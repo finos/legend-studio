@@ -1,0 +1,30 @@
+{
+  "domain": {
+    "profiles": [
+      {
+        "stereotypes": ["deprecated"],
+        "package": "meta::pure::profiles",
+        "_type": "profile",
+        "name": "doc",
+        "tags": ["doc", "todo"]
+      },
+      {
+        "stereotypes": ["abstract"],
+        "package": "meta::pure::profiles",
+        "_type": "profile",
+        "name": "typemodifiers"
+      },
+      {
+        "package": "meta::pure::metamodel::type",
+        "_type": "class",
+        "name": "Any",
+        "properties": []
+      }
+    ],
+    "enums": [],
+    "measures": [],
+    "classes": [],
+    "associations": [],
+    "functions": []
+  }
+}

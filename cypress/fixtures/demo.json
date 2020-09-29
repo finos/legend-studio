@@ -1,0 +1,13 @@
+{
+  "PROJECT_NAME": "Studio End to End Test Project",
+  "PROJECT_ID": "UAT-5520",
+  "WORKSPACE": "myDemo",
+  "TITLE": {
+    "REVIEW": "Review (Ctrl + Shift + M)",
+    "EXPLORER": "Explorer (Ctrl + Shift + X)",
+    "LOCAL_CHANGES": "Local Changes (Ctrl + Shift + G)",
+    "PROJECT_OVERVIEW": "Project",
+    "OVERVIEW": "Overview",
+    "UPDATE_WORKSPACE": "Update Workspace (Ctrl + Shift + U)"
+  }
+}

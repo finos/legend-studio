@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["dom", "dom.iterable", "esnext", "webworker", "scripthost"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "Const": ["./app/const"],
+      "MetaModelConst": ["./app/models/MetaModelConst"],
+      "MetaModelUtility": ["./app/models/MetaModelUtility"],
+      "ApplicationConfig": ["./app/ApplicationConfig"],
+      "PureModelLoader": ["./app/models/protocols/pure/PureModelLoader"],
+      "Utilities/*": ["./app/utils/*"],
+      "Components/*": ["./app/components/*"],
+      "Stores/*": ["./app/stores/*"],
+      "SDLC/*": ["app/models/sdlc/*"],
+      "EXEC/*": ["app/models/exec/*"],
+      "MM/*": ["app/models/metamodels/pure/*"],
+      "V1/*": ["./app/models/protocols/pure/v1/*"],
+      "Worker/*": ["./app/workers/*"],
+      "API/*": ["./app/api/*"],
+      "Style/*": ["./style/*"],
+      "Dev/*": ["./dev/*"],
+      "Mocks/*": ["app/__mocks__/*"]
+    }
+  },
+  "include": [
+    "./style/**/*.ts",
+    "./app/**/*.ts",
+    "./app/**/*.tsx",
+    "./dev/**/*.ts"
+  ],
+  "files": ["app/index.tsx"]
+}

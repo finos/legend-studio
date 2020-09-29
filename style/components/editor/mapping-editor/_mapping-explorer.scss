@@ -1,0 +1,230 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.mapping-explorer {
+  height: 100%;
+  width: 100%;
+
+  .panel {
+    &__header {
+      color: var(--color-dark-grey-300);
+      background: var(--color-light-grey-300);
+      font-weight: bold;
+      padding-left: 1rem;
+    }
+
+    &__header__title {
+      width: calc(100% - 2.8rem);
+    }
+
+    &__header__title--with-generation-origin {
+      max-width: calc(100% - 11rem);
+    }
+
+    &__header__action {
+      color: var(--color-dark-grey-400);
+    }
+
+    &__content {
+      padding-top: 0.5rem;
+      overflow-x: hidden;
+      background: var(--color-light-grey-200);
+      color: var(--color-dark-grey-100);
+    }
+  }
+
+  &__header__lock {
+    @include flexVCenter;
+    width: 2rem;
+    min-width: 2rem;
+    color: var(--color-light-grey-400);
+  }
+
+  &__header__lock svg {
+    font-size: 1.2rem;
+  }
+
+  &__header__generation-origin {
+    @include flexVCenter;
+    margin-right: 0.5rem;
+    height: 2.8rem;
+    cursor: pointer;
+  }
+
+  &__header__generation-origin__label {
+    @include flexVCenter;
+    background: var(--color-generated);
+    color: var(--color-light-grey-100);
+    padding: 0 0.5rem;
+    border-radius: 0.2rem 0 0 0.2rem;
+    height: 2rem;
+    width: 2rem;
+  }
+
+  &__header__generation-origin__label svg {
+    font-size: 1.2rem;
+  }
+
+  &__header__generation-origin__parent-name {
+    @include ellipsisTextOverflow;
+    height: 2rem;
+    line-height: 2rem;
+    background: var(--color-pink-300);
+    color: var(--color-light-grey-100);
+    padding: 0 0.5rem 0 0.7rem;
+    font-size: 1.2rem;
+    max-width: 6rem;
+    width: 6rem;
+  }
+
+  &__header__generation-origin__visit-btn {
+    @include flexVCenter;
+    background: var(--color-pink-300);
+    color: var(--color-light-grey-100);
+    padding: 0 0.3rem;
+    border-radius: 0 50% 50% 0;
+    height: 2rem;
+    width: 2rem;
+  }
+
+  &__item {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+    height: 2.4rem;
+  }
+
+  &__item:hover {
+    background: var(--color-light-grey-250);
+  }
+
+  &__item__label {
+    width: 100%;
+    height: 100%;
+    @include flexVCenter;
+    background: none;
+    color: inherit;
+  }
+
+  &__item__label__icon {
+    margin-right: 0.5rem;
+    @include flexCenter;
+    width: 1.7rem;
+    min-width: 1.7rem;
+  }
+
+  &__item__label__text {
+    @include ellipsisTextOverflow;
+  }
+
+  &__item--active,
+  &__item--active:hover {
+    background: var(--color-light-blue-200);
+    color: var(--color-light-grey-0);
+  }
+
+  &__item--selected-from-context-menu {
+    background: var(--color-light-grey-300);
+  }
+
+  &__context-menu {
+    background: var(--color-light-grey-100);
+    padding: 0.5rem 0;
+    min-width: 15rem;
+  }
+
+  &__context-menu__item {
+    @include flexVCenter;
+    cursor: default;
+    color: var(--color-dark-grey-300);
+    height: 2.8rem;
+    padding: 0 1rem;
+  }
+
+  &__context-menu__item__label {
+    padding-left: 1rem;
+  }
+
+  &__context-menu__item:hover {
+    background: var(--color-light-blue-200);
+    color: var(--color-light-grey-0);
+  }
+
+  &__content {
+    height: 100%;
+  }
+
+  &__content--dnd-over {
+    filter: brightness(95%) blur(0.05rem);
+    box-shadow: inset 0 0 0.4rem var(--color-dark-grey-50);
+  }
+
+  &__content__adder {
+    @include flexCenter;
+    flex-direction: column;
+    height: 100%;
+    cursor: pointer;
+    margin-top: 0 !important;
+  }
+
+  &__content__adder__text {
+    @include flexHCenter;
+    color: var(--color-dark-grey-300);
+    font-weight: bold;
+  }
+
+  &__content__adder__action {
+    @include flexCenter;
+    padding: 1rem;
+    border: 0.3rem dashed var(--color-light-grey-300);
+    border-radius: 0.3rem;
+    margin-top: 2rem;
+    width: 10rem;
+    height: 10rem;
+  }
+
+  &__content__adder__action svg {
+    font-size: 4rem;
+    color: var(--color-light-grey-300);
+  }
+
+  &__content__adder__action__add-icon {
+    display: none;
+  }
+
+  &__content__adder__action__dnd-icon {
+    display: flex;
+  }
+
+  &__content__adder:hover &__content__adder__action__add-icon {
+    display: flex;
+  }
+
+  &__content__adder:hover &__content__adder__action__dnd-icon {
+    display: none;
+  }
+
+  &__content__adder:hover &__content__adder__action {
+    border-color: var(--color-light-grey-400);
+  }
+
+  &__content--dnd-over &__content__adder__action svg {
+    animation: dnd-bounceup 0.2s alternate ease infinite;
+  }
+
+  &__content__adder:hover &__content__adder__action svg {
+    color: var(--color-light-grey-400);
+  }
+}

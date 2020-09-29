@@ -1,0 +1,62 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.share-project {
+  &__btn svg {
+    font-size: 1.8rem;
+    stroke-width: 0.3rem;
+
+    &[disabled] {
+      stroke: var(--color-dark-grey-350);
+    }
+  }
+
+  &__modal {
+    &__info-entry {
+      @include flexVCenter;
+      cursor: default;
+      padding: 0.5rem 0;
+      font-size: 1.4rem;
+    }
+
+    &__info-entry__title {
+      margin-right: 0.5rem;
+      color: var(--color-dark-grey-500);
+    }
+
+    &__info-entry__value {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-200);
+    }
+
+    &__info-entry__value a {
+      text-decoration: none;
+      font-weight: 500;
+      color: var(--color-blue-50);
+    }
+
+    &__share-btn svg {
+      padding-right: 0.7rem;
+      font-size: 2.4rem;
+    }
+
+    &__select {
+      color: var(--color-light-grey-100);
+      font-size: 1.4rem;
+      width: 15rem;
+    }
+  }
+}

@@ -1,60 +1,89 @@
-[![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
-![website build](https://github.com/finos/legend-studio/workflows/Docusaurus-website-build/badge.svg)
-
 # legend-studio
 
-Short blurb about what your project does.
+## Getting started
 
-## Installation
-
-OS X & Linux:
-
-```sh
-npm install my-crazy-module --save
+```bash
+  npm install
+  npm run setup
+  npm start
 ```
 
-Windows:
+## Developer setup
 
-```sh
-edit autoexec.bat
+### Custom DEV server config
+
+Depending on your developer environment, you might have customizations for the dev server, for example, if your environment has a different host for `localhost` and that host requires a special signed certficates and keys, you would need to provide those in `server/https`. See sample below:
+
+```json
+{
+  "host": "localhost",
+  // NOTE: the path must be relative to `webpack.config.js`
+  "key": "./dev/server/localhost.key.pem",
+  "cert": "./dev/server/localhost.cert.pem",
+  "ca": "./dev/server/ca.cert.pem"
+}
 ```
 
-## Usage example
+Whichever configs specified in this file will override that in `webpack.config.js`. See `dev/scripts/start.js` and setting `SERVER_CONFIG_PATH` for more details.
 
-A few motivating and useful examples of how your project can be used. Spice this up with code blocks and potentially screenshots / videos ([LiceCap](https://www.cockos.com/licecap/) is great for this kind of thing).
+### IDE
 
-_For more examples and usage, please refer to the [Wiki][wiki]._
+If you use VSCode (and we hope you do...), you should install `Prettier` and `ESLint` plugins, then configuallore your workspace settings in `./.vscode/settings.json` like this:
 
-## Development setup
-
-Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.
-
-```sh
-make install
-npm test
+```json
+{
+  "editor.tabSize": 2,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.options": {
+    // use advanced ESLint rules for development
+    "configFile": "./.eslintrc-advanced.js",
+    "rulePaths": ["./dev/eslint_rules"]
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/package-lock.json": true
+  },
+  // This is useful when we want to use a different version of Typescript
+  // "typescript.tsdk": "./node_modules/typescript/lib"
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "es5",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.importModuleSpecifier": "non-relative"
+}
 ```
-
-## Roadmap
-
-List the roadmap steps; alternatively link the Confluence Wiki page where the project roadmap is published.
-
-1. Item 1
-2. Item 2
-3. ....
-
-## Contributing
-
-1. Fork it (<https://github.com/finos/legend-studio/fork>)
-2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Read our [contribution guidelines](.github/CONTRIBUTING.md) and [Community Code of Conduct](https://www.finos.org/code-of-conduct)
-4. Commit your changes (`git commit -am 'Add some fooBar'`)
-5. Push to the branch (`git push origin feature/fooBar`)
-6. Create a new Pull Request
-
-_NOTE:_ Commits and pull requests to FINOS repositories will only be accepted from those contributors with an active, executed Individual Contributor License Agreement (ICLA) with FINOS OR who are covered under an existing and active Corporate Contribution License Agreement (CCLA) executed with FINOS. Commits from individuals not covered under an ICLA or CCLA will be flagged and blocked by the FINOS Clabot tool. Please note that some CCLAs require individuals/employees to be explicitly named on the CCLA.
-
-*Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)*
-
 
 ## License
 

@@ -1,15 +1,21 @@
+# system
 .DS_Store
 
-# Docusaurus generated folders
-website/translated_docs/
-website/build/
-website/i18n/
+# IDE
+.idea
+.vscode
+**/*.iml
+**/jsconfig.json
+.settings
+.project
+.classpath
 
-# Yarn build
-website/node_modules/
+# JS
+**/npm
+**/temp
+**/target
+**/node_modules
 
-# Generated docs
-docs/contributing.md
-
-# We use YARN
-website/package-lock.json
+# Developer area
+**/dev/config/**/*
+!**/dev/config/README.md

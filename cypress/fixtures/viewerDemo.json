@@ -1,0 +1,15 @@
+{
+  "PROJECT_NAME": "Studio End to End Test Project - PROD",
+  "PROJECT_ID": "PROD-18309",
+  "WORKSPACE": "test-workspace",
+  "PACKAGE_NAME": "model",
+  "TITLE": {
+    "REVIEW": "Review (Ctrl + Shift + M)",
+    "EXPLORER": "Explorer (Ctrl + Shift + X)",
+    "LOCAL_CHANGES": "Local Changes (Ctrl + Shift + G)",
+    "PROJECT_OVERVIEW": "Project",
+    "OVERVIEW": "Overview",
+    "UPDATE_WORKSPACE": "Update Workspace (Ctrl + Shift + U)"
+  },
+  "REVISION_ID": "4502d6fefb7912aacc4d99c245fb70b44696aaee"
+}
