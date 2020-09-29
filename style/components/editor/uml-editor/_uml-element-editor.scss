@@ -1,0 +1,193 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.uml-element-editor {
+  height: 100%;
+  width: 100%;
+
+  .panel {
+    height: 100%;
+
+    &__header {
+      color: var(--color-dark-grey-300);
+      font-weight: bold;
+      background: var(--color-light-grey-100);
+
+      &__title {
+        max-width: calc(100% - 11rem);
+      }
+    }
+
+    &__content {
+      height: calc(100% - 5.6rem);
+      background: var(--color-light-grey-0);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
+    }
+
+    &__content__lists--dnd-over {
+      filter: brightness(95%) blur(0.05rem);
+      box-shadow: inset 0 0 0.4rem var(--color-dark-grey-50);
+    }
+  }
+
+  &__header__lock {
+    @include flexVCenter;
+    width: 2rem;
+    min-width: 2rem;
+    color: var(--color-light-grey-400);
+  }
+
+  &__header__lock svg {
+    font-size: 1.2rem;
+  }
+
+  &__header__generation-origin {
+    @include flexVCenter;
+    margin-right: 0.5rem;
+    height: 2.8rem;
+    cursor: pointer;
+  }
+
+  &__header__generation-origin__label {
+    @include flexVCenter;
+    background: var(--color-generated);
+    color: var(--color-light-grey-100);
+    padding: 0 0.5rem;
+    border-radius: 0.2rem 0 0 0.2rem;
+    height: 2rem;
+    width: 2rem;
+  }
+
+  &__header__generation-origin__label svg {
+    font-size: 1.2rem;
+  }
+
+  &__header__generation-origin__parent-name {
+    @include ellipsisTextOverflow;
+    height: 2rem;
+    line-height: 2rem;
+    background: var(--color-pink-300);
+    color: var(--color-light-grey-100);
+    padding: 0 0.5rem 0 0.7rem;
+    font-size: 1.2rem;
+    max-width: 6rem;
+    width: 6rem;
+  }
+
+  &__header__generation-origin__visit-btn {
+    @include flexVCenter;
+    background: var(--color-pink-300);
+    color: var(--color-light-grey-100);
+    padding: 0 0.3rem;
+    border-radius: 0 50% 50% 0;
+    height: 2rem;
+    width: 2rem;
+  }
+
+  &__tabs__header {
+    padding-left: 0;
+  }
+
+  &__tabs {
+    height: 2.8rem;
+    z-index: 1;
+    display: flex;
+    overflow-x: overlay;
+    overflow-y: hidden;
+  }
+
+  &__tab {
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-light-grey-200);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  &__tab--active {
+    color: var(--color-dark-grey-50);
+    position: relative;
+  }
+
+  &__tab--active::after {
+    content: '';
+    height: 0.4rem;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background: var(--color-yellow-200);
+  }
+
+  &__basic__detail-btn {
+    @include flexCenter;
+    flex: 2.8rem 0 0;
+    height: 2.8rem;
+    color: var(--color-light-grey-0);
+    background: var(--color-light-blue-200);
+    border-radius: 0.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+  }
+
+  &__visit-parent-element-btn {
+    @include flexCenter;
+    flex: 2.8rem 0 0;
+    height: 2.8rem;
+    color: var(--color-light-grey-0);
+    background: var(--color-light-blue-200);
+    border-radius: 0.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+
+    svg {
+      font-size: 2rem;
+      color: var(--color-light-grey-100);
+    }
+  }
+
+  &__remove-btn {
+    @include flexCenter;
+    flex: 2.8rem 0 0;
+    height: 2.8rem;
+    color: var(--color-light-grey-0);
+    background: var(--color-dark-grey-300);
+    border-radius: 0.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+  }
+
+  &__remove-btn[disabled] {
+    background: var(--color-light-grey-400);
+  }
+
+  &__remove-btn--hidden {
+    pointer-events: none;
+    visibility: hidden;
+  }
+}

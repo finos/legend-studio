@@ -1,0 +1,10 @@
+{
+  "realm": "test-env",
+  "sdlcServer": "test-sdlc-url",
+  "execServer": "test-exec-url",
+  "tracerServer": "test-tracing-url",
+  "documentation": {
+    "fullDocUrl": "doc-url"
+  },
+  "features": []
+}

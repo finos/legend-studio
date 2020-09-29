@@ -1,0 +1,67 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { observable, computed } from 'mobx';
+import { guaranteeNonNullable, IllegalStateError } from 'Utilities/GeneralUtil';
+import { extractElementNameFromPath } from 'MetaModelUtility';
+import { EntityChangeType } from 'SDLC/entity/EntityChange';
+
+export class EntityDiff {
+  @observable newPath?: string;
+  @observable oldPath?: string;
+  @observable entityChangeType: EntityChangeType;
+
+  constructor(oldPath: string | undefined, newPath: string | undefined, entityChangeType: EntityChangeType) {
+    this.oldPath = oldPath;
+    this.newPath = newPath;
+    this.entityChangeType = entityChangeType;
+  }
+
+  @computed get entityName(): string { return extractElementNameFromPath(this.entityPath) }
+  @computed get entityPath(): string { return guaranteeNonNullable(this.entityChangeType === EntityChangeType.DELETE ? this.oldPath : this.newPath, `Can't find diff entity path`) }
+  @computed get key(): string { return `old-${this.oldPath ?? ''}--new-${this.newPath ?? ''}` }
+
+  getChangeTypeIcon(): string {
+    switch (this.entityChangeType) {
+      case EntityChangeType.CREATE: return 'N';
+      case EntityChangeType.DELETE: return 'D';
+      case EntityChangeType.MODIFY: return 'M';
+      case EntityChangeType.RENAME: return 'R';
+      default: return '';
+    }
+  }
+
+  static shouldOldEntityExist = (diff: EntityDiff): boolean => diff.entityChangeType === EntityChangeType.DELETE || diff.entityChangeType === EntityChangeType.MODIFY || diff.entityChangeType === EntityChangeType.RENAME;
+  static shouldNewEntityExist = (diff: EntityDiff): boolean => diff.entityChangeType === EntityChangeType.CREATE || diff.entityChangeType === EntityChangeType.MODIFY || diff.entityChangeType === EntityChangeType.RENAME;
+
+  getValidatedOldPath(): string {
+    const errorMessage = `old entity path is not defined for change type ${this.entityChangeType}`;
+    if (EntityDiff.shouldOldEntityExist(this)) {
+      return guaranteeNonNullable(this.oldPath, errorMessage);
+    }
+    throw new IllegalStateError(errorMessage);
+  }
+
+  getValidatedNewPath(): string {
+    const errorMessage = `new entity path is not defined for change type ${this.entityChangeType}`;
+    if (EntityDiff.shouldNewEntityExist(this)) {
+      return guaranteeNonNullable(this.newPath, errorMessage);
+    }
+    throw new IllegalStateError(errorMessage);
+  }
+}
+
+export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number => extractElementNameFromPath(a.newPath ?? a.oldPath ?? '').localeCompare(extractElementNameFromPath(b.newPath ?? b.oldPath ?? ''));

@@ -1,0 +1,312 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.class-form-editor {
+  .panel {
+    &__content--with-backdrop-element .panel__content__lists {
+      padding: 0;
+    }
+  }
+}
+
+.class-editor__diagram-viewer {
+  width: 100%;
+  height: 100%;
+}
+
+.derived-property-editor {
+  padding: 1rem;
+  background: var(--color-light-grey-0);
+  border-radius: 0.2rem;
+
+  .property-basic-editor {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.property-basic-editor {
+  margin-top: 0.5rem;
+  display: flex;
+
+  &__lock {
+    @include flexVCenter;
+    flex: 0 0 2.5rem;
+    color: var(--color-light-grey-300);
+  }
+
+  &__multiplicity {
+    display: flex;
+    background: var(--color-light-grey-200);
+    margin-left: 0.5rem;
+    padding: 0.3rem;
+    border-radius: 0.2rem;
+  }
+
+  &__multiplicity__range {
+    padding: 0 0.3rem;
+    font-size: 2rem;
+    @include flexVCenter;
+    font-weight: bold;
+    height: 2.2rem;
+    color: var(--color-dark-grey-400);
+    cursor: default;
+  }
+
+  &__multiplicity-bound {
+    width: 3rem;
+    border: 0.1rem solid var(--color-input-border);
+    border-radius: 0.2rem;
+    padding: 0 0.5rem;
+    height: 2.2rem;
+  }
+
+  &__multiplicity-bound[disabled] {
+    background: var(--color-light-grey-100);
+  }
+
+  &__name {
+    @include flexVCenter;
+    flex: auto;
+    height: 2.8rem;
+    background: var(--color-dark-grey-300);
+    color: var(--color-light-grey-100);
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    margin-right: 0.5rem;
+    width: calc(100% - 36rem);
+    min-width: calc(100% - 36rem);
+  }
+
+  &__name::placeholder {
+    color: var(--color-dark-grey-500);
+  }
+
+  &__name--with-lock {
+    @include flexVCenter;
+    flex: auto;
+    height: 2.8rem;
+    background: var(--color-dark-grey-300);
+    color: var(--color-light-grey-100);
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    margin-right: 0.5rem;
+    width: calc(100% - 36rem);
+    min-width: calc(100% - 36rem);
+    cursor: default;
+  }
+
+  &__name--with-lock__icon {
+    margin-right: 0.5rem;
+    width: 1.5rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__name--with-lock__name {
+    @include ellipsisTextOverflow;
+    max-width: calc(100% - 1.5rem);
+  }
+
+  &__type {
+    flex: 20rem 0 0;
+    display: flex;
+    height: 2.8rem;
+    border-radius: 0.2rem;
+    margin: 0;
+    color: var(--color-light-grey-0);
+    cursor: default;
+  }
+
+  &__type--show-click-hint {
+    cursor: pointer;
+  }
+
+  &__type--has-visit-btn {
+    border-radius: 0.2rem 1.4rem 1.4rem 0.2rem;
+  }
+
+  &__type.background--primitive {
+    border-radius: 0.2rem;
+    width: 20rem;
+  }
+
+  &__type.background--primitive &__type__label {
+    width: 100%;
+  }
+
+  &__type__abbr {
+    @include flexCenter;
+    width: 2.8rem;
+    background: var(--color-dark-shade-100);
+    border-radius: 0.2rem 0 0 0.2rem;
+  }
+
+  &__type__abbr .icon {
+    color: var(--color-light-grey-50);
+  }
+
+  &__type__label {
+    width: 14.4rem;
+    height: 2.8rem;
+    line-height: 2.8rem;
+    padding: 0 1rem;
+    @include ellipsisTextOverflow;
+  }
+
+  &__type__label--hover {
+    display: none;
+  }
+
+  &__type__visit-btn {
+    @include flexCenter;
+    width: 2.8rem;
+    font-family: var(--font-entity-label);
+    border-radius: 50%;
+    background: var(--color-dark-shade-100);
+    cursor: pointer;
+  }
+
+  &__type__visit-btn svg {
+    font-size: 2rem;
+    color: var(--color-light-grey-100);
+  }
+
+  // Show click to edit label
+  &__type .selector-input__control {
+    width: 100%;
+  }
+
+  &__type .selector-input__menu {
+    color: var(--color-dark-grey-100);
+  }
+
+  &__type--show-click-hint:hover,
+  &__type--show-click-hint:hover &__type__abbr .icon {
+    color: transparent;
+  }
+
+  &__type--show-click-hint:hover &__type__label {
+    display: none;
+    background: var(--color-dark-shade-100);
+  }
+
+  &__type--show-click-hint:hover &__type__visit-btn {
+    border-radius: 0 50% 50% 0;
+  }
+
+  &__type--show-click-hint:hover &__type__label--hover {
+    @include flexCenter;
+    color: var(--color-light-grey-100);
+  }
+
+  &__qualified-property__lambda {
+    display: flex;
+    border: 0.1rem solid var(--color-input-border);
+    width: 100%;
+    min-width: 0;
+    margin-right: 0.5rem;
+  }
+
+  &__qualified-property__lambda:hover {
+    border: 0.1rem solid var(--color-input-border--hover);
+  }
+
+  &__qualified-property__lambda:focus {
+    border: 0.1rem solid var(--color-input-border--focus);
+  }
+
+  &__locked-property-end-block {
+    width: 2.8rem;
+    min-width: 2.8rem;
+    display: flex;
+    flex: 0 0 2.8rem;
+    margin-left: 0.5rem;
+  }
+}
+
+.constraint-editor {
+  padding: 1rem;
+  background: var(--color-light-grey-0);
+  border-radius: 0.2rem;
+  margin-top: 0.5rem;
+
+  &__content {
+    display: flex;
+    margin-bottom: 0.5rem;
+
+    &__lock {
+      height: 2.8rem;
+      @include flexVCenter;
+      flex: 0 0 2.5rem;
+      color: var(--color-light-grey-300);
+    }
+
+    &__name {
+      @include flexVCenter;
+      flex: auto;
+      height: 2.8rem;
+      background: var(--color-dark-grey-300);
+      color: var(--color-light-grey-100);
+      padding: 0 1rem;
+      border-radius: 0.2rem;
+    }
+
+    &__name::placeholder {
+      color: var(--color-dark-grey-500);
+    }
+
+    &__name::placeholder {
+      color: var(--color-dark-grey-500);
+    }
+
+    &__name--with-lock {
+      @include flexVCenter;
+      flex: auto;
+      height: 2.8rem;
+      background: var(--color-dark-grey-300);
+      color: var(--color-light-grey-100);
+      padding: 0 1rem;
+      border-radius: 0.2rem;
+      cursor: default;
+    }
+
+    &__name--with-lock__icon {
+      margin-right: 0.5rem;
+      width: 1.5rem;
+
+      svg {
+        font-size: 1.2rem;
+      }
+    }
+
+    &__name--with-lock__name {
+      @include ellipsisTextOverflow;
+      max-width: calc(100% - 1.5rem);
+    }
+  }
+}
+
+.super-type-editor {
+  display: flex;
+  margin-top: 0.5rem;
+
+  &__class {
+    flex: auto;
+    min-width: 0;
+  }
+}

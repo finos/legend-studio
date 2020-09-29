@@ -1,0 +1,263 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.selector-input .selector-input {
+  &__control {
+    cursor: text;
+    border-radius: 0;
+    min-height: 2.8rem;
+    height: 2.8rem;
+    @include flexVCenter;
+    border: 0.1rem solid var(--color-input-border);
+  }
+
+  &__control:hover {
+    border: 0.1rem solid var(--color-input-border--hover);
+  }
+
+  &__control--is-focused,
+  &__control--is-focused:hover {
+    border: 0.1rem solid var(--color-input-border--focus);
+    box-shadow: none;
+  }
+
+  &__indicator-separator {
+    margin-top: 0;
+    margin-bottom: 0;
+    background: var(--color-input-border);
+  }
+
+  &__indicator {
+    cursor: pointer;
+    width: 1.6rem;
+    height: 100%;
+    @include flexVCenter;
+    padding: 0;
+  }
+
+  &__loading-indicator {
+    width: initial;
+    padding: 0 1rem;
+  }
+
+  &__dropdown-indicator {
+    @include flexCenter;
+    width: 1.5rem;
+    font-size: 1.3rem;
+    background: var(--color-light-grey-0);
+    color: var(--color-dark-grey-300);
+  }
+
+  &__clear-indicator {
+    width: 2.6rem;
+    color: var(--color-light-grey-400);
+  }
+
+  &__value-container > div:last-child {
+    margin: 0;
+    padding: 0;
+  }
+
+  &__value-container {
+    @include flexVCenter;
+    height: 2.6rem;
+    padding: 0 0.5rem;
+  }
+
+  &__option--custom {
+    @include flexVCenter;
+    height: 3.5rem;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  &__option--custom:hover {
+    background: var(--color-light-grey-100);
+  }
+}
+
+.selector-menu--dark {
+  background: var(--color-dark-grey-100);
+}
+
+.selector-menu--no-match {
+  @include flexVCenter;
+  height: 2.5rem;
+  color: var(--color-dark-grey-500);
+  padding: 0.5rem;
+  cursor: default;
+}
+
+.selector-input--dark,
+.selector-menu--dark .selector-input--dark,
+.selector-input--dark .selector-input--dark {
+  &--is-disabled {
+    cursor: not-allowed;
+    pointer-events: initial !important;
+  }
+
+  &__control {
+    cursor: text;
+    border-radius: 0;
+    min-height: 2.8rem;
+    height: 2.8rem;
+    @include flexVCenter;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-300);
+    color: var(--color-light-grey-200);
+  }
+
+  &__control:hover {
+    border: 0.1rem solid var(--color-blue-100);
+  }
+
+  &__control--is-focused,
+  &__control--is-focused:hover {
+    border: 0.1rem solid var(--color-blue-100);
+    box-shadow: none;
+  }
+
+  &__control--is-disabled {
+    cursor: not-allowed;
+    border: 0.1rem solid var(--color-dark-grey-100) !important;
+    background: var(--color-dark-grey-100);
+
+    .selector-input__dropdown-indicator {
+      visibility: hidden;
+    }
+  }
+
+  &__indicator-separator {
+    margin-top: 0;
+    margin-bottom: 0;
+    background: var(--color-dark-grey-100);
+  }
+
+  &__indicator {
+    cursor: pointer;
+    width: 1.6rem;
+    height: 100%;
+    @include flexCenter;
+    padding: 0;
+    color: var(--color-light-grey-200);
+  }
+
+  &__loading-indicator {
+    width: initial;
+    padding: 0 1rem;
+    color: var(--color-light-grey-200);
+  }
+
+  .selector-input__dropdown-indicator {
+    @include flexCenter;
+    width: 1.5rem;
+    font-size: 1.3rem;
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-200);
+  }
+
+  &__clear-indicator {
+    width: 2.6rem;
+    color: var(--color-light-grey-200);
+  }
+
+  &__value-container > div:last-child {
+    margin: 0;
+    padding: 0;
+  }
+
+  &__value-container {
+    @include flexVCenter;
+    height: 2.6rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-200);
+  }
+
+  &__value-container > * {
+    color: var(--color-light-grey-200) !important;
+  }
+
+  &__single-value,
+  &__placeholder {
+    color: var(--color-light-grey-200);
+    width: 100%;
+  }
+
+  &__single-value--is-disabled {
+    cursor: not-allowed;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__option--custom {
+    @include flexVCenter;
+    height: 3.5rem;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  &__option--custom:hover {
+    background: var(--color-dark-grey-100);
+  }
+
+  &__menu {
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-100);
+    color: var(--color-light-grey-200);
+  }
+
+  &__option {
+    color: var(--color-light-grey-200) !important;
+
+    &--is-focused {
+      background-color: var(--color-dark-blue-shade-100);
+    }
+
+    &--is-selected {
+      background-color: var(--color-light-blue-450);
+    }
+
+    &--is-disabled {
+      color: var(--color-dark-grey-400) !important;
+    }
+  }
+
+  &__option:active {
+    background-color: var(--color-light-blue-450) !important;
+  }
+}
+
+.selector-input--has-error .selector-input--dark {
+  &__control,
+  &__control:hover {
+    border-color: var(--color-red-100);
+  }
+
+  &__value-container {
+    background: var(--color-dark-red-shade-100);
+  }
+
+  &__indicators {
+    background: var(--color-dark-red-shade-100);
+
+    svg {
+      color: var(--color-red-100);
+    }
+  }
+
+  &__indicator-separator {
+    background: var(--color-red-100);
+  }
+}

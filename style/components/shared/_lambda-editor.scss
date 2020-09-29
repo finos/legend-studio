@@ -1,0 +1,172 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.lambda-editor {
+  @include flexVCenter;
+  height: 2.8rem;
+  flex: 1 0 auto;
+  min-width: 0;
+  border-radius: 0.2rem;
+  background: var(--color-dark-grey-300);
+
+  // Since `monaco-editor` does not support haivng mutliple editors with different themes so we have to
+  // hack CSS for now until we can completely convert element editor to dark theme
+  .monaco-editor {
+    .margin,
+    .monaco-editor-background {
+      background: var(--color-dark-grey-300) !important;
+    }
+
+    .decorationsOverviewRuler {
+      display: none;
+    }
+  }
+
+  &__editor__input {
+    position: relative;
+    height: 100%;
+    width: 100%;
+  }
+
+  &__editor__input__compressed {
+    .scroll-decoration {
+      box-shadow: none;
+    }
+
+    // NOTE: we technically shouldn't use `rem` here because VS Code uses px but it doesn't hurt much for now
+    .selected-text,
+    .selectionHighlight {
+      height: 2.6rem !important;
+    }
+
+    .cursors-layer .cursor {
+      top: 0.3rem !important;
+      height: 2rem !important;
+    }
+
+    .view-line {
+      @include flexVCenter;
+      height: 2.6rem !important;
+    }
+  }
+
+  &__editor__info {
+    @include flexVCenter;
+    height: 100%;
+    padding: 0 0.5rem;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-right: none;
+    border-left: none;
+    background: var(--color-dark-grey-300);
+  }
+
+  &__editor__expected-return-type {
+    @include flexCenter;
+    height: 100%;
+    height: 1.8rem;
+    border-radius: 0.2rem;
+    padding: 0 0.5rem;
+    color: var(--color-dark-grey-400);
+    background: var(--color-light-grey-0);
+    border: 0.1rem solid var(--color-light-grey-0);
+    font-size: 1.1rem;
+    cursor: default;
+  }
+
+  &__editor__expected-return-type--clickable {
+    cursor: pointer;
+  }
+
+  &__editor__expected-return-type--highlighted {
+    border-color: var(--color-yellow-0);
+    background: var(--color-yellow-0);
+    color: var(--color-dark-grey-0);
+  }
+
+  &__editor__expand-btn {
+    @include flexCenter;
+    height: 100%;
+    width: 1.6rem;
+    background: var(--color-dark-grey-280);
+    border: 0.1rem solid var(--color-dark-grey-280);
+    color: var(--color-light-grey-0);
+    border-radius: 0 0.2rem 0.2rem 0;
+    cursor: pointer;
+  }
+
+  &__editor__expand-btn[disabled] {
+    color: var(--color-dark-grey-400);
+    cursor: not-allowed;
+  }
+
+  &__expanded {
+    height: 28rem !important;
+  }
+
+  &__expanded &__editor__info {
+    align-items: flex-start;
+    padding: 0.4rem 0.5rem;
+  }
+
+  &__expanded &__editor__expand-btn {
+    background: var(--color-dark-grey-280);
+    border-color: var(--color-dark-grey-280);
+  }
+
+  &--dnd-match &__editor__expected-return-type {
+    background: var(--color-yellow-0);
+    border-color: var(--color-yellow-0);
+    color: var(--color-dark-grey-0);
+  }
+}
+
+.lambda-editor__error-feedback {
+  width: 100%;
+  margin-top: 0.5rem;
+  background: var(--color-red-100);
+  color: var(--color-light-grey-0);
+  border-radius: 0.2rem;
+  cursor: default;
+
+  &__error__message {
+    display: inline-flex;
+    line-height: 1.6rem;
+    padding: 0.5rem;
+  }
+
+  &__parsing-error__message {
+    @include flexVCenter;
+    font-size: 1.2rem;
+    color: var(--color-red-400);
+    margin-right: 0.5rem;
+  }
+
+  &__parsing-error__content {
+    @include flexHSpaceBetween;
+    border-top: 0.1rem solid var(--color-red-200);
+    padding: 0.5rem;
+  }
+
+  &__parsing-error__discard-changes-btn {
+    cursor: pointer;
+    font-size: 1.2rem;
+    height: 1.8rem;
+    background: var(--color-red-200);
+    border-radius: 0.2rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-50);
+  }
+}
