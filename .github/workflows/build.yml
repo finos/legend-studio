@@ -64,4 +64,4 @@ jobs:
       run: mvn install javadoc:javadoc
     - name: Build + Test + Sonar + Maven Deploy
       if: github.ref == 'refs/heads/master'
-      run: mvn javadoc:javadoc deploy -Psonar -pl !test-reports
+      run: mvn javadoc:javadoc deploy -Psonar
