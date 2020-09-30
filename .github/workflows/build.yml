@@ -65,7 +65,3 @@ jobs:
     - name: Build + Test + Sonar + Maven Deploy
       if: github.ref == 'refs/heads/master'
       run: mvn javadoc:javadoc deploy -Psonar -pl !test-reports
-    - name: Node build
-      run: yarn install
-    - name: Node test
-      run: yarn test:full
