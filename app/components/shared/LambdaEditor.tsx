@@ -85,7 +85,7 @@ export const LambdaEditor = observer((props: {
        * handles string <-> lambda object conversion), but there are certain operations in this app that can potentially
        * remove and recreate the lambda editor state, such as global generate or global compile, for such case, `LambdaEditorInner`
        * receives a new lambda editor state, but since React is smart about redrawing the DOM, it will not recreate the instance
-       * of `monaco-editor` (see the useEffect() block), as such, the editor is using a stale state. That is definitely a bug; 
+       * of `monaco-editor` (see the useEffect() block), as such, the editor is using a stale state. That is definitely a bug;
        * and to demonstrate, we can try the following sequence of actions:
        *
        * 1. Type something that parses in the lambda editor

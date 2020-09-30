@@ -656,7 +656,7 @@ export class DiagramRenderer {
       this.ctx.font = `${this.fontSize}px ${this.fontFamily}`;
       this.ctx.textBaseline = 'top'; // Compute min dimensions
       for (const taggedValue of classView.class.value.taggedValues) {
-        const taggedValueTxt = `{ ${this.truncateTextWithEllipsis(`${taggedValue.tag.value} = ${taggedValue.value}`, this.maxLineLength - 4)} }`;
+        const taggedValueTxt = `{ ${this.truncateTextWithEllipsis(`${taggedValue.tag.value.value} = ${taggedValue.value}`, this.maxLineLength - 4)} }`;
         const taggedValueWidth = this.ctx.measureText(taggedValueTxt).width;
         classMinWidth = Math.max(classMinWidth, taggedValueWidth);
         classMinHeight = classMinHeight + this.lineHeight;
@@ -723,7 +723,7 @@ export class DiagramRenderer {
     if (!classView.hideTaggedValues) {
       for (const taggedValue of classView.class.value.taggedValues) {
         this.ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-        const taggedValueTxt = `{ ${this.truncateTextWithEllipsis(`${taggedValue.tag.value} = ${taggedValue.value}`, this.maxLineLength - 4)} }`;
+        const taggedValueTxt = `{ ${this.truncateTextWithEllipsis(`${taggedValue.tag.value.value} = ${taggedValue.value}`, this.maxLineLength - 4)} }`;
         const taggedValueWidth = this.ctx.measureText(taggedValueTxt).width;
         this.ctx.font = `${this.fontSize * this.zoom}px ${this.fontFamily}`;
         this.ctx.fillText(taggedValueTxt, (startX + this.screenOffset.x + (classView.rectangle.width - taggedValueWidth) / 2 - this.canvasCenter.x) * this.zoom + this.canvasCenter.x, (cursorY + this.screenOffset.y + this.classViewSpaceY - this.canvasCenter.y) * this.zoom + this.canvasCenter.y);
