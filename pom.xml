@@ -360,7 +360,7 @@
         <version>${opentracing.version}</version>
       </dependency>
       <dependency>
-        <artifactId>legend-pac4j-gitlab</artifactId>
+        <artifactId>legend-shared-pac4j-gitlab</artifactId>
         <groupId>org.finos.legend</groupId>
         <version>${legend.shared.version}</version>
       </dependency>
@@ -401,7 +401,7 @@
 
     <!-- AUTH -->
     <dependency>
-      <artifactId>legend-pac4j-gitlab</artifactId>
+      <artifactId>legend-shared-pac4j-gitlab</artifactId>
       <groupId>org.finos.legend</groupId>
     </dependency>
     <!-- AUTH -->
