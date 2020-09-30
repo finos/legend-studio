@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import React, { createContext, useContext } from 'react';
 import { useLocalStore } from 'mobx-react-lite';
 import { Log, LOG_EVENT } from 'Utilities/Logger';
