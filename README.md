@@ -14,7 +14,7 @@
 
 Depending on your developer environment, you might have customizations for the dev server, for example, if your environment has a different host for `localhost` and that host requires a special signed certficates and keys, you would need to provide those in `server/https`. See sample below:
 
-```json
+```jsonc
 {
   "host": "localhost",
   // NOTE: the path must be relative to `webpack.config.js`
@@ -30,7 +30,7 @@ Whichever configs specified in this file will override that in `webpack.config.j
 
 If you use VSCode (and we hope you do...), you should install `Prettier` and `ESLint` plugins, then configuallore your workspace settings in `./.vscode/settings.json` like this:
 
-```json
+```jsonc
 {
   "editor.tabSize": 2,
   "eslint.validate": [
