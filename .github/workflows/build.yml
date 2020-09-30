@@ -50,7 +50,7 @@ jobs:
     - name: Set up Node
       uses: actions/setup-node@v1
       with:
-        node-version: '12'
+        node-version: '14.3.0'
     - name: Configure git
       run: |
         git config --global committer.email "infra@finos.org"
@@ -66,6 +66,6 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: mvn javadoc:javadoc deploy -Psonar -pl !test-reports
     - name: Node build
-      run: npm install
+      run: yarn install
     - name: Node test
-      run: npm run test:full
+      run: yarn test:full
