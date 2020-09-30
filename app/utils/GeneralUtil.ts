@@ -94,9 +94,6 @@ export const uniq = _uniq;
 export const debounce = _debounce;
 export const throttle = _throttle;
 
-// NOTE: do not remove this, this is a good way to debug in our app
-export { diff as deepDiff } from 'deep-diff';
-
 export const isString = (val: unknown): val is string => typeof val === 'string';
 export const isNumber = (val: unknown): val is number => typeof val === 'number';
 export const isBoolean = (val: unknown): val is boolean => typeof val === 'boolean';
