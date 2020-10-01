@@ -34,7 +34,7 @@
     <mainClass>org.finos.legend.server.shared.staticserver.Server</mainClass>
 
     <sonar.projectKey>legend-studio</sonar.projectKey>
-    <!-- <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey> -->
+    <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
 
     <!-- Dependencies -->
     <legend.shared.version>0.0.6</legend.shared.version>
