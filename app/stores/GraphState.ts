@@ -42,7 +42,6 @@ import { MODEL_UPDATER_INPUT_TYPE } from 'Stores/editor-state/ModelLoaderState';
 import { PureModel, CoreModel, SystemModel, LegalModel, GenerationModel } from 'MM/PureModel';
 import { PureModelContextDataObject, AbstractPureGraphManager, graphModelDataToEntities, PackageableElementObject, elementProtocolToEntity } from 'MM/AbstractPureGraphManager';
 import MM_SYSTEM_ELEMENTS from 'MM/system/System.json';
-import MM_LEGAL_ELEMENTS from 'MM/system/Legal.json';
 import { getClassiferPathFromType } from 'MM/model/packageableElements/PackageableElement';
 import { DependencyManager } from 'MM/DependencyManager';
 
@@ -117,7 +116,7 @@ export class GraphState {
       )
       .map(profile => elementProtocolToEntity(this.graphManager, profile));
     // TODO: to be removed - only for Demo Mode
-    const legalEntitites = config.features.BETA__demoMode ? (MM_LEGAL_ELEMENTS as PackageableElementObject[]).map(entity => elementProtocolToEntity(this.graphManager, entity)) : [];
+    const legalEntitites = config.features.BETA__demoMode ? ([] as PackageableElementObject[]).map(entity => elementProtocolToEntity(this.graphManager, entity)) : [];
     try {
       yield this.graphManager.buildSystem(this.coreModel, this.systemModel, systemEntities, this.legalModel, legalEntitites);
       this.systemModel.initializeAutoImports();
