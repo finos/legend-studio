@@ -35,7 +35,8 @@
 
     <sonar.projectKey>legend-studio</sonar.projectKey>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
-
+    <sonar.sources>${project.basedir}/app</sonar.sources>
+     
     <!-- Dependencies -->
     <legend.shared.version>0.0.6</legend.shared.version>
     <opentracing.version>0.32.0</opentracing.version>
