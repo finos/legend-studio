@@ -1,3 +1,8 @@
+[![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
+![legend-build](https://github.com/finos/legend-studio/workflows/legend-build/badge.svg)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=legend-studio&metric=security_rating&token=1649412014267d7d7a6833643cb3133afe0137b0)](https://sonarcloud.io/dashboard?id=legend-studio)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=legend-studio&metric=bugs&token=1649412014267d7d7a6833643cb3133afe0137b0)](https://sonarcloud.io/dashboard?id=legend-studio)
+
 # legend-studio
 
 ## Getting started
@@ -84,6 +89,14 @@ If you use VSCode (and we hope you do...), you should install `Prettier` and `ES
   "typescript.preferences.importModuleSpecifier": "non-relative"
 }
 ```
+
+## Roadmap
+
+Visit [legend.finos.org/docs/roadmap](https://alloy.finos.org/docs/roadmap) to know more about the roadmap.
+
+## Contributing
+
+Visit Legend [Contribution Gude](https://github.com/finos/alloy/blob/master/.github/CONTRIBUTING.md) to learn how to contribute to Legend.
 
 ## License
 
