@@ -92,11 +92,11 @@ If you use VSCode (and we hope you do...), you should install `Prettier` and `ES
 
 ## Roadmap
 
-Visit [legend.finos.org/docs/roadmap](https://alloy.finos.org/docs/roadmap) to know more about the roadmap.
+Visit [legend.finos.org/docs/roadmap](https://legend.finos.org/docs/roadmap) to know more about the roadmap.
 
 ## Contributing
 
-Visit Legend [Contribution Gude](https://github.com/finos/alloy/blob/master/.github/CONTRIBUTING.md) to learn how to contribute to Legend.
+Visit Legend [Contribution Guide](https://github.com/finos/legend/blob/master//CONTRIBUTING.md) to learn how to contribute to Legend.
 
 ## License
 
