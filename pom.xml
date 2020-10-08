@@ -24,7 +24,7 @@
     <artifactId>finos</artifactId>
     <version>2</version>
   </parent>
-  <groupId>org.finos.legend</groupId>
+  <groupId>org.finos.legend.studio</groupId>
   <artifactId>legend-studio</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
