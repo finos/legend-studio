@@ -62,7 +62,7 @@ export class ProtocolToMetaModelPropertyMappingVisitor implements PropertyMappin
     }
     const purePropertyMapping = new MM_PurePropertyMapping(this.topParent, property, new MM_Lambda([], propertyMapping.transform.body), this.topParent, targetSetImplementation, propertyMapping.explodeProperty);
     if (propertyMapping.enumMappingId) {
-      const enumerationMapping = this.allEnumerationMappings.find(enumerationMapping => enumerationMapping.id.value === propertyMapping.enumMappingId);
+      const enumerationMapping = this.allEnumerationMappings.find(em => em.id.value === propertyMapping.enumMappingId);
       if (!enumerationMapping) {
         // TODO: Since we don't support `includedMappings`, this will throw errors, but right now we can just make it undefined.
         Log.debug(LOG_EVENT.GRAPH_PROBLEM, `Can't find enumeration mapping with ID '${propertyMapping.enumMappingId}' in mapping '${this.topParent.parent.path}' (perhaps because we haven't supported included mappings)`);

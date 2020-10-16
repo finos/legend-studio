@@ -109,14 +109,14 @@ export const guaranteeIsNumber = (val: unknown, message = ''): number => { asser
  */
 export const recursiveOmit = (obj: Record<PropertyKey, unknown>, keysToRemove: string[]): Record<PropertyKey, unknown> => {
   const newObj = deepClone(obj);
-  const omit = (obj: Record<PropertyKey, unknown>, keysToRemove: string[]): void => {
-    for (const prop in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
-        const value = obj[prop];
-        if (keysToRemove.includes(prop)) {
-          delete obj[prop];
+  const omit = (_obj: Record<PropertyKey, unknown>, _keysToRemove: string[]): void => {
+    for (const prop in _obj) {
+      if (Object.prototype.hasOwnProperty.call(_obj, prop)) {
+        const value = _obj[prop];
+        if (_keysToRemove.includes(prop)) {
+          delete _obj[prop];
         } else if (typeof value === 'object') {
-          omit(value as Record<PropertyKey, unknown>, keysToRemove);
+          omit(value as Record<PropertyKey, unknown>, _keysToRemove);
         }
       }
     }
@@ -220,7 +220,7 @@ export const usePrevious = <T>(value: T | undefined): T | undefined => {
  * This hook measures the size of a HTML element, by default it will react to resize event on window
  * See https://github.com/Swizec/useDimensions
  */
-export const useDimensions = (options?: { remeasureOnWindowResize?: boolean }): [(node: HTMLElement | null) => void, DOMRect | undefined, HTMLElement | null] => {
+export const useDimensions = (options?: { remeasureOnWindowResize?: boolean }): [(element: HTMLElement | null) => void, DOMRect | undefined, HTMLElement | null] => {
   const [dimensions, setDimensions] = useState<DOMRect>();
   const [node, setNode] = useState<HTMLElement | null>(null);
   const ref = useCallback(node => setNode(node), []);

@@ -54,7 +54,7 @@ export class MappingExecutionGraphFetchQueryState extends MappingExecutionQueryS
   @observable graphFetchTree?: GraphFetchTreeData;
 
   @action setTarget = (target: Class | undefined): void => { this.target = target }
-  @action setGraphFetchTree = (graphFetchTree?: GraphFetchTreeData): void => { this.graphFetchTree = graphFetchTree }
+  @action setGraphFetchTree = (graphFetchTree: GraphFetchTreeData | undefined): void => { this.graphFetchTree = graphFetchTree }
 
   @computed get isValid(): boolean { return Boolean(this.target) }
 

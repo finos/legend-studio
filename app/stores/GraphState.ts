@@ -245,12 +245,12 @@ export class GraphState {
         try {
           const graphModelData = this.graphManager.buildModelDataFromEntities(entities);
           yield this.editorStore.grammarTextEditorState.updateGrammarText(graphModelData);
-        } catch (error) {
-          Log.error(LOG_EVENT.GRAPH_PROBLEM, error);
-          if (error instanceof NetworkClientError) {
+        } catch (_error) {
+          Log.error(LOG_EVENT.GRAPH_PROBLEM, _error);
+          if (_error instanceof NetworkClientError) {
             // in case the server cannot even transform the JSON due to corrupted protocol, we can redirect to model loader
-            this.redirectToModelLoaderForDebugging(error);
-            throw error;
+            this.redirectToModelLoaderForDebugging(_error);
+            throw _error;
           }
         }
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
@@ -671,15 +671,15 @@ export class GraphState {
    */
   private getProjectDependencyEntities = flow(function* (this: GraphState, dependency: ProjectDependency, dependencyMetadataMap: Map<string, ProjectDependencyMetadata>, parentConfig: ProjectConfiguration): Generator<Promise<unknown>, void, unknown> {
     try {
-      const config = deserialize(ProjectConfiguration, (yield sdlcClient.getConfigurationByVersion(dependency.projectId, dependency.version)) as ProjectConfiguration);
+      const projectConfig = deserialize(ProjectConfiguration, (yield sdlcClient.getConfigurationByVersion(dependency.projectId, dependency.version)) as ProjectConfiguration);
       // key will be the same as the prefix path for any dependent element, hence: <groupId>::<artifactId>::<versionId>
-      const dependencyKey = `${config.dependencyKey}${ENTITY_PATH_DELIMITER}${dependency.pathVersion}`;
+      const dependencyKey = `${projectConfig.dependencyKey}${ENTITY_PATH_DELIMITER}${dependency.pathVersion}`;
       if (!dependencyMetadataMap.has(dependencyKey)) {
-        (yield Promise.all(config.projectDependencies.map(projDep => this.getProjectDependencyEntities(projDep, dependencyMetadataMap, config))));
+        (yield Promise.all(projectConfig.projectDependencies.map(projDep => this.getProjectDependencyEntities(projDep, dependencyMetadataMap, projectConfig))));
         const entities = (yield sdlcClient.getEntitiesByVersion(dependency.projectId, dependency.version)) as Entity[];
         const processVersionPackage = parentConfig.projectDependencies.filter(dep => dep.projectId === dependency.projectId).length > 1;
         // This holds metedata for a dependency project. We process version package only if a project depends on multiple versions of a project
-        const projectDependenciesMetaData = { entities, config, processVersionPackage };
+        const projectDependenciesMetaData = { entities, config: projectConfig, processVersionPackage };
         dependencyMetadataMap.set(dependencyKey, projectDependenciesMetaData);
       }
     } catch (error) {

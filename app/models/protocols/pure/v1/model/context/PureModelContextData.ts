@@ -56,8 +56,8 @@ export class PureModelContextData extends PureModelContext {
   async build(entities: Entity[] | undefined): Promise<void> {
     try {
       if (entities?.length) {
-        const buildEntitiesForType = async <T>(entities: Entity[], type: Clazz<T>): Promise<T[]> => entities.length
-          ? Promise.all<T>(entities.map(e => new Promise((resolve, reject) => setTimeout(() => {
+        const buildEntitiesForType = async <T>(ents: Entity[], type: Clazz<T>): Promise<T[]> => ents.length
+          ? Promise.all<T>(ents.map(e => new Promise((resolve, reject) => setTimeout(() => {
             try {
               resolve(deserialize(type, e.content));
             } catch (error) {

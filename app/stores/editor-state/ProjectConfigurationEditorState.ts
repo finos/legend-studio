@@ -66,10 +66,10 @@ export class ProjectConfigurationEditorState extends EditorState {
   @computed get originalConfig(): ProjectConfiguration { return guaranteeNonNullable(this.originalProjectConfiguration, 'Original project configuration is not set') }
   @computed get projectOptions(): ProjectSelectOption[] { return Array.from(this.projects.values()).map(p => p.selectOption).sort(compareLabelFn) }
 
-  fectchAssociatedProjectsAndVersions = flow(function* (this: ProjectConfigurationEditorState, config: ProjectConfiguration) {
+  fectchAssociatedProjectsAndVersions = flow(function* (this: ProjectConfigurationEditorState, projectConfig: ProjectConfiguration) {
     this.isFetchingAssociatedProjectsAndVersions = true;
     try {
-      const dependencies = config.projectDependencies;
+      const dependencies = projectConfig.projectDependencies;
       yield Promise.all(dependencies.map(projDep => sdlcClient.getProject(projDep.projectId)
         .then(p => { this.projects.set(p.projectId, deserialize(Project, p)) }).catch(e => { Log.error(LOG_EVENT.SDLC_PROBLEM, e) })));
       yield Promise.all(

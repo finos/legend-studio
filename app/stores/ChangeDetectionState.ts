@@ -63,7 +63,7 @@ class RevisionChangeDetectionState {
       changes = changes.concat(Array.from(originalPaths).map(path => new EntityDiff(path, undefined, EntityChangeType.DELETE)));
     }
     this.changes = changes;
-    quiet ? undefined : Log.info(LOG_EVENT.GRAPH_CHANGES_DETECTED, Date.now() - startTime, 'ms');
+    if (!quiet) { Log.info(LOG_EVENT.GRAPH_CHANGES_DETECTED, Date.now() - startTime, 'ms') }
   });
 
   /**
@@ -84,7 +84,7 @@ class RevisionChangeDetectionState {
           const hashesIndex = event.data.hashesIndex as Map<string, string>;
           this.setEntityHashesIndex(hashesIndex);
           this.setIsBuildingEntityHashesIndex(false);
-          quiet ? undefined : Log.info(logEvent, '[ASYNC]', Date.now() - startTime, 'ms');
+          if (!quiet) { Log.info(logEvent, '[ASYNC]', Date.now() - startTime, 'ms') }
           changeDetectionWorker.terminate();
           resolve();
         };
@@ -258,7 +258,7 @@ export class ChangeDetectionState {
     const startTime = Date.now();
     const snapshot = new Map<string, string>();
     this.graphState.graph.allElements.forEach(el => snapshot.set(el.path, el.hashCode));
-    quiet ? undefined : Log.info(LOG_EVENT.GRAPH_HASH_SNAPSHOTED, Date.now() - startTime, 'ms');
+    if (!quiet) { Log.info(LOG_EVENT.GRAPH_HASH_SNAPSHOTED, Date.now() - startTime, 'ms') }
     return snapshot;
   }
 
@@ -278,7 +278,7 @@ export class ChangeDetectionState {
         resolve();
       }, 0))));
       changes = changes.concat(Array.from(originalPaths).map(path => new EntityDiff(path, undefined, EntityChangeType.DELETE)));
-      quiet ? undefined : Log.info(LOG_EVENT.GRAPH_CHANGES_DETECTED, Date.now() - startTime, 'ms');
+      if (!quiet) { Log.info(LOG_EVENT.GRAPH_CHANGES_DETECTED, Date.now() - startTime, 'ms') }
     }
     return changes;
   }
@@ -311,7 +311,7 @@ export class ChangeDetectionState {
       this.aggregatedWorkspaceChanges, this.aggregatedProjectLatestChanges,
       this.workspaceLatestRevisionState.entityHashesIndex, this.projectLatestRevisionState.entityHashesIndex
     )) as unknown as EntityChangeConflict[];
-    quiet ? undefined : Log.info(LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED, Date.now() - startTime, 'ms');
+    if (!quiet) { Log.info(LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED, Date.now() - startTime, 'ms') }
   });
 
   /**
@@ -326,7 +326,7 @@ export class ChangeDetectionState {
       this.aggregatedWorkspaceChanges, aggregatedUpdateChanges,
       this.workspaceLatestRevisionState.entityHashesIndex, this.conflictResolutionBaseRevisionState.entityHashesIndex
     )) as unknown as EntityChangeConflict[];
-    quiet ? undefined : Log.info(LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED, Date.now() - startTime, 'ms');
+    if (!quiet) { Log.info(LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED, Date.now() - startTime, 'ms') }
   });
 
   /**
@@ -397,6 +397,6 @@ export class ChangeDetectionState {
       this.workspaceLatestRevisionState.computeChanges(quiet), // for local changes detection
       this.conflictResolutionBaseRevisionState.computeChanges(quiet), // for conflict resolution changes detection
     ]);
-    quiet ? undefined : Log.info(LOG_EVENT.GRAPH_CHANGES_DETECTED, Date.now() - startTime, 'ms');
+    if (!quiet) { Log.info(LOG_EVENT.GRAPH_CHANGES_DETECTED, Date.now() - startTime, 'ms') }
   });
 }

@@ -46,7 +46,7 @@ const testRoundtrip = async (entities: Entity[]): Promise<void> => {
   // Check hash
   await editorStore.graphState.graph.precomputeHashes();
   const protocolHashesIndex = (await editorStore.graphState.graphManager.getHashInfoAndModelDataFromEntities(entities))[0];
-  await editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(protocolHashesIndex);
+  editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(protocolHashesIndex);
   await editorStore.changeDetectionState.computeLocalChanges(true);
   // WIP: avoid listing section index as part of change detection for now
   expect(editorStore.changeDetectionState.workspaceLatestRevisionState.changes.filter(change => change.entityChangeType !== EntityChangeType.DELETE || change.oldPath !== '__internal__::SectionIndex').length).toBe(0);

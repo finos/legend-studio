@@ -140,9 +140,9 @@ export class RelationshipView implements Hashable {
    * so it doesn't look too weird
    */
   findOrBuildPoint(x: number, y: number, zoom: number, allowChange = true): Point | undefined {
-    for (const point of this.path) {
-      if (Math.sqrt((x - point.x) * (x - point.x) + (y - point.y) * (y - point.y)) < 10 / zoom) {
-        return point;
+    for (const pt of this.path) {
+      if (Math.sqrt((x - pt.x) * (x - pt.x) + (y - pt.y) * (y - pt.y)) < 10 / zoom) {
+        return pt;
       }
     }
 

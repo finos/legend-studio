@@ -138,7 +138,7 @@ export class GraphBuilderContext {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  resolveElement = (path: string, includePackage: boolean): MM_PackageableElementImplicitReference<MM_PackageableElement> => this.createImplicitPackageableElementReference(path, (path: string) => this.graph.getElement(path, includePackage))
+  resolveElement = (path: string, includePackage: boolean): MM_PackageableElementImplicitReference<MM_PackageableElement> => this.createImplicitPackageableElementReference(path, (_path: string) => this.graph.getElement(_path, includePackage))
   resolveType = (path: string): MM_PackageableElementImplicitReference<MM_Type> => this.createImplicitPackageableElementReference(path, this.graph.getType)
   resolveProfile = (path: string): MM_PackageableElementImplicitReference<MM_Profile> => this.createImplicitPackageableElementReference(path, this.graph.getProfile)
   resolveClass = (path: string): MM_PackageableElementImplicitReference<MM_Class> => this.createImplicitPackageableElementReference(path, this.graph.getClass)

@@ -106,7 +106,7 @@ const MergeConflictEditor = observer((props: {
   useEffect(() => {
     if (!editor && textInputRef.current) {
       const element = textInputRef.current;
-      const editor = monacoEditorAPI.create(element, {
+      const _editor = monacoEditorAPI.create(element, {
         ...baseTextEditorSettings,
         theme: EDITOR_THEME.STUDIO,
         language: EDITOR_LANGUAGE.PURE,
@@ -114,9 +114,9 @@ const MergeConflictEditor = observer((props: {
         formatOnType: true,
         formatOnPaste: true,
       });
-      disableEditorHotKeys(editor);
-      editor.focus(); // focus on the editor initially so we can correctly compute next/prev conflict chunks
-      setEditor(editor);
+      disableEditorHotKeys(_editor);
+      _editor.focus(); // focus on the editor initially so we can correctly compute next/prev conflict chunks
+      setEditor(_editor);
     }
   }, [editor]);
 

@@ -100,7 +100,7 @@ export const processMappingTest = (mappingTest: MappingTest, context: GraphBuild
   // TODO: fix this when we support another mapping test type
   assertType(mappingTest.assert, ExpectedOutputMappingTestAssert, `Unsupported mapping test assert type '${mappingTest.assert}'`);
   const modelAssert = new MM_ExpectedOutputMappingTestAssert(mappingTest.assert.expectedOutput);
-  const inputData = mappingTest.inputData.map(inputData => processMappingTestInputData(inputData, context));
+  const inputData = mappingTest.inputData.map(input => processMappingTestInputData(input, context));
   // TODO: maybe we want to validate the graph fetch tree here so we can throw user into
   // text mode to resolve the issue but as of now, we don't do that because it's just test
   return new MM_MappingTest(mappingTest.name, query, inputData, modelAssert);

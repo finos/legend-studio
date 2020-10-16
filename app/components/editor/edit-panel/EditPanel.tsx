@@ -184,7 +184,7 @@ export const EditPanel = observer(() => {
   const renderActiveElementTab = (): React.ReactNode => {
     if (currentEditorState instanceof ElementEditorState) {
       if (currentEditorState.generationViewMode) {
-        const elementGenerationState = editorStore.elementGenerationStates.find(elementGenerationState => elementGenerationState.fileGenerationType === currentEditorState.generationViewMode);
+        const elementGenerationState = editorStore.elementGenerationStates.find(state => state.fileGenerationType === currentEditorState.generationViewMode);
         return <ElementGenerationEditor key={elementGenerationState?.uuid} elementGenerationState={guaranteeNonNullable(elementGenerationState)} currentElementState={currentEditorState} />;
       }
       switch (currentEditorState.editMode) {

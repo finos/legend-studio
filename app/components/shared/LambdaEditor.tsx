@@ -156,7 +156,7 @@ const LambdaEditorInner = observer((props: {
   useEffect(() => {
     if (!editor && textInput.current) {
       const element = textInput.current;
-      const editor = monacoEditorAPI.create(element, {
+      const _editor = monacoEditorAPI.create(element, {
         ...baseTextEditorSettings,
         language: EDITOR_LANGUAGE.PURE,
         theme: EDITOR_THEME.STUDIO,
@@ -174,8 +174,8 @@ const LambdaEditorInner = observer((props: {
         snippetSuggestions: 'none',
         scrollbar: { vertical: 'hidden' },
       });
-      disableEditorHotKeys(editor);
-      setEditor(editor);
+      disableEditorHotKeys(_editor);
+      setEditor(_editor);
     }
   }, [editor]);
 
@@ -220,15 +220,15 @@ const LambdaEditorInner = observer((props: {
      */
     onDidChangeModelContentEventDisposer.current?.dispose();
     onDidChangeModelContentEventDisposer.current = editor.onDidChangeModelContent(() => {
-      const currentValue = editor.getValue();
+      const currentVal = editor.getValue();
       /**
        * Avoid unecessary setting of lambda string. Also, this prevents clearing the non-parser error on first render.
        * Since this method is guaranteed to be called one time during the first rendering when we first set the
        * value for the lambda editor, we do not want to clear any existing non-parser error in case it is set by methods
        * like reveal error in each editor
        */
-      if (currentValue !== lambdaEditorState.lambdaString) {
-        lambdaEditorState.setLambdaString(currentValue);
+      if (currentVal !== lambdaEditorState.lambdaString) {
+        lambdaEditorState.setLambdaString(currentVal);
         /**
          * Here we clear the error as user changes the input
          * NOTE: we don't reset the parser error here, we could, but with that, we have to assume that the parsing check is

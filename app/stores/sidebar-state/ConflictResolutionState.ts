@@ -96,7 +96,7 @@ export class ConflictResolutionState {
   }
 
   @action openConflict(conflict: EntityChangeConflict): void {
-    const existingMergeEditorState = this.mergeEditorStates.find(mergeEditorState => mergeEditorState.entityPath === conflict.entityPath);
+    const existingMergeEditorState = this.mergeEditorStates.find(state => state.entityPath === conflict.entityPath);
     if (existingMergeEditorState) {
       this.editorStore.openEntityChangeConflict(existingMergeEditorState);
       return;

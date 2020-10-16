@@ -186,14 +186,15 @@ export class PureModel extends BasicModel {
    */
   precomputeHashes = flow(function* (this: PureModel, quiet?: boolean) {
     const startTime = Date.now();
-    const hashMap = new Map<string, string>();
     if (this.allElements.length) {
       yield Promise.all(this.allElements.map(element => new Promise(resolve => setTimeout(() => {
-        hashMap.set(element.path, element.hashCode);
+        element.hashCode; // manually trigger hash code recomputation
         resolve();
       }, 0))));
     }
-    quiet ? undefined : Log.info(LOG_EVENT.GRAPH_HASHES_PREPROCESSED, '[ASYNC]', Date.now() - startTime, 'ms');
+    if (!quiet) {
+      Log.info(LOG_EVENT.GRAPH_HASHES_PREPROCESSED, '[ASYNC]', Date.now() - startTime, 'ms');
+    }
   });
 
   @action setDependencyManager = (dependencyManager: DependencyManager): void => { this.dependencyManager = dependencyManager }

@@ -92,21 +92,21 @@ class ApplicationConfig {
   async configure(): Promise<void> {
     if (this.configured) { throw new IllegalStateError('Configuration should only happen once') }
     // Configuration
-    let config;
+    let configData;
     try {
-      config = await client.get<ConfigurationResponse>(`/${this.appName}/config.json`);
+      configData = await client.get<ConfigurationResponse>(`/${this.appName}/config.json`);
     } catch (error) {
       Log.error(LOG_EVENT.CONFIG_CONFIGURATION_FETCHING_PROBLEM, error);
     }
-    assertNonNullable(config, 'Configuration object is missing');
-    this._realm = guaranteeNonNullable(config.realm, 'Configration realm is missing');
-    this._sdlcServerUrl = guaranteeNonNullable(config.sdlcServer, 'Configuration SDLC server URL is missing');
-    this._executionServerUrl = guaranteeNonNullable(config.execServer, 'Configuration execution server URL is missing');
-    this._tracerServerUrl = guaranteeNonNullable(config.tracerServer, 'Configuration tracer server URL is missing');
-    this._documentations = guaranteeNonNullable(config.documentation, 'Configuration documentation info is missing');
-    this._documentations.fullDocUrl = guaranteeNonNullable(config.documentation.fullDocUrl, 'Configuration full documentation URL is missing');
+    assertNonNullable(configData, 'Configuration object is missing');
+    this._realm = guaranteeNonNullable(configData.realm, 'Configration realm is missing');
+    this._sdlcServerUrl = guaranteeNonNullable(configData.sdlcServer, 'Configuration SDLC server URL is missing');
+    this._executionServerUrl = guaranteeNonNullable(configData.execServer, 'Configuration execution server URL is missing');
+    this._tracerServerUrl = guaranteeNonNullable(configData.tracerServer, 'Configuration tracer server URL is missing');
+    this._documentations = guaranteeNonNullable(configData.documentation, 'Configuration documentation info is missing');
+    this._documentations.fullDocUrl = guaranteeNonNullable(configData.documentation.fullDocUrl, 'Configuration full documentation URL is missing');
     // Feature
-    const featureSet = guaranteeNonNullable(config.features, 'Configuration feature set info is missing');
+    const featureSet = guaranteeNonNullable(configData.features, 'Configuration feature set info is missing');
     this._features = {
       BETA__demoMode: featureSet.includes(APP_FEATURE.BETA__DEMO_MODE),
       BETA__productionProjectsOnly: featureSet.includes(APP_FEATURE.BETA__PRODUCTION_PROJECTS_ONLY),

@@ -62,7 +62,7 @@ export class MappingTestGraphFetchTreeQueryState extends MappingTestQueryState {
   @observable graphFetchTree?: GraphFetchTreeData;
 
   @action setTarget = (target: Class | undefined): void => { this.target = target }
-  @action setGraphFetchTree = (graphFetchTree?: GraphFetchTreeData): void => { this.graphFetchTree = graphFetchTree }
+  @action setGraphFetchTree = (graphFetchTree: GraphFetchTreeData | undefined): void => { this.graphFetchTree = graphFetchTree }
 
   get query(): Lambda {
     const rootGraphFetchTree = this.graphFetchTree?.root.graphFetchTreeNode;

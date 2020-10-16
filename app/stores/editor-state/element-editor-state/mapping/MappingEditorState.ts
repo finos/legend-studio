@@ -394,7 +394,7 @@ export class MappingEditorState extends ElementEditorState {
               }
               if (this.currentTabState instanceof PureInstanceSetImplementationState
               ) {
-                const propertyMappingState = this.currentTabState.propertyMappingStates.find(propertyMappingState => propertyMappingState.propertyMapping.lambdaId === sourceId);
+                const propertyMappingState = this.currentTabState.propertyMappingStates.find(state => state.propertyMapping.lambdaId === sourceId);
                 if (propertyMappingState) {
                   propertyMappingState.setCompilationError(compilationError);
                   revealed = true;

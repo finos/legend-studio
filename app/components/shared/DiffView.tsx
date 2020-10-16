@@ -53,19 +53,19 @@ export const TextDiffView = observer((props: {
   useEffect(() => {
     if (!editor && editorRef.current) {
       const element = editorRef.current;
-      const editor = monacoEditorAPI.createDiffEditor(element, {
+      const _editor = monacoEditorAPI.createDiffEditor(element, {
         ...baseTextEditorSettings,
         theme: EDITOR_THEME.STUDIO,
         readOnly: true,
       });
-      editor.getOriginalEditor().onKeyDown(event => {
+      _editor.getOriginalEditor().onKeyDown(event => {
         if (event.keyCode === KeyCode.F8) { event.preventDefault(); event.stopPropagation(); editorStore.toggleTextMode().catch(applicationStore.alertIllegalUnhandledError) }
       });
-      editor.getModifiedEditor().onKeyDown(event => {
+      _editor.getModifiedEditor().onKeyDown(event => {
         if (event.keyCode === KeyCode.F8) { event.preventDefault(); event.stopPropagation(); editorStore.toggleTextMode().catch(applicationStore.alertIllegalUnhandledError) }
       });
-      disableEditorHotKeys(editor);
-      setEditor(editor);
+      disableEditorHotKeys(_editor);
+      setEditor(_editor);
     }
   }, [applicationStore, editorStore, editor]);
 

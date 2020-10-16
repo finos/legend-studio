@@ -201,7 +201,7 @@ export class ApplicationStore {
   /**
    * Guarantee that the action being used by the component does not throw unhandled errors
    */
-  guaranteeSafeAction = (action: () => Promise<void>): () => Promise<void> => (): Promise<void> => action().catch(this.alertIllegalUnhandledError);
+  guaranteeSafeAction = (fn: () => Promise<void>): () => Promise<void> => (): Promise<void> => fn().catch(this.alertIllegalUnhandledError);
 
   async copyTextToClipboard(text: string): Promise<void> {
     if (typeof navigator.clipboard.writeText === 'function') {

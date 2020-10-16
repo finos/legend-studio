@@ -53,19 +53,19 @@ export const GrammarTextEditor = observer(() => {
   useEffect(() => {
     if (!editor && textInput.current) {
       const element = textInput.current;
-      const editor = monacoEditorAPI.create(element, {
+      const _editor = monacoEditorAPI.create(element, {
         ...baseTextEditorSettings,
         language: EDITOR_LANGUAGE.PURE,
         theme: EDITOR_THEME.STUDIO,
       });
-      editor.onDidChangeModelContent(() => {
-        grammarTextEditorState.setGraphGrammarText(editor.getValue());
+      _editor.onDidChangeModelContent(() => {
+        grammarTextEditorState.setGraphGrammarText(_editor.getValue());
         editorStore.graphState.clearCompilationError();
         // we can technically can reset the current element label regex string here
         // but if we do that on first load, the cursor will not jump to the current element
         // also, it's better to place that logic in an effect that watches for the regex string
       });
-      editor.onKeyDown(event => {
+      _editor.onKeyDown(event => {
         if (event.keyCode === KeyCode.F9) {
           event.preventDefault();
           event.stopPropagation();
@@ -76,9 +76,9 @@ export const GrammarTextEditor = observer(() => {
           editorStore.toggleTextMode().catch(applicationStore.alertIllegalUnhandledError);
         }
       });
-      disableEditorHotKeys(editor);
-      editor.focus(); // focus on the editor initially
-      setEditor(editor);
+      disableEditorHotKeys(_editor);
+      _editor.focus(); // focus on the editor initially
+      setEditor(_editor);
     }
   }, [editorStore, applicationStore, editor, grammarTextEditorState]);
 
