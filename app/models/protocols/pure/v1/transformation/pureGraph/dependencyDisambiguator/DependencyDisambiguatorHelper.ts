@@ -43,13 +43,13 @@ export interface DepdendencyProcessingContext {
  */
 export const recursiveChangeObjectValues = (obj: Record<PropertyKey, unknown>, targetObjectValuesToProcess: string[], processFunc: (value: string) => string): Record<PropertyKey, unknown> => {
   const processedObj = deepClone(obj);
-  const changeObjectValues = (obj: Record<PropertyKey, unknown>): void => {
+  const changeObjectValues = (_obj: Record<PropertyKey, unknown>): void => {
     // `for ... in` will traverse array as well
-    for (const prop in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
-        const value = obj[prop];
+    for (const prop in _obj) {
+      if (Object.prototype.hasOwnProperty.call(_obj, prop)) {
+        const value = _obj[prop];
         if (isString(value) && targetObjectValuesToProcess.includes(value)) {
-          obj[prop] = processFunc(value);
+          _obj[prop] = processFunc(value);
         } else if (isObject(value)) {
           changeObjectValues(value as Record<PropertyKey, unknown>);
         }

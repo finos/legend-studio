@@ -70,17 +70,17 @@ export class FileGenerationState {
     }
   });
 
-  @action processGenerationResult(generationResult: GenerationOutput[]): void {
+  @action processGenerationResult(output: GenerationOutput[]): void {
     this.root = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
     this.filesIndex = new Map<string, GenerationFile>();
     const openedNodeIds = this.directoryTreeData ? Array.from(this.directoryTreeData.nodes.values()).filter(node => node.isOpen).map(node => node.id) : [];
     const generationResultMap = new Map<string, GenerationOutputResult>();
-    generationResult.forEach(generationResult => {
-      generationResult.cleanFileName();
-      if (generationResultMap.has(generationResult.fileName)) {
+    output.forEach(item => {
+      item.cleanFileName();
+      if (generationResultMap.has(item.fileName)) {
         Log.warn(LOG_EVENT.CODE_GENERATION_PROBLEM, 'Found 2 generation outputs with same path');
       }
-      generationResultMap.set(generationResult.fileName, { generationOutput: generationResult, parentId: this.fileGeneration.path });
+      generationResultMap.set(item.fileName, { generationOutput: item, parentId: this.fileGeneration.path });
     });
     // take generation outputs and put them into the root directory
     processGenerationResultToGenerationDirectory(this.root, generationResultMap, this.filesIndex);

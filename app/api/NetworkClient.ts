@@ -232,7 +232,7 @@ class NetworkClient {
     return tracerClient.wrapInSpan(tracingSpanName, tracingTags ?? {}, span => this.request(HttpMethod.DELETE, url, data, options, headers, parameters, span));
   }
 
-  async request<T extends ClientResponse>(method: HttpMethod, url: string, data: unknown = undefined, options: RequestInit, headers?: RequestHeaders, parameters?: Parameters, tracingSpan?: Span): Promise<T> {
+  async request<T extends ClientResponse>(method: HttpMethod, url: string, data: unknown, options: RequestInit, headers?: RequestHeaders, parameters?: Parameters, tracingSpan?: Span): Promise<T> {
     const requestUrl = makeUrl(this.baseUrl, url, parameters);
     let body: Blob | string | undefined;
     if (data !== undefined) {

@@ -117,7 +117,7 @@ export const DiagramEditorClassCreator = observer((props: {
     const childrenNodes = node.childrenIds
       .map(id => treeData.nodes.get(id))
       .filter(isNonNullable)
-      .filter(node => node.packageableElement instanceof Package)
+      .filter(childNode => childNode.packageableElement instanceof Package)
       // packages comes first, within each group, sort by name
       .sort((a, b) => a.label.localeCompare(b.label))
       .sort((a, b) => (b.packageableElement instanceof Package ? 1 : 0) - (a.packageableElement instanceof Package ? 1 : 0));
@@ -255,14 +255,14 @@ export const DiagramEditor = observer(() => {
     };
   }
 
-  const renderNewClassPanel = (createNewClassEvent: MouseEvent): React.ReactElement => {
+  const renderNewClassPanel = (event: MouseEvent): React.ReactElement => {
     const treeData = getPackableElementTreeData(editorStore.graphState.graph.root, '', (childElement: PackageableElement) => childElement instanceof Package);
     const selectedPackageTreeNodePackage = getSelectedPackageTreeNodePackage(editorStore.explorerTreeState.selectedNode);
     if (selectedPackageTreeNodePackage) {
       const openingNode = openNode(selectedPackageTreeNodePackage, treeData, (childElement: PackageableElement) => childElement instanceof Package);
       if (openingNode) { openingNode.isSelected = true }
     }
-    return <DiagramEditorClassCreator createNewClassEvent={createNewClassEvent} onSubmit={onCreateClassSubmit} packageTree={treeData} />;
+    return <DiagramEditorClassCreator createNewClassEvent={event} onSubmit={onCreateClassSubmit} packageTree={treeData} />;
   };
 
   // Drag and Drop

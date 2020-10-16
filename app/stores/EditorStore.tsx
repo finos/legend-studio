@@ -153,12 +153,12 @@ export class EditorStore {
   @action setIgnoreNavigationBlocking(val: boolean): void { this.ignoreNavigationBlocking = val }
   @action refreshCurrentEntityDiffEditorState(): void { if (this.currentEditorState instanceof EntityDiffEditorState) { this.currentEditorState.refresh() } }
 
-  @action setBlockingAlert(alertInfo?: BlockingAlertInfo): void {
+  @action setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
     if (this._isDisposed) { return }
     this.setBlockGlobalHotkeys(Boolean(alertInfo)); // block global hotkeys if alert is shown
     this.applicationStore.setBlockingAlert(alertInfo);
   }
-  @action setActionAltertInfo(alertInfo?: ActionAlertInfo): void {
+  @action setActionAltertInfo(alertInfo: ActionAlertInfo | undefined): void {
     if (this._isDisposed) { return }
     this.applicationStore.setActionAltertInfo(alertInfo);
   }
@@ -492,7 +492,7 @@ export class EditorStore {
       // the cheap way to do this is to search by element label text, e.g. `Mapping some::package::someMapping`
       this.grammarTextEditorState.setCurrentElementLabelRegexString(element);
     } else {
-      const existingElementState = this.openedEditorStates.find(elementState => elementState instanceof ElementEditorState && elementState.element === element);
+      const existingElementState = this.openedEditorStates.find(state => state instanceof ElementEditorState && state.element === element);
       const elementState = existingElementState ?? this.createElementState(element);
       if (elementState && !existingElementState) { this.openedEditorStates.push(elementState) }
       this.setCurrentEditorState(elementState);

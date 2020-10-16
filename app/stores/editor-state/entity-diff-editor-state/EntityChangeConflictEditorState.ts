@@ -65,9 +65,6 @@ const scanMergeConflict = (text: string): MergeConflict[] => {
     // Is this a start line? <<<<<<<
     if (line.startsWith(START_HEADER_MARKER)) {
       if (currentConflict !== null) {
-        // Error, we should not see a startMarker before we've seen an endMarker
-        currentConflict = null;
-
         // Give up parsing, anything matched up this to this point will be decorated
         // anything after will not
         break;

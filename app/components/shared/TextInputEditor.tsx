@@ -40,19 +40,19 @@ export const TextInputEditor: React.FC<{
   useEffect(() => {
     if (!editor && textInputRef.current) {
       const element = textInputRef.current;
-      const editor = monacoEditorAPI.create(element, {
+      const _editor = monacoEditorAPI.create(element, {
         ...baseTextEditorSettings,
         theme: EDITOR_THEME.STUDIO,
         formatOnType: true,
         formatOnPaste: true,
       });
-      editor.onKeyDown(event => {
+      _editor.onKeyDown(event => {
         // NOTE: ideally, we should make this component fully independent of `editorStore` but we can't for now
         // since `monaco-editor` does not give a way to disable hot key by default
         if (event.keyCode === KeyCode.F8) { event.preventDefault(); event.stopPropagation(); editorStore.toggleTextMode().catch(applicationStore.alertIllegalUnhandledError) }
       });
-      disableEditorHotKeys(editor);
-      setEditor(editor);
+      disableEditorHotKeys(_editor);
+      setEditor(_editor);
     }
   }, [applicationStore, editorStore, editor]);
 
@@ -68,9 +68,9 @@ export const TextInputEditor: React.FC<{
     // for a more extensive note on this, see `LambdaEditor`
     onDidChangeModelContentEventDisposer.current?.dispose();
     onDidChangeModelContentEventDisposer.current = editor.onDidChangeModelContent(() => {
-      const currentValue = editor.getValue();
-      if (currentValue !== inputValue) {
-        updateInput?.(currentValue);
+      const currentVal = editor.getValue();
+      if (currentVal !== inputValue) {
+        updateInput?.(currentVal);
       }
     });
 

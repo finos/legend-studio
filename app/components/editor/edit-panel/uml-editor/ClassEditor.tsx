@@ -237,7 +237,7 @@ const DerivedPropertyBasicEditor = observer((props: {
   const { derivedProperty, _class, selectDerivedProperty, deleteDerivedProperty, editorState, isReadOnly } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const hasParserError = editorState.classState.derivedPropertyStates.some(dpState => dpState.parserError);
+  const hasParserError = editorState.classState.derivedPropertyStates.some(state => state.parserError);
   const dpState = editorState.classState.getDerivedPropertyState(derivedProperty);
   const isInheritedProperty = derivedProperty.owner !== _class;
   // Name
@@ -415,7 +415,7 @@ const ConstraintEditor = observer((props: {
   const { constraint, _class, deleteConstraint, editorState, isReadOnly } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const hasParserError = editorState.classState.constraintStates.some(constraintState => constraintState.parserError);
+  const hasParserError = editorState.classState.constraintStates.some(state => state.parserError);
   const isInheritedConstraint = constraint.owner !== _class;
   const constraintState = editorState.classState.getConstraintState(constraint);
   // Name

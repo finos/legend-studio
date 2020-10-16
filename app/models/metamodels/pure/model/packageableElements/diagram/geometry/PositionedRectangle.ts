@@ -84,7 +84,7 @@ export class PositionedRectangle implements Hashable {
   }
 
   get hashCode(): string {
-    this.dummyObservable; // have this here so we can re-trigger hashCode computation (in this case for class view)
+    this.dummyObservable; // manually trigger classview hash code recomputation
     return hashArray([
       HASH_STRUCTURE.POSITIONED_RECTANGLE,
       this.position,

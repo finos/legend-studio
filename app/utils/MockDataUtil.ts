@@ -65,7 +65,7 @@ export const createMockClassInstance = (_class: Class, traverseNonRequiredProper
   return mockData;
 };
 
-export const classHasCycle = (_class: Class, traverseNonRequiredProperties = false, classesIndex: Set<string>): boolean => {
+export const classHasCycle = (_class: Class, traverseNonRequiredProperties: boolean, classesIndex: Set<string>): boolean => {
   if (classesIndex.has(_class.path)) { return true }
   const properties = (traverseNonRequiredProperties ? _class.getAllProperties() : _class.getAllProperties().filter(p => p.multiplicity.lowerBound));
   const complexProperties = properties.map(property => property.genericType.value.rawType).filter(c => getClassPropertyType(c) === CLASS_PROPERTY_TYPE.CLASS);

@@ -27,7 +27,8 @@ export const FileGenerationViewer = observer(() => {
   const generatedFileState = editorStore.getCurrentEditorState(FileGenerationViewerState);
   const generatedFile = generatedFileState.generatedFile;
   const fileGeneration = generatedFile.parentId ? editorStore.graphState.graph.getNullableFileGeneration(generatedFile.parentId) : undefined;
-  const visitFileGeneration = (fileGeneration: FileGeneration): void => editorStore.openElement(fileGeneration);
+  const visitFileGeneration = (fg: FileGeneration): void => editorStore.openElement(fg);
+
   return (
     <div className="file-generation-viewer">
       <div className="panel">

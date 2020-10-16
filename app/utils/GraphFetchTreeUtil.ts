@@ -100,9 +100,9 @@ export const getGraphFetchTreeData = (type: Type): GraphFetchTreeData => {
           propertyType.allSubClasses
             .sort((a, b) => a.name.localeCompare(b.name))
             .forEach(subClass => {
-              const propertyTreeNodeData = getPropertyGraphFetchTreeNodeData(property, subClass, treeRootNode);
-              addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
-              nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+              const nodeData = getPropertyGraphFetchTreeNodeData(property, subClass, treeRootNode);
+              addUniqueEntry(treeRootNode.childrenIds, nodeData.id);
+              nodes.set(nodeData.id, nodeData);
             });
         }
       });
@@ -177,9 +177,9 @@ export const buildGraphFetchTreeData = (rootGraphFetchTree: RootGraphFetchTree):
         propertyType.allSubClasses
           .sort((a, b) => a.name.localeCompare(b.name))
           .forEach(subClass => {
-            const propertyTreeNodeData = walkPropertySubTreeAndBuild(property, subClass, treeRootNode, nodes);
-            addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
-            nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+            const nodeData = walkPropertySubTreeAndBuild(property, subClass, treeRootNode, nodes);
+            addUniqueEntry(treeRootNode.childrenIds, nodeData.id);
+            nodes.set(nodeData.id, nodeData);
           });
       }
     });
@@ -191,7 +191,7 @@ export const buildGraphFetchTreeData = (rootGraphFetchTree: RootGraphFetchTree):
  * that have been mapped through the root setImplementation class
  */
 export const selectMappedGraphFetchProperties = (graphFetchTree: GraphFetchTreeData, node: GraphFetchTreeNodeData, mapping: Mapping): void => {
-  const nodes = node.childrenIds?.map(nodeId => graphFetchTree.nodes.get(nodeId)).filter(isNonNullable) ?? [];
+  const childNodes = node.childrenIds?.map(nodeId => graphFetchTree.nodes.get(nodeId)).filter(isNonNullable) ?? [];
   const parentType = node.type;
   if (parentType instanceof Class) {
     const setImpl = mapping.getRootSetImplementation(parentType);
@@ -202,16 +202,16 @@ export const selectMappedGraphFetchProperties = (graphFetchTree: GraphFetchTreeD
       mappedProperties = uniq(setImpl.leafSetImplementations.filter(isInstanceSetImplementation)
         .map(p => p.propertyMappings).flat().filter(p => !p.isStub).map(p => p.property.value.name));
     }
-    nodes.forEach(node => {
-      const nodeClassType = node.type;
-      const nodeProperty = node.graphFetchTreeNode;
+    childNodes.forEach(childNode => {
+      const nodeClassType = childNode.type;
+      const nodeProperty = childNode.graphFetchTreeNode;
       // We only check if the node is not a class and that property has been mapped
       if (getClassPropertyType(nodeClassType) !== CLASS_PROPERTY_TYPE.CLASS
         && nodeProperty instanceof PropertyGraphFetchTree &&
         mappedProperties.includes(nodeProperty.property.value.name)) {
-        const isChecking = !node.isChecked;
+        const isChecking = !childNode.isChecked;
         if (isChecking) {
-          let currentNode = node;
+          let currentNode = childNode;
           while (currentNode.parentId) {
             const parentNode = graphFetchTree.nodes.get(currentNode.parentId);
             if (parentNode) {
@@ -222,7 +222,7 @@ export const selectMappedGraphFetchProperties = (graphFetchTree: GraphFetchTreeD
             }
           }
         }
-        node.isChecked = true;
+        childNode.isChecked = true;
       }
     });
   }

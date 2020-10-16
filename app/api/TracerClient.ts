@@ -77,10 +77,10 @@ class TracerClient {
   private userId?: string;
   private realm?: string;
 
-  initialize(url: string, userId: string, realm: string): void {
+  initialize(baseUrl: string, userId: string, realm: string): void {
     if (this.initialized) { throw new IllegalStateError('Tracer initialization should only happen once') }
-    const logger = url ? new HttpLogger({
-      endpoint: url,
+    const logger = baseUrl ? new HttpLogger({
+      endpoint: baseUrl,
       jsonEncoder: jsonEncoder.JSON_V2,
       // NOTE: this fetch implementation will be used for sending `spans`. Here, we use `whatwg-fetch`
       // with some specific options, we have to customize this instead of using the default global fetch
@@ -106,7 +106,7 @@ class TracerClient {
       serviceName: APP_TRACER_NAME,
       kind: 'client'
     });
-    this.url = url;
+    this.url = baseUrl;
     this.userId = userId;
     this.realm = realm;
     this.initialized = true;
@@ -116,7 +116,7 @@ class TracerClient {
     return guaranteeNonNullable(this._tracer, 'Tracer has not been initialized yet');
   }
 
-  wrapInSpan<T>(name: TRACER_SPAN, tags: Record<PropertyKey, unknown> = {}, promiseSupplier: (_span: Span) => Promise<T>, childOf?: Record<PropertyKey, unknown>): Promise<T> {
+  wrapInSpan<T>(name: TRACER_SPAN, tags: Record<PropertyKey, unknown>, promiseSupplier: (_span: Span) => Promise<T>, childOf?: Record<PropertyKey, unknown>): Promise<T> {
     const span = (childOf ? this.tracer.startSpan(name, { childOf }) : this.tracer.startSpan(name)) as Span;
     Object.entries(tags).forEach(([tag, value]) => span.setTag(tag, value ?? '(not set)'));
     return promiseSupplier(span).then(result => {

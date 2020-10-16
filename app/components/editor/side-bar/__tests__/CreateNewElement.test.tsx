@@ -30,23 +30,23 @@ import { ProjectStructureVersion } from 'SDLC/configuration/ProjectStructureVers
 import { Revision } from 'SDLC/revision/Revision';
 import { PACKAGEABLE_ELEMENT_TYPE } from 'MM/model/packageableElements/PackageableElement';
 
-const addRootPackage = (packageName: string, renderResult: RenderResult): void => {
-  fireEvent.click(renderResult.getByTitle('create new element', { exact: false }));
-  const contextMenu = renderResult.getByRole('menu');
+const addRootPackage = (packageName: string, result: RenderResult): void => {
+  fireEvent.click(result.getByTitle('create new element', { exact: false }));
+  const contextMenu = result.getByRole('menu');
   fireEvent.click(getByText(contextMenu, 'Add a new package'));
-  const modal = renderResult.getByTestId(TEST_ID.NEW_ELEMENT_MODAL);
+  const modal = result.getByTestId(TEST_ID.NEW_ELEMENT_MODAL);
   const packageInput = getByPlaceholderText(modal, 'Enter a name', { exact: false });
   fireEvent.change(packageInput, { target: { value: packageName } });
   fireEvent.click(getByText(modal, 'Create'));
 };
 
-const createNewElementOnRootPackage = (rootPackage: string, elementType: PACKAGEABLE_ELEMENT_TYPE, renderResult: RenderResult, elementName?: string): void => {
-  const packageExplorer = renderResult.getByTestId(TEST_ID.EXPLORER_TREES);
+const createNewElementOnRootPackage = (rootPackage: string, elementType: PACKAGEABLE_ELEMENT_TYPE, result: RenderResult, elementName?: string): void => {
+  const packageExplorer = result.getByTestId(TEST_ID.EXPLORER_TREES);
   const rootPackageDiv = getByText(packageExplorer, rootPackage);
   const rightClick = { button: 2 };
   fireEvent.click(rootPackageDiv, rightClick);
-  fireEvent.click(renderResult.getByText(`Add a new ${elementType.toLowerCase()}`));
-  const modal = renderResult.getByTestId(TEST_ID.NEW_ELEMENT_MODAL);
+  fireEvent.click(result.getByText(`Add a new ${elementType.toLowerCase()}`));
+  const modal = result.getByTestId(TEST_ID.NEW_ELEMENT_MODAL);
   const elementInput = getByPlaceholderText(modal, 'Enter a name', { exact: false });
   const inputValue = elementName ?? `${elementType}Test`;
   fireEvent.change(elementInput, { target: { value: inputValue } });

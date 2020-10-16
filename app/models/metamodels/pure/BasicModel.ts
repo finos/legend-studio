@@ -153,7 +153,9 @@ export abstract class BasicModel {
         resolve();
       }, 0))));
     }
-    quiet ? undefined : Log.info(LOG_EVENT.GRAPH_HASHES_DISPOSED, '[ASYNC]', Date.now() - startTime, 'ms');
+    if (!quiet) {
+      Log.info(LOG_EVENT.GRAPH_HASHES_DISPOSED, '[ASYNC]', Date.now() - startTime, 'ms');
+    }
   });
 
   isRoot = (pack: Package | undefined): boolean => pack === this.root;
@@ -221,7 +223,7 @@ export abstract class BasicModel {
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(element.path);
     } else if (element instanceof Package) {
-      element.children.forEach(element => this.removeElement(element));
+      element.children.forEach(el => this.removeElement(el));
     } else {
       throw new UnsupportedOperationError(`Can't delete element of unsupported type '${element.constructor.name}'`);
     }

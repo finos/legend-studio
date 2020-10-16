@@ -77,8 +77,7 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
       // NOTE: right now we only have profile and enumeration for system, we might need to generalize this step in the future
       yield this.loadTypes(graph, [systemProcessingInput]);
       yield this.postProcess(graph, [systemProcessingInput]);
-      quiet ? undefined : Log.info(LOG_EVENT.GRAPH_SYSTEM_BUILT, Date.now() - startTime, 'ms',
-        `[profile: ${systemModel.profiles.length}, enumeration: ${systemModel.enumerations.length}]`);
+      if (!quiet) { Log.info(LOG_EVENT.GRAPH_SYSTEM_BUILT, Date.now() - startTime, 'ms', `[profile: ${systemModel.profiles.length}, enumeration: ${systemModel.enumerations.length}]`) }
 
       /**
        * Legal
@@ -95,7 +94,7 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
       systemModel.setIsBuilt(true);
     } catch (error) {
       systemModel.setFailedToBuild(true);
-      quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_FAILED, '[ERROR]', Date.now() - startTime, 'ms');
+      if (!quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_FAILED, '[ERROR]', Date.now() - startTime, 'ms') }
       throw new SystemGraphProcessingError(error);
     }
   });
@@ -138,7 +137,7 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
       });
 
       const preprocessingFinishedTime = Date.now();
-      quiet ? undefined : Log.info(LOG_EVENT.GRAPH_DEPENDENCIES_PREPROCESSED, preprocessingFinishedTime - startTime, 'ms');
+      if (!quiet) { Log.info(LOG_EVENT.GRAPH_DEPENDENCIES_PREPROCESSED, preprocessingFinishedTime - startTime, 'ms') }
 
       const processingInput: ProcessingInput[] = Array.from(dependencyDataMap.entries()).map(([dependencyKey, dependencyData]) => ({ data: dependencyData, model: graph.dependencyManager.getModel(dependencyKey) }));
       yield this.preProcess(graph, processingInput);
@@ -156,12 +155,12 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
 
       yield this.postProcess(graph, processingInput);
       const processingFinishedTime = Date.now();
-      quiet ? undefined : Log.info(LOG_EVENT.GRAPH_DEPENDENCIES_PROCESSED, processingFinishedTime - preprocessingFinishedTime, 'ms');
+      if (!quiet) { Log.info(LOG_EVENT.GRAPH_DEPENDENCIES_PROCESSED, processingFinishedTime - preprocessingFinishedTime, 'ms') }
 
       dependencyManager.setIsBuilt(true);
-      quiet ? undefined : Log.info(LOG_EVENT.GRAPH_DEPENDENCIES_BUILT, '[TOTAL]', Date.now() - startTime, 'ms');
+      if (!quiet) { Log.info(LOG_EVENT.GRAPH_DEPENDENCIES_BUILT, '[TOTAL]', Date.now() - startTime, 'ms') }
     } catch (error) {
-      quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_FAILED, '[ERROR]', Date.now() - startTime, 'ms');
+      if (!quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_FAILED, '[ERROR]', Date.now() - startTime, 'ms') }
       dependencyManager.setFailedToBuild(true);
       throw new DependencyGraphProcessingError(error);
     }
@@ -169,9 +168,9 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   build = flow(function* (this: PureGraphManager, graph: MM_PureModel, entities: Entity[], options?: { quiet?: boolean; TEMP_retainSection?: boolean }) {
-    options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_STARTED);
+    if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_STARTED) }
     let stepStartTime = Date.now();
-    let stepFinishedTime = stepStartTime;
+    let stepFinishedTime;
     const startTime = stepStartTime;
     try {
       // Parse/Build Data
@@ -180,83 +179,85 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
 
       const processingInput = [{ model: graph, data }];
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_DATA_MODEL_PARSED, stepFinishedTime - stepStartTime, 'ms');
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_DATA_MODEL_PARSED, stepFinishedTime - stepStartTime, 'ms') }
       stepStartTime = stepFinishedTime;
 
       // Pre-process: Create and Index Elements
       yield this.preProcess(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_ELEMENTS_INDEXED, stepFinishedTime - stepFinishedTime, 'ms', `[element: ${data.elements.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_ELEMENTS_INDEXED, stepFinishedTime - stepStartTime, 'ms', `[element: ${data.elements.length}]`) }
       stepStartTime = stepFinishedTime;
 
       // Section index
       yield this.loadSectionIndex(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_DOMAIN_LOADED, stepFinishedTime - stepStartTime, 'ms', `[sectionIndex: ${graph.sectionIndices.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_DOMAIN_LOADED, stepFinishedTime - stepStartTime, 'ms', `[sectionIndex: ${graph.sectionIndices.length}]`) }
       stepStartTime = stepFinishedTime;
 
       // Types
       yield this.loadTypes(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_DOMAIN_LOADED, stepFinishedTime - stepStartTime, 'ms',
-        `[class: ${graph.classes.length}, enumeration: ${graph.enumerations.length}, association: ${graph.associations.length}, profile: ${graph.profiles.length}, functions: ${graph.functions.length}]`
-      );
+      if (!options?.quiet) {
+        Log.info(LOG_EVENT.GRAPH_BUILD_DOMAIN_LOADED, stepFinishedTime - stepStartTime, 'ms',
+          `[class: ${graph.classes.length}, enumeration: ${graph.enumerations.length}, association: ${graph.associations.length}, profile: ${graph.profiles.length}, functions: ${graph.functions.length}]`
+        );
+      }
       stepStartTime = stepFinishedTime;
 
       // Stores
       yield this.loadStores(graph, processingInput);
       stepFinishedTime = Date.now();
       // TODO: we might want to detail out the number of stores by type
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_STORES_LOADED, stepFinishedTime - stepStartTime, 'ms', `[store: ${graph.stores.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_STORES_LOADED, stepFinishedTime - stepStartTime, 'ms', `[store: ${graph.stores.length}]`) }
       stepStartTime = stepFinishedTime;
 
       // Mappings
       yield this.loadMappings(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_MAPPINGS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[mapping: ${graph.mappings.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_MAPPINGS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[mapping: ${graph.mappings.length}]`) }
       stepStartTime = stepFinishedTime;
 
       // Connections
       yield this.loadConnections(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_CONNECTIONS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[connection: ${graph.connections.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_CONNECTIONS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[connection: ${graph.connections.length}]`) }
       stepStartTime = stepFinishedTime;
 
       // Runtimes
       yield this.loadRuntimes(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_RUNTIMES_LOADED, stepFinishedTime - stepStartTime, 'ms', `[runtime: ${graph.runtimes.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_RUNTIMES_LOADED, stepFinishedTime - stepStartTime, 'ms', `[runtime: ${graph.runtimes.length}]`) }
       stepStartTime = stepFinishedTime;
 
       // Diagrams
       yield this.loadDiagrams(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_DIAGRAMS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[diagram: ${graph.diagrams.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_DIAGRAMS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[diagram: ${graph.diagrams.length}]`) }
       stepStartTime = stepFinishedTime;
 
       // File Generation
       yield this.loadFileGenerations(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_FILE_GENERATIONS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[text: ${graph.texts.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_FILE_GENERATIONS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[text: ${graph.texts.length}]`) }
       stepStartTime = stepFinishedTime;
 
       // Generation Tree
       yield this.loadGenerationSpecificationss(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_GENERATION_TREE_LOADED, stepFinishedTime - stepStartTime, 'ms', `[text: ${graph.texts.length}]`);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_GENERATION_TREE_LOADED, stepFinishedTime - stepStartTime, 'ms', `[text: ${graph.texts.length}]`) }
       stepStartTime = stepFinishedTime;
+
       // Text Elements
       yield this.loadTexts(graph, processingInput);
       stepFinishedTime = Date.now();
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_TEXTS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[text: ${graph.texts.length}]`);
-      stepStartTime = stepFinishedTime;
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_TEXTS_LOADED, stepFinishedTime - stepStartTime, 'ms', `[text: ${graph.texts.length}]`) }
 
       // Post-processing: Freezing Immutable Elements
       yield this.postProcess(graph, processingInput, options?.TEMP_retainSection);
       graph.setIsBuilt(true);
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILT, '[TOTAL]', Date.now() - startTime, 'ms');
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILT, '[TOTAL]', Date.now() - startTime, 'ms') }
     } catch (error) {
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_FAILED, '[ERROR]', Date.now() - startTime, 'ms');
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_FAILED, '[ERROR]', Date.now() - startTime, 'ms') }
       graph.setFailedToBuild(true);
       /**
        * Wrap all error with `GraphError`, as we throw a lot of assertion error in the graph builder
@@ -272,7 +273,7 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
     generatedModel.setIsBuilt(false);
     generatedModel.setFailedToBuild(false);
     try {
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_DATA_MODEL_PARSED);
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_DATA_MODEL_PARSED) }
       const generatedDataMap = new Map<string, PureModelContextData>();
       yield Promise.all(Array.from(generatedEntities.entries()).map(([generationParentPath, entities]) => {
         const generatedData = new PureModelContextData();
@@ -293,10 +294,9 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
       yield this.loadTexts(graph, processingInput);
       yield this.postProcess(graph, processingInput, options?.TEMP_retainSection);
       generatedModel.setIsBuilt(true);
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_GENERATIONS_BUILT, Date.now() - stepStartTime, `${graph.generationModel.allElements.length} generated elements processed`, 'ms');
-
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_GENERATIONS_BUILT, Date.now() - stepStartTime, `${graph.generationModel.allElements.length} generated elements processed`, 'ms') }
     } catch (error) {
-      options?.quiet ? undefined : Log.info(LOG_EVENT.GRAPH_BUILD_FAILED, Date.now() - stepStartTime, 'ms');
+      if (!options?.quiet) { Log.info(LOG_EVENT.GRAPH_BUILD_FAILED, Date.now() - stepStartTime, 'ms') }
       generatedModel.setFailedToBuild(true);
       /**
        * Wrap all error with `GraphError`, as we throw a lot of assertion error in the graph builder

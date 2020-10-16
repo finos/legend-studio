@@ -219,7 +219,7 @@ export class NewElementState {
         case PACKAGEABLE_ELEMENT_TYPE.CONNECTION: driver = new NewPackageableConnectionDriver(this.editorStore); break;
         case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION: driver = new NewFileGenerationDriver(this.editorStore); break;
         case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION: driver = new NewGenerationSpecificationDriver(this.editorStore); break;
-        default: undefined;
+        default: break;
       }
       this.setNewElementDriver(driver);
       this.type = newType;
