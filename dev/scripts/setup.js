@@ -31,7 +31,7 @@ const createLocalAppConfig = () => ({
   execServer: '/exec',
   tracerServer: '/tracer',
   documentation: {
-    fullDocUrl: 'https://legend.finos.org/docs/getting-started/studio',
+    fullDocUrl: 'https://legend.finos.org/docs/getting-started/installation-guide',
   },
   features: [],
 });

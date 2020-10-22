@@ -92,7 +92,7 @@ If you use VSCode (and we hope you do...), you should install `Prettier` and `ES
 
 ## Roadmap
 
-Visit our [home page](https://legend.finos.org) to know more about the roadmap.
+Visit our [roadmap](https://github.com/finos/legend#roadmap) to know more about the upcoming features.
 
 ## Contributing
 
