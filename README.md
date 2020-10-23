@@ -33,7 +33,7 @@ Whichever configs specified in this file will override that in `webpack.config.j
 
 ### IDE
 
-If you use VSCode (and we hope you do...), you should install `Prettier` and `ESLint` plugins, then configuallore your workspace settings in `./.vscode/settings.json` like this:
+If you use VSCode (and we hope you do...), you should install `Prettier` and `ESLint` plugins, then configure your workspace settings in `./.vscode/settings.json` like this:
 
 ```jsonc
 {
