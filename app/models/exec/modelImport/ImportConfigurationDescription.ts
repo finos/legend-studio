@@ -21,7 +21,7 @@ export enum MODEL_IMPORT_MODE {
   SCHEMA_IMPORT = 'schemaImport'
 }
 export class ImportConfigurationDescription {
-  @serializable type!: string;
+  @serializable key!: string;
   @serializable label!: string;
   @serializable modelImportMode!: MODEL_IMPORT_MODE;
 }

@@ -39,7 +39,7 @@ const NewFileGenerationModal = observer((props: {
   const mappingPackage = guaranteeType(element.package, Package);
   const nameRef = useRef<HTMLInputElement>(null);
   const editorStore = useEditorStore();
-  const defaultFileGenerationName = `${element.path}_${elementGenerationState.fileGenerationType}`;
+  const defaultFileGenerationName = `${element.path}_${elementGenerationState.fileGenerationDescriptionKey}`;
   const [fileGenerationPath, setFileGenerationPath] = useState<string>(defaultFileGenerationName);
   const [packageName, fileGenerationName] = resolvePackageNameAndElementName(mappingPackage.path, fileGenerationPath);
   const close = (): void => elementGenerationState.setShowNewFileGenerationModal(false);

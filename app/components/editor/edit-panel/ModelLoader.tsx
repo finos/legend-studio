@@ -34,7 +34,7 @@ export const ModelLoader = observer(() => {
   const externalFormatInputTypes = modelLoaderState.modelImportDescriptions;
   // input type
   const currentInputType = modelLoaderState.currentInputType;
-  const currentExternalInputType = modelLoaderState.currentExternalInputType;
+  const currentExternalInputType = modelLoaderState.currentExternalInputKey;
   const currentExternalInputLabel = currentExternalInputType ? modelLoaderState.getImportConfiguration(currentExternalInputType).label : undefined;
   const setCurrentInputType = (inputType: MODEL_UPDATER_INPUT_TYPE): () => void => (): void => modelLoaderState.setCurrentInputType(inputType);
   const setCurrentExternalInput = (inputType: ImportConfigurationDescription): () => void => (): void => modelLoaderState.setCurrentExternalFormatInputType(inputType);
@@ -98,7 +98,7 @@ export const ModelLoader = observer(() => {
                       <div className="model-loader__header__configs__type-option__group__name">external</div>
                       <div className="model-loader__header__configs__type-option__group__options">
                         {externalFormatInputTypes.map(inputType =>
-                          <div key={inputType.type} className="model-loader__header__configs__type-option__group__option" onClick={setCurrentExternalInput(inputType)}>
+                          <div key={inputType.key} className="model-loader__header__configs__type-option__group__option" onClick={setCurrentExternalInput(inputType)}>
                             {inputType.label}
                           </div>
                         )}
@@ -128,7 +128,7 @@ export const ModelLoader = observer(() => {
             </div>
             <div className="model-loader__header__configs__edit-mode__label">replace</div>
           </div>
-          {!modelLoaderState.currentExternalInputType && <button
+          {!modelLoaderState.currentExternalInputKey && <button
             className="model-loader__header__configs__load-project-entities-btn"
             tabIndex={-1}
             onClick={loadCurrentProjectEntities}
