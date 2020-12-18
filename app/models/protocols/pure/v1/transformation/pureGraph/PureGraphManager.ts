@@ -17,7 +17,7 @@
 import { flow } from 'mobx';
 import { Log, LOG_EVENT } from 'Utilities/Logger';
 import { Entity } from 'SDLC/entity/Entity';
-import { PROTOCOL_CLASSIFIER_PATH, ROOT_PACKAGE_NAME, SOURCE_INFORMATION_KEY } from 'MetaModelConst';
+import { ROOT_PACKAGE_NAME, SOURCE_INFORMATION_KEY } from 'MetaModelConst';
 import { promisify, UnsupportedOperationError, recursiveOmit, assertTrue, guaranteeType } from 'Utilities/GeneralUtil';
 import { ProjectDependencyMetadata } from 'SDLC/configuration/ProjectDependency';
 import { ExecuteInput } from 'EXEC/execution/ExecuteInput';
@@ -51,6 +51,20 @@ import { ValueSpecification, FunctionValueSpecification, ValueSpecificationType,
 import { RootGraphFetchTree } from 'V1/model/valueSpecification/raw/GraphFetchTree';
 import { ProtocolToMetaModelValueSpecificationVisitor } from 'V1/transformation/pureGraph/ProtocolToMetaModelValueSpecificationVisitor';
 import { serializeValueSpecification } from 'V1/transformation/pureGraph/serializer/ValueSpecificationSerializer';
+import { Profile } from 'V1/model/packageableElements/domain/Profile';
+import { Enumeration } from 'V1/model/packageableElements/domain/Enumeration';
+import { Class } from 'V1/model/packageableElements/domain/Class';
+import { ConcreteFunctionDefinition } from 'V1/model/packageableElements/function/ConcreteFunctionDefinition';
+import { Measure } from 'V1/model/packageableElements/domain/Measure';
+import { Association } from 'V1/model/packageableElements/domain/Association';
+import { Store } from 'V1/model/packageableElements/store/Store';
+import { Connection } from 'V1/model/packageableElements/connection/Connection';
+import { Runtime } from 'V1/model/packageableElements/runtime/Runtime';
+import { Text } from 'V1/model/packageableElements/text/Text';
+import { FileGeneration } from 'V1/model/packageableElements/fileGeneration/FileGeneration';
+import { Diagram } from 'V1/model/packageableElements/diagram/Diagram';
+import { GenerationSpecification } from 'V1/model/packageableElements/generationSpecification/GenerationSpecification';
+import { SectionIndex } from 'V1/model/packageableElements/section/SectionIndex';
 
 // NOTE: this interface is somewhat naive since `model` is of type `BasicPureModel`,
 // so this can only be used for pre-processing/indexing
@@ -338,54 +352,54 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
 
   private loadTypes = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
     // Second pass
-    yield Promise.all(inputs.flatMap(input => input.data.domain.profiles.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
-    yield Promise.all(inputs.flatMap(input => input.data.domain.classes.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
-    yield Promise.all(inputs.flatMap(input => input.data.domain.enums.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
-    yield Promise.all(inputs.flatMap(input => input.data.domain.measures.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element), input.model))))));
-    yield Promise.all(inputs.flatMap(input => input.data.domain.functions.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Profile).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Class).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Enumeration).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Measure).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element), input.model))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof ConcreteFunctionDefinition).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
     // Third pass
-    yield Promise.all(inputs.flatMap(input => input.data.domain.classes.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphThirdPassVisitor(this.getContext(graph, element)))))));
-    yield Promise.all(inputs.flatMap(input => input.data.domain.associations.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphThirdPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Class).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphThirdPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Association).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphThirdPassVisitor(this.getContext(graph, element)))))));
     // Fifth pass
-    yield Promise.all(inputs.flatMap(input => input.data.domain.classes.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphFifthPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Class).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphFifthPassVisitor(this.getContext(graph, element)))))));
   });
 
   private loadStores = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.stores.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Store).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
   })
 
   private loadMappings = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.mappings.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
-    yield Promise.all(inputs.flatMap(input => input.data.mappings.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphThirdPassVisitor(this.getContext(graph, element)))))));
-    yield Promise.all(inputs.flatMap(input => input.data.mappings.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphFourthPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Mapping).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Mapping).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphThirdPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Mapping).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphFourthPassVisitor(this.getContext(graph, element)))))));
   });
 
   private loadConnections = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.connections.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Connection).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
   });
 
   private loadRuntimes = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.runtimes.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Runtime).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
   });
 
   private loadDiagrams = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.diagrams.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Diagram).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
   })
 
   private loadTexts = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.texts.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof Text).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
   })
 
   private loadFileGenerations = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.fileGenerations.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof FileGeneration).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
   })
 
   private loadGenerationSpecificationss = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.generationSpecifications.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof GenerationSpecification).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
   })
 
   private loadSectionIndex = flow(function* (this: PureGraphManager, graph: MM_PureModel, inputs: ProcessingInput[]) {
-    yield Promise.all(inputs.flatMap(input => input.data.sectionIndices.map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
+    yield Promise.all(inputs.flatMap(input => input.data.elements.filter(element => element instanceof SectionIndex).map(element => promisify(() => element.accept_PackageableElementVisitor(new ProtocolToMetaModelGraphSecondPassVisitor(this.getContext(graph, element)))))));
   })
 
   getPackageableElementProtocol = <T>(element: MM_PackageableElement): T => element.accept_PackageableElementVisitor(new PackageableElementSerializer()) as unknown as T
@@ -413,10 +427,17 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
     const graphData = this.combineGraphModelData(this.getGraphModelData(graph), this.getCompileContextModelData(graph));
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = this.createBareModelData();
-    prunedGraphData.domain = graphData.domain;
-    prunedGraphData.stores = graphData.stores;
-    prunedGraphData.connections = graphData.connections;
-    prunedGraphData.mappings = [this.getPackageableElementProtocol<Mapping>(mapping)];
+    prunedGraphData.elements = graphData.elements.filter(element =>
+      element instanceof Class
+      || element instanceof Enumeration
+      || element instanceof Profile
+      || element instanceof Association
+      || element instanceof ConcreteFunctionDefinition
+      || element instanceof Measure
+      || element instanceof Store
+      || element instanceof Connection
+    );
+    prunedGraphData.elements.push(this.getPackageableElementProtocol<Mapping>(mapping));
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
     return new ExecuteInput(clientVersion, lambda, mapping.path, serializeRuntime(runtime), prunedGraphData, new BaseExecutionContext() as unknown as Record<PropertyKey, unknown>);
@@ -451,93 +472,33 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getGraphModelData = (graph: MM_PureModel): MM_PureModelContextDataObject => {
     const startTime = Date.now();
     const graphData = this.createBareModelData();
-    graphData.domain.profiles = graph.profiles.map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.classes = graph.classes.map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.enums = graph.enumerations.map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.measures = graph.measures.map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.associations = graph.associations.map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.functions = graph.functions.map(e => this.getPackageableElementProtocol(e));
-    graphData.stores = graph.stores.map(e => this.getPackageableElementProtocol(e));
-    graphData.connections = graph.connections.map(e => this.getPackageableElementProtocol(e));
-    graphData.mappings = graph.mappings.map(e => this.getPackageableElementProtocol(e));
-    graphData.runtimes = graph.runtimes.map(e => this.getPackageableElementProtocol(e));
-    graphData.fileGenerations = graph.fileGenerations.map(e => this.getPackageableElementProtocol(e));
-    graphData.generationSpecifications = graph.generationSpecifications.map(e => this.getPackageableElementProtocol(e));
-    graphData.diagrams = graph.diagrams.map(e => this.getPackageableElementProtocol(e));
-    graphData.texts = graph.texts.map(e => this.getPackageableElementProtocol(e));
-    graphData.sectionIndices = graph.sectionIndices.map(e => this.getPackageableElementProtocol(e));
+    graphData.elements = graph.allElements.map(e => this.getPackageableElementProtocol(e));
     Log.info(LOG_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED, Date.now() - startTime, 'ms');
     return graphData;
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getCompileContextModelData = (graph: MM_PureModel): MM_PureModelContextDataObject => {
     const startTime = Date.now();
     const graphData = this.createBareModelData();
     const dependencyManager = graph.dependencyManager;
     const generatedModel = graph.generationModel;
-    graphData.domain.profiles = [...dependencyManager.profiles, ...generatedModel.profiles].map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.classes = [...dependencyManager.classes, ...generatedModel.classes].map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.enums = [...dependencyManager.enumerations, ...generatedModel.enumerations].map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.measures = [...dependencyManager.measures, ...generatedModel.measures].map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.associations = [...dependencyManager.associations, ...generatedModel.associations].map(e => this.getPackageableElementProtocol(e));
-    graphData.domain.functions = [...dependencyManager.functions, ...generatedModel.functions].map(e => this.getPackageableElementProtocol(e));
-    graphData.stores = [...dependencyManager.stores, ...generatedModel.stores].map(e => this.getPackageableElementProtocol(e));
-    graphData.connections = [...dependencyManager.connections, ...generatedModel.connections].map(e => this.getPackageableElementProtocol(e));
-    graphData.mappings = [...dependencyManager.mappings, ...generatedModel.mappings].map(e => this.getPackageableElementProtocol(e));
-    graphData.runtimes = [...dependencyManager.runtimes, ...generatedModel.runtimes].map(e => this.getPackageableElementProtocol(e));
-    graphData.fileGenerations = [...dependencyManager.fileGenerations, ...generatedModel.fileGenerations].map(e => this.getPackageableElementProtocol(e));
-    graphData.generationSpecifications = [...dependencyManager.generationSpecifications, ...generatedModel.generationSpecifications].map(e => this.getPackageableElementProtocol(e));
-    graphData.diagrams = [...dependencyManager.diagrams, ...generatedModel.diagrams].map(e => this.getPackageableElementProtocol(e));
-    graphData.texts = [...dependencyManager.texts, ...generatedModel.texts].map(e => this.getPackageableElementProtocol(e));
-    graphData.sectionIndices = [...dependencyManager.sectionIndices, ...generatedModel.sectionIndices].map(e => this.getPackageableElementProtocol(e));
+    graphData.elements = [...dependencyManager.allElements, ...generatedModel.allElements].map(e => this.getPackageableElementProtocol(e));
     Log.info(LOG_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED, Date.now() - startTime, 'ms');
     return graphData;
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   combineGraphModelData = (graphData1: MM_PureModelContextDataObject, graphData2: MM_PureModelContextDataObject): MM_PureModelContextDataObject => {
     const graphData = this.createBareModelData();
-    graphData.domain.profiles = [...graphData1.domain.profiles, ...graphData2.domain.profiles];
-    graphData.domain.classes = [...graphData1.domain.classes, ...graphData2.domain.classes];
-    graphData.domain.enums = [...graphData1.domain.enums, ...graphData2.domain.enums];
-    graphData.domain.measures = [...graphData1.domain.measures, ...graphData2.domain.measures];
-    graphData.domain.associations = [...graphData1.domain.associations, ...graphData2.domain.associations];
-    graphData.domain.functions = [...graphData1.domain.functions, ...graphData2.domain.functions];
-    graphData.stores = [...graphData1.stores, ...graphData2.stores];
-    graphData.connections = [...graphData1.connections, ...graphData2.connections];
-    graphData.mappings = [...graphData1.mappings, ...graphData2.mappings];
-    graphData.runtimes = [...graphData1.runtimes, ...graphData2.runtimes];
-    graphData.fileGenerations = [...graphData1.fileGenerations, ...graphData2.fileGenerations];
-    graphData.generationSpecifications = [...graphData1.generationSpecifications, ...graphData2.generationSpecifications];
-    graphData.diagrams = [...graphData1.diagrams, ...graphData2.diagrams];
-    graphData.texts = [...graphData1.texts, ...graphData2.texts];
-    graphData.sectionIndices = [...graphData1.sectionIndices, ...graphData2.sectionIndices];
+    graphData.elements = [...graphData1.elements, ...graphData2.elements];
     return graphData;
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   buildModelDataFromEntities = (entities: Entity[]): MM_PureModelContextDataObject => {
     const graphData = this.createBareModelData();
-    graphData.domain.classes = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.CLASS).map(e => e.content);
-    graphData.domain.associations = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.ASSOCIATION).map(e => e.content);
-    graphData.domain.enums = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.ENUMERATION).map(e => e.content);
-    graphData.domain.measures = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.MEASURE).map(e => e.content);
-    graphData.domain.profiles = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.PROFILE).map(e => e.content);
-    graphData.domain.functions = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.FUNCTION).map(e => e.content);
-    graphData.stores = [];
-    graphData.connections = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.CONNECTION).map(e => e.content);
-    graphData.mappings = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.MAPPING).map(e => e.content);
-    graphData.runtimes = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.RUNTIME).map(e => e.content);
-    graphData.fileGenerations = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.FILE_GENERATION).map(e => e.content);
-    graphData.generationSpecifications = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.GENERATION_SPECIFICATION).map(e => e.content);
-    graphData.diagrams = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.DIAGRAM).map(e => e.content);
-    graphData.texts = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.TEXT).map(e => e.content);
-    graphData.sectionIndices = entities.filter(e => e.classifierPath === PROTOCOL_CLASSIFIER_PATH.SECTION_INDEX).map(e => e.content);
+    graphData.elements = entities.map(e => e.content);
     return graphData;
   }
 

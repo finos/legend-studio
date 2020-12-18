@@ -53,23 +53,7 @@ export interface PureModelContextDataObject {
       version: string;
     }
   },
-  domain: {
-    classes: PackageableElementObject[];
-    associations: PackageableElementObject[];
-    enums: PackageableElementObject[];
-    measures: PackageableElementObject[];
-    profiles: PackageableElementObject[];
-    functions: PackageableElementObject[];
-  };
-  stores: PackageableElementObject[];
-  connections: PackageableElementObject[];
-  runtimes: PackageableElementObject[];
-  mappings: PackageableElementObject[];
-  diagrams: PackageableElementObject[];
-  texts: PackageableElementObject[];
-  fileGenerations: PackageableElementObject[];
-  generationSpecifications: PackageableElementObject[];
-  sectionIndices: PackageableElementObject[];
+  elements: PackageableElementObject[];
 }
 
 export const elementProtocolToEntity = (graphManager: AbstractPureGraphManager, elementProtocol: PackageableElementObject): Entity => ({
@@ -78,23 +62,8 @@ export const elementProtocolToEntity = (graphManager: AbstractPureGraphManager, 
   classifierPath: getClassiferPathFromType(graphManager.getTypeFromProtocolType(elementProtocol._type))
 });
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 export const graphModelDataToEntities = (graphManager: AbstractPureGraphManager, graphModelData: Partial<PureModelContextDataObject>): Entity[] => [
-  ...(graphModelData.domain?.classes ?? []),
-  ...(graphModelData.domain?.associations ?? []),
-  ...(graphModelData.domain?.enums ?? []),
-  ...(graphModelData.domain?.measures ?? []),
-  ...(graphModelData.domain?.profiles ?? []),
-  ...(graphModelData.domain?.functions ?? []),
-  ...(graphModelData.stores ?? []),
-  ...(graphModelData.mappings ?? []),
-  ...(graphModelData.diagrams ?? []),
-  ...(graphModelData.texts ?? []),
-  ...(graphModelData.connections ?? []),
-  ...(graphModelData.runtimes ?? []),
-  ...(graphModelData.fileGenerations ?? []),
-  ...(graphModelData.generationSpecifications ?? []),
-  ...(graphModelData.sectionIndices ?? []),
+  ...(graphModelData.elements ?? []),
 ].map(element => elementProtocolToEntity(graphManager, element));
 
 export abstract class AbstractPureGraphManager {
