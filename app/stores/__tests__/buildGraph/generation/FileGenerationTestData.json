@@ -245,31 +245,7 @@
       "name": "MyRosetta",
       "package": "model",
       "scopeElements": ["model"],
-      "type": "cdm"
-    },
-    "classifierPath": "meta::pure::generation::metamodel::GenerationConfiguration"
-  },
-  {
-    "path": "model::MySlang",
-    "content": {
-      "_type": "fileGeneration",
-      "configurationProperties": [
-        {
-          "name": "scopeFileMap",
-          "value": {
-            "model::Firm": "firm",
-            "model::other::LegalEntity": "legalEntity"
-          }
-        }
-      ],
-      "name": "MySlang",
-      "package": "model",
-      "scopeElements": [
-        "model::Person",
-        "model::Firm",
-        "model::other::LegalEntity"
-      ],
-      "type": "slang"
+      "type": "rosetta"
     },
     "classifierPath": "meta::pure::generation::metamodel::GenerationConfiguration"
   },
@@ -296,10 +272,6 @@
         },
         {
           "path": "model::MyRosetta",
-          "type": "FILE_GENERATION"
-        },
-        {
-          "path": "model::MySlang",
           "type": "FILE_GENERATION"
         }
       ],

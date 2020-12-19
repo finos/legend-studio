@@ -37,7 +37,7 @@ test(unit('File Generation Graph Success'), () => {
   expect(graph.classes).toHaveLength(3);
   expect(graph.enumerations).toHaveLength(1);
   expect(graph.profiles).toHaveLength(1);
-  expect(graph.fileGenerations).toHaveLength(6);
+  expect(graph.fileGenerations).toHaveLength(5);
   const fileGeneration = graph.getFileGeneration('model::MyProtobuf');
   expect(graph.generationSpecifications).toHaveLength(1);
   const scope = fileGeneration.scopeElements;

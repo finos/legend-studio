@@ -47,7 +47,9 @@ export const deserializePackageableElement = (val: Record<PropertyKey, unknown>)
     case PackageableElementType.TEXT: return deserialize(Text, val);
     case PackageableElementType.FILE_GENERATION: return deserialize(FileGeneration, val);
     case PackageableElementType.GENERATION_SPECIFICATION: return deserialize(GenerationSpecification, val);
-    // TODO: runtime, connection
+    // case PackageableElementType.CONNECTION: return deserialize(PackageableConnection, val);
+    // case PackageableElementType.RUNTIME: return deserialize(PackageableRuntime, val);
+    // TODO: store
     case PackageableElementType.SECTION_INDEX: return deserialize(SectionIndex, val);
     default: throw new UnsupportedOperationError(`Can't deserialize element of unsupported type '${val._type}'`);
   }

@@ -28,7 +28,7 @@ test(unit('Infer default mapping element ID'), async () => {
   await editorStore.graphState.initializeSystem();
   await editorStore.graphState.graphManager.build(editorStore.graphState.graph, testInferenceDefaultMappingElementID as Entity[], { TEMP_retainSection: true });
   const transformedEntities = graphModelDataToEntities(editorStore.graphState.graphManager, editorStore.graphState.getBasicGraphModelData());
-  expect(transformedEntities).toEqual(testInferenceDefaultMappingElementID);
+  expect(transformedEntities).toIncludeSameMembers(testInferenceDefaultMappingElementID);
 });
 
 test(unit('Import resolution throws when multiple matches found'), async () => {
@@ -42,7 +42,7 @@ test(unit('Reference without section index should resolve all reference to full 
   await editorStore.graphState.initializeSystem();
   await editorStore.graphState.graphManager.build(editorStore.graphState.graph, testReferenceWithoutSection.original as Entity[]);
   const transformedEntities = graphModelDataToEntities(editorStore.graphState.graphManager, editorStore.graphState.getBasicGraphModelData());
-  expect(transformedEntities.filter(entity => entity.path !== '__internal__::SectionIndex')).toEqual(testReferenceWithoutSection.withoutSection);
+  expect(transformedEntities.filter(entity => entity.path !== '__internal__::SectionIndex')).toIncludeSameMembers(testReferenceWithoutSection.withoutSection);
 });
 
 test(unit('Modified reference should resolve serialization path properly'), async () => {
@@ -52,12 +52,12 @@ test(unit('Modified reference should resolve serialization path properly'), asyn
   await editorStore.graphState.graphManager.build(editorStore.graphState.graph, testReferenceModification.original as Entity[], { TEMP_retainSection: true });
   let enumeration = editorStore.graphState.graph.getEnumeration('test::tEnum');
   enumeration.taggedValues[0].setTag(editorStore.graphState.graph.getProfile('test::tProf').getTag('s4'));
-  expect(graphModelDataToEntities(editorStore.graphState.graphManager, editorStore.graphState.getBasicGraphModelData())).toEqual(testReferenceModification.sameProfileModification);
+  expect(graphModelDataToEntities(editorStore.graphState.graphManager, editorStore.graphState.getBasicGraphModelData())).toIncludeSameMembers(testReferenceModification.sameProfileModification);
   // If the reference owner changes, the serialized path is fully-resolved
   editorStore = new EditorStore(new ApplicationStore(createBrowserHistory()));
   await editorStore.graphState.initializeSystem();
   await editorStore.graphState.graphManager.build(editorStore.graphState.graph, testReferenceModification.original as Entity[], { TEMP_retainSection: true });
   enumeration = editorStore.graphState.graph.getEnumeration('test::tEnum');
   enumeration.taggedValues[0].setTag(editorStore.graphState.graph.getProfile('test2::tProf').getTag('s1'));
-  expect(graphModelDataToEntities(editorStore.graphState.graphManager, editorStore.graphState.getBasicGraphModelData())).toEqual(testReferenceModification.differentProfileModification);
+  expect(graphModelDataToEntities(editorStore.graphState.graphManager, editorStore.graphState.getBasicGraphModelData())).toIncludeSameMembers(testReferenceModification.differentProfileModification);
 });

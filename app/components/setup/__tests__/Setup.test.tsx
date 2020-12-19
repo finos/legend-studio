@@ -28,16 +28,14 @@ test(integration('Shows project selector properly when there are at least 1 proj
   jest.spyOn(sdlcClient, 'getProjects').mockResolvedValueOnce([testProject as unknown as Project]).mockResolvedValueOnce([]);
 
   const { queryByText } = renderWithAppContext(<Setup />);
-  await waitFor(noop());
   // NOTE: react-select is not like a normal input box where we could set the placeholder, so we just
   // cannot use `queryByPlaceholderText` but have to use `queryByText`
-  expect(queryByText('Choose an existing project')).not.toBeNull();
+  await waitFor(() => expect(queryByText('Choose an existing project')).not.toBeNull());
 });
 
 test(integration('Disable project selector when there is no projects'), async () => {
   jest.spyOn(sdlcClient, 'getProjects').mockResolvedValue([]);
 
   const { queryByText } = renderWithAppContext(<Setup />);
-  await waitFor(noop());
-  expect(queryByText('You have no projects, please create or acquire access for at least one')).not.toBeNull();
+  await waitFor(() => expect(queryByText('You have no projects, please create or acquire access for at least one')).not.toBeNull());
 });
