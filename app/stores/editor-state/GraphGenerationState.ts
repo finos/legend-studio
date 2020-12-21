@@ -60,7 +60,7 @@ export class GraphGenerationState {
   }
 
   @computed get fileGenerationConfigurationOptions(): FileGenerationTypeOption[] {
-    return this.supportedFileGenerationConfigurations.map(config => ({ label: config.label, value: config.type }));
+    return this.supportedFileGenerationConfigurations.map(config => ({ label: config.label, value: config.key }));
   }
 
   @computed get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
@@ -77,8 +77,8 @@ export class GraphGenerationState {
     this.fileGenerationConfigurations = fileGenerationConfigurations;
   }
 
-  getFileGenerationConfiguration(type: string): GenerationConfigurationDescription {
-    return guaranteeNonNullable(this.fileGenerationConfigurations.find(config => config.type === type), `Can't find configuration description for file generation type '${type}'`);
+  getFileGenerationConfiguration(key: string): GenerationConfigurationDescription {
+    return guaranteeNonNullable(this.fileGenerationConfigurations.find(config => config.key === key), `Can't find configuration description for file generation with key '${key}'`);
   }
 
   fetchAvailableFileGenerationDescriptions = flow(function* (this: GraphGenerationState) {
@@ -87,7 +87,7 @@ export class GraphGenerationState {
       const schemaGenerationDescriptions = ((yield executionClient.getAvailableSchemaGenerationDescriptions()) as unknown as GenerationConfigurationDescription[]).map(gen => ({ ...gen, generationMode: FILE_GENERATION_MODE.SCHEMA_GENERATION }));
       this.setFileGenerationConfigurations([...codeGenerationDescriptions, ...schemaGenerationDescriptions]
         .map(config => deserialize(GenerationConfigurationDescription, config)));
-      this.editorStore.elementGenerationStates = this.fileGenerationConfigurations.map(config => new ElementFileGenerationState(this.editorStore, config.type));
+      this.editorStore.elementGenerationStates = this.fileGenerationConfigurations.map(config => new ElementFileGenerationState(this.editorStore, config.key));
     } catch (error) {
       Log.error(LOG_EVENT.GENERATION_PROBLEM, error);
       this.editorStore.applicationStore.notifyError(error);

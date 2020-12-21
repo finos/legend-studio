@@ -29,8 +29,7 @@ test(integration('App header is displayed properly'), async () => {
   jest.spyOn(sdlcClient, 'getProjects').mockResolvedValue([]);
 
   const { queryByText } = renderWithAppContext(<Root />);
-  await waitFor(noop());
-  expect(queryByText(config.realm.toUpperCase())).not.toBeNull();
+  await waitFor(() => expect(queryByText(config.realm.toUpperCase())).not.toBeNull());
 });
 
 test(integration('Failed to authorize SDLC will redirect'), async () => {
@@ -43,9 +42,8 @@ test(integration('Failed to authorize SDLC will redirect'), async () => {
   jest.spyOn(sdlcClient, 'isAuthorized').mockResolvedValueOnce(false);
 
   const { queryByText } = renderWithAppContext(<Root />);
-  await waitFor(noop(), { timeout: 5000 });
-  expect(queryByText(config.realm.toUpperCase())).not.toBeNull();
-  expect(window.location.href).toEqual(sdlcClient.authorizeCallbackUrl(stubURL));
+  await waitFor(() => expect(queryByText(config.realm.toUpperCase())).not.toBeNull());
+  await waitFor(() => expect(window.location.href).toEqual(sdlcClient.authorizeCallbackUrl(stubURL)));
 });
 
 test(integration('Failed to accept SDLC Terms of Service will show alert'), async () => {
@@ -54,6 +52,5 @@ test(integration('Failed to accept SDLC Terms of Service will show alert'), asyn
   jest.spyOn(sdlcClient, 'getProjects').mockResolvedValue([]);
 
   const { queryByText } = renderWithAppContext(<Root />);
-  await waitFor(noop());
-  expect(queryByText('See terms of services')).not.toBeNull();
+  await waitFor(() => expect(queryByText('See terms of services')).not.toBeNull());
 });

@@ -177,14 +177,14 @@ export const EditPanel = observer(() => {
   const openedEditorStates = editorStore.openedEditorStates;
   const nativeViewModes = currentEditorState instanceof ElementEditorState ? Object.values(ELEMENT_NATIVE_VIEW_MODE) : [];
   const generationViewModes = currentEditorState instanceof ElementEditorState
-    ? editorStore.graphState.graphGenerationState.supportedFileGenerationConfigurationsForCurrentElement.map(config => ({ type: config.type, label: config.label }))
+    ? editorStore.graphState.graphGenerationState.supportedFileGenerationConfigurationsForCurrentElement.map(config => ({ key: config.key, label: config.label }))
     : [];
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   const renderActiveElementTab = (): React.ReactNode => {
     if (currentEditorState instanceof ElementEditorState) {
       if (currentEditorState.generationViewMode) {
-        const elementGenerationState = editorStore.elementGenerationStates.find(state => state.fileGenerationType === currentEditorState.generationViewMode);
+        const elementGenerationState = editorStore.elementGenerationStates.find(state => state.fileGenerationDescriptionKey === currentEditorState.generationViewMode);
         return <ElementGenerationEditor key={elementGenerationState?.uuid} elementGenerationState={guaranteeNonNullable(elementGenerationState)} currentElementState={currentEditorState} />;
       }
       switch (currentEditorState.editMode) {
@@ -319,7 +319,7 @@ export const EditPanel = observer(() => {
                         <div className="edit-panel__element-view__option__group__name">generation</div>
                         <div className="edit-panel__element-view__option__group__options">
                           {generationViewModes.map(mode =>
-                            <div key={mode.type} className="edit-panel__element-view__option" onClick={(): void => currentEditorState.setGenerationViewMode(mode.type)}>{mode.label}</div>
+                            <div key={mode.key} className="edit-panel__element-view__option" onClick={(): void => currentEditorState.setGenerationViewMode(mode.key)}>{mode.label}</div>
                           )}
                         </div>
                       </div>

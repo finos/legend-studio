@@ -46,7 +46,7 @@ const DEFAULT_EXTERNAL_FORMAT_TEXT_VALUE = '{\n' +
 export class ModelLoaderState extends EditorState {
   @observable modelText = DEFAULT_ENTITIES_TEXT_VALUE;
   @observable currentInputType = MODEL_UPDATER_INPUT_TYPE.ENTITIES;
-  @observable currentExternalInputType?: string;
+  @observable currentExternalInputKey?: string;
   @observable modelImportDescriptions: ImportConfigurationDescription[] = [];
   @observable replace = true;
   @observable isLoadingModel = false;
@@ -73,8 +73,8 @@ export class ModelLoaderState extends EditorState {
   }
 
   @action setCurrentExternalFormatInputType(inputType: ImportConfigurationDescription | undefined): void {
-    this.currentExternalInputType = inputType?.type;
-    if (this.currentExternalInputType) {
+    this.currentExternalInputKey = inputType?.key;
+    if (this.currentExternalInputKey) {
       this.modelText = DEFAULT_EXTERNAL_FORMAT_TEXT_VALUE;
     }
   }
@@ -99,7 +99,7 @@ export class ModelLoaderState extends EditorState {
         this.modelText = JSON.stringify(graphEntities, null, TAB_SIZE);
         break;
       }
-      default: throw new UnsupportedOperationError(`Unsupported model loader input type '${this.currentInputType}'`);
+      default: throw new UnsupportedOperationError(`Unsupported model loader input with key '${this.currentInputType}'`);
     }
   }
 
@@ -108,8 +108,8 @@ export class ModelLoaderState extends EditorState {
       this.isLoadingModel = true;
       this.editorStore.setBlockingAlert({ message: 'Loading model...', prompt: 'Please do not close the application', showLoading: true });
       let entities: Entity[];
-      if (this.currentExternalInputType) {
-        const parsedModel = (yield executionClient.transformExternalFormatToProtocol(deserialize(PureModelContextGenerationInput, JSON.parse(this.modelText)), this.currentExternalInputType, MODEL_IMPORT_MODE.SCHEMA_IMPORT)) as unknown as PureModelContextDataObject;
+      if (this.currentExternalInputKey) {
+        const parsedModel = (yield executionClient.transformExternalFormatToProtocol(deserialize(PureModelContextGenerationInput, JSON.parse(this.modelText)), this.currentExternalInputKey, MODEL_IMPORT_MODE.SCHEMA_IMPORT)) as unknown as PureModelContextDataObject;
         entities = graphModelDataToEntities(this.editorStore.graphState.graphManager, parsedModel);
       } else {
         switch (this.currentInputType) {
@@ -139,7 +139,7 @@ export class ModelLoaderState extends EditorState {
   });
 
   getImportConfiguration(type: string): ImportConfigurationDescription {
-    return guaranteeNonNullable(this.modelImportDescriptions.find(config => config.type === type), `Can't find configuration description for import type '${type}'`);
+    return guaranteeNonNullable(this.modelImportDescriptions.find(config => config.key === type), `Can't find configuration description for import type '${type}'`);
   }
 
   fetchAvailableModelImportDescriptions = flow(function* (this: ModelLoaderState) {

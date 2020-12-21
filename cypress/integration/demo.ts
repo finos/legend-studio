@@ -68,12 +68,8 @@ const setUp: Setup = ({ sdlcServer, execServer }) => {
   }).as('protobufGeneration');
   cy.route({
     method: 'POST',
-    url: `${execServer}/api/pure/v1/schemaGeneration/cdm`
+    url: `${execServer}/api/pure/v1/schemaGeneration/rosetta`
   }).as('rosettaGeneration');
-  cy.route({
-    method: 'POST',
-    url: `${execServer}/api/pure/v1/codeGeneration/slang`
-  }).as('slangGeneration');
   cy.route({
     method: 'POST',
     url: `${execServer}/api/pure/v1/compilation/compile`
@@ -109,12 +105,12 @@ describe('Demo Script Test', () => {
         sdlcServer = response[0];
         execServer = response[1];
         cy.server();
-        demoTest = new StudioTest({ sdlcServer, execServer, PROJECT_NAME, PROJECT_ID, WORKSPACE});
+        demoTest = new StudioTest({ sdlcServer, execServer, PROJECT_NAME, PROJECT_ID, WORKSPACE });
       })
     });
   });
 
-  const showAndVerifyGenerationView = (generationType:string, apiAlias:string) => {
+  const showAndVerifyGenerationView = (generationType: string, apiAlias: string) => {
     cy.getByTestID(TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS).contains(generationType).click();
     cy.wait(apiAlias).its('status').should('eq', 200);
     cy.getByTestID(TEST_ID.TREE_VIEW__NODE__BLOCK).should('not.be.empty');
@@ -173,7 +169,6 @@ describe('Demo Script Test', () => {
     showAndVerifyGenerationView('JSON Schema', '@jsonSchemaGeneration');
     showAndVerifyGenerationView('Protobuf', '@protobufGeneration');
     showAndVerifyGenerationView('Rosetta', '@rosettaGeneration');
-    showAndVerifyGenerationView('Slang', '@slangGeneration');
 
     cy.getByTestID(TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS).contains('Form').click();
 

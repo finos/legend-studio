@@ -476,6 +476,7 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
     const startTime = Date.now();
     const graphData = this.createBareModelData();
     graphData.elements = graph.allElements.map(e => this.getPackageableElementProtocol(e));
+    graphData.elements = graphData.elements.concat((graph.sectionIndices.map(e => this.getPackageableElementProtocol(e))));
     Log.info(LOG_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED, Date.now() - startTime, 'ms');
     return graphData;
   }
@@ -486,6 +487,7 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
     const dependencyManager = graph.dependencyManager;
     const generatedModel = graph.generationModel;
     graphData.elements = [...dependencyManager.allElements, ...generatedModel.allElements].map(e => this.getPackageableElementProtocol(e));
+    graphData.elements = graphData.elements.concat(([...dependencyManager.sectionIndices, ...generatedModel.sectionIndices].map(e => this.getPackageableElementProtocol(e))));
     Log.info(LOG_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED, Date.now() - startTime, 'ms');
     return graphData;
   }

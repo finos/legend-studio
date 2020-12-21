@@ -25,15 +25,15 @@ import { PackageableElementExplicitReference } from 'MM/model/packageableElement
 export class ElementFileGenerationState {
   uuid = uuid();
   editorStore: EditorStore;
-  @observable fileGenerationType: string;
+  @observable fileGenerationDescriptionKey: string;
   @observable fileGenerationState: FileGenerationState;
   @observable showNewFileGenerationModal = false;
 
-  constructor(editorStore: EditorStore, fileGenerationType: string) {
+  constructor(editorStore: EditorStore, fileGenerationDescriptionKey: string) {
     this.editorStore = editorStore;
-    this.fileGenerationType = fileGenerationType;
+    this.fileGenerationDescriptionKey = fileGenerationDescriptionKey;
     const fileGeneration = new FileGeneration('');
-    fileGeneration.setType(fileGenerationType);
+    fileGeneration.setType(fileGenerationDescriptionKey);
     this.fileGenerationState = new FileGenerationState(editorStore, fileGeneration);
   }
 
@@ -49,7 +49,7 @@ export class ElementFileGenerationState {
     // reset file generation state so since the current file generation is promoted to a packageable element in the graph
     // otherwise if we keep this reference, editing this element generation state will also modify the packageable element
     const newFileGeneration = new FileGeneration('');
-    newFileGeneration.setType(this.fileGenerationType);
+    newFileGeneration.setType(this.fileGenerationDescriptionKey);
     this.fileGenerationState = new FileGenerationState(this.editorStore, newFileGeneration);
   }
 

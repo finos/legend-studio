@@ -19,7 +19,7 @@ import { GenerationProperty } from './GenerationProperty';
 import { FILE_GENERATION_MODE } from 'MM/model/packageableElements/fileGeneration/FileGeneration';
 
 export class GenerationConfigurationDescription {
-  @serializable type!: string;
+  @serializable key!: string;
   @serializable label!: string;
   @serializable(list(object(GenerationProperty))) properties: GenerationProperty[] = [];
   @serializable generationMode!: FILE_GENERATION_MODE;

@@ -105,11 +105,11 @@ export const availableSchemaGenerations = [
         'type': 'MAP'
       }
     ],
-    'type': 'avro'
+    'key': 'avro'
   },
-  { 'label': 'Rosetta', 'properties': [], 'type': 'cdm' },
-  { 'label': 'JSON Schema', 'properties': [], 'type': 'jsonSchema' },
-  { 'label': 'Protobuf', 'properties': [], 'type': 'protobuf' }
+  { 'label': 'Rosetta', 'properties': [], 'key': 'rosetta' },
+  { 'label': 'JSON Schema', 'properties': [], 'key': 'jsonSchema' },
+  { 'label': 'Protobuf', 'properties': [], 'key': 'protobuf' }
 ];
 
 export const availableCodeGenerations = [
@@ -244,28 +244,24 @@ export const availableCodeGenerations = [
         'type': 'ARRAY'
       }
     ],
-    'type': 'java'
+    'key': 'java'
   }
 ];
 
 export const availableSchemaImports = [
   {
     'label': 'JSON Schema',
-    'type': 'jsonSchema'
+    'key': 'jsonSchema'
   },
   {
     'label': 'XSD',
-    'type': 'Xsd'
+    'key': 'Xsd'
   }
 ];
 
 export const availableCodeImports = [
   {
     'label': 'Java',
-    'type': 'java'
-  },
-  {
-    'label': 'Slang',
-    'type': 'slang'
+    'key': 'java'
   }
 ];

@@ -90,15 +90,15 @@ class ExecutionClient extends ServerClient {
     this.post(TRACER_SPAN.JSON_TO_GRAMMAR, `${this.pureProtocol()}/grammar/transformJsonToGrammar`, serialize(JsonToGrammarInput, input))
   transformXsdToProtocol = (input: XsdToGrammarInput): Promise<PureModelContextDataObject> =>
     this.post(TRACER_SPAN.XSD_TO_PROTOCOL, `${this.pureProtocol()}/schemaImport/xsd`, serialize(XsdToGrammarInput, input))
-  transformExternalFormatToProtocol = (input: PureModelContextGenerationInput, type: string, mode: MODEL_IMPORT_MODE): Promise<PureModelContextDataObject> =>
-    this.post(TRACER_SPAN.EXTERNAL_FORMAT_TO_PROTOCOL, `${this.pureProtocol()}/${mode}/${type}`, serialize(PureModelContextGenerationInput, input))
+  transformExternalFormatToProtocol = (input: PureModelContextGenerationInput, key: string, mode: MODEL_IMPORT_MODE): Promise<PureModelContextDataObject> =>
+    this.post(TRACER_SPAN.EXTERNAL_FORMAT_TO_PROTOCOL, `${this.pureProtocol()}/${mode}/${key}`, serialize(PureModelContextGenerationInput, input))
 
   // get available imports descriptions
   getAvailableSchemaImportDescriptions = (): Promise<ImportConfigurationDescription[]> => client.get(`${this.pureProtocol()}/schemaImport/availableImports`)
   getAvailableCodeImportDescriptions = (): Promise<ImportConfigurationDescription[]> => client.get(`${this.pureProtocol()}/codeImport/availableImports`)
   // generate file
-  generateFile = (mode: FILE_GENERATION_MODE, type: string, input: GenerationInput): Promise<PureModelContextDataObject> =>
-    this.post(TRACER_SPAN.GENERATE_FILE, `${this.pureProtocol()}/${mode}/${type}`, input)
+  generateFile = (mode: FILE_GENERATION_MODE, key: string, input: GenerationInput): Promise<PureModelContextDataObject> =>
+    this.post(TRACER_SPAN.GENERATE_FILE, `${this.pureProtocol()}/${mode}/${key}`, input)
 
   // get available file generation configurations
   getAvailableCodeGenerationDescriptions = (): Promise<GenerationConfigurationDescription[]> => client.get(`${this.pureProtocol()}/codeGeneration/availableGenerations`)

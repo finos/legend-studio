@@ -1028,7 +1028,7 @@ export const testMissingClassMapping = [
   {
     'path': 'ui::myMap',
     'content': {
-      '_type': 'Mapping',
+      '_type': 'mapping',
       'associationMappings': [],
       'classMappings': [
         {
@@ -1410,7 +1410,7 @@ export const testMissingClassMappingWithTargetId = [
   {
     'path': 'ui::myMap',
     'content': {
-      '_type': 'Mapping',
+      '_type': 'mapping',
       'associationMappings': [],
       'classMappings': [
         {
