@@ -201,7 +201,7 @@ const CreateProjectModal = observer(() => {
                 <input
                   className="panel__content__form__section__input"
                   spellCheck={false}
-                  placeholder="com.legend"
+                  placeholder="org.finos.legend.*"
                   value={groupId}
                   disabled={Boolean(importProjectSuccessReport)}
                   onChange={changeGroupId}
@@ -215,6 +215,7 @@ const CreateProjectModal = observer(() => {
                 <input
                   className="panel__content__form__section__input"
                   spellCheck={false}
+                  placeholder="my-project"
                   value={artifactId}
                   disabled={Boolean(importProjectSuccessReport)}
                   onChange={changeArtifactId}
