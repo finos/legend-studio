@@ -428,14 +428,14 @@ export class PureGraphManager extends MM_AbstractPureGraphManager {
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = this.createBareModelData();
     prunedGraphData.elements = graphData.elements.filter(element =>
-      element instanceof Class
-      || element instanceof Enumeration
-      || element instanceof Profile
-      || element instanceof Association
-      || element instanceof ConcreteFunctionDefinition
-      || element instanceof Measure
-      || element instanceof Store
-      || element instanceof Connection
+      element._type === PackageableElementType.CLASS
+      || element._type === PackageableElementType.ENUMERATION
+      || element._type === PackageableElementType.PROFILE
+      || element._type === PackageableElementType.ASSOCIATION
+      || element._type === PackageableElementType.FUNCTION
+      || element._type === PackageableElementType.MEASURE
+      || element._type === PackageableElementType.CONNECTION
+      || element._type === PackageableElementType.RUNTIME
     );
     prunedGraphData.elements.push(this.getPackageableElementProtocol<Mapping>(mapping));
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
