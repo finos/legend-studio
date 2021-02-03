@@ -136,10 +136,5 @@
   },
   "browserslist": [
     "last 2 Chrome versions"
-  ],
-  "husky": {
-    "hooks": {
-      "pre-push": "node ./dev/scripts/prePushcheck.js"
-    }
-  }
+  ]
 }
