@@ -37,7 +37,7 @@
         <sonar.sources>${project.basedir}/app</sonar.sources>
 
         <!-- Dependencies -->
-        <legend.shared.version>0.0.6</legend.shared.version>
+        <legend.shared.version>0.4.1</legend.shared.version>
         <opentracing.version>0.32.0</opentracing.version>
         <jaxb.version>2.2.11</jaxb.version>
         <javax.activation.version>1.1.1</javax.activation.version>
@@ -381,8 +381,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.finos.legend</groupId>
-                <artifactId>legend-server-shared</artifactId>
+                <groupId>org.finos.legend.shared</groupId>
+                <artifactId>legend-shared-server</artifactId>
                 <version>${legend.shared.version}</version>
             </dependency>
             <dependency>
@@ -391,8 +391,8 @@
                 <version>${opentracing.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.finos.legend.shared</groupId>
                 <artifactId>legend-shared-pac4j-gitlab</artifactId>
-                <groupId>org.finos.legend</groupId>
                 <version>${legend.shared.version}</version>
             </dependency>
             <dependency>
@@ -421,8 +421,8 @@
     <dependencies>
         <!-- SHARED -->
         <dependency>
-            <groupId>org.finos.legend</groupId>
-            <artifactId>legend-server-shared</artifactId>
+            <groupId>org.finos.legend.shared</groupId>
+            <artifactId>legend-shared-server</artifactId>
         </dependency>
         <dependency>
             <groupId>io.opentracing</groupId>
@@ -432,8 +432,8 @@
 
         <!-- AUTH -->
         <dependency>
+            <groupId>org.finos.legend.shared</groupId>
             <artifactId>legend-shared-pac4j-gitlab</artifactId>
-            <groupId>org.finos.legend</groupId>
         </dependency>
         <!-- AUTH -->
 
