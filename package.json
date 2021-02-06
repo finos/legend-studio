@@ -24,6 +24,11 @@
     "upgrade": "npm-check --update ---save-exact",
     "test:e2e": "cypress open"
   },
+  "resolutions": {
+    "**/dot-prop": "^5.1.1",
+    "**/kind-of": "^6.0.3",
+    "**/minimist": "^1.2.3"
+  },
   "dependencies": {
     "@material-ui/core": "4.11.0",
     "@types/lodash": "4.14.161",
