@@ -1,0 +1,304 @@
+[
+  {
+    "path": "model::Firm",
+    "content": {
+      "_type": "class",
+      "constraints": [
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "greaterThan",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "size",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this"
+                          }
+                        ],
+                        "property": "employees"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "integer",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": [2]
+                  }
+                ]
+              }
+            ],
+            "parameters": []
+          },
+          "name": "sizeEmploye"
+        }
+      ],
+      "name": "Firm",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "employees",
+          "type": "model::Person"
+        }
+      ],
+      "superTypes": ["model::other::LegalEntity"]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "age",
+          "type": "Integer"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "model::MyProfile",
+            "value": "doc"
+          },
+          "value": "my tag"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::other::LegalEntity",
+    "content": {
+      "_type": "class",
+      "name": "LegalEntity",
+      "package": "model::other",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "incType",
+          "type": "model::other::IncType"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::other::IncType",
+    "content": {
+      "_type": "Enumeration",
+      "name": "IncType",
+      "package": "model::other",
+      "values": [
+        {
+          "value": "CORP"
+        },
+        {
+          "value": "LLC"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Enumeration"
+  },
+  {
+    "path": "model::MyProfile",
+    "content": {
+      "_type": "profile",
+      "name": "MyProfile",
+      "package": "model",
+      "stereotypes": [],
+      "tags": ["doc"]
+    },
+    "classifierPath": "meta::pure::metamodel::extension::Profile"
+  },
+  {
+    "path": "model::functionFullPath_Firm_1__Firm_MANY__Firm_$1_MANY$__String_1__Boolean_1_",
+    "content": {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "boolean",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "values": [false]
+        }
+      ],
+      "name": "functionFullPath_Firm_1__Firm_MANY__Firm_$1_MANY$__String_1__Boolean_1_",
+      "package": "model",
+      "parameters": [
+        {
+          "_type": "var",
+          "class": "model::Firm",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "one"
+        },
+        {
+          "_type": "var",
+          "class": "model::Firm",
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "many"
+        },
+        {
+          "_type": "var",
+          "class": "model::Firm",
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "oneMany"
+        },
+        {
+          "_type": "var",
+          "class": "String",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "string"
+        }
+      ],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Boolean"
+    },
+    "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
+  },
+
+  {
+    "path": "model::MyAvro",
+    "content": {
+      "_type": "fileGeneration",
+      "configurationProperties": [
+        {
+          "name": "includeSuperTypes",
+          "value": false
+        },
+        {
+          "name": "includeNamespace",
+          "value": false
+        }
+      ],
+      "name": "MyAvro",
+      "package": "model",
+      "scopeElements": ["model"],
+      "type": "avro"
+    },
+    "classifierPath": "meta::pure::generation::metamodel::GenerationConfiguration"
+  },
+  {
+    "path": "model::MyJava",
+    "content": {
+      "_type": "fileGeneration",
+      "configurationProperties": [
+        {
+          "name": "generationType",
+          "value": "meta::java::codeGeneration::ClassType.INTERFACE"
+        },
+        {
+          "name": "jsonAnnotations",
+          "value": true
+        }
+      ],
+      "name": "MyJava",
+      "package": "model",
+      "scopeElements": ["model"],
+      "type": "java"
+    },
+    "classifierPath": "meta::pure::generation::metamodel::GenerationConfiguration"
+  },
+  {
+    "path": "model::MyProtobuf",
+    "content": {
+      "_type": "fileGeneration",
+      "configurationProperties": [],
+      "name": "MyProtobuf",
+      "package": "model",
+      "scopeElements": ["model::other"],
+      "type": "protobuf"
+    },
+    "classifierPath": "meta::pure::generation::metamodel::GenerationConfiguration"
+  },
+  {
+    "path": "model::MyGenerationSpecification",
+    "content": {
+      "_type": "generationSpecification",
+      "fileGenerations": [
+        {
+          "path": "model::MyAvro",
+          "type": "FILE_GENERATION"
+        },
+        {
+          "path": "model::MyProtobuf",
+          "type": "FILE_GENERATION"
+        }
+      ],
+      "generationNodes": [],
+      "name": "MyGenerationSpecification",
+      "package": "model"
+    },
+    "classifierPath": "meta::pure::generation::metamodel::GenerationSpecification"
+  }
+]

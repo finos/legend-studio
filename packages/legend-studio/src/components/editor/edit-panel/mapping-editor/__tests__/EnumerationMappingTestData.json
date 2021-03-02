@@ -1,0 +1,130 @@
+[
+  {
+    "path": "demo::Enum_1",
+    "content": {
+      "_type": "Enumeration",
+      "name": "Enum_1",
+      "package": "demo",
+      "values": [
+        {
+          "value": "_0"
+        },
+        {
+          "value": "_1"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Enumeration"
+  },
+  {
+    "path": "demo::Enum_2",
+    "content": {
+      "_type": "Enumeration",
+      "name": "Enum_2",
+      "package": "demo",
+      "values": [
+        {
+          "value": "zero"
+        },
+        {
+          "value": "one"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Enumeration"
+  },
+  {
+    "path": "demo::MyMap",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [],
+      "enumerationMappings": [
+        {
+          "enumeration": "demo::Enum_1",
+          "enumValueMappings": [
+            {
+              "enumValue": "_0",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "false"
+                },
+                {
+                  "_type": "stringSourceValue",
+                  "value": "0"
+                }
+              ]
+            },
+            {
+              "enumValue": "_1",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "true"
+                },
+                {
+                  "_type": "stringSourceValue",
+                  "value": "1"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "enumeration": "demo::Enum_2",
+          "enumValueMappings": [
+            {
+              "enumValue": "one",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "1"
+                }
+              ]
+            },
+            {
+              "enumValue": "zero",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "0"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "enumeration": "demo::Enum_1",
+          "enumValueMappings": [
+            {
+              "enumValue": "_0",
+              "sourceValues": [
+                {
+                  "_type": "enumSourceValue",
+                  "enumeration": "demo::Enum_2",
+                  "value": "zero"
+                }
+              ]
+            },
+            {
+              "enumValue": "_1",
+              "sourceValues": [
+                {
+                  "_type": "enumSourceValue",
+                  "enumeration": "demo::Enum_2",
+                  "value": "one"
+                }
+              ]
+            }
+          ],
+          "id": "enumToEnum"
+        }
+      ],
+      "includedMappings": [],
+      "name": "MyMap",
+      "package": "demo",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  }
+]

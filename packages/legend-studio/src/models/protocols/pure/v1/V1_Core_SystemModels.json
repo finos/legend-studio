@@ -1,0 +1,29 @@
+{
+  "elements": [
+    {
+      "stereotypes": ["public", "protected", "private", "externalizable"],
+      "package": "meta::pure::profiles",
+      "_type": "profile",
+      "name": "access"
+    },
+    {
+      "stereotypes": ["abstract"],
+      "package": "meta::pure::profiles",
+      "_type": "profile",
+      "name": "typemodifiers"
+    },
+    {
+      "stereotypes": ["deprecated"],
+      "package": "meta::pure::profiles",
+      "_type": "profile",
+      "name": "doc",
+      "tags": ["doc", "todo"]
+    },
+    {
+      "package": "meta::pure::metamodel::type",
+      "_type": "class",
+      "name": "Any",
+      "properties": []
+    }
+  ]
+}

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 
-// NOTE: this Babel configuration is duplicated of what we have in `webpack.config.js` but we need to keep this
-// because this is used by Jest
-module.exports = {
-  presets: [
-    '@babel/preset-env',
-    '@babel/preset-react',
-    '@babel/preset-typescript'
-  ],
-  plugins: [
-    '@babel/plugin-transform-react-jsx-source',
-    ['@babel/plugin-proposal-decorators', { legacy: true }],
-    ['@babel/plugin-proposal-class-properties', { loose: true }],
-    ['@babel/plugin-proposal-optional-chaining'],
-    ['@babel/plugin-proposal-nullish-coalescing-operator'],
-    // regexp named-capturing-group is not supported on Firefox yet, only on Chrome
-    // See https://bugzilla.mozilla.org/show_bug.cgi?id=1362154
-    ['@babel/plugin-transform-named-capturing-groups-regex'],
-  ]
+module.exports = (api) => {
+  // `cache.invalidate()`: The config is cache based on the value of NODE_ENV.
+  // Any time the using callback returns a value other than the one that was expected,
+  // the overall config function will be called again and all entries in the cache will
+  // be **replaced** with the result.
+  // See https://babeljs.io/docs/en/config-files#apicache
+  api.cache.invalidate(() => process.env.NODE_ENV);
+  const isEnvDevelopment = api.env('development');
+
+  return {
+    presets: [
+      [
+        '@finos/babel-preset-legend-studio',
+        {
+          development: isEnvDevelopment,
+          useTypescript: true,
+          useReact: true,
+        },
+      ],
+    ],
+  };
 };

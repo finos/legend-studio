@@ -1,0 +1,14 @@
+# Dependencies
+**/node_modules
+
+# Build
+/build/
+/packages/*/build/
+/packages/*/dist/
+/packages/*/lib/
+
+# Yarn
+.yarn/*
+.pnp.*
+
+packages/legend-studio-dev-utils/__tests__/fixtures/src/dummy.ts

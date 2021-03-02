@@ -262,11 +262,10 @@
             <!-- SHADING -->
 
             <!-- NPM -->
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
-                    <!-- NPM install -->
                     <execution>
                         <id>exec-npm-install</id>
                         <phase>initialize</phase>
@@ -280,7 +279,6 @@
                             <goal>exec</goal>
                         </goals>
                     </execution>
-                    <!-- NPM build -->
                     <execution>
                         <id>exec-npm-build</id>
                         <phase>generate-resources</phase>
@@ -295,7 +293,6 @@
                             <goal>exec</goal>
                         </goals>
                     </execution>
-                    <!-- NPM test -->
                     <execution>
                         <id>exec-npm-test</id>
                         <goals>
@@ -311,7 +308,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
             <!-- NPM -->
 
             <plugin>

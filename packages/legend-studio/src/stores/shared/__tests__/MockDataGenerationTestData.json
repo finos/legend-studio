@@ -1,0 +1,830 @@
+[
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Address",
+    "content": {
+      "_type": "class",
+      "name": "Address",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "street",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "city",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "state",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "zipCode",
+          "type": "Integer"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Applicant",
+    "content": {
+      "_type": "class",
+      "name": "Applicant",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "dateOfBirth",
+          "type": "StrictDate"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "previousApplication",
+          "type": "myPackage::test::shared::src::Application"
+        }
+      ],
+      "superTypes": [
+        "myPackage::test::shared::src::User"
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Application",
+    "content": {
+      "_type": "class",
+      "name": "Application",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "applicant",
+          "type": "myPackage::test::shared::src::Applicant"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "employee",
+          "type": "myPackage::test::shared::src::Employee"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "previousEmployeer",
+          "type": "myPackage::test::shared::src::Employer"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Employee",
+    "content": {
+      "_type": "class",
+      "name": "Employee",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "salary",
+          "type": "Integer"
+        }
+      ],
+      "superTypes": [
+        "myPackage::test::shared::src::User"
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Employer",
+    "content": {
+      "_type": "class",
+      "name": "Employer",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "address",
+          "type": "myPackage::test::shared::src::Address"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Member",
+    "content": {
+      "_type": "class",
+      "name": "Member",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "memberShipFee",
+          "type": "Integer"
+        }
+      ],
+      "superTypes": [
+        "myPackage::test::shared::src::User"
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Membership",
+    "content": {
+      "_type": "class",
+      "name": "Membership",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "products",
+          "type": "myPackage::test::shared::src::Product"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "member",
+          "type": "myPackage::test::shared::src::Member"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "startDate",
+          "type": "StrictDate"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Product",
+    "content": {
+      "_type": "class",
+      "name": "Product",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "instructor",
+          "type": "myPackage::test::shared::src::Employee"
+        },
+        {
+          "multiplicity": { "lowerBound": 0 },
+          "name": "sessions",
+          "type": "myPackage::test::shared::src::Session"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::ProductWithRegion",
+    "content": {
+      "_type": "class",
+      "name": "ProductWithRegion",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "region",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::Session",
+    "content": {
+      "_type": "class",
+      "name": "Session",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "location",
+          "type": "myPackage::test::shared::src::Address"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "date",
+          "type": "StrictDate"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "time",
+          "type": "Integer"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::User",
+    "content": {
+      "_type": "class",
+      "name": "User",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "userName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "password",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "lastName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0, "upperBound": 1 },
+          "name": "email",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "startDate",
+          "type": "StrictDate"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "address",
+          "type": "myPackage::test::shared::src::Address"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_Bicycle",
+    "content": {
+      "_type": "class",
+      "name": "_Bicycle",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "roadster",
+          "type": "Boolean"
+        }
+      ],
+      "superTypes": [
+        "myPackage::test::shared::src::_RoadVehicle"
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_Car",
+    "content": {
+      "_type": "class",
+      "name": "_Car",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "engine",
+          "type": "Boolean"
+        }
+      ],
+      "superTypes": [
+        "myPackage::test::shared::src::_RoadVehicle"
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_Firm",
+    "content": {
+      "_type": "class",
+      "name": "_Firm",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "name",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_FirmX",
+    "content": {
+      "_type": "class",
+      "name": "_FirmX",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0 },
+          "name": "pathToEmployeesSet1",
+          "type": "myPackage::test::shared::src::_PersonSrc1"
+        },
+        {
+          "multiplicity": { "lowerBound": 0 },
+          "name": "pathToEmployeesSet2",
+          "type": "myPackage::test::shared::src::_PersonSrc2"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_Person",
+    "content": {
+      "_type": "class",
+      "name": "_Person",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "fullName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0 },
+          "name": "addresses",
+          "type": "myPackage::test::shared::dest::Address"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_PersonSrc1",
+    "content": {
+      "_type": "class",
+      "name": "_PersonSrc1",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "nameFrom1",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_PersonSrc2",
+    "content": {
+      "_type": "class",
+      "name": "_PersonSrc2",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "nameFrom2",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_Person_Address",
+    "content": {
+      "_type": "class",
+      "name": "_Person_Address",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "street",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_Product",
+    "content": {
+      "_type": "class",
+      "name": "_Product",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "subProductName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "bondDetailStatus",
+          "type": "String"
+        }
+      ],
+      "superTypes": [
+        "myPackage::test::shared::src::ProductWithRegion"
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_Product2",
+    "content": {
+      "_type": "class",
+      "name": "_Product2",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "subProductName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "bondDetailStatus",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0, "upperBound": 1 },
+          "name": "region",
+          "type": "myPackage::test::shared::dest::Region"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_RoadVehicle",
+    "content": {
+      "_type": "class",
+      "name": "_RoadVehicle",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "wheelCount",
+          "type": "Integer"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_S_Person",
+    "content": {
+      "_type": "class",
+      "name": "_S_Person",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "fullName",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::src::_Trade",
+    "content": {
+      "_type": "class",
+      "name": "_Trade",
+      "package": "myPackage::test::shared::src",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "side",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "product",
+          "type": "myPackage::test::shared::src::_Product"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::mapping::Mapping",
+    "path": "myPackage::test::shared::src::bobby",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "myPackage::test::shared::src::_Bicycle",
+          "id": "ui_meta_pure_mapping_modelToModel_test_shared_src__Bicycle",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "myPackage::test::shared::src::_Bicycle",
+                "property": "roadster"
+              },
+              "source": "ui_meta_pure_mapping_modelToModel_test_shared_src__Bicycle",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "boolean",
+                    "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+                    "values": [true]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "myPackage::test::shared::src::Application"
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "bobby",
+      "package": "myPackage::test::shared::src",
+      "tests": []
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::Address",
+    "content": {
+      "_type": "class",
+      "name": "Address",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "street",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0, "upperBound": 1 },
+          "name": "extension",
+          "type": "myPackage::test::shared::dest::AddressExtension"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::AddressExtension",
+    "content": {
+      "_type": "class",
+      "name": "AddressExtension",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "stuff",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::Firm",
+    "content": {
+      "_type": "class",
+      "name": "Firm",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "legalName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0 },
+          "name": "employees",
+          "type": "myPackage::test::shared::dest::Person"
+        },
+        {
+          "multiplicity": { "lowerBound": 0 },
+          "name": "addresses",
+          "type": "myPackage::test::shared::dest::Address"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "count",
+          "type": "Integer"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::FirmEmployee",
+    "content": {
+      "_type": "class",
+      "name": "FirmEmployee",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "firmName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "fullName",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "lastName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0 },
+          "name": "addresses",
+          "type": "myPackage::test::shared::dest::Address"
+        },
+        {
+          "multiplicity": { "lowerBound": 0, "upperBound": 1 },
+          "name": "firm",
+          "type": "myPackage::test::shared::dest::Firm"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::Product",
+    "content": {
+      "_type": "class",
+      "name": "Product",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "subProductName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "bondDetailStatus",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0, "upperBound": 1 },
+          "name": "region",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::Product2Simple",
+    "content": {
+      "_type": "class",
+      "name": "Product2Simple",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0, "upperBound": 1 },
+          "name": "region",
+          "type": "myPackage::test::shared::dest::Region"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Enumeration",
+    "path": "myPackage::test::shared::dest::Region",
+    "content": {
+      "_type": "Enumeration",
+      "name": "Region",
+      "package": "myPackage::test::shared::dest",
+      "values": [{ "value": "NewYork" }, { "value": "London" }]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Enumeration",
+    "path": "myPackage::test::shared::dest::Side",
+    "content": {
+      "_type": "Enumeration",
+      "name": "Side",
+      "package": "myPackage::test::shared::dest",
+      "values": [{ "value": "Buy" }, { "value": "Sell" }]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::Trade",
+    "content": {
+      "_type": "class",
+      "name": "Trade",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "side",
+          "type": "myPackage::test::shared::dest::Side"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "productName",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 0, "upperBound": 1 },
+          "name": "productRegion",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::shared::dest::Vehicle",
+    "content": {
+      "_type": "class",
+      "name": "Vehicle",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "wheelCount",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "engine",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "roadster",
+          "type": "Boolean"
+        }
+      ]
+    }
+  }
+]

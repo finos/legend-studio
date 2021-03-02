@@ -1,0 +1,66 @@
+{
+  "name": "@finos/legend-studio-components",
+  "version": "0.0.0",
+  "description": "Legend Studio shared components and component utilities",
+  "keywords": [
+    "legend",
+    "legend-studio",
+    "studio",
+    "component",
+    "shared-component",
+    "utilities"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-components",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-studio-components"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:sass && yarn build:tsc",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD sass ./style/index.scss ./lib/index.css --style=compressed && node ../../scripts/copyright/addBundledCodeCopyrightHeader.js ./lib/index.css",
+    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "clean": "rimraf \"lib\" \"build\"",
+    "dev": "npm-run-all dev:sass dev:tsc",
+    "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
+    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "fix:js": "yarn lint:js --fix",
+    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-studio-shared": "0.0.0",
+    "@material-ui/core": "4.11.3",
+    "clsx": "1.1.1",
+    "mobx": "6.1.8",
+    "mobx-react-lite": "3.2.0",
+    "react": "17.0.1",
+    "react-icons": "4.2.0",
+    "react-select": "4.1.0",
+    "react-window": "1.8.6"
+  },
+  "devDependencies": {
+    "@finos/legend-studio-dev-utils": "0.0.0",
+    "@types/react": "17.0.2",
+    "@types/react-select": "4.0.13",
+    "@types/react-window": "1.8.2",
+    "eslint": "7.21.0",
+    "jest": "26.6.3",
+    "npm-run-all": "4.1.5",
+    "rimraf": "3.0.2",
+    "sass": "1.32.8",
+    "typescript": "4.2.2"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0"
+  }
+}
