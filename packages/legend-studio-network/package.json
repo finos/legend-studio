@@ -1,0 +1,46 @@
+{
+  "name": "@finos/legend-studio-network",
+  "version": "0.0.0",
+  "description": "Legend Studio network infrastructure",
+  "keywords": [
+    "legend",
+    "legend-studio",
+    "studio",
+    "network"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-network",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-studio-network"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:tsc",
+    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "clean": "rimraf \"lib\" \"build\"",
+    "dev": "dev:tsc",
+    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "fix:js": "yarn lint:js --fix",
+    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-studio-shared": "0.0.0"
+  },
+  "devDependencies": {
+    "@finos/legend-studio-dev-utils": "0.0.0",
+    "eslint": "7.21.0",
+    "jest": "26.6.3",
+    "rimraf": "3.0.2",
+    "typescript": "4.2.2"
+  }
+}

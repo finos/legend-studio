@@ -1,0 +1,43 @@
+{
+  "name": "@finos/eslint-plugin-legend-studio",
+  "version": "0.0.0",
+  "description": "ESLint rules for config-tester",
+  "keywords": [
+    "legend",
+    "legend-studio",
+    "studio",
+    "eslint",
+    "eslintplugin"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/eslint-plugin",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "src",
+    "index.js"
+  ],
+  "dependencies": {
+    "@babel/core": "7.13.8",
+    "@babel/eslint-parser": "7.13.8",
+    "@typescript-eslint/eslint-plugin": "4.16.1",
+    "@typescript-eslint/parser": "4.16.1",
+    "eslint": "7.21.0",
+    "eslint-config-prettier": "8.1.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-prettier": "3.3.1",
+    "eslint-plugin-react": "7.22.0",
+    "eslint-plugin-react-hooks": "4.2.0",
+    "prettier": "2.2.1"
+  },
+  "peerDependencies": {
+    "eslint": "^7.17.0",
+    "prettier": "^2.2.1"
+  }
+}

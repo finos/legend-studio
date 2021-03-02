@@ -1,0 +1,20 @@
+{
+  "baseUrl": "https://localhost:20203/studio",
+  "experimentalFetchPolyfill": true,
+  "viewportHeight": 1080,
+  "viewportWidth": 1920,
+  "fixturesFolder": "cypress/fixtures",
+  "integrationFolder": "cypress/integration",
+  "pluginsFile": "cypress/plugins",
+  "screenshotsFolder": "cypress/screenshots",
+  "supportFile": "cypress/support",
+  "videosFolder": "cypress/videos",
+  "reporter": "spec",
+  "defaultCommandTimeout": 30000,
+  "trashAssetsBeforeRuns": true,
+  "execTimeout": 60000,
+  "pageLoadTimeout": 60000,
+  "requestTimeout": 5000,
+  "responseTimeout": 30000,
+  "taskTimeout": 60000
+}

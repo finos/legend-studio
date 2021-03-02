@@ -1,45 +1,17 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "lib": ["dom", "dom.iterable", "esnext", "webworker", "scripthost"],
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "preserve",
-    "baseUrl": ".",
-    "paths": {
-      "Const": ["./app/const"],
-      "MetaModelConst": ["./app/models/MetaModelConst"],
-      "MetaModelUtility": ["./app/models/MetaModelUtility"],
-      "ApplicationConfig": ["./app/ApplicationConfig"],
-      "PureModelLoader": ["./app/models/protocols/pure/PureModelLoader"],
-      "Utilities/*": ["./app/utils/*"],
-      "Components/*": ["./app/components/*"],
-      "Stores/*": ["./app/stores/*"],
-      "SDLC/*": ["app/models/sdlc/*"],
-      "EXEC/*": ["app/models/exec/*"],
-      "MM/*": ["app/models/metamodels/pure/*"],
-      "V1/*": ["./app/models/protocols/pure/v1/*"],
-      "Worker/*": ["./app/workers/*"],
-      "API/*": ["./app/api/*"],
-      "Style/*": ["./style/*"],
-      "Dev/*": ["./dev/*"],
-      "Mocks/*": ["app/__mocks__/*"]
-    }
-  },
-  "include": [
-    "./style/**/*.ts",
-    "./app/**/*.ts",
-    "./app/**/*.tsx",
-    "./dev/**/*.ts"
-  ],
-  "files": ["app/index.tsx"]
+  // This will prevent an incorrect invocation of `tsc` without `--build` from
+  // trying to build the entire packages folder source files as one compilation
+  // (which will fail, but drop a bunch of .js files in random places as an annoying side effect).
+  // See https://github.com/RyanCavanaugh/learn-a
+  "files": [],
+  "references": [
+    { "path": "packages/legend-studio-shared" },
+    { "path": "packages/legend-studio-components" },
+    { "path": "packages/legend-studio-network" },
+    { "path": "packages/legend-studio" },
+    { "path": "packages/legend-studio-app" },
+    { "path": "packages/legend-studio-plugin-tracer-zipkin" },
+    { "path": "packages/legend-studio-plugin-management" },
+    { "path": "packages/legend-studio-preset-dsl-text" }
+  ]
 }

@@ -1,0 +1,12 @@
+{
+  "extends": "./testTsConfigExtend_parent.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "rootDir": "src",
+    "strictNullChecks": true,
+    "paths": {
+      "somePath": "somePath"
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"]
+}

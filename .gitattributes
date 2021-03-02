@@ -1,0 +1,4 @@
+# This line does two things:
+# - enable git's CRLF -> LF modification
+# - tell git to guess whether files are text or binary
+*                       text=auto

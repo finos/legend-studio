@@ -1,0 +1,33 @@
+{
+  // See https://www.typescriptlang.org/docs/handbook/compiler-options.html
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext", "webworker", "scripthost"],
+    // Project reference related settings
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    // Module settings
+    "target": "esnext",
+    "module": "esnext",
+    "skipLibCheck": true, // skip type checking of all declaration files (*.d.ts)
+    "moduleResolution": "node", // See https://www.typescriptlang.org/docs/handbook/module-resolution.html
+    "resolveJsonModule": true, // include JSON files module and auto-interpret types
+    // --isolatedModules is needed by `babel`.
+    // It perform additional checks to ensure that separate compilation
+    // (such as with transpileModule or @babel/plugin-transform-typescript) would be safe.
+    "isolatedModules": true,
+    "importsNotUsedAsValues": "error", // enforce differentiating between type-imports and standard imports
+    // `esModuleInterop` and `allowSyntheticDefaultImports` are needed to support compilation and type-checking on
+    // modules that do not have default exports
+    // See https://stackoverflow.com/questions/56238356/understanding-esmoduleinterop-in-tsconfig-file
+    "esModuleInterop": true, // enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports
+    "allowSyntheticDefaultImports": true,
+    // This option is needed for `mobx` decorator in constructor to work properly with uninitialized class attributes
+    // See https://github.com/mobxjs/mobx/issues/2486
+    "useDefineForClassFields": true,
+    // Other settings
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

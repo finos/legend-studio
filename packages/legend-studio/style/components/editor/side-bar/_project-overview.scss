@@ -1,0 +1,230 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '../../../mixins' as *;
+
+.project-overview {
+  &__content {
+    display: flex;
+    flex-direction: row;
+  }
+
+  &__item__link {
+    color: var(--color-dark-grey-500);
+    text-decoration: none;
+  }
+
+  &__item__link--selected-from-context-menu {
+    background: var(--color-dark-blue-shade-100);
+  }
+
+  &__item__link--active,
+  &__item__link--active:hover {
+    background: var(--color-light-blue-450) !important;
+  }
+
+  &__item__link__content {
+    @include ellipsisTextOverflow;
+  }
+
+  &__item__link__content__name {
+    color: var(--color-light-grey-400);
+  }
+
+  &__item__link__content__info {
+    margin-left: 1rem;
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-500);
+  }
+
+  &__activity-bar {
+    z-index: 1;
+    width: 3rem;
+    min-width: 3rem;
+    overflow: hidden;
+    height: 100%;
+    padding-top: 2.8rem;
+    background: var(--color-dark-grey-200);
+    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-left: 0.1rem solid var(--color-dark-grey-80);
+
+    &__items {
+      @include flexVCenter;
+
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0;
+    }
+
+    &__item {
+      @include flexVCenter;
+
+      flex-direction: column;
+      padding: 1rem 0;
+      cursor: pointer;
+      width: 100%;
+      border-left: 0.2rem solid var(--color-dark-grey-200);
+      color: var(--color-dark-grey-500);
+
+      &-mode {
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        font-size: 1.2rem;
+      }
+
+      &--active {
+        color: var(--color-light-grey-200);
+        border-left: 0.2rem solid var(--color-yellow-200);
+      }
+    }
+  }
+
+  &__panel {
+    width: calc(100% - 2.8rem);
+  }
+
+  &__panel__content {
+    padding-top: 0 !important;
+  }
+
+  &__release,
+  &__versions,
+  &__workspaces,
+  &__overview {
+    height: 100%;
+    background: var(--color-dark-grey-100);
+  }
+
+  &__release--empty {
+    padding: 2rem;
+    color: var(--color-light-grey-400);
+  }
+
+  &__release__content {
+    height: calc(100% - 2.8rem);
+    padding-top: 0 !important;
+  }
+
+  &__release__info {
+    height: calc(100% - 10.4rem);
+  }
+
+  &__release__info__reviews {
+    height: calc(100% - 6rem);
+  }
+
+  &__release__info__current-version {
+    @include flexVCenter;
+
+    height: 2.2rem;
+    padding: 0 0.5rem 0 1rem;
+    margin-bottom: 0.5rem;
+
+    &__container {
+      height: 6rem;
+    }
+
+    &__no-version {
+      @include ellipsisTextOverflow;
+
+      color: var(--color-dark-grey-400);
+      cursor: default;
+    }
+
+    &__link {
+      color: var(--color-dark-grey-500);
+      text-decoration: none;
+    }
+
+    &__link__content {
+      @include ellipsisTextOverflow;
+    }
+
+    &__link__content__name {
+      color: var(--color-light-grey-400);
+    }
+
+    &__link__content__info {
+      margin-left: 1rem;
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-500);
+    }
+  }
+
+  &__release__editor {
+    width: 100%;
+    padding: 0.5rem;
+    display: flex;
+
+    &__input {
+      @include flexVCenter;
+
+      padding: 0.5rem;
+      height: 9.4rem;
+      resize: none;
+      line-height: 2rem;
+      width: 100%;
+      background: var(--color-dark-grey-250);
+      border: 0.1rem solid var(--color-dark-grey-250);
+    }
+
+    &__actions {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__action {
+      text-align: center;
+      margin-left: 0.5rem;
+      height: 2.8rem;
+      width: 5rem;
+      font-size: 1.1rem;
+      min-width: 2.8rem;
+      font-weight: 500;
+      color: var(--color-light-grey-250);
+    }
+
+    &__action + &__action {
+      margin-top: 0.5rem;
+    }
+  }
+
+  &__context-menu {
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-50);
+    padding: 0.5rem 0;
+  }
+
+  &__context-menu__item {
+    @include flexVCenter;
+
+    cursor: default;
+    color: var(--color-light-grey-400);
+    height: 2.8rem;
+    padding: 0 1rem;
+  }
+
+  &__context-menu__item__label {
+    padding-left: 1rem;
+  }
+
+  &__context-menu__item:hover {
+    background: var(--color-light-blue-450);
+  }
+}

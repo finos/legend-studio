@@ -1,0 +1,16 @@
+{
+  "extends": "../../scripts/typescript/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "tsBuildInfoFile": "build/dev.tsbuildinfo",
+    "rootDir": "src",
+    "jsx": "react-jsxdev"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
+  "references": [
+    { "path": "./tsconfig.package.json" },
+    { "path": "../legend-studio" },
+    { "path": "../legend-studio-shared" },
+    { "path": "../legend-studio-components" }
+  ]
+}

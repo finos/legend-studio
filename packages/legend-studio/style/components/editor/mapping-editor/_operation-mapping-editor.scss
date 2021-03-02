@@ -1,0 +1,101 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '../../../mixins' as *;
+
+.operation-mapping-editor {
+  &__add-param-btn {
+    @include flexVCenter;
+
+    height: 2.4rem;
+    padding: 0 1rem;
+    background: var(--color-light-blue-200);
+    font-weight: 500;
+    color: var(--color-light-grey-0);
+    border-radius: 0.2rem;
+    margin-bottom: 1rem;
+  }
+
+  &__parameters--dnd-over {
+    filter: brightness(95%) blur(0.05rem);
+    box-shadow: inset 0 0 0.4rem var(--color-dark-grey-50);
+  }
+
+  &__parameter {
+    display: flex;
+    background: var(--color-light-grey-0);
+    padding: 0.5rem 0;
+    margin: 0 1rem;
+  }
+
+  &__parameter__selector {
+    flex: 1 0 auto;
+  }
+
+  &__parameter__visit-btn {
+    @include flexCenter;
+
+    width: 2.8rem;
+    color: var(--color-dark-grey-300);
+    background: var(--color-light-grey-200);
+    cursor: pointer;
+    border-radius: 0 50% 50% 0;
+  }
+
+  &__parameter__visit-btn svg {
+    font-size: 2rem;
+  }
+
+  &__parameter__remove-btn {
+    @include flexCenter;
+
+    width: 2.8rem;
+    color: var(--color-light-grey-0);
+    background: var(--color-dark-grey-300);
+    border-radius: 0.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+  }
+
+  &__parameter__remove-btn[disabled] {
+    background: var(--color-light-grey-400);
+  }
+
+  &__operation {
+    @include flexVCenter;
+
+    padding: 1rem;
+    background: var(--color-light-grey-0);
+  }
+
+  &__operation .selector-input {
+    flex: 1 0 auto;
+  }
+
+  &__operation__label {
+    display: flex;
+    font-weight: 500;
+    color: var(--color-dark-grey-300);
+    background: var(--color-light-grey-100);
+    border: 0.1rem solid var(--color-input-border);
+    border-right: none;
+    padding: 0 1rem;
+  }
+
+  &__parameters > div:first-child {
+    margin-top: 1rem;
+  }
+}

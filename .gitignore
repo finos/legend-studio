@@ -1,21 +1,43 @@
-# system
-.DS_Store
+# OS
+.DS_STORE
+*.swp
+*~
+[Dd]esktop.ini
+Thumbs.db
 
 # IDE
 .idea
-.vscode
 **/*.iml
 **/jsconfig.json
 .settings
 .project
 .classpath
 
-# JS
-**/npm
-**/temp
-**/target
+# Build
+npm-debug.log
+npm-debug.log*
+yarn-error.log*
+/build/
+/packages/*/build/
+/packages/*/dist/
+/packages/*/lib/
+
+# Dependencies
 **/node_modules
 
-# Developer area
-**/dev/config/**/*
-!**/dev/config/README.md
+# Enforce using Yarn instead of NPM for installation
+package-lock.json
+
+# Development
+/temp
+/packages/*/dev/
+
+# Yarn
+# See https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+!.yarn/constraints.pro
+.pnp.*

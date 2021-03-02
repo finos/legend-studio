@@ -1,0 +1,101 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '../../../mixins' as *;
+
+.source-panel {
+  .panel {
+    &__header {
+      box-shadow: var(--color-dark-shade-280) 0.2rem 0.1rem 0.3rem 0.1rem;
+      background: var(--color-light-grey-100);
+      color: var(--color-dark-grey-300);
+    }
+
+    &__header__action svg {
+      color: var(--color-dark-grey-300);
+    }
+
+    &__content {
+      padding: 0.3rem;
+      background: var(--color-light-grey-100);
+    }
+
+    &__content--dnd-over {
+      filter: brightness(95%) blur(0.05rem);
+      box-shadow: inset 0 0 0.4rem var(--color-dark-grey-50);
+    }
+  }
+
+  &__content__source-adder {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 100%;
+    cursor: pointer;
+    margin-top: 0 !important;
+  }
+
+  &__content__source-adder__text {
+    @include flexHCenter;
+
+    color: var(--color-dark-grey-300);
+    font-weight: bold;
+  }
+
+  &__content__source-adder__action {
+    @include flexCenter;
+
+    padding: 1rem;
+    border: 0.3rem dashed var(--color-light-grey-300);
+    border-radius: 0.3rem;
+    margin-top: 2rem;
+    width: 10rem;
+    height: 10rem;
+  }
+
+  &__content__source-adder__action svg {
+    font-size: 4rem;
+    color: var(--color-light-grey-300);
+  }
+
+  &__content__source-adder:hover &__content__source-adder__action {
+    border-color: var(--color-light-grey-400);
+  }
+
+  &__content__source-adder__action__add-icon {
+    display: none;
+  }
+
+  &__content__source-adder__action__dnd-icon {
+    display: flex;
+  }
+
+  &__content__source-adder:hover &__content__source-adder__action__add-icon {
+    display: flex;
+  }
+
+  &__content__source-adder:hover &__content__source-adder__action__dnd-icon {
+    display: none;
+  }
+
+  .panel__content--dnd-over &__content__source-adder__action svg {
+    animation: dnd-bounceup 0.2s alternate ease infinite;
+  }
+
+  &__content__source-adder:hover &__content__source-adder__action svg {
+    color: var(--color-light-grey-400);
+  }
+}

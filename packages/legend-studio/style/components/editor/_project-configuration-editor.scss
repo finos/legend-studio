@@ -1,0 +1,240 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '../../mixins' as *;
+
+.project-configuration-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+
+  .panel {
+    height: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-400) !important;
+    }
+
+    &__content {
+      height: calc(100% - 5.6rem);
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
+    }
+  }
+
+  &__content {
+    position: relative;
+  }
+
+  &__content--not-initialized {
+    @include flexCenter;
+
+    height: calc(100% - 2.8rem);
+    background: var(--color-dark-grey-50);
+    color: var(--color-dark-grey-500);
+    cursor: default;
+  }
+
+  &__tabs__header {
+    padding-left: 0;
+  }
+
+  &__tabs {
+    height: 2.8rem;
+    z-index: 1;
+    display: flex;
+    overflow-x: overlay;
+    overflow-y: hidden;
+  }
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--color-light-grey-400);
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-dark-grey-80);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  &__tab--active {
+    position: relative;
+  }
+
+  &__tab--active::after {
+    content: '';
+    height: 0.2rem;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background: var(--color-yellow-200);
+  }
+
+  /* TODO: to be removed */
+  &__update-btn {
+    background: var(--color-blue-200);
+    color: var(--color-light-grey-0);
+    border-radius: 0.2rem;
+    width: 10rem;
+    cursor: pointer;
+    height: 2rem;
+    margin-right: 0.3rem;
+
+    &:hover {
+      background: var(--color-blue-100);
+    }
+
+    &[disabled]:hover,
+    &[disabled] {
+      background: var(--color-dark-grey-200);
+    }
+  }
+
+  &__project__structure__version {
+    display: flex;
+    height: 3rem;
+    margin-bottom: 3rem;
+
+    &__label {
+      @include flexCenter;
+
+      padding: 0 1.5rem;
+      background: var(--color-dark-grey-200);
+      color: var(--color-light-grey-300);
+      border-radius: 0.2rem;
+      cursor: default;
+    }
+
+    &__label__status {
+      margin-right: 0.5rem;
+
+      svg {
+        font-size: 1.2rem;
+      }
+
+      &--up-to-date {
+        color: var(--color-green-100);
+      }
+
+      &--outdated {
+        color: var(--color-orange-100);
+      }
+    }
+
+    &__label__text {
+      border-radius: 0.2rem;
+      max-width: 50rem;
+    }
+
+    &__update-btn {
+      @include flexCenter;
+
+      margin-left: 1rem;
+      background: var(--color-red-100);
+      padding: 0 1rem;
+      border-radius: 0.2rem;
+      font-weight: 500;
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  &__content .Resizer.vertical {
+    background: padding-box var(--color-dark-grey-100);
+    width: 1.1rem;
+    min-width: 1.1rem;
+    border-left: 0.5rem solid transparent;
+    border-right: 0.5rem solid transparent;
+  }
+}
+
+.project-dependency-editor {
+  display: flex;
+  margin-top: 0.5rem;
+
+  &__value {
+    flex: auto;
+    min-width: 0;
+    border: 0.1rem solid var(--color-input-border);
+    border-radius: 0.2rem;
+    padding: 0 0.5rem;
+    height: 2.8rem;
+  }
+
+  &__value:hover {
+    border: 0.1rem solid var(--color-input-border--hover);
+  }
+
+  &__value:focus {
+    border: 0.1rem solid var(--color-input-border--focus);
+  }
+
+  &__selector {
+    flex: 1 0 auto;
+  }
+
+  &__selector + &__selector {
+    margin-left: 0.5rem;
+  }
+
+  &__remove-btn {
+    @include flexCenter;
+
+    flex: 2.8rem 0 0;
+    height: 2.8rem;
+    color: var(--color-light-grey-0);
+    background: var(--color-dark-grey-300);
+    border-radius: 0.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+  }
+
+  &__remove-btn[disabled] {
+    background: var(--color-light-grey-400);
+  }
+
+  &__remove-btn--hidden {
+    pointer-events: none;
+    visibility: hidden;
+  }
+}

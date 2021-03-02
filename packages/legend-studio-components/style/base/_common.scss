@@ -1,0 +1,90 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '../mixins' as *;
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dnd-bounceup {
+  from {
+    transform: translateY(0.3rem);
+  }
+
+  to {
+    transform: translateY(-0.3rem);
+  }
+}
+
+.hotkey {
+  &__key {
+    @include flexVCenter;
+
+    height: 2.4rem;
+    padding: 0 0.7rem;
+    border-radius: 0.3rem;
+    margin: 0 0.2rem;
+    font-weight: 500;
+  }
+
+  &__plus svg {
+    font-size: 1rem;
+    margin: 0 0.2rem;
+  }
+
+  &__spacer {
+    width: 0.6rem;
+    margin: 0 0.2rem;
+  }
+}
+
+.dnd__dropzone {
+  width: 100%;
+  height: 100%;
+}
+
+.dnd__overlay {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: var(--color-dnd__overlay);
+  filter: blur(0.05rem);
+  pointer-events: none; // pass all mouse event through it (used for nested DnD)
+  z-index: 1;
+
+  &__container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+.diagram-canvas {
+  outline: none;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}

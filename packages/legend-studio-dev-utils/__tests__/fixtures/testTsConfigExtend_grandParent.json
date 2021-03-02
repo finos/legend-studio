@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "null": "null"
+    }
+  },
+  "exclude": ["excludeGrandParent"]
+}

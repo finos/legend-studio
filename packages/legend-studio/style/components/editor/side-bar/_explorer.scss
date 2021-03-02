@@ -1,0 +1,150 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '../../../mixins' as *;
+
+.explorer {
+  width: 100%;
+
+  .panel {
+    &__header__action {
+      height: 100%;
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled],
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-300) !important;
+    }
+
+    &__header__title {
+      width: calc(100% - 3.4rem);
+    }
+  }
+
+  &__header {
+    @include flexHSpaceBetween;
+
+    min-width: 9rem;
+    background: var(--color-dark-grey-200);
+    color: var(--color-light-grey-200);
+    padding-left: 1rem;
+  }
+
+  &__content__container {
+    height: 100%;
+    background: var(--color-dark-grey-100);
+  }
+
+  &__content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    color: var(--color-light-grey-400);
+    padding: 0.5rem 0;
+  }
+
+  &__content__separator {
+    height: 0.1rem;
+    width: 100%;
+    background: var(--color-dark-grey-250);
+    margin: 0.5rem 0;
+  }
+
+  &__content__failure-notice {
+    @include flexVCenter;
+
+    flex-direction: column;
+
+    &__icon svg {
+      font-size: 11rem;
+      color: var(--color-dark-grey-80);
+    }
+
+    &__text {
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  &__deselector {
+    min-height: 5rem;
+    flex: auto;
+  }
+
+  &__config__icon {
+    padding-left: 2rem;
+  }
+
+  &__package-tree__node__container:hover {
+    background: var(--color-dark-blue-shade-100);
+  }
+
+  &__package-tree__node__container--selected,
+  &__package-tree__node__container--selected:hover {
+    background: var(--color-light-blue-450);
+  }
+
+  &__package-tree__node__icon {
+    width: 4rem;
+    min-width: 4rem;
+  }
+
+  &__package-tree__node__icon__expand,
+  &__package-tree__node__icon__type {
+    width: 2rem;
+
+    @include flexHCenter;
+  }
+
+  &__package-tree__node__icon__expand svg {
+    font-size: 1rem;
+  }
+
+  &__package-tree__node__label {
+    color: inherit;
+  }
+
+  &__new-element-modal__name-input {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  &__content--empty {
+    padding: 2rem;
+
+    &__text {
+      margin-bottom: 1rem;
+      line-height: 1.8rem;
+    }
+
+    &__btn {
+      @include flexCenter;
+
+      width: 100%;
+      height: 3.4rem;
+      padding: 0 1rem;
+      background: var(--color-blue-200);
+      color: var(--color-light-grey-50);
+      cursor: pointer;
+    }
+  }
+
+  &__floating-item {
+    padding-left: 1rem;
+  }
+}

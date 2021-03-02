@@ -1,0 +1,34 @@
+{
+  "name": "@finos/stylelint-config-legend-studio",
+  "version": "0.0.0",
+  "description": "Legend Studio Stylelint config",
+  "keywords": [
+    "legend",
+    "legend-studio",
+    "studio",
+    "stylelint",
+    "stylelint-config"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/stylelint-config",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/stylelint-config"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "dependencies": {
+    "stylelint": "13.11.0",
+    "stylelint-config-prettier": "8.0.2",
+    "stylelint-config-standard": "20.0.0",
+    "stylelint-scss": "3.19.0"
+  },
+  "peerDependencies": {
+    "stylelint": "^13.0.0"
+  }
+}

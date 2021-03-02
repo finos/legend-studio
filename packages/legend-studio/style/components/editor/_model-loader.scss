@@ -1,0 +1,181 @@
+/**
+ * Copyright 2020 Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '../../mixins' as *;
+
+.model-loader {
+  height: 100%;
+  width: 100%;
+  overflow-y: hidden;
+  position: relative;
+  background: var(--color-dark-grey-50);
+
+  &__alert__text {
+    @include flexVCenter;
+
+    height: 2.8rem;
+    font-size: 1.2rem;
+  }
+
+  &__alert__icon {
+    @include flexVCenter;
+  }
+
+  &__alert__icon svg {
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-200);
+    margin: 0 0.5rem 0 1rem;
+  }
+
+  &__header {
+    padding-left: 0;
+    background: var(--color-dark-grey-50);
+
+    &__configs {
+      display: flex;
+
+      &__type {
+        @include flexVCenter;
+
+        height: 2.6rem;
+        width: 25rem;
+        background: var(--color-dark-grey-100);
+        border-right: 0.1rem solid var(--color-dark-grey-50);
+        border-left: 0.1rem solid var(--color-dark-grey-50);
+        color: var(--color-light-grey-400);
+        cursor: pointer;
+      }
+
+      &__type__label {
+        height: 2.6rem;
+        width: 23.4rem;
+
+        @include flexCenter;
+      }
+
+      &__type__icon {
+        @include flexCenter;
+
+        border-left: 0.1rem solid var(--color-dark-grey-50);
+        height: 2.6rem;
+        width: 2.6rem;
+        min-width: 2.6rem;
+      }
+
+      &__edit-mode {
+        @include flexVCenter;
+
+        padding: 0 1.5rem;
+        background: var(--color-dark-grey-100);
+        color: var(--color-light-grey-400);
+        cursor: pointer;
+      }
+
+      &__edit-mode__label {
+        font-size: 1.2rem;
+      }
+
+      &__edit-mode__icon {
+        @include flexVCenter;
+
+        margin-right: 0.5rem;
+
+        svg {
+          color: var(--color-light-grey-400);
+        }
+      }
+
+      &__load-project-entities-btn {
+        @include flexCenter;
+
+        background: var(--color-dark-grey-100);
+        color: var(--color-light-grey-400);
+        cursor: pointer;
+        margin-left: 0.1rem;
+        width: 2.6rem;
+        min-width: 2.6rem;
+      }
+
+      &__type-option__group {
+        display: flex;
+        flex-direction: row;
+
+        &--native {
+          background: var(--color-blue-100);
+          border: 0.1rem solid var(--color-blue-100);
+        }
+
+        &--native &__name {
+          background: var(--color-blue-100);
+          color: var(--color-light-grey-50);
+        }
+
+        &--external {
+          background: var(--color-pink-300);
+          border: 0.1rem solid var(--color-pink-300);
+        }
+
+        &--external &__name {
+          background: var(--color-pink-300);
+          color: var(--color-light-grey-50);
+        }
+      }
+
+      &__type-option__group__separator {
+        height: 0.2rem;
+        width: 100%;
+      }
+
+      &__type-option__group__name {
+        @include flexCenter;
+
+        flex-direction: column;
+        cursor: default;
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        font-size: 1.1rem;
+        width: 2.2rem;
+        padding: 1rem 0;
+      }
+
+      &__type-option__group__options {
+        width: 22.6rem;
+        background: var(--color-dark-grey-100);
+      }
+
+      &__type-option__group__option {
+        height: 2rem;
+        width: 100%;
+
+        @include flexCenter;
+      }
+    }
+
+    &__load-btn {
+      color: var(--color-light-grey-0);
+      height: 2rem;
+      border-radius: 0.2rem;
+      margin-right: 0.3rem;
+      width: 10rem;
+      font-size: 1.2rem;
+    }
+  }
+
+  &__editor {
+    overflow-y: hidden;
+    position: relative;
+  }
+}
