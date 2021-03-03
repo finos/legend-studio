@@ -14,14 +14,8 @@
 
 name: legend-build
 
-env:
-  CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
-  CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+on: []
 
-on: [push, pull_request]
-  
 jobs:
   build:
     if: "!contains(github.event.head_commit.message, '[maven-release-plugin]')"
@@ -45,8 +39,8 @@ jobs:
       with:
         java-version: 13
         server-id: ossrh
-        server-username: CI_DEPLOY_USERNAME
-        server-password: CI_DEPLOY_PASSWORD
+        server-username: ${{ secrets.CI_DEPLOY_USERNAME }}
+        server-password: ${{ secrets.CI_DEPLOY_PASSWORD }}
     - name: Set up Node
       uses: actions/setup-node@v1
       with:

@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          # fetch all Git history so that `changesets` can generate changelogs with the correct commits
+          fetch-depth: 0
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.4
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: yarn
+      - name: Create Release Pull Request or Publish to NPM
+        uses: changesets/action@master
+        with:
+          version: yarn version
+          commit: 'chore: bump package versions'
+          title: 'chore: bump package versions'
+          publish: yarn release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # if 2FA is enabled, `NPM_TOKEN` must be of type `automation` to bypass 2FA
+          # NOTE: we use `YARN_NPM_AUTH_TOKEN` instead of `NPM_TOKEN` becase we use Yarn to publish 
+          # See https://docs.npmjs.com/requiring-2fa-for-package-publishing-and-settings-modification
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

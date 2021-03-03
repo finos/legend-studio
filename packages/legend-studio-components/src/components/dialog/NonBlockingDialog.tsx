@@ -15,6 +15,7 @@
  */
 
 import type { DialogProps } from '@material-ui/core';
+import type { DialogClassKey } from '@material-ui/core/Dialog';
 import Dialog from '@material-ui/core/Dialog';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
@@ -74,6 +75,7 @@ const useStyles = makeStyles({
 export const NonBlockingDialog = observer(
   (
     props: Omit<DialogProps, 'open'> & {
+      classes?: Partial<Record<DialogClassKey, string>>;
       nonModalDialogState: NonBlockingDialogState;
       onClickAway: (event: React.MouseEvent<Document>) => void;
     },

@@ -1,17 +1,27 @@
 ---
 name: 🚀 Feature Request
-about: I have a suggestion (and may want to implement it 🙂)!
-
+labels: ':rocket: Feature Request'
+about: Submit a proposal for a new feature
 ---
 
-## Feature Request
+## 🚀 Feature Request
 
-### Description of Problem:
-...what *problem* are you trying to solve that the project doesn't currently solve?
+<!-- A clear and concise description of what the feature is. -->
 
-...please resist the temptation to describe your request in terms of a solution.  Job Story form ("When [triggering condition], I want to [motivation/goal], so I can [outcome].") can help ensure you're expressing a problem statement.
+### Motivation
 
-### Potential Solutions:
-...clearly and concisely describe what you want to happen. Add any considered drawbacks.
+### Would like to work on this feature?
 
-... if you've considered alternatives, clearly and concisely describe those too.
+<!-- If you would like to implement a PR, we are more than happy to help you go through the process !-->
+
+### Is your feature request related to a problem?
+
+A concise description of what the problem is. Ex. I have an issue when [...]
+
+### Describe the solution you'd like
+
+### Describe alternatives you've considered
+
+### Documentation, adoption, testing, and migration strategy
+
+If you can, explain how users will be able to use this and how it might be documented. Maybe a mock-up?

@@ -36,11 +36,11 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-studio": "0.0.0",
+    "@finos/legend-studio": "workspace:*",
     "react": "17.0.1"
   },
   "devDependencies": {
-    "@finos/legend-studio-dev-utils": "0.0.0",
+    "@finos/legend-studio-dev-utils": "workspace:*",
     "copy-webpack-plugin": "7.0.0",
     "cross-env": "7.0.3",
     "eslint": "7.21.0",
