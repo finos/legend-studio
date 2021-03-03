@@ -6,7 +6,7 @@ on:
       version:
         description: 'New version of Docker image'
         required: true
-        default: 'warning'
+        default: '0.0.0'
 
 jobs:
   build:

@@ -24,7 +24,10 @@ yarn build
 # 2. Prepare publish content:
 #   i.    Copy the root LICENSE files to the package root.
 #   ii.   If this is a Typescript package, flat out the
-#         `tsconfig.json` file (i.e. resolve all `extends`)
+#         Typescript config files (i.e. resolve all `extends`)
+#         needed to facillitate source code navigation
+#         Usually specified in `_package.config.js` and
+#         includes `tsconfg.json`.
 #   iii.  Update the version in `package.json`
 #         For example: `{ ..., "version": "2.0.0.alpha.0` }`
 yarn tsc build:tsc --showConfig # this will show the full config, replace the content of `tsconfig.json` with this
