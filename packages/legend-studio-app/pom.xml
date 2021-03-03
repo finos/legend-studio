@@ -37,7 +37,7 @@
         <sonar.sources>${project.basedir}/app</sonar.sources>
 
         <!-- Dependencies -->
-        <legend.shared.version>0.4.1</legend.shared.version>
+        <legend.shared.version>0.5.0</legend.shared.version>
         <opentracing.version>0.32.0</opentracing.version>
         <jaxb.version>2.2.11</jaxb.version>
         <javax.activation.version>1.1.1</javax.activation.version>
@@ -188,8 +188,6 @@
                             <directory>.</directory>
                             <includes>
                                 <include>target</include>
-                                <include>node_modules</include>
-                                <include>dist</include>
                             </includes>
                         </fileset>
                     </filesets>
@@ -260,56 +258,6 @@
                 </executions>
             </plugin>
             <!-- SHADING -->
-
-            <!-- NPM -->
-            <!-- <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>exec-npm-install</id>
-                        <phase>initialize</phase>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>install</argument>
-                            </arguments>
-                        </configuration>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>exec-npm-build</id>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>run</argument>
-                                <argument>build</argument>
-                            </arguments>
-                        </configuration>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>exec-npm-test</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <phase>test</phase>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>run</argument>
-                                <argument>test:full</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin> -->
-            <!-- NPM -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
