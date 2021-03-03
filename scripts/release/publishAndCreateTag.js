@@ -19,7 +19,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 const {
   resolveFullTsConfig,
-} = require('../../packages/dev-utils/TypescriptConfigUtils');
+} = require('@finos/legend-studio-dev-utils/TypescriptConfigUtils');
 const { resolvePackageConfig } = require('../loadPackageConfig');
 
 const ROOT_DIR = path.resolve(__dirname, '../..');
@@ -117,24 +117,33 @@ packages.forEach((pkg) => {
    * `libA/src` folder but due to a not fully-resolved `tsconfig.json` the IDE will show errors for Typescript files
    * shown in `libA/src`
    */
-  const tsConfigPaths = packageConfig?.publish?.tsConfigPaths ?? [
-    'tsconfig.json',
-  ]; // default to `./tsconfig.json` if `publish.tsConfigPaths` is not specified
-  tsConfigPaths.forEach((tsConfigPath) => {
-    const resolvedTsConfigPath = path.resolve(pkg.path, tsConfigPath);
-    if (fs.existsSync(resolvedTsConfigPath)) {
-      const newTsConfigContent = resolveFullTsConfig(resolvedTsConfigPath);
+  const tsConfigProcessEntries = [
+    // default to `./tsconfig.json` if `publish.typescript` is not specified
+    {
+      source: packageConfig?.publish?.typescript?.main ?? './tsconfig.json',
+      target: './tsconfig.json',
+    },
+    ...(packageConfig?.publish?.typescript?.others ?? []).map((item) => ({
+      source: item,
+      target: item,
+    })),
+  ];
+  tsConfigProcessEntries.forEach(({ source, target }) => {
+    const resolvedSourcePath = path.resolve(pkg.path, source);
+    const resolvedTargetPath = path.resolve(pkg.path, target);
+    if (fs.existsSync(resolvedSourcePath)) {
+      const newTsConfigContent = resolveFullTsConfig(resolvedSourcePath);
       // backup the current config so we can recover post-publish
       backupTsConfig.set(
-        resolvedTsConfigPath,
-        fs.readFileSync(resolvedTsConfigPath, { encoding: 'utf-8' }),
+        resolvedTargetPath,
+        fs.readFileSync(resolvedTargetPath, { encoding: 'utf-8' }),
       );
       fs.writeFileSync(
-        resolvedTsConfigPath,
+        resolvedTargetPath,
         JSON.stringify(newTsConfigContent, null, 2),
         (err) => {
           console.log(
-            `Can't write full Typescript config file '${resolvedTsConfigPath}' for package '${pkg.name}'. Error: ${err.message}`,
+            `Can't write full Typescript config file '${resolvedSourcePath}' to path '${resolvedTargetPath}' for package '${pkg.name}'. Error: ${err.message}`,
           );
           process.exit(1);
         },

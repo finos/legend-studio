@@ -20,7 +20,9 @@ const {
 
 module.exports = {
   publish: {
-    tsConfigPath: './tsconfig.build.json',
+    typescript: {
+      main: './tsconfig.build.json',
+    },
   },
   build: {
     copyrightText: generateBundleCopyrightText(__dirname),
