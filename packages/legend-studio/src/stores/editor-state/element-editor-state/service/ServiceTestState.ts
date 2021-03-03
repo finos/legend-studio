@@ -27,6 +27,7 @@ import {
   UnsupportedOperationError,
   uniq,
   isNonNullable,
+  tryToMinifyLosslessJSONString,
   tryToFormatJSONString,
   toGrammarString,
   fromGrammarString,
@@ -179,7 +180,7 @@ export class TestContainerState {
                 ),
                 connection.class,
                 createUrlStringFromData(
-                  testData,
+                  tryToMinifyLosslessJSONString(testData),
                   JsonModelConnection.CONTENT_TYPE,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
