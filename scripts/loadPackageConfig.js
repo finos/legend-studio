@@ -18,12 +18,12 @@ const { getConfigLoader } = require('@finos/legend-studio-dev-utils/DevUtils');
 
 const configLoader = getConfigLoader('_package');
 
-const resolveConfig = (filePath) => {
+const resolvePackageConfig = (filePath) => {
   const result = configLoader.search(filePath);
   return result?.config;
 };
 
 module.exports = {
-  resolveConfig,
+  resolvePackageConfig,
   configLoader,
 };

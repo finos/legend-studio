@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * Copyright (c) An Phi.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const {
   resolveFullTsConfig,
 } = require('../../packages/dev-utils/TypescriptConfigUtils');
-const { resolveConfig } = require('../loadPackageConfig');
+const { resolvePackageConfig } = require('../loadPackageConfig');
 
 const ROOT_DIR = path.resolve(__dirname, '../..');
 
@@ -107,7 +100,7 @@ if (packages.length) {
 console.log('\nPreparing content to publish...');
 const backupTsConfig = new Map();
 packages.forEach((pkg) => {
-  const packageConfig = resolveConfig(pkg.path);
+  const packageConfig = resolvePackageConfig(pkg.path);
   // If the package does not have a LICENSE file, copy the LICENSE file from root
   if (!pkg.hasLicenseFile) {
     fs.copyFileSync(
@@ -117,35 +110,37 @@ packages.forEach((pkg) => {
   }
   /**
    * For Typescript module, we need to fully resolve `tsconfig` file, i.e. we need to make sure the config does not
-   * have `extends` field anymore. This is needed for source code navigation to work properly
+   * have `extends` field anymore. This is needed for source code navigation to work properly.
    *
    * e.g. we use module `libA` in another project, in the IDE, we navigate the source code of `libA` in node_modules
    * the IDE is smart enough to read source map and redirect our navigation to the actual source code of `libA` in
    * `libA/src` folder but due to a not fully-resolved `tsconfig.json` the IDE will show errors for Typescript files
    * shown in `libA/src`
    */
-  const tsConfigForPublishPath = path.resolve(
-    pkg.path,
-    packageConfig?.publish?.tsConfigPath ?? 'tsconfig.json', // default to `./tsconfig.json` if `publish.tsConfigPath` is not specified
-  ); // this is the tsconfig file that we use for build usually
-  const standardTsConfigPath = path.resolve(pkg.path, 'tsconfig.json');
-  if (fs.existsSync(standardTsConfigPath)) {
-    const newTsConfigContent = resolveFullTsConfig(tsConfigForPublishPath);
-    backupTsConfig.set(
-      standardTsConfigPath,
-      fs.readFileSync(standardTsConfigPath, { encoding: 'utf-8' }),
-    );
-    fs.writeFileSync(
-      standardTsConfigPath,
-      JSON.stringify(newTsConfigContent, null, 2),
-      (err) => {
-        console.log(
-          `Can't write full Typescript config for package '${pkg.name}'. Error: ${err.message}`,
-        );
-        process.exit(1);
-      },
-    );
-  }
+  const tsConfigPaths = packageConfig?.publish?.tsConfigPaths ?? [
+    'tsconfig.json',
+  ]; // default to `./tsconfig.json` if `publish.tsConfigPaths` is not specified
+  tsConfigPaths.forEach((tsConfigPath) => {
+    const resolvedTsConfigPath = path.resolve(pkg.path, tsConfigPath);
+    if (fs.existsSync(resolvedTsConfigPath)) {
+      const newTsConfigContent = resolveFullTsConfig(resolvedTsConfigPath);
+      // backup the current config so we can recover post-publish
+      backupTsConfig.set(
+        resolvedTsConfigPath,
+        fs.readFileSync(resolvedTsConfigPath, { encoding: 'utf-8' }),
+      );
+      fs.writeFileSync(
+        resolvedTsConfigPath,
+        JSON.stringify(newTsConfigContent, null, 2),
+        (err) => {
+          console.log(
+            `Can't write full Typescript config file '${resolvedTsConfigPath}' for package '${pkg.name}'. Error: ${err.message}`,
+          );
+          process.exit(1);
+        },
+      );
+    }
+  });
 });
 
 console.log('\nPublishing...');
@@ -196,10 +191,10 @@ packages.forEach((pkg) => {
   }
 });
 // Remove resolved Typescript config files
-Array.from(backupTsConfig.entries()).forEach(([path, content]) => {
-  fs.writeFileSync(path, content, (err) => {
+Array.from(backupTsConfig.entries()).forEach(([tsConfigPath, content]) => {
+  fs.writeFileSync(tsConfigPath, content, (err) => {
     console.log(
-      `Can't recover Typescript config file with path '${path}'. Make sure you manually revert this before committing.`,
+      `Can't recover Typescript config file with path '${tsConfigPath}'. Make sure you manually revert this before committing.`,
     );
   });
 });
