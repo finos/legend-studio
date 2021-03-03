@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Setup Maven cache
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         env:
           cache-name: cache-mvn-deps
         with:
@@ -30,7 +30,7 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -45,7 +45,7 @@ jobs:
           server-username: ${{ secrets.CI_DEPLOY_USERNAME }}
           server-password: ${{ secrets.CI_DEPLOY_PASSWORD }}
       - name: Setup Node
-        uses: actions/setup-node@v2.1.4
+        uses: actions/setup-node@v2.1.5
         with:
           node-version: 14.x
       - name: Configure git
