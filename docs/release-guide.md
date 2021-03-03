@@ -27,14 +27,14 @@ yarn build
 #         `tsconfig.json` file (i.e. resolve all `extends`)
 #   iii.  Update the version in `package.json`
 #         For example: `{ ..., "version": "2.0.0.alpha.0` }`
-yarn tsc build:ts --showConfig # this will show the full config, replace the content of `tsconfig.json` with this
+yarn tsc build:tsc --showConfig # this will show the full config, replace the content of `tsconfig.json` with this
 
 # 4. Check publish content:
 yarn workspace <your-package-name> check:publish
 
 # 4. Publish using Yarn
 # You might need to set the YARN_NPM_AUTH_TOKEN
-# `YARN_NPM_AUTH_TOKEN=<your token> yarn npm publish
+# `YARN_NPM_AUTH_TOKEN=<your NPM token> yarn npm publish
 # or running `yarn npm login`
 #
 # You can also specify the publish tag on NPM. e.g. `next`
