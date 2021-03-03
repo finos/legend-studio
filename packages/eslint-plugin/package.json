@@ -1,7 +1,7 @@
 {
   "name": "@finos/eslint-plugin-legend-studio",
   "version": "0.0.0",
-  "description": "ESLint rules for config-tester",
+  "description": "ESLint rules for Legend Studio",
   "keywords": [
     "legend",
     "legend-studio",

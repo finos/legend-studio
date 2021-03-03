@@ -1,0 +1,61 @@
+name: Release Docker
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New version of Docker image'
+        required: true
+        default: 'warning'
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, '[maven-release-plugin]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Maven cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-mvn-deps
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 13
+          server-id: ossrh
+          server-username: ${{ secrets.CI_DEPLOY_USERNAME }}
+          server-password: ${{ secrets.CI_DEPLOY_PASSWORD }}
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.4
+        with:
+          node-version: 14.x
+      - name: Configure git
+        run: |
+          git config --global committer.email "infra@finos.org"
+          git config --global committer.name "FINOS Admin"
+          git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git config --global author.name "${GITHUB_ACTOR}"
+      - name: Download Maven dependencies and plugins
+        run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+      - name: Build + Test + Sonar Code Scan + Deploy
+        if: github.ref == 'refs/heads/master'
+        run: mvn javadoc:javadoc deploy -Psonar
