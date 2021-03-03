@@ -21,7 +21,7 @@ Please file issue via our [Github Issues page](https://github.com/finos/legend-s
 
 ## Pull Request Guidelines
 
-- It's absolutely fine to break your change down into multiple small commits as you work on the PR - GitHub will automatically squash it before merging; however, please follow our [commit message convention](#commit-convention).
+- It's absolutely fine to break your change down into multiple small commits as you work on the PR - GitHub will automatically squash it before merging; however, please try to follow our [commit message convention](#commit-convention).
 - Adding a `changeset` if applicable (see [changeset](#changeset)).
 - Make sure `yarn test` passes (see [development guidelines](#development-guidelines))
 - Fill out the pull request template.
