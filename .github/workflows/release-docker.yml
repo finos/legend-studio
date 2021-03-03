@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-    if: "!contains(github.event.head_commit.message, '[maven-release-plugin]')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -48,6 +47,16 @@ jobs:
         uses: actions/setup-node@v2.1.5
         with:
           node-version: 14.x
+      - name: Install dependencies
+        run: yarn
+      - name: Build application
+        run: yarn build
+      - name: Change directory
+        run: cd ./packages/legend-studio-app
+      - name: Clean Maven dependencies
+        run: mvn clean
+      - name: Copy application build artifacts
+        run: cp -R ./dist/studio ./target/classes/web/
       - name: Configure git
         run: |
           git config --global committer.email "infra@finos.org"
