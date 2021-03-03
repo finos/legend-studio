@@ -68,3 +68,12 @@ git push --follow-tags
 - (Manually) bump the version in `pom/xml`. Is that all?
 - Should we move everything to a new fixtures/package and move `pom.xml` there?
 - How do we currently setup the `config.json` files? and what does it mena when we configure `e2e` tests to run in the pipeline
+
+1. Release -> maintain the changelog the right way that the version is automatically handled
+2. Create a version of shared that can take the image
+3. Create an image
+   Take random image and add content to this image
+4. Take docker image and add the index.html ....
+5. Setup a github actions
+   from shared version ->
+6. Github action to do that so we can kill POM

@@ -44,14 +44,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS --help-url 'Use `yarn commit` or see guide at: https://www.conventionalcommits.org/en/v1.0.0/'"
+      "pre-commit": "lint-staged"
     }
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
   },
   "lint-staged": {
     "*.{html,md,mdx}": [
@@ -81,8 +75,6 @@
     "@babel/core": "7.13.8",
     "@changesets/changelog-github": "0.2.8",
     "@changesets/cli": "2.14.1",
-    "@commitlint/cli": "12.0.1",
-    "@commitlint/config-conventional": "12.0.1",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
     "@finos/legend-studio-dev-utils": "workspace:*",
