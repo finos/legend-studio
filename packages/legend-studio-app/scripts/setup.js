@@ -53,8 +53,7 @@ fs.writeFileSync(
         url: 'https://legend.finos.org/zipkin',
       },
       documentation: {
-        url:
-          'https://legend.finos.org/docs/getting-started/getting-started-guide',
+        url: 'https://legend.finos.org',
       },
     },
     null,

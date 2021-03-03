@@ -1,0 +1,11 @@
+coverage:
+  parsers:
+    javascript:
+      enable_partials: yes
+  status:
+    # TODO: renable this when we start having more tests
+    # project:
+    #   default:
+    #     target: 90%
+    patch:
+      enabled: false

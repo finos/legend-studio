@@ -23,6 +23,11 @@
     "src",
     "index.js"
   ],
+  "scripts": {
+    "clean": "rimraf \"build\"",
+    "fix:js": "yarn lint:js --fix",
+    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"src/**/*.js\""
+  },
   "dependencies": {
     "@babel/core": "7.13.8",
     "@babel/eslint-parser": "7.13.8",
@@ -35,6 +40,9 @@
     "eslint-plugin-react": "7.22.0",
     "eslint-plugin-react-hooks": "4.2.0",
     "prettier": "2.2.1"
+  },
+  "devDependencies": {
+    "rimraf": "3.0.2"
   },
   "peerDependencies": {
     "eslint": "^7.17.0",

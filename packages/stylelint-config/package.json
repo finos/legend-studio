@@ -18,15 +18,24 @@
     "url": "https://github.com/finos/legend-studio.git",
     "directory": "packages/stylelint-config"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "files": [
     "index.js"
   ],
+  "scripts": {
+    "clean": "rimraf \"build\"",
+    "fix:js": "yarn lint:js --fix",
+    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\""
+  },
   "dependencies": {
     "stylelint": "13.11.0",
     "stylelint-config-prettier": "8.0.2",
     "stylelint-config-standard": "20.0.0",
     "stylelint-scss": "3.19.0"
+  },
+  "devDependencies": {
+    "eslint": "7.21.0",
+    "rimraf": "3.0.2"
   },
   "peerDependencies": {
     "stylelint": "^13.0.0"

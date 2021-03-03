@@ -31,33 +31,26 @@
     "JestConfigUtils.js",
     "ProjectReferenceConfigChecker.js",
     "PublishUtils.js",
-    "RollupConfigUtils.js",
     "TypescriptConfigUtils.js",
     "WebpackConfigUtils.js"
   ],
   "scripts": {
+    "clean": "rimraf \"build\"",
+    "fix:js": "yarn lint:js --fix",
+    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"mocks/**/*.js\" \"__tests__/**/*.js\"",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
     "@babel/core": "7.13.8",
-    "@pmmmwh/react-refresh-webpack-plugin": "0.5.0-beta.0",
-    "@rollup/plugin-alias": "3.1.2",
-    "@rollup/plugin-babel": "5.3.0",
-    "@rollup/plugin-commonjs": "17.1.0",
-    "@rollup/plugin-eslint": "8.0.1",
-    "@rollup/plugin-json": "4.1.0",
-    "@rollup/plugin-node-resolve": "11.2.0",
-    "@rollup/plugin-replace": "2.4.1",
+    "@pmmmwh/react-refresh-webpack-plugin": "0.5.0-beta.1",
     "autoprefixer": "10.2.4",
     "babel-jest": "26.6.3",
     "babel-loader": "8.2.2",
     "chalk": "4.1.0",
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "3.0.0",
-    "conventional-changelog-conventionalcommits": "4.5.0",
     "conventional-commit-types": "3.0.0",
-    "conventional-commits-parser": "3.2.1",
     "cosmiconfig": "7.0.0",
     "css-loader": "5.1.1",
     "cssnano": "4.1.10",
@@ -76,9 +69,6 @@
     "postcss-loader": "5.0.0",
     "react-refresh": "0.9.0",
     "resolve": "1.20.0",
-    "rollup": "2.40.0",
-    "rollup-plugin-terser": "7.0.2",
-    "rollup-plugin-visualizer": "4.2.0",
     "sass": "1.32.8",
     "sass-loader": "11.0.1",
     "strip-ansi": "6.0.0",
@@ -86,5 +76,10 @@
     "typescript": "4.2.2",
     "webpack": "5.24.2",
     "wrap-ansi": "7.0.0"
+  },
+  "devDependencies": {
+    "eslint": "7.21.0",
+    "monaco-editor": "0.22.3",
+    "rimraf": "3.0.2"
   }
 }

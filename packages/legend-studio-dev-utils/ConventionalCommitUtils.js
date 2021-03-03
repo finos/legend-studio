@@ -16,14 +16,6 @@
 
 const chalk = require('chalk');
 const conventionalCommitTypes = require('conventional-commit-types');
-const parser = require('conventional-commits-parser');
-const spec = require('conventional-changelog-conventionalcommits');
-
-const parseCommit = async function parse(message) {
-  const parsed = parser.sync(message, (await spec()).parserOpts);
-  parsed.raw = message;
-  console.log(parsed);
-};
 
 // This code is adapted from `cz-conventional-changelog`
 // See https://github.com/commitizen/cz-conventional-changelog
@@ -131,5 +123,4 @@ const createCommitizenPrompter = function () {
 
 module.exports = {
   createCommitizenPrompter,
-  parseCommit,
 };

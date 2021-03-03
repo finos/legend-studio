@@ -37,9 +37,6 @@ const getEnvInfo = (env, arg) => ({
 /**
  * This method gets the base Webpack config for bundling either top-level
  * webapp with HTML entry points or library.
- * At the moment, since Webpack does not support bundling ESM libraries
- * we use Rollup instead, but we keep this method to leave the potential
- * for use Webpack for bundling libraries as well.
  */
 const getBaseWebpackConfig = (env, arg, dirname, { babelConfigPath }) => {
   if (!dirname) {

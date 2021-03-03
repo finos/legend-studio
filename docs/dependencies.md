@@ -51,6 +51,6 @@ This list keeps track of dependencies which are either unstable or blockers to c
 
 As mentioned, we try to always keep our dependencies up-to-date as it often comes with bug-fixes and optimization, but sometimes, it also comes with new features which are really beneficial to us but might require some effort to migrate over or to make use of them. As such, here we keep track of the list of features to try out but we haven't quite have the time and effort.
 
-| Package                                | What's nice to try?                                                                                                                                                                                                                                                  |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [mobx](https://github.com/mobxjs/mobx) | Use `generator` and annotate as `flow` instead of using the `flow` function like now, as this makes removing `mobx` easier from code logic. Also consider using `action.bound` instead of `action` with [arrow function](https://github.com/mobxjs/mobx/issues/2756) |
+| Package                 | What's nice to try? |
+| ----------------------- | ------------------- |
+| (none)                  |                     |

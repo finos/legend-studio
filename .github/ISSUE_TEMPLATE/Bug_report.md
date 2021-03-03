@@ -1,24 +1,43 @@
 ---
-name: 🐛 Bug Report
-about: If something isn't working as expected 🤔.
-
+name: 🐛 Bug report
+labels: Bug Report, Needs Triage, Needs Repro
+about: Create a report to help us improve
 ---
 
-## Bug Report
+## 🐛 Bug Report
 
-### Steps to Reproduce:
- 1. ...step 1 description...
- 2. ...step 2 description...
- 3. ...step 3 description...
+<!-- A clear and concise description of what the bug is. -->
 
-### Expected Result:
-...description of what you expected to see...
+### Step to Reproduce
 
-### Actual Result:
-...what actually happened, including full exceptions (please include the entire stack trace, including "caused by" entries), log entries, screen shots etc. where appropriate...
+Steps to reproduce the behavior:
 
-### Environment:
-...version and build of the project, OS and runtime versions, virtualised environment (if any), etc. ...
+### Expected behavior
 
-### Additional Context:
-...add any other context about the problem here. If applicable, add screenshots to help explain...
+<!-- A clear and concise description of what you expected to happen. -->
+
+### Reproduction Code or Repo
+
+<!--
+This section is optional
+
+For bug found in the webapp, as a user, please provide your project data
+For bug found during development, please provide a minimal repository on GitHub.
+Issues without a reproduction link are likely to stall.
+
+See https://stackoverflow.com/help/minimal-reproducible-example for information on how to create good reproductions
+-->
+
+### Environment
+
+- **Browser**: <!-- e.g. Chrome 86 -->
+- **OS:** <!-- e.g. OSX 10.13.4, Windows 10 -->
+- **Node/Yarn version:** <!-- development only - e.g. Node 8/Yarn 1.22.10 -->
+
+### Possible Solution
+
+<!-- If you have suggestions on a fix for the bug -->
+
+### Additional context
+
+Add any other context about the problem here. Or a screenshot if applicable
