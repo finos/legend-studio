@@ -19,7 +19,7 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -27,7 +27,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.1.4
+        uses: actions/setup-node@v2.1.5
         with:
           node-version: 14.x
       - name: Install dependencies
@@ -42,6 +42,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # if 2FA is enabled, `NPM_TOKEN` must be of type `automation` to bypass 2FA
-          # NOTE: we use `YARN_NPM_AUTH_TOKEN` instead of `NPM_TOKEN` becase we use Yarn to publish 
+          # NOTE: we use `YARN_NPM_AUTH_TOKEN` instead of `NPM_TOKEN` becase we use Yarn to publish
           # See https://docs.npmjs.com/requiring-2fa-for-package-publishing-and-settings-modification
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
