@@ -43,7 +43,7 @@ fs.writeFileSync(
       appName: 'studio',
       env: 'local',
       sdlc: {
-        url: 'https://legend.finos.org/sdlc',
+        url: 'https://legend.finos.org/sdlc/api',
       },
       engine: {
         url: 'https://legend.finos.org/exec',
