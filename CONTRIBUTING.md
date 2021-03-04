@@ -21,14 +21,14 @@ Please file issue via our [Github Issues page](https://github.com/finos/legend-s
 
 ## Pull Request Guidelines
 
-- It's absolutely fine to break your change down into multiple small commits as you work on the PR - GitHub will automatically squash it before merging; however, please try to follow our [commit message convention](#commit-convention).
+- It's absolutely fine to break your change down into multiple small commits as you work on the PR - GitHub will automatically squash them before merging; however, when writing the PR title and commit messages, please try to follow our [commit message convention](#commit-convention).
 - Adding a `changeset` if applicable (see [changeset](#changeset)).
 - Make sure `yarn test` passes (see [development guidelines](#development-guidelines))
 - Fill out the pull request template.
 
 ### Commit Convention
 
-Commit messages should follow [Conventional Commits spec](https://www.conventionalcommits.org/en/v1.0.0/). Commit messages will be automatically validated upon commit. Note that we usually squash commits when merging PR, so the header is likely what we care about, it must follow the format below:
+We highly recommend you to write commit messages following [Conventional Commits spec](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ```md
 <type>[optional scope][optional '!']: <description>
@@ -47,7 +47,7 @@ If you are not familiar with the commit message convention, you can use `yarn co
 
 ### Changeset
 
-A `changeset` is an intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, for a PR with significant changes (refactoring, maintenance, bug fixes, adding new features), we expect the author to create a `changeset` file which indicates which packages should be re-released due to this change and a brief summary of the changes to be added to release note/changelog. We use [changesets](https://github.com/atlassian/changesets) to manage this process. The command `yarn changeset` will open an interactive prompt which helps you build the changeset.
+A `changeset` is an intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, for a PR with significant changes (refactoring, maintenance, bug fixes, or adding new features), we expect the author to create a `changeset` file which indicates which packages should be re-released due to this change and a brief summary of the changes to be added to release note/changelog. We use [changesets](https://github.com/atlassian/changesets) to manage this process. The command `yarn changeset` will open an interactive prompt which helps you build the changeset.
 
 > Changes like adding documentation or testing are also important, but they don't affect the functionalities of the app and thus never requires a release. As such, you might not need to create a changeset for these changes.
 
@@ -62,8 +62,6 @@ An example description of the major changes.
 <!--
 Please note any breaking changes and potential migration.
 Also try to adhere to the format in existing changelogs.
-You can follow conventional commit rules for writing message body
-See https://www.conventionalcommits.org/en/v1.0.0/
 -->
 ```
 
@@ -162,13 +160,13 @@ yarn fix
 
 #### :tada: Checking in your code
 
-Make sure to [create a changeset](#changeset) if you make significant code logic changes. Commit your code with messages following our [convention](#commit-convention). And last but not least, open a PR and follow up on the reviews.
+Make sure to [create a changeset](#changeset) if you make significant code logic changes. Commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
 
 ```sh
 # Bring up the interactive tool to build changeset.
 yarn changeset
 
-# Bring up the interactive tool to build commit message.
+# Bring up the interactive tool to build commit message that follow conventional commit.
 yarn commit
 ```
 

@@ -40,7 +40,7 @@
     "test:coverage": "jest --coverage",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "test:watch": "jest --watch",
-    "version": "changeset version && yarn && yarn fix:format"
+    "version": "changeset version && yarn && yarn fix:format --loglevel warn"
   },
   "husky": {
     "hooks": {

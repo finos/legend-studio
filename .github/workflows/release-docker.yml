@@ -1,30 +1,19 @@
 name: Release Docker
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'New version of Docker image'
-        required: true
-        default: '0.0.0'
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup Maven cache
-        uses: actions/cache@v2.1.4
-        env:
-          cache-name: cache-mvn-deps
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
@@ -36,13 +25,6 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Setup JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: 13
-          server-id: ossrh
-          server-username: ${{ secrets.CI_DEPLOY_USERNAME }}
-          server-password: ${{ secrets.CI_DEPLOY_PASSWORD }}
       - name: Setup Node
         uses: actions/setup-node@v2.1.5
         with:
@@ -51,20 +33,19 @@ jobs:
         run: yarn
       - name: Build application
         run: yarn build
-      - name: Change directory
-        run: cd ./packages/legend-studio-app
-      - name: Clean Maven dependencies
-        run: mvn clean
-      - name: Copy application build artifacts
-        run: cp -R ./dist/studio ./target/classes/web/
-      - name: Configure git
-        run: |
-          git config --global committer.email "infra@finos.org"
-          git config --global committer.name "FINOS Admin"
-          git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git config --global author.name "${GITHUB_ACTOR}"
-      - name: Download Maven dependencies and plugins
-        run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
-      - name: Build + Test + Sonar Code Scan + Deploy
-        if: github.ref == 'refs/heads/master'
-        run: mvn javadoc:javadoc deploy -Psonar
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.TEMP_DOCKERHUB_USERNAME }} # TODO: change this when we're ready to do real release
+          password: ${{ secrets.TEMP_DOCKERHUB_TOKEN }} # TODO: change this when we're ready to do real release
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        working-directory: ./packages/legend-studio-app
+        with:
+          push: true
+          tags: blacksteed232/legend-studio:${{ date +%Y%m%d }}
+      - name: Docker image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
