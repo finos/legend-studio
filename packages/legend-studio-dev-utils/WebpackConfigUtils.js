@@ -328,6 +328,7 @@ const getWebAppBaseWebpackConfig = (
       },
       // end - should remove this in next iteration of webpack-dev-server@4.beta
       port: 3000,
+      https: true,
       host: 'localhost',
       openPage:
         // trim the leading and trailing slash
