@@ -36,8 +36,8 @@ jobs:
         uses: changesets/action@master
         with:
           version: yarn version
-          commit: 'chore: bump package versions'
-          title: 'chore: bump package versions'
+          commit: 'chore: bump versions and release'
+          title: 'New Release'
           publish: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
