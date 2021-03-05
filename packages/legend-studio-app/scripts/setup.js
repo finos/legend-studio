@@ -28,7 +28,8 @@ fs.writeFileSync(
   JSON.stringify(
     {
       'git.build.time': new Date().toISOString(),
-      'git.build.version': 'LOCAL',
+      'git.build.version': `${require(path.resolve(__dirname, '../package.json')
+        .version)}-SNAPSHOT`,
       'git.commit.id': 'LOCAL',
     },
     null,
