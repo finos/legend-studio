@@ -28,8 +28,9 @@ fs.writeFileSync(
   JSON.stringify(
     {
       'git.build.time': new Date().toISOString(),
-      'git.build.version': `${require(path.resolve(__dirname, '../package.json')
-        .version)}-SNAPSHOT`,
+      'git.build.version': `${
+        require(path.resolve(__dirname, '../package.json')).version
+      }-SNAPSHOT`,
       'git.commit.id': 'LOCAL',
     },
     null,
@@ -44,20 +45,16 @@ fs.writeFileSync(
       appName: 'studio',
       env: 'local',
       sdlc: {
-        url: 'https://legend.finos.org/sdlc',
+        url: 'https://legend.finos.org/sdlc/api',
       },
       engine: {
-        url: 'https://legend.finos.org/exec',
-      },
-      tracer: {
-        serviceName: 'legend studio',
-        url: 'https://legend.finos.org/zipkin',
+        url: 'https://legend.finos.org/exec/api',
       },
       documentation: {
         url: 'https://legend.finos.org',
       },
     },
-    null,
+    undefined,
     2,
   ),
 );

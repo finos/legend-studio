@@ -218,7 +218,7 @@ export class ModelLoaderState extends EditorState {
           path: 'string',
         } as Entity,
       ],
-      null,
+      undefined,
       TAB_SIZE,
     )}`;
   }

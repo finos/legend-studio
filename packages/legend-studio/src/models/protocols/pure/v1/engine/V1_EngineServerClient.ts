@@ -102,16 +102,14 @@ export class V1_EngineServerClient extends AbstractServerClient {
     },
   });
 
-  _pure = (): string =>
-    `${this.networkClient.baseUrl}/api/pure/${this.version}`;
+  _pure = (): string => `${this.networkClient.baseUrl}/pure/${this.version}`;
 
-  _store = (): string =>
-    `${this.networkClient.baseUrl}/api/store/${this.version}`;
+  _store = (): string => `${this.networkClient.baseUrl}/store/${this.version}`;
 
   // ------------------------------------------- Server -------------------------------------------
 
   _server = (): string =>
-    `${this.networkClient.baseUrl}/api/server/${this.version}`;
+    `${this.networkClient.baseUrl}/server/${this.version}`;
   getCurrentUserId = (): Promise<string> =>
     this.networkClient.get(`${this._server()}/currentUser`);
 
@@ -271,7 +269,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Service -------------------------------------------
 
   _service = (server?: string): string =>
-    `${server ?? this.networkClient.baseUrl}/api/service/${this.version}`;
+    `${server ?? this.networkClient.baseUrl}/service/${this.version}`;
   serverServiceInfo = (): Promise<PlainObject<V1_ServiceConfigurationInfo>> =>
     this.networkClient.get(`${this._server()}/info/services`);
   registerService = (

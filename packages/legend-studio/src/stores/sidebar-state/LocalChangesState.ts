@@ -150,7 +150,7 @@ export class LocalChangesState {
         entityChanges: this.editorStore.graphState.computeLocalEntityChanges(),
         revisionId: this.sdlcState.currentRevisionId,
       },
-      null,
+      undefined,
       TAB_SIZE,
     );
     downloadFile(fileName, content, ContentType.APPLICATION_JSON);

@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@finos/legend-studio": "workspace:*",
+    "@finos/legend-studio-preset-dsl-text": "workspace:*",
     "react": "17.0.1"
   },
   "devDependencies": {

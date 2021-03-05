@@ -131,10 +131,15 @@ export class NetworkClientError extends Error {
 
   constructor(response: Response, payload: Payload | undefined) {
     super();
-    // Maintains proper stack trace for where our error was thrown (only available on V8)
-    // This only works in Chrome for now. Firefox (as of Feb 2020) will throw error
-    // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
-    Error.captureStackTrace(this, NetworkClientError);
+    if (typeof Error.captureStackTrace === 'function') {
+      // Maintains proper stack trace for where our error was thrown (only available on V8)
+      // This only works in Chrome for now. Firefox (as of Feb 2020) will throw error
+      // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
+      Error.captureStackTrace(this, this.constructor);
+    } else {
+      // otherwise, use the non-standard but defacto stack trace (available in most browser)
+      this.stack = new Error().stack;
+    }
     this.name = 'Network Client Error';
     this.response = response;
     const { status, statusText, url } = response;
