@@ -48,7 +48,7 @@
     "history": "5.0.0",
     "mobx": "6.1.8",
     "mobx-react-lite": "3.2.0",
-    "monaco-editor": "0.22.3",
+    "monaco-editor": "0.23.0",
     "node-diff3": "2.1.0",
     "react": "17.0.1",
     "react-dnd": "13.1.1",
