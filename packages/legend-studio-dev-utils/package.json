@@ -30,7 +30,6 @@
     "ForkTsCheckerWebpackPlugin.js",
     "JestConfigUtils.js",
     "ProjectReferenceConfigChecker.js",
-    "PublishUtils.js",
     "TypescriptConfigUtils.js",
     "WebpackConfigUtils.js"
   ],
@@ -38,6 +37,7 @@
     "clean": "rimraf \"build\"",
     "fix:js": "yarn lint:js --fix",
     "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"mocks/**/*.js\" \"__tests__/**/*.js\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -81,5 +81,8 @@
     "eslint": "7.21.0",
     "monaco-editor": "0.22.3",
     "rimraf": "3.0.2"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
   }
 }

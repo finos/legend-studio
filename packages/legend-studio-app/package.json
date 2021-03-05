@@ -33,7 +33,8 @@
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js",
     "test": "jest",
     "test:e2e": "cypress open",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "version:docker": "node ./scripts/createVersionInfoForDocker.js"
   },
   "dependencies": {
     "@finos/legend-studio": "workspace:*",

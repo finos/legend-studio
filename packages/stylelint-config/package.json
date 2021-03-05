@@ -25,7 +25,8 @@
   "scripts": {
     "clean": "rimraf \"build\"",
     "fix:js": "yarn lint:js --fix",
-    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\""
+    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
   },
   "dependencies": {
     "stylelint": "13.11.0",
@@ -39,5 +40,8 @@
   },
   "peerDependencies": {
     "stylelint": "^13.0.0"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
   }
 }

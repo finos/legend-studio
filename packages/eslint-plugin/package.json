@@ -26,7 +26,8 @@
   "scripts": {
     "clean": "rimraf \"build\"",
     "fix:js": "yarn lint:js --fix",
-    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"src/**/*.js\""
+    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"src/**/*.js\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
   },
   "dependencies": {
     "@babel/core": "7.13.8",
@@ -47,5 +48,8 @@
   "peerDependencies": {
     "eslint": "^7.17.0",
     "prettier": "^2.2.1"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
   }
 }
