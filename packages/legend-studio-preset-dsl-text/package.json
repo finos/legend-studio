@@ -45,7 +45,7 @@
     "@finos/legend-studio-shared": "workspace:*",
     "mobx": "6.1.8",
     "mobx-react-lite": "3.2.0",
-    "monaco-editor": "0.22.3",
+    "monaco-editor": "0.23.0",
     "react": "17.0.1",
     "serializr": "2.0.5"
   },

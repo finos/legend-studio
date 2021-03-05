@@ -79,7 +79,7 @@
   },
   "devDependencies": {
     "eslint": "7.21.0",
-    "monaco-editor": "0.22.3",
+    "monaco-editor": "0.23.0",
     "rimraf": "3.0.2"
   },
   "publishConfig": {
