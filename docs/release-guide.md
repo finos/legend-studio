@@ -18,24 +18,10 @@ For **publishing** there is more work. We can call the script used in CI for rel
 ```sh
 # This is the procedure to release a package in our monorepo project:
 
-# 1. Build the artifacts for publishing
-yarn build
+# 1. Build and prepare publish contents
+yarn publish:prepare
 
-# 2. Prepare publish content:
-#   i.    Copy the root LICENSE files to the package root.
-#   ii.   If this is a Typescript package, flat out the
-#         Typescript config files (i.e. resolve all `extends`)
-#         needed to facillitate source code navigation
-#         Usually specified in `_package.config.js` and
-#         includes `tsconfg.json`.
-#   iii.  Update the version in `package.json`
-#         For example: `{ ..., "version": "2.0.0.alpha.0` }`
-yarn tsc build:tsc --showConfig # this will show the full config, replace the content of `tsconfig.json` with this
-
-# 4. Check publish content:
-yarn workspace <your-package-name> check:publish
-
-# 4. Publish using Yarn
+# 2. Publish using Yarn
 # You might need to set the YARN_NPM_AUTH_TOKEN
 # `YARN_NPM_AUTH_TOKEN=<your NPM token> yarn npm publish
 # or running `yarn npm login`
@@ -44,36 +30,20 @@ yarn workspace <your-package-name> check:publish
 # See https://yarnpkg.com/cli/npm/publish
 yarn npm publish --tag <publish-tag> --tolerate-republish
 
-# 5. Remove artifacts modified in step (2).
+# 3. Remove artifacts modified in step (2).
 
 
 
 # ------------ Only if we need to push to Github --------------
 
-# 6. Make changes to `CHANGELOG.md` and update the package version
+# 4. Make changes to `CHANGELOG.md` and update the package version
 # like in step (2)
 
-# 7. Create a git annotated tag
+# 5. Create a git annotated tag
 # <!> Need to do this step if we wish to push this version to Github
 git -a <version> -m <version>
 git push --follow-tags
 
-# 8. Create a release for the version on Github, use the change in
+# 6. Create a release for the version on Github, use the change in
 # `CHANGELOG.md` as release note
 ```
-
-## Publish Docker Image
-
-- TODO
-- (Manually) bump the version in `pom/xml`. Is that all?
-- Should we move everything to a new fixtures/package and move `pom.xml` there?
-- How do we currently setup the `config.json` files? and what does it mena when we configure `e2e` tests to run in the pipeline
-
-1. Release -> maintain the changelog the right way that the version is automatically handled
-2. Create a version of shared that can take the image
-3. Create an image
-   Take random image and add content to this image
-4. Take docker image and add the index.html ....
-5. Setup a github actions
-   from shared version ->
-6. Github action to do that so we can kill POM

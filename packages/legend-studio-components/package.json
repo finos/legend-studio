@@ -34,6 +34,7 @@
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "fix:js": "yarn lint:js --fix",
     "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -63,5 +64,8 @@
   },
   "peerDependencies": {
     "react": "^17.0.0"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
   }
 }

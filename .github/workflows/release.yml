@@ -38,7 +38,7 @@ jobs:
           version: yarn version
           commit: 'chore: bump versions and release'
           title: 'New Release'
-          publish: yarn release
+          publish: yarn release && ./packages/legned-studio-app/publishDocker.sh --DOCKER_USERNAME --DOCKER_PASSWORD
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # if 2FA is enabled, `NPM_TOKEN` must be of type `automation` to bypass 2FA
