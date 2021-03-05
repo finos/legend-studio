@@ -1720,7 +1720,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ],
       } as V1_PureModelContextGenerationInput,
-      null,
+      undefined,
       TAB_SIZE,
     );
   }
@@ -1728,7 +1728,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   entitiesToPureProtocolText = (entities: Entity[]): string =>
     JSON.stringify(
       this.V1_entitiesToPureModelContextData(entities),
-      null,
+      undefined,
       TAB_SIZE,
     );
   pureProtocolToEntities = (protocol: string): Entity[] => {

@@ -15,11 +15,13 @@
  */
 
 import { Studio } from '@finos/legend-studio';
+import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
 import studioConfig from '../studio.config';
 import './index.scss';
 
 Studio.create()
   .setup({ baseUrl: studioConfig.baseUrl })
+  .withPresets([new DSLText_Preset()])
   .start()
   .catch((e) => {
     throw e;

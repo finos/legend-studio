@@ -12,5 +12,8 @@
     "src/**/*.json",
     "studio.config.js"
   ],
-  "references": [{ "path": "../legend-studio" }]
+  "references": [
+    { "path": "../legend-studio" },
+    { "path": "../legend-studio-preset-dsl-text" }
+  ]
 }

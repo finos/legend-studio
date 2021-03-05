@@ -1816,6 +1816,7 @@ __metadata:
   dependencies:
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
+    "@finos/legend-studio-preset-dsl-text": "workspace:*"
     copy-webpack-plugin: 8.0.0
     cross-env: 7.0.3
     eslint: 7.21.0
@@ -1962,7 +1963,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text":
+"@finos/legend-studio-preset-dsl-text@workspace:*, @finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
   dependencies:
