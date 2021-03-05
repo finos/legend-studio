@@ -26,16 +26,13 @@ if (!fs.existsSync(webContentDir)) {
   );
 }
 
-const time = new Date();
-
 fs.writeFileSync(
   path.resolve(webContentDir, 'version.json'),
   JSON.stringify(
     {
-      'git.build.time': time.toISOString(),
-      'git.build.version': `${time.getFullYear()}${(time.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')}${time.getDate().toString().padStart(2, '0')}`,
+      'git.build.time': new Date().toISOString(),
+      'git.build.version': require(path.resolve(__dirname, '../package.json')
+        .version),
       'git.commit.id': execSync(`git rev-parse HEAD`, {
         encoding: 'utf-8',
       }).trim(),
