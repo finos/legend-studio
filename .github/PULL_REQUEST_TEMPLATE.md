@@ -3,7 +3,7 @@ Thanks for submitting a pull request! Before making a PR, please read our contri
 https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md
 -->
 
-| Q                         | A                                                       |
+| Q                         | A                                                       |
 | ------------------------- | ------------------------------------------------------- |
 | Fixed Issues?             | <!-- e.g. Fixes #1, Fixes #2 -->                        |
 | Tests Added + Pass?       | Yes                                                     |
