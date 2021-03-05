@@ -32,16 +32,13 @@ jobs:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
-      - name: Create Release Pull Request or Publish to NPM
+      - name: Create Release Pull Request or Publish to NPM and Docker
         uses: changesets/action@master
         with:
           version: yarn version
           commit: 'chore: bump versions and release'
           title: 'New Release'
-          publish: yarn release && ./packages/legned-studio-app/publishDocker.sh --DOCKER_USERNAME --DOCKER_PASSWORD
+          publish: yarn release && yarn publish:docker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # if 2FA is enabled, `NPM_TOKEN` must be of type `automation` to bypass 2FA
-          # NOTE: we use `YARN_NPM_AUTH_TOKEN` instead of `NPM_TOKEN` becase we use Yarn to publish
-          # See https://docs.npmjs.com/requiring-2fa-for-package-publishing-and-settings-modification
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

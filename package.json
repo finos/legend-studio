@@ -30,6 +30,7 @@
     "lint:ci": "yarn lint:js --max-warnings=0 && yarn lint:style --max-warnings=0",
     "lint:js": "eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{js,ts,tsx}\" && yarn workspaces foreach --all --parallel --verbose run lint:js",
     "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/src/**/*.{scss,css}\"",
+    "publish:docker": "yarn workspace @finos/legend-studio-app build && ./packages/legend-studio-app/scripts/publish-docker.sh",
     "publish:prepare": "yarn build:setup && yarn workspaces foreach --all --no-private --parallel run publish:prepare",
     "release": "yarn publish:prepare && changeset publish",
     "setup": "yarn && yarn workspaces foreach --topological-dev --verbose run setup && yarn build:setup",
