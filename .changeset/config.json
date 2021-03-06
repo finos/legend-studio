@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@1.4.0/schema.json",
+  "$schema": "https://unpkg.com/@changesets/config@1.5.0/schema.json",
   "changelog": [
     "@changesets/changelog-github",
     { "repo": "finos/legend-studio" }
@@ -9,5 +9,6 @@
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
+  "bumpVersionsWithWorkspaceProtocolOnly": true,
   "ignore": []
 }
