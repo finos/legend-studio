@@ -17,9 +17,10 @@
   },
   "license": "Apache-2.0",
   "scripts": {
-    "build": "yarn clean && yarn build:tsc && yarn build:webpack",
+    "build": "yarn clean && yarn build:tsc && yarn build:webpack && yarn build:info",
     "build:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "build:tsc": "tsc --project ./tsconfig.build.json",
+    "build:info": "node ./scripts/setup.js ./dist/studio",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
     "clean": "rimraf \"dist\" \"build\"",
     "dev": "npm-run-all --parallel dev:tsc dev:webpack",
@@ -30,11 +31,10 @@
     "fix:js": "yarn lint:js --fix",
     "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /studio",
-    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js",
+    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev",
     "test": "jest",
     "test:e2e": "cypress open",
-    "test:watch": "jest --watch",
-    "version:docker": "node ./scripts/createVersionInfoForDocker.js"
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@finos/legend-studio": "workspace:*",
