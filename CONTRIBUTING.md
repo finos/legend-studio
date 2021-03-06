@@ -47,7 +47,7 @@ If you are not familiar with the commit message convention, you can use `yarn co
 
 ### Changeset
 
-A `changeset` is an intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, for a PR with significant changes (refactoring, maintenance, bug fixes, or adding new features), we expect the author to create a `changeset` file which indicates which packages should be re-released due to this change and a brief summary of the changes to be added to release note/changelog. We use [changesets](https://github.com/atlassian/changesets) to manage this process. The command `yarn changeset` will open an interactive prompt which helps you build the changeset.
+A `changeset` is an intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, for a PR with substantial changes (refactoring, maintenance, bug fixes, or adding new features), we expect the author to create a `changeset` file which indicates which packages should be re-released due to this change and a brief summary of the changes to be added to release note/changelog. We use [changesets](https://github.com/atlassian/changesets) to manage this process. The command `yarn changeset` will open an interactive prompt which helps you build the changeset.
 
 > Changes like adding documentation or testing are also important, but they don't affect the functionalities of the app and thus never requires a release. As such, you might not need to create a changeset for these changes.
 
