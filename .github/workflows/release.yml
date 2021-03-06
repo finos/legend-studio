@@ -9,7 +9,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.repository == ‘finos/legend-studio’ # prevent running this action in forks
+    if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
