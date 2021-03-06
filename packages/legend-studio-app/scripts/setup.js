@@ -17,21 +17,25 @@
 const fs = require('fs');
 const path = require('path');
 
-const devDir = path.resolve(__dirname, '../dev');
+const outputDir = process.argv[2];
+const resolvedOutputDir = path.resolve(__dirname, `../${outputDir}`);
+const { execSync } = require('child_process');
 
-if (!fs.existsSync(devDir)) {
-  fs.mkdirSync(devDir);
+if (!fs.existsSync(resolvedOutputDir)) {
+  fs.mkdirSync(resolvedOutputDir);
 }
 
 fs.writeFileSync(
-  path.resolve(devDir, 'version.json'),
+  path.resolve(resolvedOutputDir, 'version.json'),
   JSON.stringify(
     {
       'git.build.time': new Date().toISOString(),
       'git.build.version': `${
         require(path.resolve(__dirname, '../package.json')).version
-      }-SNAPSHOT`,
-      'git.commit.id': 'LOCAL',
+      }`,
+      'git.commit.id': execSync(`git rev-parse HEAD`, {
+        encoding: 'utf-8',
+      }).trim(),
     },
     null,
     2,
@@ -39,7 +43,7 @@ fs.writeFileSync(
 );
 
 fs.writeFileSync(
-  path.resolve(devDir, 'config.json'),
+  path.resolve(resolvedOutputDir, 'config.json'),
   JSON.stringify(
     {
       appName: 'studio',
