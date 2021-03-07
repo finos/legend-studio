@@ -31,7 +31,6 @@ const getEnvInfo = (env, arg) => ({
   isEnvDevelopment: arg.mode === 'development',
   isEnvProduction: arg.mode === 'production',
   isEnvDevelopment_Advanced: process.env.DEVELOPMENT_MODE === 'advanced',
-  isEnvDevelopment_Fast: process.env.DEVELOPMENT_MODE === 'fast',
 });
 
 /**
@@ -45,7 +44,6 @@ const getBaseWebpackConfig = (env, arg, dirname, { babelConfigPath }) => {
   const {
     isEnvDevelopment,
     isEnvProduction,
-    isEnvDevelopment_Fast,
     isEnvDevelopment_Advanced,
   } = getEnvInfo(env, arg);
 
@@ -175,11 +173,8 @@ const getBaseWebpackConfig = (env, arg, dirname, { babelConfigPath }) => {
           allowAsyncCycles: false, // allow import cycles that include an asynchronous import, e.g. import(/* webpackMode: "weak" */ './file.js')
           cwd: process.cwd(), // set the current working directory for displaying module paths
         }),
-      isEnvDevelopment &&
-        !isEnvDevelopment_Fast &&
-        new ForkTsCheckerWebpackFormatterPlugin(),
-      isEnvDevelopment &&
-        !isEnvDevelopment_Fast &&
+      isEnvDevelopment_Advanced && new ForkTsCheckerWebpackFormatterPlugin(),
+      isEnvDevelopment_Advanced &&
         // Webpack plugin that runs TypeScript type checker on a separate process.
         // NOTE: This makes the initial build process slower but allow faster incremental builds
         // See https://www.npmjs.com/package/fork-ts-checker-webpack-plugin#motivation
@@ -227,6 +222,8 @@ const getBaseWebpackConfig = (env, arg, dirname, { babelConfigPath }) => {
                 'src/**/__mocks__/*.tsx',
               ],
               parserOptions: {
+                // Limit the option like this helps with memory usage
+                // See https://github.com/typescript-eslint/typescript-eslint/issues/1192
                 project: path.resolve(dirname, './tsconfig.json'),
               },
             },

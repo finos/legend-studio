@@ -36,7 +36,7 @@
   "scripts": {
     "clean": "rimraf \"build\"",
     "fix:js": "yarn lint:js --fix",
-    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"mocks/**/*.js\" \"__tests__/**/*.js\"",
+    "lint:js": "cross-env NODE_ENV=ci eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"mocks/**/*.js\" \"__tests__/**/*.js\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -78,6 +78,7 @@
     "wrap-ansi": "7.0.0"
   },
   "devDependencies": {
+    "cross-env": "7.0.3",
     "eslint": "7.21.0",
     "monaco-editor": "0.23.0",
     "rimraf": "3.0.2"

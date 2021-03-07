@@ -29,7 +29,7 @@
     "dev": "dev:tsc",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "fix:js": "yarn lint:js --fix",
-    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "lint:js": "cross-env NODE_ENV=ci eslint --cache --cache-location ./build/.eslintcache --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
+    "cross-env": "7.0.3",
     "eslint": "7.21.0",
     "jest": "26.6.3",
     "rimraf": "3.0.2",

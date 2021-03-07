@@ -30,7 +30,7 @@
     "dev": "dev:tsc",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "fix:js": "yarn lint:js --fix",
-    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "lint:js": "cross-env NODE_ENV=ci eslint --cache --cache-location ./build/.eslintcache --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -56,6 +56,7 @@
     "@types/pako": "1.0.1",
     "@types/seedrandom": "2.4.28",
     "@types/uuid": "8.3.0",
+    "cross-env": "7.0.3",
     "eslint": "7.21.0",
     "jest": "26.6.3",
     "lodash": "4.17.21",

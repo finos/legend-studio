@@ -26,7 +26,7 @@
   "scripts": {
     "clean": "rimraf \"build\"",
     "fix:js": "yarn lint:js --fix",
-    "lint:js": "eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"src/**/*.js\"",
+    "lint:js": "cross-env NODE_ENV=ci eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"src/**/*.js\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
   },
   "dependencies": {
@@ -43,6 +43,7 @@
     "prettier": "2.2.1"
   },
   "devDependencies": {
+    "cross-env": "7.0.3",
     "rimraf": "3.0.2"
   },
   "peerDependencies": {

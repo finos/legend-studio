@@ -1779,6 +1779,7 @@ __metadata:
     "@babel/preset-react": 7.12.13
     "@babel/preset-typescript": 7.13.0
     "@babel/runtime": 7.13.9
+    cross-env: 7.0.3
     eslint: 7.21.0
     react-refresh: 0.9.0
     rimraf: 3.0.2
@@ -1796,6 +1797,7 @@ __metadata:
     "@babel/eslint-parser": 7.13.8
     "@typescript-eslint/eslint-plugin": 4.16.1
     "@typescript-eslint/parser": 4.16.1
+    cross-env: 7.0.3
     eslint: 7.21.0
     eslint-config-prettier: 8.1.0
     eslint-plugin-import: 2.22.1
@@ -1843,6 +1845,7 @@ __metadata:
     "@types/react-select": 4.0.13
     "@types/react-window": 1.8.2
     clsx: 1.1.1
+    cross-env: 7.0.3
     eslint: 7.21.0
     jest: 26.6.3
     mobx: 6.1.8
@@ -1875,6 +1878,7 @@ __metadata:
     clean-webpack-plugin: 3.0.0
     conventional-commit-types: 3.0.0
     cosmiconfig: 7.0.0
+    cross-env: 7.0.3
     css-loader: 5.1.1
     cssnano: 4.1.10
     eslint: 7.21.0
@@ -1911,6 +1915,7 @@ __metadata:
   dependencies:
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
+    cross-env: 7.0.3
     eslint: 7.21.0
     jest: 26.6.3
     rimraf: 3.0.2
@@ -1951,7 +1956,7 @@ __metadata:
     "@finos/legend-studio-network": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@types/zipkin-javascript-opentracing": 1.6.0
-    chalk: 4.1.0
+    cross-env: 7.0.3
     eslint: 7.21.0
     jest: 26.6.3
     opentracing: 0.14.5
@@ -1999,6 +2004,7 @@ __metadata:
     "@types/pako": 1.0.1
     "@types/seedrandom": 2.4.28
     "@types/uuid": 8.3.0
+    cross-env: 7.0.3
     eslint: 7.21.0
     hash.js: 1.1.7
     http-status-codes: 2.1.4
@@ -2073,6 +2079,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/stylelint-config-legend-studio@workspace:packages/stylelint-config"
   dependencies:
+    cross-env: 7.0.3
     eslint: 7.21.0
     rimraf: 3.0.2
     stylelint: 13.11.0
