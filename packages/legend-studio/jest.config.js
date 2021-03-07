@@ -31,7 +31,8 @@ module.exports = {
     '^react-dnd$': 'react-dnd/dist/cjs',
     '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
     // manual mocks - TODO: we might eventually want to move these to `@finos/legend-studio-components` or `@finos/legend-studio-test-mocks`, etc.
-    '^monaco-editor$': '@finos/legend-studio/lib/testMocks/MockedMonacoEditor.js',
+    '^monaco-editor$':
+      '@finos/legend-studio/lib/testMocks/MockedMonacoEditor.js',
     '^react-reflex$': '@finos/legend-studio/lib/testMocks/MockedReactReflex.js',
   },
   testMatch: [

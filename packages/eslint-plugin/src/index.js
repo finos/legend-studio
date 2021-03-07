@@ -21,5 +21,8 @@ module.exports = {
     recommended: require('./configs/recommended').config,
     'scripts-override': require('./configs/scripts-override').config,
   },
-  rules: {},
+  rules: {
+    'no-cross-workspace-source-import': require('./rules/no-cross-workspace-source-import'),
+    'no-same-workspace-index-import': require('./rules/no-same-workspace-index-import'),
+  },
 };

@@ -15,11 +15,14 @@
  */
 
 /**
- * Enforce usage of module alias for import
+ * Disallow usage of exports coming out from some `index` files within the same workspaces
+ * as these exports are meant for external modules to use.
+ *
+ * NOTE: IDE like Visual Studio Code sometimes auto-suggest this kinds of imports.
  */
 module.exports = {
   meta: {
-    type: 'suggestion',
+    type: 'problem',
     docs: {
       recommended: false,
     },
@@ -27,11 +30,10 @@ module.exports = {
   create(context) {
     return {
       ImportDeclaration(node) {
-        if (node.source.value.startsWith('src/')) {
+        if (node.source.value.match(/^[./]*$/)) {
           context.report({
             node: node.source,
-            message:
-              "Prefer module alias (e.g. MM, V1) over explicit path (e.g. 'src/models/**/*')",
+            message: `Do not import from an 'index' file within the same workspace`,
           });
         }
       },

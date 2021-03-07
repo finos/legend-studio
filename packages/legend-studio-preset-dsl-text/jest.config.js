@@ -24,7 +24,8 @@ module.exports = {
   rootDir: '../..',
   moduleNameMapper: {
     ...base.moduleNameMapper,
-    '^monaco-editor$': '@finos/legend-studio/lib/testMocks/MockedMonacoEditor.js',
+    '^monaco-editor$':
+      '@finos/legend-studio/lib/testMocks/MockedMonacoEditor.js',
   },
   testMatch: [
     '<rootDir>/packages/legend-studio-preset-dsl-text/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
