@@ -199,6 +199,11 @@ const REACT_RULES = {
   'react/jsx-curly-spacing': [WARN, { when: 'never', allowMultiline: true }],
 };
 
+const STUDIO_RULES = {
+  '@finos/legend-studio/no-cross-workspace-source-import': ERROR,
+  '@finos/legend-studio/no-same-workspace-index-import': ERROR,
+};
+
 const config = {
   parser: '@typescript-eslint/parser',
   env: {
@@ -228,6 +233,7 @@ const config = {
     ...TYPESCRIPT_RULES,
     ...IMPORT_RULES,
     ...REACT_RULES,
+    ...STUDIO_RULES,
   },
 };
 

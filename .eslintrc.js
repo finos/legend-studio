@@ -50,11 +50,10 @@ module.exports = {
     // See https://github.com/typescript-eslint/typescript-eslint/issues/2094
     EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
   },
-  plugins: ['@finos/eslint-plugin-legend-studio'],
+  plugins: ['@finos/legend-studio'],
   extends: [
-    'plugin:@finos/eslint-plugin-legend-studio/recommended',
-    !enableFastMode &&
-      'plugin:@finos/eslint-plugin-legend-studio/computationally-expensive',
-    'plugin:@finos/eslint-plugin-legend-studio/scripts-override', // must be called last to turn off rules which are not applicable for scripts
+    'plugin:@finos/legend-studio/recommended',
+    !enableFastMode && 'plugin:@finos/legend-studio/computationally-expensive',
+    'plugin:@finos/legend-studio/scripts-override', // must be called last to turn off rules which are not applicable for scripts
   ].filter(Boolean),
 };
