@@ -1841,7 +1841,7 @@ __metadata:
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@material-ui/core": 4.11.3
-    "@types/react": 17.0.2
+    "@types/react": 17.0.3
     "@types/react-select": 4.0.13
     "@types/react-window": 1.8.2
     clsx: 1.1.1
@@ -1883,7 +1883,7 @@ __metadata:
     cssnano: 4.1.10
     eslint: 7.21.0
     fork-ts-checker-webpack-plugin: 6.1.1
-    html-webpack-plugin: 5.2.0
+    html-webpack-plugin: 5.3.0
     isbinaryfile: 4.0.6
     jest: 26.6.3
     jest-circus: 26.6.3
@@ -2037,10 +2037,10 @@ __metadata:
     "@finos/legend-studio-shared": "workspace:*"
     "@juggle/resize-observer": 3.3.0
     "@material-ui/core": 4.11.3
-    "@testing-library/dom": 7.29.6
+    "@testing-library/dom": 7.30.0
     "@testing-library/react": 11.2.5
     "@types/css-font-loading-module": 0.0.4
-    "@types/react": 17.0.2
+    "@types/react": 17.0.3
     "@types/react-dom": 17.0.1
     "@types/react-router-dom": 5.1.7
     cross-env: 7.0.3
@@ -2082,9 +2082,9 @@ __metadata:
     cross-env: 7.0.3
     eslint: 7.21.0
     rimraf: 3.0.2
-    stylelint: 13.11.0
+    stylelint: 13.12.0
     stylelint-config-prettier: 8.0.2
-    stylelint-config-standard: 20.0.0
+    stylelint-config-standard: 21.0.0
     stylelint-scss: 3.19.0
   peerDependencies:
     stylelint: ^13.0.0
@@ -2620,7 +2620,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/dom@npm:7.29.6, @testing-library/dom@npm:^7.28.1":
+"@testing-library/dom@npm:7.30.0":
+  version: 7.30.0
+  resolution: "@testing-library/dom@npm:7.30.0"
+  dependencies:
+    "@babel/code-frame": ^7.10.4
+    "@babel/runtime": ^7.12.5
+    "@types/aria-query": ^4.2.0
+    aria-query: ^4.2.2
+    chalk: ^4.1.0
+    dom-accessibility-api: ^0.5.4
+    lz-string: ^1.4.4
+    pretty-format: ^26.6.2
+  checksum: 5af9f762ff43265cf9c36bb62bba37d73da2858a6149a2f11f159c61bfb46d60f66d9c7c10ab9f201cf0749c9e0039494005379355b0a0d494c60f6b759cea34
+  languageName: node
+  linkType: hard
+
+"@testing-library/dom@npm:^7.28.1":
   version: 7.29.6
   resolution: "@testing-library/dom@npm:7.29.6"
   dependencies:
@@ -2885,10 +2901,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:14.14.31":
+"@types/node@npm:*":
   version: 14.14.31
   resolution: "@types/node@npm:14.14.31"
   checksum: 635dc8a0898a923621e02ca179e17baa39fdfa44f0096fcc1b7046c9b32317e74a99956a7b45ca0e8069874f51f4e7873a418239a318a4b6e7936f6510ac5992
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:14.14.32":
+  version: 14.14.32
+  resolution: "@types/node@npm:14.14.32"
+  checksum: ae73f3b668242da660b4f4f2047114fc047f5a6a92b8f9f4ab2f8ca1325c914c08cf13b6f90e6e88016fafb7a662d1963b075a6220d2208651a98a1cb3407221
   languageName: node
   linkType: hard
 
@@ -3008,13 +3031,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:17.0.2":
+"@types/react@npm:*":
   version: 17.0.2
   resolution: "@types/react@npm:17.0.2"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.0.2
   checksum: de1cd27ce57a961379978f83676d60d88bf729337683d1d4cb22dd8f285ed4200db19f7243052dc67c80133fe6798da1497456fe6f67a5bba5f5e30ce2544bfa
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:17.0.3":
+  version: 17.0.3
+  resolution: "@types/react@npm:17.0.3"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 5bcaabadc90a23ad9008540eae98a5819b638c4cf1b968adc67be47d6a8dc8cb100061d877dae97618fb275e405dc484b37154080c7ac0ea7df5efcdd8f98c24
   languageName: node
   linkType: hard
 
@@ -3029,6 +3063,13 @@ __metadata:
   version: 0.12.0
   resolution: "@types/retry@npm:0.12.0"
   checksum: 0755164f2c8d615a0385609c478aaa20b17e55bc8b16d5d56ffe6a5d30b0a9845d49452a2e8903ec7c43fa361f19daf5e68c60e7381ad10a95dd3d0bb5c9f7fd
+  languageName: node
+  linkType: hard
+
+"@types/scheduler@npm:*":
+  version: 0.16.1
+  resolution: "@types/scheduler@npm:0.16.1"
+  checksum: 0124c2e4dee5e9b8c8524fcd6b1b8ea0b807b132e593925db04cdcc92ca2779a0d27c79414e60454b4458361a4d8319fa2b59d20585054f21617d1e9acf46a6f
   languageName: node
   linkType: hard
 
@@ -6762,7 +6803,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-entry-cache@npm:^6.0.0, file-entry-cache@npm:^6.0.1":
+"file-entry-cache@npm:^6.0.1":
   version: 6.0.1
   resolution: "file-entry-cache@npm:6.0.1"
   dependencies:
@@ -7712,19 +7753,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-webpack-plugin@npm:5.2.0":
-  version: 5.2.0
-  resolution: "html-webpack-plugin@npm:5.2.0"
+"html-webpack-plugin@npm:5.3.0":
+  version: 5.3.0
+  resolution: "html-webpack-plugin@npm:5.3.0"
   dependencies:
     "@types/html-minifier-terser": ^5.0.0
     html-minifier-terser: ^5.0.1
-    loader-utils: ^2.0.0
     lodash: ^4.17.20
     pretty-error: ^2.1.1
     tapable: ^2.0.0
   peerDependencies:
     webpack: ^5.20.0
-  checksum: a7476f0fb75c6728754bd963f1f09abaebacf6a238bf75a852ec2b07afaa3c0c1872d74ea81175598dccd0b9375093034035a505454919a708be7c7453ca6df6
+  checksum: ba43a880dd848893479bbc1b1ee68f2db5d4757c8a567b90cfdf6a4cf16529ad492933ac3a5ed484a27975deef619e66161f3c1048c4cb0b99cac33d99d8e9f3
   languageName: node
   linkType: hard
 
@@ -9707,7 +9747,7 @@ __metadata:
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@types/jest": 26.0.20
-    "@types/node": 14.14.31
+    "@types/node": 14.14.32
     chalk: 4.1.0
     commitizen: 4.2.3
     cross-env: 7.0.3
@@ -9719,7 +9759,7 @@ __metadata:
     prettier: 2.2.1
     rimraf: 3.0.2
     sort-package-json: 1.49.0
-    stylelint: 13.11.0
+    stylelint: 13.12.0
     typescript: 4.2.3
   languageName: unknown
   linkType: soft
@@ -9951,7 +9991,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.21, lodash@npm:^4.17.12, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20":
+"lodash@npm:4.17.21, lodash@npm:^4.17.12, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 4983720b9abca930a4a46f18db163d7dad8dd00dbed6db0cc7b499b33b717cce69f80928b27bbb1ff2cbd3b19d251ee90669a8b5ea466072ca81c2ebe91e7468
@@ -14094,7 +14134,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"string-width@npm:^4.1.0, string-width@npm:^4.2.0":
+"string-width@npm:^4.1.0, string-width@npm:^4.2.0, string-width@npm:^4.2.2":
   version: 4.2.2
   resolution: "string-width@npm:4.2.2"
   dependencies:
@@ -14297,23 +14337,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-config-recommended@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "stylelint-config-recommended@npm:3.0.0"
+"stylelint-config-recommended@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "stylelint-config-recommended@npm:4.0.0"
   peerDependencies:
-    stylelint: ">=10.1.0"
-  checksum: 455fcb427786528495f66c2de1fbcb7cc7e8007aca303d21ad8f34b7150a3f4b7669a46d2b1c69ea7ac7f4f446c43b94c0920a3619b4a8d4dc5f3eee9df7cfa2
+    stylelint: ^13.12.0
+  checksum: e62b095277d37200c70b21205892fe986fb6b6b5c27d1296f2b287ca42deef0860f37461b3271a9b96d654d54864521760514d101a4b472b70360d74182a9d28
   languageName: node
   linkType: hard
 
-"stylelint-config-standard@npm:20.0.0":
-  version: 20.0.0
-  resolution: "stylelint-config-standard@npm:20.0.0"
+"stylelint-config-standard@npm:21.0.0":
+  version: 21.0.0
+  resolution: "stylelint-config-standard@npm:21.0.0"
   dependencies:
-    stylelint-config-recommended: ^3.0.0
+    stylelint-config-recommended: ^4.0.0
   peerDependencies:
-    stylelint: ">=10.1.0"
-  checksum: 3d70090294bad0ce2841a64feb97cd3985be8f51cdf4ed5e67c1f1c1578a15755a22dd2f8d63dce0f7db46607005b5a321fcbc2b0cbf4c636b9fd48ec35e82b2
+    stylelint: ^13.12.0
+  checksum: 143fa0f531ad9f8e27078dbd38c3075fbdcaa1a0d34ce49eaf0886072897bd285f0fac8e7f3cdb9cc8fac91b88a67f306598aa4822905730801245630e6e8ec6
   languageName: node
   linkType: hard
 
@@ -14332,9 +14372,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:13.11.0":
-  version: 13.11.0
-  resolution: "stylelint@npm:13.11.0"
+"stylelint@npm:13.12.0":
+  version: 13.12.0
+  resolution: "stylelint@npm:13.12.0"
   dependencies:
     "@stylelint/postcss-css-in-js": ^0.37.2
     "@stylelint/postcss-markdown": ^0.36.2
@@ -14346,7 +14386,7 @@ __metadata:
     execall: ^2.0.0
     fast-glob: ^3.2.5
     fastest-levenshtein: ^1.0.12
-    file-entry-cache: ^6.0.0
+    file-entry-cache: ^6.0.1
     get-stdin: ^8.0.0
     global-modules: ^2.0.0
     globby: ^11.0.2
@@ -14356,7 +14396,7 @@ __metadata:
     import-lazy: ^4.0.0
     imurmurhash: ^0.1.4
     known-css-properties: ^0.21.0
-    lodash: ^4.17.20
+    lodash: ^4.17.21
     log-symbols: ^4.0.0
     mathml-tag-names: ^2.1.3
     meow: ^9.0.0
@@ -14376,7 +14416,7 @@ __metadata:
     resolve-from: ^5.0.0
     slash: ^3.0.0
     specificity: ^0.4.1
-    string-width: ^4.2.0
+    string-width: ^4.2.2
     strip-ansi: ^6.0.0
     style-search: ^0.1.0
     sugarss: ^2.0.0
@@ -14386,7 +14426,7 @@ __metadata:
     write-file-atomic: ^3.0.3
   bin:
     stylelint: bin/stylelint.js
-  checksum: ea646e0cc8940b14b984fa0b6286a0653d4af46af394a457dbe4afe376ceeda44a4f869c2addff1b73758d58d5547922a63d63ae23d55edd130ed9e3b7012d05
+  checksum: bd841f8a4c0d4f921bafb917230cf4495b88de878591d3b0e283d933de05accbafd8ca9b93049dde40e07a1de6f0d337d1efff36cec946d2c4ed710d7325809c
   languageName: node
   linkType: hard
 
