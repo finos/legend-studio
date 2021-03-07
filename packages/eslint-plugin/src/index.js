@@ -22,6 +22,10 @@ module.exports = {
     'scripts-override': require('./configs/scripts-override').config,
   },
   rules: {
+    'enforce-module-import-hierarchy': require('./rules/enforce-module-import-hierarchy'),
+    'enforce-protocol-export-prefix': require('./rules/enforce-protocol-export-prefix'),
+    'enforce-protocol-file-prefix': require('./rules/enforce-protocol-file-prefix'),
+    'no-cross-protocol-version-import': require('./rules/no-cross-protocol-version-import'),
     'no-cross-workspace-source-import': require('./rules/no-cross-workspace-source-import'),
     'no-same-workspace-index-import': require('./rules/no-same-workspace-index-import'),
   },

@@ -26,7 +26,7 @@ import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V
 
 export class V1_Association extends V1_PackageableElement implements Hashable {
   properties: V1_Property[] = [];
-  derivedProperties: V1_DerivedProperty[] = []; // we used to call derived properties qualified properties
+  derivedProperties: V1_DerivedProperty[] = [];
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
 

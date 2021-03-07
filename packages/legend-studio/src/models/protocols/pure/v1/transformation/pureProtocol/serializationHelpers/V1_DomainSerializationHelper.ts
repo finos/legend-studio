@@ -291,7 +291,7 @@ export const V1_classSchema = createModelSchema(V1_Class, {
       ),
   ),
   derivedProperties: alias(
-    'qualifiedProperties',
+    'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
     custom(
       (values) =>
         serializeArray(
@@ -347,7 +347,7 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
   package: primitive(),
   properties: list(usingModelSchema(V1_propertySchema)),
   derivedProperties: alias(
-    'qualifiedProperties',
+    'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
     custom(
       (values) =>
         serializeArray(
