@@ -28,7 +28,7 @@ import type { V1_DerivedProperty } from './V1_DerivedProperty';
 export class V1_Class extends V1_PackageableElement implements Hashable {
   superTypes: string[] = [];
   properties: V1_Property[] = [];
-  derivedProperties: V1_DerivedProperty[] = []; // we used to call derived properties qualified properties
+  derivedProperties: V1_DerivedProperty[] = [];
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
   constraints: V1_Constraint[] = [];
