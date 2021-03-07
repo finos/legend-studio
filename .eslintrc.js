@@ -15,30 +15,29 @@
  */
 
 /**
+ * We need to detect environment for ESLint CLI because there are rules
+ * which are computationally expensive to perform during development.
+ * Therefore, for each environments, we will enable/disable these rules according:
+ *  - For `development` mode (when watching for changes and re-compile): DISABLE
+ *  - For `IDE` ESLint process (to keep the IDE snappy): DISABLE
+ *  - For `production` mode (to produce bundled code): ENABLE
+ *  - For `linting` process (to check code quality in CI): ENABLE
+ */
+const enableFastMode =
+  process.env.NODE_ENV === undefined || // IDE ESLint process runs without setting a NODE environment
+  (process.env.NODE_ENV === 'development' &&
+    process.env.DEVELOPMENT_MODE !== 'advanced');
+
+/**
  * NOTE: this config is supposed to be used for both the IDE ESLint process
  * and the CI ESLint process. However, since we have many Typescript projects,
  * `typescript-eslint` does not seem to handle this well enough as it can end up
  * throwing Out-Of-Memory error if we just call `eslint` from the root directory.
- * As such, for CI, we call `eslint` from each package separately and this config
- * will be used just for the IDE ESLint process.
+ * As such, for CI, we will call `eslint` from each package separately as this is
+ * the only rules that runs the expensive linting rules
  *
  * See https://github.com/typescript-eslint/typescript-eslint/issues/1192
  */
-
-/**
- * We need to detect environment for ESLint CLI because there are rules
- * which are computationally expensive to perform during development: i.e.
- * when watching for changes and re-compile, we just want to run a light
- * set of lint rules. On the other hand, we want to run the full set during
- * production build; since IDE like `vscode` runs linting on a separate
- * process, we want to run the full set there too.
- *
- * NOTE: currently we are making use of a hack to identify IDE ESLint plugin
- * process: i.e. when `process.env.NODE_ENV = undefined`
- */
-const enableFastMode =
-  process.env.NODE_ENV === 'development' &&
-  process.env.DEVELOPMENT_MODE !== 'advanced';
 
 module.exports = {
   root: true, // tell ESLint to stop looking further up in directory tree to resolve for parent configs
