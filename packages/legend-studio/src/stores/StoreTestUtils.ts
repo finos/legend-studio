@@ -31,13 +31,13 @@ export const getTestApplicationConfig = (
       appName: 'test-app',
       env: 'test-env',
       sdlc: {
-        url: 'http://testSdlcUrl',
+        url: 'https://testSdlcUrl',
       },
       engine: {
-        url: 'http://testEngineUrl',
+        url: 'https://testEngineUrl',
       },
       documentation: {
-        url: 'http://testDocUrl',
+        url: 'https://testDocUrl',
       },
       ...extraConfigData,
     },

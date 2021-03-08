@@ -250,8 +250,7 @@ export class GraphGenerationState {
       const generationSpec = generationSpecs[0];
       const fileGenerations = generationSpec.fileGenerations;
       // we don't need to keep 'fetching' the main model as it won't grow with each file generation
-      for (let i = 0; i < fileGenerations.length; i++) {
-        const fileGeneration = fileGenerations[i];
+      for (const fileGeneration of fileGenerations) {
         let result: GenerationOutput[] = [];
         try {
           const mode = this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(

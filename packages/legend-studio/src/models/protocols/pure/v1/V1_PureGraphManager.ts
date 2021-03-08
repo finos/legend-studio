@@ -659,7 +659,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_ELEMENTS_INITIALIZED_AND_INDEXED,
-          stepFinishedTime - stepFinishedTime,
+          stepFinishedTime - stepStartTime,
           'ms',
           `[element: ${data.elements.length}]`,
         );

@@ -25,6 +25,7 @@ import {
   getEditorLanguageFromFormat,
 } from '../../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
+import type { DebouncedFunc } from '@finos/legend-studio-shared';
 import {
   UnsupportedOperationError,
   debounce,
@@ -68,7 +69,6 @@ import {
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import type { DebouncedFunc } from 'lodash';
 import { CORE_TEST_ID } from '../../../../const';
 import type { GenerationProperty } from '../../../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
 import { GenerationPropertyItemType } from '../../../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';

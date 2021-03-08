@@ -79,13 +79,13 @@ export class EndToEndTester {
       expect(status).to.equal(200);
       const workspaces = response.body;
       const result = workspaces.filter(
-        (workspace: any) => workspace.workspaceId == this.workspace,
+        (workspace: any) => workspace.workspaceId === this.workspace,
       );
-      if (requireNewWorkspace && result.length == 1) {
+      if (requireNewWorkspace && result.length === 1) {
         this.enterEditorAndDeleteWorkspace();
         cy.wait(5000);
         this.createWorkspace();
-      } else if (result.length == 0) {
+      } else if (result.length === 0) {
         this.createWorkspace();
       }
     });
