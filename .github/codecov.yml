@@ -9,11 +9,7 @@ coverage:
         # TODO: re-enable this when we start having better coverage
         # target: 90%
         informational: true # do not fail build if coverage level is not met
-    patch:
-      enabled: false
-      default:
-        # TODO: re-enable this when we start having better coverage
-        informational: true # do not fail build if coverage level is not met
+    patch: off
 
 # See https://docs.codecov.io/docs/pull-request-comments
 comment:
