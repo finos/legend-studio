@@ -1,0 +1,23 @@
+name: Code Quality Check
+
+on:
+  push:
+    branches:
+      - master
+
+# NOTE: we cannot run this action in PR because secrets are not accessible from forks
+# See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
+jobs:
+  code-quality-check:
+    name: SonarCloud Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # disabling shallow clone is recommended for improving relevancy of reporting
+      - name: SonarCloud scan
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
