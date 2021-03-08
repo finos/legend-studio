@@ -23,12 +23,13 @@ import {
   assertTrue,
   assertErrorThrown,
   tryToFormatJSONString,
-  tryToMinifyJSONString,
   fromGrammarString,
   toGrammarString,
   createUrlStringFromData,
   losslessParse,
   losslessStringify,
+  tryToMinifyLosslessJSONString,
+  tryToFormatLosslessJSONString,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
@@ -174,7 +175,8 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
         this.sourceClass ?? Class.createStub(),
       ),
       OBJECT_INPUT_TYPE.JSON,
-      this.data,
+      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+      tryToMinifyLosslessJSONString(this.data),
     );
   }
 
@@ -192,7 +194,8 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
         this.sourceClass ?? Class.createStub(),
       ),
       createUrlStringFromData(
-        tryToMinifyJSONString(this.data),
+        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        tryToMinifyLosslessJSONString(this.data),
         JsonModelConnection.CONTENT_TYPE,
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
@@ -293,7 +296,8 @@ export class MappingTestExpectedOutputAssertionState extends MappingTestAssertio
 
   get assert(): MappingTestAssert {
     return new ExpectedOutputMappingTestAssert(
-      toGrammarString(this.expectedResult),
+      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+      toGrammarString(tryToMinifyLosslessJSONString(this.expectedResult)),
     );
   }
 }
@@ -404,7 +408,8 @@ export class MappingTestState {
         this.mappingEditorState.mapping,
       );
       inputDataState.setSourceClass(inputData.sourceClass.value);
-      inputDataState.setData(inputData.data); // WIP: account for XML when we support it
+      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+      inputDataState.setData(tryToFormatLosslessJSONString(inputData.data)); // WIP: account for XML when we support it
       return inputDataState;
     } else if (inputData instanceof FlatDataInputData) {
       const inputDataState = new MappingTestFlatDataInputDataState(
@@ -423,7 +428,10 @@ export class MappingTestState {
     if (testAssertion instanceof ExpectedOutputMappingTestAssert) {
       const assertionState = new MappingTestExpectedOutputAssertionState();
       assertionState.setExpectedResult(
-        fromGrammarString(testAssertion.expectedOutput),
+        fromGrammarString(
+          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+          tryToFormatLosslessJSONString(testAssertion.expectedOutput),
+        ),
       );
       return assertionState;
     }
