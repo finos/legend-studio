@@ -167,6 +167,17 @@ export const V1_processAuthenticationStrategy = (
       ),
     );
   }
+  const extraConnectionAuthenticationStrategyBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionAuthenticationStrategyBuilders?.() ??
+      [],
+  );
+  for (const builder of extraConnectionAuthenticationStrategyBuilders) {
+    const authStrategy = builder(protocol, context);
+    if (authStrategy) {
+      return authStrategy;
+    }
+  }
   throw new UnsupportedOperationError(
     `Can't build authentication strategy of type '${getClass(protocol).name}'`,
   );
