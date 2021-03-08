@@ -4,18 +4,20 @@ coverage:
     javascript:
       enable_partials: yes
   status:
-    # TODO: re-enable this when we start having better coverage
-    # project:
-    #   default:
-    #     target: 90%
+    project:
+      default:
+        # TODO: re-enable this when we start having better coverage
+        # target: 90%
+        informational: true # do not fail build if coverage level is not met
     patch:
       enabled: false
-    # TODO: re-enable this when we start having better coverage
-    informational: true # do not fail build if coverage level is not met
+      default:
+        # TODO: re-enable this when we start having better coverage
+        informational: true # do not fail build if coverage level is not met
 
 # See https://docs.codecov.io/docs/pull-request-comments
 comment:
-  layout: diff, flags, files # hide the Reach graph
+  layout: 'diff, flags, files' # hide the Reach graph
   require_changes: true # only post comment to PR if coverage changes
 
 ignore:
