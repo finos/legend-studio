@@ -17,6 +17,7 @@
 import { observable, action, flow, makeObservable } from 'mobx';
 import {
   losslessStringify,
+  tryToFormatLosslessJSONString,
   uniq,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -91,7 +92,10 @@ export abstract class ServiceExecutionState {
     );
     // TODO: format to other format when we support other connections in the future
     this.selectedSingeExecutionTestState?.test.setData(
-      this.selectedSingeExecutionTestState.test.data,
+      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+      tryToFormatLosslessJSONString(
+        this.selectedSingeExecutionTestState.test.data,
+      ),
     ); // pre-format test data
   }
 

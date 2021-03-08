@@ -28,6 +28,7 @@ import {
   uniq,
   isNonNullable,
   tryToMinifyLosslessJSONString,
+  tryToFormatLosslessJSONString,
   tryToFormatJSONString,
   toGrammarString,
   fromGrammarString,
@@ -136,7 +137,8 @@ export class TestContainerState {
   updateTestAssert(): void {
     if (this.assertionData) {
       this.testContainer.assert = this.editorStore.graphState.graphManager.HACKY_createAssertLambda(
-        toGrammarString(this.assertionData),
+        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
       );
     }
   }
@@ -146,7 +148,10 @@ export class TestContainerState {
       testContainter.assert,
     );
     this.assertionData = expectedResultAssertionString
-      ? fromGrammarString(expectedResultAssertionString)
+      ? fromGrammarString(
+          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+          tryToFormatLosslessJSONString(expectedResultAssertionString),
+        )
       : undefined;
   }
 
@@ -180,6 +185,7 @@ export class TestContainerState {
                 ),
                 connection.class,
                 createUrlStringFromData(
+                  /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
                   tryToMinifyLosslessJSONString(testData),
                   JsonModelConnection.CONTENT_TYPE,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
@@ -267,7 +273,10 @@ export class TestContainerState {
           true,
         )) as unknown) as ExecutionResult;
         this.setAssertionData(
-          losslessStringify(result.values, undefined, TAB_SIZE),
+          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+          tryToFormatLosslessJSONString(
+            losslessStringify(result.values, undefined, TAB_SIZE),
+          ),
         );
         this.updateTestAssert();
       } else {
@@ -308,7 +317,10 @@ export class TestContainerState {
         )) as unknown) as ExecutionResult;
         this.setTestExecutionResultText({
           expected: this.assertionData ?? '',
-          actual: losslessStringify(result.values),
+          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+          actual: tryToFormatLosslessJSONString(
+            losslessStringify(result.values),
+          ),
         });
       } else {
         throw new UnsupportedOperationError();
