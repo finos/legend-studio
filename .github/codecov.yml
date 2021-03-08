@@ -1,11 +1,25 @@
+# See https://docs.codecov.io/docs/commit-status
 coverage:
   parsers:
     javascript:
       enable_partials: yes
   status:
-    # TODO: renable this when we start having more tests
+    # TODO: re-enable this when we start having better coverage
     # project:
     #   default:
     #     target: 90%
     patch:
       enabled: false
+    # TODO: re-enable this when we start having better coverage
+    informational: true # do not fail build if coverage level is not met
+
+# See https://docs.codecov.io/docs/pull-request-comments
+comment:
+  layout: diff, flags, files # hide the Reach graph
+  require_changes: true # only post comment to PR if coverage changes
+
+ignore:
+  - packages/*/_package.config.js
+  - packages/*/studio.config.js
+  - packages/*/jest.config.js
+  - packages/*/webpack.config.js
