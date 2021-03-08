@@ -225,9 +225,9 @@ const processResponse = async <T>(
   const accept = (init.headers as RequestHeaders).Accept;
   switch (accept) {
     case ContentType.APPLICATION_JSON:
-      return await response.json();
+      return response.json();
     case ContentType.TEXT_PLAIN:
-      return ((await response.text()) as unknown) as Promise<T>;
+      return (response.text() as unknown) as Promise<T>;
     default:
       return Promise.reject(
         new NetworkClientError(

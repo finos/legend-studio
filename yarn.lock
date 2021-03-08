@@ -1804,6 +1804,7 @@ __metadata:
     eslint-plugin-prettier: 3.3.1
     eslint-plugin-react: 7.22.0
     eslint-plugin-react-hooks: 4.2.0
+    micromatch: 4.0.2
     prettier: 2.2.1
     rimraf: 3.0.2
   peerDependencies:
@@ -1854,6 +1855,7 @@ __metadata:
     react: 17.0.1
     react-dom: 17.0.1
     react-icons: 4.2.0
+    react-resize-detector: 6.6.1
     react-select: 4.2.1
     react-window: 1.8.6
     rimraf: 3.0.2

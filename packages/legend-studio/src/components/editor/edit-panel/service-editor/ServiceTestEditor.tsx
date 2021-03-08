@@ -126,14 +126,12 @@ export const TestContainerItem = observer(
     );
     if (testResult) {
       testStatusIcon = testResult.result ? (
-        (testStatusIcon = (
-          <div
-            title="Test passed"
-            className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--passed"
-          >
-            <FaCheckCircle />
-          </div>
-        ))
+        <div
+          title="Test passed"
+          className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--passed"
+        >
+          <FaCheckCircle />
+        </div>
       ) : (
         <div
           title="Test failed assertion"
@@ -529,7 +527,7 @@ export const ServiceTestAssertEditor = observer(
     );
     // all test run report summary
     const numberOfTests = testState.test.asserts.length;
-    const percentageTestRun = Math.floor((numberOfTests / numberOfTests) * 100);
+    const percentageTestRun = 100; // Math.floor((numberOfTests / numberOfTests) * 100);
     const numberOfTestsPassed = testState.testResults.filter(
       (result) => result.result,
     ).length;

@@ -30,6 +30,7 @@ export {
   debounce,
   throttle,
 } from 'lodash-es';
+export type { DebouncedFunc } from 'lodash-es';
 
 // NOTE: we can use the `rng` option in UUID V4 to control the random seed during testing
 // See https://github.com/uuidjs/uuid#version-4-random

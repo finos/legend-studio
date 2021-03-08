@@ -75,7 +75,7 @@ export abstract class ElementHelperExtension {
     cy.get(id).click();
     cy.getByTestID(TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR)
       .first()
-      .should('have.text', changesCount == '0' ? '' : changesCount);
+      .should('have.text', changesCount === '0' ? '' : changesCount);
     cy.getByTestID(TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT)
       .first()
       .should('have.text', changesCount);
