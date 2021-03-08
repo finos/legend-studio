@@ -113,7 +113,10 @@ export class NetworkClientManager {
 
   constructor(config: ApplicationConfig) {
     this.coreClient = new NetworkClient();
-    this.sdlcClient = new SDLCServerClient(config);
+    this.sdlcClient = new SDLCServerClient({
+      env: config.env,
+      serverUrl: config.sdlcServerUrl,
+    });
   }
 }
 
@@ -327,7 +330,7 @@ export class ApplicationStore {
       this.isSDLCAuthorized = (yield this.areModesAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
         window.location.href = SDLCServerClient.authorizeCallbackUrl(
-          this.config,
+          this.config.sdlcServerUrl,
           window.location.href,
         );
       } else {

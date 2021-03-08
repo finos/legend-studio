@@ -48,9 +48,11 @@ import {
   DependencyGraphProcessingError,
 } from '../../../MetaModelUtility';
 import { deserialize } from 'serializr';
-import { TAB_SIZE } from '../../../../stores/EditorConfig';
 import type { AbstractEngineConfig } from '../../../metamodels/pure/action/AbstractEngineConfiguration';
-import type { GraphBuilderOptions } from '../../../metamodels/pure/graph/AbstractPureGraphManager';
+import type {
+  EngineSetupConfig,
+  GraphBuilderOptions,
+} from '../../../metamodels/pure/graph/AbstractPureGraphManager';
 import { AbstractPureGraphManager } from '../../../metamodels/pure/graph/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/model/packageableElements/runtime/Runtime';
@@ -173,7 +175,6 @@ import { V1_AlloySdlc } from './model/context/V1_AlloySdlc';
 import { V1_Protocol } from './model/V1_Protocol';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
 import type { PluginManager } from '../../../../application/PluginManager';
-import type { ApplicationConfig } from '../../../../stores/ApplicationConfig';
 import { V1_ServiceStorage } from './engine/service/V1_ServiceStorage';
 import type { Store } from '../../../metamodels/pure/model/packageableElements/store/Store';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
@@ -192,14 +193,13 @@ import { V1_transformConnection } from './transformation/pureGraph/from/V1_Conne
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database';
 import { V1_ServiceStore } from './model/packageableElements/store/relational/V1_ServiceStore';
-import type { ServerClientConfig } from '@finos/legend-studio-network';
 import { ENTITY_PATH_DELIMITER } from '../../../sdlc/SDLCUtils';
 import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity';
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
 
-export const FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
+export const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
 const getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
   if (multiplicity.lowerBound === multiplicity.upperBound) {
@@ -208,10 +208,10 @@ const getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
     multiplicity.lowerBound === 0 &&
     multiplicity.upperBound === undefined
   ) {
-    return FUNCTION_SUFFIX_MULTIPLICITY_INFINITE;
+    return V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE;
   }
   return `$${multiplicity.lowerBound}_${
-    multiplicity.upperBound ?? FUNCTION_SUFFIX_MULTIPLICITY_INFINITE
+    multiplicity.upperBound ?? V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE
   }$`;
 };
 
@@ -356,7 +356,7 @@ interface V1_GraphBuilderInput {
 }
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
-  engine: V1_Engine;
+  engine!: V1_Engine;
   logger: Logger;
   extensions: V1_GraphBuilderExtensions;
 
@@ -364,10 +364,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     pureGraphManagerPlugins: PureGraphManagerPlugin[],
     pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
     logger: Logger,
-    engineClientConfig: ServerClientConfig,
   ) {
     super(pureGraphManagerPlugins, pureProtocolProcessorPlugins);
-    this.engine = new V1_Engine(engineClientConfig, logger);
     this.logger = logger;
     // setup plugins
     this.extensions = new V1_GraphBuilderExtensions(
@@ -387,14 +385,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   setupEngine = flow(function* (
     this: V1_PureGraphManager,
     pluginManager: PluginManager,
-    config: ApplicationConfig,
+    config: EngineSetupConfig,
   ) {
+    this.engine = new V1_Engine(config.clientConfig, this.logger);
     // register plugin
     this.engine.engineServerClient.registerTracerServicePlugins(
       pluginManager.getTracerServicePlugins(),
     );
     // setup the engine client
     this.engine.config.setEnv(config.env);
+    this.engine.config.setTabSize(config.tabSize);
     try {
       this.engine.config.setCurrentUserId(
         (yield this.engine.engineServerClient.getCurrentUserId()) as string,
@@ -1707,7 +1707,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   });
 
   getExamplePureProtocolText(): string {
-    return JSON.stringify(new V1_PureModelContextData(), undefined, TAB_SIZE);
+    return JSON.stringify(
+      new V1_PureModelContextData(),
+      undefined,
+      this.engine.config.tabSize,
+    );
   }
   getExampleExternalFormatImportText(): string {
     return JSON.stringify(
@@ -1721,7 +1725,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ],
       } as V1_PureModelContextGenerationInput,
       undefined,
-      TAB_SIZE,
+      this.engine.config.tabSize,
     );
   }
 
@@ -1729,7 +1733,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     JSON.stringify(
       this.V1_entitiesToPureModelContextData(entities),
       undefined,
-      TAB_SIZE,
+      this.engine.config.tabSize,
     );
   pureProtocolToEntities = (protocol: string): Entity[] => {
     const graphData = V1_deserializePureModelContextData(JSON.parse(protocol));

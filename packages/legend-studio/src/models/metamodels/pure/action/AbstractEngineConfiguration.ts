@@ -16,8 +16,11 @@
 
 import { action, makeObservable, observable } from 'mobx';
 
+const DEFAULT_TAB_SIZE = 2;
+
 export class AbstractEngineConfig {
   env?: string;
+  tabSize = DEFAULT_TAB_SIZE;
   currentUserId?: string;
   baseUrl?: string;
   useClientRequestPayloadCompression = false;
@@ -25,6 +28,10 @@ export class AbstractEngineConfig {
 
   setEnv(val: string | undefined): void {
     this.env = val;
+  }
+
+  setTabSize(val: number): void {
+    this.tabSize = val;
   }
 
   setCurrentUserId(val: string | undefined): void {

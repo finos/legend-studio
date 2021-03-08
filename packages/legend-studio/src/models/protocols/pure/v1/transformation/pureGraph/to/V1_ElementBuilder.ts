@@ -20,7 +20,7 @@ import type { PackageableElement } from '../../../../../../metamodels/pure/model
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
 
-export type ElementBuilderPass = (
+export type V1_ElementBuilderPass = (
   elementProtocol: V1_PackageableElement,
   context: V1_GraphBuilderContext,
 ) => void;
@@ -29,10 +29,10 @@ export type V1_ElementFirstPassBuilder = (
   elementProtocol: V1_PackageableElement,
   context: V1_GraphBuilderContext,
 ) => PackageableElement;
-export type V1_ElementSecondPassBuilder = ElementBuilderPass;
-export type V1_ElementThirdPassBuilder = ElementBuilderPass;
-export type V1_ElementFourthPassBuilder = ElementBuilderPass;
-export type V1_ElementFifthPassBuilder = ElementBuilderPass;
+export type V1_ElementSecondPassBuilder = V1_ElementBuilderPass;
+export type V1_ElementThirdPassBuilder = V1_ElementBuilderPass;
+export type V1_ElementFourthPassBuilder = V1_ElementBuilderPass;
+export type V1_ElementFifthPassBuilder = V1_ElementBuilderPass;
 
 /**
  * Element builder is a mechanism to handling the building process of
