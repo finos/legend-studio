@@ -21,7 +21,7 @@ import type {
 import { getText } from '../../../../../metamodels/pure/graph/DSLText_GraphManagerHelpers';
 import type { Text } from '../../../../../metamodels/pure/model/packageableElements/Text';
 
-export const resolveText = (
+export const V1_resolveText = (
   path: string,
   context: V1_GraphBuilderContext,
 ): PackageableElementImplicitReference<Text> =>

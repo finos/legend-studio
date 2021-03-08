@@ -51,7 +51,6 @@ import {
 import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
-import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 import {
   getElementCoordinates,
   CompilationError,
@@ -146,13 +145,6 @@ export class GraphState {
       this.editorStore.applicationStore.pluginManager.getPureGraphManagerPlugins(),
       this.editorStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
       this.editorStore.applicationStore.logger,
-      {
-        baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-        enableCompression: true,
-        authenticationUrl: SDLCServerClient.authenticationUrl(
-          this.editorStore.applicationStore.config,
-        ),
-      },
     );
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
   }
@@ -216,9 +208,9 @@ export class GraphState {
   }
 
   /**
-   * NOTE: this is temporary. System entities will eventually be in a seperate SDLC project and compressed for performance.
-   * Right now the essential profiles have been extracted from Pure.
-   * We might add more system entities as needed until they the SDLC project is setup.
+   * NOTE: this is temporary. System entities might eventually be in a seperate SDLC project and compressed for performance.
+   * Right now the essential profiles have been extracted from Pure to load the minimum system models.
+   * We might add more system entities as needed until the SDLC project is setup.
    */
   initializeSystem = flow(function* (this: GraphState) {
     try {

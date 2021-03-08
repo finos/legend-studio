@@ -49,11 +49,17 @@ import type { RawValueSpecification } from '../model/rawValueSpecification/RawVa
 import type { ServiceExecutionMode } from '../action/service/ServiceExecutionMode';
 import type { AbstractEngineConfig } from '../action/AbstractEngineConfiguration';
 import type { PluginManager } from '../../../../application/PluginManager';
-import type { ApplicationConfig } from '../../../../stores/ApplicationConfig';
 import type { GenerateStoreInput } from '../action/generation/GenerateStoreInput';
 import type { Store } from '../model/packageableElements/store/Store';
 import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
+import type { ServerClientConfig } from '@finos/legend-studio-network';
+
+export interface EngineSetupConfig {
+  env: string;
+  tabSize: number;
+  clientConfig: ServerClientConfig;
+}
 
 export interface GraphBuilderOptions {
   quiet?: boolean;
@@ -81,7 +87,7 @@ export abstract class AbstractPureGraphManager {
    */
   abstract setupEngine(
     pluginManager: PluginManager,
-    config: ApplicationConfig,
+    config: EngineSetupConfig,
   ): Promise<void>;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------

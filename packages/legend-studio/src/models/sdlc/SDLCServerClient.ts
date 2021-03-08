@@ -40,7 +40,6 @@ import type { ProjectConfiguration } from './models/configuration/ProjectConfigu
 import type { CreateVersionCommand } from './models/version/CreateVersionCommand';
 import type { ProjectStructureVersion } from './models/configuration/ProjectStructureVersion';
 import type { UpdateProjectConfigurationCommand } from './models/configuration/UpdateProjectConfigurationCommand';
-import type { ApplicationConfig } from '../../stores/ApplicationConfig';
 import type { User } from './models/User';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import type { TraceData } from '@finos/legend-studio-network';
@@ -61,14 +60,19 @@ enum SDLC_TRACER_SPAN {
   COMMIT_REVIEW = 'update entities',
 }
 
+export interface SDLCServerClientConfig {
+  env: string;
+  serverUrl: string;
+}
+
 export class SDLCServerClient extends AbstractServerClient {
   public currentUser?: User;
   private env: string;
 
-  constructor(config: ApplicationConfig) {
+  constructor(config: SDLCServerClientConfig) {
     super({
-      baseUrl: config.sdlcServerUrl,
-      authenticationUrl: SDLCServerClient.authenticationUrl(config),
+      baseUrl: config.serverUrl,
+      authenticationUrl: SDLCServerClient.authenticationUrl(config.serverUrl),
     });
     this.env = config.env;
   }
@@ -91,13 +95,13 @@ export class SDLCServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Authentication -------------------------------------------
 
-  static authenticationUrl = (config: ApplicationConfig): string =>
-    `${config.sdlcServerUrl}/auth/authorize`;
+  static authenticationUrl = (authenticationServerUrl: string): string =>
+    `${authenticationServerUrl}/auth/authorize`;
   static authorizeCallbackUrl = (
-    config: ApplicationConfig,
+    authenticationServerUrl: string,
     callbackURI: string,
   ): string =>
-    `${config.sdlcServerUrl}/auth/authorize?redirect_uri=${callbackURI}`;
+    `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}`;
 
   // ------------------------------------------- User -------------------------------------------
 

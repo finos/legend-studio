@@ -76,7 +76,10 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   renderWithAppContext(<AppRoot />);
   await waitFor(() =>
     expect(window.location.href).toEqual(
-      SDLCServerClient.authorizeCallbackUrl(applicationStore.config, stubURL),
+      SDLCServerClient.authorizeCallbackUrl(
+        applicationStore.config.sdlcServerUrl,
+        stubURL,
+      ),
     ),
   );
 });

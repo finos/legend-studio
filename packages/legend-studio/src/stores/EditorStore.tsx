@@ -38,6 +38,7 @@ import {
   DEFAULT_AUX_PANEL_SIZE,
   EDITOR_MODE,
   MONOSPACED_FONT_FAMILY,
+  TAB_SIZE,
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
@@ -53,6 +54,7 @@ import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
 import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
+import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 import {
   isNonNullable,
   getClass,
@@ -403,11 +405,21 @@ export class EditorStore {
     }
     yield Promise.all([
       this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
-      this.graphState.initializeSystem(),
       this.preloadTextEditorFont(),
+      this.graphState.initializeSystem(), // this can be moved inside of `setupEngine`
       this.graphState.graphManager.setupEngine(
         this.applicationStore.pluginManager,
-        this.applicationStore.config,
+        {
+          env: this.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.applicationStore.config.engineServerUrl,
+            enableCompression: true,
+            authenticationUrl: SDLCServerClient.authenticationUrl(
+              this.applicationStore.config.sdlcServerUrl,
+            ),
+          },
+        },
       ),
     ]);
     yield this.initMode();
