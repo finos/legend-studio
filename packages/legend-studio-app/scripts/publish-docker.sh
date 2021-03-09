@@ -15,16 +15,17 @@ NC='\033[0m' # No Color
 # So we use `v2` API assuming that the ONLY time we release to Docker is through using this script; with
 # that assumption, it's relatively safe to just check the top 10 tags.
 
-echo "\n${LIGHT_BLUE}"
-echo "###################################################################"
-echo "#            ATTEMPTING TO PUBLISHING TO DOCKER HUB               #"
-echo "###################################################################"
-echo "${NC}\n"
+echo -e "\n" # use echo -e to interpret the backslash escapes
+echo -e "${LIGHT_BLUE}"
+echo -e "###################################################################"
+echo -e "#            ATTEMPTING TO PUBLISHING TO DOCKER HUB               #"
+echo -e "###################################################################"
+echo -e "${NC}"
+echo -e "\n"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DOCKER_IMAGE_VERSION=$(cat $DIR/../package.json | jq .version | jq -r)
 DOCKER_IMAGE_NAME="finos/legend-studio"
-TEMP_IMAGE_NAME="finos/legend-engine-server" # TO BE DELETED
 
 # Check the current latest tag for the Docker image, if there are any, check if the current version is already
 # the latest, if so, do nothing
@@ -39,11 +40,11 @@ do
       continue
   elif [[ $_TAG == $DOCKER_IMAGE_VERSION ]];
     then
-      echo "${YELLOW}Image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION already exists. Aborting...${NC}"
+      echo -e "${YELLOW}Image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION already exists. Aborting...${NC}"
       exit 0
   fi
 done
-echo "${LIGHT_BLUE}Image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION has not been published. Proceeding...${NC}"
+echo -e "${LIGHT_BLUE}Image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION has not been published. Proceeding...${NC}"
 
 # Check if the image `legend-shared-server` is on the latest version. If not, throw error.
 SERVER_IMAGE_NAME="finos/legend-shared-server"
@@ -60,10 +61,10 @@ do
       continue
   elif [[ $_TAG == $SERVER_IMAGE_VERSION ]];
     then
-      echo "${LIGHT_BLUE}Server image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION is already up-to-date exists. Proceeding...${NC}"
+      echo -e "${LIGHT_BLUE}Server image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION is already up-to-date exists. Proceeding...${NC}"
       break
   else
-    echo "${RED}Server image $SERVER_IMAGE_NAME:$SERVER_IMAGE_VERSION is not up-to-date. Please update to the latest $SERVER_IMAGE_NAME:$_TAG. Aborting...${NC}"
+    echo -e "${RED}Server image $SERVER_IMAGE_NAME:$SERVER_IMAGE_VERSION is not up-to-date. Please update to the latest $SERVER_IMAGE_NAME:$_TAG. Aborting...${NC}"
     exit 1
   fi
 done
@@ -77,4 +78,6 @@ docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION $DIR/../
 # Push Docker image
 docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION
 
-echo "\n${GREEN}Successfully published image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION to Docker Hub! ${NC}"
+echo -e "\n"
+echo -e "${GREEN}Successfully published image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION to Docker Hub! ${NC}"
+echo -e "\n"
