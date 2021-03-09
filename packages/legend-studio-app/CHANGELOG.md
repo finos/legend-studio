@@ -1,12 +1,18 @@
 # @finos/legend-studio-app
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`f467ab8`](https://github.com/finos/legend-studio/commit/f467ab8a2efb9a283429c0997428269d3595a17a)]:
+  - @finos/legend-studio@0.0.2
+  - @finos/legend-studio-preset-dsl-text@0.0.2
+
 ## 0.2.0
+
 ### Minor Changes
 
-
-
 - [`217ef28`](https://github.com/finos/legend-studio/commit/217ef2843aeae192b500c54f0034b4c310d32770) [#59](https://github.com/finos/legend-studio/pull/59) Thanks [@akphi](https://github.com/akphi)! - Bump version for the main app to be in sync with existing Docker image version. Prepare to publish library packages to NPM.
-
 
 ### Patch Changes
 
