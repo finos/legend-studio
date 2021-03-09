@@ -10,7 +10,7 @@
     "build:setup": "cross-env FORCE_COLOR=1 yarn clean && yarn workspaces foreach --topological-dev --verbose --exclude legend-studio --exclude @finos/legend-studio-app run build",
     "build:tsc": "tsc --build",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
-    "changeset:advanced": "changeset",
+    "changeset:cli": "changeset",
     "check:ci": "yarn check:pkg-constraints && yarn check:project-ref && yarn check:tsc && yarn check:format && yarn check:copyright && yarn check:changeset",
     "check:changeset": "node ./scripts/workflow/checkChangesets.js",
     "check:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js",
