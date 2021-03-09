@@ -9,9 +9,10 @@
     "build:sass": "cross-env FORCE_COLOR=1 yarn workspaces foreach --topological-dev --verbose run build:sass",
     "build:setup": "cross-env FORCE_COLOR=1 yarn clean && yarn workspaces foreach --topological-dev --verbose --exclude legend-studio --exclude @finos/legend-studio-app run build",
     "build:tsc": "tsc --build",
-    "changeset": "changeset",
+    "changeset": "node ./scripts/workflow/generateChangeset.js",
+    "changeset:advanced": "changeset",
     "check:ci": "yarn check:pkg-constraints && yarn check:project-ref && yarn check:tsc && yarn check:format && yarn check:copyright && yarn check:changeset",
-    "check:changeset": "yarn changeset status --since=master",
+    "check:changeset": "node ./scripts/workflow/checkChangesets.js",
     "check:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js",
     "check:format": "prettier --check \"scripts/**/*.js\" \"packages/*/src/**/*.{js,ts,tsx,html,scss,css}\"",
     "check:pkg-constraints": "yarn constraints",
@@ -66,7 +67,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "./scripts/commitizenPrompt.js"
+      "path": "./scripts/workflow/commitizenPrompt.js"
     }
   },
   "browserslist": [

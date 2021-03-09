@@ -49,10 +49,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # needed to validate changeset
-      - name: Git Status
-        run: git status && git pull -f origin master:master && git switch -c "pull-request" && git show-branch && git merge-base master HEAD
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
@@ -78,8 +74,6 @@ jobs:
         run: yarn check:format
       - name: Check copyright headers
         run: yarn check:copyright
-      - name: Check changeset coverage
-        run: yarn check:changeset
 
   test:
     name: Run Unit & Integration Tests

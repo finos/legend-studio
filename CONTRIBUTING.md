@@ -47,9 +47,11 @@ If you are not familiar with the commit message convention, you can use `yarn co
 
 ### Changeset
 
-A `changeset` is an intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, for a PR with substantial changes (refactoring, maintenance, bug fixes, or adding new features), we expect the author to create a `changeset` file which indicates which packages should be re-released due to this change and a brief summary of the changes to be added to release note/changelog. We use [changesets](https://github.com/atlassian/changesets) to manage this process. The command `yarn changeset` will open an interactive prompt which helps you build the changeset.
+A `changeset` is an intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, we expect the author to create a `changeset` file which indicates which packages should be re-released due to this change and a brief summary of the changes to be added to release note/changelog.
 
-> Changes like adding documentation or testing are also important, but they don't affect the functionalities of the app and thus never requires a release. As such, you might not need to create a changeset for these changes.
+> No matter how big is your change, you should **always** at least bump a `patch` release for the packages being modified. We enforce this to avoid missing changes during release and also to lessen the cognitive load for reivewers. If your change is not substantial (for example, you are fixing code styles, bump some minor dependencies or adding some tests), you can leave the summary blank.
+
+We use [changesets](https://github.com/atlassian/changesets) to manage this process. This is the format of the changeset.
 
 ```md
 ---
@@ -63,6 +65,18 @@ An example description of the major changes.
 Please note any breaking changes and potential migration.
 Also try to adhere to the format in existing changelogs.
 -->
+```
+
+To create the changeset, you can use the following commands:
+
+```sh
+# To quickly generate a changeset
+# NOTE: you can provide an optional message. If no message is provided,
+# the summary part of your changeset will be left blank.
+yarn changeset "e.g. some message ..."
+
+# To open an interactive prompt to build more advanced changeset
+yarn changeset:advanced
 ```
 
 ## Development Guidelines
