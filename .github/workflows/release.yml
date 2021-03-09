@@ -8,7 +8,10 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-latest
+    # NOTE: we need to use `ubuntu-20.04` in order to get `jq@1.6`.
+    # This will be the default environment for `ubuntu-latest` tag soon
+    # See https://github.com/actions/virtual-environments/issues/1816
+    runs-on: ubuntu-20.04
     if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
