@@ -16,6 +16,12 @@
 
 /**
  * Customize the changelog generator to not show changelog entry without content.
+ *
+ * Since we might enforce contributors to provide a changeset to at least bump a `patch` for any
+ * packages they modify, there are times when it doesn't really make sense to require
+ * a changeset summary. As such, we need a way to filter those changesets without summary out from
+ * the changelog.
+ *
  * NOTE: We try not to customize too far from the default changelog generator `@changesets/changelog-github`.
  *
  * See https://github.com/atlassian/changesets/blob/master/docs/modifying-changelog-format.md

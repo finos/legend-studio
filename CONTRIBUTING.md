@@ -76,7 +76,7 @@ To create the changeset, you can use the following commands:
 yarn changeset "e.g. some message ..."
 
 # To open an interactive prompt to build more advanced changeset
-yarn changeset:advanced
+yarn changeset:cli
 ```
 
 ## Development Guidelines
