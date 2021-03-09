@@ -45,12 +45,17 @@ This list keeps track of dependencies which are either unstable or blockers to c
 | [babel](https://github.com/babel/babel)                                                        | In `babel@8`, a lot of configurations are to be set to default, we should keep track of these to slim down our babel preset                                                                                                                                                                                                                                                                                                                               |
 | [jest](https://github.com/facebook/jest)                                                       | Jest does not [fully support ESM](https://github.com/facebook/jest/issues/9430) so for each package, we need to expose our entry point via the `main` field in `package.json` and let `babel-jest` handle the transform for these ESM modules. With `Jest@27`, we should also be able to get rid of custom logic to handle ESM for `lodash-es`. Also `Jest@27` will use `jest-circus` by default so we don't need to manually specify this like right now |
 | [webpack-dev-server](https://github.com/webpack/webpack-dev-server)                            | Using `beta` version. Part of `webpack@5` upgrade ([tracker](https://github.com/webpack/webpack-dev-server/milestone/4))                                                                                                                                                                                                                                                                                                                                  |
-| [yarn (v2 - berry)](https://github.com/yarnpkg/berry)                                          | [PnP](https://yarnpkg.com/features/pnp) is nice but [currently does not support ESM](https://github.com/yarnpkg/berry/issues/638) so we have to use `node_modules` as node linker mechanism                                                                                                                                                                                                                                                               |
+| [husky](https://github.com/typicode/husky)                                                     | `husky@5` forces us to change our license. We have to wait till the [early-access phase is over](https://github.com/typicode/husky/issues/857)                                                                                                                                                                                                                                                                                                            |
 
 ## Dependencies Features to Try-out
 
 As mentioned, we try to always keep our dependencies up-to-date as it often comes with bug-fixes and optimization, but sometimes, it also comes with new features which are really beneficial to us but might require some effort to migrate over or to make use of them. As such, here we keep track of the list of features to try out but we haven't quite have the time and effort.
 
-| Package                 | What's nice to try? |
-| ----------------------- | ------------------- |
-| (none)                  |                     |
+| Package                                               | What's nice to try?                                                                                                                                                                                    |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [yarn (v2 - berry)](https://github.com/yarnpkg/berry) | [PnP](https://yarnpkg.com/features/pnp) is nice to try out but [currently does not support ESM](https://github.com/yarnpkg/berry/issues/638) so we have to use `node_modules` as node linker mechanism |
+
+## TODO: add a pinned issues for these packages' limitation
+
+https://github.com/yarnpkg/berry/issues/2486
+https://github.com/yarnpkg/berry/issues/62

@@ -34,6 +34,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Create Release Pull Request or Publish to NPM and Docker
+        id: changesets
         uses: changesets/action@master
         with:
           version: yarn version
@@ -43,3 +44,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to Docker
+        # NOTE: we enforce this condition because publishing `legend-studio-app` should only be
+        # attempted if other packages are published, to ensure it uses the latest tagged versions
+        # for all of its dependencies instead of their snapshots.
+        if: steps.changesets.outputs.published == 'true'
+        run: yarn publish:docker
