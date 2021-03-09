@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
+    "docker:login": "./scripts/docker-login.sh",
     "build": "yarn clean && yarn workspaces foreach --topological-dev --verbose run build",
     "build:sass": "cross-env FORCE_COLOR=1 yarn workspaces foreach --topological-dev --verbose run build:sass",
     "build:setup": "cross-env FORCE_COLOR=1 yarn clean && cross-env FORCE_COLOR=1 yarn workspaces foreach --topological-dev --verbose --exclude legend-studio --exclude @finos/legend-studio-app run build",
