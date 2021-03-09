@@ -82,10 +82,10 @@ export class FunctionBodyEditorState extends LambdaEditorState {
   convertLambdaObjectToGrammarString = flow(function* (
     this: FunctionBodyEditorState,
     pretty: boolean,
-    firstLoad: boolean = false,
+    firstLoad?: boolean,
   ) {
     if (!this.functionElement.isStub) {
-      this.isConvertingFunctionBodyToString = firstLoad;
+      this.isConvertingFunctionBodyToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
         const functionLamba = new RawLambda(

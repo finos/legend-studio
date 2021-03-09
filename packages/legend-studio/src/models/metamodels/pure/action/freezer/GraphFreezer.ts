@@ -357,77 +357,71 @@ export class GraphFreezer
 
   // ----------------------------------------------- PROPERTY MAPPING ----------------------------------------
 
-  visit_PurePropertyMapping(propertyMapping: PurePropertyMapping): void {
-    freeze(propertyMapping);
-    freeze(propertyMapping.transform);
+  visit_PurePropertyMapping(metamodel: PurePropertyMapping): void {
+    freeze(metamodel);
+    freeze(metamodel.transform);
   }
 
-  visit_FlatDataPropertyMapping(
-    propertyMapping: FlatDataPropertyMapping,
-  ): void {
-    freeze(propertyMapping);
-    freeze(propertyMapping.transform);
+  visit_FlatDataPropertyMapping(metamodel: FlatDataPropertyMapping): void {
+    freeze(metamodel);
+    freeze(metamodel.transform);
   }
 
   visit_EmbeddedFlatDataPropertyMapping(
-    propertyMapping: EmbeddedFlatDataPropertyMapping,
+    metamodel: EmbeddedFlatDataPropertyMapping,
   ): void {
-    freeze(propertyMapping);
-    freeze(propertyMapping.id);
-    this.visit_EmbeddedFlatDataSetImplementation(propertyMapping);
+    freeze(metamodel);
+    freeze(metamodel.id);
+    this.visit_EmbeddedFlatDataSetImplementation(metamodel);
   }
 
-  visit_RelationalPropertyMapping(
-    propertyMapping: RelationalPropertyMapping,
-  ): void {
-    freeze(propertyMapping);
-    freeze(propertyMapping.relationalOperation);
+  visit_RelationalPropertyMapping(metamodel: RelationalPropertyMapping): void {
+    freeze(metamodel);
+    freeze(metamodel.relationalOperation);
   }
 
   visit_EmbeddedRelationalPropertyMapping(
-    propertyMapping: EmbeddedRelationalInstanceSetImplementation,
+    metamodel: EmbeddedRelationalInstanceSetImplementation,
   ): void {
-    freeze(propertyMapping);
-    freeze(propertyMapping.id);
-    freeze(propertyMapping.class);
-    freezeArray(propertyMapping.primaryKey, freeze);
-    freezeArray(propertyMapping.propertyMappings, (propertyMapping) =>
+    freeze(metamodel);
+    freeze(metamodel.id);
+    freeze(metamodel.class);
+    freezeArray(metamodel.primaryKey, freeze);
+    freezeArray(metamodel.propertyMappings, (propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(this),
     );
   }
 
   visit_InlineEmbeddedRelationalPropertyMapping(
-    propertyMapping: InlineEmbeddedRelationalInstanceSetImplementation,
+    metamodel: InlineEmbeddedRelationalInstanceSetImplementation,
   ): void {
-    freeze(propertyMapping);
-    freeze(propertyMapping.id);
-    freeze(propertyMapping.class);
-    freezeArray(propertyMapping.primaryKey, freeze);
-    freeze(propertyMapping.inlineSetImplementation);
-    freezeArray(propertyMapping.propertyMappings, (propertyMapping) =>
+    freeze(metamodel);
+    freeze(metamodel.id);
+    freeze(metamodel.class);
+    freezeArray(metamodel.primaryKey, freeze);
+    freeze(metamodel.inlineSetImplementation);
+    freezeArray(metamodel.propertyMappings, (propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(this),
     );
   }
 
   visit_OtherwiseEmbeddedRelationalPropertyMapping(
-    propertyMapping: OtherwiseEmbeddedRelationalInstanceSetImplementation,
+    metamodel: OtherwiseEmbeddedRelationalInstanceSetImplementation,
   ): void {
-    freeze(propertyMapping);
-    freeze(propertyMapping.id);
-    freeze(propertyMapping.class);
-    freezeArray(propertyMapping.primaryKey, freeze);
-    propertyMapping.otherwisePropertyMapping.accept_PropertyMappingVisitor(
-      this,
-    );
-    freezeArray(propertyMapping.propertyMappings, (propertyMapping) =>
+    freeze(metamodel);
+    freeze(metamodel.id);
+    freeze(metamodel.class);
+    freezeArray(metamodel.primaryKey, freeze);
+    metamodel.otherwisePropertyMapping.accept_PropertyMappingVisitor(this);
+    freezeArray(metamodel.propertyMappings, (propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(this),
     );
   }
 
   visit_AggregationAwarePropertyMapping(
-    propertyMapping: AggregationAwarePropertyMapping,
+    metamodel: AggregationAwarePropertyMapping,
   ): void {
-    freeze(propertyMapping);
+    freeze(metamodel);
   }
 
   // ----------------------------------------------- CONNECTION ----------------------------------------

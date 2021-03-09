@@ -352,7 +352,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassVisitor
     return fileGeneration;
   }
 
-  // WIP: Add support for generation specification
+  // TODO: Add support for generation specification
   visit_GenerationSpecification(
     element: V1_GenerationSpecification,
   ): PackageableElement {

@@ -307,7 +307,6 @@ export class V1_DependencyDisambiguator
       protocol.package,
       this.dependencyProcessingContext,
     );
-    return;
   }
 
   visit_Mapping(protocol: V1_Mapping): void {
@@ -372,7 +371,6 @@ export class V1_DependencyDisambiguator
     protocol.scopeElements.forEach((scopeElement) =>
       V1_processDependencyPath(scopeElement, this.dependencyProcessingContext),
     );
-    return;
   }
 
   visit_PackageableRuntime(protocol: V1_PackageableRuntime): void {
@@ -484,17 +482,17 @@ export class V1_DependencyDisambiguator
   }
 
   visit_EmbeddedFlatDataPropertyMapping(
-    propertyMapping: V1_EmbeddedFlatDataPropertyMapping,
+    protocol: V1_EmbeddedFlatDataPropertyMapping,
   ): void {
     V1_processDependablePropertyPointer(
-      propertyMapping.property,
+      protocol.property,
       this.dependencyProcessingContext,
     );
-    propertyMapping.class = V1_processDependencyPath(
-      propertyMapping.class,
+    protocol.class = V1_processDependencyPath(
+      protocol.class,
       this.dependencyProcessingContext,
     );
-    propertyMapping.propertyMappings.forEach((propertyMapping) =>
+    protocol.propertyMappings.forEach((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(this),
     );
   }
@@ -507,7 +505,6 @@ export class V1_DependencyDisambiguator
       this.dependencyProcessingContext,
     );
     //TODO relational operation element
-    return;
   }
 
   visit_InlineEmbeddedPropertyMapping(

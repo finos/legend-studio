@@ -208,14 +208,17 @@ export const ReviewSideBar = observer(() => {
               </div>
             </div>
             <div className="panel__content">
-              {changes.sort(entityDiffSorter).map((diff) => (
-                <EntityDiffSideBarItem
-                  key={diff.key}
-                  diff={diff}
-                  isSelected={isSelectedDiff(diff)}
-                  openDiff={openChange(diff)}
-                />
-              ))}
+              {changes
+                .slice()
+                .sort(entityDiffSorter)
+                .map((diff) => (
+                  <EntityDiffSideBarItem
+                    key={diff.key}
+                    diff={diff}
+                    isSelected={isSelectedDiff(diff)}
+                    openDiff={openChange(diff)}
+                  />
+                ))}
             </div>
           </div>
         </div>

@@ -104,34 +104,32 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     this.tableAliasMap = tabliaAliasMap ?? new Map<string, TableAlias>();
   }
 
-  visit_PurePropertyMapping(
-    propertyMapping: V1_PurePropertyMapping,
-  ): PropertyMapping {
+  visit_PurePropertyMapping(protocol: V1_PurePropertyMapping): PropertyMapping {
     assertNonNullable(
-      propertyMapping.property,
+      protocol.property,
       'Model-to-model property mapping property is missing',
     );
     assertNonEmptyString(
-      propertyMapping.property.class,
+      protocol.property.class,
       'Model-to-model property mapping property class is missing',
     );
     assertNonEmptyString(
-      propertyMapping.property.property,
+      protocol.property.property,
       'Model-to-model property mapping property name is missing',
     );
     assertNonNullable(
-      propertyMapping.transform,
+      protocol.transform,
       'Model-to-model property mapping transform lambda is missing',
     );
     // NOTE: mapping for derived property is not supported
-    const property = this.context.resolveProperty(propertyMapping.property);
+    const property = this.context.resolveProperty(protocol.property);
     const propertyType = property.value.genericType.value.rawType;
     let targetSetImplementation: SetImplementation | undefined;
     const topParent = guaranteeNonNullable(this.topParent);
     if (propertyType instanceof Class) {
-      if (propertyMapping.target) {
+      if (protocol.target) {
         targetSetImplementation = topParent.parent.getClassMapping(
-          propertyMapping.target,
+          protocol.target,
         );
       } else {
         /* @MARKER: ACTION ANALYTICS */
@@ -148,20 +146,20 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
-      new RawLambda([], propertyMapping.transform.body),
+      new RawLambda([], protocol.transform.body),
       topParent,
       targetSetImplementation,
-      propertyMapping.explodeProperty,
+      protocol.explodeProperty,
     );
-    if (propertyMapping.enumMappingId) {
+    if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
-        (em) => em.id.value === propertyMapping.enumMappingId,
+        (em) => em.id.value === protocol.enumMappingId,
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.logger.debug(
           CORE_LOG_EVENT.GRAPH_PROBLEM,
-          `Can't find enumeration mapping with ID '${propertyMapping.enumMappingId}' in mapping '${topParent.parent.path}' (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent.parent.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
       purePropertyMapping.transformer = enumerationMapping;
@@ -170,41 +168,38 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   }
 
   visit_FlatDataPropertyMapping(
-    propertyMapping: V1_FlatDataPropertyMapping,
+    protocol: V1_FlatDataPropertyMapping,
   ): PropertyMapping {
     assertNonNullable(
-      propertyMapping.property,
+      protocol.property,
       'Flat-data property mapping property is missing',
     );
     assertNonEmptyString(
-      propertyMapping.property.property,
+      protocol.property.property,
       'Flat-data property mapping property name is missing',
     );
     assertNonNullable(
-      propertyMapping.transform,
+      protocol.transform,
       'Flat-data property mapping transform lambda is missing',
     );
     // NOTE: there are cases that property pointer class might be missing, such as when we transform grammar to JSON
     // since we do not do look up, due to nesting structure introudced by embedded mappings, we might not have the class information
     // as such, here we have to resolve the class being mapped depending on where the property mapping is in the class mapping
     let propertyOwnerClass: Class;
-    if (propertyMapping.property.class) {
-      propertyOwnerClass = this.context.resolveClass(
-        propertyMapping.property.class,
-      ).value;
+    if (protocol.property.class) {
+      propertyOwnerClass = this.context.resolveClass(protocol.property.class)
+        .value;
     } else if (
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
     ) {
       propertyOwnerClass = this.immediateParent.class.value;
     } else {
       throw new GraphError(
-        `Can't find property owner class for property '${propertyMapping.property.property}'`,
+        `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
     // NOTE: mapping for derived property is not supported
-    const property = propertyOwnerClass.getProperty(
-      propertyMapping.property.property,
-    );
+    const property = propertyOwnerClass.getProperty(protocol.property.property);
     const sourceSetImplementation = guaranteeNonNullable(
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
         ? this.immediateParent
@@ -213,27 +208,27 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     // target
     let targetSetImplementation: SetImplementation | undefined;
     const propertyType = property.genericType.value.rawType;
-    if (propertyType instanceof Class && propertyMapping.target) {
+    if (propertyType instanceof Class && protocol.target) {
       targetSetImplementation = this.topParent?.parent.getClassMapping(
-        propertyMapping.target,
+        protocol.target,
       );
     }
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
       this.immediateParent,
       PropertyExplicitReference.create(property),
-      new RawLambda([], propertyMapping.transform.body),
+      new RawLambda([], protocol.transform.body),
       sourceSetImplementation,
       targetSetImplementation,
     );
-    if (propertyMapping.enumMappingId) {
+    if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
-        (em) => em.id.value === propertyMapping.enumMappingId,
+        (em) => em.id.value === protocol.enumMappingId,
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.logger.debug(
           CORE_LOG_EVENT.GRAPH_PROBLEM,
-          `Can't find enumeration mapping with ID '${propertyMapping.enumMappingId}' in mapping '${this.topParent?.parent.path} (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path} (perhaps because we haven't supported included mappings)`,
         );
       }
       flatDataPropertyMapping.transformer = enumerationMapping;
@@ -242,39 +237,36 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   }
 
   visit_EmbeddedFlatDataPropertyMapping(
-    propertyMapping: V1_EmbeddedFlatDataPropertyMapping,
+    protocol: V1_EmbeddedFlatDataPropertyMapping,
   ): PropertyMapping {
     assertNonNullable(
-      propertyMapping.property,
+      protocol.property,
       'Flat-data property mapping property is missing',
     );
     assertNonEmptyString(
-      propertyMapping.property.property,
+      protocol.property.property,
       'Flat-data property mapping property name is missing',
     );
     // NOTE: there are cases that property pointer class might be missing, such as when we transform grammar to JSON
     // since we do not do look up, due to nesting structure introudced by embedded mappings, we might not have the class information
     // as such, here we have to resolve the class being mapped depending on where the property mapping is in the class mapping
     let propertyOwnerClass: Class;
-    if (propertyMapping.property.class) {
-      propertyOwnerClass = this.context.resolveClass(
-        propertyMapping.property.class,
-      ).value;
+    if (protocol.property.class) {
+      propertyOwnerClass = this.context.resolveClass(protocol.property.class)
+        .value;
     } else if (
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
     ) {
       propertyOwnerClass = this.immediateParent.class.value;
     } else {
       throw new GraphError(
-        `Can't find property owner class for property '${propertyMapping.property.property}'`,
+        `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
-    const property = propertyOwnerClass.getProperty(
-      propertyMapping.property.property,
-    );
+    const property = propertyOwnerClass.getProperty(protocol.property.property);
     let _class: PackageableElementReference<Class>;
-    if (propertyMapping.class) {
-      _class = this.context.resolveClass(propertyMapping.class);
+    if (protocol.class) {
+      _class = this.context.resolveClass(protocol.class);
     } else {
       const propertyType = property.genericType.value.rawType;
       const complexClass = guaranteeType(
@@ -302,7 +294,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       undefined,
     );
     embeddedPropertyMapping.targetSetImplementation = embeddedPropertyMapping;
-    embeddedPropertyMapping.propertyMappings = propertyMapping.propertyMappings.map(
+    embeddedPropertyMapping.propertyMappings = protocol.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
           new V1_ProtocolToMetaModelPropertyMappingVisitor(
@@ -317,21 +309,21 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   }
 
   visit_RelationalPropertyMapping(
-    propertyMapping: V1_RelationalPropertyMapping,
+    protocol: V1_RelationalPropertyMapping,
   ): PropertyMapping {
     assertNonNullable(
-      propertyMapping.property,
+      protocol.property,
       'Relational property mapping property is missing',
     );
     assertNonEmptyString(
-      propertyMapping.property.property,
+      protocol.property.property,
       'Relational property mapping property name is missing',
     );
     assertNonNullable(
-      propertyMapping.relationalOperation,
+      protocol.relationalOperation,
       'Relational property mapping operation is missing',
     );
-    if (propertyMapping.localMappingProperty) {
+    if (protocol.localMappingProperty) {
       throw new UnsupportedOperationError(
         'Local mapping property is not supported',
       );
@@ -340,9 +332,8 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     let propertyOwner: Class | Association;
     if (this.immediateParent instanceof AssociationImplementation) {
       propertyOwner = this.immediateParent.association.value;
-    } else if (propertyMapping.property.class) {
-      propertyOwner = this.context.resolveClass(propertyMapping.property.class)
-        .value;
+    } else if (protocol.property.class) {
+      propertyOwner = this.context.resolveClass(protocol.property.class).value;
     } else if (
       this.immediateParent instanceof
       EmbeddedRelationalInstanceSetImplementation
@@ -350,15 +341,13 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       propertyOwner = this.immediateParent.class.value;
     } else {
       throw new GraphError(
-        `Can't find property owner class for property '${propertyMapping.property.property}'`,
+        `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
     // NOTE: mapping for derived property is not supported
-    const property = propertyOwner.getProperty(
-      propertyMapping.property.property,
-    );
+    const property = propertyOwner.getProperty(protocol.property.property);
     const operation = V1_processRelationalOperationElement(
-      propertyMapping.relationalOperation,
+      protocol.relationalOperation,
       this.context,
       this.tableAliasMap,
       [],
@@ -374,9 +363,9 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       ) {
         parentMapping = this.immediateParent.parent;
       }
-      if (propertyMapping.target) {
+      if (protocol.target) {
         targetSetImplementation = parentMapping?.getClassMapping(
-          propertyMapping.target,
+          protocol.target,
         );
       } else {
         targetSetImplementation = parentMapping?.classMappingsByClass(
@@ -387,7 +376,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     const sourceSetImplementation = guaranteeNonNullable(
       resolveRelationalPropertyMappingSource(
         this.immediateParent,
-        propertyMapping,
+        protocol,
         this.topParent,
       ),
     );
@@ -398,16 +387,15 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       sourceSetImplementation,
       targetSetImplementation,
     );
-    if (propertyMapping.enumMappingId) {
+    if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
-        (enumerationMapping) =>
-          enumerationMapping.id.value === propertyMapping.enumMappingId,
+        (em) => em.id.value === protocol.enumMappingId,
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.logger.debug(
           CORE_LOG_EVENT.GRAPH_PROBLEM,
-          `Can't find enumeration mapping with ID '${propertyMapping.enumMappingId}' in mapping '${this.topParent?.parent.path}' (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
       relationalPropertyMapping.transformer = enumerationMapping;
@@ -416,21 +404,20 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   }
 
   visit_InlineEmbeddedPropertyMapping(
-    propertyMapping: V1_InlineEmbeddedPropertyMapping,
+    protocol: V1_InlineEmbeddedPropertyMapping,
   ): PropertyMapping {
     assertNonNullable(
-      propertyMapping.property,
+      protocol.property,
       'Embedded Relational property mapping property is missing',
     );
     assertNonEmptyString(
-      propertyMapping.property.property,
+      protocol.property.property,
       'Embedded property mapping property name is missing',
     );
     let propertyOwnerClass: Class;
-    if (propertyMapping.property.class) {
-      propertyOwnerClass = this.context.resolveClass(
-        propertyMapping.property.class,
-      ).value;
+    if (protocol.property.class) {
+      propertyOwnerClass = this.context.resolveClass(protocol.property.class)
+        .value;
     } else if (
       this.immediateParent instanceof RootRelationalInstanceSetImplementation ||
       this.immediateParent instanceof
@@ -439,12 +426,10 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       propertyOwnerClass = this.immediateParent.class.value;
     } else {
       throw new GraphError(
-        `Can't find property owner class for property '${propertyMapping.property.property}'`,
+        `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
-    const property = propertyOwnerClass.getProperty(
-      propertyMapping.property.property,
-    );
+    const property = propertyOwnerClass.getProperty(protocol.property.property);
     const propertyType = property.genericType.value.rawType;
     const complexClass = guaranteeType(
       propertyType,
@@ -467,24 +452,24 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       InferableMappingElementIdExplicitValue.create(id, ''),
     );
     inline.inlineSetImplementation = topParent.parent.getClassMapping(
-      propertyMapping.setImplementationId,
+      protocol.setImplementationId,
     );
     return inline;
   }
 
   visit_EmbeddedRelationalPropertyMapping(
-    propertyMapping: V1_EmbeddedRelationalPropertyMapping,
+    protocol: V1_EmbeddedRelationalPropertyMapping,
   ): PropertyMapping {
     assertNonNullable(
-      propertyMapping.property,
+      protocol.property,
       'Embedded Relational property mapping property is missing',
     );
     assertNonEmptyString(
-      propertyMapping.property.property,
+      protocol.property.property,
       'Embedded property mapping property name is missing',
     );
     const properties = V1_processEmbeddedRelationalMappingProperties(
-      propertyMapping,
+      protocol,
       this.immediateParent,
       guaranteeNonNullable(this.topParent),
       this.context,
@@ -500,7 +485,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         '',
       ),
     );
-    embedded.primaryKey = propertyMapping.classMapping.primaryKey.map((key) =>
+    embedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
       V1_processRelationalOperationElement(
         key,
         this.context,
@@ -508,7 +493,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         [],
       ),
     );
-    embedded.propertyMappings = propertyMapping.classMapping.propertyMappings.map(
+    embedded.propertyMappings = protocol.classMapping.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
           new V1_ProtocolToMetaModelPropertyMappingVisitor(
@@ -524,18 +509,18 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   }
 
   visit_OtherwiseEmbeddedRelationalPropertyMapping(
-    propertyMapping: V1_OtherwiseEmbeddedRelationalPropertyMapping,
+    protocol: V1_OtherwiseEmbeddedRelationalPropertyMapping,
   ): PropertyMapping {
     assertNonNullable(
-      propertyMapping.property,
+      protocol.property,
       'Otherwise Embedded Relational property mapping property is missing',
     );
     assertNonEmptyString(
-      propertyMapping.property.property,
+      protocol.property.property,
       'Otherwise Embedded property mapping property name is missing',
     );
     const properties = V1_processEmbeddedRelationalMappingProperties(
-      propertyMapping,
+      protocol,
       this.immediateParent,
       guaranteeNonNullable(this.topParent),
       this.context,
@@ -551,16 +536,15 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         '',
       ),
     );
-    otherwiseEmbedded.primaryKey = propertyMapping.classMapping.primaryKey.map(
-      (key) =>
-        V1_processRelationalOperationElement(
-          key,
-          this.context,
-          this.tableAliasMap,
-          [],
-        ),
+    otherwiseEmbedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
+      V1_processRelationalOperationElement(
+        key,
+        this.context,
+        this.tableAliasMap,
+        [],
+      ),
     );
-    otherwiseEmbedded.propertyMappings = propertyMapping.classMapping.propertyMappings.map(
+    otherwiseEmbedded.propertyMappings = protocol.classMapping.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
           new V1_ProtocolToMetaModelPropertyMappingVisitor(
@@ -573,7 +557,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         ),
     ) as RelationalPropertyMapping[];
     otherwiseEmbedded.otherwisePropertyMapping = guaranteeType(
-      propertyMapping.otherwisePropertyMapping.accept_PropertyMappingVisitor(
+      protocol.otherwisePropertyMapping.accept_PropertyMappingVisitor(
         new V1_ProtocolToMetaModelPropertyMappingVisitor(
           this.context,
           otherwiseEmbedded,
@@ -588,7 +572,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   }
 
   visit_AggregationAwarePropertyMapping(
-    propertyMapping: V1_AggregationAwarePropertyMapping,
+    protocol: V1_AggregationAwarePropertyMapping,
   ): PropertyMapping {
     throw new UnsupportedOperationError();
   }

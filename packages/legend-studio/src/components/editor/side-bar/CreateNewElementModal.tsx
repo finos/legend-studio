@@ -118,7 +118,7 @@ const NewRuntimeDriverEditor = observer(() => {
   };
 
   if (!mapping) {
-    // WIP: show warning
+    // TODO: show warning
     return <div>no mapping found</div>;
   }
   return (

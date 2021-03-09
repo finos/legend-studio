@@ -638,13 +638,13 @@ export class NewElementState {
           (runtime) =>
             runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
         );
-        let runtime: Runtime;
+        let runtimeValue: Runtime;
         if (runtimes.length) {
-          runtime = runtimes[0].runtimeValue;
+          runtimeValue = runtimes[0].runtimeValue;
         } else {
-          runtime = new EngineRuntime();
+          runtimeValue = new EngineRuntime();
           decorateRuntimeWithNewMapping(
-            runtime,
+            runtimeValue,
             mapping,
             this.editorStore.graphState.graph,
           );
@@ -654,7 +654,7 @@ export class NewElementState {
             RawLambda.createStub(),
             service,
             PackageableElementExplicitReference.create(mapping),
-            runtime,
+            runtimeValue,
           ),
         );
         service.initNewService();

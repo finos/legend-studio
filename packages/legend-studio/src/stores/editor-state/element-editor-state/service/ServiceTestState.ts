@@ -232,7 +232,7 @@ export class TestContainerState {
               newRuntime.generateIdentifiedConnectionId(),
               new RelationalDatabaseConnection(
                 PackageableElementExplicitReference.create(connection.database),
-                // WIP: hard-coded this combination for now, we might want to change to something that makes more sense?
+                // TODO: hard-coded this combination for now, we might want to change to something that makes more sense?
                 DatabaseType.H2,
                 new StaticDatasourceSpecification('dummyHost', 80, 'myDb'),
                 new DefaultH2AuthenticationStrategy(),

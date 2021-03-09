@@ -57,10 +57,8 @@ const ServiceGeneralEditor = observer(() => {
   const patternValidationResult = validateServicePattern(pattern);
   const allowUpdatingPattern =
     !patternValidationResult.messages.length && pattern !== service.pattern;
-  const removePatternParameter = (
-    pattern: string,
-  ): (() => void) => (): void => {
-    service.removePatternParameter(pattern);
+  const removePatternParameter = (val: string): (() => void) => (): void => {
+    service.removePatternParameter(val);
     setPattern(service.pattern);
   };
   // Owners

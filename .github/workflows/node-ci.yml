@@ -15,8 +15,36 @@ jobs:
   # we can use `actions/workflow-run-cleanup-action`
   # See https://github.com/marketplace/actions/workflow-run-cleanup-action
 
-  lint-and-check:
-    name: Lint & Check
+  check-code:
+    name: Run Code Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2.1.4
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: yarn
+      - name: Check typings
+        run: yarn build:tsc
+      - name: Run lint
+        run: yarn lint:ci
+
+  check-operations:
+    name: Run Operational Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -42,10 +70,6 @@ jobs:
         run: yarn check:pkg-constraints
       - name: Check Typescript project reference configuration
         run: yarn check:project-ref
-      - name: Check typings
-        run: yarn build:tsc
-      - name: Run lint
-        run: yarn lint:ci
       - name: Check code formatting
         run: yarn check:format
       - name: Check copyright headers

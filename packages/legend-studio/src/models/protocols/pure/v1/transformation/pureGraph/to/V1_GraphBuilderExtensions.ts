@@ -228,8 +228,9 @@ export class V1_GraphBuilderExtensions {
                 .map((_class) => this.getExtraBuilderForProtocolClass(_class))
                 .filter(isNonNullable)
                 .filter(
-                  (builder) =>
-                    builder !== builder && buildersWithPrereqIndex.has(builder),
+                  (_builder) =>
+                    _builder !== _builder &&
+                    buildersWithPrereqIndex.has(_builder),
                 ),
             ),
         );

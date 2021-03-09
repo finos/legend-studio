@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-import type {
-  PackageableElementImplicitReference,
-  V1_GraphBuilderContext,
-} from '@finos/legend-studio';
-import { getText } from '../../../../../metamodels/pure/graph/DSLText_GraphManagerHelpers';
-import type { Text } from '../../../../../metamodels/pure/model/packageableElements/Text';
+const {
+  validateChangesets,
+} = require('@finos/legend-studio-dev-utils/ChangesetUtils');
 
-export const V1_resolveText = (
-  path: string,
-  context: V1_GraphBuilderContext,
-): PackageableElementImplicitReference<Text> =>
-  context.createImplicitPackageableElementReference(path, (_path: string) =>
-    getText(_path, context.graph),
-  );
+validateChangesets(process.cwd(), 'master');

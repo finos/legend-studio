@@ -191,7 +191,7 @@ export class ExplorerTreeState {
   // FIXME: also we need to do this properly, but should we reveal current element when we switch tab and such?
   // right now we screw that up pretty badly and we would need to think of a good strategy to make that happen
   /**
-   * WIP: this method should be replaced altogether as this could potentially cause memory leak when we `replace` the graph
+   * FIXME: this method should be replaced altogether as this could potentially cause memory leak when we `replace` the graph
    * When we refresh the graph (after compilation in text mode for example), we want to reprocess the app to
    * preserve the status of the explorer tree (opening nodes, selected nodes, etc.)
    */

@@ -222,10 +222,10 @@ export const FlatDataPropertyMappingEditor = observer(
       isReadOnly;
     // Drag and Drop
     const handleDrop = useCallback(
-      (item: FlatDataPropertyMappingTransformDropTarget): void => {
+      (droppedItem: FlatDataPropertyMappingTransformDropTarget): void => {
         if (!disableEditingTransform) {
-          if (item instanceof FlatDataColumnDragSource) {
-            const toAppend = item.data.id;
+          if (droppedItem instanceof FlatDataColumnDragSource) {
+            const toAppend = droppedItem.data.id;
             if (toAppend) {
               flatDataPropertyMappingState.setLambdaString(
                 flatDataPropertyMappingState.lambdaString + toAppend,
@@ -239,8 +239,8 @@ export const FlatDataPropertyMappingEditor = observer(
     const [{ item }, drop] = useDrop(
       () => ({
         accept: [CORE_DND_TYPE.TYPE_TREE_PRIMITIVE],
-        drop: (item: FlatDataPropertyMappingTransformDropTarget): void =>
-          handleDrop(item),
+        drop: (droppedItem: FlatDataPropertyMappingTransformDropTarget): void =>
+          handleDrop(droppedItem),
         collect: (monitor): { item: unknown } => ({
           item: monitor.getItem(),
         }),

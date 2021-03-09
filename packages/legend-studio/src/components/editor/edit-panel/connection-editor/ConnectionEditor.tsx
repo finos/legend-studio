@@ -1219,7 +1219,7 @@ const ModelConnectionEditor = observer(
     const sourceClass = connection.class.value;
     const onSourceClassChange = (val: { label: string; value: Class }): void =>
       connection.setClass(val.value);
-    // WIP: handle content type (XML/JSON)
+    // TODO: handle content type (XML/JSON)
     // url
     const changeUrl: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
       connection.setUrl(event.target.value);

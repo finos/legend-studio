@@ -30,7 +30,7 @@ beforeAll(async () => {
   );
 });
 
-// WIP Add more processing checks
+// TODO Add more processing checks
 test(unitTest('Inline Embedded Relational Mapping'), () => {
   // db
   const graph = editorStore.graphState.graph;

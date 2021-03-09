@@ -228,10 +228,9 @@ const getRuntimeExplorerTreeNodeIcon = (
   return getElementIcon(editorStore, node.data);
 };
 
-// WIP:
 const getRuntimeExplorerTreeNodeTooltipText = (
   node: RuntimeExplorerTreeNodeData,
-): string => {
+): string | undefined => {
   if (node.data instanceof Runtime) {
     return ''; // number of mapping and stores
   } else if (node.data instanceof ModelStore) {
@@ -239,9 +238,9 @@ const getRuntimeExplorerTreeNodeTooltipText = (
   } else if (node.data instanceof Store) {
     /* do nothing */
   } else if (node.data instanceof Class) {
-    //   return `JSON model connection \u2022 Class ${connectionValue.class.path}`;
+    // return `JSON model connection \u2022 Class ${connectionValue.class.path}`;
   }
-  return '';
+  return undefined;
 };
 
 const RuntimeExplorerTreeNodeContainer = observer(
@@ -304,7 +303,7 @@ const RuntimeExplorerTreeNodeContainer = observer(
               <div className="runtime-explorer__item__label__runtime__mapping__icon">
                 <MappingIcon />
               </div>
-              {/* WIP: handle when there are multiple mappings */}
+              {/* TODO: handle when there are multiple mappings */}
               <div className="runtime-explorer__item__label__runtime__mapping__text">
                 {runtimeEditorState.runtimeValue.mappings[0].value.name}
               </div>
@@ -444,7 +443,7 @@ const IdentifiedConnectionEditor = observer(
     } = props;
     const editorStore = useEditorStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
-    // WIP: runtime connection id
+    // TODO: add runtime connection id
     // connection pointer
     const isEmbeddedConnection = !(
       identifiedConnection.connection instanceof ConnectionPointer
