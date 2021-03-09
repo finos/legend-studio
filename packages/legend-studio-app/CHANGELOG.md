@@ -1,5 +1,11 @@
 # @finos/legend-studio-app
 
+## 0.2.2
+
+### Patch Changes
+
+- [`be2bc61`](https://github.com/finos/legend-studio/commit/be2bc612caad9cc18d68914fda4991115573e7fa) [#89](https://github.com/finos/legend-studio/pull/89) Thanks [@akphi](https://github.com/akphi)! - chore: fix Docker publish script
+
 ## 0.2.1
 
 ### Patch Changes
