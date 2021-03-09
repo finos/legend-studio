@@ -409,7 +409,7 @@ export class MappingTestState {
       );
       inputDataState.setSourceClass(inputData.sourceClass.value);
       /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-      inputDataState.setData(tryToFormatLosslessJSONString(inputData.data)); // WIP: account for XML when we support it
+      inputDataState.setData(tryToFormatLosslessJSONString(inputData.data)); // TODO: account for XML when we support it
       return inputDataState;
     } else if (inputData instanceof FlatDataInputData) {
       const inputDataState = new MappingTestFlatDataInputDataState(

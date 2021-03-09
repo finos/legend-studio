@@ -69,8 +69,11 @@ export class V1_ProcessingContext {
   }
 
   getInferredVariable(name: string): ValueSpecification | undefined {
-    const reversedIt = this.inferredVariableList.reverse();
-    return reversedIt.find((e) => e.get(name))?.get(name);
+    return this.inferredVariableList
+      .slice()
+      .reverse()
+      .find((e) => e.get(name))
+      ?.get(name);
   }
 
   private addVariableToNewLevel(

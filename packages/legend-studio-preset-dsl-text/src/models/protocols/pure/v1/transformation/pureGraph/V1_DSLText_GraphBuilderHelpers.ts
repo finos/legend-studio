@@ -25,6 +25,6 @@ export const V1_resolveText = (
   path: string,
   context: V1_GraphBuilderContext,
 ): PackageableElementImplicitReference<Text> =>
-  context.createImplicitPackageableElementReference(path, (path: string) =>
-    getText(path, context.graph),
+  context.createImplicitPackageableElementReference(path, (_path: string) =>
+    getText(_path, context.graph),
   );

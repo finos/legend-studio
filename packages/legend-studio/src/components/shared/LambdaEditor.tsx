@@ -429,7 +429,7 @@ export const LambdaEditor = observer(
     disabled: boolean;
     lambdaEditorState: LambdaEditorState;
     /**
-     * WIP: when we pass in these expected type we should match a type as expected type if it's covariance, i.e. it is a subtype of
+     * TODO: when we pass in these expected type we should match a type as expected type if it's covariance, i.e. it is a subtype of
      * the expected type. Note that we also have to handle that relationship for Primitive type
      * See https://dzone.com/articles/covariance-and-contravariance
      */

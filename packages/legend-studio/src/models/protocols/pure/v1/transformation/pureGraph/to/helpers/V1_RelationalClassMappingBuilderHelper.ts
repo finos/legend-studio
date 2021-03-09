@@ -75,9 +75,7 @@ export const V1_processRelationalPrimaryKey = (
     const relation = rootRelational.mainTableAlias.relation.value;
     const mainTable = rootRelational.mainTableAlias;
     let columns: Column[] = [];
-    if (relation instanceof Table) {
-      columns = relation.primaryKey;
-    } else if (relation instanceof View) {
+    if (relation instanceof Table || relation instanceof View) {
       columns = relation.primaryKey;
     }
     rootRelational.primaryKey = columns.map((col) => {

@@ -132,7 +132,7 @@ export class V1_Engine {
   pureCodeToPureModelContextData = flow(function* (
     this: V1_Engine,
     code: string,
-    options?: { onError?: (() => void) | undefined },
+    options?: { onError?: () => void },
   ): GeneratorFn<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
       (yield this.pureCodeToPureModelContextDataJson(
@@ -145,7 +145,7 @@ export class V1_Engine {
   private pureCodeToPureModelContextDataJson = flow(function* (
     this: V1_Engine,
     code: string,
-    options?: { onError?: (() => void) | undefined },
+    options?: { onError?: () => void },
   ): GeneratorFn<PlainObject<V1_PureModelContextData>> {
     const parsingResult = (yield this.engineServerClient.transformGrammarToJSON(
       {

@@ -48,7 +48,7 @@ export class V1_StorePattern {
 }
 
 export class V1_GenerateStoreInput {
-  clientVersion = 'v1_16_0'; // WIP
+  clientVersion = 'v1_16_0'; // FIXME: maybe not hard code it like this?
   connection!: V1_Connection;
   targetPackage!: string;
   targetName!: string;

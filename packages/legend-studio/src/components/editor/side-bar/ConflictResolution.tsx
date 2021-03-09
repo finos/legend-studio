@@ -147,6 +147,7 @@ export const ConflictResolution = observer(() => {
             {!conflictResolutionState.hasResolvedAllConflicts && (
               <>
                 {conflicts
+                  .slice()
                   .sort((a, b) => a.entityName.localeCompare(b.entityName))
                   .map((conflict) => (
                     <EntityChangeConflictSideBarItem
@@ -159,18 +160,22 @@ export const ConflictResolution = observer(() => {
                 {Boolean(conflicts.length) && Boolean(changes.length) && (
                   <div className="diff-panel__item-section-separator" />
                 )}
-                {changes.sort(entityDiffSorter).map((diff) => (
-                  <EntityDiffSideBarItem
-                    key={diff.key}
-                    diff={diff}
-                    isSelected={isSelectedDiff(diff)}
-                    openDiff={openChange(diff)}
-                  />
-                ))}
+                {changes
+                  .slice()
+                  .sort(entityDiffSorter)
+                  .map((diff) => (
+                    <EntityDiffSideBarItem
+                      key={diff.key}
+                      diff={diff}
+                      isSelected={isSelectedDiff(diff)}
+                      openDiff={openChange(diff)}
+                    />
+                  ))}
               </>
             )}
             {conflictResolutionState.hasResolvedAllConflicts &&
               changes
+                .slice()
                 .sort(entityDiffSorter)
                 .map((diff) => (
                   <EntityDiffSideBarItem

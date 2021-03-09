@@ -115,7 +115,7 @@ export const AppHeaderMenu: React.FC = () => {
   const [openAboutModal, setOpenAboutModal] = useState(false);
   const showAboutModal = (): void => setOpenAboutModal(true);
   const hideAboutModal = (): void => setOpenAboutModal(false);
-  // documentation WIP
+  // documentation
   const goToDocumentation = (): void => {
     window.open(config.documentationUrl, '_blank');
   };

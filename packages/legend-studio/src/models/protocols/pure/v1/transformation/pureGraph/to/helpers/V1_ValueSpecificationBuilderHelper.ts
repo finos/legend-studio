@@ -984,7 +984,7 @@ export function V1_buildFilterFunctionExpression(
         });
       }
     }
-    const processed = [
+    const _processed = [
       processedValue,
       parameters[1].accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationBuilder(
@@ -994,15 +994,15 @@ export function V1_buildFilterFunctionExpression(
         ),
       ),
     ];
-    const simpleFunction = processSimpleFunctionExpression(
-      processed,
+    const _simpleFunction = processSimpleFunctionExpression(
+      _processed,
       functionName,
       compileContext,
     );
     // return type of filtered is of type of param 0
-    simpleFunction.genericType = processedValue.genericType;
-    simpleFunction.multiplicity = processedValue.multiplicity;
-    return [simpleFunction, processed];
+    _simpleFunction.genericType = processedValue.genericType;
+    _simpleFunction.multiplicity = processedValue.multiplicity;
+    return [_simpleFunction, _processed];
   }
   const processed = parameters.map((p) =>
     p.accept_ValueSpecificationVisitor(
@@ -1074,7 +1074,7 @@ export function V1_buildProjectFunctionExpression(
           processingContext.addInferredVariables(v.name, _var);
         }
       });
-      const processed = [
+      const _processed = [
         processedValue,
         ...parameters
           .slice(1)
@@ -1088,12 +1088,12 @@ export function V1_buildProjectFunctionExpression(
             ),
           ),
       ];
-      const simpleFunction = processSimpleFunctionExpression(
-        processed,
+      const _simpleFunction = processSimpleFunctionExpression(
+        _processed,
         functionName,
         compileContext,
       );
-      return [simpleFunction, processed];
+      return [_simpleFunction, _processed];
     }
   }
   const processed = parameters.map((p) =>

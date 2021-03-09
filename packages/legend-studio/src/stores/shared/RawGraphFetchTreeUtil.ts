@@ -48,8 +48,8 @@ import type { PropertyMapping } from '../../models/metamodels/pure/model/package
 import type { EditorStore } from '../EditorStore';
 
 export class RawGraphFetchTreeNodeData implements TreeNodeData {
-  isSelected?: boolean | undefined;
-  isOpen?: boolean | undefined;
+  isSelected: boolean | undefined;
+  isOpen: boolean | undefined;
   id: string;
   label: string;
   childrenIds: string[] = [];

@@ -252,6 +252,5 @@ export const deleteEntry = <T>(
 
 export type GeneratorFn<T> = Generator<
   Promise<unknown>, // force to manually handle casting for any promise called within the generator function
-  T,
-  unknown
+  T
 >;

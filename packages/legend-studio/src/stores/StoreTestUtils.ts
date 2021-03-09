@@ -144,7 +144,7 @@ export const checkBuildingElementsRoundtrip = async (
     protocolHashesIndex,
   );
   await editorStore.changeDetectionState.computeLocalChanges(true);
-  // WIP: avoid listing section index as part of change detection for now
+  // TODO: avoid listing section index as part of change detection for now
   expect(
     editorStore.changeDetectionState.workspaceLatestRevisionState.changes.filter(
       (change) =>

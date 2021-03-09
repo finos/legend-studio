@@ -627,7 +627,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.logger.info(CORE_LOG_EVENT.GRAPH_BUILD_STARTED);
     }
     let stepStartTime = Date.now();
-    let stepFinishedTime = stepStartTime;
+    let stepFinishedTime;
     const startTime = stepStartTime;
     try {
       // Parse/Build Data
@@ -794,7 +794,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-      stepStartTime = stepFinishedTime;
 
       yield this.postProcess(graph, graphBuilderInput, {
         DEV__enableGraphImmutabilityRuntimeCheck:
@@ -1459,7 +1458,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private pureCodeToPureModelContextData = flow(function* (
     this: V1_PureGraphManager,
     code: string,
-    options?: { onError?: (() => void) | undefined },
+    options?: { onError?: () => void },
   ): GeneratorFn<V1_PureModelContextData> {
     return (yield this.engine.pureCodeToPureModelContextData(
       code,
@@ -1520,7 +1519,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   compileGraph = flow(function* (
     this: V1_PureGraphManager,
     graph: PureModel,
-    options?: { onError?: (() => void) | undefined },
+    options?: { onError?: () => void },
   ) {
     const fullModel = this.getFullGraphModelData(graph);
     yield this.engine.compilePureModelContextData(fullModel, options);

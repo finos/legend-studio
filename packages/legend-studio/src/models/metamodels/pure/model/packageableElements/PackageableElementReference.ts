@@ -53,9 +53,9 @@ export class PackageableElementExplicitReference<
     });
   }
 
-  static create<T extends PackageableElement>(
-    value: T,
-  ): PackageableElementExplicitReference<T> {
+  static create<V extends PackageableElement>(
+    value: V,
+  ): PackageableElementExplicitReference<V> {
     return new PackageableElementExplicitReference(value);
   }
 
@@ -90,12 +90,12 @@ export class PackageableElementImplicitReference<
     this.isResolvedFromAutoImports = isResolvedFromAutoImports;
   }
 
-  static create<T extends PackageableElement>(
-    value: T,
+  static create<V extends PackageableElement>(
+    value: V,
     input: string,
     parentSection: Section | undefined,
     isResolvedFromAutoImports: boolean | undefined,
-  ): PackageableElementImplicitReference<T> {
+  ): PackageableElementImplicitReference<V> {
     return new PackageableElementImplicitReference(
       value,
       input,
@@ -158,9 +158,9 @@ export class OptionalPackageableElementExplicitReference<
     });
   }
 
-  static create<T extends PackageableElement>(
-    value: T | undefined,
-  ): OptionalPackageableElementExplicitReference<T> {
+  static create<V extends PackageableElement>(
+    value: V | undefined,
+  ): OptionalPackageableElementExplicitReference<V> {
     return new OptionalPackageableElementExplicitReference(value);
   }
 
@@ -195,12 +195,12 @@ export class OptionalPackageableElementImplicitReference<
     this.isResolvedFromAutoImports = isResolvedFromAutoImports;
   }
 
-  static create<T extends PackageableElement>(
-    value: T | undefined,
+  static create<V extends PackageableElement>(
+    value: V | undefined,
     input: string | undefined,
     parentSection: Section | undefined,
     isResolvedFromAutoImports: boolean | undefined,
-  ): OptionalPackageableElementImplicitReference<T> {
+  ): OptionalPackageableElementImplicitReference<V> {
     return new OptionalPackageableElementImplicitReference(
       value,
       input,

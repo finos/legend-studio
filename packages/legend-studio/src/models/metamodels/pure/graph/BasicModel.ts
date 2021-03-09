@@ -579,7 +579,7 @@ export abstract class BasicModel {
     this.isBuilt = built;
   }
 
-  // WIP: this will be removed once we fully support section index in SDLC flow
+  // TODO: this will be removed once we fully support section index in SDLC flow
   deleteSectionIndex(): void {
     this.sectionIndicesIndex.forEach((sectionIndex) => {
       sectionIndex.setIsDeleted(true);

@@ -43,7 +43,7 @@ const createCommitizenPrompter = function () {
   const types = conventionalCommitTypes.types;
   const typeOptionLength =
     Object.keys(types)
-      .map((types) => types.length)
+      .map((type) => type.length)
       .reduce((a, b) => Math.max(a, b), Number.MIN_SAFE_INTEGER) + 1;
   const choices = Array.from(Object.entries(types)).map(([key, type]) => ({
     name: `${`${key}:`.padEnd(typeOptionLength)} ${type.description}`,
