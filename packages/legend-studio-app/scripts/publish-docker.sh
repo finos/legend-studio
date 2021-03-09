@@ -70,7 +70,10 @@ do
 done
 
 # Login to Docker Hub
-docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+#
+# NOTE: Apparently, we cannot do this from `github-actions` pipeline
+# as we will get the error: Cannot perform an interactive login from a non TTY device.
+# docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
 
 # Build Docker image
 docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION $DIR/../
