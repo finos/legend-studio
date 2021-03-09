@@ -1871,6 +1871,7 @@ __metadata:
   resolution: "@finos/legend-studio-dev-utils@workspace:packages/legend-studio-dev-utils"
   dependencies:
     "@babel/core": 7.13.8
+    "@changesets/changelog-github": 0.2.8
     "@changesets/config": 1.5.0
     "@changesets/get-release-plan": 2.0.1
     "@changesets/git": 1.1.0
@@ -9758,7 +9759,6 @@ __metadata:
   resolution: "legend-studio@workspace:."
   dependencies:
     "@babel/core": 7.13.8
-    "@changesets/changelog-github": 0.2.8
     "@changesets/cli": 2.14.1
     "@finos/babel-preset-legend-studio": "workspace:*"
     "@finos/eslint-plugin-legend-studio": "workspace:*"
