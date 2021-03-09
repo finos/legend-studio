@@ -20,9 +20,5 @@
   // needed this to be `on` instead of `auto` so auto-import suggestion works properly with monorepo
   "typescript.preferences.includePackageJsonAutoImports": "on",
   "javascript.preferences.quoteStyle": "single",
-  "typescript.preferences.quoteStyle": "single",
-  "sonarlint.connectedMode.project": {
-    "connectionId": "myFinosSonarCloud",
-    "projectKey": "legend-studio"
-  }
+  "typescript.preferences.quoteStyle": "single"
 }

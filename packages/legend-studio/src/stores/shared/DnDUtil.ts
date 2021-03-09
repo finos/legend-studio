@@ -55,18 +55,12 @@ export enum CORE_DND_TYPE {
   GENERATION_SPEC_NODE = 'GENERATION_SPEC_NODE',
 }
 
-// NOTE: Since the relationship between drop target and drag source is many-to-many, we use this util to define those relationships:
-// i.e. which drag sources correspond to a drop target
-//
 // React DnD uses Redux under the hood and also it champions the use of plain object over class instance
 // There is some practical reason for that (due to the potential need to serialize the item object), but as for now
 // this way of creating the drag itm is still very convenient for us since we can do direct type comparison rather than having
-// to use element full path, we might follow the following threads if there are any breaking changes
+// to use element full path, we might need follow the following threads if there are any breaking changes
 // See https://github.com/react-dnd/react-dnd/issues/1094
 // See https://github.com/react-dnd/react-dnd/pull/1079
-//
-// NOTE: `react-dnd` use `type` to determine if something is `dropable`
-// See https://react-dnd.github.io/react-dnd/docs/api/drag-source#parameters
 export class TypeDragSource {
   data: TypeTreeNodeData;
   type: CORE_DND_TYPE;
@@ -107,6 +101,7 @@ export class MappingElementDragSource {
   }
 }
 
+// TODO: disperse all of these to the editor, we should probably remove all of these
 export type FlatDataPropertyMappingTransformDropTarget = FlatDataColumnDragSource;
 export type TransformDropTarget = TypeDragSource;
 export type OperationSetImplementationDropTarget = MappingElementDragSource;
