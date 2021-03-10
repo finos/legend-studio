@@ -13,7 +13,7 @@
     "check:ci": "yarn check:pkg-constraints && yarn check:project-ref && yarn check:tsc && yarn check:format && yarn check:copyright && yarn check:changeset",
     "check:changeset": "node ./scripts/workflow/checkChangesets.js",
     "check:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js",
-    "check:format": "prettier --list-different \"(scripts|docs)/**/*.{json,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{json,js,ts,tsx,html,scss,css}\" && yarn sort-package-json --check \"package.json\" \"packages/*/package.json\"",
+    "check:format": "prettier --list-different \"(scripts|docs)/**/*.{md,json,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,js,ts,tsx,html,scss,css}\" && yarn sort-package-json --check \"package.json\" \"packages/*/package.json\"",
     "check:pkg-constraints": "yarn constraints",
     "check:project-ref": "node ./scripts/typescript/checkProjectReferenceConfigs.js",
     "check:tsc": "yarn build:tsc",
@@ -24,7 +24,7 @@
     "dev:tsc": "tsc --build --watch",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
     "fix:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js --update",
-    "fix:format": "prettier --write \"(scripts|docs)/**/*.{json,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{json,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
+    "fix:format": "prettier --write --loglevel=warn \"(scripts|docs)/**/*.{md,json,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
     "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{js,ts,tsx}\" --report-unused-disable-directives --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --verbose run lint:js --fix",
     "fix:style": "yarn lint:style --fix",
     "lint": "yarn lint:js && yarn lint:style",
@@ -41,7 +41,7 @@
     "test:coverage": "jest --coverage",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "test:watch": "jest --watch",
-    "version": "changeset version && yarn && yarn fix:format --loglevel warn"
+    "version": "changeset version && yarn && yarn fix:format"
   },
   "husky": {
     "hooks": {
