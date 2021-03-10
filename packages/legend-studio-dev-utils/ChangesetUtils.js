@@ -24,6 +24,14 @@ const { read } = require('@changesets/config');
 const writeChangeset = require('@changesets/write').default;
 
 /**
+ * Ref `master` does not seem to be available in github-actions pipeline when using with action/checkout
+ * So we have to use `origin/master`
+ *
+ * See https://github.com/atlassian/changesets/issues/517
+ */
+const DEFAULT_SINCE_REF = 'origin/master';
+
+/**
  * Make sure the changeset covers all the packages whose files are changed since the specified reference.
  * This is good to check changesets in a PR to ensure that the contributors have at least did a `patch`
  * bump for all the changes they made.
@@ -39,7 +47,7 @@ const writeChangeset = require('@changesets/write').default;
 async function validateChangesets(cwd, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
-  const sinceBranch = sinceRef ?? 'master';
+  const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
   const changesetPackageNames = (
     await getReleasePlan(cwd, sinceBranch, config)
   ).releases
@@ -105,7 +113,7 @@ async function validateChangesets(cwd, sinceRef) {
 async function generateChangeset(cwd, message, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
-  const sinceBranch = sinceRef ?? 'master';
+  const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
   const changedPackages = new Set(
     (
       await git.getChangedPackagesSinceRef({
@@ -114,6 +122,9 @@ async function generateChangeset(cwd, message, sinceRef) {
       })
     ).map((pkg) => pkg.packageJson.name),
   );
+  if (!changedPackages.size) {
+    info(chalk.blue(`No changeset is needed as you haven't made any changes!`));
+  }
   const newChangeset = {
     releases: Array.from(changedPackages.values()).map((pkg) => ({
       name: pkg,

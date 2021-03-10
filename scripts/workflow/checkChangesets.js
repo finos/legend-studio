@@ -18,4 +18,4 @@ const {
   validateChangesets,
 } = require('@finos/legend-studio-dev-utils/ChangesetUtils');
 
-validateChangesets(process.cwd(), 'master');
+validateChangesets(process.cwd(), 'origin/master');

@@ -18,4 +18,4 @@ const {
   generateChangeset,
 } = require('@finos/legend-studio-dev-utils/ChangesetUtils');
 
-generateChangeset(process.cwd(), process.argv[2] ?? '', 'master');
+generateChangeset(process.cwd(), process.argv[2] ?? '', 'origin/master');
