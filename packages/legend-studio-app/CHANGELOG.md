@@ -1,5 +1,15 @@
 # @finos/legend-studio-app
 
+## 0.2.7
+
+### Patch Changes
+
+- [#102](https://github.com/finos/legend-studio/pull/102) [`492e022`](https://github.com/finos/legend-studio/commit/492e02229d27fc5ef0e1bafbbd8672de0449081f) Thanks [@akphi](https://github.com/akphi)! - Update publish content avoid list
+
+- Updated dependencies [[`492e022`](https://github.com/finos/legend-studio/commit/492e02229d27fc5ef0e1bafbbd8672de0449081f)]:
+  - @finos/legend-studio@0.0.4
+  - @finos/legend-studio-preset-dsl-text@0.0.4
+
 ## 0.2.6
 
 ### Patch Changes
