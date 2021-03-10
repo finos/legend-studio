@@ -71,15 +71,16 @@ done
 
 # Login to Docker Hub
 #
-# NOTE: Apparently, we cannot do this from `github-actions` pipeline
+# NOTE: Apparently, we cannot call `docker login ...` from `github-actions` pipeline
 # as we will get the error: Cannot perform an interactive login from a non TTY device.
-# docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+# so we will use `docker/login-action`, if we run this script manually, make sure we
+# login beforehand.
 
 # Build Docker image
-docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION $DIR/../
+docker build --quiet --tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION $DIR/../
 
 # Push Docker image
-docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION
+docker push --quiet $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION
 
 echo -e "\n"
 echo -e "${GREEN}Successfully published image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION to Docker Hub! ${NC}"
