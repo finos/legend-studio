@@ -28,7 +28,7 @@ Please file issue via our [Github Issues page](https://github.com/finos/legend-s
 
 ### Commit Convention
 
-We highly recommend you to write commit messages following [Conventional Commits spec](https://www.conventionalcommits.org/en/v1.0.0/).
+We highly recommend you to write commit messages following [Conventional Commits spec](https://www.conventionalcommits.org/en/v1.0.0/) where applicable.
 
 ```md
 <type>[optional scope][optional '!']: <description>
