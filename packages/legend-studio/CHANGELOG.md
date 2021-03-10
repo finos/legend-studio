@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.0.5
+
+### Patch Changes
+
+- [#104](https://github.com/finos/legend-studio/pull/104) [`10e8f9f`](https://github.com/finos/legend-studio/commit/10e8f9f714d9376600ae8c4260405573372a24b4) Thanks [@akphi](https://github.com/akphi)! - Add `@testing-library/react` as dependencies for @finos/legend-studio
+
 ## 0.0.4
 
 ### Patch Changes
