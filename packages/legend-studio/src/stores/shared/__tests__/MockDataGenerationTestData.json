@@ -49,9 +49,7 @@
           "type": "myPackage::test::shared::src::Application"
         }
       ],
-      "superTypes": [
-        "myPackage::test::shared::src::User"
-      ]
+      "superTypes": ["myPackage::test::shared::src::User"]
     }
   },
   {
@@ -94,9 +92,7 @@
           "type": "Integer"
         }
       ],
-      "superTypes": [
-        "myPackage::test::shared::src::User"
-      ]
+      "superTypes": ["myPackage::test::shared::src::User"]
     }
   },
   {
@@ -134,9 +130,7 @@
           "type": "Integer"
         }
       ],
-      "superTypes": [
-        "myPackage::test::shared::src::User"
-      ]
+      "superTypes": ["myPackage::test::shared::src::User"]
     }
   },
   {
@@ -288,9 +282,7 @@
           "type": "Boolean"
         }
       ],
-      "superTypes": [
-        "myPackage::test::shared::src::_RoadVehicle"
-      ]
+      "superTypes": ["myPackage::test::shared::src::_RoadVehicle"]
     }
   },
   {
@@ -307,9 +299,7 @@
           "type": "Boolean"
         }
       ],
-      "superTypes": [
-        "myPackage::test::shared::src::_RoadVehicle"
-      ]
+      "superTypes": ["myPackage::test::shared::src::_RoadVehicle"]
     }
   },
   {
@@ -452,9 +442,7 @@
           "type": "String"
         }
       ],
-      "superTypes": [
-        "myPackage::test::shared::src::ProductWithRegion"
-      ]
+      "superTypes": ["myPackage::test::shared::src::ProductWithRegion"]
     }
   },
   {

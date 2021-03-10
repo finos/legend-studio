@@ -48,5 +48,5 @@ if (!process.env.LISTENING_TO_UNHANDLED_REJECTION) {
     );
   });
   // Do not add too many listeners to avoid memory-leak
-  process.env.LISTENING_TO_UNHANDLED_REJECTION = true; // eslint-disable-line no-process-env
+  process.env.LISTENING_TO_UNHANDLED_REJECTION = true;
 }

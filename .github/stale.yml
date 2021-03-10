@@ -8,8 +8,8 @@ daysUntilClose: 7
 exemptLabels:
   - 'Type: Bug'
   - 'Type: Discussion'
-  - 'Type: Needs Investigation'
   - 'Type: Regression'
+  - 'Status: Needs Investigation'
 # Label to use when marking an issue as stale
 staleLabel: 'Resolution: Stale'
 issues:

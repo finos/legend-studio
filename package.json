@@ -6,7 +6,6 @@
   ],
   "scripts": {
     "build": "yarn clean && yarn workspaces foreach --topological-dev --verbose run build",
-    "build:sass": "cross-env FORCE_COLOR=1 yarn workspaces foreach --topological-dev --verbose run build:sass",
     "build:setup": "cross-env FORCE_COLOR=1 yarn clean && cross-env FORCE_COLOR=1 yarn workspaces foreach --topological-dev --verbose --exclude legend-studio --exclude @finos/legend-studio-app run build",
     "build:tsc": "tsc --build",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
@@ -14,24 +13,24 @@
     "check:ci": "yarn check:pkg-constraints && yarn check:project-ref && yarn check:tsc && yarn check:format && yarn check:copyright && yarn check:changeset",
     "check:changeset": "node ./scripts/workflow/checkChangesets.js",
     "check:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js",
-    "check:format": "prettier --check \"scripts/**/*.js\" \"packages/*/src/**/*.{js,ts,tsx,html,scss,css}\"",
+    "check:format": "prettier --list-different \"(scripts|docs)/**/*.{json,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{json,js,ts,tsx,html,scss,css}\" && yarn sort-package-json --check \"package.json\" \"packages/*/package.json\"",
     "check:pkg-constraints": "yarn constraints",
     "check:project-ref": "node ./scripts/typescript/checkProjectReferenceConfigs.js",
     "check:tsc": "yarn build:tsc",
     "check:update": "yarn upgrade-interactive",
     "clean": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean",
-    "commit": "git-cz",
+    "commit:cli": "git-cz",
     "dev": "yarn workspace @finos/legend-studio-app dev",
     "dev:tsc": "tsc --build --watch",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
     "fix:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js --update",
-    "fix:format": "prettier --write \"scripts/**/*.js\" \"packages/*/src/**/*.{js,ts,tsx,html,scss,css}\"",
-    "fix:js": "cross-env NODE_ENV=ci FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{js,ts,tsx}\" --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --verbose run fix:js",
+    "fix:format": "prettier --write \"(scripts|docs)/**/*.{json,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{json,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
+    "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{js,ts,tsx}\" --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --verbose run lint:js --fix",
     "fix:style": "yarn lint:style --fix",
     "lint": "yarn lint:js && yarn lint:style",
     "lint:ci": "yarn lint:js --max-warnings=0 && yarn lint:style --max-warnings=0",
-    "lint:js": "cross-env NODE_ENV=ci FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{js,ts,tsx}\" && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --verbose run lint:js",
-    "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/src/**/*.{scss,css}\"",
+    "lint:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{js,ts,tsx}\" --report-unused-disable-directives && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --verbose run lint:js",
+    "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\"",
     "publish:docker": "echo 'Building webapp content...' && yarn workspace @finos/legend-studio-app build && ./packages/legend-studio-app/scripts/publish-docker.sh",
     "publish:prepare": "cross-env FORCE_COLOR=1 yarn build:setup && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:prepare",
     "release": "yarn publish:prepare && changeset publish",
@@ -54,11 +53,11 @@
       "prettier --write"
     ],
     "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
+      "eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --fix",
       "prettier --write"
     ],
     "*.{scss,css}": [
-      "stylelint --fix",
+      "stylelint --cache --cache-location ./build/.stylelintcache --fix",
       "prettier --write"
     ],
     "package.json": [
@@ -67,7 +66,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "./scripts/workflow/commitizenPrompt.js"
+      "path": "./scripts/workflow/buildCommitPrompt.js"
     }
   },
   "browserslist": [
