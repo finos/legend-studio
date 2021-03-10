@@ -37,8 +37,7 @@
   ],
   "scripts": {
     "clean": "rimraf \"build\"",
-    "fix:js": "yarn lint:js --fix",
-    "lint:js": "cross-env NODE_ENV=ci eslint --cache --cache-location ./build/.eslintcache --parser-options=requireConfigFile:false \"./*.js\" \"mocks/**/*.js\" \"__tests__/**/*.js\"",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.js\" \"mocks/**/*.js\" \"__tests__/**/*.js\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "test": "jest",
     "test:watch": "jest --watch"
