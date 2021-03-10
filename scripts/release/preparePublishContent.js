@@ -50,6 +50,9 @@ try {
         path.resolve(publishContentDir, fileOrDir),
       );
     });
+    console.log(
+      chalk.green(`\u2713 Moved basic content to publish staging area`),
+    );
   }
 
   // If there is no LICENSE file, copy the LICENSE file from root
@@ -148,11 +151,9 @@ try {
   );
   console.log(
     chalk.green(
-      `\u2713 Fully resolved dependencies versions for 'package.json'. Content:`,
+      `\u2713 Fully resolved dependencies versions in 'package.json'`,
     ),
   );
-  console.log(`\n${JSON.stringify(packageJson, undefined, 2)}\n`);
-
   console.log(
     chalk.green(
       `Sucessfully prepared publish content for workspace '${workspaceName}'!\n`,
