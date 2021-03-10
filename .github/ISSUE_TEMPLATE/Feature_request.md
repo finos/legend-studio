@@ -1,7 +1,8 @@
 ---
 name: 🚀 Feature Request
-labels: ':rocket: Feature Request'
-about: Submit a proposal for a new feature
+about: Submit a proposal for a new feature.
+title: 'Feature request: <brief description>'
+labels: 'Type: Feature Request'
 ---
 
 ## 🚀 Feature Request

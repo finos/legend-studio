@@ -79,7 +79,6 @@ const resolveFullTsConfigWithoutValidation = (fullTsConfigPath) => {
      *
      * Therefore, the only field within `tsconfig` that we needs to destruct is `compilerOptions`.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { references, ...parentTsConfig } = parentTsFullConfig; // omit `references` from parent config
     tsConfig = {
       ...parentTsConfig,
