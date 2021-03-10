@@ -62,7 +62,7 @@ jobs:
         # for all of its dependencies instead of their snapshots.
         if: steps.changesets.outputs.published == 'true'
         run: yarn publish:docker
-      - name: Uploading publish content
+      - name: Upload publish content
         # If publish never happened, there's no point in uploading this content
         if: steps.changesets.outputs.published == 'true'
         uses: actions/upload-artifact@v2
