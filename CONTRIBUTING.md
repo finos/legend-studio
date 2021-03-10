@@ -79,6 +79,8 @@ yarn changeset "e.g. some message ..."
 yarn changeset:cli
 ```
 
+> If you made a mistake in a changeset and want to create a PR to rectify that, to avoid the changeset being attributed to the wrong PR or author, you can add `pr` and `author` fields to the [front-matter part of the changelog](https://github.com/atlassian/changesets/blob/master/packages/changelog-github/CHANGELOG.md#minor-changes).
+
 ## Development Guidelines
 
 > Don't forget to check out the `scripts` section in the root and each workspace `package.json` to explore many more useful development utilities that we use in our daily development workflow.

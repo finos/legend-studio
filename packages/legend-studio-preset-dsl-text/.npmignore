@@ -1,5 +1,5 @@
-build
-style
+/build
+/style
 **/__mocks__/**
 **/__tests__/**
 /*.*

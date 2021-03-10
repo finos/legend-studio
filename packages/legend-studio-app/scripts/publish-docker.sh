@@ -61,7 +61,7 @@ do
       continue
   elif [[ $_TAG == $SERVER_IMAGE_VERSION ]];
     then
-      echo -e "${LIGHT_BLUE}Server image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION is already up-to-date exists. Proceeding...${NC}"
+      echo -e "${LIGHT_BLUE}Server image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION is already up-to-date. Proceeding...${NC}"
       break
   else
     echo -e "${RED}Server image $SERVER_IMAGE_NAME:$SERVER_IMAGE_VERSION is not up-to-date. Please update to the latest $SERVER_IMAGE_NAME:$_TAG. Aborting...${NC}"
@@ -77,9 +77,11 @@ done
 # login beforehand.
 
 # Build Docker image
+echo -e "${LIGHT_BLUE}Building image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION ...${NC}"
 docker build --quiet --tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION $DIR/../
 
 # Push Docker image
+echo -e "${LIGHT_BLUE}Pushing image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION to Docker Hub...${NC}"
 docker push --quiet $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION
 
 echo -e "\n"

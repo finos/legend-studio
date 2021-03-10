@@ -263,6 +263,7 @@ const reportViolations = ({
 };
 
 module.exports = {
+  findFiles,
   findViolations,
   reportViolations,
 };

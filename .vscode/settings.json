@@ -15,6 +15,7 @@
     "packages/*/lib": true,
     "packages/*/dist": true,
     "packages/*/build": true,
+    "/build": true,
     "/temp": true // temp dirs for local development
   },
   // needed this to be `on` instead of `auto` so auto-import suggestion works properly with monorepo

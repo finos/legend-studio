@@ -1,4 +1,4 @@
-build
+/build
 **/__mocks__/**
 **/__tests__/**
 /*.*
