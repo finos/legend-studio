@@ -1,5 +1,16 @@
 # @finos/legend-studio
 
+## 0.0.4
+
+### Patch Changes
+
+- [#102](https://github.com/finos/legend-studio/pull/102) [`492e022`](https://github.com/finos/legend-studio/commit/492e02229d27fc5ef0e1bafbbd8672de0449081f) Thanks [@akphi](https://github.com/akphi)! - Update publish content avoid list
+
+- Updated dependencies [[`492e022`](https://github.com/finos/legend-studio/commit/492e02229d27fc5ef0e1bafbbd8672de0449081f)]:
+  - @finos/legend-studio-components@0.0.4
+  - @finos/legend-studio-network@0.0.4
+  - @finos/legend-studio-shared@0.0.4
+
 ## 0.0.3
 
 ### Patch Changes
