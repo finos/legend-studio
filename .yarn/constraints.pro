@@ -60,4 +60,9 @@ gen_enforced_field(WorkspaceCwd, 'homepage', HomepageUrl) :-
   atom_concat('https://github.com/finos/legend-studio/tree/master/', WorkspaceCwd, HomepageUrl),
   % Private packages aren't covered
     \+ workspace_field_test(WorkspaceCwd, 'private', 'true').
+% Make sure all packages that can be published must specify a directory to stage/prepare publish content
+gen_enforced_field(WorkspaceCwd, 'publishConfig.directory', 'build/publishContent') :-
+  workspace(WorkspaceCwd),
+  % Private packages aren't covered
+    \+ workspace_field_test(WorkspaceCwd, 'private', 'true').
 
