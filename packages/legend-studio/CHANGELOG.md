@@ -1,5 +1,16 @@
 # @finos/legend-studio
 
+## 0.0.6
+
+### Patch Changes
+
+- [#106](https://github.com/finos/legend-studio/pull/106) [`ce630c7`](https://github.com/finos/legend-studio/commit/ce630c7c13b7b52a67d14189d42400cabfd13868) Thanks [@akphi](https://github.com/akphi)! - Fix dev-utils for Webpack and Jest to make consumer projects work with published packages from NPM
+
+- Updated dependencies []:
+  - @finos/legend-studio-components@0.0.5
+  - @finos/legend-studio-network@0.0.5
+  - @finos/legend-studio-shared@0.0.4
+
 ## 0.0.5
 
 ### Patch Changes
