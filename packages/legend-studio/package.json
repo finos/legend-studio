@@ -65,7 +65,6 @@
   },
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
-    "@juggle/resize-observer": "3.3.0",
     "@testing-library/dom": "7.30.0",
     "@types/css-font-loading-module": "0.0.4",
     "@types/react": "17.0.3",
