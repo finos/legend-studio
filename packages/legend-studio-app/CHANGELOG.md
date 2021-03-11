@@ -1,5 +1,15 @@
 # @finos/legend-studio-app
 
+## 0.2.10
+
+### Patch Changes
+
+- [#108](https://github.com/finos/legend-studio/pull/108) [`35119b3`](https://github.com/finos/legend-studio/commit/35119b3421f949da32be5884ace73ab94b010a54) Thanks [@akphi](https://github.com/akphi)! - Move @types/\* dependencies from devDependencies in order to ensure NPM consumers properly install these typings
+
+- Updated dependencies [[`35119b3`](https://github.com/finos/legend-studio/commit/35119b3421f949da32be5884ace73ab94b010a54)]:
+  - @finos/legend-studio@0.0.7
+  - @finos/legend-studio-preset-dsl-text@0.0.7
+
 ## 0.2.9
 
 ### Patch Changes

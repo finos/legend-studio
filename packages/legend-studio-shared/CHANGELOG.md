@@ -1,5 +1,11 @@
 # @finos/legend-studio-shared
 
+## 0.0.5
+
+### Patch Changes
+
+- [#108](https://github.com/finos/legend-studio/pull/108) [`35119b3`](https://github.com/finos/legend-studio/commit/35119b3421f949da32be5884ace73ab94b010a54) Thanks [@akphi](https://github.com/akphi)! - Move @types/\* dependencies from devDependencies in order to ensure NPM consumers properly install these typings
+
 ## 0.0.4
 
 ### Patch Changes
