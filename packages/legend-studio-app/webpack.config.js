@@ -28,8 +28,8 @@ module.exports = (env, arg) => {
   const baseConfig = getWebAppBaseWebpackConfig(env, arg, __dirname, {
     mainEntryPath: path.resolve(__dirname, './src/index.tsx'),
     indexHtmlPath: path.resolve(__dirname, './src/index.html'),
-    babelConfigPath: path.resolve(__dirname, '../../babel.config.js'),
     appConfig,
+    babelConfigPath: path.resolve(__dirname, '../../babel.config.js'),
   });
   const config = {
     ...baseConfig,
