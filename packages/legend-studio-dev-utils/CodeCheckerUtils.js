@@ -43,7 +43,7 @@ const hasPhrases = (file, phrases = []) => {
   );
 };
 
-const collectMarkerStats = (filesWithMarker, markerSet) => {
+const collectMarkerStats = (filesWithMarker, markerSet, groupByDirectory) => {
   const result = {
     dirs: [],
     files: [],
@@ -56,33 +56,36 @@ const collectMarkerStats = (filesWithMarker, markerSet) => {
   // classify marker types
   filesWithMarker.forEach((file) => {
     const fileContent = getFileContent(file).trim();
-    // respect the scope: dir > file > section
     if (fileContent.includes(markerSet.dirMarker)) {
       dirs.add(path.dirname(file));
-    } else if (fileContent.includes(markerSet.fileMarker)) {
+    }
+    if (fileContent.includes(markerSet.fileMarker)) {
       files.add(file);
-    } else if (
+    }
+    if (
       fileContent.includes(markerSet.startSectionMarker) ||
       fileContent.includes(markerSet.endSectionMarker)
     ) {
       sections.add(file);
-    } else {
-      // if no scope marker is provided, it is assumed that the marker is for the whole file
-      files.add(file);
     }
   });
-  // simplify stats - if a directory includes file or section, the latter will not be listed
   result.dirs = Array.from(dirs.values());
-  Array.from(files.values()).forEach((file) => {
-    if (result.dirs.every((dir) => !file.startsWith(`${dir}/`))) {
-      result.files.push(file);
-    }
-  });
-  Array.from(sections.values()).forEach((file) => {
-    if (result.dirs.every((dir) => !file.startsWith(`${dir}/`))) {
-      result.sections.push(file);
-    }
-  });
+  if (groupByDirectory) {
+    // simplify stats - if a directory includes file or section, the latter will not be listed
+    Array.from(files.values()).forEach((file) => {
+      if (result.dirs.every((dir) => !file.startsWith(`${dir}/`))) {
+        result.files.push(file);
+      }
+    });
+    Array.from(sections.values()).forEach((file) => {
+      if (result.dirs.every((dir) => !file.startsWith(`${dir}/`))) {
+        result.sections.push(file);
+      }
+    });
+  } else {
+    result.files = Array.from(files.values());
+    result.sections = Array.from(sections.values());
+  }
   return result;
 };
 
@@ -113,7 +116,11 @@ const findFiles = ({
   const filesWithMarker = files.filter((file) =>
     hasPhrases(file, [markerSet.marker]),
   );
-  const markerStats = collectMarkerStats(filesWithMarker, markerSet);
+  const markerStats = collectMarkerStats(
+    filesWithMarker,
+    markerSet,
+    groupByDirectory,
+  );
 
   const filesWithPhrases = files.filter(
     (file) =>
@@ -123,7 +130,12 @@ const findFiles = ({
 
   const result = markerStats.dirs // sort directories to the top
     .sort((a, b) => a.localeCompare(b))
-    .map((dir) => ({ path: dir, isDir: true }))
+    .map((dir) => ({
+      path: dir,
+      hasMarker: true,
+      hasDirectoryMarker: true,
+      hasPhrase: filesWithPhrases.some((file) => file.startsWith(dir)),
+    }))
     .concat(
       Array.from(new Set([...filesWithMarker, ...filesWithPhrases]).values())
         .filter(
@@ -135,10 +147,13 @@ const findFiles = ({
         .map((file) => {
           const res = { path: file };
           if (markerStats.sections.some((section) => section === file)) {
-            res.hasMarkerSection = true;
+            res.hasSectionMarker = true;
           }
           if (filesWithPhrases.includes(file)) {
             res.hasPhrase = true;
+          }
+          if (filesWithMarker.includes(file)) {
+            res.hasMarker = true;
           }
           return res;
         }),
@@ -228,7 +243,7 @@ const reportMatches = ({
   messageFormatter,
   helpMessage,
 }) => {
-  const foundFiles = findMatches({
+  const foundMatches = findMatches({
     marker,
     phrases,
     forceMatchPatterns,
@@ -237,21 +252,22 @@ const reportMatches = ({
     groupByDirectory,
   });
 
-  if (foundFiles.length > 0) {
+  if (foundMatches.length > 0) {
     exitWithError(
       `${
         messageFormatter
-          ? messageFormatter(foundFiles)
-          : `Found ${foundFiles.length} matches:`
-      }:\n${foundFiles
-        .map((file) => {
+          ? messageFormatter(foundMatches)
+          : `Found ${foundMatches.length} matches:`
+      }:\n${foundMatches
+        .map((match) => {
           const status = [
-            file.isDir && chalk.grey('[DIR]'),
-            file.isForceMatched && chalk.yellow('(force-matched)'),
-            file.hasMarkerSection && chalk.orange('(section)'),
-            file.hasPhrase && chalk.red('(phrase)'),
+            match.hasMarker && chalk.cyan('(marker)'),
+            match.hasDirectoryMarker && chalk.cyan('(DIR)'),
+            match.hasSectionMarker && chalk.cyan('(section)'),
+            match.isForceMatched && chalk.yellow('(force-matched)'),
+            match.hasPhrase && chalk.red('(phrase)'),
           ].filter(Boolean);
-          return `${file.path} ${status.join(' ')}`;
+          return `${chalk.grey(match.path)} ${status.join(' ')}`;
         })
         .join('\n')}${helpMessage ? `\n${helpMessage}` : ''}`,
     );
