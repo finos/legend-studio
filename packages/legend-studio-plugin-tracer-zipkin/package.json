@@ -39,6 +39,7 @@
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-network": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
+    "@types/zipkin-javascript-opentracing": "1.6.0",
     "opentracing": "0.14.5",
     "zipkin": "0.22.0",
     "zipkin-javascript-opentracing": "3.0.0",
@@ -46,7 +47,6 @@
   },
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
-    "@types/zipkin-javascript-opentracing": "1.6.0",
     "cross-env": "7.0.3",
     "eslint": "7.21.0",
     "jest": "26.6.3",
