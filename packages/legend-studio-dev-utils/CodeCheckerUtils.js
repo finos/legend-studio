@@ -93,8 +93,7 @@ const findFiles = ({
   includePatterns = [],
   /* micromatch glob patterns */
   excludePatterns = [],
-  useMarkerScope = false,
-  // TODO: collapse by folder option
+  groupByDirectory,
 }) => {
   const files = execSync('git ls-files', { encoding: 'utf-8' })
     .trim()
@@ -114,9 +113,7 @@ const findFiles = ({
   const filesWithMarker = files.filter((file) =>
     hasPhrases(file, [markerSet.marker]),
   );
-  const markerStats = useMarkerScope
-    ? collectMarkerStats(filesWithMarker, markerSet)
-    : undefined;
+  const markerStats = collectMarkerStats(filesWithMarker, markerSet);
 
   const filesWithPhrases = files.filter(
     (file) =>
@@ -124,27 +121,24 @@ const findFiles = ({
       hasPhrases(file, phrases.list),
   );
 
-  const result = (markerStats?.dirs ?? []) // sort directories to the top
+  const result = markerStats.dirs // sort directories to the top
     .sort((a, b) => a.localeCompare(b))
     .map((dir) => ({ path: dir, isDir: true }))
     .concat(
       Array.from(new Set([...filesWithMarker, ...filesWithPhrases]).values())
         .filter(
           (file) =>
+            !groupByDirectory ||
             // if the directory is already marked, skip all of its sub-dirs and files
-            !markerStats ||
             markerStats.dirs.every((dir) => !file.startsWith(`${dir}/`)),
         )
         .map((file) => {
           const res = { path: file };
-          if (markerStats?.sections.some((section) => section === file)) {
+          if (markerStats.sections.some((section) => section === file)) {
             res.hasMarkerSection = true;
           }
           if (filesWithPhrases.includes(file)) {
             res.hasPhrase = true;
-            if (!filesWithMarker.includes(file)) {
-              res.hasPhraseOnly = true;
-            }
           }
           return res;
         }),
@@ -153,28 +147,33 @@ const findFiles = ({
   return result;
 };
 
-const findViolations = ({
+const findMatches = ({
   /* e.g. marker: { key: 'internal' } */
   marker,
-  /* e.g. bannedPhrases: { list: [], excludePatterns: [] } */
-  bannedPhrases,
-  /* micromatch glob patterns */
-  /** NOTE: we should really only use this for files that do not allow marker comments: e.g. JSON, generated files */
-  bannedPatterns = [],
+  /* e.g. phrases: { list: [], excludePatterns: [] } */
+  phrases,
+  /**
+   * If files or directories match this, they are automatically counted.
+   * We should really only use this for files that do not allow marker comments: e.g. JSON, generated files
+   *
+   * micromatch glob patterns
+   */
+  forceMatchPatterns = [],
   /* micromatch glob patterns */
   includePatterns = [],
   /* micromatch glob patterns */
   excludePatterns = [],
+  groupByDirectory,
 }) => {
-  const violations = findFiles({
+  const foundFiles = findFiles({
     marker,
-    useMarkerScope: true,
-    phrases: bannedPhrases,
+    groupByDirectory,
+    phrases,
     includePatterns,
     excludePatterns,
   });
 
-  const bannedFiles = Array.from(
+  const forceMatchFiles = Array.from(
     new Set(
       execSync('git ls-files', { encoding: 'utf-8' })
         .trim()
@@ -185,8 +184,8 @@ const findViolations = ({
             (!includePatterns.length ||
               micromatch.isMatch(file, includePatterns)) &&
             !GENERIC_EXCLUDE_PATTERNS.some((pattern) => pattern.test(file)) &&
-            (!bannedPatterns.length ||
-              micromatch.isMatch(file, bannedPatterns)) &&
+            forceMatchPatterns.length &&
+            micromatch.isMatch(file, forceMatchPatterns) &&
             !micromatch.isMatch(file, excludePatterns) &&
             fs.existsSync(file) &&
             !fs.lstatSync(file).isDirectory() &&
@@ -195,66 +194,65 @@ const findViolations = ({
     ).values(),
   );
 
-  // check if banned files violations are already marked by markers
-  bannedFiles.forEach((file) => {
+  // add to the list force-matches that are not already in the result set
+  forceMatchFiles.forEach((file) => {
     if (
-      violations
-        .map((violation) => violation.path)
-        .every((dir) => !file.startsWith(`${dir}/`))
+      foundFiles
+        .map((_file) => _file.path)
+        .every((_path) => !file.startsWith(`${_path}/`))
     ) {
-      violations.push({ path: file, isBanned: true });
+      foundFiles.push({ path: file, isForceMatched: true });
     }
   });
 
-  return violations;
+  return foundFiles;
 };
 
-const reportViolations = ({
+const reportMatches = ({
   /* e.g. marker: { key: 'internal' } */
   marker,
-  /* e.g. bannedPhrases: { list: [], excludePatterns: [] } */
-  bannedPhrases,
-  /* micromatch glob patterns */
-  /** NOTE: we should really only use this for files that do not allow marker comments: e.g. JSON, generated files */
-  bannedPatterns = [],
+  /* e.g. phrases: { list: [], excludePatterns: [] } */
+  phrases,
+  /**
+   * If files or directories match this, they are automatically counted.
+   * We should really only use this for files that do not allow marker comments: e.g. JSON, generated files
+   *
+   * micromatch glob patterns
+   */
+  forceMatchPatterns = [],
   /* micromatch glob patterns */
   includePatterns = [],
   /* micromatch glob patterns */
   excludePatterns = [],
+  groupByDirectory,
   messageFormatter,
   helpMessage,
 }) => {
-  const violations = findViolations({
+  const foundFiles = findMatches({
     marker,
-    bannedPhrases,
-    bannedPatterns,
+    phrases,
+    forceMatchPatterns,
     includePatterns,
     excludePatterns,
+    groupByDirectory,
   });
 
-  if (violations.length > 0) {
+  if (foundFiles.length > 0) {
     exitWithError(
       `${
         messageFormatter
-          ? messageFormatter(violations)
-          : `Found ${violations.length} violation(s):`
-      }:\n${violations
-        .map(
-          (file) =>
-            `${
-              file.hasMarkerSection
-                ? `${chalk.bold.yellow('o')} ${file.path} ${chalk.bold.yellow(
-                    '(section)',
-                  )}`
-                : `${chalk.red('\u2717')} ${file.path}${
-                    file.isDir ? ` ${chalk.grey('[DIR]')}` : ''
-                  }`
-            }${
-              file.hasPhraseOnly || (file.hasMarkerSection && file.hasPhrase)
-                ? ` ${chalk.bold.red('(phrase)')}`
-                : ''
-            }${file.isBanned ? ` ${chalk.bold.red('(banned)')}` : ''}`,
-        )
+          ? messageFormatter(foundFiles)
+          : `Found ${foundFiles.length} matches:`
+      }:\n${foundFiles
+        .map((file) => {
+          const status = [
+            file.isDir && chalk.grey('[DIR]'),
+            file.isForceMatched && chalk.yellow('(force-matched)'),
+            file.hasMarkerSection && chalk.orange('(section)'),
+            file.hasPhrase && chalk.red('(phrase)'),
+          ].filter(Boolean);
+          return `${file.path} ${status.join(' ')}`;
+        })
         .join('\n')}${helpMessage ? `\n${helpMessage}` : ''}`,
     );
   } else {
@@ -264,6 +262,6 @@ const reportViolations = ({
 
 module.exports = {
   findFiles,
-  findViolations,
-  reportViolations,
+  findMatches,
+  reportMatches,
 };
