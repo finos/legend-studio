@@ -322,6 +322,16 @@ export class ChangeDetectionState {
   start(): void {
     this.changeDetectionReaction?.();
     /**
+     * It seems like the reaction action is not always called in tests, causing fluctuation in
+     * code coverage report for this file. As such, for test, we would want to disable throttling
+     * to avoid timing issue.
+     *
+     * See https://docs.codecov.io/docs/unexpected-coverage-changes
+     * See https://community.codecov.io/t/codecov-reporting-impacted-files-for-unchanged-and-completely-unrelated-file/2635
+     */
+    // eslint-disable-next-line no-process-env
+    const throttleDuration = process.env.NODE_ENV === 'test' ? 0 : 1000;
+    /**
      * For the reaction, the data we observe is the snapshot of the current hashes, note that we can also use the hashCode
      * of the root package although this might get interesting in the future when we introduce project dependency or
      * auto-gen elements...
@@ -352,7 +362,7 @@ export class ChangeDetectionState {
       () => {
         this.computeLocalChanges(true).catch(noop());
       },
-      { delay: 1000 }, // throttle the call
+      { delay: throttleDuration }, // throttle the call
       /**
        * NOTE: this reaction will not be fired immediately so we have to manually call the first local changes computation
        * See https://mobx.js.org/refguide/reaction.html#options
