@@ -57,7 +57,7 @@ const V1_schemaNameMapperModelSchema = createModelSchema(V1_SchemaNameMapper, {
 const V1_tableNameMapperModelSchema = createModelSchema(V1_TableNameMapper, {
   _type: usingConstantValueSchema(V1_MapperType.TABLE),
   from: primitive(),
-  schemaMapper: usingModelSchema(V1_schemaNameMapperModelSchema),
+  schema: usingModelSchema(V1_schemaNameMapperModelSchema),
   to: primitive(),
 });
 
