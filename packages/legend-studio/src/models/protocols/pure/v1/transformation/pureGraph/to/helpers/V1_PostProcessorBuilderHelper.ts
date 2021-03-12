@@ -36,14 +36,14 @@ import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
 const V1_processSchemaNameMapper = (
-  schemaMapper: V1_SchemaNameMapper,
-): SchemaNameMapper => new SchemaNameMapper(schemaMapper.from, schemaMapper.to);
+  schema: V1_SchemaNameMapper,
+): SchemaNameMapper => new SchemaNameMapper(schema.from, schema.to);
 
 export const V1_processMapper = (mapper: V1_Mapper): Mapper => {
   if (mapper instanceof V1_SchemaNameMapper) {
     return V1_processSchemaNameMapper(mapper);
   } else if (mapper instanceof V1_TableNameMapper) {
-    const _schema = V1_processSchemaNameMapper(mapper.schemaMapper);
+    const _schema = V1_processSchemaNameMapper(mapper.schema);
     return new TableNameMapper(mapper.from, mapper.to, _schema);
   }
   throw new UnsupportedOperationError(

@@ -52,7 +52,7 @@ export const V1_transformMapper = (val: Mapper): V1_Mapper => {
     return V1_transformSchemaNameMapper(val);
   } else if (val instanceof TableNameMapper) {
     const tableNameMapper = new V1_TableNameMapper();
-    tableNameMapper.schemaMapper = V1_transformSchemaNameMapper(val.schema);
+    tableNameMapper.schema = V1_transformSchemaNameMapper(val.schema);
     tableNameMapper.from = val.from;
     tableNameMapper.to = val.to;
     return tableNameMapper;
