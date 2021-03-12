@@ -34,13 +34,13 @@ export class V1_SchemaNameMapper extends V1_Mapper {
 }
 
 export class V1_TableNameMapper extends V1_Mapper {
-  schemaMapper!: V1_SchemaNameMapper;
+  schema!: V1_SchemaNameMapper;
 
   get hashCode(): string {
     return hashArray([
       super.hashCode,
       CORE_HASH_STRUCTURE.TABLE_MAPPER,
-      this.schemaMapper,
+      this.schema,
     ]);
   }
 }
