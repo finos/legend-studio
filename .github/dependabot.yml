@@ -1,5 +1,6 @@
 # Configuration for `dependabot`
-# See https://docs.github.com/en/free-pro-team@latest/github/administering-a-repository/configuration-options-for-dependency-updates
+# See https://docs.github.com/en/github/administering-a-repository/enabling-and-disabling-version-updates
+# See https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -11,12 +12,6 @@ updates:
       include: scope
     labels:
       - 'dependencies'
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: weekly
-    commit-message:
-      prefix: chore
-      include: scope
-    labels:
-      - 'dependencies'
+
+# NOTE: We disable version update check for NPM/Yarn dependencies as it can get really noisy and there is
+# currently no way to add a changeset to the PR created by the bot

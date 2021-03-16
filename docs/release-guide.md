@@ -46,9 +46,12 @@ git push --follow-tags
 # 1. Swap out the `workspace:*` in `package.json` to point
 # at fixed versions.
 
-# 2. Login to Docker
+# 2. Check Docker image
+yarn workspace @finos/legend-studio-app check:docker
+
+# 3. Login to Docker
 docker login
 
-# 3. Build image and publish to Docker Hub
-yarn publish:docker
+# 4. Build image and publish to Docker Hub
+yarn workspace @finos/legend-studio-app publish:docker
 ```

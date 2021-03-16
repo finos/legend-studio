@@ -8,10 +8,7 @@ on:
 jobs:
   release:
     name: Release
-    # NOTE: we need to use `ubuntu-20.04` in order to get `jq@1.6`.
-    # This will be the default environment for `ubuntu-latest` tag soon
-    # See https://github.com/actions/virtual-environments/issues/1816
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
@@ -61,7 +58,7 @@ jobs:
         # attempted if other packages are published, to ensure it uses the latest tagged versions
         # for all of its dependencies instead of their snapshots.
         if: steps.changesets.outputs.published == 'true'
-        run: yarn publish:docker
+        run: yarn workspace @finos/legend-studio-app publish:docker
       - name: Upload publish content
         # If publish never happened, there's no point in uploading this content
         if: steps.changesets.outputs.published == 'true'
