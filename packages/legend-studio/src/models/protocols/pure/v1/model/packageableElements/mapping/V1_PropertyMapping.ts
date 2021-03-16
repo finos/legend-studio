@@ -27,6 +27,7 @@ import type { V1_PropertyPointer } from '../../../model/packageableElements/doma
 import type { V1_PurePropertyMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PurePropertyMapping';
 import type { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping';
 import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_EmbeddedFlatDataPropertyMapping';
+import type { V1_XStorePropertyMapping } from './xStore/V1_XStorePropertyMapping';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface V1_PropertyMappingVisitor<T> {
@@ -50,6 +51,7 @@ export interface V1_PropertyMappingVisitor<T> {
   visit_AggregationAwarePropertyMapping(
     propertyMapping: V1_AggregationAwarePropertyMapping,
   ): T;
+  visit_XStorePropertyMapping(propertyMapping: V1_XStorePropertyMapping): T;
 }
 
 export abstract class V1_PropertyMapping implements Hashable {

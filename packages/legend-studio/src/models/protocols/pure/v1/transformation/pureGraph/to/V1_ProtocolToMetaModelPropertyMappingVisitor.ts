@@ -60,6 +60,7 @@ import type { V1_OtherwiseEmbeddedRelationalPropertyMapping } from '../../../mod
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
 import { V1_processRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import { V1_processEmbeddedRelationalMappingProperties } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder';
+import type { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -89,6 +90,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   private topParent: InstanceSetImplementation | undefined;
   private allEnumerationMappings: EnumerationMapping[] = [];
   private tableAliasMap: Map<string, TableAlias>;
+  private allClassMappings: SetImplementation[];
 
   constructor(
     context: V1_GraphBuilderContext,
@@ -96,12 +98,14 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     topParent: InstanceSetImplementation | undefined,
     allEnumerationMappings: EnumerationMapping[],
     tabliaAliasMap?: Map<string, TableAlias>,
+    allClassMappings?: SetImplementation[],
   ) {
     this.context = context;
     this.immediateParent = immediateParent;
     this.topParent = topParent;
     this.allEnumerationMappings = allEnumerationMappings;
     this.tableAliasMap = tabliaAliasMap ?? new Map<string, TableAlias>();
+    this.allClassMappings = allClassMappings ?? [];
   }
 
   visit_PurePropertyMapping(protocol: V1_PurePropertyMapping): PropertyMapping {
@@ -569,6 +573,28 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       RelationalPropertyMapping,
     );
     return otherwiseEmbedded;
+  }
+
+  visit_XStorePropertyMapping(
+    protocol: V1_XStorePropertyMapping,
+  ): PropertyMapping {
+    assertNonNullable(
+      protocol.property,
+      'XStore property mapping property is missing',
+    );
+    assertNonEmptyString(
+      protocol.property.class,
+      'XStore property mapping property class is missing',
+    );
+    assertNonEmptyString(
+      protocol.property.property,
+      'XStore property mapping property name is missing',
+    );
+    assertNonNullable(
+      protocol.crossExpression,
+      'XStore property mapping transform lambda is missing',
+    );
+    throw new Error('Method not implemented.');
   }
 
   visit_AggregationAwarePropertyMapping(

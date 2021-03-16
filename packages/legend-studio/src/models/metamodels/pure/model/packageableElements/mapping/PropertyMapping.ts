@@ -33,6 +33,7 @@ import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../..
 import type { EmbeddedRelationalInstanceSetImplementation } from '../../../model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../model/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation';
 import type { AggregationAwarePropertyMapping } from '../../../model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
+import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface PropertyMappingVisitor<T> {
@@ -56,6 +57,7 @@ export interface PropertyMappingVisitor<T> {
   visit_AggregationAwarePropertyMapping(
     propertyMapping: AggregationAwarePropertyMapping,
   ): T;
+  visit_XStorePropertyMapping(propertyMapping: XStorePropertyMapping): T;
 }
 
 export abstract class PropertyMapping implements Hashable, Stubable {

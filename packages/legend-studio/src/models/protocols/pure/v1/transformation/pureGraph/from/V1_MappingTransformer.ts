@@ -122,6 +122,10 @@ import { V1_AggregateSetImplementationContainer } from '../../../model/packageab
 import { V1_AggregateSpecification } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSpecification';
 import { V1_AggregateFunction } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction';
 import { V1_GroupByFunction } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_GroupByFunction';
+import type { XStorePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStorePropertyMapping';
+import { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
+import { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
+import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -433,6 +437,25 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
   return embedded;
 };
 
+const transformXStorePropertyMapping = (
+  element: XStorePropertyMapping,
+): V1_XStorePropertyMapping => {
+  const xstore = new V1_XStorePropertyMapping();
+  xstore.property = V1_transformPropertyReference(element.property);
+  xstore.source = transformPropertyMappingSource(
+    element.sourceSetImplementation,
+  );
+  xstore.target = transformPropertyMappingTarget(
+    element.targetSetImplementation,
+  );
+  if (!element.crossExpression.isStub) {
+    xstore.crossExpression = element.crossExpression.accept_ValueSpecificationVisitor(
+      new V1_RawValueSpecificationTransformer(),
+    ) as V1_RawLambda;
+  }
+  return xstore;
+};
+
 const transformOtherwiseEmbeddedRelationalPropertyMapping = (
   element: OtherwiseEmbeddedRelationalInstanceSetImplementation,
 ): V1_OtherwiseEmbeddedRelationalPropertyMapping => {
@@ -514,7 +537,11 @@ class PropertyMappingSerializer
   ): V1_PropertyMapping {
     return transformOtherwiseEmbeddedRelationalPropertyMapping(propertyMapping);
   }
-
+  visit_XStorePropertyMapping(
+    propertyMapping: XStorePropertyMapping,
+  ): V1_PropertyMapping {
+    return transformXStorePropertyMapping(propertyMapping);
+  }
   visit_AggregationAwarePropertyMapping(
     propertyMapping: AggregationAwarePropertyMapping,
   ): V1_PropertyMapping {
@@ -796,11 +823,26 @@ const transformRelationalAssociationImplementation = (
   return relationalMapping;
 };
 
+const transformXStorelAssociationImplementation = (
+  element: XStoreAssociationImplementation,
+): V1_XStoreAssociationMapping => {
+  const xStoreMapping = new V1_XStoreAssociationMapping();
+  xStoreMapping.stores = element.stores.map(V1_transformElementReference);
+  xStoreMapping.association = V1_transformElementReference(element.association);
+  xStoreMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+    element.propertyMappings,
+  );
+  xStoreMapping.id = mappingElementIdSerializer(element.id);
+  return xStoreMapping;
+};
+
 const transformAssociationImplementation = (
   element: AssociationImplementation,
 ): V1_AssociationMapping => {
   if (element instanceof RelationalAssociationImplementation) {
     return transformRelationalAssociationImplementation(element);
+  } else if (element instanceof XStoreAssociationImplementation) {
+    return transformXStorelAssociationImplementation(element);
   }
   throw new UnsupportedOperationError(
     `Can't transform association implementation of type '${
