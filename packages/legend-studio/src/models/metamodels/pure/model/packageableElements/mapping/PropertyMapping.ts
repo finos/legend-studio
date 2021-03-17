@@ -104,6 +104,7 @@ export abstract class PropertyMapping implements Hashable, Stubable {
       CORE_HASH_STRUCTURE.PROPERTY_MAPPING,
       this.property.pointerHashCode,
       this.targetSetImplementation?.id.value ?? '',
+      this.localMappingProperty ?? '',
     ]);
   }
 

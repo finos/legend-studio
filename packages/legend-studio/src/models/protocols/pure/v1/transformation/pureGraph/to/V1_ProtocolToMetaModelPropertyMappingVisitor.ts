@@ -31,7 +31,7 @@ import type { PropertyMappingsImplementation } from '../../../../../../metamodel
 import { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EnumerationMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import type { SetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';
+import { SetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { RawLambda } from '../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import type { Association } from '../../../../../../metamodels/pure/model/packageableElements/domain/Association';
@@ -39,6 +39,7 @@ import type { TableAlias } from '../../../../../../metamodels/pure/model/package
 import { InferableMappingElementIdExplicitValue } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
 import type { PackageableElementReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PackageableElementExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import type { PropertyReference } from '../../../../../../metamodels/pure/model/packageableElements/domain/PropertyReference';
 import { PropertyExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/domain/PropertyReference';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
@@ -61,6 +62,12 @@ import type { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packag
 import { V1_processRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import { V1_processEmbeddedRelationalMappingProperties } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder';
 import type { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
+import { XStorePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStorePropertyMapping';
+import type { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
+import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
+import { Property } from '../../../../../../metamodels/pure/model/packageableElements/domain/Property';
+import { MappingClass } from '../../../../../../metamodels/pure/model/packageableElements/mapping/MappingClass';
+import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/model/packageableElements/mapping/LocalMappingPropertyInfo';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -91,6 +98,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   private allEnumerationMappings: EnumerationMapping[] = [];
   private tableAliasMap: Map<string, TableAlias>;
   private allClassMappings: SetImplementation[];
+  private xStoreParent?: XStoreAssociationImplementation;
 
   constructor(
     context: V1_GraphBuilderContext,
@@ -99,6 +107,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     allEnumerationMappings: EnumerationMapping[],
     tabliaAliasMap?: Map<string, TableAlias>,
     allClassMappings?: SetImplementation[],
+    xStoreParent?: XStoreAssociationImplementation,
   ) {
     this.context = context;
     this.immediateParent = immediateParent;
@@ -106,6 +115,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     this.allEnumerationMappings = allEnumerationMappings;
     this.tableAliasMap = tabliaAliasMap ?? new Map<string, TableAlias>();
     this.allClassMappings = allClassMappings ?? [];
+    this.xStoreParent = xStoreParent;
   }
 
   visit_PurePropertyMapping(protocol: V1_PurePropertyMapping): PropertyMapping {
@@ -126,7 +136,33 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       'Model-to-model property mapping transform lambda is missing',
     );
     // NOTE: mapping for derived property is not supported
-    const property = this.context.resolveProperty(protocol.property);
+    let property: PropertyReference;
+    let localMapping: LocalMappingPropertyInfo | undefined;
+    if (protocol.localMappingProperty) {
+      const localMappingProperty = protocol.localMappingProperty;
+      const mappingClass = new MappingClass(
+        `${this.topParent?.parent?.path}_${this.topParent?.id}${protocol.property.property}`,
+      );
+      const _multiplicity = this.context.graph.getMultiplicity(
+        localMappingProperty.multiplicity.lowerBound,
+        localMappingProperty.multiplicity.upperBound,
+      );
+      const _property = new Property(
+        protocol.property.property,
+        _multiplicity,
+        this.context.resolveGenericType(localMappingProperty.type),
+        mappingClass,
+      );
+      property = PropertyExplicitReference.create(_property);
+      localMapping = new LocalMappingPropertyInfo();
+      localMapping.localMappingProperty = true;
+      localMapping.localMappingPropertyMultiplicity = _multiplicity;
+      localMapping.localMappingPropertyType = this.context.resolveType(
+        localMappingProperty.type,
+      ).value;
+    } else {
+      property = this.context.resolveProperty(protocol.property);
+    }
     const propertyType = property.value.genericType.value.rawType;
     let targetSetImplementation: SetImplementation | undefined;
     const topParent = guaranteeNonNullable(this.topParent);
@@ -168,6 +204,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       }
       purePropertyMapping.transformer = enumerationMapping;
     }
+    purePropertyMapping.localMappingProperty = localMapping;
     return purePropertyMapping;
   }
 
@@ -592,14 +629,57 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     );
     assertNonNullable(
       protocol.crossExpression,
-      'XStore property mapping transform lambda is missing',
+      'XStore property mapping cross expression lambda is missing',
     );
-    throw new Error('Method not implemented.');
+
+    const xStoreParent = guaranteeNonNullable(
+      this.xStoreParent,
+      'XStoreAssociation expected to be parent of XStore PropertyMapping',
+    );
+    const _association = xStoreParent.association.value;
+    const property = _association.getProperty(protocol.property.property);
+    const sourceSetImplementation = this.allClassMappings.find(
+      (c) => c.id.value === protocol.source,
+    );
+    const targetSetImplementation = this.allClassMappings.find(
+      (c) => c.id.value === protocol.target,
+    );
+    const xStorePropertyMapping = new XStorePropertyMapping(
+      xStoreParent,
+      PropertyExplicitReference.create(property),
+      guaranteeNonNullable(sourceSetImplementation),
+      targetSetImplementation,
+    );
+    xStorePropertyMapping.crossExpression = new RawLambda(
+      protocol.crossExpression.parameters,
+      protocol.crossExpression.body,
+    );
+    return xStorePropertyMapping;
   }
 
   visit_AggregationAwarePropertyMapping(
     protocol: V1_AggregationAwarePropertyMapping,
   ): PropertyMapping {
-    throw new UnsupportedOperationError();
+    const _class = this.context.resolveClass(protocol.property.class);
+    const property = _class.value.getProperty(protocol.property.property);
+    let sourceSetImpl: SetImplementation;
+    if (protocol.source) {
+      sourceSetImpl = guaranteeNonNullable(
+        this.allClassMappings.find((c) => c.id.value === protocol.source),
+      );
+    } else {
+      sourceSetImpl =
+        this.topParent ??
+        guaranteeType(this.immediateParent, SetImplementation);
+    }
+    const targetSetImplementation = this.allClassMappings.find(
+      (c) => c.id.value === protocol.target,
+    );
+    return new AggregationAwarePropertyMapping(
+      this.immediateParent,
+      PropertyExplicitReference.create(property),
+      sourceSetImpl,
+      targetSetImplementation,
+    );
   }
 }

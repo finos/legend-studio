@@ -707,6 +707,8 @@ const V1_serializeAssociationPropertMapping = (
 ): PlainObject<V1_PropertyMapping> | typeof SKIP => {
   if (protocol instanceof V1_RelationalPropertyMapping) {
     return serialize(relationalPropertyMappingModelSchema, protocol);
+  } else if (protocol instanceof V1_XStorePropertyMapping) {
+    return serialize(xStorePropertyMappingModelSchema, protocol);
   }
   return SKIP;
 };
@@ -717,6 +719,8 @@ const V1_deserializeAssociationPropertMapping = (
   switch (json._type) {
     case V1_PropertyMappingType.RELATIONAL:
       return deserialize(relationalPropertyMappingModelSchema, json);
+    case V1_PropertyMappingType.XSTORE:
+      return deserialize(xStorePropertyMappingModelSchema, json);
     default:
       return SKIP;
   }

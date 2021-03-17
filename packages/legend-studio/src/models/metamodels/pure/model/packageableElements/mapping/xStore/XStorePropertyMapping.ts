@@ -35,6 +35,11 @@ export class XStorePropertyMapping
     ]);
   }
 
+  get isStub(): boolean {
+    // TODO figure out isStub conditions
+    return false;
+  }
+
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
     return visitor.visit_XStorePropertyMapping(this);
   }

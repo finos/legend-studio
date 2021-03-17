@@ -20,22 +20,15 @@ import { Class } from '../../../model/packageableElements/domain/Class';
 import type { Property } from '../domain/Property';
 
 export class MappingClass extends Class {
-  setImplementation: SetImplementation;
-  class: Class;
+  setImplementation?: SetImplementation;
+  class?: Class;
   localProperties: Property[] = [];
 
-  constructor(
-    name: string,
-    _class: Class,
-    setImplementation: SetImplementation,
-  ) {
+  constructor(name: string) {
     super(name);
     makeObservable(this, {
       setImplementation: observable,
       class: observable,
     });
-
-    this.class = _class;
-    this.setImplementation = setImplementation;
   }
 }

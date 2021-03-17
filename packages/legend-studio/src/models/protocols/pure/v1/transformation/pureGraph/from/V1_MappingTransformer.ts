@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   getClass,
   isNonNullable,
@@ -70,6 +69,7 @@ import {
   V1_initPackageableElement,
   V1_transformElementReference,
   V1_transformElementReferencePointer,
+  V1_transformMultiplicity,
   V1_transformOptionalElementReference,
 } from './V1_CoreTransformerHelper';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
@@ -126,6 +126,8 @@ import type { XStorePropertyMapping } from '../../../../../../metamodels/pure/mo
 import { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
 import { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
 import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
+import { V1_LocalMappingPropertyInfo } from '../../../model/packageableElements/mapping/V1_LocalMappingPropertyInfo';
+import type { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/model/packageableElements/mapping/LocalMappingPropertyInfo';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -139,6 +141,17 @@ export const V1_transformPropertyReference = (
 const mappingElementIdSerializer = (
   value: InferableMappingElementIdValue,
 ): string | undefined => value.valueForSerialization;
+
+const transformLocalPropertyInfo = (
+  value: LocalMappingPropertyInfo,
+): V1_LocalMappingPropertyInfo => {
+  const localPropertyInfo = new V1_LocalMappingPropertyInfo();
+  localPropertyInfo.type = value.localMappingPropertyType.path;
+  localPropertyInfo.multiplicity = V1_transformMultiplicity(
+    value.localMappingPropertyMultiplicity,
+  );
+  return localPropertyInfo;
+};
 
 const transformEnumValueMapping = (
   element: EnumValueMapping,
@@ -367,6 +380,11 @@ const transformPurePropertyMapping = (
       new V1_RawValueSpecificationTransformer(),
     ) as V1_RawLambda;
   }
+  if (element.localMappingProperty) {
+    purePropertyMapping.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   purePropertyMapping.explodeProperty = element.explodeProperty;
   return purePropertyMapping;
 };
@@ -388,6 +406,11 @@ const transformRelationalPropertyMapping = (
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
+  if (element.localMappingProperty) {
+    propertyMapping.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return propertyMapping;
 };
 
@@ -415,6 +438,11 @@ const transformEmbeddedRelationalPropertyMapping = (
   }
   classMapping.class = V1_transformElementReference(element.class);
   embedded.classMapping = classMapping;
+  if (element.localMappingProperty) {
+    embedded.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return embedded;
 };
 
@@ -434,6 +462,11 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
     embedded.id = id;
   }
   embedded.setImplementationId = element.inlineSetImplementation.id.value;
+  if (element.localMappingProperty) {
+    embedded.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return embedded;
 };
 
@@ -452,6 +485,11 @@ const transformXStorePropertyMapping = (
     xstore.crossExpression = element.crossExpression.accept_ValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(),
     ) as V1_RawLambda;
+  }
+  if (element.localMappingProperty) {
+    xstore.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
   }
   return xstore;
 };
@@ -483,6 +521,11 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
   embedded.otherwisePropertyMapping = serializeProperyMapping(
     element.otherwisePropertyMapping,
   ) as V1_RelationalPropertyMapping;
+  if (element.localMappingProperty) {
+    embedded.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return embedded;
 };
 
@@ -497,6 +540,11 @@ const transformAggregationAwarePropertyMapping = (
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
+  if (element.localMappingProperty) {
+    propertyMapping.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return propertyMapping;
 };
 

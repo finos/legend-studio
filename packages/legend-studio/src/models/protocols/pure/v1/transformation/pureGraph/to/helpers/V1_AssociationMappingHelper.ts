@@ -29,7 +29,7 @@ import type { V1_GraphBuilderContext } from '../../../../transformation/pureGrap
 import { V1_ProtocolToMetaModelPropertyMappingVisitor } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingVisitor';
 import type { V1_AssociationMapping } from '../../../../model/packageableElements/mapping/V1_AssociationMapping';
 import { V1_XStoreAssociationMapping } from '../../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
-import type { XStoreAssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
+import { XStoreAssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
 
 const getInferredAssociationMappingId = (
   _association: Association,
@@ -46,7 +46,7 @@ const buildRelationalAssociationMapping = (
   parentMapping: Mapping,
   context: V1_GraphBuilderContext,
 ): RelationalAssociationImplementation => {
-  const allClassMappings = parentMapping.allIncludedMappings
+  const allClassMappings = [parentMapping, ...parentMapping.allIncludedMappings]
     .map((m) => m.classMappings)
     .flat();
   const association = context.resolveAssociation(element.association);
@@ -79,11 +79,11 @@ const buildXStoreAssociationMapping = (
   parentMapping: Mapping,
   context: V1_GraphBuilderContext,
 ): XStoreAssociationImplementation => {
-  const allClassMappings = parentMapping.allIncludedMappings
+  const allClassMappings = [parentMapping, ...parentMapping.allIncludedMappings]
     .map((m) => m.classMappings)
     .flat();
   const association = context.resolveAssociation(element.association);
-  const xStoreAssociationImplementation = new RelationalAssociationImplementation(
+  const xStoreAssociationImplementation = new XStoreAssociationImplementation(
     getInferredAssociationMappingId(association.value, element),
     parentMapping,
     association,
@@ -101,6 +101,7 @@ const buildXStoreAssociationMapping = (
           parentMapping.enumerationMappings,
           undefined,
           allClassMappings,
+          xStoreAssociationImplementation,
         ),
       ),
   );
