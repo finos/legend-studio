@@ -34,6 +34,7 @@ import type { EmbeddedRelationalInstanceSetImplementation } from '../../../model
 import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../model/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation';
 import type { AggregationAwarePropertyMapping } from '../../../model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
 import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping';
+import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface PropertyMappingVisitor<T> {
@@ -70,9 +71,7 @@ export abstract class PropertyMapping implements Hashable, Stubable {
   // NOTE: in Pure, we actually only store `targetId` and `sourceId` instead of the reference
   // but for convenience and graph completeness validation purpose we will resolve to the actual set implementations here
   targetSetImplementation?: SetImplementation;
-  // localMappingProperty?: boolean;
-  // localMappingPropertyType?: Type;
-  // localMappingPropertyMultiplicity?: Multiplicity;
+  localMappingProperty?: LocalMappingPropertyInfo;
   // store?: Store;
 
   constructor(

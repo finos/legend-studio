@@ -69,6 +69,7 @@ export abstract class V1_PropertyMapping implements Hashable {
       CORE_HASH_STRUCTURE.PROPERTY_MAPPING,
       this.property,
       this.target ?? '',
+      this.localMappingProperty ?? '',
     ]);
   }
 

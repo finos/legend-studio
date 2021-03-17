@@ -16,18 +16,20 @@
 
 import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import type { Multiplicity } from '../domain/Multiplicity';
+import type { Type } from '../domain/Type';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 
-export class V1_LocalMappingPropertyInfo implements Hashable {
-  type!: string;
-  multiplicity!: V1_Multiplicity;
+export class LocalMappingPropertyInfo implements Hashable {
+  localMappingProperty!: boolean;
+  localMappingPropertyType!: Type;
+  localMappingPropertyMultiplicity!: Multiplicity;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.LOCAL_MAPPING_PROPERTY,
-      this.type,
-      this.multiplicity,
+      this.localMappingPropertyType.path,
+      this.localMappingPropertyMultiplicity,
     ]);
   }
 }

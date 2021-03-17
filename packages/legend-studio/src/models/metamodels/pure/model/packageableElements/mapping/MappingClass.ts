@@ -16,14 +16,20 @@
 
 import { observable, makeObservable } from 'mobx';
 import type { SetImplementation } from '../../../model/packageableElements/mapping/SetImplementation';
-import type { Class } from '../../../model/packageableElements/domain/Class';
+import { Class } from '../../../model/packageableElements/domain/Class';
+import type { Property } from '../domain/Property';
 
-export class MappingClass {
+export class MappingClass extends Class {
   setImplementation: SetImplementation;
   class: Class;
-  // localProperties: Property;
+  localProperties: Property[] = [];
 
-  constructor(_class: Class, setImplementation: SetImplementation) {
+  constructor(
+    name: string,
+    _class: Class,
+    setImplementation: SetImplementation,
+  ) {
+    super(name);
     makeObservable(this, {
       setImplementation: observable,
       class: observable,
