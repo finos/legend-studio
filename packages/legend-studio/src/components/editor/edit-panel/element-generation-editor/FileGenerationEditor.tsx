@@ -78,6 +78,10 @@ import {
   PackageableElementReference,
   PackageableElementExplicitReference,
 } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import {
+  isValidFullPath,
+  resolvePackageNameAndElementName,
+} from '../../../../models/MetaModelUtility';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -677,10 +681,14 @@ const GenerationEnumPropertyEditor = observer(
     ) => void;
   }) => {
     const { property, fileGeneration, isReadOnly, update } = props;
+    const getEnumLabel = (_enum: string): string =>
+      isValidFullPath(_enum)
+        ? resolvePackageNameAndElementName('', _enum)[1]
+        : _enum;
     const options = guaranteeNonNullable(
       property.items,
       'Generation configuration description items for enum property item type is missing',
-    ).enums.map((_enum) => ({ label: _enum, value: _enum }));
+    ).enums.map((_enum) => ({ label: getEnumLabel(_enum), value: _enum }));
     const value =
       (fileGeneration.getConfigValue(property.name) as string | undefined) ??
       property.defaultValue;
@@ -704,7 +712,7 @@ const GenerationEnumPropertyEditor = observer(
           className="panel__content__form__section__dropdown"
           options={options}
           onChange={onChange}
-          value={{ label: value, value }}
+          value={{ label: getEnumLabel(value), value }}
           isClearable={true}
           escapeClearsValue={true}
           darkMode={true}
