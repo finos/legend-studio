@@ -738,3 +738,157 @@ export const testMappingRoundtrip = [
     classifierPath: 'meta::pure::metamodel::section::SectionIndex',
   },
 ];
+
+export const testLocalPropertyMapping = [
+  {
+    path: 'test::Firm',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'id',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'legalName',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::Firm_Person',
+    content: {
+      _type: 'association',
+      name: 'Firm_Person',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'employer',
+          type: 'test::Firm',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'employees',
+          type: 'test::Person',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::relationship::Association',
+  },
+  {
+    path: 'test::crossPropertyMappingWithLocalProperties',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'pureInstance',
+          class: 'test::Person',
+          id: 'p',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              localMappingProperty: {
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+                type: 'Integer',
+              },
+              property: {
+                class:
+                  'test::crossPropertyMappingWithLocalProperties_[object Object]firmId',
+                property: 'firmId',
+              },
+              source: 'p',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    values: [1],
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::Person',
+                property: 'name',
+              },
+              source: 'p',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'name',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: false,
+          srcClass: 'test::Person',
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'crossPropertyMappingWithLocalProperties',
+      package: 'test',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
