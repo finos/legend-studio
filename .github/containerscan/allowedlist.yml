@@ -1,8 +1,0 @@
-# See https://github.com/Azure/container-scan
-general:
-  vulnerabilities:
-    # `finos/legend-shared-server` is using an older of `openjdk` with vulnerabilities
-    # TODO: upgrade and remove this file
-    # See https://github.com/finos/legend-shared/pull/93
-    - CVE-2021-24031
-    - CVE-2021-24032
