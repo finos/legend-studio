@@ -7,7 +7,9 @@
 
 ## Getting started
 
-Make sure you have `Yarn` installed
+Make sure you have SDLC and Engine servers running. If you don't have these servers setup to run locally, you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose) to quickly set them up. The more convenient approach we found is to run these server and use a remote Gitlab instance, if you choose to follow that direction, pay attention to the [note on development](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-with-remote-gitlab/README.md#note-on-development).
+
+Make sure you have `Yarn` installed. Run the following commands in order.
 
 ```bash
   yarn setup
