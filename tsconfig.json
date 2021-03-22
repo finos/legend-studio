@@ -12,6 +12,7 @@
     { "path": "packages/legend-studio-app" },
     { "path": "packages/legend-studio-plugin-tracer-zipkin" },
     { "path": "packages/legend-studio-plugin-management" },
-    { "path": "packages/legend-studio-preset-dsl-text" }
+    { "path": "packages/legend-studio-preset-dsl-text" },
+    { "path": "packages/legend-studio-preset-external-format-json-schema" }
   ]
 }
