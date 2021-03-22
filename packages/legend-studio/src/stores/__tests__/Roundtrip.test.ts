@@ -55,10 +55,14 @@ import {
   simpleEmbeddedRelationalRoundtrip,
   multiLevelEmbeddedRelationalRoundtrip,
   testRelationalAssociationMapping,
+  testXStoreAssociationMapping,
 } from '../__tests__/roundtrip/RelationalRoundtripTestData';
 import { testServiceRoundtrip } from '../__tests__/roundtrip/ServiceRoundtripTestData';
 import { testGraphFetchTreeRoundtrip } from '../__tests__/roundtrip/ValueSpecificationRoundtripTestData';
-import { testMappingRoundtrip } from '../__tests__/roundtrip/MappingRoundtripTestData';
+import {
+  testMappingRoundtrip,
+  testLocalPropertyMapping,
+} from '../__tests__/roundtrip/MappingRoundtripTestData';
 import { testRuntimeRoundtrip } from '../__tests__/roundtrip/RuntimeRoundtripTestData';
 import { checkBuildingElementsRoundtrip } from '../StoreTestUtils';
 
@@ -144,6 +148,10 @@ test(unitTest('Relational Mapping import resolution roundtrip'), async () => {
   await checkBuildingElementsRoundtrip(
     testRelationalAssociationMapping as Entity[],
   );
+  await checkBuildingElementsRoundtrip(
+    testXStoreAssociationMapping as Entity[],
+  );
+  await checkBuildingElementsRoundtrip(testLocalPropertyMapping as Entity[]);
   // await testRoundtrip(testRelationalInputData as Entity[]);
   // await testRoundtrip(targetSetImplementationThroughAssociation as Entity[]);
 });

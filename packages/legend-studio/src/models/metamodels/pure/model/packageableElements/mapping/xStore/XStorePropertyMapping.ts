@@ -16,18 +16,31 @@
 
 import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import type { RawLambda } from '../../../rawValueSpecification/RawLambda';
+import type { Stubable } from '../../../Stubable';
+import type { PropertyMappingVisitor } from '../PropertyMapping';
+import { PropertyMapping } from '../PropertyMapping';
 
-export class V1_LocalMappingPropertyInfo implements Hashable {
-  type!: string;
-  multiplicity!: V1_Multiplicity;
+export class XStorePropertyMapping
+  extends PropertyMapping
+  implements Hashable, Stubable {
+  crossExpression!: RawLambda;
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.LOCAL_MAPPING_PROPERTY,
-      this.type,
-      this.multiplicity,
+      CORE_HASH_STRUCTURE.XSTORE_PROPERTY_MAPPING,
+      super.hashCode,
+      this.crossExpression,
     ]);
+  }
+
+  get isStub(): boolean {
+    // TODO figure out isStub conditions
+    return false;
+  }
+
+  accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
+    return visitor.visit_XStorePropertyMapping(this);
   }
 }

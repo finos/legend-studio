@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   getClass,
   isNonNullable,
@@ -70,6 +69,7 @@ import {
   V1_initPackageableElement,
   V1_transformElementReference,
   V1_transformElementReferencePointer,
+  V1_transformMultiplicity,
   V1_transformOptionalElementReference,
 } from './V1_CoreTransformerHelper';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
@@ -122,6 +122,12 @@ import { V1_AggregateSetImplementationContainer } from '../../../model/packageab
 import { V1_AggregateSpecification } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSpecification';
 import { V1_AggregateFunction } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction';
 import { V1_GroupByFunction } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_GroupByFunction';
+import type { XStorePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStorePropertyMapping';
+import { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
+import { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
+import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
+import { V1_LocalMappingPropertyInfo } from '../../../model/packageableElements/mapping/V1_LocalMappingPropertyInfo';
+import type { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/model/packageableElements/mapping/LocalMappingPropertyInfo';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -135,6 +141,17 @@ export const V1_transformPropertyReference = (
 const mappingElementIdSerializer = (
   value: InferableMappingElementIdValue,
 ): string | undefined => value.valueForSerialization;
+
+const transformLocalPropertyInfo = (
+  value: LocalMappingPropertyInfo,
+): V1_LocalMappingPropertyInfo => {
+  const localPropertyInfo = new V1_LocalMappingPropertyInfo();
+  localPropertyInfo.type = value.localMappingPropertyType.path;
+  localPropertyInfo.multiplicity = V1_transformMultiplicity(
+    value.localMappingPropertyMultiplicity,
+  );
+  return localPropertyInfo;
+};
 
 const transformEnumValueMapping = (
   element: EnumValueMapping,
@@ -363,6 +380,11 @@ const transformPurePropertyMapping = (
       new V1_RawValueSpecificationTransformer(),
     ) as V1_RawLambda;
   }
+  if (element.localMappingProperty) {
+    purePropertyMapping.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   purePropertyMapping.explodeProperty = element.explodeProperty;
   return purePropertyMapping;
 };
@@ -384,6 +406,11 @@ const transformRelationalPropertyMapping = (
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
+  if (element.localMappingProperty) {
+    propertyMapping.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return propertyMapping;
 };
 
@@ -411,6 +438,11 @@ const transformEmbeddedRelationalPropertyMapping = (
   }
   classMapping.class = V1_transformElementReference(element.class);
   embedded.classMapping = classMapping;
+  if (element.localMappingProperty) {
+    embedded.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return embedded;
 };
 
@@ -430,7 +462,36 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
     embedded.id = id;
   }
   embedded.setImplementationId = element.inlineSetImplementation.id.value;
+  if (element.localMappingProperty) {
+    embedded.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return embedded;
+};
+
+const transformXStorePropertyMapping = (
+  element: XStorePropertyMapping,
+): V1_XStorePropertyMapping => {
+  const xstore = new V1_XStorePropertyMapping();
+  xstore.property = V1_transformPropertyReference(element.property);
+  xstore.source = transformPropertyMappingSource(
+    element.sourceSetImplementation,
+  );
+  xstore.target = transformPropertyMappingTarget(
+    element.targetSetImplementation,
+  );
+  if (!element.crossExpression.isStub) {
+    xstore.crossExpression = element.crossExpression.accept_ValueSpecificationVisitor(
+      new V1_RawValueSpecificationTransformer(),
+    ) as V1_RawLambda;
+  }
+  if (element.localMappingProperty) {
+    xstore.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
+  return xstore;
 };
 
 const transformOtherwiseEmbeddedRelationalPropertyMapping = (
@@ -460,6 +521,11 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
   embedded.otherwisePropertyMapping = serializeProperyMapping(
     element.otherwisePropertyMapping,
   ) as V1_RelationalPropertyMapping;
+  if (element.localMappingProperty) {
+    embedded.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return embedded;
 };
 
@@ -474,6 +540,11 @@ const transformAggregationAwarePropertyMapping = (
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
+  if (element.localMappingProperty) {
+    propertyMapping.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
   return propertyMapping;
 };
 
@@ -514,7 +585,11 @@ class PropertyMappingSerializer
   ): V1_PropertyMapping {
     return transformOtherwiseEmbeddedRelationalPropertyMapping(propertyMapping);
   }
-
+  visit_XStorePropertyMapping(
+    propertyMapping: XStorePropertyMapping,
+  ): V1_PropertyMapping {
+    return transformXStorePropertyMapping(propertyMapping);
+  }
   visit_AggregationAwarePropertyMapping(
     propertyMapping: AggregationAwarePropertyMapping,
   ): V1_PropertyMapping {
@@ -796,11 +871,26 @@ const transformRelationalAssociationImplementation = (
   return relationalMapping;
 };
 
+const transformXStorelAssociationImplementation = (
+  element: XStoreAssociationImplementation,
+): V1_XStoreAssociationMapping => {
+  const xStoreMapping = new V1_XStoreAssociationMapping();
+  xStoreMapping.stores = element.stores.map(V1_transformElementReference);
+  xStoreMapping.association = V1_transformElementReference(element.association);
+  xStoreMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+    element.propertyMappings,
+  );
+  xStoreMapping.id = mappingElementIdSerializer(element.id);
+  return xStoreMapping;
+};
+
 const transformAssociationImplementation = (
   element: AssociationImplementation,
 ): V1_AssociationMapping => {
   if (element instanceof RelationalAssociationImplementation) {
     return transformRelationalAssociationImplementation(element);
+  } else if (element instanceof XStoreAssociationImplementation) {
+    return transformXStorelAssociationImplementation(element);
   }
   throw new UnsupportedOperationError(
     `Can't transform association implementation of type '${

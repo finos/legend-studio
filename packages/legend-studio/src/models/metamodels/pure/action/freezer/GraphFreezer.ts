@@ -80,6 +80,7 @@ import type { SectionIndex } from '../../model/packageableElements/section/Secti
 import type { ServiceStore } from '../../model/packageableElements/store/relational/model/ServiceStore';
 import type { AggregationAwareSetImplementation } from '../../model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { AggregationAwarePropertyMapping } from '../../model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
+import type { XStorePropertyMapping } from '../../model/packageableElements/mapping/xStore/XStorePropertyMapping';
 import type { ModelChainConnection } from '../../model/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import type {
   ElementFreezer,
@@ -416,6 +417,11 @@ export class GraphFreezer
     freezeArray(metamodel.propertyMappings, (propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(this),
     );
+  }
+
+  visit_XStorePropertyMapping(metamodel: XStorePropertyMapping): void {
+    freeze(metamodel);
+    freeze(metamodel.crossExpression);
   }
 
   visit_AggregationAwarePropertyMapping(

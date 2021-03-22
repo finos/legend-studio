@@ -28,6 +28,8 @@ import { V1_RelationalAssociationMapping } from '../../../../model/packageableEl
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import { V1_ProtocolToMetaModelPropertyMappingVisitor } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingVisitor';
 import type { V1_AssociationMapping } from '../../../../model/packageableElements/mapping/V1_AssociationMapping';
+import { V1_XStoreAssociationMapping } from '../../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
+import { XStoreAssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
 
 const getInferredAssociationMappingId = (
   _association: Association,
@@ -44,6 +46,9 @@ const buildRelationalAssociationMapping = (
   parentMapping: Mapping,
   context: V1_GraphBuilderContext,
 ): RelationalAssociationImplementation => {
+  const allClassMappings = [parentMapping, ...parentMapping.allIncludedMappings]
+    .map((m) => m.classMappings)
+    .flat();
   const association = context.resolveAssociation(element.association);
   const relationalAssociationImplementation = new RelationalAssociationImplementation(
     getInferredAssociationMappingId(association.value, element),
@@ -61,10 +66,46 @@ const buildRelationalAssociationMapping = (
           relationalAssociationImplementation,
           undefined,
           parentMapping.enumerationMappings,
+          undefined,
+          allClassMappings,
         ),
       ),
   );
   return relationalAssociationImplementation;
+};
+
+const buildXStoreAssociationMapping = (
+  element: V1_XStoreAssociationMapping,
+  parentMapping: Mapping,
+  context: V1_GraphBuilderContext,
+): XStoreAssociationImplementation => {
+  const allClassMappings = [parentMapping, ...parentMapping.allIncludedMappings]
+    .map((m) => m.classMappings)
+    .flat();
+  const association = context.resolveAssociation(element.association);
+  const xStoreAssociationImplementation = new XStoreAssociationImplementation(
+    getInferredAssociationMappingId(association.value, element),
+    parentMapping,
+    association,
+  );
+  xStoreAssociationImplementation.stores = element.stores.map(
+    context.resolveStore,
+  );
+  xStoreAssociationImplementation.propertyMappings = element.propertyMappings.map(
+    (propertyMapping) =>
+      propertyMapping.accept_PropertyMappingVisitor(
+        new V1_ProtocolToMetaModelPropertyMappingVisitor(
+          context,
+          xStoreAssociationImplementation,
+          undefined,
+          parentMapping.enumerationMappings,
+          undefined,
+          allClassMappings,
+          xStoreAssociationImplementation,
+        ),
+      ),
+  );
+  return xStoreAssociationImplementation;
 };
 
 // TODO: consider changing to visitor pattern ?
@@ -75,6 +116,8 @@ export const V1_buildAssociationMapping = (
 ): AssociationImplementation => {
   if (element instanceof V1_RelationalAssociationMapping) {
     return buildRelationalAssociationMapping(element, parentMapping, context);
+  } else if (element instanceof V1_XStoreAssociationMapping) {
+    return buildXStoreAssociationMapping(element, parentMapping, context);
   }
   throw new UnsupportedOperationError(
     `Can't build association mapping of type '${getClass(element).name}'`,

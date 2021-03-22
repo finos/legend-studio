@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
-import type { SetImplementation } from '../../../model/packageableElements/mapping/SetImplementation';
-import { Class } from '../../../model/packageableElements/domain/Class';
-import type { Property } from '../domain/Property';
+import { hashArray } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { V1_AssociationMapping } from '../V1_AssociationMapping';
+import type { V1_PropertyMapping } from '../V1_PropertyMapping';
 
-export class MappingClass extends Class {
-  setImplementation?: SetImplementation;
-  class?: Class;
-  localProperties: Property[] = [];
+export class V1_XStoreAssociationMapping extends V1_AssociationMapping {
+  propertyMappings: V1_PropertyMapping[] = [];
 
-  constructor(name: string) {
-    super(name);
-    makeObservable(this, {
-      setImplementation: observable,
-      class: observable,
-    });
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.XSTORE_ASSOCIATION_IMPLEMENTATION,
+      super.hashCode,
+      hashArray(this.propertyMappings),
+    ]);
   }
 }

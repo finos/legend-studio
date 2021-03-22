@@ -16,18 +16,25 @@
 
 import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import type { V1_PropertyMappingVisitor } from '../V1_PropertyMapping';
+import { V1_PropertyMapping } from '../V1_PropertyMapping';
+import type { V1_RawLambda } from '../../../rawValueSpecification/V1_RawLambda';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
-export class V1_LocalMappingPropertyInfo implements Hashable {
-  type!: string;
-  multiplicity!: V1_Multiplicity;
+export class V1_XStorePropertyMapping
+  extends V1_PropertyMapping
+  implements Hashable {
+  crossExpression!: V1_RawLambda;
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.LOCAL_MAPPING_PROPERTY,
-      this.type,
-      this.multiplicity,
+      CORE_HASH_STRUCTURE.XSTORE_PROPERTY_MAPPING,
+      super.hashCode,
+      this.crossExpression,
     ]);
+  }
+
+  accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {
+    return visitor.visit_XStorePropertyMapping(this);
   }
 }

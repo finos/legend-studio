@@ -92,6 +92,8 @@ import { V1_AggregateFunction } from '../../../model/packageableElements/store/r
 import { V1_GroupByFunction } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_GroupByFunction';
 import { V1_AggregationAwarePropertyMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwarePropertyMapping';
 import type { V1_AbstractFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_AbstractFlatDataPropertyMapping';
+import { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
+import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -111,7 +113,7 @@ enum V1_PropertyMappingType {
   INLINE_EMBEDDED_RELATIONAL = 'inlineEmbeddedPropertyMapping',
   OTHERWISE_EMBEDDED_RELATIONAL = 'otherwiseEmbeddedPropertyMapping',
   AGGREGATION_AWARE = 'AggregationAwarePropertyMapping',
-  // XSTORE = 'xStorePropertyMapping',
+  XSTORE = 'xStorePropertyMapping',
 }
 
 // ------------------------------------- Shared -------------------------------------
@@ -328,6 +330,20 @@ const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
   },
 );
 
+const xStorePropertyMappingModelSchema = createModelSchema(
+  V1_XStorePropertyMapping,
+  {
+    _type: usingConstantValueSchema(V1_PropertyMappingType.XSTORE),
+    crossExpression: usingModelSchema(V1_rawLambdaModelSchema),
+    localMappingProperty: usingModelSchema(
+      V1_localMappingPropertyInfoModelSchema,
+    ),
+    property: usingModelSchema(V1_propertyPointerModelSchema),
+    source: primitive(),
+    target: optional(primitive()),
+  },
+);
+
 function V1_serializeRelationalPropertyMapping(
   protocol: V1_PropertyMapping,
 ): PlainObject<V1_PropertyMapping> | typeof SKIP {
@@ -344,6 +360,8 @@ function V1_serializeRelationalPropertyMapping(
     );
   } else if (protocol instanceof V1_InlineEmbeddedPropertyMapping) {
     return serialize(inlineEmbeddedPropertyMappingModelSchema, protocol);
+  } else if (protocol instanceof V1_XStorePropertyMapping) {
+    return serialize(xStorePropertyMappingModelSchema, protocol);
   }
   return SKIP;
 }
@@ -363,6 +381,8 @@ function V1_deserializeRelationalPropertyMapping(
       );
     case V1_PropertyMappingType.INLINE_EMBEDDED_RELATIONAL:
       return deserialize(inlineEmbeddedPropertyMappingModelSchema, json);
+    case V1_PropertyMappingType.XSTORE:
+      return deserialize(xStorePropertyMappingModelSchema, json);
     default:
       return SKIP;
   }
@@ -679,7 +699,7 @@ const V1_mappingTestModelSchema = createModelSchema(V1_MappingTest, {
 
 enum V1_AssociationMappingType {
   RELATIONAL = 'relational',
-  // XSTORE = 'xStore'
+  XSTORE = 'xStore',
 }
 
 const V1_serializeAssociationPropertMapping = (
@@ -687,6 +707,8 @@ const V1_serializeAssociationPropertMapping = (
 ): PlainObject<V1_PropertyMapping> | typeof SKIP => {
   if (protocol instanceof V1_RelationalPropertyMapping) {
     return serialize(relationalPropertyMappingModelSchema, protocol);
+  } else if (protocol instanceof V1_XStorePropertyMapping) {
+    return serialize(xStorePropertyMappingModelSchema, protocol);
   }
   return SKIP;
 };
@@ -697,6 +719,8 @@ const V1_deserializeAssociationPropertMapping = (
   switch (json._type) {
     case V1_PropertyMappingType.RELATIONAL:
       return deserialize(relationalPropertyMappingModelSchema, json);
+    case V1_PropertyMappingType.XSTORE:
+      return deserialize(xStorePropertyMappingModelSchema, json);
     default:
       return SKIP;
   }
@@ -718,11 +742,29 @@ const relationalAssociationMappingModelschema = createModelSchema(
   },
 );
 
+const xStoreAssociationMappingModelschema = createModelSchema(
+  V1_XStoreAssociationMapping,
+  {
+    _type: usingConstantValueSchema(V1_AssociationMappingType.XSTORE),
+    association: primitive(),
+    id: optional(primitive()),
+    propertyMappings: list(
+      custom(
+        (val) => V1_serializeAssociationPropertMapping(val),
+        (val) => V1_deserializeAssociationPropertMapping(val),
+      ),
+    ),
+    stores: list(primitive()),
+  },
+);
+
 const V1_serializeAssociationMapping = (
   protocol: V1_AssociationMapping,
 ): PlainObject<V1_AssociationMapping> | typeof SKIP => {
   if (protocol instanceof V1_RelationalAssociationMapping) {
     return serialize(relationalAssociationMappingModelschema, protocol);
+  } else if (protocol instanceof V1_XStoreAssociationMapping) {
+    return serialize(xStoreAssociationMappingModelschema, protocol);
   }
   return SKIP;
 };
@@ -733,6 +775,8 @@ const V1_deserializeAssociationMapping = (
   switch (json._type) {
     case V1_AssociationMappingType.RELATIONAL:
       return deserialize(relationalAssociationMappingModelschema, json);
+    case V1_AssociationMappingType.XSTORE:
+      return deserialize(xStoreAssociationMappingModelschema, json);
     default:
       return SKIP;
   }

@@ -8978,3 +8978,235 @@ export const testRelationalAssociationMapping = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
+
+export const testXStoreAssociationMapping = [
+  {
+    path: 'test::Firm',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'id',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'legalName',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::Firm_Person',
+    content: {
+      _type: 'association',
+      name: 'Firm_Person',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'employer',
+          type: 'test::Firm',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'employees',
+          type: 'test::Person',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::relationship::Association',
+  },
+  {
+    path: 'test::crossPropertyMappingWithLocalProperties',
+    content: {
+      _type: 'mapping',
+      associationMappings: [
+        {
+          _type: 'xStore',
+          association: 'test::Firm_Person',
+          propertyMappings: [
+            {
+              _type: 'xStorePropertyMapping',
+              crossExpression: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'equal',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'this',
+                          },
+                        ],
+                        property: 'name',
+                      },
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'that',
+                          },
+                        ],
+                        property: 'legalName',
+                      },
+                    ],
+                  },
+                ],
+                parameters: [],
+              },
+              property: {
+                class: 'test::Person',
+                property: 'employer',
+              },
+              source: 'p',
+              target: 'f',
+            },
+          ],
+          stores: [],
+        },
+      ],
+      classMappings: [
+        {
+          _type: 'pureInstance',
+          class: 'test::Person',
+          id: 'p',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::Person',
+                property: 'name',
+              },
+              source: 'p',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'name',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: false,
+          srcClass: 'test::Person',
+        },
+        {
+          _type: 'pureInstance',
+          class: 'test::Firm',
+          id: 'f',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::Firm',
+                property: 'id',
+              },
+              source: 'f',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'id',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::Firm',
+                property: 'legalName',
+              },
+              source: 'f',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'legalName',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: false,
+          srcClass: 'test::Firm',
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'crossPropertyMappingWithLocalProperties',
+      package: 'test',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];

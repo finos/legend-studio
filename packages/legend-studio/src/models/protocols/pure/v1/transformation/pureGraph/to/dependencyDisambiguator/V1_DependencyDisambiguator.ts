@@ -72,6 +72,7 @@ import type { V1_Measure } from '../../../../model/packageableElements/domain/V1
 import type { V1_RelationalDatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import type { V1_RootRelationalClassMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping';
 import type { V1_AggregationAwareClassMapping } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping';
+import type { V1_XStorePropertyMapping } from '../../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
 import type { V1_OtherwiseEmbeddedRelationalPropertyMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_OtherwiseEmbeddedRelationalPropertyMapping';
 import type { V1_SectionIndex } from '../../../../model/packageableElements/section/V1_SectionIndex';
@@ -529,6 +530,17 @@ export class V1_DependencyDisambiguator
   ): void {
     // TODO
     return;
+  }
+
+  visit_XStorePropertyMapping(propertyMapping: V1_XStorePropertyMapping): void {
+    V1_processDependablePropertyPointer(
+      propertyMapping.property,
+      this.dependencyProcessingContext,
+    );
+    V1_processDependableLambda(
+      propertyMapping.crossExpression,
+      this.dependencyProcessingContext,
+    );
   }
 
   visit_AggregationAwarePropertyMapping(

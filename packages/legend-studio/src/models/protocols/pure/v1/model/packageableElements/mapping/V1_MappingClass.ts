@@ -19,7 +19,7 @@ import type { V1_Property } from '../../../model/packageableElements/domain/V1_P
 import { V1_Class } from '../../../model/packageableElements/domain/V1_Class';
 
 export class V1_MappingClass extends V1_Class {
-  setImplementation!: V1_ClassMapping;
-  rootClass!: V1_Class;
+  setImplementation?: V1_ClassMapping;
+  rootClass?: V1_Class;
   localProperties!: V1_Property;
 }
