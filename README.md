@@ -42,7 +42,7 @@ Read our [contributing guide](./CONTRIBUTING.md) to learn about our development 
 
 ### License
 
-Copyright Goldman Sachs
+Copyright (c) 2020-present, Goldman Sachs
 
 Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
