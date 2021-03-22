@@ -1,5 +1,17 @@
 # @finos/legend-studio-app
 
+## 0.2.11
+
+### Patch Changes
+
+- [#126](https://github.com/finos/legend-studio/pull/126) [`e307167`](https://github.com/finos/legend-studio/commit/e307167ecde868aa88077fc693a5850fe160acb7) Thanks [@akphi](https://github.com/akphi)! - Upgrade legend-shared-server used in Docker image.
+
+* [#115](https://github.com/finos/legend-studio/pull/115) [`9bfdd6f`](https://github.com/finos/legend-studio/commit/9bfdd6fbdf649d1a411e0263c2af1bfeb2d1e2b3) Thanks [@akphi](https://github.com/akphi)! - Scan Docker image for security issues
+
+* Updated dependencies [[`5e4e97c`](https://github.com/finos/legend-studio/commit/5e4e97c8f704b529cbfed3109a24bef30ebb98a8), [`2ea6867`](https://github.com/finos/legend-studio/commit/2ea6867695a0a00e02b08eadd5ec7db3d384ec6f), [`c0cb6e2`](https://github.com/finos/legend-studio/commit/c0cb6e23acced19135bcb9122ad74d9ff0a02a96), [`2a2acce`](https://github.com/finos/legend-studio/commit/2a2acced59e9dea97706dd6dcb25332862231f40), [`e01d74f`](https://github.com/finos/legend-studio/commit/e01d74fac0a0befd01621c285244cf5732bb3a39)]:
+  - @finos/legend-studio@0.0.8
+  - @finos/legend-studio-preset-dsl-text@0.0.8
+
 ## 0.2.10
 
 ### Patch Changes

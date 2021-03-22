@@ -1,5 +1,7 @@
 # @finos/legend-studio-dev-utils
 
+## 0.0.7
+
 ## 0.0.6
 
 ### Patch Changes
