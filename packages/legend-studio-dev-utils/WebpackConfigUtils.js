@@ -347,7 +347,6 @@ const getWebAppBaseWebpackConfig = (
         publicPath: '/',
       },
       open: true,
-      https: true,
       // start - should remove this in next iteration of webpack-dev-server@4.beta
       static: {
         watch: false,
