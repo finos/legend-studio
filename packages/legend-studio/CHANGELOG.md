@@ -1,5 +1,20 @@
 # @finos/legend-studio
 
+## 0.0.8
+
+### Patch Changes
+
+- [#124](https://github.com/finos/legend-studio/pull/124) [`2ea6867`](https://github.com/finos/legend-studio/commit/2ea6867695a0a00e02b08eadd5ec7db3d384ec6f) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Change label for enum options in file generation editor: for element-path-like values we will show only the element name.
+
+* [#123](https://github.com/finos/legend-studio/pull/123) [`2a2acce`](https://github.com/finos/legend-studio/commit/2a2acced59e9dea97706dd6dcb25332862231f40) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add support for cross store (xStore) association mapping in studio. Done by adding a new type of AssociationImplementation called 'XStoreAssociationImplementation' and a new type of PropertyMapping called 'XStorePropertyMapping'. Add roundtrip tests to test flow.
+
+- [#114](https://github.com/finos/legend-studio/pull/114) [`e01d74f`](https://github.com/finos/legend-studio/commit/e01d74fac0a0befd01621c285244cf5732bb3a39) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Change schemaMapper to schema in tableNameMapper to be align with protocol
+
+- Updated dependencies [[`5e4e97c`](https://github.com/finos/legend-studio/commit/5e4e97c8f704b529cbfed3109a24bef30ebb98a8)]:
+  - @finos/legend-studio-components@0.0.7
+  - @finos/legend-studio-network@0.0.7
+  - @finos/legend-studio-shared@0.0.6
+
 ## 0.0.7
 
 ### Patch Changes

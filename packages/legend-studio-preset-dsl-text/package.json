@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-preset-dsl-text",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Legend Studio preset for Text DSL",
   "keywords": [
     "legend",
