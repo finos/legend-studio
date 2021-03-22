@@ -2,6 +2,7 @@
   // NOTE: if in `User Settings`, specific extension (e.g. ts, tsx) is configured with another formatter, the following config won't work
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.tabSize": 2,
+  "files.eol": "\n",
   "eslint.validate": [
     "javascript",
     "javascriptreact",
