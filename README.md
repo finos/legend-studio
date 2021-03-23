@@ -7,7 +7,7 @@
 
 ## Getting started
 
-Make sure you have SDLC and Engine servers running. If you don't have these servers setup to run locally, you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose) to quickly set them up. The more convenient approach we found is to run these server and use a remote Gitlab instance, if you choose to follow that direction, pay attention to the [note on development](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-with-remote-gitlab/README.md#note-on-development).
+Make sure you have SDLC and Engine servers running. If you don't have these servers [setup to run locally](https://legend.finos.org/docs/installation/maven-install-guide#installation-steps), you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose) to quickly set them up. The more convenient approach we found is to run these server and use a remote Gitlab instance, if you choose to follow that direction, pay attention to the [note on development](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-with-remote-gitlab/README.md#note-on-development).
 
 Make sure you have `Yarn` installed. Run the following commands in order.
 
@@ -16,6 +16,10 @@ Make sure you have `Yarn` installed. Run the following commands in order.
   yarn setup
   yarn dev
 ```
+
+After setting up, visit http://localhost:8080/studio and the application should be up :tada:
+
+> If you get `Unauthorized` error, visit SDLC server at http://localhost:7070/api/auth/authorize in your browser, you might get redirected to the Gitlab login page or a Gitlab page that askes you to authorize Legend application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
 
 ## Documentation
 

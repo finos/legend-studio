@@ -97,6 +97,10 @@ yarn install
 yarn setup
 ```
 
+After setting up, visit http://localhost:8080/studio and the application should be up :tada:
+
+> If you get `Unauthorized` error, visit SDLC server at http://localhost:7070/api/auth/authorize in your browser, you might get redirected to the Gitlab login page or a Gitlab page that askes you to authorize Legend application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
+
 #### :pencil2: Writing code
 
 After setting up, you can start Legend Studio.

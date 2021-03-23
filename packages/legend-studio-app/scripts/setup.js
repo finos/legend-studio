@@ -49,10 +49,10 @@ fs.writeFileSync(
       appName: 'studio',
       env: 'local',
       sdlc: {
-        url: 'https://legend.finos.org/sdlc/api',
+        url: 'https://localhost:7075/api',
       },
       engine: {
-        url: 'https://legend.finos.org/exec/api',
+        url: 'https://localhost:9090/api',
       },
       documentation: {
         url: 'https://legend.finos.org',
