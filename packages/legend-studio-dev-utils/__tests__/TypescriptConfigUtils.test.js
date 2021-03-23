@@ -16,6 +16,7 @@
 
 const path = require('path');
 const {
+  getTsConfigJSON,
   resolveFullTsConfig,
   resolveFullTsConfigWithoutValidation,
 } = require('../TypescriptConfigUtils');
@@ -76,3 +77,26 @@ test(
     });
   },
 );
+
+test(unitTest('Parse Typescript config non-recursively'), () => {
+  expect(
+    getTsConfigJSON(
+      path.resolve(__dirname, './fixtures/testTsConfigWithTrailingCommas.json'),
+    ),
+  ).toEqual({
+    compilerOptions: {
+      paths: {
+        '@something/*': './src/*',
+        somePath: ['./src/somePath', './src/somePath1'],
+        'toBeExcluded/*': 'nothing',
+      },
+    },
+    include: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.json'],
+  });
+  expect(() =>
+    getTsConfigJSON(
+      path.resolve(__dirname, './fixtures/testTsConfigWithTrailingCommas.json'),
+      true,
+    ),
+  ).toThrow();
+});

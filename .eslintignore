@@ -11,4 +11,5 @@
 .yarn/*
 .pnp.*
 
-packages/legend-studio-dev-utils/__tests__/fixtures/src/dummy.ts
+# Exceptions
+/packages/legend-studio-dev-utils/__tests__/fixtures/src/dummy.ts

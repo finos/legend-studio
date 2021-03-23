@@ -1,0 +1,12 @@
+// NOTE: this file format is meant this way for testing, DO NOT change it.
+{
+  "compilerOptions": {
+    "paths": {
+      "@something/*": "./src/*",
+      "somePath": ["./src/somePath", "./src/somePath1"],
+      "toBeExcluded/*": "nothing",
+    }
+  },
+  // some comments
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json",],
+}

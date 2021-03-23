@@ -25,14 +25,26 @@ const getDir = (file) =>
     ? file
     : file.split(path.sep).slice(0, -1).join(path.sep);
 
-const getTsConfigJSON = (file) => {
+/**
+ * Get the Typescript config file content non-recursively.
+ *
+ * NOTE: There are conflicting behavior when trailing commas are detected:
+ * 1. Prettier allows trailing commas and there's a chance we use it in Typescript config files.
+ * 2. Typescript allows trailing commas in Typescript config files.
+ * 3. `jsonc-parser` tolerates trailing commas but will count it as a parsing error, and there's no option to
+ *    filter out trailing commas among the violations.
+ *
+ * Therefore, it's best that we don't do a check for parsing error in the config files by default,
+ * that should be taken care of by Typescript anyway.
+ */
+const getTsConfigJSON = (file, checkForParsingError = false) => {
   const parseErrors = [];
   if (!fs.existsSync(file)) {
     throw new Error(`Can't find Typescript config file with path '${file}'`);
   }
   const text = getFileContent(file);
   const json = parse(text, parseErrors);
-  if (parseErrors.length > 0) {
+  if (checkForParsingError && parseErrors.length > 0) {
     throw new Error(`Can't parse Typescript config file with path '${file}'`);
   }
   return json;

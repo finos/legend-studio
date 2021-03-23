@@ -8,3 +8,6 @@
 # Yarn
 .yarn/*
 .pnp.*
+
+# Exceptions
+/packages/legend-studio-dev-utils/__tests__/fixtures/testTsConfigWithTrailingCommas.json
