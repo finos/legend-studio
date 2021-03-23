@@ -12,6 +12,7 @@ Make sure you have SDLC and Engine servers running. If you don't have these serv
 Make sure you have `Yarn` installed. Run the following commands in order.
 
 ```bash
+  yarn install
   yarn setup
   yarn dev
 ```

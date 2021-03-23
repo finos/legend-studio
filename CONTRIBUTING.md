@@ -93,6 +93,7 @@ Studio relies on SDLC and Engine servers as its backend. If you don't have these
 
 ```sh
 # Install dependencies, link and set up the workspaces, and build the workspaces to make sure your project is in good shape.
+yarn install
 yarn setup
 ```
 
