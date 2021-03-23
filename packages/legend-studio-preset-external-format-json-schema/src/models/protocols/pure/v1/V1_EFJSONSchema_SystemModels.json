@@ -1,0 +1,39 @@
+{
+  "elements": [
+    {
+      "stereotypes": [
+        "int64",
+        "int32",
+        "byte",
+        "double",
+        "binary",
+        "array",
+        "null",
+        "object"
+      ],
+      "package": "meta::json::schema",
+      "_type": "profile",
+      "name": "JSONSchemaTypeExtension"
+    },
+    {
+      "tags": ["javaType", "javaInterface"],
+      "package": "meta::json::schema",
+      "_type": "profile",
+      "name": "JSONSchemaJavaExtension"
+    },
+    {
+      "stereotypes": ["discriminatorProperty"],
+      "tags": ["discriminatorName"],
+      "package": "meta::json::schema",
+      "_type": "profile",
+      "name": "JSONSchemaOpenAPIExtension"
+    },
+    {
+      "stereotypes": ["noAdditionalProperties", "readOnly", "writeOnly"],
+      "package": "meta::json::schema",
+      "_type": "profile",
+      "name": "JSONSchemaGeneration",
+      "tags": ["defaultValue", "name", "example"]
+    }
+  ]
+}

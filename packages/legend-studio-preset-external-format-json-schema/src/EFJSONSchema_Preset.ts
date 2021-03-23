@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-import { Studio } from '@finos/legend-studio';
-import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
-import { EFJSONSchema_Preset } from '@finos/legend-studio-preset-external-format-json-schema';
-import studioConfig from '../studio.config';
-import './index.scss';
+import packageJson from '../package.json';
+import type { PluginManager } from '@finos/legend-studio';
+import { AbstractPreset } from '@finos/legend-studio-shared';
+import { EFJSONSchema_PureProtocolProcessorPlugin } from './models/protocols/pure/EFJSONSchema_PureProtocolProcessorPlugin';
 
-Studio.create()
-  .setup({ baseUrl: studioConfig.baseUrl })
-  .withPresets([new DSLText_Preset(), new EFJSONSchema_Preset()])
-  .start()
-  .catch((e) => {
-    throw e;
-  });
+export class EFJSONSchema_Preset extends AbstractPreset {
+  constructor() {
+    super(packageJson.name, packageJson.version);
+  }
+
+  install(pluginManager: PluginManager): void {
+    new EFJSONSchema_PureProtocolProcessorPlugin().install(pluginManager);
+  }
+}
