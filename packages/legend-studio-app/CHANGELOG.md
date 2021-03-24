@@ -1,5 +1,16 @@
 # @finos/legend-studio-app
 
+## 0.2.12
+
+### Patch Changes
+
+- [#125](https://github.com/finos/legend-studio/pull/125) [`9e9e912`](https://github.com/finos/legend-studio/commit/9e9e91272a351b75ff2d694b3ceb1342c067ee77) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add preset external format - JSON schema
+
+- Updated dependencies [[`9e9e912`](https://github.com/finos/legend-studio/commit/9e9e91272a351b75ff2d694b3ceb1342c067ee77)]:
+  - @finos/legend-studio-preset-external-format-json-schema@0.0.2
+  - @finos/legend-studio@0.0.9
+  - @finos/legend-studio-preset-dsl-text@0.0.9
+
 ## 0.2.11
 
 ### Patch Changes

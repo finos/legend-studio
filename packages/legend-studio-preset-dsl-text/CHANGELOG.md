@@ -1,5 +1,14 @@
 # @finos/legend-studio-preset-dsl-text
 
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @finos/legend-studio@0.0.9
+  - @finos/legend-studio-components@0.0.8
+  - @finos/legend-studio-shared@0.0.6
+
 ## 0.0.8
 
 ### Patch Changes
