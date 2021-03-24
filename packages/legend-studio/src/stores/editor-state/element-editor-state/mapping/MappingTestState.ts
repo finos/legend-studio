@@ -175,8 +175,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
         this.sourceClass ?? Class.createStub(),
       ),
       OBJECT_INPUT_TYPE.JSON,
-      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-      tryToMinifyLosslessJSONString(this.data),
+      this.data,
     );
   }
 

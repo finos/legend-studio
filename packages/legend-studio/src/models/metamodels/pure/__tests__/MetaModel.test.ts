@@ -15,9 +15,19 @@
  */
 
 import { hashLambda } from '../../../MetaModelUtility';
-import { unitTest } from '@finos/legend-studio-shared';
+import {
+  losslessParse,
+  losslessStringify,
+  unitTest,
+} from '@finos/legend-studio-shared';
 import { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import { Package } from '../model/packageableElements/domain/Package';
+import {
+  ObjectInputData,
+  OBJECT_INPUT_TYPE,
+} from '../model/packageableElements/store/modelToModel/mapping/ObjectInputData';
+import { Class } from '../model/packageableElements/domain/Class';
+import { PackageableElementExplicitReference } from '../model/packageableElements/PackageableElementReference';
 
 test(unitTest('Create valid and invalid packages on a root package'), () => {
   const _root = new Package(ROOT_PACKAGE_NAME.MAIN);
@@ -75,3 +85,27 @@ test(
     );
   },
 );
+
+test(unitTest('JSON Object input data should be minified'), () => {
+  const test1 = new ObjectInputData(
+    PackageableElementExplicitReference.create(Class.createStub()),
+    OBJECT_INPUT_TYPE.JSON,
+    '{"a":1}',
+  );
+
+  const test2 = new ObjectInputData(
+    PackageableElementExplicitReference.create(Class.createStub()),
+    OBJECT_INPUT_TYPE.JSON,
+    '{\n  "a":1\n}',
+  );
+
+  const test3 = new ObjectInputData(
+    PackageableElementExplicitReference.create(Class.createStub()),
+    OBJECT_INPUT_TYPE.JSON,
+    '{\n  "a":1, \n "b" : {\n  "b1":"hello"\n} \n}',
+  );
+
+  expect(test1.data === losslessStringify(losslessParse(test1.data)));
+  expect(test2.data === losslessStringify(losslessParse(test2.data)));
+  expect(test3.data === losslessStringify(losslessParse(test3.data)));
+});
