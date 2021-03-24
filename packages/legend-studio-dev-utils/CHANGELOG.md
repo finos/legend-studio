@@ -1,5 +1,11 @@
 # @finos/legend-studio-dev-utils
 
+## 0.0.8
+
+### Patch Changes
+
+- [#131](https://github.com/finos/legend-studio/pull/131) [`e446ca0`](https://github.com/finos/legend-studio/commit/e446ca0bbff277ed32ace64feca6d7c1907ff1c8) Thanks [@akphi](https://github.com/akphi)! - Do not check for parsing error in Typescript config files while checking for Typescript project reference issues.
+
 ## 0.0.7
 
 ## 0.0.6
