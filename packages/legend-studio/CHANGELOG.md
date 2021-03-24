@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.0.10
+
+### Patch Changes
+
+- [#134](https://github.com/finos/legend-studio/pull/134) [`c3b31f7`](https://github.com/finos/legend-studio/commit/c3b31f7d385ada299be92b3716d6a2a64c179eed) Thanks [@aziemchawdhary-gs](https://github.com/aziemchawdhary-gs)! - Ensure that test data is stored with no formatting
+
 ## 0.0.9
 
 ### Patch Changes
