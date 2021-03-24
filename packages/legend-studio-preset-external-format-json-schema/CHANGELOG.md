@@ -1,5 +1,11 @@
 # @finos/legend-studio-preset-external-format-json-schema
 
+## 0.0.4
+
+### Patch Changes
+
+- [#138](https://github.com/finos/legend-studio/pull/138) [`98b2f15`](https://github.com/finos/legend-studio/commit/98b2f15d96e8f108ed7e8fe9489b9d31ac7439a5) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add publish:prepare command to external format json schema repo
+
 ## 0.0.3
 
 ### Patch Changes
