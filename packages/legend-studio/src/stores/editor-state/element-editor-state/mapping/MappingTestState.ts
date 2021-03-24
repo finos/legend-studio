@@ -295,8 +295,7 @@ export class MappingTestExpectedOutputAssertionState extends MappingTestAssertio
 
   get assert(): MappingTestAssert {
     return new ExpectedOutputMappingTestAssert(
-      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-      toGrammarString(tryToMinifyLosslessJSONString(this.expectedResult)),
+      toGrammarString(this.expectedResult),
     );
   }
 }
