@@ -19,6 +19,7 @@ import {
   hashArray,
   UnsupportedOperationError,
   isValidJSONString,
+  tryToMinifyLosslessJSONString,
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
@@ -67,7 +68,11 @@ export class ObjectInputData extends InputData implements Hashable {
 
     this.sourceClass = sourceClass;
     this.inputType = inputType;
-    this.data = data;
+    /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/66 */
+    this.data =
+      inputType === OBJECT_INPUT_TYPE.JSON
+        ? tryToMinifyLosslessJSONString(data)
+        : data;
   }
 
   get validationResult(): ValidationIssue | undefined {
