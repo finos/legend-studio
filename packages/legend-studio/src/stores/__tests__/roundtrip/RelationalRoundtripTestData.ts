@@ -8954,8 +8954,6 @@ export const testRelationalAssociationMapping = [
       ],
       enumerationMappings: [
         {
-          enumeration:
-            'apps::meta::pure::tests::model::simple::GeographicEntityType',
           enumValueMappings: [
             {
               enumValue: 'CITY',
@@ -8967,6 +8965,8 @@ export const testRelationalAssociationMapping = [
               ],
             },
           ],
+          enumeration:
+            'apps::meta::pure::tests::model::simple::GeographicEntityType',
           id: 'GE',
         },
       ],

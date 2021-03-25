@@ -909,7 +909,6 @@ const enumValueMappingModelSchema = createModelSchema(V1_EnumValueMapping, {
 const V1_enumerationMappingModelSchema = createModelSchema(
   V1_EnumerationMapping,
   {
-    enumeration: primitive(),
     enumValueMappings: list(
       custom(
         (value) => serialize(enumValueMappingModelSchema, value),
@@ -922,6 +921,7 @@ const V1_enumerationMappingModelSchema = createModelSchema(
           ),
       ),
     ),
+    enumeration: primitive(),
     id: optional(primitive()),
   },
 );
