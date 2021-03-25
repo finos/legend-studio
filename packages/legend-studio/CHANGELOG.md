@@ -1,5 +1,13 @@
 # @finos/legend-studio
 
+## 0.0.11
+
+### Patch Changes
+
+- [#140](https://github.com/finos/legend-studio/pull/140) [`3b5fb01`](https://github.com/finos/legend-studio/commit/3b5fb01dce4ffa2081c016369f6b8ee715fb5245) Thanks [@akphi](https://github.com/akphi)! - Make sure expected test result JSON for mapping test does not store with formatting to not break text mode.
+
+* [#140](https://github.com/finos/legend-studio/pull/140) [`3b5fb01`](https://github.com/finos/legend-studio/commit/3b5fb01dce4ffa2081c016369f6b8ee715fb5245) Thanks [@akphi](https://github.com/akphi)! - Make JSON property field sort consistent with Java Jackson
+
 ## 0.0.10
 
 ### Patch Changes
