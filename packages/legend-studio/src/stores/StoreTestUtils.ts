@@ -95,7 +95,15 @@ export const ensureObjectFieldsAreSortedAlphabetically = (
       });
     } else {
       expect(Object.keys(_obj)).toEqual(
-        Object.keys(_obj).sort((k1, k2) => k1.localeCompare(k2)),
+        /**
+         * NOTE: we cannot use `localeCompare` because it is not compatible with
+         * the way the backend (i.e. Java's Jackson/GSON sort property fields, which
+         * employees a sorting strategy based on ASCII value).
+         * e.g. 'enumeration'.localeCompare('enumValueMapping') = -1
+         * but 'E' < 'e' in terms of ASCII value.
+         * Therefore, we should just uses string comparison here instead
+         */
+        Object.keys(_obj).sort((k1, k2) => (k1 > k2 ? 1 : k1 < k2 ? -1 : 0)),
       );
       for (const prop in _obj) {
         if (Object.prototype.hasOwnProperty.call(_obj, prop)) {

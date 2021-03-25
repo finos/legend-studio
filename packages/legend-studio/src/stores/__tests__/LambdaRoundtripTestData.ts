@@ -1112,7 +1112,6 @@ export const m2mTestData = [
       ],
       enumerationMappings: [
         {
-          enumeration: 'demo::other::IncType',
           enumValueMappings: [
             {
               enumValue: 'LLC',
@@ -1133,6 +1132,7 @@ export const m2mTestData = [
               ],
             },
           ],
+          enumeration: 'demo::other::IncType',
         },
       ],
       includedMappings: [],

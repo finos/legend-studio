@@ -40,7 +40,6 @@
       "classMappings": [],
       "enumerationMappings": [
         {
-          "enumeration": "demo::Enum_1",
           "enumValueMappings": [
             {
               "enumValue": "_0",
@@ -68,10 +67,10 @@
                 }
               ]
             }
-          ]
+          ],
+          "enumeration": "demo::Enum_1"
         },
         {
-          "enumeration": "demo::Enum_2",
           "enumValueMappings": [
             {
               "enumValue": "one",
@@ -91,10 +90,10 @@
                 }
               ]
             }
-          ]
+          ],
+          "enumeration": "demo::Enum_2"
         },
         {
-          "enumeration": "demo::Enum_1",
           "enumValueMappings": [
             {
               "enumValue": "_0",
@@ -117,6 +116,7 @@
               ]
             }
           ],
+          "enumeration": "demo::Enum_1",
           "id": "enumToEnum"
         }
       ],

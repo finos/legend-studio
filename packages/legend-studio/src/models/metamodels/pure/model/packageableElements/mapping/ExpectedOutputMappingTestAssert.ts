@@ -19,6 +19,7 @@ import {
   hashArray,
   isValidJSONString,
   fromGrammarString,
+  tryToMinifyLosslessJSONString,
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -40,7 +41,8 @@ export class ExpectedOutputMappingTestAssert
       hashCode: computed,
     });
 
-    this.expectedOutput = expectedOutput;
+    /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+    this.expectedOutput = tryToMinifyLosslessJSONString(expectedOutput);
   }
 
   get validationResult(): ValidationIssue | undefined {
