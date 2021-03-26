@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.0.12
+
+### Patch Changes
+
+- [#144](https://github.com/finos/legend-studio/pull/144) [`288523d`](https://github.com/finos/legend-studio/commit/288523ddf3d37b146f6229189b7174f9e4bd6da8) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Initialize engine in review and viewer store
+
 ## 0.0.11
 
 ### Patch Changes
