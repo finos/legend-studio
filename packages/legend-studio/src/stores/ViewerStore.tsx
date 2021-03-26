@@ -33,13 +33,14 @@ import { Workspace } from '../models/sdlc/models/workspace/Workspace';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { GraphError } from '../models/MetaModelUtility';
 import { useLocalObservable } from 'mobx-react-lite';
-import { EDITOR_MODE } from './EditorConfig';
+import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
 import type { ViewerRouteParams } from './RouterConfig';
 import {
   getVersionViewerRoute,
   getRevisionViewerRoute,
   getProjectViewerRoute,
 } from './RouterConfig';
+import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ViewerStore {
   editorStore: EditorStore;
@@ -178,7 +179,21 @@ export class ViewerStore {
           undefined,
         )) as Entity[];
       }
-
+      // init engine
+      yield this.editorStore.graphState.graphManager.setupEngine(
+        this.editorStore.applicationStore.pluginManager,
+        {
+          env: this.editorStore.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+            enableCompression: true,
+            authenticationUrl: SDLCServerClient.authenticationUrl(
+              this.editorStore.applicationStore.config.sdlcServerUrl,
+            ),
+          },
+        },
+      );
       // init graph
       yield this.editorStore.graphState.initializeSystem();
       yield this.editorStore.graphState.buildGraphForViewerMode(entities);

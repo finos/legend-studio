@@ -175,6 +175,7 @@ const ReviewInner = observer(() => {
 
   useEffect(() => {
     reviewStore.setProjectIdAndReviewId(projectId, reviewId);
+    reviewStore.init().catch(applicationStore.alertIllegalUnhandledError);
     reviewStore.getReview().catch(applicationStore.alertIllegalUnhandledError);
     reviewStore
       .fetchProject()
