@@ -24,7 +24,8 @@ import { Review } from '../models/sdlc/models/review/Review';
 import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
 import { Project } from '../models/sdlc/models/project/Project';
-import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
+import { EDITOR_MODE, ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
+import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ReviewStore {
   editorStore: EditorStore;
@@ -61,6 +62,32 @@ export class ReviewStore {
   get review(): Review {
     return guaranteeNonNullable(this.currentReview, 'Review must exist');
   }
+
+  init = flow(function* (this: ReviewStore) {
+    try {
+      // init engine
+      yield this.editorStore.graphState.graphManager.setupEngine(
+        this.editorStore.applicationStore.pluginManager,
+        {
+          env: this.editorStore.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+            enableCompression: true,
+            authenticationUrl: SDLCServerClient.authenticationUrl(
+              this.editorStore.applicationStore.config.sdlcServerUrl,
+            ),
+          },
+        },
+      );
+    } catch (error: unknown) {
+      this.editorStore.applicationStore.logger.error(
+        CORE_LOG_EVENT.SDLC_PROBLEM,
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+    }
+  });
 
   setProjectIdAndReviewId(projectId: string, reviewId: string): void {
     this.currentProjectId = projectId;
