@@ -159,9 +159,9 @@ export interface ConfigurationData {
 }
 
 export interface VersionData {
-  'git.build.time': string;
-  'git.build.version': string;
-  'git.commit.id': string;
+  buildTime: string;
+  version: string;
+  commitSHA: string;
 }
 
 export class ApplicationConfig {
@@ -246,16 +246,16 @@ export class ApplicationConfig {
 
     // Version
     this.appVersion = guaranteeNonNullable(
-      versionData['git.build.version'],
-      'Application build version is missing',
+      versionData.version,
+      'Application version is missing',
     );
     this.appVersionBuildTime = guaranteeNonNullable(
-      versionData['git.build.time'],
+      versionData.buildTime,
       'Application build time is missing',
     );
     this.appVersionCommitId = guaranteeNonNullable(
-      versionData['git.commit.id'],
-      'Application build revision SHA is mising',
+      versionData.commitSHA,
+      'Application build source commit SHA is mising',
     );
 
     this.isConfigured = isConfigured;

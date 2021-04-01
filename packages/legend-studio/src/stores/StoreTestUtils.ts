@@ -42,9 +42,9 @@ export const getTestApplicationConfig = (
       ...extraConfigData,
     },
     {
-      'git.build.time': '2001-01-01T00:00:00-0000',
-      'git.build.version': 'test-version',
-      'git.commit.id': 'test-commit-id',
+      buildTime: '2001-01-01T00:00:00-0000',
+      version: 'test-version',
+      commitSHA: 'test-commit-id',
     },
     '/studio/',
   );

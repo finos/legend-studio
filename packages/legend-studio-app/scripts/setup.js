@@ -29,11 +29,9 @@ fs.writeFileSync(
   path.resolve(resolvedOutputDir, 'version.json'),
   JSON.stringify(
     {
-      'git.build.time': new Date().toISOString(),
-      'git.build.version': `${
-        require(path.resolve(__dirname, '../package.json')).version
-      }`,
-      'git.commit.id': execSync(`git rev-parse HEAD`, {
+      buildTime: new Date().toISOString(),
+      version: `${require(path.resolve(__dirname, '../package.json')).version}`,
+      commitSHA: execSync(`git rev-parse HEAD`, {
         encoding: 'utf-8',
       }).trim(),
     },
@@ -49,10 +47,10 @@ fs.writeFileSync(
       appName: 'studio',
       env: 'local',
       sdlc: {
-        url: 'https://localhost:7075/api',
+        url: 'http://localhost:7070/api',
       },
       engine: {
-        url: 'https://localhost:9090/api',
+        url: 'http://localhost:6060/api',
       },
       documentation: {
         url: 'https://legend.finos.org',
