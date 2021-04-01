@@ -23,12 +23,14 @@ import {
   SKIP,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
+import { AssertionError } from '@finos/legend-studio-shared';
 import {
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   SerializationFactory,
 } from '@finos/legend-studio-shared';
+import { makeObservable, observable, action } from 'mobx';
 
 export class ServiceRegistrationEnvInfo {
   env!: string;
@@ -142,13 +144,17 @@ class ApplicationCoreOptions {
   }
 }
 
+interface SdlcServerOption {
+  label: string;
+  url: string;
+}
+
 export interface ConfigurationData {
   appName: string;
   env: string;
-  sdlc: { url: string };
+  sdlc: { url: string } | SdlcServerOption[];
   engine: { url: string };
   documentation: { url: string };
-
   options?: Record<PropertyKey, unknown>;
 }
 
@@ -163,7 +169,8 @@ export class ApplicationConfig {
   readonly baseUrl: string;
   readonly env: string;
   readonly documentationUrl: string;
-  readonly sdlcServerUrl: string;
+  sdlcServerUrl: string;
+  sdlcServerOptions: SdlcServerOption[] = [];
   readonly engineServerUrl: string;
   readonly options = new ApplicationCoreOptions();
 
@@ -172,11 +179,22 @@ export class ApplicationConfig {
   readonly appVersionBuildTime: string;
   readonly appVersionCommitId: string;
 
+  isConfigured = false;
+
   constructor(
     configData: ConfigurationData,
     versionData: VersionData,
     baseUrl: string,
   ) {
+    makeObservable(this, {
+      sdlcServerUrl: observable,
+      isConfigured: observable,
+      setSDLCServerUrl: action,
+      setConfigured: action,
+    });
+
+    let isConfigured = true;
+
     this.baseUrl = baseUrl;
     this.appName = guaranteeNonEmptyString(
       configData.appName,
@@ -190,10 +208,22 @@ export class ApplicationConfig {
       configData.sdlc,
       `Application configuration failure: 'sdlc' field is missing`,
     );
-    this.sdlcServerUrl = guaranteeNonEmptyString(
-      configData.sdlc.url,
-      `Application configuration failure: 'sdlc.url' field is missing or empty`,
-    );
+    if (Array.isArray(configData.sdlc)) {
+      if (configData.sdlc.length === 0) {
+        throw new AssertionError(
+          `Application configuration failure: 'sdlc' field configured in list form but has no entry`,
+        );
+      }
+      this.sdlcServerUrl = configData.sdlc[0].url;
+      this.sdlcServerOptions = configData.sdlc;
+      // TODO: we might need to do some checks for URL duplication here
+      isConfigured = configData.sdlc.length === 1; // skip SDLC server configuration when there is only one option
+    } else {
+      this.sdlcServerUrl = guaranteeNonEmptyString(
+        configData.sdlc.url,
+        `Application configuration failure: 'sdlc.url' field is missing`,
+      );
+    }
     assertNonNullable(
       configData.engine,
       `Application configuration failure: 'engine' field is missing`,
@@ -227,6 +257,15 @@ export class ApplicationConfig {
       versionData['git.commit.id'],
       'Application build revision SHA is mising',
     );
-    Object.freeze(this);
+
+    this.isConfigured = isConfigured;
+  }
+
+  setSDLCServerUrl(val: string): void {
+    this.sdlcServerUrl = val;
+  }
+
+  setConfigured(val: boolean): void {
+    this.isConfigured = val;
   }
 }
