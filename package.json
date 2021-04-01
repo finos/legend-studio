@@ -33,14 +33,14 @@
     "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\"",
     "publish:prepare": "cross-env FORCE_COLOR=1 yarn build:setup && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:prepare",
     "release": "yarn publish:prepare && changeset publish",
-    "setup": "yarn && yarn workspaces foreach --topological-dev --verbose run setup && yarn build:setup",
+    "setup": "yarn install && yarn workspaces foreach --topological-dev --verbose run setup && yarn build:setup",
     "start": "yarn dev",
     "test": "jest",
     "test:ci": "yarn build:setup && yarn test:coverage",
     "test:coverage": "jest --coverage",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "test:watch": "jest --watch",
-    "version": "changeset version && yarn && yarn fix:format"
+    "version": "changeset version && yarn install && yarn fix:format"
   },
   "husky": {
     "hooks": {

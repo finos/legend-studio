@@ -89,7 +89,7 @@ yarn changeset:cli
 
 Make sure to install [Node.js](https://nodejs.org/en/) and [Yarn](https://yarnpkg.com/). For IDE, we highly recommend [Visual Studio Code](https://code.visualstudio.com/). Also, to assist development, don't forget to install [ESLint](https://eslint.org/) and [Stylelint](https://stylelint.io/) plugins to help you catch problems while writing code; and install [Prettier](https://prettier.io/) plugin to help you auto-format code. Last but not least, run the `setup` script.
 
-Studio relies on SDLC and Engine servers as its backend. If you don't have these servers setup to run locally, you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose) to quickly set them up. The more convenient approach we found is to run these server and use a remote Gitlab instance, if you choose to follow that direction, pay attention to the [note on development](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-with-remote-gitlab/README.md#note-on-development).
+Studio relies on SDLC and Engine servers as its backend. If you don't have these servers [setup to run locally](https://legend.finos.org/docs/installation/maven-install-guide#installation-steps), you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev) to quickly set them up.
 
 ```sh
 # Install dependencies, link and set up the workspaces, and build the workspaces to make sure your project is in good shape.
@@ -99,7 +99,7 @@ yarn setup
 
 After setting up, visit http://localhost:8080/studio and the application should be up :tada:
 
-> If you get `Unauthorized` error, visit SDLC server at http://localhost:7070/api/auth/authorize in your browser, you might get redirected to the Gitlab login page or a Gitlab page that askes you to authorize Legend application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
+> If you get `Unauthorized` error, visit SDLC server at http://localhost:7070/api/auth/authorize in your browser, you will get redirected to the Gitlab login page or a Gitlab page asking you to authorize Legend OAuth application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
 
 #### :pencil2: Writing code
 
