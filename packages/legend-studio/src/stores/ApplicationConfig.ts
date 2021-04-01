@@ -23,8 +23,8 @@ import {
   SKIP,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
-import { AssertionError } from '@finos/legend-studio-shared';
 import {
+  AssertionError,
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,

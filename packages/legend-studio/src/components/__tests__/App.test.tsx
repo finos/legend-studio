@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import { AppRoot } from '../App';
+import { App, AppRoot } from '../App';
 import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
 } from '@finos/legend-studio-shared';
+import { BrowserRouter } from 'react-router-dom';
+import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
 import {
@@ -28,14 +30,12 @@ import {
 } from '../ComponentTestUtils';
 import type { ApplicationStore } from '../../stores/ApplicationStore';
 import { SDLCServerClient } from '../../models/sdlc/SDLCServerClient';
+import { PluginManager } from '../../application/PluginManager';
 
 let applicationStore: ApplicationStore;
 
-beforeEach(() => {
-  applicationStore = getMockedApplicationStore(getTestApplicationConfig());
-});
-
 test(integrationTest('App header is displayed properly'), async () => {
+  applicationStore = getMockedApplicationStore(getTestApplicationConfig());
   MOBX__enableSpyOrMock();
   jest
     .spyOn(applicationStore.networkClientManager.sdlcClient, 'isAuthorized')
@@ -61,6 +61,7 @@ test(integrationTest('App header is displayed properly'), async () => {
 });
 
 test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
+  applicationStore = getMockedApplicationStore(getTestApplicationConfig());
   const stubURL = 'stubUrl';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (global as any).window = Object.create(window) as Window;
@@ -87,6 +88,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
 test(
   integrationTest('Failed to accept SDLC Terms of Service will show alert'),
   async () => {
+    applicationStore = getMockedApplicationStore(getTestApplicationConfig());
     MOBX__enableSpyOrMock();
     jest
       .spyOn(applicationStore.networkClientManager.sdlcClient, 'isAuthorized')
@@ -106,5 +108,33 @@ test(
     await waitFor(() =>
       expect(queryByText('See terms of services')).not.toBeNull(),
     );
+  },
+);
+
+test(
+  integrationTest(
+    'Multiple SDLC servers configured requires application configuration before initialization',
+  ),
+  async () => {
+    const config = getTestApplicationConfig({
+      sdlc: [
+        {
+          label: 'Server1',
+          url: 'https://testSdlcUrl1',
+        },
+        {
+          label: 'Server2',
+          url: 'https://testSdlcUrl2',
+        },
+      ],
+    });
+
+    const { queryByText } = render(
+      <BrowserRouter>
+        <App config={config} pluginManager={PluginManager.create()} />
+      </BrowserRouter>,
+    );
+
+    await waitFor(() => expect(queryByText('SDLC Server')).not.toBeNull());
   },
 );
