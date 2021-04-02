@@ -27,15 +27,19 @@ import {
 } from '../stores/ApplicationStore';
 import { NotificationSnackbar } from './shared/NotificationSnackbar';
 import { observer } from 'mobx-react-lite';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  CustomSelectorInput,
+  PanelLoadingIndicator,
+} from '@finos/legend-studio-components';
 import { ROUTE_PATTERN } from '../stores/RouterConfig';
 import { ActionAlert } from './application/ActionAlert';
 import { BlockingAlert } from './application/BlockingAlert';
-import { AppHeader } from './shared/AppHeader';
+import { AppHeader, BasicAppHeader } from './shared/AppHeader';
 import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import type { ApplicationConfig } from '../stores/ApplicationConfig';
 import type { PluginManager } from '../application/PluginManager';
+import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 
 /**
  * NOTE: this approach generally works well to control Material theme overriding
@@ -170,24 +174,80 @@ export const AppRoot = observer(() => {
   );
 });
 
-export const App = ({
-  config,
-  pluginManager,
-}: {
-  config: ApplicationConfig;
-  pluginManager: PluginManager;
-}): React.ReactElement => {
-  const history = (useHistory() as unknown) as History<State>;
+export const AppConfigurationEditor = observer(
+  (props: { config: ApplicationConfig }) => {
+    const { config } = props;
+    const sdlcServerOptions = config.sdlcServerOptions.map((option) => ({
+      label: option.label,
+      value: option.url,
+    }));
+    const onSDLCServerChange = (val: {
+      label: string;
+      value: string;
+    }): void => {
+      config.setSDLCServerUrl(val.value);
+    };
+    const currentSDLCServerOption = guaranteeNonNullable(
+      sdlcServerOptions.find((option) => option.value === config.sdlcServerUrl),
+    );
 
-  return (
-    <ApplicationStoreProvider
-      config={config}
-      history={history}
-      pluginManager={pluginManager}
-    >
-      <ThemeProvider theme={materialTheme}>
-        <AppRoot />
-      </ThemeProvider>
-    </ApplicationStoreProvider>
-  );
-};
+    const configure = (): void => {
+      config.setConfigured(true);
+    };
+
+    return (
+      <div className="app">
+        <div className="app__page">
+          <BasicAppHeader config={config} />
+          <div className="app__content app__configuration-editor">
+            <div className="app__configuration-editor__content">
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  SDLC Server
+                </div>
+                <CustomSelectorInput
+                  options={sdlcServerOptions}
+                  onChange={onSDLCServerChange}
+                  value={currentSDLCServerOption}
+                  darkMode={true}
+                />
+                <button
+                  className="btn btn--dark u-pull-right app__configuration-editor__action"
+                  onClick={configure}
+                >
+                  Configure
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+export const App = observer(
+  (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
+    const { config, pluginManager } = props;
+    const history = (useHistory() as unknown) as History<State>;
+
+    if (!config.isConfigured) {
+      return (
+        <ThemeProvider theme={materialTheme}>
+          <AppConfigurationEditor config={config} />
+        </ThemeProvider>
+      );
+    }
+    return (
+      <ApplicationStoreProvider
+        config={config}
+        history={history}
+        pluginManager={pluginManager}
+      >
+        <ThemeProvider theme={materialTheme}>
+          <AppRoot />
+        </ThemeProvider>
+      </ApplicationStoreProvider>
+    );
+  },
+);
