@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.0.13
+
+### Patch Changes
+
+- [#147](https://github.com/finos/legend-studio/pull/147) [`c1e3047`](https://github.com/finos/legend-studio/commit/c1e3047300b1be93c27059b8bf570a76698c5970) Thanks [@akphi](https://github.com/akphi)! - Allow configuring SDLC server when multiple SDLC servers are available in Studio config file.
+
 ## 0.0.12
 
 ### Patch Changes
