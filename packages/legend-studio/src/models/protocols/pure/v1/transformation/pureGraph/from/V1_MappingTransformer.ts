@@ -778,6 +778,9 @@ const transformAggregationAwareSetImplementation = (
   element: AggregationAwareSetImplementation,
 ): V1_AggregationAwareClassMapping => {
   const classMapping = new V1_AggregationAwareClassMapping();
+  classMapping.id = mappingElementIdSerializer(element.id);
+  classMapping.class = V1_transformElementReference(element.class);
+
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
     classMapping.root = root;

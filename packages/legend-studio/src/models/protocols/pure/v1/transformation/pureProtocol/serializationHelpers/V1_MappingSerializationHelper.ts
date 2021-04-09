@@ -479,8 +479,8 @@ const aggregationAwarePropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    source: primitive(),
     property: usingModelSchema(V1_propertyPointerModelSchema),
+    source: optional(primitive()),
     target: optional(primitive()),
   },
 );

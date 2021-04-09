@@ -15,8 +15,19 @@
  */
 
 import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification/V1_RawLambda';
+import {Hashable, hashArray} from "@finos/legend-studio-shared";
+import {CORE_HASH_STRUCTURE} from "../../../../../../../../../MetaModelConst";
+import {hashLambda} from "../../../../../../../../../MetaModelUtility";
 
-export class V1_AggregateFunction {
+export class V1_AggregateFunction implements Hashable {
   mapFn!: V1_RawLambda; // LAMBDA
   aggregateFn!: V1_RawLambda; // LAMBDA
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.AGGREGATE_FUNCTION,
+      hashLambda(this.mapFn.parameters, this.mapFn.body),
+      hashLambda(this.aggregateFn.parameters, this.aggregateFn.body),
+    ]);
+  }
 }

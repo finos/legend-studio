@@ -16,13 +16,25 @@
 
 import type { AggregationFunctionSpecification } from './AggregationFunctionSpecification';
 import type { GroupByFunctionSpecification } from './GroupByFunctionSpecification';
+import type {Hashable} from "@finos/legend-studio-shared";
+import {hashArray} from "@finos/legend-studio-shared";
+import {CORE_HASH_STRUCTURE} from "../../../../../../MetaModelConst";
 
-export class AggregateSpecification {
+export class AggregateSpecification implements Hashable {
   canAggregate: boolean;
   groupByFunctions: GroupByFunctionSpecification[] = [];
   aggregateValues: AggregationFunctionSpecification[] = [];
 
   constructor(canAggregate: boolean) {
     this.canAggregate = canAggregate;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.AGGREGATION_AWARE_SPECIFICATION,
+      hashArray(this.groupByFunctions),
+      hashArray(this.aggregateValues),
+      this.canAggregate.toString(),
+    ]);
   }
 }

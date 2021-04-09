@@ -75,6 +75,8 @@ import { NamedRelation } from '../../../model/packageableElements/store/relation
 import { InferableMappingElementIdExplicitValue } from '../../../model/packageableElements/mapping/InferableMappingElementId';
 import type { MappingInclude } from './MappingInclude';
 import { InferableMappingElementRootExplicitValue } from './InferableMappingElementRoot';
+import { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
+import { AggregationAwarePropertyMapping } from './aggregationAware/AggregationAwarePropertyMapping';
 
 export enum MAPPING_ELEMENT_TYPE {
   CLASS = 'CLASS',
@@ -124,7 +126,10 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
 
   // TODO: account for mapping includes
   get allClassMappings(): SetImplementation[] {
-    return this.classMappings;
+    return [
+      ...this.classMappings,
+      ...this.extractAllClassMappingsFromAggregationAware(),
+    ];
   }
 
   get allEnumerationMappings(): EnumerationMapping[] {
@@ -159,6 +164,33 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     return this.classMappings;
   }
 
+  getAggregationAwareClassMappings(): AggregationAwareSetImplementation[] {
+    return this.classMappings.filter(
+      <
+        (
+          classMapping: SetImplementation,
+        ) => classMapping is AggregationAwareSetImplementation
+      >((classMapping: SetImplementation) =>
+        classMapping instanceof AggregationAwareSetImplementation),
+    );
+  }
+
+  extractAllClassMappingsFromAggregationAware(): SetImplementation[] {
+    let aggregatioAware = this.getAggregationAwareClassMappings();
+    return [
+      ...aggregatioAware.map(
+        (aggregatioAware) => aggregatioAware.mainSetImplementation,
+      ),
+      ...aggregatioAware
+        .map((aggregatioAware) =>
+          aggregatioAware.aggregateSetImplementations.map(
+            (setImpl) => setImpl.setImplementation,
+          ),
+        )
+        .flat(),
+    ];
+  }
+
   classMappingsByClass(
     _class: Class,
     findInIncludedMappings = false,
@@ -172,7 +204,9 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
 
   getClassMapping = (id: string): SetImplementation =>
     guaranteeNonNullable(
-      this.classMappings.find((classMapping) => classMapping.id.value === id),
+      this.allClassMappings.find(
+        (classMapping) => classMapping.id.value === id,
+      ),
       `Can't find class mapping with ID '${id}' in mapping '${this.path}'`,
     );
 
@@ -288,6 +322,7 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     switch (type) {
       case MAPPING_ELEMENT_TYPE.CLASS:
       case SOURCR_ID_LABEL.OPERATION_CLASS_MAPPING:
+      case SOURCR_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
       case SOURCR_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
         return this.getClassMappings().find(
           (classMapping) => classMapping.id.value === id,
@@ -476,6 +511,8 @@ export const getMappingElementSource = (
     mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
   ) {
     return mappingElement.rootInstanceSetImplementation.mainTableAlias.relation;
+  } else if (mappingElement instanceof AggregationAwareSetImplementation) {
+    return getMappingElementSource(mappingElement.mainSetImplementation);
   }
   throw new UnsupportedOperationError(
     `Can't get mapping element source of type '${

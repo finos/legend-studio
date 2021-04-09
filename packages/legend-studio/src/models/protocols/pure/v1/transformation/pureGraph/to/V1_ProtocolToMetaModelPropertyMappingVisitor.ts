@@ -67,6 +67,8 @@ import type { XStoreAssociationImplementation } from '../../../../../../metamode
 import { Property } from '../../../../../../metamodels/pure/model/packageableElements/domain/Property';
 import { MappingClass } from '../../../../../../metamodels/pure/model/packageableElements/mapping/MappingClass';
 import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/model/packageableElements/mapping/LocalMappingPropertyInfo';
+import type {AggregationAwareSetImplementation} from "../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation";
+import {AggregationAwarePropertyMapping} from "../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping";
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -98,6 +100,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   private tableAliasMap: Map<string, TableAlias>;
   private allClassMappings: SetImplementation[];
   private xStoreParent?: XStoreAssociationImplementation;
+  private aggregationAwareParent?: AggregationAwareSetImplementation;
 
   constructor(
     context: V1_GraphBuilderContext,
@@ -107,6 +110,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     tabliaAliasMap?: Map<string, TableAlias>,
     allClassMappings?: SetImplementation[],
     xStoreParent?: XStoreAssociationImplementation,
+    aggregationAwareParent?: AggregationAwareSetImplementation,
   ) {
     this.context = context;
     this.immediateParent = immediateParent;
@@ -115,6 +119,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     this.tableAliasMap = tabliaAliasMap ?? new Map<string, TableAlias>();
     this.allClassMappings = allClassMappings ?? [];
     this.xStoreParent = xStoreParent;
+    this.aggregationAwareParent = aggregationAwareParent;
   }
 
   visit_PurePropertyMapping(protocol: V1_PurePropertyMapping): PropertyMapping {
@@ -182,11 +187,14 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         );
       }
     }
+    let sourceSetImplementation: SetImplementation = protocol.source ? topParent.parent.getClassMapping(
+      protocol.source,
+    ) : topParent;
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
       new RawLambda([], protocol.transform.body),
-      topParent,
+      sourceSetImplementation,
       targetSetImplementation,
       protocol.explodeProperty,
     );
@@ -659,6 +667,46 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   visit_AggregationAwarePropertyMapping(
     protocol: V1_AggregationAwarePropertyMapping,
   ): PropertyMapping {
-    throw new UnsupportedOperationError();
+    assertNonNullable(
+      protocol.property,
+      'Model-to-model property mapping property is missing',
+    );
+    assertNonEmptyString(
+      protocol.property.class,
+      'Model-to-model property mapping property class is missing',
+    );
+    assertNonEmptyString(
+      protocol.property.property,
+      'Model-to-model property mapping property name is missing',
+    );
+    const aggregationAwareParent = guaranteeNonNullable(
+      this.aggregationAwareParent,
+      'AggregationAware expected to be parent of Aggregation Aware PropertyMapping',
+    );
+
+    let propertyMapping = aggregationAwareParent.mainSetImplementation.propertyMappings.find(
+      (p) => p.property.value.name == protocol.property.property
+    );
+
+    let property: PropertyReference = propertyMapping?.property ?? this.context.resolveProperty(protocol.property);
+
+    const sourceSetImplementation = this.allClassMappings.find(
+      (c) => c.id.value === protocol.source,
+    );
+    const targetSetImplementation = this.allClassMappings.find(
+      (c) => c.id.value === protocol.target,
+    );
+
+    const aggregationAwarePropertyMapping = new AggregationAwarePropertyMapping(
+      this.topParent ?? this.immediateParent,
+      property,
+      guaranteeNonNullable(sourceSetImplementation),
+      targetSetImplementation,
+    );
+
+    if(protocol.localMappingProperty && propertyMapping?.localMappingProperty) {
+      aggregationAwarePropertyMapping.localMappingProperty = guaranteeNonNullable(propertyMapping?.localMappingProperty);
+    }
+    return aggregationAwarePropertyMapping;
   }
 }

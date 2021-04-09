@@ -15,11 +15,22 @@
  */
 
 import type { RawLambda } from '../../../../model/rawValueSpecification/RawLambda';
+import {hashArray} from "@finos/legend-studio-shared";
+import type { Hashable } from '@finos/legend-studio-shared';
+import {CORE_HASH_STRUCTURE} from "../../../../../../MetaModelConst";
+import {hashLambda} from "../../../../../../MetaModelUtility";
 
-export class GroupByFunctionSpecification {
+export class GroupByFunctionSpecification implements Hashable {
   groupByFn: RawLambda;
 
   constructor(groupByFn: RawLambda) {
     this.groupByFn = groupByFn;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GROUP_BY_FUNCTION,
+      hashLambda(this.groupByFn.parameters, this.groupByFn.body),
+    ]);
   }
 }

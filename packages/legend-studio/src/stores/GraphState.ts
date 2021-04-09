@@ -102,6 +102,7 @@ import { ENTITY_PATH_DELIMITER } from '../models/sdlc/SDLCUtils';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import type { PropertyMapping } from '../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import { AssociationImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
+import {AggregationAwareSetImplementation} from "../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation";
 
 export class GraphState {
   editorStore: EditorStore;
@@ -1172,6 +1173,10 @@ export class GraphState {
       setImplementation instanceof EmbeddedRelationalInstanceSetImplementation
     ) {
       return SET_IMPLEMENTATION_TYPE.EMBEDDED_RELATIONAL;
+    } else if (
+      setImplementation instanceof AggregationAwareSetImplementation
+    ) {
+      return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE
     }
     throw new UnsupportedOperationError(
       `Can't derive set implementation type of type '${

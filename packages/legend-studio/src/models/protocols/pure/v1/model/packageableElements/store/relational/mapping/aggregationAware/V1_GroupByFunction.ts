@@ -15,7 +15,17 @@
  */
 
 import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification/V1_RawLambda';
+import {Hashable, hashArray} from "@finos/legend-studio-shared";
+import {CORE_HASH_STRUCTURE} from "../../../../../../../../../MetaModelConst";
+import {hashLambda} from "../../../../../../../../../MetaModelUtility";
 
-export class V1_GroupByFunction {
+export class V1_GroupByFunction implements Hashable{
   groupByFn!: V1_RawLambda;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GROUP_BY_FUNCTION,
+      hashLambda(this.groupByFn.parameters, this.groupByFn.body),
+    ]);
+  }
 }

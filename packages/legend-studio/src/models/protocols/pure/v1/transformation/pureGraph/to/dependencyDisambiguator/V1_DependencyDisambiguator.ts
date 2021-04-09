@@ -452,7 +452,21 @@ export class V1_DependencyDisambiguator
   visit_AggregationAwareClassMapping(
     classMapping: V1_AggregationAwareClassMapping,
   ): void {
-    // TODO
+    classMapping.mainSetImplementation.class = V1_processDependencyPath(
+      classMapping.mainSetImplementation.class,
+      this.dependencyProcessingContext,
+    );
+    classMapping.mainSetImplementation.accept_ClassMappingVisitor(this);
+    classMapping.aggregateSetImplementations.map((aggregate) => {
+      aggregate.setImplementation.class = V1_processDependencyPath(
+        aggregate.setImplementation.class,
+        this.dependencyProcessingContext,
+      );
+      aggregate.setImplementation.accept_ClassMappingVisitor(this)
+    });
+    classMapping.propertyMappings.forEach((propertyMapping) =>
+      propertyMapping.accept_PropertyMappingVisitor(this),
+    );
     return;
   }
 

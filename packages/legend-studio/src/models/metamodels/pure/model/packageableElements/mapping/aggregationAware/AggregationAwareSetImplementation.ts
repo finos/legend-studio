@@ -23,6 +23,8 @@ import type { PackageableElementReference } from '../../../../model/packageableE
 import type { Class } from '../../../../model/packageableElements/domain/Class';
 import type { InferableMappingElementRoot } from '../../../../model/packageableElements/mapping/InferableMappingElementRoot';
 import type { AggregateSetImplementationContainer } from './AggregateSetImplementationContainer';
+import { hashArray } from '@finos/legend-studio-shared';
+import {CORE_HASH_STRUCTURE} from "../../../../../../MetaModelConst";
 
 export class AggregationAwareSetImplementation extends InstanceSetImplementation {
   aggregateSetImplementations: AggregateSetImplementationContainer[] = [];
@@ -61,5 +63,15 @@ export class AggregationAwareSetImplementation extends InstanceSetImplementation
   }
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
     return visitor.visit_AggregationAwareSetImplementation(this);
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.AGGREGATION_AWARE_MAPPING,
+      super.hashCode,
+      this.mainSetImplementation,
+      hashArray(this.aggregateSetImplementations),
+      hashArray(this.propertyMappings),
+    ]);
   }
 }
