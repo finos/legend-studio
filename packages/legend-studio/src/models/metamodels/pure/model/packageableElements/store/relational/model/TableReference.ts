@@ -25,7 +25,7 @@ import { PackageableElementExplicitReference } from '../../../../../model/packag
 import { ReferenceWithOwner } from '../../../../../model/Reference';
 import type { Database } from '../../../../../model/packageableElements/store/relational/model/Database';
 import type { Table } from '../../../../../model/packageableElements/store/relational/model/Table';
-import { SELF_JOIN_TABLE_NAME } from './Join';
+import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
 
 export abstract class NamedRelationalReference extends ReferenceWithOwner {
   readonly ownerReference: PackageableElementReference<Database>;
@@ -75,7 +75,7 @@ export abstract class TableReference extends NamedRelationalReference {
     return [
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_POINTER,
       this.ownerReference.valueForSerialization,
-      this.value.schema.name,
+      SELF_JOIN_SCHEMA_NAME,
       SELF_JOIN_TABLE_NAME,
     ]
       .map(hashString)
