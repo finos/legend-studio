@@ -16,10 +16,11 @@
 
 import type { V1_GroupByFunction } from './V1_GroupByFunction';
 import type { V1_AggregateFunction } from './V1_AggregateFunction';
-import {Hashable, hashArray} from "@finos/legend-studio-shared";
-import {CORE_HASH_STRUCTURE} from "../../../../../../../../../MetaModelConst";
+import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 
-export class V1_AggregateSpecification implements Hashable{
+export class V1_AggregateSpecification implements Hashable {
   canAggregate = false;
   groupByFunctions: V1_GroupByFunction[] = [];
   aggregateValues: V1_AggregateFunction[] = [];

@@ -462,7 +462,8 @@ export class V1_DependencyDisambiguator
         aggregate.setImplementation.class,
         this.dependencyProcessingContext,
       );
-      aggregate.setImplementation.accept_ClassMappingVisitor(this)
+      aggregate.setImplementation.accept_ClassMappingVisitor(this);
+      return aggregate;
     });
     classMapping.propertyMappings.forEach((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(this),

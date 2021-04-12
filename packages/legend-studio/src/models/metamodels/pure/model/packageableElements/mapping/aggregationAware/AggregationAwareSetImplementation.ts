@@ -24,7 +24,7 @@ import type { Class } from '../../../../model/packageableElements/domain/Class';
 import type { InferableMappingElementRoot } from '../../../../model/packageableElements/mapping/InferableMappingElementRoot';
 import type { AggregateSetImplementationContainer } from './AggregateSetImplementationContainer';
 import { hashArray } from '@finos/legend-studio-shared';
-import {CORE_HASH_STRUCTURE} from "../../../../../../MetaModelConst";
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 
 export class AggregationAwareSetImplementation extends InstanceSetImplementation {
   aggregateSetImplementations: AggregateSetImplementationContainer[] = [];

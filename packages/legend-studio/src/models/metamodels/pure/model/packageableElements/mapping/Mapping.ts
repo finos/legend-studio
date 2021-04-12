@@ -76,7 +76,6 @@ import { InferableMappingElementIdExplicitValue } from '../../../model/packageab
 import type { MappingInclude } from './MappingInclude';
 import { InferableMappingElementRootExplicitValue } from './InferableMappingElementRoot';
 import { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
-import { AggregationAwarePropertyMapping } from './aggregationAware/AggregationAwarePropertyMapping';
 
 export enum MAPPING_ELEMENT_TYPE {
   CLASS = 'CLASS',
@@ -176,7 +175,7 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
   }
 
   extractAllClassMappingsFromAggregationAware(): SetImplementation[] {
-    let aggregatioAware = this.getAggregationAwareClassMappings();
+    const aggregatioAware = this.getAggregationAwareClassMappings();
     return [
       ...aggregatioAware.map(
         (aggregatioAware) => aggregatioAware.mainSetImplementation,

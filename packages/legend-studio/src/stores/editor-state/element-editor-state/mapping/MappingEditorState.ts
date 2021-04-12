@@ -87,7 +87,7 @@ import {
 import { RootFlatDataRecordTypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import {AggregationAwareSetImplementation} from "../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation";
+import { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 
 export interface MappingElementTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;

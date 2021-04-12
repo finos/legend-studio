@@ -67,8 +67,8 @@ import type { XStoreAssociationImplementation } from '../../../../../../metamode
 import { Property } from '../../../../../../metamodels/pure/model/packageableElements/domain/Property';
 import { MappingClass } from '../../../../../../metamodels/pure/model/packageableElements/mapping/MappingClass';
 import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/model/packageableElements/mapping/LocalMappingPropertyInfo';
-import type {AggregationAwareSetImplementation} from "../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation";
-import {AggregationAwarePropertyMapping} from "../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping";
+import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -187,9 +187,9 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         );
       }
     }
-    let sourceSetImplementation: SetImplementation = protocol.source ? topParent.parent.getClassMapping(
-      protocol.source,
-    ) : topParent;
+    const sourceSetImplementation: SetImplementation = protocol.source
+      ? topParent.parent.getClassMapping(protocol.source)
+      : topParent;
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
@@ -684,11 +684,13 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       'AggregationAware expected to be parent of Aggregation Aware PropertyMapping',
     );
 
-    let propertyMapping = aggregationAwareParent.mainSetImplementation.propertyMappings.find(
-      (p) => p.property.value.name == protocol.property.property
+    const propertyMapping = aggregationAwareParent.mainSetImplementation.propertyMappings.find(
+      (p) => p.property.value.name === protocol.property.property,
     );
 
-    let property: PropertyReference = propertyMapping?.property ?? this.context.resolveProperty(protocol.property);
+    const property: PropertyReference =
+      propertyMapping?.property ??
+      this.context.resolveProperty(protocol.property);
 
     const sourceSetImplementation = this.allClassMappings.find(
       (c) => c.id.value === protocol.source,
@@ -704,8 +706,13 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       targetSetImplementation,
     );
 
-    if(protocol.localMappingProperty && propertyMapping?.localMappingProperty) {
-      aggregationAwarePropertyMapping.localMappingProperty = guaranteeNonNullable(propertyMapping?.localMappingProperty);
+    if (
+      protocol.localMappingProperty &&
+      propertyMapping?.localMappingProperty
+    ) {
+      aggregationAwarePropertyMapping.localMappingProperty = guaranteeNonNullable(
+        propertyMapping.localMappingProperty,
+      );
     }
     return aggregationAwarePropertyMapping;
   }

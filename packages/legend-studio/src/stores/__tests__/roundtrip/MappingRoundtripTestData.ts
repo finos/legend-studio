@@ -893,7 +893,7 @@ export const testLocalPropertyMapping = [
   },
 ];
 
-export const testAggregationAwareMappingRoundtrip =[
+export const testAggregationAwareMappingRoundtrip = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
@@ -935,7 +935,7 @@ export const testAggregationAwareMappingRoundtrip =[
         },
       ],
     },
-    path: 'test::FiscalCalendar'
+    path: 'test::FiscalCalendar',
   },
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
@@ -1111,128 +1111,134 @@ export const testAggregationAwareMappingRoundtrip =[
             },
           ],
           root: false,
-          srcClass: 'test::FiscalCalendar'
+          srcClass: 'test::FiscalCalendar',
         },
         {
           _type: 'aggregationAware',
-          aggregateSetImplementations: [{
-            aggregateSpecification: {
-              aggregateValues: [{
-                aggregateFn: {
-                  _type: 'lambda',
-                  body: [
-                    {
-                      _type: 'func',
-                      function: 'sum',
-                      parameters: [
+          aggregateSetImplementations: [
+            {
+              aggregateSpecification: {
+                aggregateValues: [
+                  {
+                    aggregateFn: {
+                      _type: 'lambda',
+                      body: [
                         {
-                          _type: 'var',
-                          name: 'mapped',
+                          _type: 'func',
+                          function: 'sum',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'mapped',
+                            },
+                          ],
                         },
                       ],
+                      parameters: [],
                     },
-                  ],
-                  parameters: [],
-                },
-                mapFn: {
-                  _type: 'lambda',
-                  body: [
-                    {
-                      _type: 'property',
-                      parameters: [
+                    mapFn: {
+                      _type: 'lambda',
+                      body: [
                         {
-                          _type: 'var',
-                          name: 'this',
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'this',
+                            },
+                          ],
+                          property: 'revenue',
                         },
                       ],
-                      property: 'revenue',
+                      parameters: [],
                     },
-                  ],
-                  parameters: [],
-                },
-              }],
-              canAggregate: true,
-              groupByFunctions: [{
-                groupByFn: {
-                  _type: 'lambda',
-                  body: [
-                    {
-                      _type: 'property',
-                      parameters: [
+                  },
+                ],
+                canAggregate: true,
+                groupByFunctions: [
+                  {
+                    groupByFn: {
+                      _type: 'lambda',
+                      body: [
                         {
-                          _type: 'var',
-                          name: 'this',
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'this',
+                            },
+                          ],
+                          property: 'salesDate',
                         },
                       ],
+                      parameters: [],
+                    },
+                  },
+                ],
+              },
+              index: 0,
+              setImplementation: {
+                _type: 'pureInstance',
+                class: 'test::Sales',
+                id: 'a_Aggregate_0',
+                propertyMappings: [
+                  {
+                    _type: 'purePropertyMapping',
+                    explodeProperty: false,
+                    property: {
+                      class: 'test::Sales',
                       property: 'salesDate',
                     },
-                  ],
-                  parameters: [],
-                },
-              }],
+                    source: 'a',
+                    target: 'b',
+                    transform: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'src',
+                            },
+                          ],
+                          property: 'salesDate',
+                        },
+                      ],
+                      parameters: [],
+                    },
+                  },
+                  {
+                    _type: 'purePropertyMapping',
+                    explodeProperty: false,
+                    property: {
+                      class: 'test::Sales',
+                      property: 'revenue',
+                    },
+                    source: 'a',
+                    transform: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'src',
+                            },
+                          ],
+                          property: 'netRevenue',
+                        },
+                      ],
+                      parameters: [],
+                    },
+                  },
+                ],
+                root: false,
+                srcClass: 'test::Sales_By_Date',
+              },
             },
-            index: 0,
-            setImplementation: {
-              _type: 'pureInstance',
-              class: 'test::Sales',
-              id: 'a_Aggregate_0',
-              propertyMappings: [
-                {
-                  _type: 'purePropertyMapping',
-                  explodeProperty: false,
-                  property: {
-                    class: 'test::Sales',
-                    property: 'salesDate',
-                  },
-                  source: 'a',
-                  target: 'b',
-                  transform: {
-                    _type: 'lambda',
-                    body: [
-                      {
-                        _type: 'property',
-                        parameters: [
-                          {
-                            _type: 'var',
-                            name: 'src',
-                          },
-                        ],
-                        property: 'salesDate',
-                      },
-                    ],
-                    parameters: [],
-                  },
-                },
-                {
-                  _type: 'purePropertyMapping',
-                  explodeProperty: false,
-                  property: {
-                    class: 'test::Sales',
-                    property: 'revenue',
-                  },
-                  source: 'a',
-                  transform: {
-                    _type: 'lambda',
-                    body: [
-                      {
-                        _type: 'property',
-                        parameters: [
-                          {
-                            _type: 'var',
-                            name: 'src',
-                          },
-                        ],
-                        property: 'netRevenue',
-                      },
-                    ],
-                    parameters: [],
-                  },
-                },
-              ],
-              root: false,
-              srcClass: 'test::Sales_By_Date'
-            },
-          }],
+          ],
           class: 'test::Sales',
           id: 'a',
           mainSetImplementation: {
@@ -1293,7 +1299,7 @@ export const testAggregationAwareMappingRoundtrip =[
               },
             ],
             root: false,
-            srcClass: 'test::Sales'
+            srcClass: 'test::Sales',
           },
           propertyMappings: [
             {
@@ -1335,7 +1341,11 @@ export const testAggregationAwareMappingRoundtrip =[
         {
           _type: 'importAware',
           imports: [],
-          elements: ['test::FiscalCalendar', 'test::Sales', 'test::Sales_By_Date'],
+          elements: [
+            'test::FiscalCalendar',
+            'test::Sales',
+            'test::Sales_By_Date',
+          ],
           parserName: 'Pure',
         },
         {

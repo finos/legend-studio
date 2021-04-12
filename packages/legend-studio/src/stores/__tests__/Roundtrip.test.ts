@@ -114,7 +114,9 @@ test(unitTest('Mapping import resolution roundtrip'), async () => {
 });
 
 test(unitTest('Aggregation Aware mapping roundtrip'), async () => {
-  await checkBuildingElementsRoundtrip(testAggregationAwareMappingRoundtrip as Entity[]);
+  await checkBuildingElementsRoundtrip(
+    testAggregationAwareMappingRoundtrip as Entity[],
+  );
 });
 
 test(unitTest('Runtime import resolution roundtrip'), async () => {

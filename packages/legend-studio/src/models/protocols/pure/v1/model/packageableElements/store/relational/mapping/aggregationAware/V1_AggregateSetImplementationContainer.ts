@@ -16,11 +16,11 @@
 
 import type { V1_ClassMapping } from '../../../../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_AggregateSpecification } from './V1_AggregateSpecification';
-import {Hashable, hashArray} from "@finos/legend-studio-shared";
-import {CORE_HASH_STRUCTURE} from "../../../../../../../../../MetaModelConst";
+import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 
-export class V1_AggregateSetImplementationContainer implements Hashable
-{
+export class V1_AggregateSetImplementationContainer implements Hashable {
   index!: number;
   setImplementation!: V1_ClassMapping;
   aggregateSpecification!: V1_AggregateSpecification;

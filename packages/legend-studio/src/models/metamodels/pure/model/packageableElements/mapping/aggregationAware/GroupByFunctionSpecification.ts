@@ -15,10 +15,10 @@
  */
 
 import type { RawLambda } from '../../../../model/rawValueSpecification/RawLambda';
-import {hashArray} from "@finos/legend-studio-shared";
+import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import {CORE_HASH_STRUCTURE} from "../../../../../../MetaModelConst";
-import {hashLambda} from "../../../../../../MetaModelUtility";
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import { hashLambda } from '../../../../../../MetaModelUtility';
 
 export class GroupByFunctionSpecification implements Hashable {
   groupByFn: RawLambda;

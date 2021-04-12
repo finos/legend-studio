@@ -40,9 +40,9 @@ import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElem
 import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping';
 import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping';
 import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
-import {AggregationAwareSetImplementation} from "../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation";
-import type {InstanceSetImplementation} from "../../../../../../metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation";
-import {V1_processAggregateContainer} from "./helpers/V1_AggregationAwareClassMappingBuilderHelper";
+import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
+import { V1_processAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
   implements V1_ClassMappingVisitor<SetImplementation> {
@@ -185,10 +185,17 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
       this.parent,
       targetClass,
       InferableMappingElementRootExplicitValue.create(classMapping.root),
-      classMapping.mainSetImplementation.accept_ClassMappingVisitor(new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(this.context, mapping)) as InstanceSetImplementation
+      classMapping.mainSetImplementation.accept_ClassMappingVisitor(
+        new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(
+          this.context,
+          mapping,
+        ),
+      ) as InstanceSetImplementation,
     );
-    aggragetionAwareInstanceSetImplementation.aggregateSetImplementations =
-      classMapping.aggregateSetImplementations.map((setImplementation) => V1_processAggregateContainer(setImplementation, this.context, mapping));
+    aggragetionAwareInstanceSetImplementation.aggregateSetImplementations = classMapping.aggregateSetImplementations.map(
+      (setImplementation) =>
+        V1_processAggregateContainer(setImplementation, this.context, mapping),
+    );
     return aggragetionAwareInstanceSetImplementation;
   }
 }

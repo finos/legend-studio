@@ -16,11 +16,11 @@
 
 import type { InstanceSetImplementation } from '../../../../model/packageableElements/mapping/InstanceSetImplementation';
 import type { AggregateSpecification } from './AggregateSpecification';
-import type {Hashable} from "@finos/legend-studio-shared";
-import {hashArray} from "@finos/legend-studio-shared";
-import {CORE_HASH_STRUCTURE} from "../../../../../../MetaModelConst";
+import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 
-export class AggregateSetImplementationContainer implements Hashable{
+export class AggregateSetImplementationContainer implements Hashable {
   index: number;
   aggregateSpecification: AggregateSpecification;
   setImplementation: InstanceSetImplementation;
