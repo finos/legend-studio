@@ -2864,6 +2864,79 @@ export const testDatabaseWithSelfJoin = [
     },
     classifierPath: 'meta::relational::metamodel::Database',
   },
+  {
+    path: 'apps::meta::relational::tests::dbInc1',
+    content: {
+      _type: 'relational',
+      filters: [],
+      joins: [
+        {
+          name: 'Person_Manager',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'MANAGERID',
+                table: {
+                  _type: 'Table',
+                  database: 'apps::meta::relational::tests::dbInc1',
+                  schema: 'demoSchema',
+                  table: 'personTable',
+                },
+                tableAlias: 'personTable',
+              },
+              {
+                _type: 'column',
+                column: 'ID',
+                table: {
+                  _type: 'Table',
+                  database: 'apps::meta::relational::tests::dbInc1',
+                  schema: 'default',
+                  table: '{target}',
+                },
+                tableAlias: '{target}',
+              },
+            ],
+          },
+          target: 't_personTable',
+        },
+      ],
+      name: 'dbInc1',
+      package: 'apps::meta::relational::tests',
+      schemas: [
+        {
+          name: 'demoSchema',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'MANAGERID',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+              ],
+              name: 'personTable',
+              primaryKey: ['ID'],
+            },
+          ],
+          views: [],
+        },
+      ],
+      includedStores: [],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
 ];
 
 export const simpleEmbeddedRelationalRoundtrip = [
