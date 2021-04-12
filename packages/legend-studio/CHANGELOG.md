@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.0.14
+
+### Patch Changes
+
+- [#150](https://github.com/finos/legend-studio/pull/150) [`58433f5`](https://github.com/finos/legend-studio/commit/58433f5e9f65571a6ca57da60dfb264fb7ef051a) Thanks [@emilia-sokol-gs](https://github.com/emilia-sokol-gs)! - Add support for aggregartion aware mapping in studio. Done by adding missing implementation e.g. in V1_ProtocolToMetaModel visitor for class mapping and property mapping. Added roundtrip test to test flow.
+
 ## 0.0.13
 
 ### Patch Changes
