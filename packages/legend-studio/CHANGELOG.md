@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.0.15
+
+### Patch Changes
+
+- [#153](https://github.com/finos/legend-studio/pull/153) [`09634da`](https://github.com/finos/legend-studio/commit/09634da8795744557c097725a42089384d0bafaa) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - fix studio change detection for self-join
+
 ## 0.0.14
 
 ### Patch Changes
