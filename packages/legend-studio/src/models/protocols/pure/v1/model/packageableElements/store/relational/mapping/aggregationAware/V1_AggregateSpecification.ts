@@ -16,9 +16,21 @@
 
 import type { V1_GroupByFunction } from './V1_GroupByFunction';
 import type { V1_AggregateFunction } from './V1_AggregateFunction';
+import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 
-export class V1_AggregateSpecification {
+export class V1_AggregateSpecification implements Hashable {
   canAggregate = false;
   groupByFunctions: V1_GroupByFunction[] = [];
   aggregateValues: V1_AggregateFunction[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.AGGREGATION_AWARE_SPECIFICATION,
+      hashArray(this.groupByFunctions),
+      hashArray(this.aggregateValues),
+      this.canAggregate.toString(),
+    ]);
+  }
 }

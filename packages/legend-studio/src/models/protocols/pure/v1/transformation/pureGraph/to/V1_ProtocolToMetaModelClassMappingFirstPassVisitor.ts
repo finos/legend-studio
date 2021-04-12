@@ -40,6 +40,9 @@ import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElem
 import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping';
 import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping';
 import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
+import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
+import { V1_processAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
   implements V1_ClassMappingVisitor<SetImplementation> {
@@ -167,6 +170,32 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
   visit_AggregationAwareClassMapping(
     classMapping: V1_AggregationAwareClassMapping,
   ): SetImplementation {
-    throw new UnsupportedOperationError();
+    assertNonEmptyString(
+      classMapping.class,
+      'Aggregation Aware class mapping class is missing',
+    );
+    assertNonNullable(
+      classMapping.root,
+      'Aggregation Aware class mapping root flag is missing',
+    );
+    const targetClass = this.context.resolveClass(classMapping.class);
+    const mapping = this.context.graph.getMapping(this.parent.path);
+    const aggragetionAwareInstanceSetImplementation = new AggregationAwareSetImplementation(
+      V1_getInferredClassMappingId(targetClass.value, classMapping),
+      this.parent,
+      targetClass,
+      InferableMappingElementRootExplicitValue.create(classMapping.root),
+      classMapping.mainSetImplementation.accept_ClassMappingVisitor(
+        new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(
+          this.context,
+          mapping,
+        ),
+      ) as InstanceSetImplementation,
+    );
+    aggragetionAwareInstanceSetImplementation.aggregateSetImplementations = classMapping.aggregateSetImplementations.map(
+      (setImplementation) =>
+        V1_processAggregateContainer(setImplementation, this.context, mapping),
+    );
+    return aggragetionAwareInstanceSetImplementation;
   }
 }

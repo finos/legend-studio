@@ -892,3 +892,470 @@ export const testLocalPropertyMapping = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
+
+export const testAggregationAwareMappingRoundtrip = [
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'FiscalCalendar',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'date',
+          type: 'Date',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'fiscalYear',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'fiscalMonth',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'fiscalQtr',
+          type: 'Integer',
+        },
+      ],
+    },
+    path: 'test::FiscalCalendar',
+  },
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Sales',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'id',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'salesDate',
+          type: 'test::FiscalCalendar',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'revenue',
+          type: 'Float',
+        },
+      ],
+    },
+    path: 'test::Sales',
+  },
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Sales_By_Date',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'salesDate',
+          type: 'test::FiscalCalendar',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'netRevenue',
+          type: 'Float',
+        },
+      ],
+    },
+    path: 'test::Sales_By_Date',
+  },
+  {
+    classifierPath: 'meta::pure::mapping::Mapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'pureInstance',
+          class: 'test::FiscalCalendar',
+          id: 'b',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::FiscalCalendar',
+                property: 'date',
+              },
+              source: 'b',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'date',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::FiscalCalendar',
+                property: 'fiscalYear',
+              },
+              source: 'b',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'fiscalYear',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::FiscalCalendar',
+                property: 'fiscalMonth',
+              },
+              source: 'b',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'fiscalMonth',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::FiscalCalendar',
+                property: 'fiscalQtr',
+              },
+              source: 'b',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'fiscalQtr',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: false,
+          srcClass: 'test::FiscalCalendar',
+        },
+        {
+          _type: 'aggregationAware',
+          aggregateSetImplementations: [
+            {
+              aggregateSpecification: {
+                aggregateValues: [
+                  {
+                    aggregateFn: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'func',
+                          function: 'sum',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'mapped',
+                            },
+                          ],
+                        },
+                      ],
+                      parameters: [],
+                    },
+                    mapFn: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'this',
+                            },
+                          ],
+                          property: 'revenue',
+                        },
+                      ],
+                      parameters: [],
+                    },
+                  },
+                ],
+                canAggregate: true,
+                groupByFunctions: [
+                  {
+                    groupByFn: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'this',
+                            },
+                          ],
+                          property: 'salesDate',
+                        },
+                      ],
+                      parameters: [],
+                    },
+                  },
+                ],
+              },
+              index: 0,
+              setImplementation: {
+                _type: 'pureInstance',
+                class: 'test::Sales',
+                id: 'a_Aggregate_0',
+                propertyMappings: [
+                  {
+                    _type: 'purePropertyMapping',
+                    explodeProperty: false,
+                    property: {
+                      class: 'test::Sales',
+                      property: 'salesDate',
+                    },
+                    source: 'a',
+                    target: 'b',
+                    transform: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'src',
+                            },
+                          ],
+                          property: 'salesDate',
+                        },
+                      ],
+                      parameters: [],
+                    },
+                  },
+                  {
+                    _type: 'purePropertyMapping',
+                    explodeProperty: false,
+                    property: {
+                      class: 'test::Sales',
+                      property: 'revenue',
+                    },
+                    source: 'a',
+                    transform: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'src',
+                            },
+                          ],
+                          property: 'netRevenue',
+                        },
+                      ],
+                      parameters: [],
+                    },
+                  },
+                ],
+                root: false,
+                srcClass: 'test::Sales_By_Date',
+              },
+            },
+          ],
+          class: 'test::Sales',
+          id: 'a',
+          mainSetImplementation: {
+            _type: 'pureInstance',
+            class: 'test::Sales',
+            id: 'a_Main',
+            propertyMappings: [
+              {
+                _type: 'purePropertyMapping',
+                explodeProperty: false,
+                property: {
+                  class: 'test::Sales',
+                  property: 'salesDate',
+                },
+                source: 'a',
+                target: 'b',
+                transform: {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'src',
+                        },
+                      ],
+                      property: 'salesDate',
+                    },
+                  ],
+                  parameters: [],
+                },
+              },
+              {
+                _type: 'purePropertyMapping',
+                explodeProperty: false,
+                property: {
+                  class: 'test::Sales',
+                  property: 'revenue',
+                },
+                source: 'a',
+                transform: {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'src',
+                        },
+                      ],
+                      property: 'revenue',
+                    },
+                  ],
+                  parameters: [],
+                },
+              },
+            ],
+            root: false,
+            srcClass: 'test::Sales',
+          },
+          propertyMappings: [
+            {
+              _type: 'AggregationAwarePropertyMapping',
+              property: {
+                class: 'test::Sales',
+                property: 'salesDate',
+              },
+              source: 'a',
+              target: 'b',
+            },
+            {
+              _type: 'AggregationAwarePropertyMapping',
+              property: {
+                class: 'test::Sales',
+                property: 'revenue',
+              },
+              source: 'a',
+            },
+          ],
+          root: false,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'map',
+      package: 'test',
+      tests: [],
+    },
+    path: 'test::map',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          imports: [],
+          elements: [
+            'test::FiscalCalendar',
+            'test::Sales',
+            'test::Sales_By_Date',
+          ],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          imports: [],
+          elements: ['test::map'],
+          parserName: 'Mapping',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];

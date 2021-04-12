@@ -16,8 +16,11 @@
 
 import type { InstanceSetImplementation } from '../../../../model/packageableElements/mapping/InstanceSetImplementation';
 import type { AggregateSpecification } from './AggregateSpecification';
+import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 
-export class AggregateSetImplementationContainer {
+export class AggregateSetImplementationContainer implements Hashable {
   index: number;
   aggregateSpecification: AggregateSpecification;
   setImplementation: InstanceSetImplementation;
@@ -30,5 +33,14 @@ export class AggregateSetImplementationContainer {
     this.index = index;
     this.aggregateSpecification = aggregateSpecification;
     this.setImplementation = setImplementation;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.AGGREGATION_AWARE_SET_IMPLEMENTATION_CONTAINER,
+      this.index.toString(),
+      this.setImplementation,
+      this.aggregateSpecification,
+    ]);
   }
 }

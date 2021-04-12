@@ -15,13 +15,25 @@
  */
 
 import type { RawLambda } from '../../../../model/rawValueSpecification/RawLambda';
+import { hashArray } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import { hashLambda } from '../../../../../../MetaModelUtility';
 
-export class AggregationFunctionSpecification {
+export class AggregationFunctionSpecification implements Hashable {
   mapFn: RawLambda;
   aggregateFn: RawLambda;
 
   constructor(mapFn: RawLambda, aggregateFn: RawLambda) {
     this.mapFn = mapFn;
     this.aggregateFn = aggregateFn;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.AGGREGATE_FUNCTION,
+      hashLambda(this.mapFn.parameters, this.mapFn.body),
+      hashLambda(this.aggregateFn.parameters, this.aggregateFn.body),
+    ]);
   }
 }

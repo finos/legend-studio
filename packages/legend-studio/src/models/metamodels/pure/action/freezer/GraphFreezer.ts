@@ -332,6 +332,7 @@ export class GraphFreezer
   ): void {
     freeze(setImplementation);
     freeze(setImplementation.id);
+    freeze(setImplementation.mainSetImplementation);
     freezeArray(setImplementation.propertyMappings, (propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(this),
     );

@@ -60,6 +60,7 @@ import {
 import { testServiceRoundtrip } from '../__tests__/roundtrip/ServiceRoundtripTestData';
 import { testGraphFetchTreeRoundtrip } from '../__tests__/roundtrip/ValueSpecificationRoundtripTestData';
 import {
+  testAggregationAwareMappingRoundtrip,
   testMappingRoundtrip,
   testLocalPropertyMapping,
 } from '../__tests__/roundtrip/MappingRoundtripTestData';
@@ -110,6 +111,12 @@ test(unitTest('Connection import resolution roundtrip'), async () => {
 test(unitTest('Mapping import resolution roundtrip'), async () => {
   await checkBuildingElementsRoundtrip(testMappingRoundtrip as Entity[]);
   // TODO? association mapping
+});
+
+test(unitTest('Aggregation Aware mapping roundtrip'), async () => {
+  await checkBuildingElementsRoundtrip(
+    testAggregationAwareMappingRoundtrip as Entity[],
+  );
 });
 
 test(unitTest('Runtime import resolution roundtrip'), async () => {

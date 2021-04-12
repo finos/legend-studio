@@ -49,6 +49,8 @@ import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElem
 import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping';
 import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping';
 import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
+import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+import type { V1_AggregateSetImplementationContainer } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer';
 
 export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
   implements V1_ClassMappingVisitor<void> {
@@ -230,6 +232,49 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
   visit_AggregationAwareClassMapping(
     classMapping: V1_AggregationAwareClassMapping,
   ): SetImplementation {
-    throw new UnsupportedOperationError();
+    const aggragetionAwareInstanceSetImplementation = guaranteeType(
+      this.parent.getClassMapping(
+        V1_getInferredClassMappingId(
+          this.context.resolveClass(classMapping.class).value,
+          classMapping,
+        ).value,
+      ),
+      AggregationAwareSetImplementation,
+    );
+    const mapping = this.context.graph.getMapping(this.parent.path);
+    classMapping.mainSetImplementation.accept_ClassMappingVisitor(
+      new V1_ProtocolToMetaModelClassMappingSecondPassVisitor(
+        this.context,
+        mapping,
+      ),
+    );
+
+    aggragetionAwareInstanceSetImplementation.propertyMappings = classMapping.propertyMappings.map(
+      (propertyMapping) =>
+        propertyMapping.accept_PropertyMappingVisitor(
+          new V1_ProtocolToMetaModelPropertyMappingVisitor(
+            this.context,
+            aggragetionAwareInstanceSetImplementation,
+            aggragetionAwareInstanceSetImplementation,
+            this.parent.enumerationMappings,
+            new Map<string, TableAlias>(),
+            mapping.allClassMappings,
+            undefined,
+            aggragetionAwareInstanceSetImplementation,
+          ),
+        ),
+    );
+
+    classMapping.aggregateSetImplementations.map(
+      (aggregateSetImpl: V1_AggregateSetImplementationContainer) =>
+        aggregateSetImpl.setImplementation.accept_ClassMappingVisitor(
+          new V1_ProtocolToMetaModelClassMappingSecondPassVisitor(
+            this.context,
+            mapping,
+          ),
+        ),
+    );
+
+    return aggragetionAwareInstanceSetImplementation;
   }
 }

@@ -143,4 +143,5 @@ export enum SET_IMPLEMENTATION_TYPE {
   EMBEDDED_FLAT_DATA = 'embeddedFlatData',
   RELATIONAL = 'relational',
   EMBEDDED_RELATIONAL = 'embeddedRelational',
+  AGGREGATION_AWARE = 'aggregationAware',
 }
