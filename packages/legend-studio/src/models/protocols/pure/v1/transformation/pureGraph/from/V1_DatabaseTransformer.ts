@@ -54,7 +54,10 @@ import type { Column } from '../../../../../../metamodels/pure/model/packageable
 import type { Filter } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Filter';
 import type { GroupByMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/GroupByMapping';
 import type { Join } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Join';
-import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Join';
+import {
+  SELF_JOIN_SCHEMA_NAME,
+  SELF_JOIN_TABLE_NAME,
+} from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Join';
 import type { ColumnMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/ColumnMapping';
 import type { View } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/View';
 import type { Schema } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Schema';
