@@ -33,7 +33,7 @@
       "package": "meta::json::schema",
       "_type": "profile",
       "name": "JSONSchemaGeneration",
-      "tags": ["defaultValue", "name", "example"]
+      "tags": ["defaultValue", "name", "example", "title"]
     }
   ]
 }
