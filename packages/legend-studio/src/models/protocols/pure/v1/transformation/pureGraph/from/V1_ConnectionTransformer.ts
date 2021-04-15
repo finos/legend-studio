@@ -147,8 +147,8 @@ const transformAuthenticationStrategy = (
   plugins: PureProtocolProcessorPlugin[],
 ): V1_AuthenticationStrategy => {
   if (metamodel instanceof DefaultH2AuthenticationStrategy) {
-    const authenication = new V1_DefaultH2AuthenticationStrategy();
-    return authenication;
+    const authentication = new V1_DefaultH2AuthenticationStrategy();
+    return authentication;
   } else if (metamodel instanceof DelegatedKerberosAuthenticationStrategy) {
     const auth = new V1_DelegatedKerberosAuthenticationStrategy();
     auth.serverPrincipal = metamodel.serverPrincipal;

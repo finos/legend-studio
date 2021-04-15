@@ -21,7 +21,7 @@ import {
   JsonModelConnectionValueState,
   FlatDataConnectionValueState,
   PackageableConnectionEditorState,
-  CORE_AUTHENICATION_STRATEGY_TYPE,
+  CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TABE,
 } from '../../../../stores/editor-state/element-editor-state/ConnectionEditorState';
@@ -1032,7 +1032,7 @@ const RelationalConnectionGeneralEditor = observer(
 
     // auth type
     const authOptions = (Object.values(
-      CORE_AUTHENICATION_STRATEGY_TYPE,
+      CORE_AUTHENTICATION_STRATEGY_TYPE,
     ) as string[])
       .concat(
         plugins.flatMap(
@@ -1053,7 +1053,7 @@ const RelationalConnectionGeneralEditor = observer(
       val: { label: string; value: string } | null,
     ): void => {
       connectionValueState.changeAuthenticationStrategy(
-        val?.value ?? CORE_AUTHENICATION_STRATEGY_TYPE.OAUTH,
+        val?.value ?? CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH,
       );
     };
 
@@ -1123,14 +1123,14 @@ const RelationalConnectionGeneralEditor = observer(
                     <div className="panel__header">
                       <div className="panel__header__title">
                         <div className="panel__header__title__label">
-                          authenication spec
+                          authentication spec
                         </div>
                       </div>
                     </div>
                     <div className="panel__content relational-connection-editor__source__content">
                       <div className="panel__content__form__section">
                         <div className="panel__content__form__section__header__label">
-                          Authenication
+                          Authentication
                         </div>
                         <CustomSelectorInput
                           options={authOptions}

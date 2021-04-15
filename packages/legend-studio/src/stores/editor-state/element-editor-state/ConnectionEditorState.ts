@@ -78,7 +78,7 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   SNOWFLAKE = 'SNOWFLAKE',
 }
 
-export enum CORE_AUTHENICATION_STRATEGY_TYPE {
+export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   DELEGATED_KERBEROS = 'DELEGATED_KERBEROS',
   H2_DEFAULT = 'H2_DEFAULT',
   TEST = 'TEST',
@@ -308,13 +308,13 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   get selectedAuth(): string {
     const auth = this.connection.authenticationStrategy;
     if (auth instanceof DelegatedKerberosAuthenticationStrategy) {
-      return CORE_AUTHENICATION_STRATEGY_TYPE.DELEGATED_KERBEROS;
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS;
     } else if (auth instanceof TestDatabaseAuthenticationStrategy) {
-      return CORE_AUTHENICATION_STRATEGY_TYPE.TEST;
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.TEST;
     } else if (auth instanceof DefaultH2AuthenticationStrategy) {
-      return CORE_AUTHENICATION_STRATEGY_TYPE.H2_DEFAULT;
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT;
     } else if (auth instanceof OAuthAuthenticationStrategy) {
-      return CORE_AUTHENICATION_STRATEGY_TYPE.OAUTH;
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH;
     }
     const extraAuthenticationStrategyTypeGetters = this.editorStore.applicationStore.pluginManager
       .getEditorPlugins()
@@ -338,25 +338,25 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
 
   changeAuthenticationStrategy(type: string): void {
     switch (type) {
-      case CORE_AUTHENICATION_STRATEGY_TYPE.DELEGATED_KERBEROS: {
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS: {
         this.connection.setAuthenticationStrategy(
           new DelegatedKerberosAuthenticationStrategy(),
         );
         return;
       }
-      case CORE_AUTHENICATION_STRATEGY_TYPE.H2_DEFAULT: {
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT: {
         this.connection.setAuthenticationStrategy(
           new DefaultH2AuthenticationStrategy(),
         );
         return;
       }
-      case CORE_AUTHENICATION_STRATEGY_TYPE.TEST: {
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.TEST: {
         this.connection.setAuthenticationStrategy(
           new TestDatabaseAuthenticationStrategy(),
         );
         return;
       }
-      case CORE_AUTHENICATION_STRATEGY_TYPE.OAUTH:
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH:
         this.connection.setAuthenticationStrategy(
           new OAuthAuthenticationStrategy('', ''),
         );
