@@ -187,9 +187,16 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         );
       }
     }
-    const sourceSetImplementation: SetImplementation = protocol.source
-      ? topParent.parent.getClassMapping(protocol.source)
-      : topParent;
+    let sourceSetImplementation: SetImplementation = topParent;
+    if (protocol.source) {
+      try {
+        sourceSetImplementation = topParent.parent.getClassMapping(
+          protocol.source,
+        );
+      } catch (e) {
+        // ignore
+      }
+    }
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
