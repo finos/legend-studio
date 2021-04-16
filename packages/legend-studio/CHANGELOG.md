@@ -1,5 +1,13 @@
 # @finos/legend-studio
 
+## 0.0.16
+
+### Patch Changes
+
+- [#158](https://github.com/finos/legend-studio/pull/158) [`5f28d8e`](https://github.com/finos/legend-studio/commit/5f28d8e653993369efb41ff91e4f7d6b7fcd76e0) Thanks [@emilia-sokol-gs](https://github.com/emilia-sokol-gs)! - Fix setting source for PurePropertyMapping
+
+* [#156](https://github.com/finos/legend-studio/pull/156) [`2aa9425`](https://github.com/finos/legend-studio/commit/2aa942562310702003da859d1222612fcac38a19) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - fix authentication typo
+
 ## 0.0.15
 
 ### Patch Changes
