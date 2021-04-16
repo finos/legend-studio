@@ -193,7 +193,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         sourceSetImplementation = topParent.parent.getClassMapping(
           protocol.source,
         );
-      } catch (e) {
+      } catch (e: unknown) {
         // ignore
       }
     }
