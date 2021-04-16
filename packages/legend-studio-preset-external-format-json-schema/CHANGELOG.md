@@ -1,5 +1,11 @@
 # @finos/legend-studio-preset-external-format-json-schema
 
+## 0.0.11
+
+### Patch Changes
+
+- [#159](https://github.com/finos/legend-studio/pull/159) [`7231550`](https://github.com/finos/legend-studio/commit/7231550a2b016a9e85fdaa141c4f8ccd803b269c) Thanks [@AFine-gs](https://github.com/AFine-gs)! - add title to json schema
+
 ## 0.0.10
 
 ### Patch Changes
