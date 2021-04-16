@@ -20,6 +20,7 @@ import {
   assertNonEmptyString,
   guaranteeType,
   guaranteeNonNullable,
+  returnUndefOnError,
 } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../../../../../utils/Logger';
 import { GraphError } from '../../../../../../MetaModelUtility';
@@ -187,14 +188,17 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         );
       }
     }
-    const sourceSetImplementation: SetImplementation = protocol.source
-      ? topParent.parent.getClassMapping(protocol.source)
-      : topParent;
+    const sourceSetImplementation = returnUndefOnError(() =>
+      protocol.source
+        ? topParent.parent.getClassMapping(protocol.source)
+        : undefined,
+    );
+
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
       new RawLambda([], protocol.transform.body),
-      sourceSetImplementation,
+      sourceSetImplementation ?? topParent,
       targetSetImplementation,
       protocol.explodeProperty,
     );
