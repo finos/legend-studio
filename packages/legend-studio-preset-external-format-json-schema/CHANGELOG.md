@@ -1,5 +1,12 @@
 # @finos/legend-studio-preset-external-format-json-schema
 
+## 0.0.10
+
+### Patch Changes
+
+- Updated dependencies [[`5f28d8e`](https://github.com/finos/legend-studio/commit/5f28d8e653993369efb41ff91e4f7d6b7fcd76e0), [`2aa9425`](https://github.com/finos/legend-studio/commit/2aa942562310702003da859d1222612fcac38a19)]:
+  - @finos/legend-studio@0.0.16
+
 ## 0.0.9
 
 ### Patch Changes
