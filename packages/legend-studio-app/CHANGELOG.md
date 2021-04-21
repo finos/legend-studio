@@ -1,5 +1,14 @@
 # @finos/legend-studio-app
 
+## 0.2.22
+
+### Patch Changes
+
+- Updated dependencies [[`7db0623`](https://github.com/finos/legend-studio/commit/7db0623da87c55256d440744e41bd1e2f8327e08)]:
+  - @finos/legend-studio@0.0.17
+  - @finos/legend-studio-preset-dsl-text@0.0.17
+  - @finos/legend-studio-preset-external-format-json-schema@0.0.12
+
 ## 0.2.21
 
 ### Patch Changes
