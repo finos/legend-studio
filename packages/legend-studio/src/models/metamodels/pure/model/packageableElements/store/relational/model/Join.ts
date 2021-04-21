@@ -52,7 +52,6 @@ export class Join implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABASE_JOIN,
       this.name,
-      this.target?.name ?? '',
       this.operation,
     ]);
   }
