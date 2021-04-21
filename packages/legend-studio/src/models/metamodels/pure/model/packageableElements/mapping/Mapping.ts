@@ -165,24 +165,20 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
 
   getAggregationAwareClassMappings(): AggregationAwareSetImplementation[] {
     return this.classMappings.filter(
-      <
-        (
-          classMapping: SetImplementation,
-        ) => classMapping is AggregationAwareSetImplementation
-      >((classMapping: SetImplementation) =>
-        classMapping instanceof AggregationAwareSetImplementation),
+      (
+        classMapping: SetImplementation,
+      ): classMapping is AggregationAwareSetImplementation =>
+        classMapping instanceof AggregationAwareSetImplementation,
     );
   }
 
   extractAllClassMappingsFromAggregationAware(): SetImplementation[] {
     const aggregatioAware = this.getAggregationAwareClassMappings();
     return [
-      ...aggregatioAware.map(
-        (aggregatioAware) => aggregatioAware.mainSetImplementation,
-      ),
+      ...aggregatioAware.map((aggregate) => aggregate.mainSetImplementation),
       ...aggregatioAware
-        .map((aggregatioAware) =>
-          aggregatioAware.aggregateSetImplementations.map(
+        .map((aggregate) =>
+          aggregate.aggregateSetImplementations.map(
             (setImpl) => setImpl.setImplementation,
           ),
         )

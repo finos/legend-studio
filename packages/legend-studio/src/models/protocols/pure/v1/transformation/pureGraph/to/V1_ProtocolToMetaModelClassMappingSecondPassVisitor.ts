@@ -265,7 +265,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
         ),
     );
 
-    classMapping.aggregateSetImplementations.map(
+    classMapping.aggregateSetImplementations.forEach(
       (aggregateSetImpl: V1_AggregateSetImplementationContainer) =>
         aggregateSetImpl.setImplementation.accept_ClassMappingVisitor(
           new V1_ProtocolToMetaModelClassMappingSecondPassVisitor(
