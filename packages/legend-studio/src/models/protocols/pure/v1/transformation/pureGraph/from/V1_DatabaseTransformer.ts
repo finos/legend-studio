@@ -284,7 +284,6 @@ const transformJoin = (element: Join): V1_Join => {
   const join = new V1_Join();
   join.name = element.name;
   join.operation = V1_transformRelationalOperationElement(element.operation);
-  join.target = element.target?.name;
   return join;
 };
 

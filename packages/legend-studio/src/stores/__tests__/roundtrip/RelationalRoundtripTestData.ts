@@ -503,7 +503,6 @@ export const testDatabaseRoundtrip = [
               },
             ],
           },
-          target: 't_interactionTable',
         },
         {
           name: 'Order_SalesPerson',
@@ -2093,7 +2092,6 @@ export const testDatabaseRoundtrip = [
               },
             ],
           },
-          target: 't_personTable',
         },
         {
           name: 'location_PlaceOfInterest',
@@ -2827,7 +2825,6 @@ export const testDatabaseWithSelfJoin = [
               },
             ],
           },
-          target: 't_personTable',
         },
       ],
       name: 'dbInc',
@@ -2900,7 +2897,6 @@ export const testDatabaseWithSelfJoin = [
               },
             ],
           },
-          target: 't_personTable',
         },
       ],
       name: 'dbInc1',
@@ -7697,7 +7693,6 @@ export const testRelationalAssociationMapping = [
               },
             ],
           },
-          target: 't_personTable',
         },
         {
           name: 'location_PlaceOfInterest',
