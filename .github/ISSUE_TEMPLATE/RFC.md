@@ -9,6 +9,6 @@ labels: 'Type: Discussion'
 
 <!-- A brief summary of what the RFC is about -->
 
-### Motivation
+### Context and Motivation
 
-### Context
+### Implementation Plan
