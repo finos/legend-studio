@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.0.17
+
+### Patch Changes
+
+- [#163](https://github.com/finos/legend-studio/pull/163) [`7db0623`](https://github.com/finos/legend-studio/commit/7db0623da87c55256d440744e41bd1e2f8327e08) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - fix change detection for self-join definition
+
 ## 0.0.16
 
 ### Patch Changes

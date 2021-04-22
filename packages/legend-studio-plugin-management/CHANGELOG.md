@@ -1,5 +1,12 @@
 # @finos/legend-studio-plugin-management
 
+## 0.0.17
+
+### Patch Changes
+
+- Updated dependencies [[`7db0623`](https://github.com/finos/legend-studio/commit/7db0623da87c55256d440744e41bd1e2f8327e08)]:
+  - @finos/legend-studio@0.0.17
+
 ## 0.0.16
 
 ### Patch Changes
