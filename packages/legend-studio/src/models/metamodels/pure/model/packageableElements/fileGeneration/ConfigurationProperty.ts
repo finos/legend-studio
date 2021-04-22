@@ -43,7 +43,7 @@ export class ConfigurationProperty implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.CONFIGURATION_PROPERTY,
       this.name,
-      hashObject(this.value),
+      hashObject(this.value as object),
     ]);
   }
 }
