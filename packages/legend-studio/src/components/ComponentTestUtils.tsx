@@ -34,7 +34,11 @@ import type { Entity } from '../models/sdlc/models/entity/Entity';
 import type { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { Revision } from '../models/sdlc/models/revision/Revision';
-import { ROUTE_PATTERN, getEditorRoute } from '../stores/RouterConfig';
+import {
+  ROUTE_PATTERN,
+  generateEditorRoute,
+  URL_PATH_PLACEHOLDER,
+} from '../stores/Router';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -126,14 +130,14 @@ export const SDLC_TestData = {
 export const renderWithAppContext = (
   ui: React.ReactNode,
   {
-    route = '/',
+    route = `/${URL_PATH_PLACEHOLDER}/`,
     history = createMemoryHistory({ initialEntries: [route] }),
   }: { route?: string; history?: History } = {},
   config = getTestApplicationConfig(),
 ): RenderResult & { history: History } => ({
   // NOTE: this type any cast is needed to handle the outdated typings of `history` used by `react-router@5`.
   // TODO: We will fix this when we move to `react-router@6`
-  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   ...render(
     <ApplicationStoreProvider
       config={config}
@@ -143,7 +147,7 @@ export const renderWithAppContext = (
       <Router history={(history as unknown) as any}>{ui}</Router>
     </ApplicationStoreProvider>,
   ),
-  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
+  /* eslint-enable @typescript-eslint/no-explicit-any */
   // adding `history` to the returned utilities to allow us
   // to reference it in our tests (just try to avoid using this to test implementation details).
   history,
@@ -158,7 +162,7 @@ export const getMockedApplicationStore = (
     config,
     pluginManager,
   );
-  const MockedApplicationStore = require('../stores/ApplicationStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedApplicationStore = require('../stores/ApplicationStore');
   mockedApplicationStore.logger.mute();
   MockedApplicationStore.useApplicationStore = jest.fn();
   MockedApplicationStore.useApplicationStore.mockReturnValue(
@@ -174,7 +178,7 @@ export const getMockedEditorStore = (
   const mockedEditorStore = new EditorStore(
     applicationStore ?? getMockedApplicationStore(getTestApplicationConfig()),
   );
-  const MockedEditorStore = require('../stores/EditorStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedEditorStore = require('../stores/EditorStore');
   MockedEditorStore.useEditorStore = jest.fn();
   MockedEditorStore.useEditorStore.mockReturnValue(mockedEditorStore);
   return mockedEditorStore;
@@ -329,12 +333,13 @@ export const setUpEditor = async (
     <Route
       exact={true}
       strict={true}
-      path={ROUTE_PATTERN.EDITOR}
+      path={ROUTE_PATTERN.EDIT}
       component={Editor}
     />
   );
   const renderResult = renderWithAppContext(component, {
-    route: getEditorRoute(
+    route: generateEditorRoute(
+      mockedEditorStore.applicationStore.config.sdlcServerKey,
       ((workspace as unknown) as Workspace).projectId,
       ((workspace as unknown) as Workspace).workspaceId,
     ),

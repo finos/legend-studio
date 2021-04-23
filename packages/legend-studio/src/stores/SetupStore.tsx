@@ -40,7 +40,7 @@ import {
   ACTION_STATE,
 } from '@finos/legend-studio-shared';
 import { Review } from '../models/sdlc/models/review/Review';
-import { getSetupRoute } from './RouterConfig';
+import { generateSetupRoute } from './Router';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -187,7 +187,10 @@ export class SetupStore {
       yield this.fetchProjects();
       this.projects?.set(createdProject.projectId, createdProject);
       this.applicationStore.historyApiClient.push(
-        getSetupRoute(createdProject.projectId),
+        generateSetupRoute(
+          this.applicationStore.config.sdlcServerKey,
+          createdProject.projectId,
+        ),
       );
       this.setCreateProjectModal(false);
     } catch (error: unknown) {

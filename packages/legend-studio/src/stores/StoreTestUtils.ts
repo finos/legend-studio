@@ -22,32 +22,42 @@ import { EditorStore } from './EditorStore';
 import { createBrowserHistory } from 'history';
 import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { PluginManager } from '../application/PluginManager';
+import { URL_PATH_PLACEHOLDER } from './Router';
+
+export const testApplicationConfigData = {
+  appName: 'test-app',
+  env: 'test-env',
+  sdlc: {
+    url: 'https://testSdlcUrl',
+  },
+  engine: {
+    url: 'https://testEngineUrl',
+  },
+  documentation: {
+    url: 'https://testDocUrl',
+  },
+};
+
+export const testApplicationVersionData = {
+  buildTime: '2001-01-01T00:00:00-0000',
+  version: 'test-version',
+  commitSHA: 'test-commit-id',
+};
 
 export const getTestApplicationConfig = (
   extraConfigData = {},
-): ApplicationConfig =>
-  new ApplicationConfig(
+): ApplicationConfig => {
+  const config = new ApplicationConfig(
     {
-      appName: 'test-app',
-      env: 'test-env',
-      sdlc: {
-        url: 'https://testSdlcUrl',
-      },
-      engine: {
-        url: 'https://testEngineUrl',
-      },
-      documentation: {
-        url: 'https://testDocUrl',
-      },
+      ...testApplicationConfigData,
       ...extraConfigData,
     },
-    {
-      buildTime: '2001-01-01T00:00:00-0000',
-      version: 'test-version',
-      commitSHA: 'test-commit-id',
-    },
+    testApplicationVersionData,
     '/studio/',
   );
+  config.setSDLCServerKey(URL_PATH_PLACEHOLDER);
+  return config;
+};
 
 export const getTestEditorStore = (
   applicationConfig = getTestApplicationConfig(),

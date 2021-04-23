@@ -35,7 +35,7 @@ import {
   useApplicationStore,
 } from '../../../stores/ApplicationStore';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { getReviewRoute } from '../../../stores/RouterConfig';
+import { generateReviewRoute } from '../../../stores/Router';
 import { CORE_TEST_ID } from '../../../const';
 
 export const WorkspaceUpdater = observer(() => {
@@ -240,7 +240,11 @@ export const WorkspaceUpdater = observer(() => {
                   className="side-bar__panel__item workspace-updater__review__link"
                   rel="noopener noreferrer"
                   target="_blank"
-                  to={getReviewRoute(review.projectId, review.id)}
+                  to={generateReviewRoute(
+                    applicationStore.config.sdlcServerKey,
+                    review.projectId,
+                    review.id,
+                  )}
                   title={'See review detail'}
                 >
                   <div className="workspace-updater__review">

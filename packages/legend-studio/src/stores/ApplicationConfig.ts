@@ -30,7 +30,8 @@ import {
   guaranteeNonNullable,
   SerializationFactory,
 } from '@finos/legend-studio-shared';
-import { makeObservable, observable, action } from 'mobx';
+import { makeObservable, observable, action, computed } from 'mobx';
+import { URL_PATH_PLACEHOLDER } from './Router';
 
 export class ServiceRegistrationEnvInfo {
   env!: string;
@@ -144,15 +145,16 @@ class ApplicationCoreOptions {
   }
 }
 
-interface SdlcServerOption {
+export interface SDLCServerOption {
   label: string;
+  key: string;
   url: string;
 }
 
 export interface ConfigurationData {
   appName: string;
   env: string;
-  sdlc: { url: string } | SdlcServerOption[];
+  sdlc: { url: string } | SDLCServerOption[];
   engine: { url: string };
   documentation: { url: string };
   options?: Record<PropertyKey, unknown>;
@@ -169,8 +171,8 @@ export class ApplicationConfig {
   readonly baseUrl: string;
   readonly env: string;
   readonly documentationUrl: string;
-  sdlcServerUrl: string;
-  sdlcServerOptions: SdlcServerOption[] = [];
+  _sdlcServerKey: string | undefined;
+  sdlcServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
   readonly options = new ApplicationCoreOptions();
 
@@ -187,14 +189,13 @@ export class ApplicationConfig {
     baseUrl: string,
   ) {
     makeObservable(this, {
-      sdlcServerUrl: observable,
+      _sdlcServerKey: observable,
+      sdlcServerKey: computed,
+      sdlcServerUrl: computed,
       isConfigured: observable,
-      setSDLCServerUrl: action,
+      setSDLCServerKey: action,
       setConfigured: action,
     });
-
-    let isConfigured = true;
-
     this.baseUrl = baseUrl;
     this.appName = guaranteeNonEmptyString(
       configData.appName,
@@ -214,15 +215,27 @@ export class ApplicationConfig {
           `Application configuration failure: 'sdlc' field configured in list form but has no entry`,
         );
       }
-      this.sdlcServerUrl = configData.sdlc[0].url;
+      // Make sure the specified instances are unique by key
+      if (
+        new Set(configData.sdlc.map((instance) => instance.key)).size !==
+        configData.sdlc.length
+      ) {
+        throw new AssertionError(
+          `Application configuration failure: 'sdlc' is configured with duplicated entries`,
+        );
+      }
       this.sdlcServerOptions = configData.sdlc;
-      // TODO: we might need to do some checks for URL duplication here
-      isConfigured = configData.sdlc.length === 1; // skip SDLC server configuration when there is only one option
     } else {
-      this.sdlcServerUrl = guaranteeNonEmptyString(
-        configData.sdlc.url,
-        `Application configuration failure: 'sdlc.url' field is missing`,
-      );
+      this.sdlcServerOptions = [
+        {
+          key: URL_PATH_PLACEHOLDER,
+          url: guaranteeNonEmptyString(
+            configData.sdlc.url,
+            `Application configuration failure: 'sdlc.url' field is missing`,
+          ),
+          label: '(default)',
+        },
+      ];
     }
     assertNonNullable(
       configData.engine,
@@ -257,12 +270,26 @@ export class ApplicationConfig {
       versionData.commitSHA,
       'Application build source commit SHA is mising',
     );
-
-    this.isConfigured = isConfigured;
   }
 
-  setSDLCServerUrl(val: string): void {
-    this.sdlcServerUrl = val;
+  get sdlcServerKey(): string {
+    return guaranteeNonNullable(
+      this._sdlcServerKey,
+      'SDLC server is not setup properly',
+    );
+  }
+
+  get sdlcServerUrl(): string {
+    return guaranteeNonNullable(
+      this.sdlcServerOptions.find(
+        (option) => option.key === this.sdlcServerKey,
+      ),
+      'SDLC server is not setup properly',
+    ).url;
+  }
+
+  setSDLCServerKey(val: string): void {
+    this._sdlcServerKey = val;
   }
 
   setConfigured(val: boolean): void {

@@ -34,12 +34,12 @@ import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { GraphError } from '../models/MetaModelUtility';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
-import type { ViewerRouteParams } from './RouterConfig';
+import type { ViewerRouteParams } from './Router';
 import {
-  getVersionViewerRoute,
-  getRevisionViewerRoute,
-  getProjectViewerRoute,
-} from './RouterConfig';
+  generateViewVersionRoute,
+  generateVieweRevisionRoute,
+  generateViewProjectRoute,
+} from './Router';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ViewerStore {
@@ -85,10 +85,21 @@ export class ViewerStore {
       this.elementPath = params.entityPath;
       this.editorStore.applicationStore.historyApiClient.replace(
         params.versionId
-          ? getVersionViewerRoute(params.projectId, params.versionId)
+          ? generateViewVersionRoute(
+              this.editorStore.applicationStore.config.sdlcServerKey,
+              params.projectId,
+              params.versionId,
+            )
           : params.revisionId
-          ? getRevisionViewerRoute(params.projectId, params.revisionId)
-          : getProjectViewerRoute(params.projectId),
+          ? generateVieweRevisionRoute(
+              this.editorStore.applicationStore.config.sdlcServerKey,
+              params.projectId,
+              params.revisionId,
+            )
+          : generateViewProjectRoute(
+              this.editorStore.applicationStore.config.sdlcServerKey,
+              params.projectId,
+            ),
       );
     }
   }

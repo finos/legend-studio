@@ -32,7 +32,7 @@ import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { getSetupRoute } from '../RouterConfig';
+import { generateSetupRoute } from '../Router';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;
@@ -321,7 +321,10 @@ export class WorkspaceReviewState {
             type: ActionAlertActionType.PROCEED,
             handler: (): void =>
               this.editorStore.applicationStore.historyApiClient.push(
-                getSetupRoute(this.editorStore.sdlcState.currentProjectId),
+                generateSetupRoute(
+                  this.editorStore.applicationStore.config.sdlcServerKey,
+                  this.editorStore.sdlcState.currentProjectId,
+                ),
               ),
             default: true,
           },
