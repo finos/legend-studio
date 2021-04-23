@@ -32,11 +32,6 @@ export const generateRoutePatternWithSDLCServerKey = (
   pattern: string,
 ): string => `/:${PATH_PARAM_TOKEN.SDLC_SERVER_KEY}${pattern}`;
 
-export const wrapUrlWithSDLCServerKey = (
-  sdlcServerKey: string,
-  url: string,
-): string => `/${sdlcServerKey ?? URL_PATH_PLACEHOLDER}${url}`;
-
 export const ROUTE_PATTERN = Object.freeze({
   VIEW: generateRoutePatternWithSDLCServerKey(
     `/view/:${PATH_PARAM_TOKEN.PROJECT_ID}`,

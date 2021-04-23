@@ -52,7 +52,7 @@
       "prettier --write"
     ],
     "*.{js,jsx,ts,tsx}": [
-      "eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --fix",
+      "eslint --cache --cache-location ./build/.eslintcache --fix",
       "prettier --write"
     ],
     "*.{scss,css}": [

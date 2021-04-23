@@ -137,7 +137,7 @@ export const renderWithAppContext = (
 ): RenderResult & { history: History } => ({
   // NOTE: this type any cast is needed to handle the outdated typings of `history` used by `react-router@5`.
   // TODO: We will fix this when we move to `react-router@6`
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
   ...render(
     <ApplicationStoreProvider
       config={config}
@@ -147,7 +147,7 @@ export const renderWithAppContext = (
       <Router history={(history as unknown) as any}>{ui}</Router>
     </ApplicationStoreProvider>,
   ),
-  /* eslint-enable @typescript-eslint/no-explicit-any */
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
   // adding `history` to the returned utilities to allow us
   // to reference it in our tests (just try to avoid using this to test implementation details).
   history,
@@ -162,7 +162,7 @@ export const getMockedApplicationStore = (
     config,
     pluginManager,
   );
-  const MockedApplicationStore = require('../stores/ApplicationStore');
+  const MockedApplicationStore = require('../stores/ApplicationStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   mockedApplicationStore.logger.mute();
   MockedApplicationStore.useApplicationStore = jest.fn();
   MockedApplicationStore.useApplicationStore.mockReturnValue(
@@ -178,7 +178,7 @@ export const getMockedEditorStore = (
   const mockedEditorStore = new EditorStore(
     applicationStore ?? getMockedApplicationStore(getTestApplicationConfig()),
   );
-  const MockedEditorStore = require('../stores/EditorStore');
+  const MockedEditorStore = require('../stores/EditorStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStore.useEditorStore = jest.fn();
   MockedEditorStore.useEditorStore.mockReturnValue(mockedEditorStore);
   return mockedEditorStore;

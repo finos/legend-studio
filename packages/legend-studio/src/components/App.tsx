@@ -38,8 +38,8 @@ import {
   PanelLoadingIndicator,
 } from '@finos/legend-studio-components';
 import type { SDLCServerKeyRouteParams } from '../stores/Router';
-import { generateSetupRoute } from '../stores/Router';
 import {
+  generateSetupRoute,
   ROUTE_PATTERN,
   generateRoutePatternWithSDLCServerKey,
 } from '../stores/Router';
