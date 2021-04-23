@@ -30,8 +30,8 @@ import { clsx } from '@finos/legend-studio-components';
 import { GoSync } from 'react-icons/go';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import type { EditorRouteParams } from '../../stores/RouterConfig';
-import { getSetupRoute } from '../../stores/RouterConfig';
+import type { EditorRouteParams } from '../../stores/Router';
+import { generateSetupRoute } from '../../stores/Router';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 
@@ -134,13 +134,24 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             <FaCodeBranch />
           </div>
           <div className="editor__status-bar__workspace__project">
-            <Link to={getSetupRoute(projectId)}>
+            <Link
+              to={generateSetupRoute(
+                applicationStore.config.sdlcServerKey,
+                projectId,
+              )}
+            >
               {currentProject?.name ?? 'unknown'}
             </Link>
           </div>
           /
           <div className="editor__status-bar__workspace__workspace">
-            <Link to={getSetupRoute(projectId, workspaceId)}>
+            <Link
+              to={generateSetupRoute(
+                applicationStore.config.sdlcServerKey,
+                projectId,
+                workspaceId,
+              )}
+            >
               {workspaceId}
             </Link>
           </div>

@@ -31,10 +31,10 @@ import {
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
 import type { Workspace } from '../../../models/sdlc/models/workspace/Workspace';
 import {
-  getEditorRoute,
-  getVersionViewerRoute,
-  getReviewRoute,
-} from '../../../stores/RouterConfig';
+  generateEditorRoute,
+  generateViewVersionRoute,
+  generateReviewRoute,
+} from '../../../stores/Router';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 
 const WorkspaceViewerContextMenu = observer<
@@ -68,6 +68,7 @@ const WorkspaceViewerContextMenu = observer<
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const isActive =
     editorStore.sdlcState.currentWorkspaceId === workspace.workspaceId;
   const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
@@ -93,7 +94,11 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         )}
         rel="noopener noreferrer"
         target="_blank"
-        to={getEditorRoute(workspace.projectId, workspace.workspaceId)}
+        to={generateEditorRoute(
+          applicationStore.config.sdlcServerKey,
+          workspace.projectId,
+          workspace.workspaceId,
+        )}
         title={'Go to workspace detail'}
       >
         <div className="project-overview__item__link__content">
@@ -269,7 +274,8 @@ const ReleaseEditor = observer(() => {
                       className="project-overview__release__info__current-version__link"
                       rel="noopener noreferrer"
                       target="_blank"
-                      to={getVersionViewerRoute(
+                      to={generateViewVersionRoute(
+                        applicationStore.config.sdlcServerKey,
                         latestProjectVersion.projectId,
                         latestProjectVersion.id.id,
                       )}
@@ -321,7 +327,11 @@ const ReleaseEditor = observer(() => {
                     className="side-bar__panel__item workspace-updater__review__link"
                     rel="noopener noreferrer"
                     target="_blank"
-                    to={getReviewRoute(review.projectId, review.id)}
+                    to={generateReviewRoute(
+                      applicationStore.config.sdlcServerKey,
+                      review.projectId,
+                      review.id,
+                    )}
                     title={'See review detail'}
                   >
                     <div className="workspace-updater__review">
@@ -380,7 +390,11 @@ const VersionsViewer = observer(() => {
               className="side-bar__panel__item project-overview__item__link"
               rel="noopener noreferrer"
               target="_blank"
-              to={getVersionViewerRoute(version.projectId, version.id.id)}
+              to={generateViewVersionRoute(
+                applicationStore.config.sdlcServerKey,
+                version.projectId,
+                version.id.id,
+              )}
               title={'See version detail'}
             >
               <div className="project-overview__item__link__content">

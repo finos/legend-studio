@@ -33,11 +33,11 @@ import type { ProjectSelectOption } from '../../models/sdlc/models/project/Proje
 import { ProjectType } from '../../models/sdlc/models/project/Project';
 import { isNumber, ACTION_STATE } from '@finos/legend-studio-shared';
 import { MdModeEdit } from 'react-icons/md';
-import type { SetupRouteParams } from '../../stores/RouterConfig';
+import type { SetupRouteParams } from '../../stores/Router';
 import {
-  getEditorRoute,
-  getProjectViewerRoute,
-} from '../../stores/RouterConfig';
+  generateEditorRoute,
+  generateViewProjectRoute,
+} from '../../stores/Router';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';
@@ -610,7 +610,8 @@ const SetupSelection = observer(() => {
       setupStore.currentWorkspace
     ) {
       applicationStore.historyApiClient.push(
-        getEditorRoute(
+        generateEditorRoute(
+          applicationStore.config.sdlcServerKey,
           setupStore.currentProjectId,
           setupStore.currentWorkspaceId,
         ),
@@ -659,7 +660,10 @@ const SetupSelection = observer(() => {
                 onClick={(): void => {
                   if (setupStore.currentProjectId) {
                     applicationStore.historyApiClient.push(
-                      getProjectViewerRoute(setupStore.currentProjectId),
+                      generateViewProjectRoute(
+                        applicationStore.config.sdlcServerKey,
+                        setupStore.currentProjectId,
+                      ),
                     );
                   }
                 }}

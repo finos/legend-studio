@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import { App, AppRoot } from '../App';
+import { AppRoot } from '../App';
 import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
 } from '@finos/legend-studio-shared';
-import { BrowserRouter } from 'react-router-dom';
-import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
 import {
@@ -30,7 +28,6 @@ import {
 } from '../ComponentTestUtils';
 import type { ApplicationStore } from '../../stores/ApplicationStore';
 import { SDLCServerClient } from '../../models/sdlc/SDLCServerClient';
-import { PluginManager } from '../../application/PluginManager';
 
 let applicationStore: ApplicationStore;
 
@@ -108,33 +105,5 @@ test(
     await waitFor(() =>
       expect(queryByText('See terms of services')).not.toBeNull(),
     );
-  },
-);
-
-test(
-  integrationTest(
-    'Multiple SDLC servers configured requires application configuration before initialization',
-  ),
-  async () => {
-    const config = getTestApplicationConfig({
-      sdlc: [
-        {
-          label: 'Server1',
-          url: 'https://testSdlcUrl1',
-        },
-        {
-          label: 'Server2',
-          url: 'https://testSdlcUrl2',
-        },
-      ],
-    });
-
-    const { queryByText } = render(
-      <BrowserRouter>
-        <App config={config} pluginManager={PluginManager.create()} />
-      </BrowserRouter>,
-    );
-
-    await waitFor(() => expect(queryByText('SDLC Server')).not.toBeNull());
   },
 );

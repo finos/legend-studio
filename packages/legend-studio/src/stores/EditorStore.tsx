@@ -88,7 +88,7 @@ import { FileGenerationViewerState } from './editor-state/FileGenerationViewerSt
 import type { GenerationFile } from './shared/FileGenerationTreeUtil';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState';
 import { DevToolState } from './aux-panel-state/DevToolState';
-import { getSetupRoute } from './RouterConfig';
+import { generateSetupRoute } from './Router';
 import { NonBlockingDialogState } from '@finos/legend-studio-components';
 import type {
   PackageableElement,
@@ -387,7 +387,12 @@ export class EditorStore {
         CORE_LOG_EVENT.SDLC_PROBLEM,
         `Project '${projectId}' does not exist! Redirecting ...`,
       );
-      this.applicationStore.historyApiClient.push('/');
+      this.applicationStore.historyApiClient.push(
+        generateSetupRoute(
+          this.applicationStore.config.sdlcServerKey,
+          undefined,
+        ),
+      );
       onLeave(false);
       return;
     }
@@ -398,7 +403,11 @@ export class EditorStore {
         `Workspace '${workspaceId}' of project '${projectId}' does not exist! Redirecting ...`,
       );
       this.applicationStore.historyApiClient.push(
-        getSetupRoute(projectId, workspaceId),
+        generateSetupRoute(
+          this.applicationStore.config.sdlcServerKey,
+          projectId,
+          workspaceId,
+        ),
       );
       onLeave(false);
       return;

@@ -18,9 +18,9 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import Dialog from '@material-ui/core/Dialog';
 import {
-  getProjectViewerRoute,
-  getVersionViewerRoute,
-} from '../../../stores/RouterConfig';
+  generateViewProjectRoute,
+  generateViewVersionRoute,
+} from '../../../stores/Router';
 import {
   PanelLoadingIndicator,
   CustomSelectorInput,
@@ -45,10 +45,17 @@ const ShareModal = observer(
     const projectId = editorStore.sdlcState.currentProjectId;
     const projectLink = selectedVersion
       ? `${urlBase}${applicationStore.historyApiClient.createHref({
-          pathname: getVersionViewerRoute(projectId, selectedVersion.id.id),
+          pathname: generateViewVersionRoute(
+            applicationStore.config.sdlcServerKey,
+            projectId,
+            selectedVersion.id.id,
+          ),
         })}`
       : `${urlBase}${applicationStore.historyApiClient.createHref({
-          pathname: getProjectViewerRoute(projectId),
+          pathname: generateViewProjectRoute(
+            applicationStore.config.sdlcServerKey,
+            projectId,
+          ),
         })}`;
     const copyProjectLink = (): void => {
       applicationStore

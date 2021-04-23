@@ -37,11 +37,11 @@ import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
-import type { ReviewRouteParams } from '../../stores/RouterConfig';
+import type { ReviewRouteParams } from '../../stores/Router';
 import {
-  getProjectViewerRoute,
-  getEditorRoute,
-} from '../../stores/RouterConfig';
+  generateViewProjectRoute,
+  generateEditorRoute,
+} from '../../stores/Router';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';
@@ -80,14 +80,23 @@ const ReviewStatusBar = observer(() => {
             <FaCodeBranch />
           </div>
           <div className="review__status-bar__workspace__project">
-            <Link to={getProjectViewerRoute(reviewStore.projectId)}>
+            <Link
+              to={generateViewProjectRoute(
+                applicationStore.config.sdlcServerKey,
+                reviewStore.projectId,
+              )}
+            >
               {currentProject}
             </Link>
           </div>
           /
           <div className="review__status-bar__workspace__workspace">
             <Link
-              to={getEditorRoute(reviewStore.projectId, review.workspaceId)}
+              to={generateEditorRoute(
+                applicationStore.config.sdlcServerKey,
+                reviewStore.projectId,
+                review.workspaceId,
+              )}
             >
               {review.workspaceId}
             </Link>

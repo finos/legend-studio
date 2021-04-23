@@ -37,8 +37,8 @@ import { clsx } from '@finos/legend-studio-components';
 import { NotificationSnackbar } from '../shared/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from '../../stores/ViewerStore';
-import type { ViewerRouteParams } from '../../stores/RouterConfig';
-import { getSetupRoute } from '../../stores/RouterConfig';
+import type { ViewerRouteParams } from '../../stores/Router';
+import { generateSetupRoute } from '../../stores/Router';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
@@ -48,6 +48,7 @@ const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerRouteParams>();
   const viewerState = useViewerStore();
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const latestVersion = viewerState.onLatestVersion;
   const currentRevision = viewerState.onCurrentRevision;
   const statusBarInfo = params.revisionId ?? params.versionId ?? 'HEAD';
@@ -81,7 +82,12 @@ const ViewerStatusBar = observer(() => {
             <FaCodeBranch />
           </div>
           <div className="editor__status-bar__workspace__project">
-            <Link to={getSetupRoute(projectId)}>
+            <Link
+              to={generateSetupRoute(
+                applicationStore.config.sdlcServerKey,
+                projectId,
+              )}
+            >
               {currentProject?.name ?? 'unknown'}
             </Link>
           </div>

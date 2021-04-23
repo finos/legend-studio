@@ -29,7 +29,7 @@ import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { Workspace } from '../../models/sdlc/models/workspace/Workspace';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import { getNullableFirstElement } from '@finos/legend-studio-shared';
-import { getSetupRoute } from '../RouterConfig';
+import { generateSetupRoute } from '../Router';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',
@@ -108,7 +108,10 @@ export class ProjectOverviewState {
         );
         this.editorStore.setIgnoreNavigationBlocking(true);
         this.editorStore.applicationStore.historyApiClient.push(
-          getSetupRoute(this.editorStore.sdlcState.currentProjectId),
+          generateSetupRoute(
+            this.editorStore.applicationStore.config.sdlcServerKey,
+            this.editorStore.sdlcState.currentProjectId,
+          ),
         );
       }
     } catch (error: unknown) {
