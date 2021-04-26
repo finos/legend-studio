@@ -34,6 +34,8 @@ export const QueryBuilderLambdaEditor = observer(
     const queryTextEditorState = queryBuilderState.queryTextEditorState;
     const close = (): Promise<void> =>
       queryBuilderState.queryTextEditorState.closeModal();
+    const discardChanges = (): void =>
+      queryBuilderState.queryTextEditorState.setMode(undefined);
     const mode = queryTextEditorState.mode;
     useEffect(() => {
       queryTextEditorState
@@ -69,13 +71,14 @@ export const QueryBuilderLambdaEditor = observer(
                   forceBackdrop={false}
                   forceExpansion={true}
                   useBaseTextEditorSettings={true}
+                  hideErrorBar={true}
                 />
               )}
               {mode === QueryTextEditorMode.JSON && (
                 <div className="panel__content mapping-execution-panel__json-editor">
                   <TextInputEditor
                     language={EDITOR_LANGUAGE.JSON}
-                    inputValue={queryTextEditorState.lambdaJson}
+                    inputValue={queryTextEditorState.readOnlylambdaJson}
                     isReadOnly={true}
                   />
                 </div>
@@ -84,8 +87,15 @@ export const QueryBuilderLambdaEditor = observer(
           </div>
           <div className="modal__footer">
             <button
-              className="btn query-builder-text-mode__modal__close-btn"
+              className="btn btn--dark btn--caution"
+              onClick={discardChanges}
+            >
+              Discard changes
+            </button>
+            <button
+              className="btn btn--dark"
               onClick={close}
+              disabled={Boolean(queryTextEditorState.parserError)}
             >
               Close
             </button>
