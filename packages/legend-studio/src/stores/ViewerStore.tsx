@@ -139,6 +139,9 @@ export class ViewerStore {
         ),
       );
 
+      // fetch project versions
+      yield this.editorStore.sdlcState.fetchProjectVersions();
+
       // ensure only either version or revision is specified
       if (versionId && revisionId) {
         throw new IllegalStateError(
