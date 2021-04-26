@@ -23,5 +23,3 @@ export enum QUERY_BUILDER_TEST_ID {
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
-export const NOT_FUNCTION_NAME = 'not';
-export const EXISTS_FUNCTION_NAME = 'exists';

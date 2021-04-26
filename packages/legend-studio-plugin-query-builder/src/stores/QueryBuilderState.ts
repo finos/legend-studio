@@ -98,19 +98,19 @@ export class QueryBuilderState extends EditorExtensionState {
   openQueryBuilder = false;
   operators: QueryBuilderOperator[] = [
     new QueryBuilderEqualOperator(),
-    new QueryBuilderNotEqualOperator(),
-    new QueryBuilderLessThanOperator(),
-    new QueryBuilderLessThanEqualOperator(),
-    new QueryBuilderGreaterThanOperator(),
-    new QueryBuilderGreaterThanEqualOperator(),
-    new QueryBuilderStartWithOperator(),
-    new QueryBuilderNotStartWithOperator(),
-    new QueryBuilderContainOperator(),
-    new QueryBuilderNotContainOperator(),
-    new QueryBuilderEndWithOperator(),
-    new QueryBuilderNotEndWithOperator(),
-    new QueryBuilderIsEmptyOperator(),
-    new QueryBuilderIsNotEmptyOperator(),
+    // new QueryBuilderNotEqualOperator(),
+    // new QueryBuilderLessThanOperator(),
+    // new QueryBuilderLessThanEqualOperator(),
+    // new QueryBuilderGreaterThanOperator(),
+    // new QueryBuilderGreaterThanEqualOperator(),
+    // new QueryBuilderStartWithOperator(),
+    // new QueryBuilderNotStartWithOperator(),
+    // new QueryBuilderContainOperator(),
+    // new QueryBuilderNotContainOperator(),
+    // new QueryBuilderEndWithOperator(),
+    // new QueryBuilderNotEndWithOperator(),
+    // new QueryBuilderIsEmptyOperator(),
+    // new QueryBuilderIsNotEmptyOperator(),
   ];
 
   constructor(editorStore: EditorStore) {

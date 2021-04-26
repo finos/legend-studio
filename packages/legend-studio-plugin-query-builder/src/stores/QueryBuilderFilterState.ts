@@ -102,6 +102,7 @@ export class FilterConditionState {
   propertyEditorState: QueryBuilderPropertyEditorState;
   operator!: QueryBuilderOperator;
   value?: ValueSpecification;
+  existsLambdaParamNames: string[] = [];
 
   constructor(
     editorStore: EditorStore,
@@ -116,6 +117,7 @@ export class FilterConditionState {
       changeOperator: action,
       setOperator: action,
       setValue: action,
+      addExistsLambdaParamNames: action,
     });
 
     this.editorStore = editorStore;
@@ -177,6 +179,10 @@ export class FilterConditionState {
 
   setValue(val: ValueSpecification | undefined): void {
     this.value = val;
+  }
+
+  addExistsLambdaParamNames(val: string): void {
+    this.existsLambdaParamNames.push(val);
   }
 
   getFunctionExpression(): ValueSpecification {

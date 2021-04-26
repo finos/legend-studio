@@ -1,9 +1,8 @@
 ---
 '@finos/legend-studio': minor
-'@finos/legend-studio-components': minor
-'@finos/legend-studio-app': minor
 ---
 
+pr: #171
 **BREAKING CHANGE** Studio router is reorganized to be more consistent and to accomondate more use cases.
 
 - All routes now are to be prefixed with the SDLC server key, if there is only one SDLC server specified in the config file (with legacy SDLC field config form: `sdlc: { url: string }`), then the server key is `-`, i.e. `/studio/-/...`, else the server key is the key to the SDLC instance, i.e. `/studio/sdlc1/...`.
