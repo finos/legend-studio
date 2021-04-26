@@ -26,6 +26,7 @@ import {
   FaPlus,
   FaPlusCircle,
   FaTimes,
+  FaCircle,
   FaCaretDown,
 } from 'react-icons/fa';
 import { BsFillTriangleFill } from 'react-icons/bs';
@@ -646,6 +647,10 @@ export const QueryBuilderFilterPanel = observer(
       filterState.suppressClickawayEventListener();
       filterState.pruneTree();
     };
+    const simplifyTree = (): void => {
+      filterState.suppressClickawayEventListener();
+      filterState.simplifyTree();
+    };
     const createCondition = (): void => {
       filterState.suppressClickawayEventListener();
       filterState.addNodeFromNode(
@@ -778,6 +783,14 @@ export const QueryBuilderFilterPanel = observer(
               title="Cleanup Tree"
             >
               <FaBrush />
+            </button>
+            <button
+              className="panel__header__action"
+              onClick={simplifyTree}
+              tabIndex={-1}
+              title="Simplify Tree"
+            >
+              <FaCircle />
             </button>
             <button
               className="panel__header__action"
