@@ -370,7 +370,7 @@ const buildFilterConditionStateWithExists = (
       propertyExpression,
     );
     existsLambdaParameterNames.forEach((paramName) =>
-      filterConditionState?.addExistsLambdaParamNames(paramName),
+      filterConditionState.addExistsLambdaParamNames(paramName),
     );
     return filterConditionState;
   }

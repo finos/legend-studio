@@ -688,7 +688,8 @@ export class QueryBuilderFilterState
         });
         // remove the current group node
         parentNode.removeChildNode(node);
-        // do somehting
+        // remove the node
+        this.nodes.delete(node.id);
       });
       nodesToProcess = getUnnecessaryNodes();
     }
