@@ -16,6 +16,8 @@
 
 import type { Type, ValueSpecification } from '@finos/legend-studio';
 import {
+  FunctionType,
+  LambdaFunction,
   LambdaFunctionInstanceValue,
   VariableExpression,
   SUPPORTED_FUNCTIONS,
@@ -24,8 +26,9 @@ import {
   GenericTypeExplicitReference,
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
-  PRIMITIVE_TYPE,
   SimpleFunctionExpression,
+  PRIMITIVE_TYPE,
+  CORE_ELEMENT_PATH,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 import {
@@ -33,6 +36,7 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
   assertTrue,
+  generateEnumerableNameFromToken,
 } from '@finos/legend-studio-shared';
 import type {
   QueryBuilderFilterState,
@@ -91,39 +95,152 @@ export const buildPrimitiveInstanceValue = (
   return instance;
 };
 
-export const buildFilterConditionExpression = (
+const getPropertyExpressionChainVariable = (
+  propertyExpression: AbstractPropertyExpression,
+): VariableExpression => {
+  let currentPe: ValueSpecification = propertyExpression;
+  while (currentPe instanceof AbstractPropertyExpression) {
+    currentPe = currentPe.parametersValues[0];
+  }
+  return guaranteeType(currentPe, VariableExpression);
+};
+
+const buildFilterConditionExpressionWithExists = (
   filterConditionState: FilterConditionState,
-  functionName: string,
+  operatorFunctionName: string,
 ): ValueSpecification => {
-  const multiplicity_ONE = filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+  const multiplicityOne = filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
-  // if (filterConditionState.propertyEditorState.requiresExistsHandling) {
-  //   const pes: AbstractPropertyExpression[] = [];
-  //   let currentPe: ValueSpecification =
-  //     filterConditionState.propertyEditorState.propertyExpression;
-  //   while (currentPe instanceof AbstractPropertyExpression) {
-  //     const pe = new AbstractPropertyExpression('', multiplicity_ONE);
-  //     pe.func = currentPropertyExpression.func;
-  //     pes.push(pe);
-  //     currentPe = currentPe.parametersValues[0];
-  //   }
-  //   // generateTestName(): string {
-  //   //   const generatedName = generateEnumerableNameFromToken(
-  //   //     this.tests.map((test) => test.name),
-  //   //     'test',
-  //   //   );
-  //   //   assertTrue(
-  //   //     !this.tests.find((test) => test.name === generatedName),
-  //   //     `Can't auto-generate test name for value '${generatedName}'`,
-  //   //   );
-  //   //   return generatedName;
-  //   // }
-  //   return new ValueSpecification();
-  // }
+  assertTrue(filterConditionState.propertyEditorState.requiresExistsHandling);
+
+  // 1. Decompose property expression
+  const pes: AbstractPropertyExpression[] = [];
+  let currentPe: ValueSpecification =
+    filterConditionState.propertyEditorState.propertyExpression;
+  while (currentPe instanceof AbstractPropertyExpression) {
+    const pe = new AbstractPropertyExpression('', multiplicityOne);
+    pe.func = currentPe.func;
+    pe.parametersValues =
+      currentPe.parametersValues.length > 1
+        ? // NOTE: we must retain the rest of the parameters as those are derived property parameters
+          currentPe.parametersValues.slice(1)
+        : [];
+    pes.push(pe);
+    currentPe = currentPe.parametersValues[0];
+  }
+  const rootVariable = guaranteeType(currentPe, VariableExpression);
+
+  // 2. Traverse the list of decomposed property expression backward, every time we encounter a property of
+  // multiplicity many, create a new property expression and keep track of it to later form the lambda chain
+  const existsLambdaParamNames = [
+    ...filterConditionState.existsLambdaParamNames,
+  ];
+  const existsLambdaPropertyChains: ValueSpecification[] = [rootVariable];
+  let currentParamNameIndex = 0;
+
+  for (let i = pes.length - 1; i >= 0; --i) {
+    const pe = pes[i];
+    // just keep adding to the property chain
+    pe.parametersValues.unshift(
+      existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1],
+    );
+    existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1] = pe;
+    // ... but if the property is of multiplicity multiple, start a new property chain
+    if (
+      pe.func.multiplicity.upperBound === undefined ||
+      pe.func.multiplicity.upperBound > 1
+    ) {
+      // NOTE: we need to find/generate the property chain variable name
+      // here, by doing this, we try our best to respect original/user-input variable name
+      if (currentParamNameIndex > existsLambdaParamNames.length - 1) {
+        existsLambdaParamNames.push(
+          generateEnumerableNameFromToken(
+            existsLambdaParamNames,
+            filterConditionState.filterState.lambdaVariableName,
+          ),
+        );
+        assertTrue(currentParamNameIndex === existsLambdaParamNames.length - 1);
+      }
+      existsLambdaPropertyChains.push(
+        new VariableExpression(
+          existsLambdaParamNames[currentParamNameIndex],
+          multiplicityOne,
+        ),
+      );
+      currentParamNameIndex++;
+    }
+  }
+
+  // 3. Build each property chain into an exists() simple function expression
+  const simpleFunctionExpressions: SimpleFunctionExpression[] = [];
+  const typeAny = filterConditionState.editorStore.graphState.graph.getClass(
+    CORE_ELEMENT_PATH.ANY,
+  );
+  for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
+    const simpleFunctionExpression = new SimpleFunctionExpression(
+      SUPPORTED_FUNCTIONS.EXISTS,
+      multiplicityOne,
+    );
+    simpleFunctionExpression.parametersValues.push(
+      existsLambdaPropertyChains[i],
+    );
+    simpleFunctionExpressions.push(simpleFunctionExpression);
+  }
+  // build the leaf simple function expression which uses the operator
+  const operatorEpression = new SimpleFunctionExpression(
+    operatorFunctionName,
+    multiplicityOne,
+  );
+  operatorEpression.parametersValues.push(
+    existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1],
+  );
+  // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
+  if (filterConditionState.value) {
+    operatorEpression.parametersValues.push(filterConditionState.value);
+  }
+  simpleFunctionExpressions.push(operatorEpression);
+
+  // 4. Build the exists() lambda chain
+  assertTrue(simpleFunctionExpressions.length >= 2);
+  for (let i = simpleFunctionExpressions.length - 2; i >= 0; --i) {
+    const currentSFE = simpleFunctionExpressions[i];
+    const childSFE = simpleFunctionExpressions[i + 1];
+    // build child SFE lambda
+    const _existsLambdaVariable = childSFE.parametersValues[0];
+    const existsLambdaVariable =
+      _existsLambdaVariable instanceof AbstractPropertyExpression
+        ? getPropertyExpressionChainVariable(_existsLambdaVariable)
+        : guaranteeType(_existsLambdaVariable, VariableExpression);
+    const existsLambda = new LambdaFunctionInstanceValue(multiplicityOne);
+    const existsLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
+    existsLambdaFunctionType.parameters.push(existsLambdaVariable);
+    const existsLambdaFunction = new LambdaFunction(existsLambdaFunctionType);
+    existsLambdaFunction.expressionSequence = [childSFE];
+    existsLambda.values.push(existsLambdaFunction);
+    // add the child SFE lambda to the current SFE parameters
+    currentSFE.parametersValues.push(existsLambda);
+  }
+
+  return simpleFunctionExpressions[0];
+};
+
+export const buildFilterConditionExpression = (
+  filterConditionState: FilterConditionState,
+  operatorFunctionName: string,
+): ValueSpecification => {
+  const multiplicityOne = filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
+  if (filterConditionState.propertyEditorState.requiresExistsHandling) {
+    return buildFilterConditionExpressionWithExists(
+      filterConditionState,
+      operatorFunctionName,
+    );
+  }
   const expression = new SimpleFunctionExpression(
-    functionName,
-    multiplicity_ONE,
+    operatorFunctionName,
+    multiplicityOne,
   );
   expression.parametersValues.push(
     filterConditionState.propertyEditorState.propertyExpression,
@@ -134,43 +251,6 @@ export const buildFilterConditionExpression = (
   }
   return expression;
 };
-
-// buildFilterExpression(
-//   getAllFunc: SimpleFunctionExpression,
-// ): SimpleFunctionExpression | undefined {
-//   const lambdaVariable = new VariableExpression(
-//     this.filterState.lambdaVariableName,
-//     this.editorStore.graphState.graph.getTypicalMultiplicity(
-//       TYPICAL_MULTIPLICITY_TYPE.ONE,
-//     ),
-//   );
-//   const parameters = this.filterState.getParameterValues();
-//   if (!parameters) {
-//     return undefined;
-//   }
-//   const typeAny = this.editorStore.graphState.graph.getClass(
-//     CORE_ELEMENT_PATH.ANY,
-//   );
-//   const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
-//     TYPICAL_MULTIPLICITY_TYPE.ONE,
-//   );
-//   // main filter expression
-//   const filterExpression = new SimpleFunctionExpression(
-//     SUPPORTED_FUNCTIONS.FILTER,
-//     multiplicityOne,
-//   );
-//   // param [0]
-//   filterExpression.parametersValues.push(getAllFunc);
-//   // param [1]
-//   const filterLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-//   const filterLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-//   filterLambdaFunctionType.parameters.push(lambdaVariable);
-//   const colLambdaFunction = new LambdaFunction(filterLambdaFunctionType);
-//   colLambdaFunction.expressionSequence = parameters;
-//   filterLambda.values.push(colLambdaFunction);
-//   filterExpression.parametersValues.push(filterLambda);
-//   return filterExpression;
-// }
 
 /**
  * Handling exists() lambda found in the filter condition expression.
@@ -191,14 +271,14 @@ const buildFilterConditionStateWithExists = (
   operatorFunctionName: string,
 ): FilterConditionState | undefined => {
   if (expression.functionName === SUPPORTED_FUNCTIONS.EXISTS) {
+    // 1. Decompose the exists() lambda chain into property expression chains
     const existsLambdaParameterNames: string[] = [];
     const propertyExpressions: AbstractPropertyExpression[] = [];
     let currentExpression: SimpleFunctionExpression = expression;
     while (currentExpression.functionName === SUPPORTED_FUNCTIONS.EXISTS) {
-      // loop into and extract and build the property expression
       const existsLambda = guaranteeNonNullable(
         guaranteeType(
-          expression.parametersValues[1],
+          currentExpression.parametersValues[1],
           LambdaFunctionInstanceValue,
         ).values[0],
         'exists() lambda function is missing',
@@ -237,20 +317,22 @@ const buildFilterConditionStateWithExists = (
         throw new Error(`Can't process exists() lambda function`);
       }
     }
+    // NOTE: make sure that the inner most function expression is the one we support
     if (currentExpression.functionName !== operatorFunctionName) {
       return undefined;
     }
-    const multiplicity_ONE = filterState.editorStore.graphState.graph.getTypicalMultiplicity(
+
+    // 2. Build the property expression
+    const multiplicityOne = filterState.editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
-    // form the property expression chain
     const initialPropertyExpression = guaranteeType(
       expression.parametersValues[0],
       AbstractPropertyExpression,
     );
     let propertyExpression = new AbstractPropertyExpression(
       '',
-      multiplicity_ONE,
+      multiplicityOne,
     );
     propertyExpression.func = initialPropertyExpression.func;
     propertyExpression.parametersValues =
@@ -260,7 +342,7 @@ const buildFilterConditionStateWithExists = (
       const pes: AbstractPropertyExpression[] = [];
       let currentPe: ValueSpecification = currentPropertyExpression;
       while (currentPe instanceof AbstractPropertyExpression) {
-        const pe = new AbstractPropertyExpression('', multiplicity_ONE);
+        const pe = new AbstractPropertyExpression('', multiplicityOne);
         pe.func = currentPe.func;
         pe.parametersValues =
           currentPe.parametersValues.length > 1
@@ -280,6 +362,8 @@ const buildFilterConditionStateWithExists = (
       pes[pes.length - 1].parametersValues.unshift(propertyExpression);
       propertyExpression = pes[0];
     }
+
+    // 3. Build the filter condition state with the simplified property expression
     const filterConditionState = new FilterConditionState(
       filterState.editorStore,
       filterState,
@@ -291,16 +375,6 @@ const buildFilterConditionStateWithExists = (
     return filterConditionState;
   }
   return undefined;
-};
-
-const getPropertyExpressionChainVariable = (
-  propertyExpression: AbstractPropertyExpression,
-): VariableExpression => {
-  let currentPe: ValueSpecification = propertyExpression;
-  while (currentPe instanceof AbstractPropertyExpression) {
-    currentPe = currentPe.parametersValues[0];
-  }
-  return guaranteeType(currentPe, VariableExpression);
 };
 
 export const buildFilterConditionState = (

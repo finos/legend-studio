@@ -102,15 +102,15 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
 export const getPropertyExpression = (
   treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
-  multiplicity_ONE: Multiplicity,
+  multiplicityOne: Multiplicity,
 ): AbstractPropertyExpression => {
   const projectionColumnLambdaVariable = new VariableExpression(
     DEFAULT_LAMBDA_VARIABLE_NAME,
-    multiplicity_ONE,
+    multiplicityOne,
   );
   const propertyExpression = new AbstractPropertyExpression(
     '',
-    multiplicity_ONE,
+    multiplicityOne,
   );
   propertyExpression.func = guaranteeNonNullable(node.property);
   let currentExpression = propertyExpression;
@@ -118,7 +118,7 @@ export const getPropertyExpression = (
   while (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData) {
     const parentPropertyExpression = new AbstractPropertyExpression(
       '',
-      multiplicity_ONE,
+      multiplicityOne,
     );
     parentPropertyExpression.func = guaranteeNonNullable(parentNode.property);
     currentExpression.parametersValues.push(parentPropertyExpression);
