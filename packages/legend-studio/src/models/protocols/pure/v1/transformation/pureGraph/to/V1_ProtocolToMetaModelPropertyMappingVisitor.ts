@@ -33,7 +33,6 @@ import { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pu
 import { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EnumerationMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import type { SetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { RawLambda } from '../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import type { Association } from '../../../../../../metamodels/pure/model/packageableElements/domain/Association';
 import type { TableAlias } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
@@ -70,6 +69,7 @@ import { MappingClass } from '../../../../../../metamodels/pure/model/packageabl
 import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/model/packageableElements/mapping/LocalMappingPropertyInfo';
 import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
+import { V1_rawLambdaBuilderWithResolver } from './helpers/V1_RawLambdaResolver';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -197,7 +197,11 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
-      new RawLambda([], protocol.transform.body),
+      V1_rawLambdaBuilderWithResolver(
+        this.context,
+        [],
+        protocol.transform.body,
+      ),
       sourceSetImplementation ?? topParent,
       targetSetImplementation,
       protocol.explodeProperty,
@@ -268,7 +272,11 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
       this.immediateParent,
       PropertyExplicitReference.create(property),
-      new RawLambda([], protocol.transform.body),
+      V1_rawLambdaBuilderWithResolver(
+        this.context,
+        [],
+        protocol.transform.body,
+      ),
       sourceSetImplementation,
       targetSetImplementation,
     );
@@ -661,7 +669,8 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       guaranteeNonNullable(sourceSetImplementation),
       targetSetImplementation,
     );
-    xStorePropertyMapping.crossExpression = new RawLambda(
+    xStorePropertyMapping.crossExpression = V1_rawLambdaBuilderWithResolver(
+      this.context,
       protocol.crossExpression.parameters,
       protocol.crossExpression.body,
     );

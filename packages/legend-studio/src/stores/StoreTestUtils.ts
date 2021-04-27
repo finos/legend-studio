@@ -171,3 +171,37 @@ export const checkBuildingElementsRoundtrip = async (
     ).length,
   ).toBe(0);
 };
+
+export const checkBuildingResolvedElements = async (
+  entities: Entity[],
+  resolvedEntities: Entity[],
+  editorStore = getTestEditorStore(),
+): Promise<void> => {
+  await editorStore.graphState.initializeSystem();
+  await editorStore.graphState.graphManager.buildGraph(
+    editorStore.graphState.graph,
+    entities,
+  );
+  const transformedEntities = editorStore.graphState.graph.allElements.map(
+    (element) => editorStore.graphState.graphManager.elementToEntity(element),
+  );
+  // ensure that transformed entities have all fields ordered alphabetically
+  transformedEntities.forEach((entity) =>
+    ensureObjectFieldsAreSortedAlphabetically(entity.content),
+  );
+  // check if the contents are the same (i.e. roundtrip test)
+  expect(transformedEntities).toIncludeSameMembers(
+    excludeSectionIndex(resolvedEntities),
+  );
+  // check hash
+  await editorStore.graphState.graph.precomputeHashes(
+    editorStore.applicationStore.logger,
+  );
+  const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
+    entities,
+  );
+  editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
+    protocolHashesIndex,
+  );
+  await editorStore.changeDetectionState.computeLocalChanges(true);
+};
