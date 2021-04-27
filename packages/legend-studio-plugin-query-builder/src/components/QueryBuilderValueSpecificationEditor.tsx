@@ -161,7 +161,7 @@ const EnumValueInstanceValueEditor = observer(
     return (
       <div className="query-builder-value-spec-editor">
         <CustomSelectorInput
-          className="query-builder__projection__options__sort__dropdown"
+          className="u-full-width"
           options={options}
           onChange={changeValue}
           value={{ value: enumValue, label: enumValue.name }}
@@ -204,11 +204,25 @@ const setCollectionValue = (
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
   let result: unknown[] = [];
-  const parseResult = CSVParser.parse<string[]>(value.trim());
+  const parseResult = CSVParser.parse<string[]>(value.trim(), {
+    delimiter: ',',
+  });
   const parseData = parseResult.data[0]; // only take the first line
   if (parseResult.errors.length) {
-    // just escape
-    return;
+    if (
+      parseResult.errors.length === 1 &&
+      parseResult.errors[0].code === 'UndetectableDelimiter' &&
+      parseResult.errors[0].type === 'Delimiter' &&
+      parseResult?.data.length === 1
+    ) {
+      // NOTE: this happens when the user only put one item in the value input
+      // we can go the other way by ensure the input has a comma but this is arguably neater
+      // as it tinkers with the parser
+    } else {
+      // there were some parsing error, escape
+      // NOTE: ideally, we could show a warning here
+      return;
+    }
   } else if (expectedType instanceof PrimitiveType) {
     switch (expectedType.path) {
       case PRIMITIVE_TYPE.STRING: {
@@ -249,6 +263,7 @@ const setCollectionValue = (
         break;
       }
       default:
+        // unsupported expected type, just escape
         return;
     }
   } else if (expectedType instanceof Enumeration) {

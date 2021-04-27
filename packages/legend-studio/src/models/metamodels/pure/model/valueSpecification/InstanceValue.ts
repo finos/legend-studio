@@ -43,11 +43,17 @@ export class InstanceValue extends ValueSpecification {
   deleteValue(val: unknown): void {
     deleteEntry(this.values, val);
   }
+
   addValue(val: unknown): void {
     addUniqueEntry(this.values, val);
   }
+
   changeValue(val: unknown, idx: number): void {
     this.values[idx] = val;
+  }
+
+  changeValues(val: unknown[]): void {
+    this.values = val;
   }
 
   accept_ValueSpecificationVisitor<T>(
@@ -201,6 +207,20 @@ export class PureListInstanceValue extends InstanceValue {
 
 export class CollectionInstanceValue extends InstanceValue {
   values: ValueSpecification[] = [];
+
+  constructor(
+    multiplicity: Multiplicity,
+    genericTypeReference?: GenericTypeReference,
+  ) {
+    super(multiplicity, genericTypeReference);
+
+    makeObservable<CollectionInstanceValue>(this, {
+      genericType: observable,
+      values: observable,
+      changeValues: action,
+    });
+  }
+
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {

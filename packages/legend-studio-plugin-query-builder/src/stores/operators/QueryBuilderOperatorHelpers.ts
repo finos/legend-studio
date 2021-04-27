@@ -270,7 +270,7 @@ const buildFilterConditionStateWithExists = (
   filterState: QueryBuilderFilterState,
   expression: SimpleFunctionExpression,
   operatorFunctionName: string,
-): FilterConditionState | undefined => {
+): [FilterConditionState | undefined, SimpleFunctionExpression | undefined] => {
   if (expression.functionName === SUPPORTED_FUNCTIONS.EXISTS) {
     // 1. Decompose the exists() lambda chain into property expression chains
     const existsLambdaParameterNames: string[] = [];
@@ -320,7 +320,7 @@ const buildFilterConditionStateWithExists = (
     }
     // NOTE: make sure that the inner most function expression is the one we support
     if (currentExpression.functionName !== operatorFunctionName) {
-      return undefined;
+      return [undefined, undefined];
     }
 
     // 2. Build the property expression
@@ -373,9 +373,9 @@ const buildFilterConditionStateWithExists = (
     existsLambdaParameterNames.forEach((paramName) =>
       filterConditionState.addExistsLambdaParamNames(paramName),
     );
-    return filterConditionState;
+    return [filterConditionState, currentExpression];
   }
-  return undefined;
+  return [undefined, undefined];
 };
 
 export const buildFilterConditionState = (
@@ -391,6 +391,11 @@ export const buildFilterConditionState = (
   hasNoValue = false,
 ): FilterConditionState | undefined => {
   let filterConditionState: FilterConditionState | undefined;
+  // We use this to keep track of the main expression that uses the operator. This is needed
+  // for the post-build check logic
+  // NOTE: this might be short-sighted design, if more complicated use case coming up
+  // we probably should just move the post-build check logic into simple operator case
+  let mainExpressionWithOperator: SimpleFunctionExpression | undefined;
   if (expression.functionName === operatorFunctionName) {
     const propertyExpression = guaranteeType(
       expression.parametersValues[0],
@@ -408,26 +413,33 @@ export const buildFilterConditionState = (
       filterState,
       propertyExpression,
     );
+    mainExpressionWithOperator = expression;
   } else if (expression.functionName === SUPPORTED_FUNCTIONS.EXISTS) {
-    filterConditionState = buildFilterConditionStateWithExists(
+    [
+      filterConditionState,
+      mainExpressionWithOperator,
+    ] = buildFilterConditionStateWithExists(
       filterState,
       expression,
       operatorFunctionName,
     );
   }
-  // Do some check to make sure the simple filter condition LHS, RHS, and operator are compatible
-  if (filterConditionState) {
+
+  // Post-build check: make sure the simple filter condition LHS, RHS, and operator are compatible
+  // otherwise, reset the value of the condition automatically.
+  // TODO: consider if this is the good thing to do, or should we throw and redirect to text-mode?
+  if (filterConditionState && mainExpressionWithOperator) {
     if (
       !operator.isCompatibleWithFilterConditionProperty(filterConditionState)
     ) {
       return undefined;
     }
     filterConditionState.setOperator(operator);
-    if (!hasNoValue && expression.parametersValues.length < 2) {
+    if (!hasNoValue && mainExpressionWithOperator.parametersValues.length < 2) {
       return undefined;
     }
     filterConditionState.setValue(
-      hasNoValue ? undefined : expression.parametersValues[1],
+      hasNoValue ? undefined : mainExpressionWithOperator.parametersValues[1],
     );
     if (!operator.isCompatibleWithFilterConditionValue(filterConditionState)) {
       filterConditionState.setValue(
