@@ -65,9 +65,11 @@ export const QueryBuilderLambdaEditor = observer(
         >
           <div className="modal__header">
             <div className="modal__title">Query</div>
-            <div className="modal__title__error-badge">
-              Failed to parse query
-            </div>
+            {queryTextEditorState.parserError && (
+              <div className="modal__title__error-badge">
+                Failed to parse query
+              </div>
+            )}
           </div>
           <div className="modal__body">
             <div
@@ -98,12 +100,14 @@ export const QueryBuilderLambdaEditor = observer(
             </div>
           </div>
           <div className="modal__footer">
-            <button
-              className="btn btn--dark btn--caution"
-              onClick={discardChanges}
-            >
-              Discard changes
-            </button>
+            {mode === QueryTextEditorMode.TEXT && (
+              <button
+                className="btn btn--dark btn--caution"
+                onClick={discardChanges}
+              >
+                Discard changes
+              </button>
+            )}
             <button
               className="btn btn--dark"
               onClick={close}
