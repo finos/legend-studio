@@ -84,4 +84,17 @@ export class V1_ProcessingContext {
     map.set(name, variable);
     this.inferredVariableList.push(map);
   }
+
+  clone(): V1_ProcessingContext {
+    const ctx = new V1_ProcessingContext('');
+    ctx.tags = this.tags.clone();
+    ctx.inferredVariableList = this.inferredVariableList.map((varMap) => {
+      const newVarMap = new Map<string, ValueSpecification>();
+      varMap.forEach((valueSpec, key) => {
+        newVarMap.set(key, valueSpec);
+      });
+      return newVarMap;
+    });
+    return ctx;
+  }
 }

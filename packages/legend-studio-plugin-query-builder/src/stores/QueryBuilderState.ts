@@ -84,6 +84,10 @@ import {
   QueryBuilderIsEmptyOperator,
   QueryBuilderIsNotEmptyOperator,
 } from './operators/QueryBuilderIsEmptyOperator';
+import {
+  QueryBuilderInOperator,
+  QueryBuilderNotInOperator,
+} from './operators/QueryBuilderInOperator';
 
 export class QueryBuilderState extends EditorExtensionState {
   editorStore: EditorStore;
@@ -96,6 +100,7 @@ export class QueryBuilderState extends EditorExtensionState {
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   openQueryBuilder = false;
+  TEMPORARY__enableGraphFetch = false;
   operators: QueryBuilderOperator[] = [
     new QueryBuilderEqualOperator(),
     new QueryBuilderNotEqualOperator(),
@@ -109,11 +114,18 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderNotContainOperator(),
     new QueryBuilderEndWithOperator(),
     new QueryBuilderNotEndWithOperator(),
+    new QueryBuilderInOperator(),
+    new QueryBuilderNotInOperator(),
     new QueryBuilderIsEmptyOperator(),
     new QueryBuilderIsNotEmptyOperator(),
   ];
 
-  constructor(editorStore: EditorStore) {
+  constructor(
+    editorStore: EditorStore,
+    options?: {
+      TEMPORARY__enableGraphFetch?: boolean;
+    },
+  ) {
     super();
 
     makeObservable(this, {
@@ -154,6 +166,10 @@ export class QueryBuilderState extends EditorExtensionState {
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(
       editorStore,
       this,
+    );
+
+    this.TEMPORARY__enableGraphFetch = Boolean(
+      options?.TEMPORARY__enableGraphFetch,
     );
   }
 

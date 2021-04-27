@@ -58,7 +58,11 @@ export class QueryTextEditorState extends LambdaEditorState {
   rawLambdaState: QueryRawLambdaState;
   isConvertingLambdaToString = false;
   mode: QueryTextEditorMode | undefined;
-  lambdaJson = '';
+  /**
+   * This is used to store the JSON string when viewing the query in JSON mode
+   * TODO: consider moving this to another state if we need to simplify the logic of text-mode
+   */
+  readOnlylambdaJson = '';
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
     super('', LAMBDA_START);
@@ -81,12 +85,15 @@ export class QueryTextEditorState extends LambdaEditorState {
   setQueryRawLambdaState(rawLambdaState: QueryRawLambdaState): void {
     this.rawLambdaState = rawLambdaState;
   }
+
   setMode(openModal: QueryTextEditorMode | undefined): void {
     this.mode = openModal;
   }
+
   setLambdaJson(lambdaJson: string): void {
-    this.lambdaJson = lambdaJson;
+    this.readOnlylambdaJson = lambdaJson;
   }
+
   convertLambdaGrammarStringToObject = flow(function* (
     this: QueryTextEditorState,
   ) {
@@ -177,21 +184,17 @@ export class QueryTextEditorState extends LambdaEditorState {
 
   closeModal = flow(function* (this: QueryTextEditorState) {
     if (this.mode === QueryTextEditorMode.TEXT) {
-      yield this.closeTextMode();
+      yield this.convertLambdaGrammarStringToObject();
+      if (this.parserError) {
+        this.editorStore.applicationStore.notifyError(
+          `Can't parse query. Please fix error before closing: ${this.parserError.message}`,
+        );
+      } else {
+        this.queryBuilderState.initWithRawLambda(this.rawLambdaState.lambda);
+        this.setMode(undefined);
+      }
       return;
     }
     this.setMode(undefined);
-  });
-
-  closeTextMode = flow(function* (this: QueryTextEditorState) {
-    yield this.convertLambdaGrammarStringToObject();
-    if (this.parserError) {
-      this.editorStore.applicationStore.notifyError(
-        `Fix parsing error before closing: ${this.parserError.message}`,
-      );
-    } else {
-      this.queryBuilderState.initWithRawLambda(this.rawLambdaState.lambda);
-      this.setMode(undefined);
-    }
   });
 }

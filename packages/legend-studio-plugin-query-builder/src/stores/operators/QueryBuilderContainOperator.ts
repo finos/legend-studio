@@ -34,7 +34,7 @@ import {
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
-  getValueSpecificationTypeInfo,
+  getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from './QueryBuilderOperatorHelpers';
 
@@ -57,13 +57,10 @@ export class QueryBuilderContainOperator extends QueryBuilderOperator {
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const typeInfo = filterConditionState.value
-      ? getValueSpecificationTypeInfo(filterConditionState.value)
+    const type = filterConditionState.value
+      ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
-    return (
-      PRIMITIVE_TYPE.STRING === typeInfo?.type.path &&
-      typeInfo.isCollection === false
-    );
+    return PRIMITIVE_TYPE.STRING === type?.path;
   }
 
   getDefaultFilterConditionValue(

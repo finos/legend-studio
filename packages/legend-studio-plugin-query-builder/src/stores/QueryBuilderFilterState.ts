@@ -102,6 +102,7 @@ export class FilterConditionState {
   propertyEditorState: QueryBuilderPropertyEditorState;
   operator!: QueryBuilderOperator;
   value?: ValueSpecification;
+  existsLambdaParamNames: string[] = [];
 
   constructor(
     editorStore: EditorStore,
@@ -116,6 +117,7 @@ export class FilterConditionState {
       changeOperator: action,
       setOperator: action,
       setValue: action,
+      addExistsLambdaParamNames: action,
     });
 
     this.editorStore = editorStore;
@@ -177,6 +179,10 @@ export class FilterConditionState {
 
   setValue(val: ValueSpecification | undefined): void {
     this.value = val;
+  }
+
+  addExistsLambdaParamNames(val: string): void {
+    this.existsLambdaParamNames.push(val);
   }
 
   getFunctionExpression(): ValueSpecification {
@@ -323,6 +329,7 @@ export class QueryBuilderFilterState
       newGroupWithConditionFromNode: action,
       removeNodeAndPruneBranch: action,
       pruneTree: action,
+      simplifyTree: action,
       collapseTree: action,
       expandTree: action,
     });
@@ -595,6 +602,7 @@ export class QueryBuilderFilterState
   }
 
   pruneTree(): void {
+    this.setSelectedNode(undefined);
     // remove all blank nodes
     Array.from(this.nodes.values())
       .filter(
@@ -644,6 +652,49 @@ export class QueryBuilderFilterState
     }
   }
 
+  /**
+   * Cleanup unecessary group nodes (i.e. group node whose group operation is the same as its parent's)
+   */
+  simplifyTree(): void {
+    this.setSelectedNode(undefined);
+    const getUnnecessaryNodes = (): QueryBuilderFilterTreeGroupNodeData[] =>
+      Array.from(this.nodes.values())
+        .filter(
+          (node): node is QueryBuilderFilterTreeGroupNodeData =>
+            node instanceof QueryBuilderFilterTreeGroupNodeData,
+        )
+        .filter((node) => {
+          if (!node.parentId || !this.nodes.has(node.parentId)) {
+            return false;
+          }
+          const parentGroupNode = guaranteeType(
+            this.nodes.get(node.parentId),
+            QueryBuilderFilterTreeGroupNodeData,
+          );
+          return parentGroupNode.groupOperation === node.groupOperation;
+        });
+    // Squash these unnecessary group nodes
+    let nodesToProcess = getUnnecessaryNodes();
+    while (nodesToProcess.length) {
+      nodesToProcess.forEach((node) => {
+        const parentNode = guaranteeType(
+          this.nodes.get(guaranteeNonNullable(node.parentId)),
+          QueryBuilderFilterTreeGroupNodeData,
+        );
+        // send all children of the current group node to their grandparent node
+        [...node.childrenIds].forEach((childId) => {
+          const childNode = this.getNode(childId);
+          parentNode.addChildNode(childNode);
+        });
+        // remove the current group node
+        parentNode.removeChildNode(node);
+        // remove the node
+        this.nodes.delete(node.id);
+      });
+      nodesToProcess = getUnnecessaryNodes();
+    }
+  }
+
   isValidMove(
     node: QueryBuilderFilterTreeNodeData,
     toNode: QueryBuilderFilterTreeNodeData,
@@ -676,23 +727,49 @@ export class QueryBuilderFilterState
     Array.from(this.nodes.values()).forEach((node) => node.setIsOpen(true));
   }
 
-  getSimpleFunctionExpression(
+  buildSimpleFunctionExpression(
     node: QueryBuilderFilterTreeNodeData,
   ): ValueSpecification | undefined {
     if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
       return node.condition.getFunctionExpression();
     } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
+      const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
       const func = new SimpleFunctionExpression(
         node.groupOperation,
-        this.editorStore.graphState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
+        multiplicityOne,
       );
-      func.parametersValues = node.childrenIds
+      const clauses = node.childrenIds
         .map((e) => this.nodes.get(e))
         .filter(isNonNullable)
-        .map((e) => this.getSimpleFunctionExpression(e))
+        .map((e) => this.buildSimpleFunctionExpression(e))
         .filter(isNonNullable);
+      /**
+       * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
+       * like and/or do not take more than 2 parameters, as such, if we have more than 2, we need
+       * to create a chain of this operation to accomondate.
+       *
+       * This means that in the read direction, we might need to flatten the chains down to group with
+       * multiple clauses. This means user's intended grouping will not be kept.
+       */
+      if (clauses.length > 2) {
+        const firstClause = clauses[0];
+        let currentClause: ValueSpecification = clauses[clauses.length - 1];
+        for (let i = clauses.length - 2; i > 0; --i) {
+          const clause1 = clauses[i];
+          const clause2 = currentClause;
+          const groupClause = new SimpleFunctionExpression(
+            node.groupOperation,
+            multiplicityOne,
+          );
+          groupClause.parametersValues = [clause1, clause2];
+          currentClause = groupClause;
+        }
+        func.parametersValues = [firstClause, currentClause];
+      } else {
+        func.parametersValues = clauses;
+      }
       return func.parametersValues.length ? func : undefined;
     }
     return undefined;
@@ -701,7 +778,7 @@ export class QueryBuilderFilterState
   getParameterValues(): ValueSpecification[] | undefined {
     const parametersValues = this.rootIds
       .map((e) => guaranteeNonNullable(this.nodes.get(e)))
-      .map((e) => this.getSimpleFunctionExpression(e))
+      .map((e) => this.buildSimpleFunctionExpression(e))
       .filter(isNonNullable);
     return !parametersValues.length ? undefined : parametersValues;
   }

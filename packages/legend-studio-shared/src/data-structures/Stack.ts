@@ -36,7 +36,17 @@ export class Stack<T> implements StackInterface<T> {
     return this.storage[this.size() - 1];
   }
 
+  peekAll(): T[] {
+    return [...this.storage];
+  }
+
   size(): number {
     return this.storage.length;
+  }
+
+  clone(): Stack<T> {
+    const stack = new Stack<T>();
+    this.storage.forEach((item) => stack.push(item));
+    return stack;
   }
 }

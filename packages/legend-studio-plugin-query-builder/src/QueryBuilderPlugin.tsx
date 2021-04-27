@@ -37,13 +37,27 @@ import { flowResult } from 'mobx';
 import type { IKeyboardEvent } from 'monaco-editor';
 import { KeyCode } from 'monaco-editor';
 
+interface QueryBuilderPluginConfigData {
+  TEMPORARY__enableGraphFetch: boolean;
+}
+
 export class QueryBuilderPlugin extends EditorPlugin {
+  TEMPORARY__enableGraphFetch = false;
+
   constructor() {
     super(packageJson.name, packageJson.version);
   }
 
   install(pluginManager: PluginManager): void {
     pluginManager.registerEditorPlugin(this);
+  }
+
+  configure(_configData: object): QueryBuilderPlugin {
+    const configData = _configData as QueryBuilderPluginConfigData;
+    this.TEMPORARY__enableGraphFetch = Boolean(
+      configData.TEMPORARY__enableGraphFetch,
+    );
+    return this;
   }
 
   getExtraEditorExtensionComponentRendererConfigurations(): EditorExtensionComponentRendererConfiguration[] {
@@ -62,7 +76,9 @@ export class QueryBuilderPlugin extends EditorPlugin {
   getExtraEditorExtensionStateCreators(): EditorExtensionStateCreator[] {
     return [
       (editorStore: EditorStore): EditorExtensionState | undefined =>
-        new QueryBuilderState(editorStore),
+        new QueryBuilderState(editorStore, {
+          TEMPORARY__enableGraphFetch: this.TEMPORARY__enableGraphFetch,
+        }),
     ];
   }
 

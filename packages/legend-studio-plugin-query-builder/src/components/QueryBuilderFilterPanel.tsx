@@ -26,6 +26,7 @@ import {
   FaPlus,
   FaPlusCircle,
   FaTimes,
+  FaCircle,
   FaCaretDown,
 } from 'react-icons/fa';
 import { BsFillTriangleFill } from 'react-icons/bs';
@@ -225,7 +226,7 @@ const QueryBuilderFilterConditionEditor = observer(
             <button
               className="query-builder-filter-tree__condition-node__operator__dropdown__trigger"
               tabIndex={-1}
-              title="Choose Operation..."
+              title="Choose Operator..."
             >
               <FaCaretDown />
             </button>
@@ -234,6 +235,11 @@ const QueryBuilderFilterConditionEditor = observer(
             <div className="query-builder-filter-tree__condition-node__value">
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
+                graph={node.condition.editorStore.graphState.graph}
+                expectedType={
+                  node.condition.propertyEditorState.propertyExpression.func
+                    .genericType.value.rawType
+                }
               />
             </div>
           )}
@@ -646,6 +652,10 @@ export const QueryBuilderFilterPanel = observer(
       filterState.suppressClickawayEventListener();
       filterState.pruneTree();
     };
+    const simplifyTree = (): void => {
+      filterState.suppressClickawayEventListener();
+      filterState.simplifyTree();
+    };
     const createCondition = (): void => {
       filterState.suppressClickawayEventListener();
       filterState.addNodeFromNode(
@@ -778,6 +788,14 @@ export const QueryBuilderFilterPanel = observer(
               title="Cleanup Tree"
             >
               <FaBrush />
+            </button>
+            <button
+              className="panel__header__action"
+              onClick={simplifyTree}
+              tabIndex={-1}
+              title="Simplify Tree"
+            >
+              <FaCircle />
             </button>
             <button
               className="panel__header__action"

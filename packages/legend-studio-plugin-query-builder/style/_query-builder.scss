@@ -16,11 +16,6 @@
 
 @use './mixins' as *;
 
-:root {
-  --color-magenta-300: #8c4268;
-}
-
-// TODO: when we componentize query builder, we should move this out
 .query-builder__dialog {
   height: calc(100vh - 4rem);
   width: calc(100vw - 4rem);
@@ -361,7 +356,7 @@
     display: inline-flex;
     font-weight: 700;
     font-size: 1.1rem;
-    font-family: 'Roboto Mono', sans-serif;
+    font-family: 'Roboto Mono', monospace;
     color: var(--color-light-grey-400);
     height: 2rem;
     line-height: 2rem;
@@ -372,7 +367,7 @@
     display: inline-flex;
     font-weight: 700;
     font-size: 1.6rem;
-    font-family: 'Roboto Mono', sans-serif;
+    font-family: 'Roboto Mono', monospace;
     height: 2rem;
     line-height: 2rem;
     margin-left: 0.5rem;
@@ -520,15 +515,17 @@
   }
 
   &__mode {
-    padding: 0.5rem;
     display: flex;
     align-items: center;
     background: var(--color-dark-grey-250);
     color: var(--color-light-grey-200);
+    height: 2.2rem;
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
   }
 
   &__mode--selected {
-    cursor: default;
     background: var(--color-blue-200);
   }
 }
@@ -870,7 +867,7 @@
     line-height: 1.8rem;
     font-weight: 700;
     font-size: 1rem;
-    font-family: 'Roboto Mono', sans-serif;
+    font-family: 'Roboto Mono', monospace;
     color: var(--color-light-grey-200);
     background: var(--color-dark-shade-230);
 
@@ -1101,8 +1098,6 @@
     }
 
     &__operator__label {
-      @include flexCenter;
-
       padding: 0 0.5rem;
       font-weight: 500;
       background: var(--color-dark-grey-280);
@@ -1110,6 +1105,8 @@
       color: var(--color-light-grey-100);
       border-radius: 0.2rem 0 0 0.2rem;
       font-size: 1.1rem;
+      line-height: 1.8rem;
+      white-space: nowrap;
     }
 
     &__operator__dropdown__trigger {
@@ -1129,8 +1126,9 @@
     }
 
     &__operator__dropdown__option {
-      font-size: 1.2rem;
-      font-family: 'Roboto Mono', sans-serif;
+      font-size: 1.1rem;
+      height: 2.2rem;
+      font-family: 'Roboto Mono', monospace;
     }
 
     &__value {
@@ -1169,6 +1167,16 @@
 
   height: 100%;
   width: 100%;
+
+  &--unsupported {
+    @include flexCenter;
+
+    width: 100%;
+    height: 1.8rem;
+    background: var(--color-dark-grey-280);
+    border-radius: 0.2rem;
+    font-size: 1.1rem;
+  }
 
   &__input {
     height: 100%;
@@ -1218,6 +1226,52 @@
       color: var(--color-dark-grey-300);
     }
   }
+
+  &__list-editor__preview {
+    @include ellipsisTextOverflow;
+
+    line-height: 1.8rem;
+    width: calc(100% - 1.8rem);
+    height: 1.8rem;
+    font-size: 1.1rem;
+    font-family: 'Roboto Mono', monospace;
+    background: var(--color-dark-grey-250);
+    padding-left: 0.5rem;
+    color: var(--color-light-grey-300);
+    cursor: pointer;
+  }
+
+  &__list-editor__save-button {
+    @include flexCenter;
+
+    height: 2.2rem;
+    width: 2.2rem;
+    min-width: 2.2rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__list-editor__edit-icon {
+    @include flexCenter;
+
+    height: 1.8rem;
+    width: 2.7rem;
+    min-width: 2.7rem;
+    background: var(--color-dark-grey-250);
+    border-radius: 0 0.9rem 0.9rem 0;
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-light-grey-250);
+    }
+  }
+
+  &:hover &__list-editor__preview,
+  &:hover &__list-editor__edit-icon {
+    background: var(--color-dark-grey-300);
+  }
 }
 
 .query-builder-text-mode {
@@ -1226,11 +1280,6 @@
       width: 100%;
       height: 100%;
       background: var(--color-dark-grey-50);
-    }
-
-    &__close-btn {
-      border-color: var(--color-blue-200);
-      background: var(--color-blue-300);
     }
   }
 
@@ -1246,6 +1295,26 @@
           background: var(--color-dark-grey-50) !important;
         }
       }
+    }
+  }
+
+  &__modal--has-error {
+    border: 0.1rem solid var(--color-red-280) !important;
+
+    .modal__header {
+      background: var(--color-red-200);
+    }
+
+    .modal__title__error-badge {
+      @include flexCenter;
+
+      margin-right: 1rem;
+      background: var(--color-red-400);
+      height: 2.2rem;
+      border-radius: 0.2rem;
+      padding: 0.5rem;
+      font-size: 1.2rem;
+      user-select: none;
     }
   }
 }

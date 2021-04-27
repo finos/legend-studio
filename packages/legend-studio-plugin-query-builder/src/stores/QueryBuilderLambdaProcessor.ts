@@ -380,6 +380,13 @@ export class QueryBuilderLambdaProcessor
         const filterExpression = valueSpecification.parametersValues[1];
         if (filterExpression instanceof LambdaFunctionInstanceValue) {
           processFilterFunction(filterExpression, filterState);
+          /**
+           * NOTE: Since group operations ike and/or do not take more than 2 parameters, if there are
+           * more than 2 clauses in each group operations, then these clauses are converted into an
+           * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
+           * After building the filter state.
+           */
+          filterState.simplifyTree();
           return;
         }
       }

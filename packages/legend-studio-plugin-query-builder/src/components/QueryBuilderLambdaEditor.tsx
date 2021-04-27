@@ -34,6 +34,8 @@ export const QueryBuilderLambdaEditor = observer(
     const queryTextEditorState = queryBuilderState.queryTextEditorState;
     const close = (): Promise<void> =>
       queryBuilderState.queryTextEditorState.closeModal();
+    const discardChanges = (): void =>
+      queryBuilderState.queryTextEditorState.setMode(undefined);
     const mode = queryTextEditorState.mode;
     useEffect(() => {
       queryTextEditorState
@@ -51,9 +53,23 @@ export const QueryBuilderLambdaEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal query-builder-text-mode__modal">
+        <div
+          className={clsx(
+            'modal modal--dark editor-modal query-builder-text-mode__modal',
+            {
+              'query-builder-text-mode__modal--has-error': Boolean(
+                queryTextEditorState.parserError,
+              ),
+            },
+          )}
+        >
           <div className="modal__header">
-            <div className="modal__title">Query </div>
+            <div className="modal__title">Query</div>
+            {queryTextEditorState.parserError && (
+              <div className="modal__title__error-badge">
+                Failed to parse query
+              </div>
+            )}
           </div>
           <div className="modal__body">
             <div
@@ -69,13 +85,14 @@ export const QueryBuilderLambdaEditor = observer(
                   forceBackdrop={false}
                   forceExpansion={true}
                   useBaseTextEditorSettings={true}
+                  hideErrorBar={true}
                 />
               )}
               {mode === QueryTextEditorMode.JSON && (
                 <div className="panel__content mapping-execution-panel__json-editor">
                   <TextInputEditor
                     language={EDITOR_LANGUAGE.JSON}
-                    inputValue={queryTextEditorState.lambdaJson}
+                    inputValue={queryTextEditorState.readOnlylambdaJson}
                     isReadOnly={true}
                   />
                 </div>
@@ -83,9 +100,18 @@ export const QueryBuilderLambdaEditor = observer(
             </div>
           </div>
           <div className="modal__footer">
+            {mode === QueryTextEditorMode.TEXT && (
+              <button
+                className="btn btn--dark btn--caution"
+                onClick={discardChanges}
+              >
+                Discard changes
+              </button>
+            )}
             <button
-              className="btn query-builder-text-mode__modal__close-btn"
+              className="btn btn--dark"
               onClick={close}
+              disabled={Boolean(queryTextEditorState.parserError)}
             >
               Close
             </button>
