@@ -26,14 +26,12 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveType,
-  TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
-import {
   CollectionInstanceValue,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
@@ -213,7 +211,7 @@ const setCollectionValue = (
       parseResult.errors.length === 1 &&
       parseResult.errors[0].code === 'UndetectableDelimiter' &&
       parseResult.errors[0].type === 'Delimiter' &&
-      parseResult?.data.length === 1
+      parseResult.data.length === 1
     ) {
       // NOTE: this happens when the user only put one item in the value input
       // we can go the other way by ensure the input has a comma but this is arguably neater
