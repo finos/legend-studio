@@ -71,6 +71,10 @@ import {
   lambda_setOperatorFilter,
   lambda_simpleSingleConditionFilter,
 } from './QueryBuilder_Roundtrip_TestFilterQueries';
+import {
+  lambda_input_filterWithExists,
+  lambda_output_filterWithExists,
+} from './QueryBuilder_TestFilterQueriesWithExits';
 
 let renderResult: RenderResult;
 
@@ -578,3 +582,37 @@ test(integrationTest('Roundtrip for filter expression (M2M)'), async () => {
     mockedEditorStore,
   );
 });
+
+test(
+  integrationTest('Filter exists() processing issue(s) are auto-corrected'),
+  async () => {
+    const mockedEditorStore = await init(SimpleM2MModel);
+    MOBX__enableSpyOrMock();
+    mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
+    MOBX__disableSpyOrMock();
+    const queryBuilderState = mockedEditorStore.getEditorExtensionState(
+      QueryBuilderState,
+    );
+    await flowResult(queryBuilderState.setOpenQueryBuilder(true));
+    queryBuilderState.querySetupState.setClass(
+      mockedEditorStore.graphState.graph.getClass('model::target::_Person'),
+    );
+    queryBuilderState.resetData();
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    // ensure form has updated with respect to the new state
+    await waitFor(() => getByText(queryBuilderSetup, '_Person'));
+    await waitFor(() => getByText(queryBuilderSetup, 'mapping'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+    // test input and output lambda
+    queryBuilderState.buildWithRawLambda(
+      getRawLambda(lambda_input_filterWithExists),
+    );
+    const jsonQuery = mockedEditorStore.graphState.graphManager.serializeRawValueSpecification(
+      queryBuilderState.getRawLambdaQuery(),
+    );
+    expect([lambda_output_filterWithExists]).toIncludeSameMembers([jsonQuery]);
+    testRoundtrip(lambda_output_filterWithExists, mockedEditorStore);
+  },
+);
