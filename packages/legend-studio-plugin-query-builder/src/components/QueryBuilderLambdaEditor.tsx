@@ -53,9 +53,21 @@ export const QueryBuilderLambdaEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal query-builder-text-mode__modal">
+        <div
+          className={clsx(
+            'modal modal--dark editor-modal query-builder-text-mode__modal',
+            {
+              'query-builder-text-mode__modal--has-error': Boolean(
+                queryTextEditorState.parserError,
+              ),
+            },
+          )}
+        >
           <div className="modal__header">
-            <div className="modal__title">Query </div>
+            <div className="modal__title">Query</div>
+            <div className="modal__title__error-badge">
+              Failed to parse query
+            </div>
           </div>
           <div className="modal__body">
             <div

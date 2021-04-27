@@ -1124,7 +1124,8 @@
     }
 
     &__operator__dropdown__option {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
+      height: 2.2rem;
       font-family: 'Roboto Mono', monospace;
     }
 
@@ -1292,6 +1293,26 @@
           background: var(--color-dark-grey-50) !important;
         }
       }
+    }
+  }
+
+  &__modal--has-error {
+    border: 0.1rem solid var(--color-red-280) !important;
+
+    .modal__header {
+      background: var(--color-red-200);
+    }
+
+    .modal__title__error-badge {
+      @include flexCenter;
+
+      margin-right: 1rem;
+      background: var(--color-red-400);
+      height: 2.2rem;
+      border-radius: 0.2rem;
+      padding: 0.5rem;
+      font-size: 1.2rem;
+      user-select: none;
     }
   }
 }

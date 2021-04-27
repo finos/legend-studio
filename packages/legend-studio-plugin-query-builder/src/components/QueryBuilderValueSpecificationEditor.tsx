@@ -188,6 +188,12 @@ const stringifyValue = (values: ValueSpecification[]): string => {
   ]).trim();
 };
 
+/**
+ * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+ * we silently remove values which are not valid or parsable. But perhaps, we can consider
+ * passing in logger or notifier to show give the users some idea of what went wrong instead
+ * of silently swallow parts of their inputs like this.
+ */
 const setCollectionValue = (
   valueSpecification: CollectionInstanceValue,
   graph: PureModel,
