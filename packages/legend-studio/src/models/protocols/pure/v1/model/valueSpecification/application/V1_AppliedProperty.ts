@@ -18,7 +18,7 @@ import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecifica
 import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
 
 export class V1_AppliedProperty extends V1_ValueSpecification {
-  class!: string;
+  class?: string;
   property!: string;
   parameters: V1_ValueSpecification[] = [];
 

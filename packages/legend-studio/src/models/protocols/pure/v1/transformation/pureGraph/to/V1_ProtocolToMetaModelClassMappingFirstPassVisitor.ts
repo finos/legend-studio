@@ -28,7 +28,6 @@ import {
 import { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { RawLambda } from '../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import { OptionalPackageableElementImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { InferableMappingElementRootExplicitValue } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InferableMappingElementRoot';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
@@ -43,6 +42,7 @@ import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/
 import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
 import { V1_processAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper';
+import { V1_rawLambdaBuilderWithResolver } from './helpers/V1_RawLambdaResolver';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
   implements V1_ClassMappingVisitor<SetImplementation> {
@@ -107,7 +107,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
       ),
     );
     pureInstanceSetImplementation.filter = classMapping.filter
-      ? new RawLambda([], classMapping.filter.body)
+      ? V1_rawLambdaBuilderWithResolver(
+          this.context,
+          [],
+          classMapping.filter.body,
+        )
       : undefined;
     return pureInstanceSetImplementation;
   }
@@ -135,7 +139,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
       sourceRootRecordType,
     );
     flatDataInstanceSetImplementation.filter = classMapping.filter
-      ? new RawLambda([], classMapping.filter.body)
+      ? V1_rawLambdaBuilderWithResolver(
+          this.context,
+          [],
+          classMapping.filter.body,
+        )
       : undefined;
     return flatDataInstanceSetImplementation;
   }

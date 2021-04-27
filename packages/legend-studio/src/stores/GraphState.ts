@@ -349,6 +349,8 @@ export class GraphState {
           .DEV__enableGraphImmutabilityRuntimeCheck,
         TEMPORARY__keepSectionIndex: this.editorStore.applicationStore.config
           .options.EXPERIMENTAL__enableFullGrammarImportSupport,
+        TEMPORARY__disableRawLambdaResolver: this.editorStore.applicationStore
+          .config.options.TEMPORARY__disableRawLambdaResolver,
       });
       // build generations
       yield this.graphManager.buildGenerations(
@@ -855,6 +857,8 @@ export class GraphState {
           .DEV__enableGraphImmutabilityRuntimeCheck,
         TEMPORARY__keepSectionIndex: this.editorStore.applicationStore.config
           .options.EXPERIMENTAL__enableFullGrammarImportSupport,
+        TEMPORARY__disableRawLambdaResolver: this.editorStore.applicationStore
+          .config.options.TEMPORARY__disableRawLambdaResolver,
       });
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?

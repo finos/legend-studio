@@ -71,6 +71,7 @@ import { V1_getRelation } from './helpers/V1_DatabaseBuilderHelper';
 import type { Logger } from '../../../../../../../utils/Logger';
 import type { BasicModel } from '../../../../../../metamodels/pure/graph/BasicModel';
 import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
+import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graph/AbstractPureGraphManager';
 
 type ResolutionResult<T> = [T, boolean | undefined];
 
@@ -81,6 +82,7 @@ export class V1_GraphBuilderContext {
   readonly graph: PureModel;
   readonly imports: Package[] = [];
   readonly section?: Section;
+  readonly options?: GraphBuilderOptions;
 
   constructor(builder: V1_GraphBuilderContextBuilder) {
     this.logger = builder.logger;
@@ -89,6 +91,7 @@ export class V1_GraphBuilderContext {
     this.extensions = builder.extensions;
     this.imports = builder.imports;
     this.section = builder.section;
+    this.options = builder.options;
   }
 
   resolve<T>(
@@ -410,17 +413,20 @@ export class V1_GraphBuilderContextBuilder {
   graph: PureModel;
   imports: Package[] = [];
   section?: Section;
+  options?: GraphBuilderOptions;
 
   constructor(
     graph: PureModel,
     currentSubGraph: BasicModel,
     extensions: V1_GraphBuilderExtensions,
     logger: Logger,
+    options?: GraphBuilderOptions,
   ) {
     this.graph = graph;
     this.currentSubGraph = currentSubGraph;
     this.extensions = extensions;
     this.logger = logger;
+    this.options = options;
   }
 
   withElement(element: V1_PackageableElement): V1_GraphBuilderContextBuilder {

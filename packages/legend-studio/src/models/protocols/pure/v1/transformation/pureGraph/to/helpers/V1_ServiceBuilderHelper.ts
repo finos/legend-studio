@@ -32,7 +32,6 @@ import {
   TestContainer,
   KeyedSingleExecutionTest,
 } from '../../../../../../../metamodels/pure/model/packageableElements/service/ServiceTest';
-import { RawLambda } from '../../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { ServiceExecution } from '../../../../../../../metamodels/pure/model/packageableElements/service/ServiceExecution';
 import {
   PureSingleExecution,
@@ -63,6 +62,7 @@ import {
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
 } from '../../../../model/packageableElements/V1_PackageableElement';
+import { V1_rawLambdaBuilderWithResolver } from './V1_RawLambdaResolver';
 
 export const V1_processServiceTest = (
   serviceTest: V1_ServiceTest,
@@ -78,7 +78,11 @@ export const V1_processServiceTest = (
     const singleTest = new SingleExecutionTest(parentService, serviceTest.data);
     singleTest.asserts = serviceTest.asserts.map((assert) => {
       const testContainer = new TestContainer(
-        new RawLambda(assert.assert.parameters, assert.assert.body),
+        V1_rawLambdaBuilderWithResolver(
+          context,
+          assert.assert.parameters,
+          assert.assert.body,
+        ),
         singleTest,
       );
       testContainer.parameterValues = assert.parameterValues;
@@ -120,7 +124,11 @@ export const V1_processServiceTest = (
       );
       keyedTest.asserts = test.asserts.map((assert) => {
         const testContaier = new TestContainer(
-          new RawLambda(assert.assert.parameters, assert.assert.body),
+          V1_rawLambdaBuilderWithResolver(
+            context,
+            assert.assert.parameters,
+            assert.assert.body,
+          ),
           keyedTest,
         );
         testContaier.parameterValues = assert.parameterValues;
@@ -232,7 +240,8 @@ export const V1_processServiceExecution = (
       'Service Pure execution function is missing',
     );
     return new PureSingleExecution(
-      new RawLambda(
+      V1_rawLambdaBuilderWithResolver(
+        context,
         serviceExecution.func.parameters,
         serviceExecution.func.body,
       ),
@@ -258,7 +267,8 @@ export const V1_processServiceExecution = (
     );
     const execution = new PureMultiExecution(
       serviceExecution.executionKey,
-      new RawLambda(
+      V1_rawLambdaBuilderWithResolver(
+        context,
         serviceExecution.func.parameters,
         serviceExecution.func.body,
       ),

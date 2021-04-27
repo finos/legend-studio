@@ -98,7 +98,15 @@ class ApplicationCoreOptions {
    * to figure out how we want to store this element in SDLC.
    */
   EXPERIMENTAL__enableFullGrammarImportSupport = false;
-
+  /**
+   * Allows disabling of resolving element paths inside a RawLambda
+   *
+   * NOTE: when we move to save imports as part of the user's project, this feature
+   * will no longer be needed and can be removed. This flag will only be relevant if
+   * EXPERIMENTAL__enableFullGrammarImportSupport is set to false since full grammar import support
+   * will not require a lambda resolver.
+   */
+  TEMPORARY__disableRawLambdaResolver = false;
   /**
    * Allows disabling service registration as the Legend service operational infrastructure
    * has not been open-sourced yet.
@@ -125,6 +133,7 @@ class ApplicationCoreOptions {
       TEMPORARY__useSDLCProductionProjectsOnly: optional(primitive()),
       EXPERIMENTAL__enableFullGrammarImportSupport: optional(primitive()),
       TEMPORARY__disableServiceRegistration: optional(primitive()),
+      TEMPORARY__disableRawLambdaResolver: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         custom(
           (value) => SKIP,
