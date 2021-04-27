@@ -226,7 +226,7 @@ const QueryBuilderFilterConditionEditor = observer(
             <button
               className="query-builder-filter-tree__condition-node__operator__dropdown__trigger"
               tabIndex={-1}
-              title="Choose Operation..."
+              title="Choose Operator..."
             >
               <FaCaretDown />
             </button>
@@ -235,6 +235,11 @@ const QueryBuilderFilterConditionEditor = observer(
             <div className="query-builder-filter-tree__condition-node__value">
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
+                graph={node.condition.editorStore.graphState.graph}
+                expectedType={
+                  node.condition.propertyEditorState.propertyExpression.func
+                    .genericType.value.rawType
+                }
               />
             </div>
           )}

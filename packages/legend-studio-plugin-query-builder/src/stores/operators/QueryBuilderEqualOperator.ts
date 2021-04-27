@@ -42,7 +42,7 @@ import {
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
-  getValueSpecificationTypeInfo,
+  getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from './QueryBuilderOperatorHelpers';
 
@@ -80,11 +80,11 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    const typeInfo = filterConditionState.value
-      ? getValueSpecificationTypeInfo(filterConditionState.value)
+    const type = filterConditionState.value
+      ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
     return (
-      typeInfo !== undefined &&
+      type !== undefined &&
       ((([
         PRIMITIVE_TYPE.STRING,
         PRIMITIVE_TYPE.BOOLEAN,
@@ -93,9 +93,8 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
         PRIMITIVE_TYPE.DECIMAL,
         PRIMITIVE_TYPE.FLOAT,
         PRIMITIVE_TYPE.STRICTDATE,
-      ] as unknown) as string).includes(typeInfo.type.path) ||
-        typeInfo.type === propertyType) &&
-      typeInfo.isCollection === false
+      ] as unknown) as string).includes(type.path) ||
+        type === propertyType)
     );
   }
 

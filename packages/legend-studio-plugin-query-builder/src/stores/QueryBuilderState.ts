@@ -84,6 +84,10 @@ import {
   QueryBuilderIsEmptyOperator,
   QueryBuilderIsNotEmptyOperator,
 } from './operators/QueryBuilderIsEmptyOperator';
+import {
+  QueryBuilderInOperator,
+  QueryBuilderNotInOperator,
+} from './operators/QueryBuilderInOperator';
 
 export class QueryBuilderState extends EditorExtensionState {
   editorStore: EditorStore;
@@ -109,6 +113,8 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderNotContainOperator(),
     new QueryBuilderEndWithOperator(),
     new QueryBuilderNotEndWithOperator(),
+    new QueryBuilderInOperator(),
+    new QueryBuilderNotInOperator(),
     new QueryBuilderIsEmptyOperator(),
     new QueryBuilderIsNotEmptyOperator(),
   ];

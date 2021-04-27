@@ -1982,6 +1982,7 @@ __metadata:
     "@finos/legend-studio-shared": "workspace:*"
     "@testing-library/dom": 7.30.4
     "@testing-library/react": 11.2.6
+    "@types/papaparse": 5.2.5
     "@types/react": 17.0.3
     "@types/react-dom": 17.0.3
     "@types/react-router-dom": 5.1.7
@@ -1993,6 +1994,7 @@ __metadata:
     mobx-react-lite: 3.2.0
     monaco-editor: 0.23.0
     npm-run-all: 4.1.5
+    papaparse: 5.3.0
     react: 17.0.2
     react-dom: 17.0.2
     react-router-dom: 5.2.0
@@ -3014,6 +3016,15 @@ __metadata:
   version: 1.0.1
   resolution: "@types/pako@npm:1.0.1"
   checksum: dea6f4b8e4cc1a8a129b373bced446f8c3b02d5b98a9669f4598a82a45b72912146f578ccb6a0b75a0d29ea125e272b07c1ffc15225635d30cf8807f07ed0d81
+  languageName: node
+  linkType: hard
+
+"@types/papaparse@npm:5.2.5":
+  version: 5.2.5
+  resolution: "@types/papaparse@npm:5.2.5"
+  dependencies:
+    "@types/node": "*"
+  checksum: c212250add6ab83825b3ebb7afbe4df47888dd800ea2e1bf06758394efaab047beb12c50bfaf45a6066cf5ead95b250042fa92675ef1fff1c235990c8ec14d8b
   languageName: node
   linkType: hard
 
@@ -11527,6 +11538,13 @@ __metadata:
   version: 2.0.3
   resolution: "pako@npm:2.0.3"
   checksum: a89beeaf07a8853f1b1b4868088489582f9f3ba4170e779c2af6a9f2f91735c67a4e63e52b9c7cdef6e0b530838b72437cf53ff624ef5315d6eb2ae0c459b1dd
+  languageName: node
+  linkType: hard
+
+"papaparse@npm:5.3.0":
+  version: 5.3.0
+  resolution: "papaparse@npm:5.3.0"
+  checksum: 65a492e6dcfd03ea39114cdedbc3bf71be3ec16e622e94e09f6ffbba5a964bba6bd11c6aecec6a93d2f700d6f847716357266f9f6206a23ee1ee896c3f2bb2b4
   languageName: node
   linkType: hard
 

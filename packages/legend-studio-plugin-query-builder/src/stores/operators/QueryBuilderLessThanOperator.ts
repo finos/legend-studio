@@ -33,7 +33,7 @@ import {
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
-  getValueSpecificationTypeInfo,
+  getNonCollectionValueSpecificationType,
 } from './QueryBuilderOperatorHelpers';
 
 const LESS_THAN_FUNCTION_NAME = 'lessThan';
@@ -60,18 +60,17 @@ export class QueryBuilderLessThanOperator extends QueryBuilderOperator {
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const typeInfo = filterConditionState.value
-      ? getValueSpecificationTypeInfo(filterConditionState.value)
+    const type = filterConditionState.value
+      ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
     return (
-      typeInfo !== undefined &&
+      type !== undefined &&
       (([
         PRIMITIVE_TYPE.NUMBER,
         PRIMITIVE_TYPE.INTEGER,
         PRIMITIVE_TYPE.DECIMAL,
         PRIMITIVE_TYPE.FLOAT,
-      ] as unknown) as string).includes(typeInfo.type.path) &&
-      typeInfo.isCollection === false
+      ] as unknown) as string).includes(type.path)
     );
   }
 

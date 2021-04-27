@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import type { Type, ValueSpecification } from '@finos/legend-studio';
+import type {
+  Enumeration,
+  PrimitiveType,
+  Type,
+  ValueSpecification,
+} from '@finos/legend-studio';
 import {
   FunctionType,
   LambdaFunction,
@@ -37,6 +42,7 @@ import {
   guaranteeNonNullable,
   assertTrue,
   generateEnumerableNameFromToken,
+  addUniqueEntry,
 } from '@finos/legend-studio-shared';
 import type {
   QueryBuilderFilterState,
@@ -45,11 +51,6 @@ import type {
 import { FilterConditionState } from '../QueryBuilderFilterState';
 import format from 'date-fns/format';
 import { DATE_FORMAT } from '@finos/legend-studio/lib/const';
-
-export interface QueryBuilderValueSpecificationInfo {
-  type: Type;
-  isCollection: boolean;
-}
 
 export const getDefaultPrimitiveInstanceValueForType = (
   type: PRIMITIVE_TYPE,
@@ -465,20 +466,66 @@ export const unwrapNotExpression = (
   return undefined;
 };
 
-export const getValueSpecificationTypeInfo = (
+export const getNonCollectionValueSpecificationType = (
   valueSpecification: ValueSpecification,
-): QueryBuilderValueSpecificationInfo | undefined => {
+): Type | undefined => {
   if (valueSpecification instanceof PrimitiveInstanceValue) {
-    return {
-      type: valueSpecification.genericType.value.rawType,
-      isCollection: false,
-    };
+    return valueSpecification.genericType.value.rawType;
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
-    return {
-      type: guaranteeNonNullable(valueSpecification.values[0]).value.owner,
-      isCollection: false,
-    };
+    return guaranteeNonNullable(valueSpecification.values[0]).value.owner;
   }
-  // WIP-QB: support collection here
+  return undefined;
+};
+
+export const getCollectionValueSpecificationType = (
+  filterConditionState: FilterConditionState,
+  values: ValueSpecification[],
+): Type | undefined => {
+  if (values.every((val) => val instanceof PrimitiveInstanceValue)) {
+    const valuePrimitiveTypes: (PrimitiveType | undefined)[] = [];
+    (values as PrimitiveInstanceValue[]).forEach((val) => {
+      const primitiveType = val.genericType.value.rawType;
+      switch (primitiveType.path) {
+        case PRIMITIVE_TYPE.STRING:
+          addUniqueEntry(
+            valuePrimitiveTypes,
+            filterConditionState.editorStore.graphState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.STRING,
+            ),
+          );
+          break;
+        case PRIMITIVE_TYPE.INTEGER:
+        case PRIMITIVE_TYPE.DECIMAL:
+        case PRIMITIVE_TYPE.FLOAT:
+        case PRIMITIVE_TYPE.NUMBER:
+          addUniqueEntry(
+            valuePrimitiveTypes,
+            filterConditionState.editorStore.graphState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.NUMBER,
+            ),
+          );
+          break;
+        default:
+          valuePrimitiveTypes.push(undefined);
+          break;
+      }
+    });
+    if (valuePrimitiveTypes.length > 1) {
+      return undefined;
+    }
+    return valuePrimitiveTypes[0] as PrimitiveType;
+  } else if (values.every((val) => val instanceof EnumValueInstanceValue)) {
+    const valueEnumerationTypes: Enumeration[] = [];
+    (values as EnumValueInstanceValue[]).forEach((val) => {
+      addUniqueEntry(
+        valueEnumerationTypes,
+        guaranteeNonNullable(val.values[0]).value.owner,
+      );
+    });
+    if (valueEnumerationTypes.length > 1) {
+      return undefined;
+    }
+    return valueEnumerationTypes[0];
+  }
   return undefined;
 };

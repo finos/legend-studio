@@ -62,6 +62,13 @@ const DerivedPropertyExpressionEditor = observer(
             }`}</div>
             <QueryBuilderValueSpecificationEditor
               valueSpecification={parameterValues[idx]}
+              graph={
+                derivedPropertyExpressionState.editorStore.graphState.graph
+              }
+              expectedType={
+                derivedPropertyExpressionState.propertyExpression.func
+                  .genericType.value.rawType
+              }
             />
             <div className="panel__content__form__section__list"></div>
           </div>
