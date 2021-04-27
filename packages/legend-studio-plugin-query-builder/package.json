@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-plugin-query-builder",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Legend Studio plugin for query builder",
   "keywords": [
     "legend",

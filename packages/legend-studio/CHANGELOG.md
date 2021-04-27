@@ -1,5 +1,26 @@
 # @finos/legend-studio
 
+## 0.1.0
+
+### Minor Changes
+
+- [#173](https://github.com/finos/legend-studio/pull/173) [`7709ab3`](https://github.com/finos/legend-studio/commit/7709ab3b2a3e66a5d44864e1ce694e696dddba69) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - A RawLambda resolver is added to resolve element paths inside lambdas that leverage imports. This allow successful compilation of graph that contain lambdas using imports.
+
+* [#171](https://github.com/finos/legend-studio/pull/171) [`2d1f8a7`](https://github.com/finos/legend-studio/commit/2d1f8a78c38121e96b745939b23ba5cc46c7a53c) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE** Studio router is reorganized to be more consistent and to accomondate more use cases.
+
+  - All routes now are to be prefixed with the SDLC server key, if there is only one SDLC server specified in the config file (with legacy SDLC field config form: `sdlc: { url: string }`), then the server key is `-`, i.e. `/studio/-/...`, else the server key is the key to the SDLC instance, i.e. `/studio/sdlc1/...`.
+  - If the server key specified in the URL is not recognised, the user will be redirected to the setup page if there is only one SDLC server in the config or the SDLC server configuration page if there are multiple SDLC servers in the config.
+  - Some basic routes are now renamed to be more consistent with others: e.g. setup page route is `/studio/-/setup/...`, editor page route is `/studio/-/edit/...`, and viewer page route is `/studio/-/view/...`
+
+### Patch Changes
+
+- [#172](https://github.com/finos/legend-studio/pull/172) [`e9c97c4`](https://github.com/finos/legend-studio/commit/e9c97c41b18d79d2676e48e12ae4e92d528b1819) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Fetch project versions in view mode, enabling features such as service registration in view mode.
+
+- Updated dependencies [[`b04b0f9`](https://github.com/finos/legend-studio/commit/b04b0f9abbecf886d0c864a8484717bf26ff22dc), [`4167a8b`](https://github.com/finos/legend-studio/commit/4167a8b68766beab60b98d5b3a6b23fbbce4847b)]:
+  - @finos/legend-studio-components@0.0.9
+  - @finos/legend-studio-network@0.0.9
+  - @finos/legend-studio-shared@0.0.7
+
 ## 0.0.17
 
 ### Patch Changes

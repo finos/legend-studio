@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-plugin-tracer-zipkin",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Legend Studio plugin for tracer using Zipkin and OpenTracing",
   "keywords": [
     "legend",
