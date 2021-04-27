@@ -78,25 +78,27 @@ export const QueryBuilderFetchStructurePanel = observer(
             <div className="panel__header__title__label">fetch structure</div>
           </div>
           <div className="panel__header__actions">
-            <div className="query-builder__fetch__structure__modes">
-              {Object.values(FETCH_STRUCTURE_MODE).map((fetchMode) => (
-                // TODO: might want to add alert modal to alert user changing fetch structure rests state
-                <button
-                  onClick={(): void =>
-                    fetchStructureState.handleFetchStructureModeChange(
-                      fetchMode,
-                    )
-                  }
-                  className={clsx('query-builder__fetch__structure__mode', {
-                    'query-builder__fetch__structure__mode--selected':
-                      fetchMode === fetchStructureState.fetchStructureMode,
-                  })}
-                  key={fetchMode}
-                >
-                  {prettyCONSTName(fetchMode)}
-                </button>
-              ))}
-            </div>
+            {queryBuilderState.TEMPORARY__enableGraphFetch && (
+              <div className="query-builder__fetch__structure__modes">
+                {Object.values(FETCH_STRUCTURE_MODE).map((fetchMode) => (
+                  // TODO: might want to add alert modal to alert user changing fetch structure rests state
+                  <button
+                    onClick={(): void =>
+                      fetchStructureState.handleFetchStructureModeChange(
+                        fetchMode,
+                      )
+                    }
+                    className={clsx('query-builder__fetch__structure__mode', {
+                      'query-builder__fetch__structure__mode--selected':
+                        fetchMode === fetchStructureState.fetchStructureMode,
+                    })}
+                    key={fetchMode}
+                  >
+                    {prettyCONSTName(fetchMode)}
+                  </button>
+                ))}
+              </div>
+            )}
             <button
               className="panel__header__action"
               onClick={openModal}

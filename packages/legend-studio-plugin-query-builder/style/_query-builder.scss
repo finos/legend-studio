@@ -515,15 +515,17 @@
   }
 
   &__mode {
-    padding: 0.5rem;
     display: flex;
     align-items: center;
     background: var(--color-dark-grey-250);
     color: var(--color-light-grey-200);
+    height: 2.2rem;
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
   }
 
   &__mode--selected {
-    cursor: default;
     background: var(--color-blue-200);
   }
 }
