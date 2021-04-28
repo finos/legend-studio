@@ -22,6 +22,7 @@ export enum V1_DatasourceSpecificationType {
   STATIC = 'static',
   H2_EMBEDDED = 'h2Embedded',
   SNOWFLAKE = 'snowflake',
+  H2_LOCAL = 'h2Local',
 }
 
 export abstract class V1_DatasourceSpecification implements Hashable {
@@ -79,6 +80,21 @@ export class V1_SnowflakeDatasourceSpecification
       this.region,
       this.warehouseName,
       this.databaseName,
+    ]);
+  }
+}
+
+export class V1_LocalH2DataSourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable {
+  testDataSetupCsv?: string;
+  testDataSetupSqls: string[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.EMBEDDED_H2_DATASOURCE_SPECIFICATION,
+      this.testDataSetupCsv ?? '',
+      hashArray(this.testDataSetupSqls),
     ]);
   }
 }
