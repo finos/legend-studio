@@ -121,6 +121,21 @@ export class EmbeddedH2DatasourceSpecification
   }
 }
 
+export class LocalH2DatasourceSpecification
+  extends DatasourceSpecification
+  implements Hashable {
+  testDataSetupCsv?: string;
+  testDataSetupSqls: string[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.EMBEDDED_H2_DATASOURCE_SPECIFICATION,
+      this.testDataSetupCsv ?? '',
+      hashArray(this.testDataSetupSqls),
+    ]);
+  }
+}
+
 export class SnowflakeDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable {

@@ -15,6 +15,7 @@
  */
 
 import { Studio } from '@finos/legend-studio';
+import { QueryBuilderPlugin } from '@finos/legend-studio-plugin-query-builder';
 import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
 import { EFJSONSchema_Preset } from '@finos/legend-studio-preset-external-format-json-schema';
 import studioConfig from '../studio.config';
@@ -23,6 +24,7 @@ import './index.scss';
 Studio.create()
   .setup({ baseUrl: studioConfig.baseUrl })
   .withPresets([new DSLText_Preset(), new EFJSONSchema_Preset()])
+  .withPlugins([new QueryBuilderPlugin()])
   .start()
   .catch((e) => {
     throw e;

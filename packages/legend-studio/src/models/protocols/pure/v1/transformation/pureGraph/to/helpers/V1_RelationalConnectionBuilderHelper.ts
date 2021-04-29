@@ -22,6 +22,7 @@ import {
   guaranteeNonEmptyString,
 } from '@finos/legend-studio-shared';
 import type { DatasourceSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
+import { LocalH2DatasourceSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import {
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
@@ -36,6 +37,7 @@ import {
 } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_DatasourceSpecification } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
+import { V1_LocalH2DataSourceSpecification } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
@@ -124,6 +126,10 @@ export const V1_processDatasourceSpecification = (
       datasourceSpecificationProtocol.databaseName,
     );
     return snowflakeSpec;
+  } else if (
+    datasourceSpecificationProtocol instanceof V1_LocalH2DataSourceSpecification
+  ) {
+    return new LocalH2DatasourceSpecification();
   }
   const extraConnectionDatasourceSpecificationBuilders = context.extensions.plugins.flatMap(
     (plugin) =>

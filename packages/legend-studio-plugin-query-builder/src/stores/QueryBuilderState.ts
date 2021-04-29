@@ -209,10 +209,16 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   reset(): void {
+    const currentQueryBuilderState = this.editorStore.getEditorExtensionState(
+      QueryBuilderState,
+    );
     changeEntry(
       this.editorStore.editorExtensionStates,
       this.editorStore.getEditorExtensionState(QueryBuilderState),
-      new QueryBuilderState(this.editorStore),
+      new QueryBuilderState(this.editorStore, {
+        TEMPORARY__enableGraphFetch:
+          currentQueryBuilderState.TEMPORARY__enableGraphFetch,
+      }),
     );
   }
 
