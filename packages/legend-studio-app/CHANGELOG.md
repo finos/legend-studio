@@ -1,5 +1,17 @@
 # @finos/legend-studio-app
 
+## 0.2.24
+
+### Patch Changes
+
+- [#176](https://github.com/finos/legend-studio/pull/176) [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d) Thanks [@akphi](https://github.com/akphi)! - Activate query builder plugin
+
+- Updated dependencies [[`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d), [`2f0991a`](https://github.com/finos/legend-studio/commit/2f0991a15e50cb3c5ecbe3a4ca46c7ec26d09415), [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d)]:
+  - @finos/legend-studio-plugin-query-builder@0.0.2
+  - @finos/legend-studio@0.1.1
+  - @finos/legend-studio-preset-dsl-text@0.0.19
+  - @finos/legend-studio-preset-external-format-json-schema@0.0.14
+
 ## 0.2.23
 
 ### Patch Changes

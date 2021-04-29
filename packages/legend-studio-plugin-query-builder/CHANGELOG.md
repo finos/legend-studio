@@ -1,5 +1,16 @@
 # @finos/legend-studio-plugin-query-builder
 
+## 0.0.2
+
+### Patch Changes
+
+- [#176](https://github.com/finos/legend-studio/pull/176) [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d) Thanks [@akphi](https://github.com/akphi)! - Fix the issue with the flag `TEMPORARY__enableGraphFetch` where this option is being ignored when query builder is closed and re-opened.
+
+- Updated dependencies [[`2f0991a`](https://github.com/finos/legend-studio/commit/2f0991a15e50cb3c5ecbe3a4ca46c7ec26d09415), [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d)]:
+  - @finos/legend-studio@0.1.1
+  - @finos/legend-studio-components@0.0.10
+  - @finos/legend-studio-shared@0.0.8
+
 ## 0.0.1
 
 ### Patch Changes
