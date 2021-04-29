@@ -16,6 +16,6 @@
     { "path": "../legend-studio" },
     { "path": "../legend-studio-preset-dsl-text" },
     { "path": "../legend-studio-preset-external-format-json-schema" },
-    { "path": "../legend-studio-plugin-query-builder" },
+    { "path": "../legend-studio-plugin-query-builder" }
   ]
 }

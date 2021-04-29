@@ -1869,7 +1869,7 @@ __metadata:
     react: 17.0.2
     react-dom: 17.0.2
     react-icons: 4.2.0
-    react-resize-detector: 6.7.0
+    react-resize-detector: 6.6.1
     react-select: 4.3.0
     react-window: 1.8.6
     rimraf: 3.0.2
@@ -2138,7 +2138,7 @@ __metadata:
     react-hotkeys: 2.0.0
     react-icons: 4.2.0
     react-reflex: 4.0.0
-    react-resize-detector: 6.7.0
+    react-resize-detector: 6.6.1
     react-router: 5.2.0
     react-router-dom: 5.2.0
     react-split-pane: 0.1.92
@@ -12831,9 +12831,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resize-detector@npm:6.7.0":
-  version: 6.7.0
-  resolution: "react-resize-detector@npm:6.7.0"
+"react-resize-detector@npm:6.6.1":
+  version: 6.6.1
+  resolution: "react-resize-detector@npm:6.6.1"
   dependencies:
     "@types/resize-observer-browser": ^0.1.5
     lodash.debounce: ^4.0.8
@@ -12842,7 +12842,7 @@ __metadata:
   peerDependencies:
     react: ^16.0.0 || ^17.0.0
     react-dom: ^16.0.0 || ^17.0.0
-  checksum: cece27f8758105953d5191a38586f5b5fcd504bfc65d2fe56bcf7520e786db855405ddcf0be7a79d14603c6bd10621d89b411d19e9b21c1384c6c466ad16fb58
+  checksum: 36d6afe3039097302ac10b2d3e5052c0c4b2b8203e7b9046f5cd2ee6f289db5832dcaef6ed6ccb45ae40880136f0d97d38bcd847c7f9045518fc2ca0d4f3ef72
   languageName: node
   linkType: hard
 
