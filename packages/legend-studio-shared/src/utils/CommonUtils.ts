@@ -242,7 +242,10 @@ export const deleteEntry = <T>(
   entryToDelete: T,
   comparator = (val1: T, val2: T): boolean => val1 === val2,
 ): boolean => {
-  const idx = array.findIndex((entry) => comparator(entry, entryToDelete));
+  const idx = array.findIndex((entry) => {
+    console.log(entry, entryToDelete);
+    return comparator(entry, entryToDelete);
+  });
   if (idx !== -1) {
     array.splice(idx, 1);
     return true;
