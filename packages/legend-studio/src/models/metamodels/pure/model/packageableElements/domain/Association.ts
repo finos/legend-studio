@@ -139,7 +139,7 @@ export class Association
       Class,
       `Association property '${property.name}' must be of type 'class'`,
     );
-    otherPropertyAssociatedClass.propertiesFromAssociations.length &&
+    if (otherPropertyAssociatedClass.propertiesFromAssociations.length) {
       assertTrue(
         deleteEntry(
           otherPropertyAssociatedClass.propertiesFromAssociations,
@@ -147,6 +147,7 @@ export class Association
         ),
         `Can't find property '${otherProperty.name}' from association '${this.path}' in associated class '${otherPropertyAssociatedClass.path}'`,
       );
+    }
     // set up the relationship between the other property and the new class
     addUniqueEntry(type.propertiesFromAssociations, otherProperty);
     // set new type for the property
