@@ -138,10 +138,15 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.graph.buildPackageString(element.package, element.name),
     );
     measure.setCanonicalUnit(
-      V1_processUnit(element.canonicalUnit, measure, this.context.graph),
+      V1_processUnit(
+        element.canonicalUnit,
+        measure,
+        this.context.graph,
+        this.context,
+      ),
     );
     measure.nonCanonicalUnits = element.nonCanonicalUnits.map((unit) =>
-      V1_processUnit(unit, measure, this.context.currentSubGraph),
+      V1_processUnit(unit, measure, this.context.currentSubGraph, this.context),
     );
   }
 

@@ -40,7 +40,7 @@ import {
 } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import Backdrop from '@material-ui/core/Backdrop';
-import type { EditorRouteParams } from '../../stores/RouterConfig';
+import type { EditorRouteParams } from '../../stores/Router';
 import {
   ActionAlertType,
   ActionAlertActionType,
@@ -104,6 +104,7 @@ export const EditorInner = observer(() => {
       }
     }
   };
+
   useEffect(() => {
     if (ref.current) {
       editorStore.setMaxAuxPanelSize(ref.current.offsetHeight);
@@ -297,14 +298,12 @@ export const EditorInner = observer(() => {
 
   // NOTE: this type any cast is needed to handle the outdated typings of `history` used by `react-router@5`.
   // TODO: We will fix this when we move to `react-router@6`
-  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
   const promptComponent = (
     <Prompt
       when={onNavigationChangeIndicator}
-      message={(handleRouteNavigationBlocking as unknown) as any}
+      message={(handleRouteNavigationBlocking as unknown) as any} // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
     />
   );
-  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
 
   return (
     <div className="app__page">

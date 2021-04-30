@@ -207,13 +207,13 @@ const V1_appliedFunctionModelSchema = createModelSchema(V1_AppliedFunction, {
 const appliedPropertyModelSchema = createModelSchema(V1_AppliedProperty, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.APPLIED_PROPERTY),
   class: optional(primitive()),
-  property: primitive(),
   parameters: list(
     custom(
       (val) => V1_serializeValueSpecification(val),
       (val) => V1_deserializeValueSpecification(val),
     ),
   ),
+  property: primitive(),
 });
 
 const collectionModelSchema = createModelSchema(V1_Collection, {

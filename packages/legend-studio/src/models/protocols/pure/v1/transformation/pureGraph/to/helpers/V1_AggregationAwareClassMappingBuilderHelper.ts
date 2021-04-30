@@ -16,7 +16,6 @@
 
 import type { Mapping } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import { RawLambda } from '../../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { V1_AggregateSetImplementationContainer } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer';
 import { AggregateSetImplementationContainer } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregateSetImplementationContainer';
 import type { InstanceSetImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
@@ -27,12 +26,15 @@ import { GroupByFunctionSpecification } from '../../../../../../../metamodels/pu
 import { AggregationFunctionSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationFunctionSpecification';
 import type { V1_AggregateFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction';
 import { V1_ProtocolToMetaModelClassMappingFirstPassVisitor } from '../V1_ProtocolToMetaModelClassMappingFirstPassVisitor';
+import { V1_rawLambdaBuilderWithResolver } from './V1_RawLambdaResolver';
 
 export const V1_processGroupByFunction = (
   groupByFunction: V1_GroupByFunction,
+  context: V1_GraphBuilderContext,
 ): GroupByFunctionSpecification => {
   const groupByFunctionSpecification = new GroupByFunctionSpecification(
-    new RawLambda(
+    V1_rawLambdaBuilderWithResolver(
+      context,
       groupByFunction.groupByFn.parameters,
       groupByFunction.groupByFn.body,
     ),
@@ -43,12 +45,15 @@ export const V1_processGroupByFunction = (
 
 export const V1_processAggregateFunction = (
   aggregationFunction: V1_AggregateFunction,
+  context: V1_GraphBuilderContext,
 ): AggregationFunctionSpecification => {
-  const mapFn = new RawLambda(
+  const mapFn = V1_rawLambdaBuilderWithResolver(
+    context,
     aggregationFunction.mapFn.parameters,
     aggregationFunction.mapFn.body,
   );
-  const aggregateFn = new RawLambda(
+  const aggregateFn = V1_rawLambdaBuilderWithResolver(
+    context,
     aggregationFunction.aggregateFn.parameters,
     aggregationFunction.aggregateFn.body,
   );
@@ -57,15 +62,16 @@ export const V1_processAggregateFunction = (
 
 export const V1_processAggregateSpecification = (
   specification: V1_AggregateSpecification,
+  context: V1_GraphBuilderContext,
 ): AggregateSpecification => {
   const aggregateSpecification = new AggregateSpecification(
     specification.canAggregate,
   );
   aggregateSpecification.aggregateValues = specification.aggregateValues.map(
-    (aggregateValue) => V1_processAggregateFunction(aggregateValue),
+    (aggregateValue) => V1_processAggregateFunction(aggregateValue, context),
   );
   aggregateSpecification.groupByFunctions = specification.groupByFunctions.map(
-    (groupByFunction) => V1_processGroupByFunction(groupByFunction),
+    (groupByFunction) => V1_processGroupByFunction(groupByFunction, context),
   );
   return aggregateSpecification;
 };
@@ -77,7 +83,7 @@ export const V1_processAggregateContainer = (
 ): AggregateSetImplementationContainer => {
   const aggregateSetImplementationContainer = new AggregateSetImplementationContainer(
     container.index,
-    V1_processAggregateSpecification(container.aggregateSpecification),
+    V1_processAggregateSpecification(container.aggregateSpecification, context),
     container.setImplementation.accept_ClassMappingVisitor(
       new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(context, mapping),
     ) as InstanceSetImplementation,

@@ -88,6 +88,7 @@ const LambdaEditorInner = observer(
     forceBackdrop: boolean;
     forceExpansion?: boolean;
     useBaseTextEditorSettings?: boolean;
+    hideErrorBar?: boolean;
   }) => {
     const {
       className,
@@ -100,6 +101,7 @@ const LambdaEditorInner = observer(
       forceBackdrop,
       forceExpansion,
       useBaseTextEditorSettings,
+      hideErrorBar,
     } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -414,10 +416,12 @@ const LambdaEditorInner = observer(
             </button>
           )}
         </div>
-        <LambdaErrorFeedback
-          error={parserError ?? compilationError}
-          discardChanges={discardChanges}
-        />
+        {!hideErrorBar && (
+          <LambdaErrorFeedback
+            error={parserError ?? compilationError}
+            discardChanges={discardChanges}
+          />
+        )}
       </>
     );
   },
@@ -439,6 +443,7 @@ export const LambdaEditor = observer(
     forceBackdrop: boolean;
     forceExpansion?: boolean;
     useBaseTextEditorSettings?: boolean;
+    hideErrorBar?: boolean;
   }) => {
     const {
       className,
@@ -450,6 +455,7 @@ export const LambdaEditor = observer(
       matchedExpectedType,
       forceExpansion,
       useBaseTextEditorSettings,
+      hideErrorBar,
     } = props;
     const debouncedTransformStringToLambda = useMemo(
       () =>
@@ -499,6 +505,7 @@ export const LambdaEditor = observer(
         forceBackdrop={forceBackdrop}
         forceExpansion={forceExpansion}
         useBaseTextEditorSettings={useBaseTextEditorSettings}
+        hideErrorBar={hideErrorBar}
       />
     );
   },

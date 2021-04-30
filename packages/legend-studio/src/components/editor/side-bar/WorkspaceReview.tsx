@@ -38,7 +38,7 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '../../../stores/ApplicationStore';
-import { getReviewRoute } from '../../../stores/RouterConfig';
+import { generateReviewRoute } from '../../../stores/Router';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
 
@@ -271,7 +271,8 @@ export const WorkspaceReview = observer(() => {
                       className="workspace-review__title__content__input__link"
                       rel="noopener noreferrer"
                       target="_blank"
-                      to={getReviewRoute(
+                      to={generateReviewRoute(
+                        applicationStore.config.sdlcServerKey,
                         workspaceReview.projectId,
                         workspaceReview.id,
                       )}

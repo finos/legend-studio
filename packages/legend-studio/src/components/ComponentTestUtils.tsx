@@ -34,7 +34,11 @@ import type { Entity } from '../models/sdlc/models/entity/Entity';
 import type { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { Revision } from '../models/sdlc/models/revision/Revision';
-import { ROUTE_PATTERN, getEditorRoute } from '../stores/RouterConfig';
+import {
+  ROUTE_PATTERN,
+  generateEditorRoute,
+  URL_PATH_PLACEHOLDER,
+} from '../stores/Router';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -126,7 +130,7 @@ export const SDLC_TestData = {
 export const renderWithAppContext = (
   ui: React.ReactNode,
   {
-    route = '/',
+    route = `/${URL_PATH_PLACEHOLDER}/`,
     history = createMemoryHistory({ initialEntries: [route] }),
   }: { route?: string; history?: History } = {},
   config = getTestApplicationConfig(),
@@ -329,12 +333,13 @@ export const setUpEditor = async (
     <Route
       exact={true}
       strict={true}
-      path={ROUTE_PATTERN.EDITOR}
+      path={ROUTE_PATTERN.EDIT}
       component={Editor}
     />
   );
   const renderResult = renderWithAppContext(component, {
-    route: getEditorRoute(
+    route: generateEditorRoute(
+      mockedEditorStore.applicationStore.config.sdlcServerKey,
       ((workspace as unknown) as Workspace).projectId,
       ((workspace as unknown) as Workspace).workspaceId,
     ),

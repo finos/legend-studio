@@ -1,5 +1,26 @@
 # @finos/legend-studio-app
 
+## 0.2.24
+
+### Patch Changes
+
+- [#176](https://github.com/finos/legend-studio/pull/176) [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d) Thanks [@akphi](https://github.com/akphi)! - Activate query builder plugin
+
+- Updated dependencies [[`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d), [`2f0991a`](https://github.com/finos/legend-studio/commit/2f0991a15e50cb3c5ecbe3a4ca46c7ec26d09415), [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d)]:
+  - @finos/legend-studio-plugin-query-builder@0.0.2
+  - @finos/legend-studio@0.1.1
+  - @finos/legend-studio-preset-dsl-text@0.0.19
+  - @finos/legend-studio-preset-external-format-json-schema@0.0.14
+
+## 0.2.23
+
+### Patch Changes
+
+- Updated dependencies [[`7709ab3`](https://github.com/finos/legend-studio/commit/7709ab3b2a3e66a5d44864e1ce694e696dddba69), [`b04b0f9`](https://github.com/finos/legend-studio/commit/b04b0f9abbecf886d0c864a8484717bf26ff22dc), [`2d1f8a7`](https://github.com/finos/legend-studio/commit/2d1f8a78c38121e96b745939b23ba5cc46c7a53c), [`4167a8b`](https://github.com/finos/legend-studio/commit/4167a8b68766beab60b98d5b3a6b23fbbce4847b), [`e9c97c4`](https://github.com/finos/legend-studio/commit/e9c97c41b18d79d2676e48e12ae4e92d528b1819)]:
+  - @finos/legend-studio@0.1.0
+  - @finos/legend-studio-preset-dsl-text@0.0.18
+  - @finos/legend-studio-preset-external-format-json-schema@0.0.13
+
 ## 0.2.22
 
 ### Patch Changes

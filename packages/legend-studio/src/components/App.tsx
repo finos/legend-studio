@@ -15,7 +15,13 @@
  */
 
 import { useEffect } from 'react';
-import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
+import {
+  Switch,
+  Route,
+  Redirect,
+  useHistory,
+  useRouteMatch,
+} from 'react-router-dom';
 import { Setup } from './setup/Setup';
 import { Editor } from './editor/Editor';
 import { Review } from './review/Review';
@@ -31,13 +37,21 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
 } from '@finos/legend-studio-components';
-import { ROUTE_PATTERN } from '../stores/RouterConfig';
+import type { SDLCServerKeyRouteParams } from '../stores/Router';
+import {
+  generateSetupRoute,
+  ROUTE_PATTERN,
+  generateRoutePatternWithSDLCServerKey,
+} from '../stores/Router';
 import { ActionAlert } from './application/ActionAlert';
 import { BlockingAlert } from './application/BlockingAlert';
 import { AppHeader, BasicAppHeader } from './shared/AppHeader';
 import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
-import type { ApplicationConfig } from '../stores/ApplicationConfig';
+import type {
+  ApplicationConfig,
+  SDLCServerOption,
+} from '../stores/ApplicationConfig';
 import type { PluginManager } from '../application/PluginManager';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 
@@ -117,7 +131,7 @@ export const AppRoot = observer(() => {
     .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? [])
     .filter((entry) => {
       /**
-       * NOTE: filter out page extra application page that will clash with `/:projectId`
+       * NOTE: Make sure the first path in the url pattern is not a token which could make it the catch-all route.
        *
        * TODO: maybe there's a more sophisticated way to manage URL pattern conflicts, but this is sufficient for now.
        */
@@ -150,24 +164,29 @@ export const AppRoot = observer(() => {
       )}
       {applicationStore.isSDLCAuthorized && (
         <Switch>
-          {extraApplicationPageRenderEntries.map((entry) => (
-            <Route
-              key={entry.urlPattern}
-              exact={true}
-              path={entry.urlPattern}
-              component={entry.component as React.ComponentType<unknown>}
-            />
-          ))}
-          <Route exact={true} path={ROUTE_PATTERN.VIEWER} component={Viewer} />
+          <Route exact={true} path={ROUTE_PATTERN.VIEW} component={Viewer} />
           <Route exact={true} path={ROUTE_PATTERN.REVIEW} component={Review} />
           <Route
             exact={true}
             strict={true}
-            path={ROUTE_PATTERN.EDITOR}
+            path={ROUTE_PATTERN.EDIT}
             component={Editor}
           />
           <Route exact={true} path={ROUTE_PATTERN.SETUP} component={Setup} />
-          <Redirect to="/" />
+          {extraApplicationPageRenderEntries.map((entry) => (
+            <Route
+              key={entry.urlPattern}
+              exact={true}
+              path={generateRoutePatternWithSDLCServerKey(entry.urlPattern)}
+              component={entry.component as React.ComponentType<unknown>}
+            />
+          ))}
+          <Redirect
+            to={generateSetupRoute(
+              applicationStore.config.sdlcServerKey,
+              undefined,
+            )}
+          />
         </Switch>
       )}
     </div>
@@ -177,22 +196,27 @@ export const AppRoot = observer(() => {
 export const AppConfigurationEditor = observer(
   (props: { config: ApplicationConfig }) => {
     const { config } = props;
+    const history = (useHistory() as unknown) as History<State>;
     const sdlcServerOptions = config.sdlcServerOptions.map((option) => ({
       label: option.label,
-      value: option.url,
+      value: option,
     }));
     const onSDLCServerChange = (val: {
       label: string;
-      value: string;
+      value: SDLCServerOption;
     }): void => {
-      config.setSDLCServerUrl(val.value);
+      config.setSDLCServerKey(val.value.key);
     };
     const currentSDLCServerOption = guaranteeNonNullable(
-      sdlcServerOptions.find((option) => option.value === config.sdlcServerUrl),
+      sdlcServerOptions.find(
+        (option) => option.value.key === config.sdlcServerKey,
+      ),
     );
 
     const configure = (): void => {
       config.setConfigured(true);
+      // go to the default URL after confiruing SDLC server
+      history.push(generateSetupRoute(config.sdlcServerKey, undefined));
     };
 
     return (
@@ -230,8 +254,35 @@ export const App = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
     const { config, pluginManager } = props;
     const history = (useHistory() as unknown) as History<State>;
+    const routeMatch = useRouteMatch<SDLCServerKeyRouteParams>(
+      generateRoutePatternWithSDLCServerKey('/'),
+    );
+    const sdlcServerKey = config.sdlcServerOptions.find(
+      (option) => option.key === routeMatch?.params.sdlcServerKey,
+    )?.key;
+
+    useEffect(() => {
+      if (!config.isConfigured) {
+        if (sdlcServerKey !== undefined) {
+          config.setSDLCServerKey(sdlcServerKey);
+          config.setConfigured(true);
+        } else if (config.sdlcServerOptions.length === 1) {
+          // when there is only one SDLC server and the sdlc server key provided is unrecognized,
+          // auto-fix the URL
+          history.push(
+            generateSetupRoute(config.sdlcServerOptions[0].key, undefined),
+          );
+        } else {
+          // set this by default for the app config editor
+          config.setSDLCServerKey(config.sdlcServerOptions[0].key);
+        }
+      }
+    }, [config, history, sdlcServerKey]);
 
     if (!config.isConfigured) {
+      if (!config._sdlcServerKey) {
+        return null;
+      }
       return (
         <ThemeProvider theme={materialTheme}>
           <AppConfigurationEditor config={config} />

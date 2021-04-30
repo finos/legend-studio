@@ -40,6 +40,7 @@ import { V1_FlatDataConnection } from '../../../model/packageableElements/store/
 import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
+  V1_LocalH2DataSourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
@@ -118,6 +119,7 @@ export const V1_flatDataConnectionModelSchema = createModelSchema(
 enum V1_DatasourceSpecificationType {
   STATIC = 'static',
   H2_EMBEDDED = 'h2Embedded',
+  H2_LOCAL = 'h2Local',
   SNOWFLAKE = 'snowflake',
 }
 
@@ -138,6 +140,15 @@ const embeddedH2DatasourceSpecificationModelSchema = createModelSchema(
     autoServerMode: primitive(),
     databaseName: primitive(),
     directory: primitive(),
+  },
+);
+
+const localH2DatasourceSpecificationModelSchema = createModelSchema(
+  V1_LocalH2DataSourceSpecification,
+  {
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.H2_LOCAL),
+    testDataSetupCsv: primitive(),
+    testDataSetupSqls: list(primitive()),
   },
 );
 
@@ -162,6 +173,8 @@ export const V1_serializeDatasourceSpecification = (
     return serialize(embeddedH2DatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     return serialize(snowflakeDatasourceSpecificationModelSchema, protocol);
+  } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
+    return serialize(localH2DatasourceSpecificationModelSchema, protocol);
   }
   const extraConnectionDatasourceSpecificationProtocolSerializers = plugins.flatMap(
     (plugin) =>
@@ -192,6 +205,8 @@ export const V1_deserializeDatasourceSpecification = (
       return deserialize(embeddedH2DatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.SNOWFLAKE:
       return deserialize(snowflakeDatasourceSpecificationModelSchema, json);
+    case V1_DatasourceSpecificationType.H2_LOCAL:
+      return deserialize(localH2DatasourceSpecificationModelSchema, json);
     default: {
       const extraConnectionDatasourceSpecificationProtocolDeserializers = plugins.flatMap(
         (plugin) =>

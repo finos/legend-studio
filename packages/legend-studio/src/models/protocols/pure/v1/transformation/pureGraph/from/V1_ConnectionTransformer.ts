@@ -38,6 +38,7 @@ import {
 } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { DatasourceSpecification } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import {
+  LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -50,6 +51,7 @@ import {
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
 import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
+  V1_LocalH2DataSourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_StaticDatasourceSpecification,
@@ -114,6 +116,8 @@ const transformDatasourceSpecification = (
     return transformEmbeddedH2DatasourceSpecification(metamodel);
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof LocalH2DatasourceSpecification) {
+    return new V1_LocalH2DataSourceSpecification();
   }
   const extraConnectionDatasourceSpecificationTransformers = plugins.flatMap(
     (plugin) =>

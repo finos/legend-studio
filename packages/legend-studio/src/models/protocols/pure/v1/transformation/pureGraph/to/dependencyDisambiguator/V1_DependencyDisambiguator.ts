@@ -457,7 +457,7 @@ export class V1_DependencyDisambiguator
       this.dependencyProcessingContext,
     );
     classMapping.mainSetImplementation.accept_ClassMappingVisitor(this);
-    classMapping.aggregateSetImplementations.map((aggregate) => {
+    classMapping.aggregateSetImplementations.forEach((aggregate) => {
       aggregate.setImplementation.class = V1_processDependencyPath(
         aggregate.setImplementation.class,
         this.dependencyProcessingContext,
@@ -468,7 +468,6 @@ export class V1_DependencyDisambiguator
     classMapping.propertyMappings.forEach((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(this),
     );
-    return;
   }
 
   // ----------------------------------------------- PROPERTY MAPPING ----------------------------------------

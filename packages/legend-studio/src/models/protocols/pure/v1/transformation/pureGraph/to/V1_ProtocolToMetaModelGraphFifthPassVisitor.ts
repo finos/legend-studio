@@ -78,7 +78,7 @@ export class V1_ProtocolToMetaModelGraphFifthPassVisitor
         V1_processDerivedProperty(derivedProperty, this.context, _class),
     );
     _class.constraints = element.constraints.map((constraint) =>
-      V1_processClassConstraint(constraint, _class),
+      V1_processClassConstraint(constraint, _class, this.context),
     );
   }
 

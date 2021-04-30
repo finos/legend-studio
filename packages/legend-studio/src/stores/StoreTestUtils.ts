@@ -22,32 +22,42 @@ import { EditorStore } from './EditorStore';
 import { createBrowserHistory } from 'history';
 import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { PluginManager } from '../application/PluginManager';
+import { URL_PATH_PLACEHOLDER } from './Router';
+
+export const testApplicationConfigData = {
+  appName: 'test-app',
+  env: 'test-env',
+  sdlc: {
+    url: 'https://testSdlcUrl',
+  },
+  engine: {
+    url: 'https://testEngineUrl',
+  },
+  documentation: {
+    url: 'https://testDocUrl',
+  },
+};
+
+export const testApplicationVersionData = {
+  buildTime: '2001-01-01T00:00:00-0000',
+  version: 'test-version',
+  commitSHA: 'test-commit-id',
+};
 
 export const getTestApplicationConfig = (
   extraConfigData = {},
-): ApplicationConfig =>
-  new ApplicationConfig(
+): ApplicationConfig => {
+  const config = new ApplicationConfig(
     {
-      appName: 'test-app',
-      env: 'test-env',
-      sdlc: {
-        url: 'https://testSdlcUrl',
-      },
-      engine: {
-        url: 'https://testEngineUrl',
-      },
-      documentation: {
-        url: 'https://testDocUrl',
-      },
+      ...testApplicationConfigData,
       ...extraConfigData,
     },
-    {
-      buildTime: '2001-01-01T00:00:00-0000',
-      version: 'test-version',
-      commitSHA: 'test-commit-id',
-    },
+    testApplicationVersionData,
     '/studio/',
   );
+  config.setSDLCServerKey(URL_PATH_PLACEHOLDER);
+  return config;
+};
 
 export const getTestEditorStore = (
   applicationConfig = getTestApplicationConfig(),
@@ -160,4 +170,38 @@ export const checkBuildingElementsRoundtrip = async (
         change.oldPath !== '__internal__::SectionIndex',
     ).length,
   ).toBe(0);
+};
+
+export const checkBuildingResolvedElements = async (
+  entities: Entity[],
+  resolvedEntities: Entity[],
+  editorStore = getTestEditorStore(),
+): Promise<void> => {
+  await editorStore.graphState.initializeSystem();
+  await editorStore.graphState.graphManager.buildGraph(
+    editorStore.graphState.graph,
+    entities,
+  );
+  const transformedEntities = editorStore.graphState.graph.allElements.map(
+    (element) => editorStore.graphState.graphManager.elementToEntity(element),
+  );
+  // ensure that transformed entities have all fields ordered alphabetically
+  transformedEntities.forEach((entity) =>
+    ensureObjectFieldsAreSortedAlphabetically(entity.content),
+  );
+  // check if the contents are the same (i.e. roundtrip test)
+  expect(transformedEntities).toIncludeSameMembers(
+    excludeSectionIndex(resolvedEntities),
+  );
+  // check hash
+  await editorStore.graphState.graph.precomputeHashes(
+    editorStore.applicationStore.logger,
+  );
+  const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
+    entities,
+  );
+  editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
+    protocolHashesIndex,
+  );
+  await editorStore.changeDetectionState.computeLocalChanges(true);
 };

@@ -38,6 +38,8 @@ export enum SUPPORTED_FUNCTIONS {
   SORT_FUNC = 'sort',
   SERIALIZE = 'serialize',
   GRAPH_FETCH_CHECKED = 'graphFetchChecked',
+  EXISTS = 'exists',
+  NOT = 'not',
 }
 
 export class Expression extends ValueSpecification {

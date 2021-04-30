@@ -21,7 +21,7 @@ import { useSetupStore } from '../../stores/SetupStore';
 import type { SelectComponent } from '@finos/legend-studio-components';
 import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
-import { getSetupRoute } from '../../stores/RouterConfig';
+import { generateSetupRoute } from '../../stores/Router';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { ACTION_STATE } from '@finos/legend-studio-shared';
 
@@ -50,7 +50,6 @@ export const ProjectSelector = observer(
     const { onChange, create } = props;
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore();
-    const config = applicationStore.config;
     const currentProjectId = setupStore.currentProjectId;
     const options = setupStore.projectOptions;
     const selectedOption =
@@ -70,7 +69,12 @@ export const ProjectSelector = observer(
             .fetchWorkspaces(val.value)
             .catch(applicationStore.alertIllegalUnhandledError);
         }
-        applicationStore.historyApiClient.push(getSetupRoute(val?.value ?? ''));
+        applicationStore.historyApiClient.push(
+          generateSetupRoute(
+            applicationStore.config.sdlcServerKey,
+            val?.value ?? '',
+          ),
+        );
       }
     };
 
@@ -78,7 +82,12 @@ export const ProjectSelector = observer(
       if (setupStore.projects && !setupStore.currentProject) {
         if (currentProjectId) {
           // For first load, if the project is not found, reset the URL
-          applicationStore.historyApiClient.push('/');
+          applicationStore.historyApiClient.push(
+            generateSetupRoute(
+              applicationStore.config.sdlcServerKey,
+              undefined,
+            ),
+          );
         }
         onChange(false);
       }
@@ -104,7 +113,10 @@ export const ProjectSelector = observer(
           className="setup-selector__action btn--dark"
           onClick={create}
           tabIndex={-1}
-          disabled={config.options.TEMPORARY__disableSDLCProjectCreation}
+          disabled={
+            applicationStore.config.options
+              .TEMPORARY__disableSDLCProjectCreation
+          }
           title={'Create a Project'}
         >
           <FaPlus />

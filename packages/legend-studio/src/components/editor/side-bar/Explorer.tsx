@@ -63,7 +63,7 @@ import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerati
 import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerationTreeUtil';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
-import { getElementViewerRoute } from '../../../stores/RouterConfig';
+import { generateViewEntityRoute } from '../../../stores/Router';
 import { isNonNullable, toTitleCase } from '@finos/legend-studio-shared';
 import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
@@ -116,7 +116,8 @@ const ExplorerContextMenu = observer(
       if (node) {
         window.open(
           applicationStore.historyApiClient.createHref({
-            pathname: getElementViewerRoute(
+            pathname: generateViewEntityRoute(
+              applicationStore.config.sdlcServerKey,
               projectId,
               node.packageableElement.path,
             ),
