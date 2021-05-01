@@ -129,7 +129,7 @@ export class LocalH2DatasourceSpecification
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.EMBEDDED_H2_DATASOURCE_SPECIFICATION,
+      CORE_HASH_STRUCTURE.LOCAL_H2_DATASOURCE_SPECIFICATION,
       this.testDataSetupCsv ?? '',
       hashArray(this.testDataSetupSqls),
     ]);

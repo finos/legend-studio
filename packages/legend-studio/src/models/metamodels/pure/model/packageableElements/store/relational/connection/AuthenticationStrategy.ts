@@ -120,3 +120,39 @@ export class OAuthAuthenticationStrategy
     ]);
   }
 }
+
+export class SnowflakePublicAuthenticationStrategy
+  extends AuthenticationStrategy
+  implements Hashable {
+  privateKeyVaultReference: string;
+  passPhraseVaultReference: string;
+  publicUserName: string;
+
+  constructor(
+    privateKeyVaultReference: string,
+    passPhraseVaultReference: string,
+    publicUserName: string,
+  ) {
+    super();
+
+    makeObservable(this, {
+      privateKeyVaultReference: observable,
+      passPhraseVaultReference: observable,
+      publicUserName: observable,
+      hashCode: computed,
+    });
+
+    this.privateKeyVaultReference = privateKeyVaultReference;
+    this.passPhraseVaultReference = passPhraseVaultReference;
+    this.publicUserName = publicUserName;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SNOWFLAKE_PUBLIC_AUTHENTICATION_STRATEGY,
+      this.privateKeyVaultReference,
+      this.passPhraseVaultReference,
+      this.publicUserName,
+    ]);
+  }
+}

@@ -30,6 +30,7 @@ import {
 } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { AuthenticationStrategy } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
+  SnowflakePublicAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
@@ -45,6 +46,7 @@ import {
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
+  V1_SnowflakePublicAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
@@ -159,6 +161,24 @@ export const V1_processAuthenticationStrategy = (
     const metamodel = new DelegatedKerberosAuthenticationStrategy();
     metamodel.serverPrincipal = protocol.serverPrincipal;
     return metamodel;
+  } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
+    assertNonEmptyString(
+      protocol.privateKeyVaultReference,
+      'Snowflake public authentication strategy private key vault reference is missing or empty',
+    );
+    assertNonEmptyString(
+      protocol.passPhraseVaultReference,
+      'Snowflake public authentication strategy pass phrase vault reference is missing or empty',
+    );
+    assertNonEmptyString(
+      protocol.publicUserName,
+      'Snowflake public authentication user name is missing or empty',
+    );
+    return new SnowflakePublicAuthenticationStrategy(
+      protocol.privateKeyVaultReference,
+      protocol.passPhraseVaultReference,
+      protocol.publicUserName,
+    );
   } else if (protocol instanceof V1_TestDatabaseAuthenticationStrategy) {
     return new TestDatabaseAuthenticationStrategy();
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
