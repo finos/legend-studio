@@ -25,7 +25,11 @@ const baseConfig = getBaseConfig({
 
 module.exports = {
   ...baseConfig,
-  setupFiles: ['<rootDir>/scripts/jest/setupTests.js'],
+  setupFiles: [
+    '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
+    '<rootDir>/scripts/jest/setupTests/blockFetch.js',
+    '<rootDir>/scripts/jest/setupTests/handleUnhandledRejection.js',
+  ],
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed
   // See https://jestjs.io/docs/en/configuration#setupfilesafterenv-array

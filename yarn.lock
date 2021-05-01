@@ -1932,6 +1932,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests"
+  dependencies:
+    "@finos/legend-studio": "workspace:*"
+    "@finos/legend-studio-dev-utils": "workspace:*"
+    "@finos/legend-studio-shared": "workspace:*"
+    "@types/react": 17.0.4
+    axios: 0.21.1
+    copy-webpack-plugin: 8.1.1
+    cross-env: 7.0.3
+    eslint: 7.25.0
+    jest: 26.6.3
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    rimraf: 3.0.2
+    typescript: 4.2.4
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-studio-network@workspace:*, @finos/legend-studio-network@workspace:packages/legend-studio-network":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-network@workspace:packages/legend-studio-network"
@@ -4082,6 +4102,15 @@ __metadata:
   version: 1.11.0
   resolution: "aws4@npm:1.11.0"
   checksum: 5a00d045fd0385926d20ebebcfba5ec79d4482fe706f63c27b324d489a04c68edb0db99ed991e19eda09cb8c97dc2452059a34d97545cebf591d7a2b5a10999f
+  languageName: node
+  linkType: hard
+
+"axios@npm:0.21.1":
+  version: 0.21.1
+  resolution: "axios@npm:0.21.1"
+  dependencies:
+    follow-redirects: ^1.10.0
+  checksum: c87915fa0b18c15c63350112b6b3563a3e2ae524d7707de0a73d2e065e0d30c5d3da8563037bc29d4cc1b7424b5a350cb7274fa52525c6c04a615fe561c6ab11
   languageName: node
   linkType: hard
 
@@ -7034,7 +7063,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.0.0":
+"follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.10.0":
   version: 1.14.0
   resolution: "follow-redirects@npm:1.14.0"
   peerDependenciesMeta:

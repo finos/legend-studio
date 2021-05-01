@@ -1,0 +1,117 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import path from 'path';
+import fs from 'fs';
+import axios from 'axios';
+import type { V1_PackageableElement } from '@finos/legend-studio';
+import { EntityChangeType } from '@finos/legend-studio';
+import { getTestEditorStore } from '@finos/legend-studio';
+import type { PlainObject } from '@finos/legend-studio-shared';
+import { unitTest } from '@finos/legend-studio-shared';
+
+const ENGINE_SERVER_URL = 'http://localhost:6060/api';
+const TEST_CASE_DIR = path.resolve(__dirname, 'cases');
+
+const checkGrammarRoundtrip = async (
+  file: string,
+  editorStore = getTestEditorStore(),
+): Promise<void> => {
+  // parse the grammar
+  const content = fs.readFileSync(file, { encoding: 'utf-8' });
+  const json = await axios.post(
+    `${ENGINE_SERVER_URL}/pure/v1/grammar/transformGrammarToJson`,
+    {
+      code: content,
+    },
+    {},
+  );
+  const entities = editorStore.graphState.graphManager.pureProtocolToEntities(
+    JSON.stringify(json.data.modelDataContext),
+  );
+
+  await editorStore.graphState.initializeSystem();
+  await editorStore.graphState.graphManager.buildGraph(
+    editorStore.graphState.graph,
+    entities,
+    { TEMPORARY__keepSectionIndex: true },
+  );
+  const transformedEntities = editorStore.graphState.graph.allElements.map(
+    (element) => editorStore.graphState.graphManager.elementToEntity(element),
+  );
+
+  // ensure that transformed entities have all fields ordered alphabetically
+  expect(
+    // received: transformed entity
+    transformedEntities
+      .map((entity) => entity.content)
+      .map(editorStore.graphState.graphManager.pruneSourceInformation),
+  ).toIncludeSameMembers(
+    // expected: protocol JSON parsed from grammar text
+    json.data.modelDataContext.elements
+      .map(editorStore.graphState.graphManager.pruneSourceInformation)
+      .filter(
+        (elementProtocol: PlainObject<V1_PackageableElement>) =>
+          elementProtocol._type !== 'sectionIndex',
+      ),
+  );
+
+  // check hash computation
+  await editorStore.graphState.graph.precomputeHashes(
+    editorStore.applicationStore.logger,
+  );
+  const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
+    entities,
+  );
+  editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
+    protocolHashesIndex,
+  );
+  await editorStore.changeDetectionState.computeLocalChanges(true);
+
+  // TODO: avoid listing section index as part of change detection for now
+  expect(
+    editorStore.changeDetectionState.workspaceLatestRevisionState.changes.filter(
+      (change) =>
+        change.entityChangeType !== EntityChangeType.DELETE ||
+        change.oldPath !== '__internal__::SectionIndex',
+    ).length,
+  ).toBe(0);
+};
+
+const testNameFrom = (fileName: string): string => {
+  const name = path.basename(fileName, '.pure').split('-').join(' ');
+  return `${name[0].toUpperCase()}${name.substring(1, name.length)}`;
+};
+
+const cases = fs
+  .readdirSync(TEST_CASE_DIR)
+  .map((filePath) => path.resolve(TEST_CASE_DIR, filePath))
+  .filter((filePath) => fs.statSync(filePath).isFile())
+  .map((filePath) => [testNameFrom(filePath), filePath]);
+
+test(unitTest('Grammar roundtrip'), async () => {
+  const filePath = path.resolve(
+    __dirname,
+    'cases/embeddedRelationalMappingWithoutImports.pure',
+  );
+  await checkGrammarRoundtrip(filePath);
+});
+
+describe('Protocol JSON parsed from grammar text roundtrip test', () => {
+  test.each(cases)('%s', async (testName, filePath) => {
+    await checkGrammarRoundtrip(filePath);
+  });
+});
