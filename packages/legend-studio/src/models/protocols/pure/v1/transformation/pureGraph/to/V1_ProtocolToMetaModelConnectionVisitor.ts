@@ -214,6 +214,8 @@ export class V1_ProtocolToMetaModelConnectionVisitor
         this.context,
       ),
     );
+    val.timeZone = connection.timeZone;
+    val.quoteIdentifiers = connection.quoteIdentifiers;
     val.postProcessors = connection.postProcessors.map((p) =>
       V1_processPostProcessor(p, this.context),
     );

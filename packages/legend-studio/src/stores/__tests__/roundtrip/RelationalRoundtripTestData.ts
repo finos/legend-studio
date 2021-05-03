@@ -3645,6 +3645,56 @@ export const testRelationalDatabaseConnectionRoundtrip = [
     },
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
+  {
+    path: 'simple::H2ConnectionWithQuoteIdentifiers',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        datasourceSpecification: {
+          _type: 'static',
+          databaseName: 'myDb',
+          host: 'somehost',
+          port: 999,
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        quoteIdentifiers: true,
+        timeZone: 'IST',
+        type: 'H2',
+      },
+      name: 'H2ConnectionWithQuoteIdentifiers',
+      package: 'simple',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
+    path: 'simple::H2ConnectionWithQuoteIdentifiers1',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        datasourceSpecification: {
+          _type: 'static',
+          databaseName: 'myDb',
+          host: 'somehost',
+          port: 999,
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        quoteIdentifiers: false,
+        timeZone: 'IST',
+        type: 'H2',
+      },
+      name: 'H2ConnectionWithQuoteIdentifiers1',
+      package: 'simple',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
 ];
 
 export const testRelationalInputData = [

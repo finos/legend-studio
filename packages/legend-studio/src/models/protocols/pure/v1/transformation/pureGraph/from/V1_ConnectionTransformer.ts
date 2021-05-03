@@ -197,6 +197,7 @@ const transformRelationalDatabaseConnection = (
   );
   connection.type = (metamodel.type as unknown) as V1_DatabaseType;
   connection.timeZone = metamodel.timeZone;
+  connection.quoteIdentifiers = metamodel.quoteIdentifiers;
   if (metamodel.postProcessors.length) {
     connection.postProcessors = metamodel.postProcessors.map((postprocessor) =>
       V1_transformPostProcessor(postprocessor, plugins),
