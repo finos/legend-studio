@@ -139,12 +139,27 @@ export class SnowflakePublicAuthenticationStrategy
       privateKeyVaultReference: observable,
       passPhraseVaultReference: observable,
       publicUserName: observable,
+      setPrivateKeyVaultReference: action,
+      setPassPhraseVaultReference: action,
+      setPublicUserName: action,
       hashCode: computed,
     });
 
     this.privateKeyVaultReference = privateKeyVaultReference;
     this.passPhraseVaultReference = passPhraseVaultReference;
     this.publicUserName = publicUserName;
+  }
+
+  setPrivateKeyVaultReference(val: string): void {
+    this.privateKeyVaultReference = val;
+  }
+
+  setPassPhraseVaultReference(val: string): void {
+    this.passPhraseVaultReference = val;
+  }
+
+  setPublicUserName(val: string): void {
+    this.publicUserName = val;
   }
 
   get hashCode(): string {

@@ -127,6 +127,21 @@ export class LocalH2DatasourceSpecification
   testDataSetupCsv?: string;
   testDataSetupSqls: string[] = [];
 
+  constructor() {
+    super();
+
+    makeObservable(this, {
+      testDataSetupCsv: observable,
+      testDataSetupSqls: observable,
+      setTestDataSetupCsv: action,
+      hashCode: computed,
+    });
+  }
+
+  setTestDataSetupCsv(val: string | undefined): void {
+    this.testDataSetupCsv = val;
+  }
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.LOCAL_H2_DATASOURCE_SPECIFICATION,
