@@ -36,9 +36,9 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "25.1.0",
-    "@ag-grid-community/core": "25.1.0",
-    "@ag-grid-community/react": "25.1.0",
+    "@ag-grid-community/client-side-row-model": "25.2.0",
+    "@ag-grid-community/core": "25.2.0",
+    "@ag-grid-community/react": "25.2.0",
     "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-network": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
@@ -61,7 +61,7 @@
     "react-hotkeys": "2.0.0",
     "react-icons": "4.2.0",
     "react-reflex": "4.0.0",
-    "react-resize-detector": "6.6.1",
+    "react-resize-detector": "6.7.1",
     "react-router": "5.2.0",
     "react-router-dom": "5.2.0",
     "react-split-pane": "0.1.92",
