@@ -186,4 +186,52 @@ test(integrationTest('Enumeration View'), async () => {
   expect(queryByText(enumerationEditor, 'enumA')).toBeNull();
 });
 
+test(integrationTest('Association View'), async () => {
+  await openElementFromExplorerTree('ui::TestAssociation', renderResult);
+  const editPanelHeader = renderResult.getByTestId(
+    CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
+  );
+  expect(getByText(editPanelHeader, 'TestAssociation')).not.toBeNull();
+  const associationEditor = renderResult.getByTestId(
+    CORE_TEST_ID.ASSOCIATION_EDITOR,
+  );
+  const properties = ['testClassProp', 'testClassSibling'];
+  const propertyTypes = ['TestClass', 'TestClassSibling'];
+  // input fields for association property name are present
+  properties.forEach((t) =>
+    expect(getByDisplayValue(associationEditor, t)).not.toBeNull(),
+  );
+  // Tagged Values
+  fireEvent.click(getByText(associationEditor, 'Tagged Values'));
+  await waitFor(() => getByText(associationEditor, 'ProfileTest'));
+  getByDisplayValue(associationEditor, 'Association Tag');
+  // Steretypes
+  fireEvent.click(getByText(associationEditor, 'Stereotypes'));
+  await waitFor(() => getByText(associationEditor, 'stereotype2'));
+  // Back to properties
+  fireEvent.click(getByText(associationEditor, 'Properties'));
+  await waitFor(() => getByDisplayValue(associationEditor, 'testClassProp'));
+  const inputA = getByDisplayValue(associationEditor, 'testClassProp');
+  const propertyTypeA = inputA.parentElement as HTMLElement;
+  fireEvent.change(inputA, { target: { value: 'random' } });
+  await waitFor(() => getByDisplayValue(associationEditor, 'random'));
+  expect(getAllByDisplayValue(propertyTypeA, '1')).toHaveLength(2);
+  expect(getByText(propertyTypeA, 'TestClass')).not.toBeNull();
+  expect(getAllByRole(propertyTypeA, 'button')).toHaveLength(2);
+  // sub panel property
+  const inputB = getByDisplayValue(associationEditor, 'testClassSibling');
+  const propertyTypeB = inputB.parentElement as HTMLElement;
+  const buttons = getAllByRole(propertyTypeB, 'button');
+  expect(buttons).toHaveLength(2);
+  expect(queryByDisplayValue(associationEditor, 'ProfileTest')).toBeNull();
+  const navigateToPropertyButton = buttons[1];
+  fireEvent.click(navigateToPropertyButton);
+  await waitFor(() => getByText(associationEditor, 'property'));
+  const subPropertyPanel = getByTestId(associationEditor, CORE_TEST_ID.PANEL);
+  getByDisplayValue(subPropertyPanel, 'association tag');
+  fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
+  await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
+  const deleteSubPanelButton = queryAllByRole(subPropertyPanel, 'button')[0];
+  fireEvent.click(deleteSubPanelButton);
+});
 // Unable to find an element with the text: temporal. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.

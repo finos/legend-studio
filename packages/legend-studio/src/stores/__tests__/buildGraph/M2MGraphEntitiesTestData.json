@@ -1643,6 +1643,21 @@
       "_type": "association",
       "name": "TestAssociation",
       "package": "ui",
+      "stereotypes": [
+        {
+          "profile": "ui::test1::ProfileTest",
+          "value": "stereotype2"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "ui::test1::ProfileTest",
+            "value": "tag1"
+          },
+          "value": "Association Tag"
+        }
+      ],
       "properties": [
         {
           "multiplicity": {
@@ -1657,6 +1672,21 @@
             "lowerBound": 1,
             "upperBound": 1
           },
+          "stereotypes": [
+            {
+              "profile": "ui::test1::ProfileTest",
+              "value": "stereotype1"
+            }
+          ],
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "ui::test1::ProfileTest",
+                "value": "tag1"
+              },
+              "value": "association tag"
+            }
+          ],
           "name": "testClassSibling",
           "type": "ui::TestClassSibling"
         }
