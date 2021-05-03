@@ -119,7 +119,10 @@ const transformDatasourceSpecification = (
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof LocalH2DatasourceSpecification) {
-    return new V1_LocalH2DataSourceSpecification();
+    const protocol = new V1_LocalH2DataSourceSpecification();
+    protocol.testDataSetupCsv = metamodel.testDataSetupCsv;
+    protocol.testDataSetupSqls = metamodel.testDataSetupSqls;
+    return protocol;
   }
   const extraConnectionDatasourceSpecificationTransformers = plugins.flatMap(
     (plugin) =>
