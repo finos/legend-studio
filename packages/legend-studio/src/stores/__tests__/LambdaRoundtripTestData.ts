@@ -372,7 +372,7 @@ export const simpleProjectionWithFilter = {
   parameters: [],
 };
 
-export const testData = [
+export const ComplexRelationalModel = [
   {
     path: 'apps::pure::studio::tests::model::simple::Person',
     content: {
@@ -698,7 +698,7 @@ export const firmPersonGraphFetch = {
   parameters: [],
 };
 
-export const m2mTestData = [
+export const M2MModel = [
   {
     path: 'demo::other::IncType',
     content: {

@@ -32,6 +32,7 @@ import type { RelationalDatabaseConnection } from '../../../../../../metamodels/
 import type { AuthenticationStrategy } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   DefaultH2AuthenticationStrategy,
+  SnowflakePublicAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   OAuthAuthenticationStrategy,
@@ -59,6 +60,7 @@ import {
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
   V1_DefaultH2AuthenticationStrategy,
+  V1_SnowflakePublicAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -117,7 +119,10 @@ const transformDatasourceSpecification = (
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof LocalH2DatasourceSpecification) {
-    return new V1_LocalH2DataSourceSpecification();
+    const protocol = new V1_LocalH2DataSourceSpecification();
+    protocol.testDataSetupCsv = metamodel.testDataSetupCsv;
+    protocol.testDataSetupSqls = metamodel.testDataSetupSqls;
+    return protocol;
   }
   const extraConnectionDatasourceSpecificationTransformers = plugins.flatMap(
     (plugin) =>
@@ -151,17 +156,21 @@ const transformAuthenticationStrategy = (
   plugins: PureProtocolProcessorPlugin[],
 ): V1_AuthenticationStrategy => {
   if (metamodel instanceof DefaultH2AuthenticationStrategy) {
-    const authentication = new V1_DefaultH2AuthenticationStrategy();
-    return authentication;
+    return new V1_DefaultH2AuthenticationStrategy();
   } else if (metamodel instanceof DelegatedKerberosAuthenticationStrategy) {
     const auth = new V1_DelegatedKerberosAuthenticationStrategy();
     auth.serverPrincipal = metamodel.serverPrincipal;
     return auth;
   } else if (metamodel instanceof TestDatabaseAuthenticationStrategy) {
-    const auth = new V1_TestDatabaseAuthenticationStrategy();
-    return auth;
+    return new V1_TestDatabaseAuthenticationStrategy();
   } else if (metamodel instanceof OAuthAuthenticationStrategy) {
     return transformOAuthtAuthenticationStrategy(metamodel);
+  } else if (metamodel instanceof SnowflakePublicAuthenticationStrategy) {
+    const auth = new V1_SnowflakePublicAuthenticationStrategy();
+    auth.privateKeyVaultReference = metamodel.privateKeyVaultReference;
+    auth.passPhraseVaultReference = metamodel.passPhraseVaultReference;
+    auth.publicUserName = metamodel.publicUserName;
+    return auth;
   }
   const extraConnectionAuthenticationStrategyTransformers = plugins.flatMap(
     (plugin) =>

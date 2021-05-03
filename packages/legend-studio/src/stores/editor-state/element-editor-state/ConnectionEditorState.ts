@@ -37,10 +37,12 @@ import {
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
+  SnowflakePublicAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
 } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
+  LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
   StaticDatasourceSpecification,
 } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
@@ -74,6 +76,7 @@ export enum RELATIONAL_DATABASE_TABE {
 
 export enum CORE_DATASOURCE_SPEC_TYPE {
   STATIC = 'STATIC',
+  H2_LOCAL = 'H2_LOCAL',
   H2_EMBEDDED = 'H2_EMBEDDED',
   SNOWFLAKE = 'SNOWFLAKE',
 }
@@ -81,6 +84,7 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
 export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   DELEGATED_KERBEROS = 'DELEGATED_KERBEROS',
   H2_DEFAULT = 'H2_DEFAULT',
+  SNOWFLAKE_PUBLIC = 'SNOWFLAKE_PUBLIC',
   TEST = 'TEST',
   OAUTH = 'OAUTH',
 }
@@ -243,6 +247,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.H2_EMBEDDED;
     } else if (spec instanceof SnowflakeDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE;
+    } else if (spec instanceof LocalH2DatasourceSpecification) {
+      return CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL;
     }
     const extraDatasourceSpecificationTypeGetters = this.editorStore.applicationStore.pluginManager
       .getEditorPlugins()
@@ -269,6 +275,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_DATASOURCE_SPEC_TYPE.STATIC: {
         this.connection.setDatasourceSpecification(
           new StaticDatasourceSpecification('', 80, ''),
+        );
+        return;
+      }
+      case CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL: {
+        this.connection.setDatasourceSpecification(
+          new LocalH2DatasourceSpecification(),
         );
         return;
       }
@@ -315,6 +327,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT;
     } else if (auth instanceof OAuthAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH;
+    } else if (auth instanceof SnowflakePublicAuthenticationStrategy) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
     }
     const extraAuthenticationStrategyTypeGetters = this.editorStore.applicationStore.pluginManager
       .getEditorPlugins()
@@ -341,6 +355,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS: {
         this.connection.setAuthenticationStrategy(
           new DelegatedKerberosAuthenticationStrategy(),
+        );
+        return;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC: {
+        this.connection.setAuthenticationStrategy(
+          new SnowflakePublicAuthenticationStrategy('', '', ''),
         );
         return;
       }
