@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/// <reference types="jest-extended" />
 import path from 'path';
 import fs from 'fs';
 import axios from 'axios';
