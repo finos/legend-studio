@@ -185,5 +185,3 @@ test(integrationTest('Enumeration View'), async () => {
   fireEvent.click(deleteButton);
   expect(queryByText(enumerationEditor, 'enumA')).toBeNull();
 });
-
-// Unable to find an element with the text: temporal. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.

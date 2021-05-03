@@ -17,8 +17,7 @@
   "scripts": {
     "build": "echo 'do nothing'",
     "clean": "rimraf \"dist\" \"build\"",
-    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.js\" \"./src/**/*.{js,ts,tsx}\"",
-    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
     "test:manual": "jest --config jest.config.manual.js",
     "test:watch": "jest --config jest.config.manual.js --watch"
   },

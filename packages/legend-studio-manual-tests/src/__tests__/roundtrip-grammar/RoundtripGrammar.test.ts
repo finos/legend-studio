@@ -18,10 +18,8 @@ import path from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import type { V1_PackageableElement } from '@finos/legend-studio';
-import { EntityChangeType } from '@finos/legend-studio';
-import { getTestEditorStore } from '@finos/legend-studio';
+import { EntityChangeType, getTestEditorStore } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-studio-shared';
-import { unitTest } from '@finos/legend-studio-shared';
 
 const ENGINE_SERVER_URL = 'http://localhost:6060/api';
 const TEST_CASE_DIR = path.resolve(__dirname, 'cases');
@@ -101,14 +99,6 @@ const cases = fs
   .map((filePath) => path.resolve(TEST_CASE_DIR, filePath))
   .filter((filePath) => fs.statSync(filePath).isFile())
   .map((filePath) => [testNameFrom(filePath), filePath]);
-
-test(unitTest('Grammar roundtrip'), async () => {
-  const filePath = path.resolve(
-    __dirname,
-    'cases/embeddedRelationalMappingWithoutImports.pure',
-  );
-  await checkGrammarRoundtrip(filePath);
-});
 
 describe('Protocol JSON parsed from grammar text roundtrip test', () => {
   test.each(cases)('%s', async (testName, filePath) => {
