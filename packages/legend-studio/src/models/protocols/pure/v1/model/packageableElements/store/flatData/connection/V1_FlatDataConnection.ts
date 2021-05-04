@@ -26,7 +26,7 @@ export class V1_FlatDataConnection extends V1_Connection implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_CONNECTION,
-      super.hashCode,
+      this.store ?? '',
       this.url,
     ]);
   }

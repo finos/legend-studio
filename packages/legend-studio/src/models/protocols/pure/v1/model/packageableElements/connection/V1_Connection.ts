@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
-import { hashArray } from '@finos/legend-studio-shared';
 import type { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import type { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import type { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
@@ -49,9 +47,7 @@ export interface V1_ConnectionVisitor<T> {
 export abstract class V1_Connection implements Hashable {
   store?: string;
 
-  get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.CONNECTION, this.store ?? '']);
-  }
+  abstract get hashCode(): string;
 
   abstract accept_ConnectionVisitor<T>(visitor: V1_ConnectionVisitor<T>): T;
 }

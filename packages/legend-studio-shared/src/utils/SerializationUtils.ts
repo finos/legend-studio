@@ -89,7 +89,9 @@ export const deserializeArray = (
 };
 /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
 
-export const usingConstantValueSchema = (value: unknown): PropSchema =>
+export const usingConstantValueSchema = (
+  value: unknown | typeof SKIP,
+): PropSchema =>
   custom(
     () => value,
     () => value,
