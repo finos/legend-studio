@@ -64,6 +64,12 @@ module.exports = {
   coverageDirectory: '<rootDir>/build/coverage',
   watchPathIgnorePatterns: [
     ...baseConfig.watchPathIgnorePatterns,
-    '/packages/.*/lib',
+    '<rootDir>/packages/.*/build',
+    '<rootDir>/packages/.*/lib',
+    '<rootDir>/packages/.*/dist',
+    '<rootDir>/packages/.*/dev',
+    '<rootDir>/build',
+    '<rootDir>/docs',
+    '<rootDir>/temp',
   ],
 };

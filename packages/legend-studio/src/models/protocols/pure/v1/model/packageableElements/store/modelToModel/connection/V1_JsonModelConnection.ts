@@ -27,7 +27,6 @@ export class V1_JsonModelConnection extends V1_Connection implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.JSON_MODEL_CONNECTION,
-      super.hashCode,
       this.class,
       this.url,
     ]);

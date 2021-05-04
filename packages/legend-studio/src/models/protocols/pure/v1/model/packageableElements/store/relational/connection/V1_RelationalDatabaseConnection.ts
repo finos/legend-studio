@@ -53,7 +53,7 @@ export class V1_RelationalDatabaseConnection
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_DATABASE_CONNECTION,
-      super.hashCode,
+      this.store ?? '',
       this.timeZone ?? '',
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,

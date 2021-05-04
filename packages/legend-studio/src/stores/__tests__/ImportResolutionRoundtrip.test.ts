@@ -199,7 +199,7 @@ describe(unitTest('Diagram import resolution roundtrip'), () => {
 });
 
 describe(unitTest('Service import resolution roundtrip'), () => {
-  test.each([['Simple diagram specification', testServiceRoundtrip]])(
+  test.each([['Simple service', testServiceRoundtrip]])(
     '%s',
     async (testName, entities) => {
       await checkBuildingElementsRoundtrip(entities);

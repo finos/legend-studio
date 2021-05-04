@@ -64,7 +64,7 @@ export class FlatDataConnection extends Connection implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_CONNECTION,
-      super.hashCode,
+      this.store.valueForSerialization,
       this.url,
     ]);
   }

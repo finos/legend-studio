@@ -68,7 +68,6 @@ export class JsonModelConnection
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.JSON_MODEL_CONNECTION,
-      super.hashCode,
       this.class.valueForSerialization,
       this.url,
     ]);
