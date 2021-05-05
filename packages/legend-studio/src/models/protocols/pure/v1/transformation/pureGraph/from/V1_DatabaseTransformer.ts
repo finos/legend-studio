@@ -166,6 +166,7 @@ export const V1_transformTableAliasToTablePointer = (
 ): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
   tablePtr.database = tableAlias.relation.ownerReference.valueForSerialization;
+  tablePtr.mainTableDb = tablePtr.database; // NOTE: added to be consistent with grammar parser
   tablePtr.schema = tableAlias.isSelfJoinTarget
     ? SELF_JOIN_SCHEMA_NAME
     : tableAlias.relation.value.schema.name;
@@ -178,6 +179,7 @@ export const V1_transformTableAliasToTablePointer = (
 export const V1_transformTableToTablePointer = (table: Table): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
   tablePtr.database = table.schema.owner.path;
+  tablePtr.mainTableDb = tablePtr.database; // NOTE: added to be consistent with grammar parser
   tablePtr.schema = table.schema.name;
   tablePtr.table = table.name;
   return tablePtr;

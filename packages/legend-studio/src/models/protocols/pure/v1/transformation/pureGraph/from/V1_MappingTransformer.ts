@@ -398,9 +398,7 @@ const transformRelationalPropertyMapping = (
   propertyMapping.relationalOperation = V1_transformRelationalOperationElement(
     element.relationalOperation,
   );
-  propertyMapping.source = transformPropertyMappingSource(
-    element.sourceSetImplementation,
-  );
+  propertyMapping.source = undefined;
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -417,9 +415,7 @@ const transformEmbeddedRelationalPropertyMapping = (
 ): V1_EmbeddedRelationalPropertyMapping => {
   const embedded = new V1_EmbeddedRelationalPropertyMapping();
   embedded.property = V1_transformPropertyReference(element.property);
-  embedded.source = transformPropertyMappingSource(
-    element.sourceSetImplementation,
-  );
+  embedded.source = undefined;
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -449,9 +445,7 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
 ): V1_InlineEmbeddedPropertyMapping => {
   const embedded = new V1_InlineEmbeddedPropertyMapping();
   embedded.property = V1_transformPropertyReference(element.property);
-  embedded.source = transformPropertyMappingSource(
-    element.sourceSetImplementation,
-  );
+  embedded.source = undefined;
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -460,6 +454,39 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
     embedded.id = id;
   }
   embedded.setImplementationId = element.inlineSetImplementation.id.value;
+  if (element.localMappingProperty) {
+    embedded.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
+  }
+  return embedded;
+};
+
+const transformOtherwiseEmbeddedRelationalPropertyMapping = (
+  element: OtherwiseEmbeddedRelationalInstanceSetImplementation,
+): V1_OtherwiseEmbeddedRelationalPropertyMapping => {
+  const embedded = new V1_OtherwiseEmbeddedRelationalPropertyMapping();
+  embedded.property = V1_transformPropertyReference(element.property);
+  embedded.source = undefined;
+  embedded.target = transformPropertyMappingTarget(
+    element.targetSetImplementation,
+  );
+  const classMapping = new V1_RelationalClassMapping();
+  classMapping.primaryKey = element.primaryKey.map(
+    V1_transformRelationalOperationElement,
+  );
+  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+    element.propertyMappings,
+  );
+  const root = transformMappingElementRoot(element.root);
+  if (root !== undefined) {
+    classMapping.root = root;
+  }
+  classMapping.class = V1_transformElementReference(element.class);
+  embedded.classMapping = classMapping;
+  embedded.otherwisePropertyMapping = serializeProperyMapping(
+    element.otherwisePropertyMapping,
+  ) as V1_RelationalPropertyMapping;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
       element.localMappingProperty,
@@ -490,41 +517,6 @@ const transformXStorePropertyMapping = (
     );
   }
   return xstore;
-};
-
-const transformOtherwiseEmbeddedRelationalPropertyMapping = (
-  element: OtherwiseEmbeddedRelationalInstanceSetImplementation,
-): V1_OtherwiseEmbeddedRelationalPropertyMapping => {
-  const embedded = new V1_OtherwiseEmbeddedRelationalPropertyMapping();
-  embedded.property = V1_transformPropertyReference(element.property);
-  embedded.source = transformPropertyMappingSource(
-    element.sourceSetImplementation,
-  );
-  embedded.target = transformPropertyMappingTarget(
-    element.targetSetImplementation,
-  );
-  const classMapping = new V1_RelationalClassMapping();
-  classMapping.primaryKey = element.primaryKey.map(
-    V1_transformRelationalOperationElement,
-  );
-  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
-    element.propertyMappings,
-  );
-  const root = transformMappingElementRoot(element.root);
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
-  classMapping.class = V1_transformElementReference(element.class);
-  embedded.classMapping = classMapping;
-  embedded.otherwisePropertyMapping = serializeProperyMapping(
-    element.otherwisePropertyMapping,
-  ) as V1_RelationalPropertyMapping;
-  if (element.localMappingProperty) {
-    embedded.localMappingProperty = transformLocalPropertyInfo(
-      element.localMappingProperty,
-    );
-  }
-  return embedded;
 };
 
 const transformAggregationAwarePropertyMapping = (

@@ -272,7 +272,7 @@ const relationalPropertyMappingModelSchema = createModelSchema(
       (val) => V1_serializeRelationalOperationElement(val),
       (val) => V1_deserializeRelationalOperationElement(val),
     ),
-    source: primitive(),
+    source: optional(primitive()),
     target: optional(primitive()),
   },
 );
@@ -287,7 +287,7 @@ const embeddedRelationalPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: primitive(),
+    source: optional(primitive()),
     target: optional(primitive()),
   },
 );
@@ -305,7 +305,7 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema = createModelSchema
       (val) => V1_deserializeRelationalPropertyMapping(val),
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: primitive(),
+    source: optional(primitive()),
     target: optional(primitive()),
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
@@ -324,7 +324,7 @@ const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: primitive(),
+    source: optional(primitive()),
     setImplementationId: primitive(),
     target: optional(primitive()),
   },
