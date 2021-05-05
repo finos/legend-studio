@@ -369,9 +369,7 @@ const transformPurePropertyMapping = (
   purePropertyMapping.property = V1_transformPropertyReference(
     element.property,
   );
-  purePropertyMapping.source = transformPropertyMappingSource(
-    element.sourceSetImplementation,
-  );
+  purePropertyMapping.source = '';
   purePropertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );

@@ -1711,7 +1711,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "fullName"
               },
-              "source": "ui_test1_Target_Something",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1750,7 +1750,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "age"
               },
-              "source": "ui_test1_Target_Something",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1780,7 +1780,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "description"
               },
-              "source": "ui_test1_Target_Something",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1828,7 +1828,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "fullName"
               },
-              "source": "targetSomething",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1858,7 +1858,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "age"
               },
-              "source": "targetSomething",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1888,7 +1888,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "description"
               },
-              "source": "targetSomething",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [

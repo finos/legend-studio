@@ -199,7 +199,7 @@ export const testServiceRoundtrip = [
         data: 'moreThanData',
       },
     },
-    classifierPath: 'meta::alloy::service::metamodel::Service',
+    classifierPath: 'meta::legend::service::metamodel::Service',
   },
   {
     path: 'test::pure::tService_Multi',
@@ -361,7 +361,7 @@ export const testServiceRoundtrip = [
         ],
       },
     },
-    classifierPath: 'meta::alloy::service::metamodel::Service',
+    classifierPath: 'meta::legend::service::metamodel::Service',
   },
   {
     path: 'test::pure::tService_SingleWithEmbeddedRuntime',
@@ -439,7 +439,6 @@ export const testServiceRoundtrip = [
                   connection: {
                     _type: 'JsonModelConnection',
                     class: 'tClass',
-                    element: 'ModelStore',
                     url: 'my_url',
                   },
                   id: 'id3',
@@ -465,7 +464,7 @@ export const testServiceRoundtrip = [
         data: 'moreThanData',
       },
     },
-    classifierPath: 'meta::alloy::service::metamodel::Service',
+    classifierPath: 'meta::legend::service::metamodel::Service',
   },
   {
     path: 'test::myConnection',
@@ -474,7 +473,6 @@ export const testServiceRoundtrip = [
       connectionValue: {
         _type: 'JsonModelConnection',
         class: 'test::tClass',
-        element: 'ModelStore',
         url: 'dummy',
       },
       name: 'myConnection',

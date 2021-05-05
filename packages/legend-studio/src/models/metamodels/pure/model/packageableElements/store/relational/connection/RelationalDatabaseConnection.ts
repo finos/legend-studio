@@ -43,6 +43,7 @@ export abstract class DatabaseConnection extends Connection {
   type: DatabaseType;
   // debug?: boolean;
   timeZone?: string;
+  quoteIdentifiers?: boolean;
 
   constructor(
     store: PackageableElementReference<Database>,
@@ -53,6 +54,7 @@ export abstract class DatabaseConnection extends Connection {
     makeObservable(this, {
       type: observable,
       timeZone: observable,
+      quoteIdentifiers: observable,
       setType: action,
     });
 
@@ -101,8 +103,9 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_DATABASE_CONNECTION,
-      super.hashCode,
+      this.store.valueForSerialization,
       this.timeZone ?? '',
+      this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,
       this.authenticationStrategy,
       hashArray(this.postProcessors),

@@ -106,7 +106,7 @@ export const QueryBuilderFetchStructurePanel = observer(
               disabled={
                 fetchStructureStateMode !== FETCH_STRUCTURE_MODE.PROJECTION
               }
-              title="Configure Result Set Modifiers..."
+              title="Configure result set modifiers..."
             >
               <CgOptions className="query-builder__icon query-builder__icon__query-option" />
             </button>

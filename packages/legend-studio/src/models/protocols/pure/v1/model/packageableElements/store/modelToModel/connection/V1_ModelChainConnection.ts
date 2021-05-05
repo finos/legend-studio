@@ -26,7 +26,6 @@ export class V1_ModelChainConnection extends V1_Connection implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MODEL_CHAIN_CONNECTION,
-      super.hashCode,
       hashArray(this.mappings),
     ]);
   }

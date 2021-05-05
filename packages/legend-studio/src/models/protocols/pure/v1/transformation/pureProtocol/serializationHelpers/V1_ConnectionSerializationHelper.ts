@@ -47,6 +47,7 @@ import {
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
+  V1_SnowflakePublicAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
@@ -80,7 +81,7 @@ export const V1_modelChainConnectionModelSchema = createModelSchema(
   V1_ModelChainConnection,
   {
     _type: usingConstantValueSchema(V1_ConnectionType.MODEL_CHAIN_CONNECTION),
-    store: alias('element', primitive()),
+    store: alias('element', optional(primitive())),
     mappings: list(primitive()),
   },
 );
@@ -90,7 +91,7 @@ export const V1_jsonModelConnectionModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ConnectionType.JSON_MODEL_CONNECTION),
     class: primitive(),
-    store: alias('element', primitive()),
+    store: alias('element', optional(primitive())),
     url: primitive(),
   },
 );
@@ -100,7 +101,7 @@ export const V1_xmlModelConnectionModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ConnectionType.XML_MODEL_CONNECTION),
     class: primitive(),
-    store: alias('element', primitive()),
+    store: alias('element', optional(primitive())),
     url: primitive(),
   },
 );
@@ -230,6 +231,7 @@ export const V1_deserializeDatasourceSpecification = (
 
 enum V1_AuthenticationStrategyType {
   DELEGATED_KERBEROS = 'delegatedKerberos',
+  SNOWFLAKE_PUBLIC = 'snowflakePublic',
   H2_DEFAULT = 'h2Default',
   TEST = 'test',
   OAUTH = 'oauth',
@@ -255,6 +257,18 @@ const V1_testDatabaseAuthenticationStrategyModelSchema = createModelSchema(
   { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.TEST) },
 );
 
+const V1_snowflakePublicAuthenticationStrategyModelSchema = createModelSchema(
+  V1_SnowflakePublicAuthenticationStrategy,
+  {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.SNOWFLAKE_PUBLIC,
+    ),
+    privateKeyVaultReference: primitive(),
+    passPhraseVaultReference: primitive(),
+    publicUserName: primitive(),
+  },
+);
+
 const V1_oAuthAuthenticationStrategyModelSchema = createModelSchema(
   V1_OAuthAuthenticationStrategy,
   {
@@ -278,6 +292,11 @@ export const V1_serializeAuthenticationStrategy = (
   } else if (protocol instanceof V1_TestDatabaseAuthenticationStrategy) {
     return serialize(
       V1_testDatabaseAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
+    return serialize(
+      V1_snowflakePublicAuthenticationStrategyModelSchema,
       protocol,
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
@@ -313,6 +332,11 @@ export const V1_deserializeAuthenticationStrategy = (
       );
     case V1_AuthenticationStrategyType.H2_DEFAULT:
       return deserialize(V1_defaultH2AuthenticationStrategyModelSchema, json);
+    case V1_AuthenticationStrategyType.SNOWFLAKE_PUBLIC:
+      return deserialize(
+        V1_snowflakePublicAuthenticationStrategyModelSchema,
+        json,
+      );
     case V1_AuthenticationStrategyType.TEST:
       return deserialize(
         V1_testDatabaseAuthenticationStrategyModelSchema,

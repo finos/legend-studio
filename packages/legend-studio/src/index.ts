@@ -138,6 +138,7 @@ export {
 
 // SDLC
 export { Entity } from './models/sdlc/models/entity/Entity';
+export { EntityChangeType } from './models/sdlc/models/entity/EntityChange';
 export { Build, BuildStatus } from './models/sdlc/models/build/Build';
 export { Project, ProjectType } from './models/sdlc/models/project/Project';
 

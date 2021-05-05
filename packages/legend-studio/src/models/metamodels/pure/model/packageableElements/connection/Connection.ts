@@ -52,16 +52,11 @@ export abstract class Connection implements Hashable {
     });
   }
 
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.CONNECTION,
-      this.store.valueForSerialization,
-    ]);
-  }
-
   setStore(val: PackageableElementReference<Store>): void {
     this.store = val;
   }
+
+  abstract get hashCode(): string;
 
   abstract accept_ConnectionVisitor<T>(visitor: ConnectionVisitor<T>): T;
 }
