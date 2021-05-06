@@ -30,12 +30,13 @@ import type { V1_GraphBuilderContext } from '../../../../transformation/pureGrap
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
 import { V1_getInferredClassMappingId } from '../../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
 
-export const V1_processEmbeddedRelationalMappingProperties = (
+export const V1_processEmbeddedRelationalMappingProperty = (
   propertyMapping: V1_EmbeddedRelationalPropertyMapping,
   immediateParent: PropertyMappingsImplementation,
   topParent: InstanceSetImplementation,
   context: V1_GraphBuilderContext,
 ): {
+  propertyOwnerClass: Class;
   property: Property;
   _class: PackageableElementReference<Class>;
   id: InferableMappingElementIdExplicitValue;
@@ -86,5 +87,5 @@ export const V1_processEmbeddedRelationalMappingProperties = (
     immediateParent instanceof RootRelationalInstanceSetImplementation
       ? immediateParent
       : topParent;
-  return { property, _class, id, sourceSetImplementation };
+  return { propertyOwnerClass, property, _class, id, sourceSetImplementation };
 };
