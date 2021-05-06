@@ -9237,7 +9237,7 @@ export const testXStoreAssociationMapping = [
                 class: 'test::Person',
                 property: 'name',
               },
-              source: 'p',
+              source: '',
               transform: {
                 _type: 'lambda',
                 body: [
@@ -9271,7 +9271,7 @@ export const testXStoreAssociationMapping = [
                 class: 'test::Firm',
                 property: 'id',
               },
-              source: 'f',
+              source: '',
               transform: {
                 _type: 'lambda',
                 body: [
@@ -9296,7 +9296,7 @@ export const testXStoreAssociationMapping = [
                 class: 'test::Firm',
                 property: 'legalName',
               },
-              source: 'f',
+              source: '',
               transform: {
                 _type: 'lambda',
                 body: [

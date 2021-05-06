@@ -1,75 +1,48 @@
-Enum model::target::IncType
+Class other::Person
 {
-  LLC,
-  QB
+    name:String[1];
+    firm:other::Firm[1];
+    address: other::Address[0..1];
 }
-
-Class model::Firm
+Class other::Firm
 {
-  employees: model::Person[1..*];
-  type: String[1];
+    legalName:String[1];
+    employees:other::Person[1];
+    address:other::Address[1];
 }
-
-Class model::Person
+Class other::Address
 {
-  firstName: String[1];
-  lastName: String[1];
+    line1:String[1];
 }
-
-Class model::target::_Firm
-{
-  employees: model::target::_Person[1..*];
-  type: model::target::IncType[1];
-}
-
-Class model::target::_Person
-{
-  fullName: String[1];
-}
-
-
-###Mapping
-Mapping model::mapping
-(
-  *model::target::_Person: Pure
-  {
-    ~src model::Person
-    fullName: $src.firstName
-  }
-  *model::target::_Firm: Pure
-  {
-    ~src model::Firm
-    employees[model_target__Person, x]: $src.employees,
-    type: EnumerationMapping model_target_IncType: $src.type
-  }
-
-  model::target::IncType: EnumerationMapping
-  {
-    LLC: ['llc'],
-    QB: ['qb']
-  }
+###Relational
+Database mapping::db(
+   Table employeeFirmDenormTable
+   (
+    id INT PRIMARY KEY,
+    name VARCHAR(200),
+    firmId INT,
+    legalName VARCHAR(200),
+    address VARCHAR(200)
+   )
 )
-
-
-###Runtime
-Runtime model::runtime
-{
-  mappings:
-  [
-    model::mapping
-  ];
-  connections:
-  [
-    ModelStore:
-    [
-      connection_1:
-      #{
-        JsonModelConnection
-        {
-          class: model::Firm;
-          url: 'data:application/json,%7B%22employees%22%3A%5B%7B%22firstName%22%3A%22firstName%2013%22%2C%22lastName%22%3A%22lastName%2035%22%7D%5D%7D';
-        }
-      }#
-    ]
-  ];
-}
+###Mapping
+Mapping mappingPackage::myMapping
+(
+    other::Person: Relational
+    {
+        name : [mapping::db]employeeFirmDenormTable.name,
+        firm
+        (
+            ~primaryKey ([mapping::db]employeeFirmDenormTable.legalName)
+            legalName : [mapping::db]employeeFirmDenormTable.legalName,
+            address
+            (
+                line1: [mapping::db]employeeFirmDenormTable.address
+            )
+        ),
+        address
+        (
+            line1: [mapping::db]employeeFirmDenormTable.address
+        )
+    }
+)

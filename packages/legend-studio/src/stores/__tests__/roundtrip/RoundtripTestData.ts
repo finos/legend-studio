@@ -221,7 +221,7 @@ export const simpleDebuggingCase = [
                 class: 'myPack::BasicPerson',
                 property: 'fullName',
               },
-              source: 'myPack_BasicPerson',
+              source: '',
               transform: {
                 _type: 'lambda',
                 body: [
@@ -269,7 +269,7 @@ export const simpleDebuggingCase = [
                 class: 'myPack::BasicPerson',
                 property: 'title',
               },
-              source: 'myPack_BasicPerson',
+              source: '',
               transform: {
                 _type: 'lambda',
                 body: [

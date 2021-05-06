@@ -58,7 +58,6 @@ export const testRuntimeRoundtrip = [
       connectionValue: {
         _type: 'JsonModelConnection',
         class: 'test::tClass',
-        element: 'ModelStore',
         url: 'my_url',
       },
       name: 'tConnection',
@@ -92,7 +91,6 @@ export const testRuntimeRoundtrip = [
                 connection: {
                   _type: 'JsonModelConnection',
                   class: 'tClass',
-                  element: 'ModelStore',
                   url: 'my_url',
                 },
                 id: 'id4',

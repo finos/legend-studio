@@ -68,7 +68,6 @@ export const testConnectionRoundtrip = [
       connectionValue: {
         _type: 'JsonModelConnection',
         class: 'tClass',
-        element: 'ModelStore',
         url: 'my_url',
       },
       name: 'tConnJSON',
@@ -83,7 +82,6 @@ export const testConnectionRoundtrip = [
       connectionValue: {
         _type: 'XmlModelConnection',
         class: 'tClass',
-        element: 'ModelStore',
         url: 'my_url',
       },
       name: 'tConnXML',
@@ -123,7 +121,6 @@ export const testModelChainConnectionRoundtrip = [
       connectionValue: {
         _type: 'ModelChainConnection',
         mappings: ['test::myMapping'],
-        element: 'ModelStore',
       },
       name: 'modelChain',
       package: 'test',
@@ -137,7 +134,6 @@ export const testModelChainConnectionRoundtrip = [
       connectionValue: {
         _type: 'JsonModelConnection',
         class: 'test::myClass',
-        element: 'ModelStore',
         url: 'myData',
       },
       name: 'myJsonConnection',

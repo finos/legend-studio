@@ -969,7 +969,7 @@ export const M2MModel = [
                 class: 'demo::other::NPerson',
                 property: 'fullName',
               },
-              source: 'demo_other_NPerson',
+              source: '',
               transform: {
                 _type: 'lambda',
                 body: [
@@ -1035,7 +1035,7 @@ export const M2MModel = [
                 class: 'demo::other::NFirm',
                 property: 'nEmployees',
               },
-              source: 'demo_other_NFirm',
+              source: '',
               target: 'demo_other_NPerson',
               transform: {
                 _type: 'lambda',
@@ -1061,7 +1061,7 @@ export const M2MModel = [
                 class: 'demo::other::NFirm',
                 property: 'name',
               },
-              source: 'demo_other_NFirm',
+              source: '',
               transform: {
                 _type: 'lambda',
                 body: [
@@ -1087,7 +1087,7 @@ export const M2MModel = [
                 class: 'demo::other::NFirm',
                 property: 'incType',
               },
-              source: 'demo_other_NFirm',
+              source: '',
               transform: {
                 _type: 'lambda',
                 body: [

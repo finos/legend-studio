@@ -103,7 +103,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_DATABASE_CONNECTION,
-      super.hashCode,
+      this.store.valueForSerialization,
       this.timeZone ?? '',
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,

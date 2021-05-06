@@ -27,7 +27,6 @@ export class V1_XmlModelConnection extends V1_Connection implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.XML_MODEL_CONNECTION,
-      super.hashCode,
       this.class,
       this.url,
     ]);

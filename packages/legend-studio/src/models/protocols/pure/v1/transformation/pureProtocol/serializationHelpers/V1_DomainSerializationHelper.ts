@@ -275,6 +275,12 @@ export const V1_classSchema = createModelSchema(V1_Class, {
       ),
   ),
   name: primitive(),
+  // NOTE: we don't process milestoning at the moment so this is added to ensure
+  // consistency between the protocol in Studio and Engine only.
+  originalMilestonedProperties: custom(
+    (values) => serializeArray([], () => SKIP, true),
+    (values) => deserializeArray([], () => SKIP, false),
+  ),
   package: primitive(),
   properties: custom(
     (values) =>
