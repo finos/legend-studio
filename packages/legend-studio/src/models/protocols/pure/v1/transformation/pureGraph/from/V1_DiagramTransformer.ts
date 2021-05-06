@@ -54,7 +54,7 @@ const transformPropertyView = (element: PropertyView): V1_PropertyView => {
   const line = new V1_Line();
   line.points = element.fullPath;
   view.line = line;
-  view.property = V1_transformPropertyReference(element.property);
+  view.property = V1_transformPropertyReference(element.property, false);
   view.sourceView = relationshipEdgeViewTransformer(element.from);
   view.targetView = relationshipEdgeViewTransformer(element.to);
   return view;
