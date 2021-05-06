@@ -40,6 +40,7 @@ export enum V1_DatabaseType {
 export abstract class V1_DatabaseConnection extends V1_Connection {
   type!: V1_DatabaseType;
   timeZone?: string;
+  quoteIdentifiers?: boolean;
 }
 
 export class V1_RelationalDatabaseConnection
@@ -54,6 +55,7 @@ export class V1_RelationalDatabaseConnection
       CORE_HASH_STRUCTURE.RELATIONAL_DATABASE_CONNECTION,
       super.hashCode,
       this.timeZone ?? '',
+      this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,
       this.authenticationStrategy,
       hashArray(this.postProcessors),

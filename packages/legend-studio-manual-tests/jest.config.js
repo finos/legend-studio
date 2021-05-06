@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-// References to resolve in Graph Fetch Tree
-// - PropertyGraphFetchTree - property
-// - PropertyGraphFetchTree - subType `OPTIONAL`
-// - RootGraphFetchTree - class
-export const testGraphFetchTreeRoundtrip = [
-  // TODO
-];
+const base = require('../../scripts/jest/jest.config.base.js');
+const packageJson = require('./package.json');
+
+module.exports = {
+  ...base,
+  displayName: packageJson.name,
+  name: packageJson.name,
+  rootDir: '../..',
+  testMatch: ['<rootDir>/packages/legend-studio-manual-tests'],
+};
