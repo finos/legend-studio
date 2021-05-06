@@ -311,7 +311,7 @@ const columnModelSchema = createModelSchema(V1_Column, {
 export const V1_tablePtrModelSchema = createModelSchema(V1_TablePtr, {
   _type: usingConstantValueSchema(V1_TABLE_POINTER_TYPE),
   database: primitive(),
-  mainTableDb: primitive(),
+  mainTableDb: primitive(), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   schema: primitive(),
   table: primitive(),
 });

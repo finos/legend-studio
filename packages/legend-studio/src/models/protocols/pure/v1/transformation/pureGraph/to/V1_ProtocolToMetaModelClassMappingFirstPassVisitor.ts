@@ -103,7 +103,7 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
         srcClassReference?.value,
         classMapping.srcClass,
         this.context.section,
-        srcClassReference?.isResolvedFromAutoImports,
+        srcClassReference?.isInferred,
       ),
     );
     pureInstanceSetImplementation.filter = classMapping.filter

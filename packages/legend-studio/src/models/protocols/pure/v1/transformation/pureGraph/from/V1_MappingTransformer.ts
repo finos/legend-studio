@@ -369,7 +369,7 @@ const transformPurePropertyMapping = (
   purePropertyMapping.property = V1_transformPropertyReference(
     element.property,
   );
-  purePropertyMapping.source = '';
+  purePropertyMapping.source = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   purePropertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -398,7 +398,7 @@ const transformRelationalPropertyMapping = (
   propertyMapping.relationalOperation = V1_transformRelationalOperationElement(
     element.relationalOperation,
   );
-  propertyMapping.source = undefined;
+  propertyMapping.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -415,7 +415,7 @@ const transformEmbeddedRelationalPropertyMapping = (
 ): V1_EmbeddedRelationalPropertyMapping => {
   const embedded = new V1_EmbeddedRelationalPropertyMapping();
   embedded.property = V1_transformPropertyReference(element.property);
-  embedded.source = undefined;
+  embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -430,7 +430,7 @@ const transformEmbeddedRelationalPropertyMapping = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.classMapping = classMapping;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
@@ -445,7 +445,7 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
 ): V1_InlineEmbeddedPropertyMapping => {
   const embedded = new V1_InlineEmbeddedPropertyMapping();
   embedded.property = V1_transformPropertyReference(element.property);
-  embedded.source = undefined;
+  embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -467,7 +467,7 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
 ): V1_OtherwiseEmbeddedRelationalPropertyMapping => {
   const embedded = new V1_OtherwiseEmbeddedRelationalPropertyMapping();
   embedded.property = V1_transformPropertyReference(element.property);
-  embedded.source = undefined;
+  embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -482,7 +482,7 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.classMapping = classMapping;
   embedded.otherwisePropertyMapping = serializeProperyMapping(
     element.otherwisePropertyMapping,
@@ -702,7 +702,7 @@ const transsformRelationalInstanceSetImpl = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   return classMapping;
 };
 

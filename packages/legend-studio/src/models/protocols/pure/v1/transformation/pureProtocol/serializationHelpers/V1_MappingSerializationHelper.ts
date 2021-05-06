@@ -287,7 +287,7 @@ const embeddedRelationalPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()),
+    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     target: optional(primitive()),
   },
 );
@@ -305,7 +305,7 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema = createModelSchema
       (val) => V1_deserializeRelationalPropertyMapping(val),
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()),
+    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     target: optional(primitive()),
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
@@ -324,7 +324,7 @@ const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()),
+    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     setImplementationId: primitive(),
     target: optional(primitive()),
   },

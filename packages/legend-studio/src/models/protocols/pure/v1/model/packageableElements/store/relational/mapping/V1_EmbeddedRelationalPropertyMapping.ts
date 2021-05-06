@@ -37,7 +37,7 @@ export class V1_EmbeddedRelationalPropertyMapping
       super.hashCode,
       this.classMapping.class,
       hashArray(this.classMapping.primaryKey),
-      // // skip `root` since we disregard it in embedded property mappings
+      // skip `root` since we disregard it in embedded property mappings
       hashArray(this.classMapping.propertyMappings),
     ]);
   }

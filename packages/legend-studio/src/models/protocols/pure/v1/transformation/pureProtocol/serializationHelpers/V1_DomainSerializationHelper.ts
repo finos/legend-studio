@@ -280,7 +280,7 @@ export const V1_classSchema = createModelSchema(V1_Class, {
   originalMilestonedProperties: custom(
     (values) => serializeArray([], () => SKIP, true),
     (values) => deserializeArray([], () => SKIP, false),
-  ),
+  ), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   package: primitive(),
   properties: custom(
     (values) =>
