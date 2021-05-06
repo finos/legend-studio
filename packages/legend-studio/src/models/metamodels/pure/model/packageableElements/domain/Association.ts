@@ -139,7 +139,8 @@ export class Association
       Class,
       `Association property '${property.name}' must be of type 'class'`,
     );
-    if (otherPropertyAssociatedClass.propertiesFromAssociations.length) {
+    // don't invoke deletion if the property has stub classes
+    if (!otherPropertyAssociatedClass.isStub) {
       assertTrue(
         deleteEntry(
           otherPropertyAssociatedClass.propertiesFromAssociations,
