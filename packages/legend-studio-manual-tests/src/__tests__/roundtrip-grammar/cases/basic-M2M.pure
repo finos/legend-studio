@@ -1,0 +1,75 @@
+Enum model::target::IncType
+{
+  LLC,
+  QB
+}
+
+Class model::Firm
+{
+  employees: model::Person[1..*];
+  type: String[1];
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::target::_Firm
+{
+  employees: model::target::_Person[1..*];
+  type: model::target::IncType[1];
+}
+
+Class model::target::_Person
+{
+  fullName: String[1];
+}
+
+
+###Mapping
+Mapping model::mapping
+(
+  *model::target::_Person: Pure
+  {
+    ~src model::Person
+    fullName: $src.firstName
+  }
+  *model::target::_Firm: Pure
+  {
+    ~src model::Firm
+    employees[model_target__Person, x]: $src.employees,
+    type: EnumerationMapping model_target_IncType: $src.type
+  }
+
+  model::target::IncType: EnumerationMapping
+  {
+    LLC: ['llc'],
+    QB: ['qb']
+  }
+)
+
+
+###Runtime
+Runtime model::runtime
+{
+  mappings:
+  [
+    model::mapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: model::Firm;
+          url: 'data:application/json,%7B%22employees%22%3A%5B%7B%22firstName%22%3A%22firstName%2013%22%2C%22lastName%22%3A%22lastName%2035%22%7D%5D%7D';
+        }
+      }#
+    ]
+  ];
+}

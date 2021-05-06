@@ -19,7 +19,7 @@ export {
   ConnectionEditor_StringEditor,
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
-} from './components/editor/edit-panel/connection-editor/ConnectionEditor';
+} from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor';
 
 // store
 export * from './stores/StoreRelational_EditorPlugin_Extension';

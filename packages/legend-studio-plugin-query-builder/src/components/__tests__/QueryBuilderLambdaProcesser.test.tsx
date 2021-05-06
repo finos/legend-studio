@@ -15,10 +15,8 @@
  */
 
 /// <reference types="jest-extended" />
-import type { RenderResult } from '@testing-library/react';
 import { fireEvent, getByTitle, getByText } from '@testing-library/react';
 import {
-  queryBuilderTestData,
   simpleProjection,
   projectionWithChainedProperty,
   projectionWithResultSetModifiers,
@@ -28,13 +26,11 @@ import {
   errorInGraphLambda,
   unSupportedFunctionName,
   projectWithDerivedProperty,
-  fullComplexProjectionQuery,
-  m2mTestData,
   firmPersonGraphFetch,
   simpleGraphFetch,
-} from './QueryBuilderTestData';
-import COVIDDataSimpleModel from './QueryBuilder_Model_COVID.json';
-import SimpleM2MModel from './QueryBuilder_Model_SimpleM2M.json';
+} from './QueryBuilder_TestData';
+import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
+import ComplexM2MModel from './QueryBuilder_Model_ComplexM2M.json';
 import {
   integrationTest,
   guaranteeNonNullable,
@@ -43,66 +39,36 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-studio-shared';
 import { getAllByText, waitFor } from '@testing-library/dom';
-import type { PlainObject } from '@finos/legend-studio-shared';
 import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
-import type { EditorStore, Entity } from '@finos/legend-studio';
 import {
-  getMockedApplicationStore,
-  getTestApplicationConfig,
-  PluginManager,
   AbstractPropertyExpression,
-  getMockedEditorStore,
   RawLambda,
   setUpEditorWithDefaultSDLCData,
 } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Constants';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
-import { QueryBuilderPlugin } from '../../QueryBuilderPlugin';
-import {
-  lambda_enumerationOperatorFilter,
-  lambda_existsChainFilter,
-  lambda_existsChainFilterWithCustomVariableName,
-  lambda_groupConditionFilter,
-  lambda_groupConditionFilter_withMultipleClauseGroup,
-  lambda_notOperatorFilter,
-  lambda_setOperatorFilter,
-  lambda_simpleSingleConditionFilter,
-} from './QueryBuilder_Roundtrip_TestFilterQueries';
-import {
-  lambda_input_filterWithExists,
-  lambda_output_filterWithExists,
-} from './QueryBuilder_TestFilterQueriesWithExits';
-
-let renderResult: RenderResult;
+import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
   body?: object;
 }): RawLambda => new RawLambda(jsonRawLambda.parameters, jsonRawLambda.body);
 
-const init = async (entities: PlainObject<Entity>[]): Promise<EditorStore> => {
-  const pluginManager = PluginManager.create();
-  pluginManager.usePlugins([new QueryBuilderPlugin()]).install();
-  const mockedApplicationStore = getMockedApplicationStore(
-    getTestApplicationConfig(),
-    pluginManager,
-  );
-  const mockedEditorStore = getMockedEditorStore(mockedApplicationStore);
-  renderResult = await setUpEditorWithDefaultSDLCData(mockedEditorStore, {
-    entities,
-  });
-  return mockedEditorStore;
-};
-
 test(
   integrationTest(
-    'Validates query builder state after processing a json lambda',
+    'Query builder state is properly set after processing a projection lambda',
   ),
   async () => {
-    const mockedEditorStore = await init(queryBuilderTestData);
+    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
+    const renderResult = await setUpEditorWithDefaultSDLCData(
+      mockedEditorStore,
+      {
+        entities: ComplexRelationalModel,
+      },
+    );
     const _personClass = mockedEditorStore.graphState.graph.getClass(
       'model::pure::tests::model::simple::Person',
     );
@@ -267,7 +233,7 @@ test(
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
     );
     fireEvent.click(
-      getByTitle(queryBuilder, 'Configure Result Set Modifiers...'),
+      getByTitle(queryBuilder, 'Configure result set modifiers...'),
     );
     const modal = await waitFor(() => renderResult.getByRole('dialog'));
     await waitFor(() => getByText(modal, 'Sort and Order'));
@@ -364,15 +330,21 @@ test(
 
 test(
   integrationTest(
-    'Validates query builder state after processing a graph lambda',
+    'Query builder state is properly set after processing a graph-fetch lambda',
   ),
   async () => {
-    const mockedEditorStore = await init(m2mTestData);
+    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
+    const renderResult = await setUpEditorWithDefaultSDLCData(
+      mockedEditorStore,
+      {
+        entities: ComplexM2MModel,
+      },
+    );
     const _personClass = mockedEditorStore.graphState.graph.getClass(
-      'demo::other::NPerson',
+      'model::target::NPerson',
     );
     const _firmClass = mockedEditorStore.graphState.graph.getClass(
-      'demo::other::NFirm',
+      'model::target::NFirm',
     );
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
@@ -406,187 +378,18 @@ test(
   // TODO: add more test when we rework the graph fetch tree
 );
 
-test(integrationTest('Test unsupported functions'), async () => {
-  const mockedEditorStore = await init(queryBuilderTestData);
-  MOBX__enableSpyOrMock();
-  mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-  MOBX__disableSpyOrMock();
-  const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-    QueryBuilderState,
-  );
-  await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-  queryBuilderState.querySetupState.setClass(
-    mockedEditorStore.graphState.graph.getClass(
-      'model::pure::tests::model::simple::Person',
-    ),
-  );
-  queryBuilderState.resetData();
-  const queryBuilderSetup = await waitFor(() =>
-    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-  );
-  // ensure form has updated with respect to the new state
-  await waitFor(() => getByText(queryBuilderSetup, 'Person'));
-  await waitFor(() => getByText(queryBuilderSetup, 'simpleRelationalMapping'));
-  await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
-  // test various lambdas
-  // Unable to update query builder with grammar due to: Function testUnSupported currently not supported
-  expect(() =>
-    queryBuilderState.buildWithRawLambda(
-      getRawLambda(unSupportedGetAllWithOneConditionFilter),
-    ),
-  ).toThrowError(`Can't process filter expression function`);
-  expect(() =>
-    queryBuilderState.buildWithRawLambda(getRawLambda(errorInGraphLambda)),
-  ).toThrowError(
-    "Can't find type 'model::pure::tests::model::simple::NotFound'",
-  );
-  expect(() =>
-    queryBuilderState.buildWithRawLambda(getRawLambda(unSupportedFunctionName)),
-  ).toThrowError(`Can't process function 'testUnSupported'`);
-});
-
-// ------------------------------------------- ROUNDTRIP -----------------------------------------
-//
-// TODO: consider moving these to state/store directory as these are testing for the state
-// rather than the UI (we only use the UI to launch query builder)
-
-const testRoundtrip = (
-  jsonRawLambda: { parameters?: object; body?: object },
-  mockedEditorStore: EditorStore,
-): void => {
-  const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-    QueryBuilderState,
-  );
-  queryBuilderState.buildWithRawLambda(getRawLambda(jsonRawLambda));
-  const jsonQuery = mockedEditorStore.graphState.graphManager.serializeRawValueSpecification(
-    queryBuilderState.getRawLambdaQuery(),
-  );
-  expect([jsonRawLambda]).toIncludeSameMembers([jsonQuery]);
-};
-
-test(integrationTest('Roundtrip for projection'), async () => {
-  const mockedEditorStore = await init(queryBuilderTestData);
-  MOBX__enableSpyOrMock();
-  mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-  MOBX__disableSpyOrMock();
-  const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-    QueryBuilderState,
-  );
-  await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-  queryBuilderState.querySetupState.setClass(
-    mockedEditorStore.graphState.graph.getClass(
-      'model::pure::tests::model::simple::Person',
-    ),
-  );
-  queryBuilderState.resetData();
-  const queryBuilderSetup = await waitFor(() =>
-    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-  );
-  // ensure form has updated with respect to the new state
-  await waitFor(() => getByText(queryBuilderSetup, 'Person'));
-  await waitFor(() => getByText(queryBuilderSetup, 'simpleRelationalMapping'));
-  await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
-  // test various lambdas
-  testRoundtrip(simpleProjection, mockedEditorStore);
-  testRoundtrip(projectionWithChainedProperty, mockedEditorStore);
-  testRoundtrip(projectionWithResultSetModifiers, mockedEditorStore);
-  testRoundtrip(getAllWithOneConditionFilter, mockedEditorStore);
-  testRoundtrip(getAllWithGroupedFilter, mockedEditorStore);
-  testRoundtrip(projectWithDerivedProperty, mockedEditorStore);
-  testRoundtrip(fullComplexProjectionQuery, mockedEditorStore);
-});
-
-test(integrationTest('Roundtrip for graph fetch tree'), async () => {
-  // Graph Fetch
-  const mockedEditorStore = await init(m2mTestData);
-  MOBX__enableSpyOrMock();
-  mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-  MOBX__disableSpyOrMock();
-  const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-    QueryBuilderState,
-  );
-  await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-  queryBuilderState.querySetupState.setClass(
-    mockedEditorStore.graphState.graph.getClass('demo::other::NPerson'),
-  );
-  queryBuilderState.resetData();
-  const queryBuilderSetup = await waitFor(() =>
-    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-  );
-  // ensure form has updated with respect to the new state
-  await waitFor(() => getByText(queryBuilderSetup, 'NPerson'));
-  await waitFor(() => getByText(queryBuilderSetup, 'MyMapping'));
-  testRoundtrip(simpleGraphFetch, mockedEditorStore);
-  testRoundtrip(firmPersonGraphFetch, mockedEditorStore);
-});
-
 test(
-  integrationTest('Roundtrip for filter expression (relational)'),
+  integrationTest(
+    'Query builder lambda processer should properly handle unsupported functions',
+  ),
   async () => {
-    const mockedEditorStore = await init(COVIDDataSimpleModel);
-    MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-    MOBX__disableSpyOrMock();
-    const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-      QueryBuilderState,
-    );
-    await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-    queryBuilderState.querySetupState.setClass(
-      mockedEditorStore.graphState.graph.getClass('domain::COVIDData'),
-    );
-    queryBuilderState.resetData();
-    const queryBuilderSetup = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-    );
-    // ensure form has updated with respect to the new state
-    await waitFor(() => getByText(queryBuilderSetup, 'COVIDData'));
-    await waitFor(() => getByText(queryBuilderSetup, 'CovidDataMapping'));
-    await waitFor(() => getByText(queryBuilderSetup, 'H2Runtime'));
-    // test various lambdas
-    testRoundtrip(lambda_simpleSingleConditionFilter, mockedEditorStore);
-    testRoundtrip(lambda_notOperatorFilter, mockedEditorStore);
-    testRoundtrip(lambda_setOperatorFilter, mockedEditorStore);
-    testRoundtrip(lambda_groupConditionFilter, mockedEditorStore);
-    testRoundtrip(
-      lambda_groupConditionFilter_withMultipleClauseGroup,
+    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
+    const renderResult = await setUpEditorWithDefaultSDLCData(
       mockedEditorStore,
+      {
+        entities: ComplexRelationalModel,
+      },
     );
-  },
-);
-
-test(integrationTest('Roundtrip for filter expression (M2M)'), async () => {
-  const mockedEditorStore = await init(SimpleM2MModel);
-  MOBX__enableSpyOrMock();
-  mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-  MOBX__disableSpyOrMock();
-  const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-    QueryBuilderState,
-  );
-  await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-  queryBuilderState.querySetupState.setClass(
-    mockedEditorStore.graphState.graph.getClass('model::target::_Person'),
-  );
-  queryBuilderState.resetData();
-  const queryBuilderSetup = await waitFor(() =>
-    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-  );
-  // ensure form has updated with respect to the new state
-  await waitFor(() => getByText(queryBuilderSetup, '_Person'));
-  await waitFor(() => getByText(queryBuilderSetup, 'mapping'));
-  await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
-  // test various lambdas
-  testRoundtrip(lambda_enumerationOperatorFilter, mockedEditorStore);
-  testRoundtrip(lambda_existsChainFilter, mockedEditorStore);
-  testRoundtrip(
-    lambda_existsChainFilterWithCustomVariableName,
-    mockedEditorStore,
-  );
-});
-
-test(
-  integrationTest('Filter exists() processing issue(s) are auto-corrected'),
-  async () => {
-    const mockedEditorStore = await init(SimpleM2MModel);
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
     MOBX__disableSpyOrMock();
@@ -595,24 +398,36 @@ test(
     );
     await flowResult(queryBuilderState.setOpenQueryBuilder(true));
     queryBuilderState.querySetupState.setClass(
-      mockedEditorStore.graphState.graph.getClass('model::target::_Person'),
+      mockedEditorStore.graphState.graph.getClass(
+        'model::pure::tests::model::simple::Person',
+      ),
     );
     queryBuilderState.resetData();
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     // ensure form has updated with respect to the new state
-    await waitFor(() => getByText(queryBuilderSetup, '_Person'));
-    await waitFor(() => getByText(queryBuilderSetup, 'mapping'));
-    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
-    // test input and output lambda
-    queryBuilderState.buildWithRawLambda(
-      getRawLambda(lambda_input_filterWithExists),
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
     );
-    const jsonQuery = mockedEditorStore.graphState.graphManager.serializeRawValueSpecification(
-      queryBuilderState.getRawLambdaQuery(),
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    // test various lambdas
+    // Unable to update query builder with grammar due to: Function testUnSupported currently not supported
+    expect(() =>
+      queryBuilderState.buildWithRawLambda(
+        getRawLambda(unSupportedGetAllWithOneConditionFilter),
+      ),
+    ).toThrowError(`Can't process filter expression function`);
+    expect(() =>
+      queryBuilderState.buildWithRawLambda(getRawLambda(errorInGraphLambda)),
+    ).toThrowError(
+      "Can't find type 'model::pure::tests::model::simple::NotFound'",
     );
-    expect([lambda_output_filterWithExists]).toIncludeSameMembers([jsonQuery]);
-    testRoundtrip(lambda_output_filterWithExists, mockedEditorStore);
+    expect(() =>
+      queryBuilderState.buildWithRawLambda(
+        getRawLambda(unSupportedFunctionName),
+      ),
+    ).toThrowError(`Can't process function 'testUnSupported'`);
   },
 );

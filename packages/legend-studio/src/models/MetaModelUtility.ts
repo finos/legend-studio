@@ -51,6 +51,10 @@ export class SystemGraphProcessingError extends EnrichedError {
 export const fromElementPathToMappingElementId = (className: string): string =>
   className.split(ELEMENT_PATH_DELIMITER).join('_');
 
+/**
+ * This method concatenate 2 fully-qualified elementh paths to form a single one
+ * and then extracts the name and package part from it.
+ */
 export const resolvePackageNameAndElementName = (
   defaultPath: string,
   path: string,

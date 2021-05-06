@@ -67,7 +67,7 @@ const setupMockedApplicationStoreForSuccessfulLoadding = (): void => {
   MOBX__disableSpyOrMock();
 };
 
-test.only(
+test(
   integrationTest(
     'URL is properly reset with configured SDLC when only one server is specified in the config (legacy SDLC config form)',
   ),
@@ -93,7 +93,7 @@ test.only(
   },
 );
 
-test.only(
+test(
   integrationTest(
     'SDLC server configuration is required when the SDLC server key in the URL is not recognised',
   ),

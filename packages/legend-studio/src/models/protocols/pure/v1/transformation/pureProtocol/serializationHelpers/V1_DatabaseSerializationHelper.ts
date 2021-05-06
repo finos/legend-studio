@@ -519,6 +519,7 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
       (val) => V1_deserializeDatasourceSpecification(val, plugins),
     ),
     store: alias('element', primitive()),
+    quoteIdentifiers: optional(primitive()),
     timeZone: optional(primitive()),
     postProcessors: custom(
       (values) =>

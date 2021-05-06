@@ -68,3 +68,20 @@ export class V1_OAuthAuthenticationStrategy
     ]);
   }
 }
+
+export class V1_SnowflakePublicAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable {
+  privateKeyVaultReference!: string;
+  passPhraseVaultReference!: string;
+  publicUserName!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SNOWFLAKE_PUBLIC_AUTHENTICATION_STRATEGY,
+      this.privateKeyVaultReference,
+      this.passPhraseVaultReference,
+      this.publicUserName,
+    ]);
+  }
+}

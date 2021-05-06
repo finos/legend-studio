@@ -22,8 +22,8 @@ import {
   excludeSectionIndex,
 } from '../StoreTestUtils';
 import {
-  m2mTestData,
-  testData,
+  M2MModel,
+  ComplexRelationalModel,
   projectWithCols,
   simpleAllFunc,
   simpleFilterFunc,
@@ -33,65 +33,78 @@ import {
   firmPersonGraphFetch,
 } from './LambdaRoundtripTestData';
 
-const testRoundtripLambda = async (
-  entities: Entity[],
-  lambda: Record<string | number | symbol, unknown>,
-): Promise<void> => {
-  // setup + test setup
-  const editorStore = getTestEditorStore();
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    entities,
-    { TEMPORARY__keepSectionIndex: true },
-  );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
-    (element) => editorStore.graphState.graphManager.elementToEntity(element),
-  );
-  transformedEntities.forEach((entity) =>
-    ensureObjectFieldsAreSortedAlphabetically(entity.content),
-  );
-  expect(transformedEntities).toIncludeSameMembers(
-    excludeSectionIndex(entities),
-  );
-  await editorStore.graphState.graph.precomputeHashes(
-    editorStore.applicationStore.logger,
-  );
-  const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
-    entities,
-  );
-  editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
-    protocolHashesIndex,
-  );
-  await editorStore.changeDetectionState.computeLocalChanges(true);
-  expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
-      .length,
-  ).toBe(0);
-  // roundtrip check
-  const _builtValueSpec = editorStore.graphState.graphManager.buildValueSpecificationFromJson(
-    lambda,
-    editorStore.graphState.graph,
-  );
-  const _rawLambda = editorStore.graphState.graphManager.buildRawValueSpecification(
-    _builtValueSpec,
-    editorStore.graphState.graph,
-  );
-  const _jsonLambda = editorStore.graphState.graphManager.serializeRawValueSpecification(
-    _rawLambda,
-  );
-  expect([_jsonLambda]).toIncludeAllMembers([lambda]);
+type RoundtripTestCase = [
+  string,
+  {
+    entities: Entity[];
+  },
+  { parameters?: object; body?: object },
+];
+
+const relationalCtx = {
+  entities: ComplexRelationalModel,
 };
 
-test(unitTest('Test projection query function'), async () => {
-  await testRoundtripLambda(testData as Entity[], simpleAllFunc);
-  await testRoundtripLambda(testData as Entity[], simpleFilterFunc);
-  await testRoundtripLambda(testData as Entity[], simpleProjection);
-  await testRoundtripLambda(testData as Entity[], projectWithCols);
-  await testRoundtripLambda(testData as Entity[], simpleProjectionWithFilter);
-});
+const m2mCtx = {
+  entities: M2MModel,
+};
 
-test(unitTest('Test graph fetch tree'), async () => {
-  await testRoundtripLambda(m2mTestData as Entity[], simpleGraphFetch);
-  await testRoundtripLambda(m2mTestData as Entity[], firmPersonGraphFetch);
+const cases: RoundtripTestCase[] = [
+  ['Simple all() function', relationalCtx, simpleAllFunc],
+  ['Simple filter() function', relationalCtx, simpleFilterFunc],
+  ['Simple project() function', relationalCtx, simpleProjection],
+  ['Simple project() function with columns', relationalCtx, projectWithCols],
+  ['Simple project() and filter()', relationalCtx, simpleProjectionWithFilter],
+  ['Simple graph fetch', m2mCtx, simpleGraphFetch],
+  ['Complex graph fetch', m2mCtx, firmPersonGraphFetch],
+];
+
+describe(unitTest('Lambda processing roundtrip test'), () => {
+  test.each(cases)('%s', async (testName, context, lambda) => {
+    const { entities } = context;
+    // setup
+    const editorStore = getTestEditorStore();
+    await editorStore.graphState.initializeSystem();
+    await editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      entities,
+      { TEMPORARY__keepSectionIndex: true },
+    );
+    const transformedEntities = editorStore.graphState.graph.allElements.map(
+      (element) => editorStore.graphState.graphManager.elementToEntity(element),
+    );
+    transformedEntities.forEach((entity) =>
+      ensureObjectFieldsAreSortedAlphabetically(entity.content),
+    );
+    expect(transformedEntities).toIncludeSameMembers(
+      excludeSectionIndex(entities),
+    );
+    await editorStore.graphState.graph.precomputeHashes(
+      editorStore.applicationStore.logger,
+    );
+    const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
+      entities,
+    );
+    editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
+      protocolHashesIndex,
+    );
+    await editorStore.changeDetectionState.computeLocalChanges(true);
+    expect(
+      editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+        .length,
+    ).toBe(0);
+    // roundtrip check
+    const _builtValueSpec = editorStore.graphState.graphManager.buildValueSpecificationFromJson(
+      lambda,
+      editorStore.graphState.graph,
+    );
+    const _rawLambda = editorStore.graphState.graphManager.buildRawValueSpecification(
+      _builtValueSpec,
+      editorStore.graphState.graph,
+    );
+    const _jsonLambda = editorStore.graphState.graphManager.serializeRawValueSpecification(
+      _rawLambda,
+    );
+    expect([_jsonLambda]).toIncludeAllMembers([lambda]);
+  });
 });
