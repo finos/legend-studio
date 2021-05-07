@@ -462,6 +462,7 @@ export const ComplexRelationalModel = [
           mainTable: {
             _type: 'Table',
             database: 'apps::pure::studio::relational::tests::dbInc',
+            mainTableDb: 'apps::pure::studio::relational::tests::dbInc',
             schema: 'default',
             table: 'personTable',
           },
@@ -472,6 +473,7 @@ export const ComplexRelationalModel = [
               table: {
                 _type: 'Table',
                 database: 'apps::pure::studio::relational::tests::dbInc',
+                mainTableDb: 'apps::pure::studio::relational::tests::dbInc',
                 schema: 'default',
                 table: 'personTable',
               },
@@ -491,12 +493,12 @@ export const ComplexRelationalModel = [
                 table: {
                   _type: 'Table',
                   database: 'apps::pure::studio::relational::tests::dbInc',
+                  mainTableDb: 'apps::pure::studio::relational::tests::dbInc',
                   schema: 'default',
                   table: 'personTable',
                 },
                 tableAlias: 'personTable',
               },
-              source: 'apps_pure_studio_tests_model_simple_Person',
             },
             {
               _type: 'relationalPropertyMapping',
@@ -510,12 +512,12 @@ export const ComplexRelationalModel = [
                 table: {
                   _type: 'Table',
                   database: 'apps::pure::studio::relational::tests::dbInc',
+                  mainTableDb: 'apps::pure::studio::relational::tests::dbInc',
                   schema: 'default',
                   table: 'personTable',
                 },
                 tableAlias: 'personTable',
               },
-              source: 'apps_pure_studio_tests_model_simple_Person',
             },
           ],
           root: true,

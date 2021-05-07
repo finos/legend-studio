@@ -467,7 +467,7 @@ const V1_joinModelSchema = createModelSchema(V1_Join, {
     (val) => V1_serializeRelationalOperationElement(val),
     (val) => V1_deserializeRelationalOperationElement(val),
   ),
-  target: primitive(),
+  target: optional(primitive()),
 });
 
 const V1_filterModelSchema = createModelSchema(V1_Filter, {
