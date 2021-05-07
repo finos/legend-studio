@@ -135,7 +135,7 @@ export const V1_transformPropertyReference = (
 ): V1_PropertyPointer => {
   const property = new V1_PropertyPointer();
   property.class = isTransformingEmbeddedPropertyMapping
-    ? ''
+    ? undefined
     : V1_transformElementReference(element.ownerReference);
   property.property = element.value.name;
   return property;
@@ -453,7 +453,7 @@ const transformEmbeddedRelationalPropertyMapping = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  classMapping.class = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.classMapping = classMapping;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
@@ -514,7 +514,7 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  classMapping.class = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.classMapping = classMapping;
   embedded.otherwisePropertyMapping = serializeProperyMapping(
     element.otherwisePropertyMapping,
@@ -760,7 +760,7 @@ const transformRelationalInstanceSetImpl = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  classMapping.class = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   return classMapping;
 };
 

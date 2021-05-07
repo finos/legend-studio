@@ -19,14 +19,16 @@ import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 
 export class V1_PropertyPointer implements Hashable {
-  class!: string;
+  // NOTE: In Pure protocol, this property is required, but for cases like embedded property mapping,
+  // this should not be set, so most likely we will change Pure protocol to match this eventually.
+  class?: string;
   property!: string;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROPERTY_POINTER,
       this.property,
-      this.class,
+      this.class ?? '',
     ]);
   }
 }

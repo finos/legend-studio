@@ -241,7 +241,7 @@ const relationalClassMappingModelSchema = createModelSchema(
   V1_RelationalClassMapping,
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.RELATIONAL),
-    class: primitive(),
+    class: optional(primitive()),
     id: optional(primitive()),
     primaryKey: list(
       custom(

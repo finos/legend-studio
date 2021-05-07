@@ -180,11 +180,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Aggregation Aware class mapping class is missing',
+      'Aggregation-aware class mapping class is missing',
     );
     assertNonNullable(
       classMapping.root,
-      'Aggregation Aware class mapping root flag is missing',
+      'Aggregation-aware class mapping root flag is missing',
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     const mapping = this.context.graph.getMapping(this.parent.path);

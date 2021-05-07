@@ -219,7 +219,9 @@ export const V1_processDependablePropertyPointer = (
   propertyPtr: V1_PropertyPointer,
   context: V1_DepdendencyProcessingContext,
 ): void => {
-  propertyPtr.class = V1_processDependencyPath(propertyPtr.class, context);
+  propertyPtr.class = propertyPtr.class
+    ? V1_processDependencyPath(propertyPtr.class, context)
+    : undefined;
 };
 
 const processDependableTestContainer = (

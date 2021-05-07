@@ -452,7 +452,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         ? PropertyImplicitReference.create(
             PackageableElementImplicitReference.create(
               propertyOwner,
-              protocol.property.class,
+              protocol.property.class ?? '',
               this.context.section,
               true,
             ),
@@ -484,11 +484,11 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Embedded Relational property mapping property is missing',
+      'Inline embedded property mapping property is missing',
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Embedded property mapping property name is missing',
+      'Inline embedded property mapping property name is missing',
     );
     let propertyOwnerClass: Class;
     if (protocol.property.class) {
@@ -524,7 +524,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           propertyOwnerClass,
-          protocol.property.class,
+          protocol.property.class ?? '',
           this.context.section,
           true,
         ),
@@ -546,11 +546,11 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Embedded Relational property mapping property is missing',
+      'Embedded relational property mapping property is missing',
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Embedded property mapping property name is missing',
+      'Embedded relational property mapping property name is missing',
     );
     const property = V1_processEmbeddedRelationalMappingProperty(
       protocol,
@@ -563,7 +563,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           property.propertyOwnerClass,
-          protocol.property.class,
+          protocol.property.class ?? '',
           this.context.section,
           true,
         ),
@@ -602,11 +602,11 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Otherwise Embedded Relational property mapping property is missing',
+      'Otherwise embedded relational property mapping property is missing',
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Otherwise Embedded property mapping property name is missing',
+      'Otherwise embedded relational property mapping property name is missing',
     );
     const property = V1_processEmbeddedRelationalMappingProperty(
       protocol,
@@ -619,7 +619,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           property.propertyOwnerClass,
-          protocol.property.class,
+          protocol.property.class ?? '',
           this.context.section,
           true,
         ),
@@ -687,7 +687,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
 
     const xStoreParent = guaranteeNonNullable(
       this.xStoreParent,
-      'XStoreAssociation expected to be parent of XStore PropertyMapping',
+      'XStore property mapping parent is missing',
     );
     const _association = xStoreParent.association.value;
     const property = _association.getProperty(protocol.property.property);
@@ -716,19 +716,19 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Model-to-model property mapping property is missing',
+      'Aggregation-aware property mapping property is missing',
     );
     assertNonEmptyString(
       protocol.property.class,
-      'Model-to-model property mapping property class is missing',
+      'Aggregation-aware property mapping property class is missing',
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Model-to-model property mapping property name is missing',
+      'Aggregation-aware property mapping property name is missing',
     );
     const aggregationAwareParent = guaranteeNonNullable(
       this.aggregationAwareParent,
-      'AggregationAware expected to be parent of Aggregation Aware PropertyMapping',
+      'Aggregation-aware property mapping parent is missing',
     );
 
     const propertyMapping = aggregationAwareParent.mainSetImplementation.propertyMappings.find(

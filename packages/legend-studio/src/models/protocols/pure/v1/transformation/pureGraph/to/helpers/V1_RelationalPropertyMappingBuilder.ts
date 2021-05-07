@@ -71,7 +71,7 @@ export const V1_processEmbeddedRelationalMappingProperty = (
     );
     _class = PackageableElementImplicitReference.create(
       complexClass,
-      propertyMapping.classMapping.class,
+      propertyMapping.classMapping.class ?? '',
       context.section,
       true,
     );

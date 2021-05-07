@@ -66,7 +66,7 @@ export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
 export const V1_propertyPointerModelSchema = createModelSchema(
   V1_PropertyPointer,
   {
-    class: primitive(),
+    class: optional(primitive()),
     property: primitive(),
   },
 );
