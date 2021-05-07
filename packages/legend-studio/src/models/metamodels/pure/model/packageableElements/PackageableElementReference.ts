@@ -70,13 +70,13 @@ export class PackageableElementImplicitReference<
   readonly initialResolvedPath: string;
   readonly input: string;
   readonly parentSection?: Section;
-  readonly isResolvedFromAutoImports?: boolean;
+  readonly isInferred?: boolean;
 
   private constructor(
     value: T,
     input: string,
     parentSection: Section | undefined,
-    isResolvedFromAutoImports: boolean | undefined,
+    isInferred: boolean | undefined,
   ) {
     super(value);
 
@@ -87,7 +87,7 @@ export class PackageableElementImplicitReference<
     this.initialResolvedPath = value.path;
     this.input = input;
     this.parentSection = parentSection;
-    this.isResolvedFromAutoImports = isResolvedFromAutoImports;
+    this.isInferred = isInferred;
   }
 
   static create<V extends PackageableElement>(
@@ -106,7 +106,7 @@ export class PackageableElementImplicitReference<
 
   get valueForSerialization(): string {
     const currentElementPath = this.value.path;
-    if (this.isResolvedFromAutoImports) {
+    if (this.isInferred) {
       return this.input;
     }
     // when the parent section does not exist or has been deleted
@@ -181,7 +181,7 @@ export class OptionalPackageableElementImplicitReference<
     value: T | undefined,
     input: string | undefined,
     parentSection: Section | undefined,
-    isResolvedFromAutoImports: boolean | undefined,
+    isInferred: boolean | undefined,
   ) {
     super(value);
 
@@ -192,20 +192,20 @@ export class OptionalPackageableElementImplicitReference<
     this.initialResolvedPath = value?.path;
     this.input = input;
     this.parentSection = parentSection;
-    this.isResolvedFromAutoImports = isResolvedFromAutoImports;
+    this.isResolvedFromAutoImports = isInferred;
   }
 
   static create<V extends PackageableElement>(
     value: V | undefined,
     input: string | undefined,
     parentSection: Section | undefined,
-    isResolvedFromAutoImports: boolean | undefined,
+    isInferred: boolean | undefined,
   ): OptionalPackageableElementImplicitReference<V> {
     return new OptionalPackageableElementImplicitReference(
       value,
       input,
       parentSection,
-      isResolvedFromAutoImports,
+      isInferred,
     );
   }
 

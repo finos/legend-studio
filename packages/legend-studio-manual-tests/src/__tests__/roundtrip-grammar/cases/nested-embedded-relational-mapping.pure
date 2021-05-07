@@ -1,4 +1,5 @@
 import other::*;
+import meta::pure::mapping::*;
 
 Class other::Person
 {
@@ -16,6 +17,7 @@ Class other::Address
 {
     line1:String[1];
 }
+
 ###Relational
 Database mapping::db(
    Table employeeFirmDenormTable
@@ -26,25 +28,36 @@ Database mapping::db(
     legalName VARCHAR(200),
     address VARCHAR(200)
    )
+   Table employeeFirmDenormTable2
+   (
+    id INT PRIMARY KEY,
+    name VARCHAR(200),
+    firmId INT,
+    legalName VARCHAR(200),
+    address VARCHAR(200)
+   )
 )
+
 ###Mapping
+import other::*;
+import mapping::*;
 Mapping mappingPackage::myMapping
 (
-    other::Person: Relational
+    Person: Relational
     {
-        name : [mapping::db]employeeFirmDenormTable.name,
+        name : [db]employeeFirmDenormTable.name,
         firm
         (
-            ~primaryKey ([mapping::db]employeeFirmDenormTable.legalName)
-            legalName : [mapping::db]employeeFirmDenormTable.legalName,
+            ~primaryKey ([db]employeeFirmDenormTable.legalName)
+            legalName : [db]employeeFirmDenormTable.legalName,
             address
             (
-                line1: [mapping::db]employeeFirmDenormTable.address
+                line1: [db]employeeFirmDenormTable.address
             )
         ),
         address
         (
-            line1: [mapping::db]employeeFirmDenormTable.address
+            line1: [db]employeeFirmDenormTable.address
         )
     }
 )

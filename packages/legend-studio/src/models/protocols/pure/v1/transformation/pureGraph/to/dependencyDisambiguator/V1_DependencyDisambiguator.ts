@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-studio-shared';
 import type { V1_ModelChainConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import type {
   V1_PackageableElement,
@@ -390,7 +393,7 @@ export class V1_DependencyDisambiguator
 
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): void {
     classMapping.class = V1_processDependencyPath(
-      classMapping.class,
+      guaranteeNonNullable(classMapping.class),
       this.dependencyProcessingContext,
     );
   }
@@ -399,7 +402,7 @@ export class V1_DependencyDisambiguator
     classMapping: V1_PureInstanceClassMapping,
   ): void {
     classMapping.class = V1_processDependencyPath(
-      classMapping.class,
+      guaranteeNonNullable(classMapping.class),
       this.dependencyProcessingContext,
     );
     classMapping.srcClass = classMapping.srcClass
@@ -418,7 +421,7 @@ export class V1_DependencyDisambiguator
     classMapping: V1_RootFlatDataClassMapping,
   ): void {
     classMapping.class = V1_processDependencyPath(
-      classMapping.class,
+      guaranteeNonNullable(classMapping.class),
       this.dependencyProcessingContext,
     );
     classMapping.flatData = V1_processDependencyPath(
@@ -433,7 +436,7 @@ export class V1_DependencyDisambiguator
 
   visit_RelationalClassMapping(classMapping: V1_RelationalClassMapping): void {
     classMapping.class = V1_processDependencyPath(
-      classMapping.class,
+      guaranteeNonNullable(classMapping.class),
       this.dependencyProcessingContext,
     );
     classMapping.propertyMappings.forEach((propertyMapping) =>
@@ -452,16 +455,21 @@ export class V1_DependencyDisambiguator
   visit_AggregationAwareClassMapping(
     classMapping: V1_AggregationAwareClassMapping,
   ): void {
-    classMapping.mainSetImplementation.class = V1_processDependencyPath(
-      classMapping.mainSetImplementation.class,
-      this.dependencyProcessingContext,
-    );
+    classMapping.mainSetImplementation.class = classMapping
+      .mainSetImplementation.class
+      ? V1_processDependencyPath(
+          classMapping.mainSetImplementation.class,
+          this.dependencyProcessingContext,
+        )
+      : classMapping.mainSetImplementation.class;
     classMapping.mainSetImplementation.accept_ClassMappingVisitor(this);
     classMapping.aggregateSetImplementations.forEach((aggregate) => {
-      aggregate.setImplementation.class = V1_processDependencyPath(
-        aggregate.setImplementation.class,
-        this.dependencyProcessingContext,
-      );
+      aggregate.setImplementation.class = aggregate.setImplementation.class
+        ? V1_processDependencyPath(
+            aggregate.setImplementation.class,
+            this.dependencyProcessingContext,
+          )
+        : aggregate.setImplementation.class;
       aggregate.setImplementation.accept_ClassMappingVisitor(this);
       return aggregate;
     });

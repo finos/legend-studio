@@ -41,7 +41,9 @@ export interface V1_ClassMappingVisitor<T> {
 
 export abstract class V1_ClassMapping implements Hashable {
   id?: string;
-  class!: string;
+  // NOTE: In Pure protocol, this property is required, but for cases like embedded property mapping,
+  // this should not be set, so most likely we will change Pure protocol to match this eventually.
+  class?: string;
   root!: boolean;
   mappingClass?: V1_MappingClass;
 
@@ -49,7 +51,7 @@ export abstract class V1_ClassMapping implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.SET_IMPLEMENTATION,
       this.id ?? '',
-      this.class,
+      this.class ?? '',
       this.root.toString(),
     ]);
   }

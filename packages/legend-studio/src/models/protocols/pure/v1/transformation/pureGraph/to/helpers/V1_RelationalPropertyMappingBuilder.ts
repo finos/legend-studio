@@ -20,7 +20,7 @@ import type { InstanceSetImplementation } from '../../../../../../../metamodels/
 import { RootRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { InferableMappingElementIdExplicitValue } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
 import type { Property } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Property';
 import { Class } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Class';
@@ -30,12 +30,13 @@ import type { V1_GraphBuilderContext } from '../../../../transformation/pureGrap
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
 import { V1_getInferredClassMappingId } from '../../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
 
-export const V1_processEmbeddedRelationalMappingProperties = (
+export const V1_processEmbeddedRelationalMappingProperty = (
   propertyMapping: V1_EmbeddedRelationalPropertyMapping,
   immediateParent: PropertyMappingsImplementation,
   topParent: InstanceSetImplementation,
   context: V1_GraphBuilderContext,
 ): {
+  propertyOwnerClass: Class;
   property: Property;
   _class: PackageableElementReference<Class>;
   id: InferableMappingElementIdExplicitValue;
@@ -68,7 +69,12 @@ export const V1_processEmbeddedRelationalMappingProperties = (
       Class,
       'Only complex classes can be the target of an embedded property mapping',
     );
-    _class = PackageableElementExplicitReference.create(complexClass);
+    _class = PackageableElementImplicitReference.create(
+      complexClass,
+      propertyMapping.classMapping.class ?? '',
+      context.section,
+      true,
+    );
   }
   const id =
     propertyMapping.classMapping.id || propertyMapping.classMapping.class
@@ -81,5 +87,5 @@ export const V1_processEmbeddedRelationalMappingProperties = (
     immediateParent instanceof RootRelationalInstanceSetImplementation
       ? immediateParent
       : topParent;
-  return { property, _class, id, sourceSetImplementation };
+  return { propertyOwnerClass, property, _class, id, sourceSetImplementation };
 };

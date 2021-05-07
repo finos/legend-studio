@@ -157,7 +157,7 @@ export const V1_processEnumerationMapping = (
       sourceTypeReference?.value,
       sourceTypeInput,
       context.section,
-      sourceTypeReference?.isResolvedFromAutoImports,
+      sourceTypeReference?.isInferred,
     ),
   );
   enumerationMapping.enumValueMappings = srcEnumerationMapping.enumValueMappings.map(
