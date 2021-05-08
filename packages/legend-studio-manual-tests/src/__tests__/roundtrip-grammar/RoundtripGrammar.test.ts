@@ -51,9 +51,7 @@ import type { PlainObject } from '@finos/legend-studio-shared';
 const ENGINE_SERVER_URL = 'http://localhost:6060/api';
 const TEST_CASE_DIR = path.resolve(__dirname, 'cases');
 const EXCLUDED_CASE_FILES: string[] = [
-  'basic-M2M.pure', // until we fix the grammar parser to not include the variable for the property mapping lambda
-  // 'embedded-relational-mapping.pure',
-  'nested-embedded-relational-mapping.pure',
+  'embedded-relational-mapping-with-imports.pure', // TODO?
 ];
 
 const checkGrammarRoundtrip = async (
