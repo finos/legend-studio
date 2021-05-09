@@ -164,6 +164,7 @@ export interface ConfigurationData {
   appName: string;
   env: string;
   sdlc: { url: string } | SDLCServerOption[];
+  metadataSdlc?: { url: string };
   engine: { url: string };
   documentation: { url: string };
   options?: Record<PropertyKey, unknown>;
@@ -183,6 +184,7 @@ export class ApplicationConfig {
   _sdlcServerKey: string | undefined;
   sdlcServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
+  readonly metadataSdlcServerUrl?: string;
   readonly options = new ApplicationCoreOptions();
 
   // TODO: consider modifying and/or moving this out when we refactor `version.json`
@@ -254,6 +256,12 @@ export class ApplicationConfig {
       configData.engine.url,
       `Application configuration failure: 'engine.url' field is missing or empty`,
     );
+    if (configData.metadataSdlc) {
+      this.metadataSdlcServerUrl = guaranteeNonEmptyString(
+        configData.metadataSdlc.url,
+        `Application configuration failure: 'metadataSdlc.url' field is missing or empty`,
+      );
+    }
     assertNonNullable(
       configData.documentation,
       `Application configuration failure: 'documentation' field is missing`,
