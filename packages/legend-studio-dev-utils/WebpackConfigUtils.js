@@ -46,11 +46,8 @@ const getBaseWebpackConfig = (
   if (!dirname) {
     throw new Error(`\`dirname\` is required to build Webpack config`);
   }
-  const {
-    isEnvDevelopment,
-    isEnvProduction,
-    isEnvDevelopment_Advanced,
-  } = getEnvInfo(env, arg);
+  const { isEnvDevelopment, isEnvProduction, isEnvDevelopment_Advanced } =
+    getEnvInfo(env, arg);
 
   const config = {
     mode: arg.mode,
@@ -346,19 +343,13 @@ const getWebAppBaseWebpackConfig = (
       dev: {
         publicPath: '/',
       },
-      open: true,
-      // start - should remove this in next iteration of webpack-dev-server@4.beta
-      static: {
-        watch: false,
-      },
-      // end - should remove this in next iteration of webpack-dev-server@4.beta
-      port: 8080,
-      host: 'localhost',
-      openPage:
+      open:
         // trim the leading and trailing slash
         appConfig.baseUrl.length === 1
-          ? undefined
-          : appConfig.baseUrl.slice(1, -1),
+          ? false
+          : [appConfig.baseUrl.slice(1, -1)],
+      port: 8080,
+      host: 'localhost',
       // redirect 404s to /index.html
       historyApiFallback: {
         // URL contains dot such as for version (majorV.minV.patchV: 1.0.0) need this rule

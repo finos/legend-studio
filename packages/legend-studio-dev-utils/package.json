@@ -51,7 +51,7 @@
     "@changesets/logger": "0.0.5",
     "@changesets/write": "0.1.4",
     "@manypkg/get-packages": "1.1.1",
-    "@pmmmwh/react-refresh-webpack-plugin": "0.5.0-beta.1",
+    "@pmmmwh/react-refresh-webpack-plugin": "0.5.0-beta.7",
     "autoprefixer": "10.2.5",
     "babel-jest": "26.6.3",
     "babel-loader": "8.2.2",
