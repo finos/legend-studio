@@ -196,7 +196,6 @@ test(integrationTest('Association View'), async () => {
     CORE_TEST_ID.ASSOCIATION_EDITOR,
   );
   const properties = ['testClassProp', 'testClassSibling'];
-  const propertyTypes = ['TestClass', 'TestClassSibling'];
   // input fields for association property name are present
   properties.forEach((t) =>
     expect(getByDisplayValue(associationEditor, t)).not.toBeNull(),
