@@ -20,7 +20,6 @@
     "check:tsc": "yarn build:tsc",
     "check:update": "yarn upgrade-interactive",
     "clean": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean",
-    "commit:cli": "git-cz",
     "dev": "yarn workspace @finos/legend-studio-app dev",
     "dev:tsc": "tsc --build --watch",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
@@ -61,11 +60,6 @@
       "sort-package-json"
     ]
   },
-  "config": {
-    "commitizen": {
-      "path": "./scripts/workflow/buildCommitPrompt.js"
-    }
-  },
   "browserslist": [
     "last 2 Chrome versions"
   ],
@@ -80,7 +74,6 @@
     "@types/jest": "26.0.23",
     "@types/node": "15.0.2",
     "chalk": "4.1.1",
-    "commitizen": "4.2.4",
     "cross-env": "7.0.3",
     "eslint": "7.26.0",
     "fs-extra": "10.0.0",

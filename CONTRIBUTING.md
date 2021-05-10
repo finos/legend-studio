@@ -41,8 +41,6 @@ fix: correct minor typos in code
 -->
 ```
 
-If you are not familiar with the commit message convention, you can use `yarn commit:cli` instead of `git commit`, which provides an interactive prompt which helps you build compliant commit messages.
-
 > Structuring commit messages this way has many advantages. It's parsable by changelog generation tools. Also, we hope that this convention encourages contributors to break their work down into smaller logical units, making it easier to understand and review PRs.
 
 ### Changeset
@@ -188,9 +186,6 @@ Make sure to [create a changeset](#changeset) if you make significant code logic
 ```sh
 # Bring up the interactive tool to build changeset.
 yarn changeset
-
-# Bring up the interactive tool to build commit message that follow conventional commit.
-yarn commit:cli
 ```
 
 #### :package: Releasing
