@@ -51,6 +51,9 @@ export default {
   ],
   collectCoverageFrom: [
     '<rootDir>/packages/*/**/*.[jt]s?(x)',
+    '!<rootDir>/packages/*/webpack.config.js',
+    '!<rootDir>/packages/*/jest.config.js',
+    '!<rootDir>/packages/*/_package.config.js',
     '!<rootDir>/packages/*/build/**',
     '!<rootDir>/packages/*/lib/**',
     '!<rootDir>/packages/*/dev/**',
@@ -60,6 +63,7 @@ export default {
     '!**/__tests__/**',
     '!**/vendor/**',
     '!**/scripts/**',
+    '!<rootDir>/packages/legend-studio-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
     '!<rootDir>/packages/legend-studio-app/cypress/**', // TODO: update this when restructure `e2e` test suite
   ],
   coverageDirectory: '<rootDir>/build/coverage',
