@@ -20,9 +20,10 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export const extensions = ['js', 'ts', 'tsx', 'css', 'scss'];
-export const excludePatterns = [];
-export const copyrightText = readFileSync(
-  resolve(__dirname, './COPYRIGHT_HEADER.txt'),
-  { encoding: 'utf-8' },
-);
+export default {
+  extensions: ['js', 'ts', 'tsx', 'css', 'scss'],
+  excludePatterns: [],
+  copyrightText: readFileSync(resolve(__dirname, './COPYRIGHT_HEADER.txt'), {
+    encoding: 'utf-8',
+  }),
+};

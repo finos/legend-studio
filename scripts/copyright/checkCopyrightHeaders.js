@@ -17,8 +17,8 @@
 import {
   checkCopyrightHeaders,
   updateCopyrightHeaders,
-} from '@finos/legend-studio-dev-utils/CopyrightUtils.js';
-import config from './copyright.config';
+} from '@finos/legend-studio-dev-utils/CopyrightUtils';
+import config from './copyright.config.js';
 
 const toUpdate = process.argv.includes('--update');
 
