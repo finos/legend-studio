@@ -1823,6 +1823,88 @@ export const testDatabaseRoundtrip = [
     classifierPath: 'meta::relational::metamodel::Database',
   },
   {
+    path: 'model::relational::tests::db2',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: ['model::relational::tests::db'],
+      joins: [],
+      name: 'db2',
+      package: 'model::relational::tests',
+      schemas: [
+        {
+          name: 'default',
+          tables: [],
+          views: [
+            {
+              columnMappings: [
+                {
+                  name: 'PERSON_ID',
+                  operation: {
+                    _type: 'column',
+                    column: 'ID',
+                    table: {
+                      _type: 'Table',
+                      database: 'model::relational::tests::db2',
+                      mainTableDb: 'model::relational::tests::db2',
+                      schema: 'default',
+                      table: 'personTable',
+                    },
+                    tableAlias: 'personTable',
+                  },
+                },
+                {
+                  name: 'lastName',
+                  operation: {
+                    _type: 'column',
+                    column: 'LASTNAME',
+                    table: {
+                      _type: 'Table',
+                      database: 'model::relational::tests::db2',
+                      mainTableDb: 'model::relational::tests::db2',
+                      schema: 'default',
+                      table: 'personTable',
+                    },
+                    tableAlias: 'personTable',
+                  },
+                },
+                {
+                  name: 'firm_name',
+                  operation: {
+                    _type: 'elemtWithJoins',
+                    joins: [
+                      {
+                        db: 'model::relational::tests::db2',
+                        name: 'Firm_Person',
+                      },
+                    ],
+                    relationalElement: {
+                      _type: 'column',
+                      column: 'LEGALNAME',
+                      table: {
+                        _type: 'Table',
+                        database: 'model::relational::tests::db2',
+                        mainTableDb: 'model::relational::tests::db2',
+                        schema: 'default',
+                        table: 'firmTable',
+                      },
+                      tableAlias: 'firmTable',
+                    },
+                  },
+                },
+              ],
+              distinct: false,
+              groupBy: [],
+              name: 'ViewWithJoinInIncludedStore',
+              primaryKey: ['PERSON_ID'],
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
     path: 'model::relational::tests::dbInc',
     content: {
       _type: 'relational',
