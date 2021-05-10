@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
-    "@testing-library/dom": "7.30.4",
+    "@testing-library/dom": "7.31.0",
     "@testing-library/react": "11.2.6",
     "cross-env": "7.0.3",
     "eslint": "7.26.0",
