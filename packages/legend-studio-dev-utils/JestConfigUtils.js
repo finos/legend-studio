@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const { resolveFullTsConfig } = require('./TypescriptConfigUtils');
+import { resolve } from 'path';
+import { resolveFullTsConfig } from './TypescriptConfigUtils.js';
 
-const getBaseConfig = ({ babelConfigPath }) => ({
+export const getBaseConfig = ({ babelConfigPath }) => ({
   transform: {
     // Since `babel-jest` will not do type checking for the test code.
     // We need to manually run `tsc`. Another option is to use `jest-runner-tsc`
@@ -56,7 +56,7 @@ const getBaseConfig = ({ babelConfigPath }) => ({
   ],
 });
 
-const buildModuleNameMapperFromTsConfigPathMapping = ({
+export const buildModuleNameMapperFromTsConfigPathMapping = ({
   dirname,
   tsConfigPath,
   excludePaths = [],
@@ -67,7 +67,7 @@ const buildModuleNameMapperFromTsConfigPathMapping = ({
   const tsConfig = resolveFullTsConfig(tsConfigPath);
   const paths = tsConfig?.compilerOptions?.paths;
   const baseUrl = tsConfig?.compilerOptions?.baseUrl;
-  const basePath = baseUrl ? path.resolve(dirname, baseUrl) : dirname;
+  const basePath = baseUrl ? resolve(dirname, baseUrl) : dirname;
   if (paths) {
     const aliases = {};
     Object.entries(paths).forEach(([key, value]) => {
@@ -78,19 +78,12 @@ const buildModuleNameMapperFromTsConfigPathMapping = ({
       const replacement = (Array.isArray(value) ? value : [value]).map((val) =>
         val.replace('*', '$1'),
       );
-      aliases[regexp] = replacement.map((val) => path.resolve(basePath, val));
+      aliases[regexp] = replacement.map((val) => resolve(basePath, val));
     });
     return aliases;
   }
   return {};
 };
 
-const unitTest = (testName) => `[UNIT] ${testName}`;
-const integrationTest = (testName) => `[INTEGRATION] ${testName}`;
-
-module.exports = {
-  unitTest,
-  integrationTest,
-  getBaseConfig,
-  buildModuleNameMapperFromTsConfigPathMapping,
-};
+export const unitTest = (testName) => `[UNIT] ${testName}`;
+export const integrationTest = (testName) => `[INTEGRATION] ${testName}`;

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-const {
-  validateChangesets,
-} = require('@finos/legend-studio-dev-utils/ChangesetUtils');
+import { validateChangesets } from '@finos/legend-studio-dev-utils/ChangesetUtils';
 
 validateChangesets(process.cwd(), 'origin/master');

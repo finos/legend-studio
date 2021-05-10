@@ -9,6 +9,8 @@
     "typescript",
     "typescriptreact"
   ],
+  "eslint.options": { "configFile": "./.eslintrc.cjs" },
+  "stylelint.configFile": "./.stylelintrc.json",
   "search.exclude": {
     "**/node_modules": true,
     "**/yarn.lock": true,

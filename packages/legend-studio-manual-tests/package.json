@@ -14,6 +14,7 @@
     "directory": "packages/legend-studio-manual-tests"
   },
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "build": "echo 'do nothing'",
     "clean": "rimraf \"dist\" \"build\"",

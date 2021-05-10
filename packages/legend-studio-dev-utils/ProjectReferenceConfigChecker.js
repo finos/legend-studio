@@ -14,36 +14,34 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const micromatch = require('micromatch');
-const { execSync } = require('child_process');
-const fs = require('fs');
-const chalk = require('chalk');
-const { getTsConfigJSON } = require('./TypescriptConfigUtils');
-const { exitWithError } = require('./DevUtils');
+import { sep, resolve } from 'path';
+import micromatch from 'micromatch';
+import { execSync } from 'child_process';
+import { lstatSync, existsSync } from 'fs';
+import chalk from 'chalk';
+import { getTsConfigJSON } from './TypescriptConfigUtils.js';
+import { exitWithError, loadJSON } from './DevUtils.js';
 
 const getDir = (file) =>
-  fs.lstatSync(file).isDirectory()
-    ? file
-    : file.split(path.sep).slice(0, -1).join(path.sep);
+  lstatSync(file).isDirectory() ? file : file.split(sep).slice(0, -1).join(sep);
 
 const PACKAGE_JSON_PATTERN = /package\.json$/;
 
 const getProjectInfo = (dirname, projectPath) => {
-  const projectFullPath = path.resolve(dirname, `${projectPath}`);
+  const projectFullPath = resolve(dirname, `${projectPath}`);
   const dir = getDir(projectFullPath);
-  const tsConfigPath = !fs.lstatSync(projectFullPath).isDirectory()
+  const tsConfigPath = !lstatSync(projectFullPath).isDirectory()
     ? projectFullPath
-    : path.resolve(projectFullPath, 'tsconfig.json');
+    : resolve(projectFullPath, 'tsconfig.json');
   // NOTE: since tsconfig files don't inherit `references` it's safe to just get the file and extract
   // `references` field instead of resolving the full tsconfig file which takes time.
   const tsConfigFile = getTsConfigJSON(tsConfigPath);
-  const packageJsonPath = path.resolve(dir, 'package.json');
-  if (!fs.existsSync(packageJsonPath)) {
+  const packageJsonPath = resolve(dir, 'package.json');
+  if (!existsSync(packageJsonPath)) {
     // if `package.json` does not exists, there's nothing to check
     return undefined;
   }
-  const packageJson = require(packageJsonPath);
+  const packageJson = loadJSON(packageJsonPath);
   return {
     dir,
     path: projectFullPath,
@@ -74,7 +72,7 @@ const getProjectInfo = (dirname, projectPath) => {
  *
  * See https://github.com/RyanCavanaugh/learn-a
  */
-const checkProjectReferenceConfig = ({
+export const checkProjectReferenceConfig = ({
   rootDir,
   /* micromatch glob patterns */
   excludePackagePatterns = [],
@@ -84,7 +82,7 @@ const checkProjectReferenceConfig = ({
   try {
     // resolve all projects referenced in the root `tsconfig.json`
     // and build a lookup table between project and corresponding package
-    const rootTsConfigPath = path.resolve(rootDir, './tsconfig.json');
+    const rootTsConfigPath = resolve(rootDir, './tsconfig.json');
     const projectMap = new Map();
     (getTsConfigJSON(rootTsConfigPath).references ?? [])
       .map((ref) => ref.path)
@@ -113,11 +111,11 @@ const checkProjectReferenceConfig = ({
       if (micromatch.isMatch(file, excludePackagePatterns)) {
         return;
       }
-      const packageJsonPath = path.resolve(rootDir, `${file}`);
+      const packageJsonPath = resolve(rootDir, `${file}`);
       const dir = getDir(packageJsonPath);
-      const packageJson = require(packageJsonPath);
-      const tsConfigPath = path.resolve(dir, `tsconfig.json`);
-      if (!fs.existsSync(tsConfigPath)) {
+      const packageJson = loadJSON(packageJsonPath);
+      const tsConfigPath = resolve(dir, `tsconfig.json`);
+      if (!existsSync(tsConfigPath)) {
         // if `tsconfig.json` does not exists, this package is not written in Typescript, therefore we can skip it
         // NOTE: this check seems rather optimistic, the `tsconfig.json` file could be named differently
         // we might need to come up with a more sophisticated check (e.g. check `types` file in `package.json`)
@@ -201,8 +199,4 @@ const checkProjectReferenceConfig = ({
   } else {
     console.log('No issues with Typescript project reference found!');
   }
-};
-
-module.exports = {
-  checkProjectReferenceConfig,
 };

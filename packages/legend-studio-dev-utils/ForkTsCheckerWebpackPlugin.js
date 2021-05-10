@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 
-module.exports = ForkTsCheckerWebpackPlugin;
+export default ForkTsCheckerWebpackPlugin;

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-const chalk = require('chalk');
-const conventionalCommitTypes = require('conventional-commit-types');
+import chalk from 'chalk';
+import { types as CONVENTIONAL_COMMIT_TYPES } from 'conventional-commit-types';
 
 // This code is adapted from `cz-conventional-changelog`
 // See https://github.com/commitizen/cz-conventional-changelog
-const createCommitizenPrompter = function () {
+export const createCommitizenPrompter = function () {
   // This is the length of Github commit title, more than this and the commit will get truncated
   const MAXIMUM_HEADER_LENGTH = 72;
 
@@ -40,7 +40,7 @@ const createCommitizenPrompter = function () {
   };
 
   // build `type` options
-  const types = conventionalCommitTypes.types;
+  const types = CONVENTIONAL_COMMIT_TYPES;
   const typeOptionLength =
     Object.keys(types)
       .map((type) => type.length)
@@ -119,8 +119,4 @@ const createCommitizenPrompter = function () {
         });
     },
   };
-};
-
-module.exports = {
-  createCommitizenPrompter,
 };

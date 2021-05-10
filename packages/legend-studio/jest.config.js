@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-const base = require('../../scripts/jest/jest.config.base.js');
-const packageJson = require('./package.json');
+import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import base from '../../scripts/jest/jest.config.base.js';
 
-module.exports = {
+const packageJson = loadJSON('./package.json');
+
+export default {
   ...base,
   displayName: packageJson.name,
   name: packageJson.name,

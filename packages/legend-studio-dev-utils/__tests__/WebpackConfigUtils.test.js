@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-const path = require('path');
+import { resolve } from 'path';
+import { buildAliasEntriesFromTsConfigPathMapping } from '../WebpackConfigUtils.js';
+import { unitTest } from '../JestConfigUtils.js';
 
-const {
-  buildAliasEntriesFromTsConfigPathMapping,
-} = require('../WebpackConfigUtils');
-const { unitTest } = require('../JestConfigUtils');
+jest.mock('strip-ansi');
+jest.mock('wrap-ansi');
 
 test(unitTest('Build Webpack aliases from Typescript path mapping'), () => {
   const aliases = buildAliasEntriesFromTsConfigPathMapping({
     dirname: __dirname,
-    tsConfigPath: path.resolve(
-      __dirname,
-      './fixtures/testTsConfigPathMapping.json',
-    ),
+    tsConfigPath: resolve(__dirname, './fixtures/testTsConfigPathMapping.json'),
     excludePaths: ['toBeExcluded/*'],
   });
   expect(aliases).toEqual({
-    '@something': [path.resolve(__dirname, './src')],
+    '@something': [resolve(__dirname, './src')],
     somePath$: [
-      path.resolve(__dirname, './src/somePath'),
-      path.resolve(__dirname, './src/somePath1'),
+      resolve(__dirname, './src/somePath'),
+      resolve(__dirname, './src/somePath1'),
     ],
   });
 });
@@ -46,17 +43,17 @@ test(
   () => {
     const aliases = buildAliasEntriesFromTsConfigPathMapping({
       dirname: __dirname,
-      tsConfigPath: path.resolve(
+      tsConfigPath: resolve(
         __dirname,
         './fixtures/testTsConfigPathMapping_withBaseUrl.json',
       ),
       excludePaths: ['toBeExcluded/*'],
     });
     expect(aliases).toEqual({
-      '@something': [path.resolve(__dirname, '../..', './src')],
+      '@something': [resolve(__dirname, '../..', './src')],
       somePath$: [
-        path.resolve(__dirname, '../..', './src/somePath'),
-        path.resolve(__dirname, '../..', './src/somePath1'),
+        resolve(__dirname, '../..', './src/somePath'),
+        resolve(__dirname, '../..', './src/somePath1'),
       ],
     });
   },

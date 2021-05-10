@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const {
-  getBaseConfig,
-} = require('@finos/legend-studio-dev-utils/JestConfigUtils');
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { getBaseConfig } from '@finos/legend-studio-dev-utils/JestConfigUtils';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const baseConfig = getBaseConfig({
-  babelConfigPath: path.resolve(__dirname, '../../babel.config.js'),
+  babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
 });
 
-module.exports = {
+export default {
   ...baseConfig,
   setupFiles: [
     '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',

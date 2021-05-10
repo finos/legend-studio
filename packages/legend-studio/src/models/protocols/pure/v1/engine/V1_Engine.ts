@@ -336,7 +336,10 @@ export class V1_Engine {
       }),
     );
     const codeGenerationDescriptions = ((yield this.engineServerClient.getAvailableCodeGenerationDescriptions()) as PlainObject<V1_GenerationConfigurationDescription>[]).map(
-      (gen) => ({ ...gen, generationMode: GenerationMode.CODE_GENERATION }),
+      (gen) => ({
+        ...gen,
+        generationMode: GenerationMode.CODE_GENERATION,
+      }),
     );
     return [
       ...schemaGenerationDescriptions,

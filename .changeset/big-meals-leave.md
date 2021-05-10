@@ -2,4 +2,5 @@
 '@finos/legend-studio': patch
 ---
 
-Add fix for association view
+pr: 190
+Fix a bug in association editor where it crashes when users attempt to modify the property type(s) of a newly created association.

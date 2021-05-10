@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-const fs = require('fs');
-const chalk = require('chalk');
-const path = require('path');
-const { execSync } = require('child_process');
-const {
-  resolveFullTsConfig,
-} = require('@finos/legend-studio-dev-utils/TypescriptConfigUtils');
-const { resolvePackageConfig } = require('../loadPackageConfig');
-const fsExtra = require('fs-extra');
+import { existsSync, readdirSync, copyFileSync, writeFileSync } from 'fs';
+import chalk from 'chalk';
+import { resolve, dirname } from 'path';
+import { execSync } from 'child_process';
+import { resolveFullTsConfig } from '@finos/legend-studio-dev-utils/TypescriptConfigUtils';
+import { resolvePackageConfig } from '../loadPackageConfig';
+import { mkdirs, copySync } from 'fs-extra';
+import { fileURLToPath } from 'url';
+import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
 
-const ROOT_DIR = path.resolve(__dirname, '../../');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const ROOT_DIR = resolve(__dirname, '../../');
 const workspaceDir = process.cwd();
 const packageConfig = resolvePackageConfig(workspaceDir);
-const packageJson = require(path.resolve(workspaceDir, 'package.json'));
+const packageJson = loadJSON(resolve(workspaceDir, 'package.json'));
 const workspaceName = packageJson.name;
 
 console.log(`Preparing publish content for workspace '${workspaceName}'...`);
@@ -38,16 +40,16 @@ try {
 
   // If the directory for staging publish content is not there, create it
   // and populate it with publish content
-  if (!fs.existsSync(publishContentDir)) {
-    fsExtra.mkdirs(publishContentDir);
+  if (!existsSync(publishContentDir)) {
+    mkdirs(publishContentDir);
     // Copy the content of the workspace (including build artifacts) to the staging area
-    fs.readdirSync(workspaceDir).forEach((fileOrDir) => {
+    readdirSync(workspaceDir).forEach((fileOrDir) => {
       if (['build', 'dev', 'temp'].includes(fileOrDir)) {
         return;
       }
-      fsExtra.copySync(
-        path.resolve(workspaceDir, fileOrDir),
-        path.resolve(publishContentDir, fileOrDir),
+      copySync(
+        resolve(workspaceDir, fileOrDir),
+        resolve(publishContentDir, fileOrDir),
       );
     });
     console.log(
@@ -56,10 +58,10 @@ try {
   }
 
   // If there is no LICENSE file, copy the LICENSE file from root
-  if (!fs.existsSync(path.resolve(publishContentDir, 'LICENSE'))) {
-    fs.copyFileSync(
-      path.resolve(ROOT_DIR, 'LICENSE'),
-      path.resolve(publishContentDir, 'LICENSE'),
+  if (!existsSync(resolve(publishContentDir, 'LICENSE'))) {
+    copyFileSync(
+      resolve(ROOT_DIR, 'LICENSE'),
+      resolve(publishContentDir, 'LICENSE'),
     );
     console.log(chalk.green(`\u2713 Added LICENSE file`));
   }
@@ -85,11 +87,11 @@ try {
     })),
   ];
   tsConfigProcessEntries.forEach(({ source, target }) => {
-    const resolvedSourcePath = path.resolve(workspaceDir, source);
-    const resolvedTargetPath = path.resolve(publishContentDir, target);
-    if (fs.existsSync(resolvedSourcePath)) {
+    const resolvedSourcePath = resolve(workspaceDir, source);
+    const resolvedTargetPath = resolve(publishContentDir, target);
+    if (existsSync(resolvedSourcePath)) {
       const newTsConfigContent = resolveFullTsConfig(resolvedSourcePath);
-      fs.writeFileSync(
+      writeFileSync(
         resolvedTargetPath,
         JSON.stringify(newTsConfigContent, null, 2),
         (err) => {
@@ -126,7 +128,7 @@ try {
     .forEach((ws) => {
       workspaceVersionMap.set(
         ws.name,
-        require(path.resolve(ROOT_DIR, ws.location, 'package.json')).version,
+        loadJSON(resolve(ROOT_DIR, ws.location, 'package.json')).version,
       );
     });
 
@@ -145,8 +147,8 @@ try {
     }
   });
 
-  fs.writeFileSync(
-    path.resolve(publishContentDir, 'package.json'),
+  writeFileSync(
+    resolve(publishContentDir, 'package.json'),
     JSON.stringify(packageJson, undefined, 2),
   );
   console.log(

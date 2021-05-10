@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-const {
-  generateChangeset,
-} = require('@finos/legend-studio-dev-utils/ChangesetUtils');
+import { generateChangeset } from '@finos/legend-studio-dev-utils/ChangesetUtils';
 
 generateChangeset(process.cwd(), process.argv[2] ?? '', 'origin/master');

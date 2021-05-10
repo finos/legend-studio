@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-const fs = require('fs');
-const path = require('path');
-const { exitWithError } = require('@finos/legend-studio-dev-utils/DevUtils');
-const {
-  addCopyrightHeaderToBundledOutput,
-} = require('@finos/legend-studio-dev-utils/CopyrightUtils');
+import { existsSync } from 'fs';
+import { resolve } from 'path';
+import { exitWithError } from '@finos/legend-studio-dev-utils/DevUtils';
+import { addCopyrightHeaderToBundledOutput } from '@finos/legend-studio-dev-utils/CopyrightUtils';
 
 const file = process.argv[2];
 
@@ -36,16 +34,16 @@ const file = process.argv[2];
  * As such, the best way to make this work agnostic of setup is to
  * find the path from where we can retrieve the file
  */
-[process.env.INIT_CWD, process.cwd()].forEach((basePath) => {
-  const configPath = path.resolve(basePath, '_package.config.js');
-  if (!fs.existsSync(configPath)) {
-    return;
+[process.env.INIT_CWD, process.cwd()].map(async (basePath) => {
+  const configPath = resolve(basePath, '_package.config.js');
+  if (!existsSync(configPath)) {
+    exitWithError(
+      `Failed to add copyright header to bundled output file: ${file}`,
+    );
   }
-  addCopyrightHeaderToBundledOutput({
+  await addCopyrightHeaderToBundledOutput({
     basePath,
     configPath,
     file,
   });
 });
-
-exitWithError(`Failed to add copyright header to bundled output file: ${file}`);

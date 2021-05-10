@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-module.exports = {
+export default {
   publish: {
     typescript: {
       main: './tsconfig.build.json',

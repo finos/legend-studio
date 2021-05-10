@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-const {
-  checkProjectReferenceConfig,
-} = require('@finos/legend-studio-dev-utils/ProjectReferenceConfigChecker');
-const path = require('path');
+import { checkProjectReferenceConfig } from '@finos/legend-studio-dev-utils/ProjectReferenceConfigChecker';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 checkProjectReferenceConfig({
-  rootDir: path.resolve(__dirname, '../../'),
+  rootDir: resolve(__dirname, '../../'),
   excludePackagePatterns: [],
   excludeReferencePatterns: ['**/tsconfig.package.json'],
 });
