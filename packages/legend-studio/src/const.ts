@@ -31,6 +31,7 @@ export enum CORE_TEST_ID {
   EDIT_PANEL__HEADER_TABS = 'edit-panel__header-tabs',
   CLASS_FORM_EDITOR = 'class-form-editor',
   ENUMERATION_EDITOR = 'enumeration-editor',
+  ASSOCIATION_EDITOR = 'association-editor',
   ELEMENT_EXPLORER = 'element-explorer',
   TYPE_VISIT = 'type-visit',
   STATUS_BAR = 'status-bar',

@@ -376,7 +376,10 @@ export const AssociationEditor = observer(
       [handleDropStereotype],
     );
     return (
-      <div className="uml-element-editor association-editor">
+      <div
+        data-testid={CORE_TEST_ID.ASSOCIATION_EDITOR}
+        className="uml-element-editor association-editor"
+      >
         <SplitPane
           split="horizontal"
           primary="second"
