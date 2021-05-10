@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "clean": "rimraf \"build\"",
-    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.js\"",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.{mjs,cjs,js}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
   },
   "dependencies": {
@@ -33,7 +33,7 @@
     "@babel/helper-plugin-utils": "7.13.0",
     "@babel/plugin-proposal-class-properties": "7.13.0",
     "@babel/plugin-transform-runtime": "7.13.15",
-    "@babel/preset-env": "7.14.0",
+    "@babel/preset-env": "7.14.1",
     "@babel/preset-react": "7.13.13",
     "@babel/preset-typescript": "7.13.0",
     "@babel/runtime": "7.14.0",
@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "7.25.0",
+    "eslint": "7.26.0",
     "rimraf": "3.0.2",
     "typescript": "4.2.4"
   },

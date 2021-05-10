@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-const {
+import {
   checkCopyrightHeaders,
   updateCopyrightHeaders,
-} = require('@finos/legend-studio-dev-utils/CopyrightUtils');
-const config = require('./copyright.config');
+} from '@finos/legend-studio-dev-utils/CopyrightUtils';
+import config from './copyright.config.js';
 
 const toUpdate = process.argv.includes('--update');
 

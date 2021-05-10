@@ -14,15 +14,31 @@
  * limitations under the License.
  */
 
-const base = require('../../scripts/jest/jest.config.base.js');
-const packageJson = require('./package.json');
+import base from '../../scripts/jest/jest.config.base.js';
+import { loadJSON } from './DevUtils.js';
 
-module.exports = {
+const packageJson = loadJSON('./package.json');
+
+export default {
   ...base,
   displayName: packageJson.name,
   name: packageJson.name,
   rootDir: '../..',
+  moduleNameMapper: {
+    ...base.moduleNameMapper,
+    // NOTE: since these packages use ESM exports, we will have till Jest support it, but since we don't really use
+    // them in the test, we will just mock them
+    // See https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c#im-having-problems-with-esm-and-jest
+    'strip-ansi': '@finos/legend-studio-dev-utils/mocks/fileMock',
+    'wrap-ansi': '@finos/legend-studio-dev-utils/mocks/fileMock',
+  },
   testMatch: [
     '<rootDir>/packages/legend-studio-dev-utils/**/__tests__/**/*(*.)test.[jt]s?(x)',
+  ],
+  // TODO: remove this when `import.meta` is supported by Jest
+  // See https://github.com/facebook/jest/issues/9430
+  testPathIgnorePatterns: [
+    ...base.testPathIgnorePatterns,
+    '<rootDir>/packages/legend-studio-dev-utils/__tests__/WebpackConfigUtils.test.js',
   ],
 };

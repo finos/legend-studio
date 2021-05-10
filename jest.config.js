@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-const base = require('./scripts/jest/jest.config.base.js');
+import base from './scripts/jest/jest.config.base.js';
 
-module.exports = {
+export default {
   ...base,
   projects: ['<rootDir>/packages/*'],
 };

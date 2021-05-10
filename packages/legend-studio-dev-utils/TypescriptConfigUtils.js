@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const { execSync } = require('child_process');
-const fs = require('fs');
-const { parse } = require('jsonc-parser');
-const { getFileContent } = require('./DevUtils');
+import { sep, resolve, dirname } from 'path';
+import { execSync } from 'child_process';
+import { lstatSync, existsSync } from 'fs';
+import { parse } from 'jsonc-parser';
+import { getFileContent } from './DevUtils.js';
 
 const getDir = (file) =>
-  fs.lstatSync(file).isDirectory()
-    ? file
-    : file.split(path.sep).slice(0, -1).join(path.sep);
+  lstatSync(file).isDirectory() ? file : file.split(sep).slice(0, -1).join(sep);
 
 /**
  * Get the Typescript config file content non-recursively.
@@ -37,9 +35,9 @@ const getDir = (file) =>
  * Therefore, it's best that we don't do a check for parsing error in the config files by default,
  * that should be taken care of by Typescript anyway.
  */
-const getTsConfigJSON = (file, checkForParsingError = false) => {
+export const getTsConfigJSON = (file, checkForParsingError = false) => {
   const parseErrors = [];
-  if (!fs.existsSync(file)) {
+  if (!existsSync(file)) {
     throw new Error(`Can't find Typescript config file with path '${file}'`);
   }
   const text = getFileContent(file);
@@ -56,12 +54,12 @@ const getTsConfigJSON = (file, checkForParsingError = false) => {
  * such as to see ifany files match the pattern specified in `files`
  * and `includes`
  */
-const resolveFullTsConfigWithoutValidation = (fullTsConfigPath) => {
+export const resolveFullTsConfigWithoutValidation = (fullTsConfigPath) => {
   let tsConfig = getTsConfigJSON(fullTsConfigPath);
   let tsConfigDir = getDir(fullTsConfigPath);
   let ext = tsConfig.extends;
   while (ext) {
-    const parentTsConfigPath = path.resolve(tsConfigDir, ext);
+    const parentTsConfigPath = resolve(tsConfigDir, ext);
     tsConfigDir = getDir(parentTsConfigPath);
     let parentTsFullConfig;
     try {
@@ -110,16 +108,10 @@ const resolveFullTsConfigWithoutValidation = (fullTsConfigPath) => {
  * This method uses `tsc` to resolve the full config
  * but because it uses `tsc` it will also do validation.
  */
-const resolveFullTsConfig = (fullTsConfigPath) =>
+export const resolveFullTsConfig = (fullTsConfigPath) =>
   JSON.parse(
     execSync(`tsc -p ${fullTsConfigPath} --showConfig`, {
       encoding: 'utf-8',
-      cwd: path.dirname(fullTsConfigPath),
+      cwd: dirname(fullTsConfigPath),
     }),
   );
-
-module.exports = {
-  getTsConfigJSON,
-  resolveFullTsConfigWithoutValidation,
-  resolveFullTsConfig,
-};

@@ -139,7 +139,7 @@ export class Association
       Class,
       `Association property '${property.name}' must be of type 'class'`,
     );
-    // don't inovke deletion if the class is a stub (otherProperty is not present)
+    // don't invoke deletion if the class is a stub (otherProperty is not present)
     if (!otherPropertyAssociatedClass.isStub) {
       assertTrue(
         deleteEntry(

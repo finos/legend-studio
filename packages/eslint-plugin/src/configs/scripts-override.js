@@ -23,7 +23,7 @@ const config = {
   overrides: [
     {
       // relax linting rules for scripts
-      files: ['**.js'],
+      files: ['**.{mjs,cjs,js}'],
       parser: '@babel/eslint-parser', // use this parser for non-ts files so it does not require `parserOptions.project` config like `@typescript-eslint/parser`
       rules: {
         'no-console': OFF,

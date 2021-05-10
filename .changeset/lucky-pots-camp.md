@@ -2,4 +2,5 @@
 '@finos/legend-studio': patch
 ---
 
-check joins in included databases
+pr: 193
+Check for joins in included databases.

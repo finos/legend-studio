@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const {
-  generateCopyrightComment,
-} = require('@finos/legend-studio-dev-utils/CopyrightUtils');
-const { getFileContent } = require('@finos/legend-studio-dev-utils/DevUtils');
+import { resolve, dirname } from 'path';
+import { generateCopyrightComment } from '@finos/legend-studio-dev-utils/CopyrightUtils';
+import {
+  getFileContent,
+  loadJSON,
+} from '@finos/legend-studio-dev-utils/DevUtils';
+import { fileURLToPath } from 'url';
 
-const generateBundleCopyrightText = (workspaceDir) => {
-  const packageJson = require(path.resolve(workspaceDir, './package.json'));
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export const generateBundleCopyrightText = (workspaceDir) => {
+  const packageJson = loadJSON(resolve(workspaceDir, './package.json'));
   return generateCopyrightComment({
-    text: getFileContent(path.resolve(__dirname, './COPYRIGHT_HEADER.txt')),
+    text: getFileContent(resolve(__dirname, './COPYRIGHT_HEADER.txt')),
     pkg: {
       name: packageJson.name,
       version: packageJson.version,
     },
   });
-};
-
-module.exports = {
-  generateBundleCopyrightText,
 };

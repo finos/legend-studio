@@ -26,17 +26,14 @@
  *
  * See https://github.com/atlassian/changesets/blob/master/docs/modifying-changelog-format.md
  */
-const githubChangelogFunctions = require('@changesets/changelog-github')
-  .default;
+import GithubChangelogFunctions from '@changesets/changelog-github';
 
-const getReleaseLine = async (changeset, type, options) => {
+export const getReleaseLine = async (changeset, type, options) => {
   if (!changeset.summary) {
     return undefined; // do not show change log release line without content
   }
-  return githubChangelogFunctions.getReleaseLine(changeset, type, options);
+  return GithubChangelogFunctions.getReleaseLine(changeset, type, options);
 };
 
-module.exports = {
-  getReleaseLine,
-  getDependencyReleaseLine: githubChangelogFunctions.getDependencyReleaseLine,
-};
+export const getDependencyReleaseLine =
+  GithubChangelogFunctions.getDependencyReleaseLine;

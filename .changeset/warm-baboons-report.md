@@ -2,4 +2,5 @@
 '@finos/legend-studio': patch
 ---
 
-Add support for Snowflake Public authentication strategy
+pr: 183
+Add support for Snowflake Public authentication strategy.

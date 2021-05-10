@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-const { getConfigLoader } = require('@finos/legend-studio-dev-utils/DevUtils');
+import { getConfigLoader } from '@finos/legend-studio-dev-utils/DevUtils';
 
-const configLoader = getConfigLoader('_package');
+export const configLoader = getConfigLoader('_package');
 
-const resolvePackageConfig = (filePath) => {
+export const resolvePackageConfig = (filePath) => {
   const result = configLoader.search(filePath);
   return result?.config;
-};
-
-module.exports = {
-  resolvePackageConfig,
-  configLoader,
 };
