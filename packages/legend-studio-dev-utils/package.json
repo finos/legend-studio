@@ -23,7 +23,7 @@
   "exports": {
     "./mocks/fileMock": "./mocks/fileMock.js",
     "./ChangesetUtils": "./ChangesetUtils.js",
-    "./ChangesetChangelogUtils": "./ChangesetChangelogUtils.js",
+    "./ChangesetChangelogUtils": "./ChangesetChangelogUtils.cjs",
     "./CodeCheckerUtils": "./CodeCheckerUtils.js",
     "./CopyrightUtils": "./CopyrightUtils.js",
     "./DevUtils": "./DevUtils.js",
