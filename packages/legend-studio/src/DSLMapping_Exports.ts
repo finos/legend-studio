@@ -30,6 +30,11 @@ export { PropertyMapping } from './models/metamodels/pure/model/packageableEleme
 export { V1_Mapping } from './models/protocols/pure/v1/model/packageableElements/mapping/V1_Mapping';
 export { V1_PackageableRuntime } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_PackageableRuntime';
 export { V1_Store } from './models/protocols/pure/v1/model/packageableElements/store/V1_Store';
+export {
+  V1_EngineRuntime,
+  V1_Runtime,
+} from './models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
+export { V1_engineRuntimeModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
 
 // stores
 export {
