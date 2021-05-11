@@ -136,12 +136,11 @@ export const MappingElementExplorer = observer(
     // Drag and Drop
     const [, dragRef] = useDrag(
       () => ({
-        item: new MappingElementDragSource(
+        type:
           mappingElement instanceof SetImplementation
             ? CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING
             : CORE_DND_TYPE.NONE,
-          mappingElement,
-        ),
+        item: new MappingElementDragSource(mappingElement),
       }),
       [mappingElement],
     );
@@ -244,12 +243,11 @@ const MappingElementTreeNodeContainer = observer(
     // Drag and Drop
     const [, dragRef] = useDrag(
       () => ({
-        item: new MappingElementDragSource(
+        type:
           mappingElement instanceof SetImplementation
             ? CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING
             : CORE_DND_TYPE.NONE,
-          mappingElement,
-        ),
+        item: new MappingElementDragSource(mappingElement),
       }),
       [mappingElement],
     );

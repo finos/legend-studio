@@ -43,7 +43,7 @@
     "@finos/legend-studio-shared": "workspace:*",
     "@types/papaparse": "5.2.5",
     "@types/react": "17.0.5",
-    "@types/react-dom": "17.0.3",
+    "@types/react-dom": "17.0.4",
     "@types/react-router-dom": "5.1.7",
     "date-fns": "2.21.3",
     "mobx": "6.3.0",

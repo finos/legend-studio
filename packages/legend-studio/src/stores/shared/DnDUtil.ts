@@ -63,41 +63,33 @@ export enum CORE_DND_TYPE {
 // See https://github.com/react-dnd/react-dnd/pull/1079
 export class TypeDragSource {
   data: TypeTreeNodeData;
-  type: CORE_DND_TYPE;
 
-  constructor(type: CORE_DND_TYPE, data: TypeTreeNodeData) {
+  constructor(data: TypeTreeNodeData) {
     this.data = data;
-    this.type = type;
   }
 }
 
 export class FlatDataColumnDragSource {
   data: FlatDataRecordTypeTreeNodeData;
-  type: CORE_DND_TYPE;
 
   constructor(data: FlatDataRecordTypeTreeNodeData) {
     this.data = data;
-    this.type = CORE_DND_TYPE.TYPE_TREE_PRIMITIVE;
   }
 }
 
 export class ElementDragSource {
   data: PackageTreeNodeData;
-  type: string;
 
-  constructor(type: string, data: PackageTreeNodeData) {
+  constructor(data: PackageTreeNodeData) {
     this.data = data;
-    this.type = type;
   }
 }
 
 export class MappingElementDragSource {
   data: MappingElement;
-  type: CORE_DND_TYPE;
 
-  constructor(type: CORE_DND_TYPE, data: MappingElement) {
+  constructor(data: MappingElement) {
     this.data = data;
-    this.type = type;
   }
 }
 

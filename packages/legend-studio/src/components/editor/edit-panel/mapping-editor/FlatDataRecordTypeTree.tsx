@@ -78,6 +78,7 @@ const RecordFieldTreeNodeContainer: React.FC<
   const { selectedType } = innerProps;
   const [, dragRef] = useDrag(
     () => ({
+      type: CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
       item: new FlatDataColumnDragSource(node),
     }),
     [node],

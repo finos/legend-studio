@@ -122,6 +122,7 @@ const EnumerationPropertyMappingEditor = observer(
     propertyMappingState: PurePropertyMappingState;
     drop?: ConnectDropTarget;
     dragItem?: TransformDropTarget;
+    dragItemType: string;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;
@@ -132,6 +133,7 @@ const EnumerationPropertyMappingEditor = observer(
       propertyMappingState,
       drop,
       dragItem,
+      dragItemType,
       transformProps,
       isReadOnly,
     } = props;
@@ -186,7 +188,7 @@ const EnumerationPropertyMappingEditor = observer(
     const canDrop =
       dragItem &&
       ((dragItem.data.type && dragItem.data.type === expectedType) ||
-        (dragItem.type === CORE_DND_TYPE.TYPE_TREE_ENUM &&
+        (dragItemType === CORE_DND_TYPE.TYPE_TREE_ENUM &&
           dragItem.data.parent === expectedType));
 
     return (
@@ -331,12 +333,12 @@ export const PurePropertyMappingEditor = observer(
       isReadOnly;
     // DnD
     const handleDrop = useCallback(
-      (dropItem: TransformDropTarget): void => {
+      (dropItem: TransformDropTarget, dropType: string): void => {
         if (!disableEditingTransform) {
           if (dropItem instanceof TypeDragSource) {
             // if the dragged node is enum, when dropped, we want to have it as a constant
             let toAppend = '';
-            if (dropItem.type === CORE_DND_TYPE.TYPE_TREE_ENUM) {
+            if (dropType === CORE_DND_TYPE.TYPE_TREE_ENUM) {
               toAppend = `${dropItem.data.parent.path}.${dropItem.data.label}`;
             } else {
               toAppend = dropItem.data.id;
@@ -359,7 +361,7 @@ export const PurePropertyMappingEditor = observer(
       },
       [disableEditingTransform, purePropertyMappingState],
     );
-    const [{ item }, drop] = useDrop(
+    const [{ item, dragItemType }, drop] = useDrop(
       () => ({
         accept: [
           CORE_DND_TYPE.TYPE_TREE_CLASS,
@@ -367,9 +369,11 @@ export const PurePropertyMappingEditor = observer(
           CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
           CORE_DND_TYPE.TYPE_TREE_ENUM,
         ],
-        drop: (dropItem: TransformDropTarget): void => handleDrop(dropItem),
-        collect: (monitor): { item: unknown } => ({
+        drop: (dropItem: TransformDropTarget, monitor): void =>
+          handleDrop(dropItem, monitor.getItemType() as string),
+        collect: (monitor): { item: unknown; dragItemType: string } => ({
           item: monitor.getItem(),
+          dragItemType: monitor.getItemType() as string,
         }),
       }),
       [handleDrop],
@@ -403,6 +407,7 @@ export const PurePropertyMappingEditor = observer(
             propertyMappingState={purePropertyMappingState}
             drop={drop}
             dragItem={dragItem}
+            dragItemType={dragItemType}
             transformProps={transformProps}
             isReadOnly={isReadOnly}
           />

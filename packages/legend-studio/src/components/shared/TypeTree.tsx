@@ -149,7 +149,7 @@ const TypeTreeNodeContainer: React.FC<
   const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
   const { selectedType } = innerProps;
   const [, dragRef] = useDrag(
-    () => ({ item: new TypeDragSource(node.dndType, node) }),
+    () => ({ type: node.dndType, item: new TypeDragSource(node) }),
     [node],
   );
   const isExpandable = Boolean(node.childrenIds?.length);
