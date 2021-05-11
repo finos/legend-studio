@@ -190,18 +190,18 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
     const explorerState = queryBuilderState.explorerState;
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        item:
+        type:
           node instanceof QueryBuilderExplorerTreePropertyNodeData
-            ? {
-                type:
-                  node.type instanceof Enumeration
-                    ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY
-                    : node.type instanceof Class
-                    ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
-                    : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-                node,
-              }
-            : { type: QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT },
+            ? node.type instanceof Enumeration
+              ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY
+              : node.type instanceof Class
+              ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
+              : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
+            : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
+        item: (): { node?: QueryBuilderExplorerTreePropertyNodeData } =>
+          node instanceof QueryBuilderExplorerTreePropertyNodeData
+            ? { node }
+            : {},
       }),
       [node],
     );

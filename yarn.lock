@@ -1824,7 +1824,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/cache@npm:^11.0.0, @emotion/cache@npm:^11.1.3":
+"@emotion/cache@npm:^11.1.3":
   version: 11.1.3
   resolution: "@emotion/cache@npm:11.1.3"
   dependencies:
@@ -1834,6 +1834,19 @@ __metadata:
     "@emotion/weak-memoize": ^0.2.5
     stylis: ^4.0.3
   checksum: 09a7ddde3f7bcc9adb0694f1432cc740fab80f5069cceb773baa64961e83e5cd4549bb7b9ec2acd9ff0a80b437d82cf7e382881de5fff827a8ede959b7ffd90a
+  languageName: node
+  linkType: hard
+
+"@emotion/cache@npm:^11.4.0":
+  version: 11.4.0
+  resolution: "@emotion/cache@npm:11.4.0"
+  dependencies:
+    "@emotion/memoize": ^0.7.4
+    "@emotion/sheet": ^1.0.0
+    "@emotion/utils": ^1.0.0
+    "@emotion/weak-memoize": ^0.2.5
+    stylis: ^4.0.3
+  checksum: bdef4c0ccc9bb87e99e4d48ff4855afe684035e9233a54bb339eb6aeafef35bd34fbed8ddb0d5ee440abd42c598043a87ebb0a324f2a1d732edf9c6b1709f9ed
   languageName: node
   linkType: hard
 
@@ -2024,7 +2037,7 @@ __metadata:
     react-dom: 17.0.2
     react-icons: 4.2.0
     react-resize-detector: 6.7.1
-    react-select: 4.3.0
+    react-select: 4.3.1
     react-window: 1.8.6
     rimraf: 3.0.2
     sass: 1.32.12
@@ -2094,7 +2107,6 @@ __metadata:
     "@finos/legend-studio-shared": "workspace:*"
     "@types/react": 17.0.5
     axios: 0.21.1
-    copy-webpack-plugin: 8.1.1
     cross-env: 7.0.3
     eslint: 7.26.0
     jest: 26.6.3
@@ -2158,7 +2170,7 @@ __metadata:
     "@testing-library/react": 11.2.6
     "@types/papaparse": 5.2.5
     "@types/react": 17.0.5
-    "@types/react-dom": 17.0.3
+    "@types/react-dom": 17.0.4
     "@types/react-router-dom": 5.1.7
     cross-env: 7.0.3
     date-fns: 2.21.3
@@ -2290,7 +2302,7 @@ __metadata:
     "@testing-library/react": 11.2.6
     "@types/css-font-loading-module": 0.0.4
     "@types/react": 17.0.5
-    "@types/react-dom": 17.0.3
+    "@types/react-dom": 17.0.4
     "@types/react-router-dom": 5.1.7
     cross-env: 7.0.3
     date-fns: 2.21.3
@@ -2305,8 +2317,8 @@ __metadata:
     node-diff3: 2.1.2
     npm-run-all: 4.1.5
     react: 17.0.2
-    react-dnd: 13.1.1
-    react-dnd-html5-backend: 12.1.1
+    react-dnd: 14.0.2
+    react-dnd-html5-backend: 14.0.0
     react-dom: 17.0.2
     react-hotkeys: 2.0.0
     react-icons: 4.2.0
@@ -3247,12 +3259,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:*, @types/react-dom@npm:17.0.3":
+"@types/react-dom@npm:*":
   version: 17.0.3
   resolution: "@types/react-dom@npm:17.0.3"
   dependencies:
     "@types/react": "*"
   checksum: 102a3ee9ecf96fdd82d37d90860d0b80e160a368117e4e84512c801f8c7f381d7a2b9305f155670f42eab4784d036375cbf16c9905839dd0857e7031ff966803
+  languageName: node
+  linkType: hard
+
+"@types/react-dom@npm:17.0.4":
+  version: 17.0.4
+  resolution: "@types/react-dom@npm:17.0.4"
+  dependencies:
+    "@types/react": "*"
+  checksum: 871ffb0dbd2ee4b73023ae3f32bf9df69549ccfb0d47451769c476a495437c55f198128ecbee8417c41a8fa8762f2153e53f9d4eac1853de5b9ef7b02b9c07f9
   languageName: node
   linkType: hard
 
@@ -5942,14 +5963,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dnd-core@npm:12.0.1":
-  version: 12.0.1
-  resolution: "dnd-core@npm:12.0.1"
+"dnd-core@npm:14.0.0":
+  version: 14.0.0
+  resolution: "dnd-core@npm:14.0.0"
   dependencies:
     "@react-dnd/asap": ^4.0.0
     "@react-dnd/invariant": ^2.0.0
     redux: ^4.0.5
-  checksum: 92cb3905fae181c886377a990fbb2569378bef9306895cee2f07b24536cc2e2a837206ca8c0da30a78cbf74494c8e66b03dedcafe34ed92e0f757fd0857e3f3b
+  checksum: 1036d1656b94a045964067c92ef74a3ab9289a001f2c8ec1aada747c3bf63d536058421c9d933c525b8e83a68d4ab4b8cf2f4a13e98c81e153023ed0ab78321a
   languageName: node
   linkType: hard
 
@@ -6892,7 +6913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-deep-equal@npm:^3.1.1":
+"fast-deep-equal@npm:^3.1.1, fast-deep-equal@npm:^3.1.3":
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
   checksum: e21a9d8d84f53493b6aa15efc9cfd53dd5b714a1f23f67fb5dc8f574af80df889b3bce25dc081887c6d25457cce704e636395333abad896ccdec03abaf1f3f9d
@@ -12558,22 +12579,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dnd-html5-backend@npm:12.1.1":
-  version: 12.1.1
-  resolution: "react-dnd-html5-backend@npm:12.1.1"
+"react-dnd-html5-backend@npm:14.0.0":
+  version: 14.0.0
+  resolution: "react-dnd-html5-backend@npm:14.0.0"
   dependencies:
-    dnd-core: 12.0.1
-  checksum: 50c3866a62d56f0a5654c18def68a2262197ca0453b1ed6d68f6b71b7584f1510a4b954a5906df6e6b969327059015e44c6fb3ab583c7a22ffff9dac07e96b14
+    dnd-core: 14.0.0
+  checksum: de4d8a7c15f18db7fc8cd316e660bfbf96db533caf4c782b5f30e5dd9cb4274d3c65910530718d24222779e01d0189cee2747763cc976b47f75cf36de52977e2
   languageName: node
   linkType: hard
 
-"react-dnd@npm:13.1.1":
-  version: 13.1.1
-  resolution: "react-dnd@npm:13.1.1"
+"react-dnd@npm:14.0.2":
+  version: 14.0.2
+  resolution: "react-dnd@npm:14.0.2"
   dependencies:
     "@react-dnd/invariant": ^2.0.0
     "@react-dnd/shallowequal": ^2.0.0
-    dnd-core: 12.0.1
+    dnd-core: 14.0.0
+    fast-deep-equal: ^3.1.3
     hoist-non-react-statics: ^3.3.2
   peerDependencies:
     "@types/hoist-non-react-statics": ">= 3.3.1"
@@ -12587,7 +12609,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 34f7b9b2462fd418dd92d356b86fbc59f90de6bfdc008f78db020e63321ab3d37e5617d6269305e88bc5a723be2c84ed6042a795c8f8a4f4e010bfd1d49cc763
+  checksum: 140965a3b5824d510c23ce5a1efaebc179cb36fbf20d558d576dc956b2ea601c0e7bbfe3577661664e73c618f7e103d2bb4e919e08c6ea1da3bd0593854b9ede
   languageName: node
   linkType: hard
 
@@ -12744,12 +12766,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-select@npm:4.3.0":
-  version: 4.3.0
-  resolution: "react-select@npm:4.3.0"
+"react-select@npm:4.3.1":
+  version: 4.3.1
+  resolution: "react-select@npm:4.3.1"
   dependencies:
     "@babel/runtime": ^7.12.0
-    "@emotion/cache": ^11.0.0
+    "@emotion/cache": ^11.4.0
     "@emotion/react": ^11.1.1
     memoize-one: ^5.0.0
     prop-types: ^15.6.0
@@ -12758,7 +12780,7 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0
     react-dom: ^16.8.0 || ^17.0.0
-  checksum: 00946ed4dfa46523bc44cd26aab11431396632097207081b471d1965fa53cf7f5a006ac11d89b8a65df05cc5376b1c4438edb1d5259323bdc6d3adf01c79d53e
+  checksum: e87e0b42a662ddce7957a69a3029ea769b22264c197cbd1d8bde1ce631e49c5c5f42414773364674a7a6a8431340e1ede49220583bf1dcd966b63e9bd25cfc12
   languageName: node
   linkType: hard
 

@@ -358,11 +358,9 @@ const QueryBuilderFilterTreeNodeContainer = observer(
 
     // Drag and Drop
     const handleDrop = useCallback(
-      (item: QueryBuilderFilterDropTarget): void => {
+      (item: QueryBuilderFilterDropTarget, type: string): void => {
         if (
-          Object.values<string>(QUERY_BUILDER_FILTER_DND_TYPE).includes(
-            item.type,
-          )
+          Object.values<string>(QUERY_BUILDER_FILTER_DND_TYPE).includes(type)
         ) {
           // const dropNode = (item as QueryBuilderFilterConditionDragSource).node;
           // TODO: re-arrange
@@ -429,7 +427,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           monitor: DropTargetMonitor,
         ): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item);
+            handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         // canDrop: (item: QueryBuilderFilterConditionDragSource, monitor: DropTargetMonitor): boolean => {
@@ -446,16 +444,13 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     );
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        item: {
-          type:
-            node instanceof QueryBuilderFilterTreeGroupNodeData
-              ? QUERY_BUILDER_FILTER_DND_TYPE.GROUP_CONDITION
-              : node instanceof QueryBuilderFilterTreeConditionNodeData
-              ? QUERY_BUILDER_FILTER_DND_TYPE.CONDITION
-              : QUERY_BUILDER_FILTER_DND_TYPE.BLANK_CONDITION,
-          node,
-        },
-        begin: (): void => filterState.setRearrangingConditions(true),
+        type:
+          node instanceof QueryBuilderFilterTreeGroupNodeData
+            ? QUERY_BUILDER_FILTER_DND_TYPE.GROUP_CONDITION
+            : node instanceof QueryBuilderFilterTreeConditionNodeData
+            ? QUERY_BUILDER_FILTER_DND_TYPE.CONDITION
+            : QUERY_BUILDER_FILTER_DND_TYPE.BLANK_CONDITION,
+        item: (): QueryBuilderFilterConditionDragSource => ({ node }),
         end: (): void => filterState.setRearrangingConditions(false),
       }),
       [node, filterState],

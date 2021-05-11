@@ -234,7 +234,7 @@ export const addCopyrightHeaderToBundledOutput = async ({
   configPath,
   file,
 }) => {
-  const config = await import(configPath);
+  const config = (await import(configPath)).default;
   const copyrightText = config?.build?.copyrightText;
   if (!copyrightText) {
     exitWithError(

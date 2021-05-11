@@ -29,7 +29,6 @@ import {
   action,
 } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import type { CORE_DND_TYPE } from '../shared/DnDUtil';
 import type { CompilationError } from '../../models/metamodels/pure/action/EngineError';
 import type { GenerationTreeNode } from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
 import { GenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
@@ -37,7 +36,6 @@ import type { PackageableElement } from '../../models/metamodels/pure/model/pack
 
 export interface GenerationSpecNodeDragSource {
   nodeState: GenerationTreeNodeState;
-  type: CORE_DND_TYPE;
 }
 
 export type GenerationSpecNodeDropTarget = GenerationSpecNodeDragSource;

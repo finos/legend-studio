@@ -25,15 +25,20 @@
  * NOTE: We try not to customize too far from the default changelog generator `@changesets/changelog-github`.
  *
  * See https://github.com/atlassian/changesets/blob/master/docs/modifying-changelog-format.md
+ *
+ * NOTE: Looks like `changeset` only support CJS for now so we cannot use ESM in this file.
  */
-import GithubChangelogFunctions from '@changesets/changelog-github';
+const githubChangelogFunctions = require('@changesets/changelog-github')
+  .default;
 
-export const getReleaseLine = async (changeset, type, options) => {
+const getReleaseLine = async (changeset, type, options) => {
   if (!changeset.summary) {
     return undefined; // do not show change log release line without content
   }
-  return GithubChangelogFunctions.getReleaseLine(changeset, type, options);
+  return githubChangelogFunctions.getReleaseLine(changeset, type, options);
 };
 
-export const getDependencyReleaseLine =
-  GithubChangelogFunctions.getDependencyReleaseLine;
+module.exports = {
+  getReleaseLine,
+  getDependencyReleaseLine: githubChangelogFunctions.getDependencyReleaseLine,
+};

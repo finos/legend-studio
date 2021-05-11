@@ -232,7 +232,8 @@ const PackageTreeNodeContainer = observer(
     const { disableContextMenu } = innerProps;
     const [, dragRef] = useDrag(
       () => ({
-        item: new ElementDragSource(node.dndType, node),
+        type: node.dndType,
+        item: new ElementDragSource(node),
       }),
       [node],
     );

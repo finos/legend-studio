@@ -166,11 +166,11 @@ const ModelGenerationItem = observer(
     );
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        item: {
-          type: CORE_DND_TYPE.GENERATION_SPEC_NODE,
-          nodeState,
+        type: CORE_DND_TYPE.GENERATION_SPEC_NODE,
+        item: (): GenerationSpecNodeDragSource => {
+          nodeState.setIsBeingDragged(true);
+          return { nodeState };
         },
-        begin: (): void => nodeState.setIsBeingDragged(true),
         end: (item: GenerationSpecNodeDragSource | undefined): void =>
           item?.nodeState.setIsBeingDragged(false),
       }),

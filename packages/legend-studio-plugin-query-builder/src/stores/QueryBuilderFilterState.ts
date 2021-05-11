@@ -87,7 +87,6 @@ export enum QUERY_BUILDER_FILTER_DND_TYPE {
 }
 
 export interface QueryBuilderFilterConditionDragSource {
-  type: QUERY_BUILDER_FILTER_DND_TYPE;
   node: QueryBuilderFilterTreeNodeData;
 }
 

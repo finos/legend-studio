@@ -16,6 +16,10 @@
 
 import { getConfigLoader } from '@finos/legend-studio-dev-utils/DevUtils';
 
+// NOTE: `cosmiconfig` does not work with ESM config so unfortunately
+// we cannot rely on this right now to load config, we will temporarily
+// hard-code the config path
+// See https://github.com/davidtheclark/cosmiconfig/issues/224
 export const configLoader = getConfigLoader('_package');
 
 export const resolvePackageConfig = (filePath) => {

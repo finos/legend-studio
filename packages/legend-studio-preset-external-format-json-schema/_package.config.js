@@ -20,9 +20,11 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export const publish = {
-  tsConfigPath: './tsconfig.build.json',
-};
-export const build = {
-  copyrightText: generateBundleCopyrightText(__dirname),
+export default {
+  publish: {
+    tsConfigPath: './tsconfig.build.json',
+  },
+  build: {
+    copyrightText: generateBundleCopyrightText(__dirname),
+  },
 };
