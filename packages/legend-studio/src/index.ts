@@ -135,7 +135,7 @@ export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrSchema,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
-export { 
+export {
   V1_EngineRuntime,
   V1_Runtime,
 } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
