@@ -1,5 +1,11 @@
 # @finos/legend-studio-dev-utils
 
+## 0.0.11
+
+### Patch Changes
+
+- [#194](https://github.com/finos/legend-studio/pull/194) [`80bd86a`](https://github.com/finos/legend-studio/commit/80bd86a5add9011f1ce7df33d700a1c1f28d5e08) Thanks [@akphi](https://github.com/akphi)! - Use ES module (ESM) throughout the codebase.
+
 ## 0.0.10
 
 ## 0.0.9
