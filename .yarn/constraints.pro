@@ -6,17 +6,17 @@ constraints_min_version(1).
 
 % Enforce that a workspace MUST depend on the same version of a dependency as the one used by the other workspaces
 gen_enforced_dependency(WorkspaceCwd, DependencyIdent, DependencyRange2, DependencyType) :-
-  % Iterates over all dependencies from all workspaces
+  % Iterate over all dependencies from all workspaces
     workspace_has_dependency(WorkspaceCwd, DependencyIdent, DependencyRange, DependencyType),
-  % Iterates over similarly-named dependencies from all workspaces (again)
+  % Iterate over similarly-named dependencies from all workspaces (again)
     workspace_has_dependency(OtherWorkspaceCwd, DependencyIdent, DependencyRange2, DependencyType2),
   % Ignore peer dependencies
     DependencyType \= 'peerDependencies',
     DependencyType2 \= 'peerDependencies'.
 
-% Prevent workspaces from depending on non-workspace versions of available workspaces
+% Prevent workspaces from depending on outdated versions of available workspaces
 gen_enforced_dependency(WorkspaceCwd, DependencyIdent, WorkspaceRange, DependencyType) :-
-  % Iterates over all dependencies from all workspaces
+  % Iterate over all dependencies from all workspaces
     workspace_has_dependency(WorkspaceCwd, DependencyIdent, DependencyRange, DependencyType),
   % Only consider those that target something that could be a workspace
     workspace_ident(DependencyCwd, DependencyIdent),
@@ -33,6 +33,18 @@ gen_enforced_dependency(WorkspaceCwd, DependencyIdent, WorkspaceRange, Dependenc
       ;
         atom_concat('^', DependencyVersion, WorkspaceRange)
     ).
+
+% Enforce that all workspaces must depend on other workspaces using `workspace:*` in devDependencies
+gen_enforced_dependency(WorkspaceCwd, DependencyIdent, 'workspace:*', 'devDependencies') :-
+  workspace_has_dependency(WorkspaceCwd, DependencyIdent, _, 'devDependencies'),
+  % Only consider those that target something that could be a workspace
+  workspace_ident(DependencyCwd, DependencyIdent).
+
+% Enforce that all workspaces must depend on other workspaces using `workspace:*` in dependencies
+gen_enforced_dependency(WorkspaceCwd, DependencyIdent, 'workspace:*', 'dependencies') :-
+  workspace_has_dependency(WorkspaceCwd, DependencyIdent, _, 'dependencies'),
+  % Only consider those that target something that could be a workspace
+  workspace_ident(DependencyCwd, DependencyIdent).
 
 % Enforce that only private workspaces can have non-dev private dependencies on other workspaces
 gen_enforced_field(WorkspaceCwd, 'private', WorkspacePrivate) :-
