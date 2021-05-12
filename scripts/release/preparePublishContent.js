@@ -32,7 +32,7 @@ const workspaceName = packageJson.name;
 
 const preparePublishContent = async () => {
   const packageConfig = existsSync(resolve(workspaceDir, '_package.config.js'))
-    ? await import(resolve(workspaceDir, '_package.config.js')).default
+    ? (await import(resolve(workspaceDir, '_package.config.js'))).default
     : undefined;
   console.log(`Preparing publish content for workspace '${workspaceName}'...`);
 
