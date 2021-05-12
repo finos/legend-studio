@@ -199,7 +199,7 @@ export const testServiceRoundtrip = [
         data: 'moreThanData',
       },
     },
-    classifierPath: 'meta::legend::service::metamodel::Service',
+    classifierPath: 'meta::alloy::service::metamodel::Service',
   },
   {
     path: 'test::pure::tService_Multi',
@@ -361,7 +361,7 @@ export const testServiceRoundtrip = [
         ],
       },
     },
-    classifierPath: 'meta::legend::service::metamodel::Service',
+    classifierPath: 'meta::alloy::service::metamodel::Service',
   },
   {
     path: 'test::pure::tService_SingleWithEmbeddedRuntime',
@@ -464,7 +464,7 @@ export const testServiceRoundtrip = [
         data: 'moreThanData',
       },
     },
-    classifierPath: 'meta::legend::service::metamodel::Service',
+    classifierPath: 'meta::alloy::service::metamodel::Service',
   },
   {
     path: 'test::myConnection',
