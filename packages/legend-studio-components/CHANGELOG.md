@@ -1,5 +1,12 @@
 # @finos/legend-studio-components
 
+## 0.0.12
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @finos/legend-studio-shared@0.0.9
+
 ## 0.0.11
 
 ### Patch Changes
