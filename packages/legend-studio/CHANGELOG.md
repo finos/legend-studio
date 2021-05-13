@@ -1,5 +1,18 @@
 # @finos/legend-studio
 
+## 0.1.3
+
+### Patch Changes
+
+- [#199](https://github.com/finos/legend-studio/pull/199) [`2aab88e`](https://github.com/finos/legend-studio/commit/2aab88e797eec37760a646f7c6ee9d9f612d31cc) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Use meta::alloy::service::metamodel::Service for service classifierPath.
+
+* [#200](https://github.com/finos/legend-studio/pull/200) [`20b4e8f`](https://github.com/finos/legend-studio/commit/20b4e8f21d4c4abc1fd8ef06e826b9b8df883bc5) Thanks [@akphi](https://github.com/akphi)! - Improve the UX when users launch the editor with either not-found project or workspace. In particular, if the workspace is not found, we give them the option to create the workspace to start making changes or just view the project without the need to create any workspace. This will help with the case where users share URLs to a particular project/workspace; before, they are redirected back to the setup page with no clear message, which is _very confusing_.
+
+* Updated dependencies [[`20b4e8f`](https://github.com/finos/legend-studio/commit/20b4e8f21d4c4abc1fd8ef06e826b9b8df883bc5)]:
+  - @finos/legend-studio-components@0.0.12
+  - @finos/legend-studio-network@0.0.11
+  - @finos/legend-studio-shared@0.0.9
+
 ## 0.1.2
 
 ### Patch Changes
