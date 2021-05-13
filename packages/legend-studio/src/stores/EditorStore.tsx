@@ -88,7 +88,7 @@ import { FileGenerationViewerState } from './editor-state/FileGenerationViewerSt
 import type { GenerationFile } from './shared/FileGenerationTreeUtil';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState';
 import { DevToolState } from './aux-panel-state/DevToolState';
-import { generateSetupRoute } from './Router';
+import { generateSetupRoute, generateViewProjectRoute } from './Router';
 import { NonBlockingDialogState } from '@finos/legend-studio-components';
 import type {
   PackageableElement,
@@ -381,34 +381,122 @@ export class EditorStore {
       this.initState.conclude(hasBuildSucceeded);
     };
 
-    yield this.sdlcState.fetchCurrentProject(projectId);
+    yield this.sdlcState.fetchCurrentProject(projectId, {
+      suppressNotification: true,
+    });
     if (!this.sdlcState.currentProject) {
-      this.applicationStore.logger.warn(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
-        `Project '${projectId}' does not exist! Redirecting ...`,
-      );
-      this.applicationStore.historyApiClient.push(
-        generateSetupRoute(
-          this.applicationStore.config.sdlcServerKey,
-          undefined,
-        ),
-      );
+      // If the project is not found or the user does not have access to it,
+      // we will not automatically redirect them to the setup page as they will lose the URL
+      // instead, we give them the option to:
+      // - reload the page (in case they later gain access)
+      // - back to the setup page
+      this.setActionAltertInfo({
+        message: `Project not found or inaccessible`,
+        prompt: 'Please check that the project exists and request access to it',
+        type: ActionAlertType.STANDARD,
+        onEnter: (): void => this.setBlockGlobalHotkeys(true),
+        onClose: (): void => this.setBlockGlobalHotkeys(false),
+        actions: [
+          {
+            label: 'Reload application',
+            default: true,
+            type: ActionAlertActionType.STANDARD,
+            handler: (): void => {
+              window.location.reload();
+            },
+          },
+          {
+            label: 'Back to setup page',
+            type: ActionAlertActionType.STANDARD,
+            handler: (): void => {
+              this.applicationStore.historyApiClient.push(
+                generateSetupRoute(
+                  this.applicationStore.config.sdlcServerKey,
+                  undefined,
+                ),
+              );
+            },
+          },
+        ],
+      });
       onLeave(false);
       return;
     }
-    yield this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId);
+    yield this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId, {
+      suppressNotification: true,
+    });
     if (!this.sdlcState.currentWorkspace) {
-      this.applicationStore.logger.warn(
-        CORE_LOG_EVENT.SETUP_PROBLEM,
-        `Workspace '${workspaceId}' of project '${projectId}' does not exist! Redirecting ...`,
-      );
-      this.applicationStore.historyApiClient.push(
-        generateSetupRoute(
-          this.applicationStore.config.sdlcServerKey,
-          projectId,
-          workspaceId,
-        ),
-      );
+      // If the workspace is not found,
+      // we will not automatically redirect the user to the setup page as they will lose the URL
+      // instead, we give them the option to:
+      // - create the workspace
+      // - view project
+      // - back to the setup page
+      const createWorkspaceAndRelaunch = async (): Promise<void> => {
+        try {
+          this.applicationStore.setBlockingAlert({
+            message: 'Creating workspace...',
+            prompt: 'Please do not close the application',
+          });
+          const workspace = await this.applicationStore.networkClientManager.sdlcClient.createWorkspace(
+            projectId,
+            workspaceId,
+          );
+          this.applicationStore.setBlockingAlert(undefined);
+          this.applicationStore.notifySuccess(
+            `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
+          );
+          window.location.reload();
+        } catch (error: unknown) {
+          this.applicationStore.logger.error(
+            CORE_LOG_EVENT.SETUP_PROBLEM,
+            error,
+          );
+          this.applicationStore.notifyError(error);
+        }
+      };
+      this.setActionAltertInfo({
+        message: 'Workspace not found',
+        prompt: `Please note that you can check out the project in viewer mode. Workspace is only required if you need to work on the project.`,
+        type: ActionAlertType.STANDARD,
+        onEnter: (): void => this.setBlockGlobalHotkeys(true),
+        onClose: (): void => this.setBlockGlobalHotkeys(false),
+        actions: [
+          {
+            label: 'View project',
+            default: true,
+            type: ActionAlertActionType.STANDARD,
+            handler: (): void => {
+              this.applicationStore.historyApiClient.push(
+                generateViewProjectRoute(
+                  this.applicationStore.config.sdlcServerKey,
+                  projectId,
+                ),
+              );
+            },
+          },
+          {
+            label: 'Create workspace',
+            type: ActionAlertActionType.STANDARD,
+            handler: (): void => {
+              createWorkspaceAndRelaunch();
+            },
+          },
+          {
+            label: 'Back to setup page',
+            type: ActionAlertActionType.STANDARD,
+            handler: (): void => {
+              this.applicationStore.historyApiClient.push(
+                generateSetupRoute(
+                  this.applicationStore.config.sdlcServerKey,
+                  projectId,
+                  workspaceId,
+                ),
+              );
+            },
+          },
+        ],
+      });
       onLeave(false);
       return;
     }
