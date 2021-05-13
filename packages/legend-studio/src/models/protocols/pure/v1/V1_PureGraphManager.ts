@@ -239,7 +239,7 @@ enum CORE_ELEMENT_CLASSIFIER_PATH {
   DATABASE = 'meta::relational::metamodel::Database',
   SERVICE_STORE = 'meta::servicestore::metamodel::ServiceStore',
   MAPPING = 'meta::pure::mapping::Mapping',
-  SERVICE = 'meta::legend::service::metamodel::Service',
+  SERVICE = 'meta::alloy::service::metamodel::Service',
   DIAGRAM = 'meta::pure::metamodel::diagram::Diagram',
   CONNECTION = 'meta::pure::runtime::PackageableConnection',
   RUNTIME = 'meta::pure::runtime::PackageableRuntime',

@@ -10859,7 +10859,7 @@
         "data": ""
       }
     },
-    "classifierPath": "meta::legend::service::metamodel::Service"
+    "classifierPath": "meta::alloy::service::metamodel::Service"
   },
   {
     "path": "model::MyRuntime",
