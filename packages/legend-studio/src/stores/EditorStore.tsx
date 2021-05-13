@@ -479,7 +479,9 @@ export class EditorStore {
             label: 'Create workspace',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              createWorkspaceAndRelaunch();
+              createWorkspaceAndRelaunch().catch(
+                this.applicationStore.alertIllegalUnhandledError,
+              );
             },
           },
           {
