@@ -34,7 +34,6 @@ export interface PackageTreeNodeData extends TreeNodeData {
 
 export interface FlatDataRecordTypeTreeNodeData extends TreeNodeData {
   field: FlatDataRecordField;
-  dndType: CORE_DND_TYPE;
   parentType: RootFlatDataRecordType;
 }
 

@@ -44,7 +44,6 @@ const getRecordTypeTreeNodeData = (
   }]`,
   label: field.label,
   field: field,
-  dndType: CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
   parentType: parentRecordType,
   isOpen: true,
 });

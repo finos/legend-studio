@@ -340,21 +340,8 @@ export class RootFlatDataInstanceSetImplementationState extends FlatDataInstance
     super(editorStore, setImplementation);
 
     this.mappingElement = setImplementation;
-    this.propertyMappingStates = setImplementation.propertyMappings.map(
-      (propertyMapping) => {
-        if (propertyMapping instanceof FlatDataPropertyMapping) {
-          return new FlatDataPropertyMappingState(
-            propertyMapping,
-            this.editorStore,
-          );
-        } else if (propertyMapping instanceof EmbeddedFlatDataPropertyMapping) {
-          return new EmbeddedFlatDataInstanceSetImplementationState(
-            editorStore,
-            propertyMapping,
-          );
-        }
-        throw new UnsupportedOperationError();
-      },
+    this.propertyMappingStates = this.getPropertyMappingStates(
+      setImplementation.propertyMappings,
     );
   }
 

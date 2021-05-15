@@ -84,6 +84,9 @@ export const DatabaseIcon: React.FC = () => (
     <FaDatabase />
   </div>
 );
+export const TableJoinIcon: React.FC = () => (
+  <div className="icon icon--table-join color--primitive">@</div>
+);
 export const MappingIcon: React.FC = () => (
   <div className="icon color--mapping">
     <FaMap />

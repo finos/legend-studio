@@ -39,6 +39,10 @@
     }
   }
 
+  &__header__title {
+    max-width: calc(100% - 2.8rem);
+  }
+
   &__content__source-adder {
     @include flexCenter;
 

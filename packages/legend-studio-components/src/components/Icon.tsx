@@ -32,4 +32,5 @@ export { VscError as ErrorIcon } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
   GoChevronUp as ChevronUpIcon,
+  GoChevronRight as ChevronRightIcon,
 } from 'react-icons/go';

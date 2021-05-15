@@ -30,7 +30,7 @@
     "build:sass": "cross-env INIT_CWD=$INIT_CWD sass ./style/index.scss ./lib/index.css --style=compressed && node ../../scripts/copyright/addBundledCodeCopyrightHeader.js ./lib/index.css",
     "build:tsc": "tsc --project ./tsconfig.build.json",
     "clean": "rimraf \"lib\" \"build\"",
-    "dev": "npm-run-all dev:sass dev:tsc",
+    "dev": "npm-run-all --parallel dev:sass dev:tsc",
     "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
