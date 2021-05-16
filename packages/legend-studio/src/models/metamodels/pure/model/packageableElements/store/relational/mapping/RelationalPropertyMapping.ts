@@ -21,21 +21,21 @@ import type { Hashable } from '@finos/legend-studio-shared';
 import type { EnumerationMapping } from '../../../../../model/packageableElements/mapping/EnumerationMapping';
 import type { PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/PropertyMapping';
 import { PropertyMapping } from '../../../../../model/packageableElements/mapping/PropertyMapping';
-import type { RelationalOperationElement } from '../../../../../model/packageableElements/store/relational/model/RelationalOperationElement';
 import type { PropertyMappingsImplementation } from '../../../../../model/packageableElements/mapping/PropertyMappingsImplementation';
 import type { PropertyReference } from '../../../../../model/packageableElements/domain/PropertyReference';
 import type { SetImplementation } from '../../../../../model/packageableElements/mapping/SetImplementation';
+import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtility';
+import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement';
 
 export class RelationalPropertyMapping
   extends PropertyMapping
   implements Hashable {
   transformer?: EnumerationMapping;
-  relationalOperation: RelationalOperationElement;
+  relationalOperation!: RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
 
   constructor(
     owner: PropertyMappingsImplementation,
     property: PropertyReference,
-    relationalOperation: RelationalOperationElement,
     source: SetImplementation,
     target?: SetImplementation,
   ) {
@@ -46,8 +46,6 @@ export class RelationalPropertyMapping
       relationalOperation: observable,
       hashCode: computed,
     });
-
-    this.relationalOperation = relationalOperation;
   }
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
@@ -64,7 +62,7 @@ export class RelationalPropertyMapping
       CORE_HASH_STRUCTURE.REALTIONAL_PROPERTY_MAPPPING,
       super.hashCode,
       this.transformer?.id.value ?? '',
-      this.relationalOperation,
+      hashObjectWithoutSourceInformation(this.relationalOperation),
     ]);
   }
 }

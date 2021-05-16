@@ -21,10 +21,10 @@ import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLa
 
 export class V1_Constraint implements Hashable {
   name!: string;
-  functionDefinition!: V1_RawLambda;
+  functionDefinition!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   externalId?: string;
   enforcementLevel?: string;
-  messageFunction?: V1_RawLambda;
+  messageFunction?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
     return hashArray([

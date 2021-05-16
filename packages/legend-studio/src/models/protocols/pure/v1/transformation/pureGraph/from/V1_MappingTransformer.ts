@@ -417,9 +417,7 @@ const transformRelationalPropertyMapping = (
     element.property,
     isTransformingEmbeddedPropertyMapping,
   );
-  propertyMapping.relationalOperation = V1_transformRelationalOperationElement(
-    element.relationalOperation,
-  );
+  propertyMapping.relationalOperation = element.relationalOperation;
   propertyMapping.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,

@@ -23,7 +23,7 @@ import type { V1_InputData } from './V1_InputData';
 
 export class V1_MappingTest implements Hashable {
   name!: string;
-  query!: V1_RawLambda;
+  query!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   inputData: V1_InputData[] = [];
   assert!: V1_MappingTestAssert;
 

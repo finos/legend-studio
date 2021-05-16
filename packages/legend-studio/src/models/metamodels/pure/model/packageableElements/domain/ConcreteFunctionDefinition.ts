@@ -40,8 +40,8 @@ export class ConcreteFunctionDefinition
   implements Hashable, Stubable {
   returnType: PackageableElementReference<Type>;
   returnMultiplicity: Multiplicity;
-  parameters: RawVariableExpression[] = [];
-  body: object[] = [];
+  parameters: RawVariableExpression[] = []; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  body: object[] = []; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
 

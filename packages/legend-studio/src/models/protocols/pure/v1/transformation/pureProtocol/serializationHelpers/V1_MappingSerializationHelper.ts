@@ -23,6 +23,7 @@ import {
   SKIP,
   custom,
   optional,
+  raw,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -268,10 +269,7 @@ const relationalPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    relationalOperation: custom(
-      (val) => V1_serializeRelationalOperationElement(val),
-      (val) => V1_deserializeRelationalOperationElement(val),
-    ),
+    relationalOperation: raw(),
     source: optional(primitive()),
     target: optional(primitive()),
   },

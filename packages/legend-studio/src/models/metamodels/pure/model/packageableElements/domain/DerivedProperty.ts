@@ -49,9 +49,8 @@ export class DerivedProperty
   multiplicity: Multiplicity;
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
-  // Lambda
-  body?: object;
-  parameters?: object;
+  body?: object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  parameters?: object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor(
     name: string,

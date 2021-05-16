@@ -21,7 +21,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 import { hashLambda } from '../../../../../../../../../MetaModelUtility';
 
 export class V1_GroupByFunction implements Hashable {
-  groupByFn!: V1_RawLambda;
+  groupByFn!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
     return hashArray([

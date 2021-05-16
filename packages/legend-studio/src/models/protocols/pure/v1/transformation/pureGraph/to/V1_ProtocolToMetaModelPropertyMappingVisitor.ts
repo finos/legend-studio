@@ -412,12 +412,6 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     }
     // NOTE: mapping for derived property is not supported
     const property = propertyOwner.getProperty(protocol.property.property);
-    const operation = V1_processRelationalOperationElement(
-      protocol.relationalOperation,
-      this.context,
-      this.tableAliasMap,
-      [],
-    );
     // since we are not doing embedded property mappings yet, the target must have already been added to the mapping
     const propertyType = property.genericType.value.rawType;
     let targetSetImplementation: SetImplementation | undefined;
@@ -459,10 +453,12 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
             property,
           )
         : PropertyExplicitReference.create(property),
-      operation,
       sourceSetImplementation,
       targetSetImplementation,
     );
+    // NOTE: for now, we don't build the operation element, we will use its raw form for the editor
+    relationalPropertyMapping.relationalOperation =
+      protocol.relationalOperation;
     if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
         (em) => em.id.value === protocol.enumMappingId,
