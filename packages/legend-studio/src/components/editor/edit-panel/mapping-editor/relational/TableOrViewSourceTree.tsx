@@ -166,7 +166,7 @@ const resolveJoinTargetRelation = (
   });
   assertTrue(
     potentialTargetRelations.size < 2,
-    `Can't resolve target relation for join. Only self-join and cross join are currently supported`,
+    `Can't resolve target relation for join`,
   );
   return potentialTargetRelations.size === 0
     ? sourceRelation

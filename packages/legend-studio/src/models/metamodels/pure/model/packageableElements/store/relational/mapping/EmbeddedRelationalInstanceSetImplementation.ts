@@ -135,7 +135,11 @@ export class EmbeddedRelationalInstanceSetImplementation
       this.class.valueForSerialization,
       hashArray(this.primaryKey),
       //skip `root` since we disregard it in embedded property mappings
-      hashArray(this.propertyMappings),
+      hashArray(
+        this.propertyMappings.filter(
+          (propertyMapping) => !propertyMapping.isStub,
+        ),
+      ),
     ]);
   }
 }

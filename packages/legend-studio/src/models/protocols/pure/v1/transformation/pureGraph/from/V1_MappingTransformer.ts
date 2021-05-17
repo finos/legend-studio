@@ -314,7 +314,7 @@ const transformPropertyMappingSource = (value: SetImplementation): string =>
 const transformPropertyMappingTarget = (
   value: SetImplementation | undefined,
 ): string | undefined => value?.id.value;
-const classMappingPropertyMappingsSerializer = (
+const transformClassMappingPropertyMappings = (
   values: PropertyMapping[],
   isTransformingEmbeddedPropertyMapping: boolean,
 ): V1_PropertyMapping[] =>
@@ -362,7 +362,7 @@ const transformEmbeddedFlatDataPropertyMapping = (
     element.property,
     false, // TODO: we might ned to turn this on in the future once we start working on the gramar roundtrip for flat-data
   );
-  embedded.propertyMappings = classMappingPropertyMappingsSerializer(
+  embedded.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     false, // TODO: we might ned to turn this on in the future once we start working on the gramar roundtrip for flat-data
   );
@@ -447,7 +447,7 @@ const transformEmbeddedRelationalPropertyMapping = (
   classMapping.primaryKey = element.primaryKey.map(
     V1_transformRelationalOperationElement,
   );
-  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     true,
   );
@@ -508,7 +508,7 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
   classMapping.primaryKey = element.primaryKey.map(
     V1_transformRelationalOperationElement,
   );
-  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     true,
   );
@@ -684,7 +684,7 @@ const transformPureInstanceSetImplementation = (
     ) as V1_RawLambda;
   }
   classMapping.id = mappingElementIdSerializer(element.id);
-  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     true,
   );
@@ -711,7 +711,7 @@ const transformFlatDataInstanceSetImpl = (
   classMapping.flatData =
     element.sourceRootRecordType.ownerReference.valueForSerialization;
   classMapping.id = mappingElementIdSerializer(element.id);
-  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     true,
   );
@@ -756,7 +756,7 @@ const transformRootRelationalSetImpl = (
 
     classMapping.filter = filter;
   }
-  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     false,
   );
@@ -774,7 +774,7 @@ const transformRelationalInstanceSetImpl = (
   classMapping.primaryKey = element.primaryKey.map(
     V1_transformRelationalOperationElement,
   );
-  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     true,
   );
@@ -861,7 +861,7 @@ const transformAggregationAwareSetImplementation = (
   if (mainSetImplementation) {
     classMapping.mainSetImplementation = mainSetImplementation;
   }
-  classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     false,
   );
@@ -939,7 +939,7 @@ const transformRelationalAssociationImplementation = (
   relationalMapping.association = V1_transformElementReference(
     element.association,
   );
-  relationalMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  relationalMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     false,
   );
@@ -953,7 +953,7 @@ const transformXStorelAssociationImplementation = (
   const xStoreMapping = new V1_XStoreAssociationMapping();
   xStoreMapping.stores = element.stores.map(V1_transformElementReference);
   xStoreMapping.association = V1_transformElementReference(element.association);
-  xStoreMapping.propertyMappings = classMappingPropertyMappingsSerializer(
+  xStoreMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     false,
   );

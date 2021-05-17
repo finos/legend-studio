@@ -54,7 +54,7 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '../../../../stores/ApplicationStore';
-import { MapppingElementDecorationCleanUpVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MapingElementDecorateVisitor';
+import { MapppingElementDecorationCleanUpVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';

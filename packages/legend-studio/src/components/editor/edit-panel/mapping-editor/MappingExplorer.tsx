@@ -45,7 +45,7 @@ import { CORE_TEST_ID } from '../../../../const';
 import { getElementIcon } from '../../../shared/Icon';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import { MappingElementDecorateVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MapingElementDecorateVisitor';
+import { MappingElementDecorateVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
 import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
   getMappingElementType,

@@ -26,7 +26,7 @@ import {
   guaranteeType,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { MappingElementDecorateVisitor } from '../../../editor-state/element-editor-state/mapping/MapingElementDecorateVisitor';
+import { MappingElementDecorateVisitor } from './MappingElementDecorateVisitor';
 import type { SourceInformation } from '../../../../models/metamodels/pure/action/SourceInformation';
 import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
