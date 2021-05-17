@@ -15,7 +15,6 @@
  */
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import { LAMBDA_START } from '../../../../../models/MetaModelConst';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
@@ -25,6 +24,13 @@ import type { EditorStore } from '../../../../EditorStore';
 import type { PropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import type { RelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import type { RawRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import {
+  createStubRelationalOperationElement,
+  isStubRelationalOperationElement,
+} from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
+import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -34,7 +40,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     propertyMapping: RelationalPropertyMapping,
     editorStore: EditorStore,
   ) {
-    super('', LAMBDA_START, propertyMapping);
+    super('', '', propertyMapping);
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -42,70 +48,73 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
   convertLambdaGrammarStringToObject = flow(function* (
     this: RelationalPropertyMappingState,
   ) {
-    // const emptyLambda = RawLambda.createStub();
-    // if (this.lambdaString) {
-    //   try {
-    //     const lambda = (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
-    //       this.fullLambdaString,
-    //       this.propertyMapping.lambdaId,
-    //     )) as RawLambda | undefined;
-    //     this.setParserError(undefined);
-    //     if (this.propertyMapping instanceof RelationalPropertyMapping) {
-    //       this.propertyMapping.transform = lambda ?? emptyLambda;
-    //     }
-    //   } catch (error: unknown) {
-    //     if (error instanceof ParserError) {
-    //       this.setParserError(error);
-    //     }
-    //     this.editorStore.applicationStore.logger.error(
-    //       CORE_LOG_EVENT.PARSING_PROBLEM,
-    //       error,
-    //     );
-    //   }
-    // } else {
-    //   this.clearErrors();
-    //   if (this.propertyMapping instanceof RelationalPropertyMapping) {
-    //     this.propertyMapping.transform = emptyLambda;
-    //   }
-    // }
+    const stubOperation = createStubRelationalOperationElement();
+    if (this.lambdaString) {
+      try {
+        const operation = (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
+          this.fullLambdaString,
+          this.propertyMapping.lambdaId,
+        )) as RawRelationalOperationElement | undefined;
+        this.setParserError(undefined);
+        if (this.propertyMapping instanceof RelationalPropertyMapping) {
+          this.propertyMapping.relationalOperation = operation ?? stubOperation;
+        }
+      } catch (error: unknown) {
+        if (error instanceof ParserError) {
+          this.setParserError(error);
+        }
+        this.editorStore.applicationStore.logger.error(
+          CORE_LOG_EVENT.PARSING_PROBLEM,
+          error,
+        );
+      }
+    } else {
+      this.clearErrors();
+      if (this.propertyMapping instanceof RelationalPropertyMapping) {
+        this.propertyMapping.relationalOperation = stubOperation;
+      }
+    }
   });
 
   convertLambdaObjectToGrammarString = flow(function* (
     this: RelationalPropertyMappingState,
     pretty: boolean,
   ) {
-    //   if (this.propertyMapping instanceof RelationalPropertyMapping) {
-    //     if (!this.propertyMapping.transform.isStub) {
-    //       try {
-    //         const lambdas = new Map<string, RawLambda>();
-    //         lambdas.set(
-    //           this.propertyMapping.lambdaId,
-    //           this.propertyMapping.transform,
-    //         );
-    //         const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-    //           lambdas,
-    //           pretty,
-    //         )) as Map<string, string>;
-    //         const grammarText = isolatedLambdas.get(
-    //           this.propertyMapping.lambdaId,
-    //         );
-    //         this.setLambdaString(
-    //           grammarText !== undefined
-    //             ? this.extractLambdaString(grammarText)
-    //             : '',
-    //         );
-    //         this.clearErrors();
-    //       } catch (error: unknown) {
-    //         this.editorStore.applicationStore.logger.error(
-    //           CORE_LOG_EVENT.PARSING_PROBLEM,
-    //           error,
-    //         );
-    //       }
-    //     } else {
-    //       this.clearErrors();
-    //       this.setLambdaString('');
-    //     }
-    //   }
+    if (this.propertyMapping instanceof RelationalPropertyMapping) {
+      if (
+        !isStubRelationalOperationElement(
+          this.propertyMapping.relationalOperation,
+        )
+      ) {
+        try {
+          const operations = new Map<string, RawRelationalOperationElement>();
+          operations.set(
+            this.propertyMapping.lambdaId,
+            this.propertyMapping.relationalOperation,
+          );
+          const operationsInText = (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+            operations,
+          )) as Map<string, string>;
+          const grammarText = operationsInText.get(
+            this.propertyMapping.lambdaId,
+          );
+          this.setLambdaString(
+            grammarText !== undefined
+              ? this.extractLambdaString(grammarText)
+              : '',
+          );
+          this.clearErrors();
+        } catch (error: unknown) {
+          this.editorStore.applicationStore.logger.error(
+            CORE_LOG_EVENT.PARSING_PROBLEM,
+            error,
+          );
+        }
+      } else {
+        this.clearErrors();
+        this.setLambdaString('');
+      }
+    }
   });
 }
 
@@ -183,38 +192,41 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
   convertPropertyMappingTransformObjects = flow(function* (
     this: RootRelationalInstanceSetImplementationState,
   ) {
-    // const lambdas = new Map<string, RawLambda>();
-    // const propertyMappingStates = new Map<
-    //   string,
-    //   RelationalPropertyMappingState
-    // >();
-    // this.propertyMappingStates.forEach((pm) => {
-    //   if (pm.propertyMapping instanceof RelationalPropertyMapping) {
-    //     lambdas.set(pm.propertyMapping.lambdaId, pm.propertyMapping.transform);
-    //     propertyMappingStates.set(pm.propertyMapping.lambdaId, pm);
-    //   }
-    //   // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
-    // });
-    // if (lambdas.size) {
-    //   this.isConvertingTransformObjects = true;
-    //   try {
-    //     const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-    //       lambdas,
-    //     )) as Map<string, string>;
-    //     isolatedLambdas.forEach((grammarText, key) => {
-    //       const RelationalPropertyMappingState = propertyMappingStates.get(key);
-    //       RelationalPropertyMappingState?.setLambdaString(
-    //         RelationalPropertyMappingState.extractLambdaString(grammarText),
-    //       );
-    //     });
-    //   } catch (error: unknown) {
-    //     this.editorStore.applicationStore.logger.error(
-    //       CORE_LOG_EVENT.PARSING_PROBLEM,
-    //       error,
-    //     );
-    //   } finally {
-    //     this.isConvertingTransformObjects = false;
-    //   }
-    // }
+    const operations = new Map<string, RawRelationalOperationElement>();
+    const propertyMappingStates = new Map<
+      string,
+      RelationalPropertyMappingState
+    >();
+    this.propertyMappingStates.forEach((pm) => {
+      if (pm.propertyMapping instanceof RelationalPropertyMapping) {
+        operations.set(
+          pm.propertyMapping.lambdaId,
+          pm.propertyMapping.relationalOperation,
+        );
+        propertyMappingStates.set(pm.propertyMapping.lambdaId, pm);
+      }
+      // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
+    });
+    if (operations.size) {
+      this.isConvertingTransformObjects = true;
+      try {
+        const operationsInText = (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+          operations,
+        )) as Map<string, string>;
+        operationsInText.forEach((grammarText, key) => {
+          const relationalPropertyMappingState = propertyMappingStates.get(key);
+          relationalPropertyMappingState?.setLambdaString(
+            relationalPropertyMappingState.extractLambdaString(grammarText),
+          );
+        });
+      } catch (error: unknown) {
+        this.editorStore.applicationStore.logger.error(
+          CORE_LOG_EVENT.PARSING_PROBLEM,
+          error,
+        );
+      } finally {
+        this.isConvertingTransformObjects = false;
+      }
+    }
   });
 }

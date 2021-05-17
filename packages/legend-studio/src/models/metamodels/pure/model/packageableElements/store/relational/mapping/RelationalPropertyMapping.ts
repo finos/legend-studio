@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import { hashArray } from '@finos/legend-studio-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import {
+  CORE_HASH_STRUCTURE,
+  SOURCR_ID_LABEL,
+} from '../../../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import type { EnumerationMapping } from '../../../../../model/packageableElements/mapping/EnumerationMapping';
 import type { PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/PropertyMapping';
@@ -44,8 +47,27 @@ export class RelationalPropertyMapping
     makeObservable(this, {
       transformer: observable,
       relationalOperation: observable,
+      setTransformer: action,
+      lambdaId: computed,
       hashCode: computed,
     });
+  }
+
+  // `operationId` is properly the more appropriate term to use, but we are just following what we
+  // do for other property mapping for consistency
+  get lambdaId(): string {
+    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
+    return `${this.owner.parent.path}-${
+      SOURCR_ID_LABEL.RELATIONAL_CLASS_MAPPING
+    }-${this.owner.id.value}-${this.property.value.name}-${
+      this.targetSetImplementation
+        ? `-${this.targetSetImplementation.id.value}`
+        : ''
+    }-${this.owner.propertyMappings.indexOf(this)}`;
+  }
+
+  setTransformer(value: EnumerationMapping | undefined): void {
+    this.transformer = value;
   }
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {

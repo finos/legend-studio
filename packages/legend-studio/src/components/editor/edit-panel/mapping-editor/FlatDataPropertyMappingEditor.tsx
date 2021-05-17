@@ -299,7 +299,7 @@ export const FlatDataPropertyMappingEditor = observer(
         return (
           <div className="property-mapping-editor__entry--embedded">
             Editing property mapping for complex property is currently not
-            allowed in form mode
+            supported in form mode
           </div>
         );
       default:

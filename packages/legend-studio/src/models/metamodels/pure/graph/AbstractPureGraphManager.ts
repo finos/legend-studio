@@ -54,6 +54,7 @@ import type { Store } from '../model/packageableElements/store/Store';
 import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import type { ServerClientConfig } from '@finos/legend-studio-network';
+import type { RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/RawRelationalOperationElement';
 
 export interface EngineSetupConfig {
   env: string;
@@ -150,6 +151,15 @@ export abstract class AbstractPureGraphManager {
   abstract lambdaToPureCode(
     lambdas: Map<string, RawLambda>,
     pretty?: boolean,
+  ): Promise<Map<string, string>>;
+
+  // TODO: consider moving these to relational plugin when we complete modularization
+  abstract pureCodeToRelationalOperationElement(
+    operation: string,
+    operationId: string,
+  ): Promise<RawRelationalOperationElement | undefined>;
+  abstract relationalOperationElementToPureCode(
+    operations: Map<string, RawRelationalOperationElement>,
   ): Promise<Map<string, string>>;
 
   // ------------------------------------------- Compile -------------------------------------------

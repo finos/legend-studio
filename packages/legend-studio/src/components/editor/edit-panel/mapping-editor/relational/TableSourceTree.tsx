@@ -27,7 +27,6 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from '@finos/legend-studio-components';
-import { CORE_DND_TYPE } from '../../../../../stores/shared/DnDUtil';
 import {
   addUniqueEntry,
   getClass,
@@ -59,6 +58,7 @@ import {
 import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import type { Join } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Join';
 
+export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
 export abstract class TableElementTreeNodeData implements TreeNodeData {
   id: string;
   label: string;
@@ -91,7 +91,7 @@ export class JoinNodeData extends TableElementTreeNodeData {
   }
 }
 
-export class TableDragSource {
+export class TableElementDragSource {
   data: TableElementTreeNodeData;
 
   constructor(data: TableElementTreeNodeData) {
@@ -209,8 +209,8 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
   const [, dragRef] = useDrag(
     () => ({
-      type: CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
-      item: new TableDragSource(node),
+      type: TABLE_ELEMENT_DND_TYPE,
+      item: new TableElementDragSource(node),
     }),
     [node],
   );

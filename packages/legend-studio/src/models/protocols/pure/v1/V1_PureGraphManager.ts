@@ -197,6 +197,8 @@ import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Mult
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
+import type { RawRelationalOperationElement } from '../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import type { V1_RawRelationalOperationElement } from './model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 
 export const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1499,6 +1501,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     pretty?: boolean,
   ): Promise<Map<string, string>> {
     return this.engine.transformLambdasToCode(lambdas, pretty);
+  }
+
+  pureCodeToRelationalOperationElement = flow(function* (
+    this: V1_PureGraphManager,
+    operation: string,
+    operationId: string,
+  ): GeneratorFn<RawRelationalOperationElement | undefined> {
+    return (yield this.engine.transformPureCodeToRelationalOperationElement(
+      operation,
+      operationId,
+    )) as V1_RawRelationalOperationElement | undefined;
+  });
+
+  relationalOperationElementToPureCode(
+    operations: Map<string, RawRelationalOperationElement>,
+  ): Promise<Map<string, string>> {
+    return this.engine.transformRelationalOperationElementsToPureCode(
+      operations,
+    );
   }
 
   // ------------------------------------------- Compile -------------------------------------------

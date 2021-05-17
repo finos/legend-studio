@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-import { custom, createModelSchema, primitive } from 'serializr';
+import { custom, createModelSchema } from 'serializr';
 import {
   deseralizeMap,
   SerializationFactory,
   serializeMap,
 } from '@finos/legend-studio-shared';
 
-export class V1_GrammarToJsonInput {
-  isolatedLambdas?: Map<string, string>;
-  code?: string;
+export class V1_RelationalOperationElementGrammarToJsonInput {
+  operations!: Map<string, string>;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_GrammarToJsonInput, {
-      isolatedLambdas: custom(
+    createModelSchema(V1_RelationalOperationElementGrammarToJsonInput, {
+      operations: custom(
         (val) => serializeMap<string>(val),
         (val) => deseralizeMap<string>(val),
       ),
-      code: primitive(),
     }),
   );
 }
