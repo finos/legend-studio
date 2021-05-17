@@ -36,16 +36,16 @@ import type { MappingElement } from '../../../../../models/metamodels/pure/model
 import { Enumeration } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { EnumerationMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import {
-  TableElementDragSource,
+  TableOrViewTreeNodeDragSource,
   TABLE_ELEMENT_DND_TYPE,
-} from './TableSourceTree';
+} from './TableOrViewSourceTree';
 import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
     propertyMappingState: RelationalPropertyMappingState;
     drop?: ConnectDropTarget;
-    dragItem?: TableElementDragSource;
+    dragItem?: TableOrViewTreeNodeDragSource;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;
@@ -71,7 +71,7 @@ const EnumerationPropertyMappingEditor = observer(
   (props: {
     propertyMappingState: RelationalPropertyMappingState;
     drop?: ConnectDropTarget;
-    dragItem?: TableElementDragSource;
+    dragItem?: TableOrViewTreeNodeDragSource;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;
@@ -177,9 +177,9 @@ export const RelationalPropertyMappingEditor = observer(
       isReadOnly;
     // Drag and Drop
     const handleDrop = useCallback(
-      (droppedItem: TableElementDragSource): void => {
+      (droppedItem: TableOrViewTreeNodeDragSource): void => {
         if (!disableEditingTransform) {
-          if (droppedItem instanceof TableElementDragSource) {
+          if (droppedItem instanceof TableOrViewTreeNodeDragSource) {
             const toAppend = droppedItem.data.id;
             if (toAppend) {
               relationalPropertyMappingState.setLambdaString(
@@ -194,7 +194,7 @@ export const RelationalPropertyMappingEditor = observer(
     const [{ item }, drop] = useDrop(
       () => ({
         accept: [TABLE_ELEMENT_DND_TYPE],
-        drop: (droppedItem: TableElementDragSource): void =>
+        drop: (droppedItem: TableOrViewTreeNodeDragSource): void =>
           handleDrop(droppedItem),
         collect: (monitor): { item: unknown } => ({
           item: monitor.getItem(),
@@ -202,7 +202,8 @@ export const RelationalPropertyMappingEditor = observer(
       }),
       [handleDrop],
     );
-    const dragItem = item instanceof TableElementDragSource ? item : undefined;
+    const dragItem =
+      item instanceof TableOrViewTreeNodeDragSource ? item : undefined;
     const transformProps = {
       disableTransform:
         relationalInstanceSetImplementationState.isConvertingTransformObjects,

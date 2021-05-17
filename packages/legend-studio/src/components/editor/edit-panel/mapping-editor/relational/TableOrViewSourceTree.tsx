@@ -29,8 +29,10 @@ import {
 } from '@finos/legend-studio-components';
 import {
   addUniqueEntry,
+  assertTrue,
   getClass,
   guaranteeType,
+  isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { Type } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Type';
@@ -57,105 +59,200 @@ import {
 } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import type { Join } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Join';
+import type { View } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 
 export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
-export abstract class TableElementTreeNodeData implements TreeNodeData {
+const JOIN_OPERATOR = '>';
+const JOIN_AT_SYMBOL = '@';
+const generateDatabasePointerText = (database: string): string =>
+  `[${database}]`;
+
+export abstract class TableOrViewTreeNodeData implements TreeNodeData {
   id: string;
   label: string;
   isSelected?: boolean;
   isOpen?: boolean;
   childrenIds?: string[];
-  parentNode?: TableElementTreeNodeData;
+  relation: Table | View;
 
-  constructor(id: string, label: string) {
+  constructor(id: string, label: string, relation: Table | View) {
     this.id = id;
     this.label = label;
+    this.relation = relation;
   }
 }
 
-export class ColumnNodeData extends TableElementTreeNodeData {
+export class ColumnNodeData extends TableOrViewTreeNodeData {
   column: Column;
 
-  constructor(id: string, label: string, column: Column) {
-    super(id, label);
+  constructor(
+    id: string,
+    label: string,
+    relation: Table | View,
+    column: Column,
+  ) {
+    super(id, label, relation);
     this.column = column;
   }
 }
 
-export class JoinNodeData extends TableElementTreeNodeData {
+export class JoinNodeData extends TableOrViewTreeNodeData {
   join: Join;
 
-  constructor(id: string, label: string, join: Join) {
-    super(id, label);
+  constructor(id: string, label: string, relation: Table | View, join: Join) {
+    super(id, label, relation);
     this.join = join;
   }
 }
 
-export class TableElementDragSource {
-  data: TableElementTreeNodeData;
+export class TableOrViewTreeNodeDragSource {
+  data: TableOrViewTreeNodeData;
 
-  constructor(data: TableElementTreeNodeData) {
+  constructor(data: TableOrViewTreeNodeData) {
     this.data = data;
   }
 }
 
+const generateColumnTreeNodeId = (
+  column: Column,
+  relation: Table | View,
+  parentNode: TableOrViewTreeNodeData | undefined,
+): string =>
+  `${
+    parentNode?.id ??
+    `${generateDatabasePointerText(relation.schema.owner.path)}${
+      relation.schema.name
+    }.${relation.name}`
+  }.${column.name}`;
+
 const getColumnTreeNodeData = (
   column: Column,
-  parentTable: Table,
-  parentNode: TableElementTreeNodeData | undefined,
-): TableElementTreeNodeData => {
-  const SOURCE_PARAMETER_NAME = `[${parentTable.schema.owner.path}]${parentTable.schema.name}`;
+  relation: Table | View,
+  parentNode: TableOrViewTreeNodeData | undefined,
+): TableOrViewTreeNodeData => {
   const columnNode = new ColumnNodeData(
-    `${SOURCE_PARAMETER_NAME}.${column.name}`,
+    generateColumnTreeNodeId(column, relation, parentNode),
     column.name,
+    relation,
     column,
   );
-  columnNode.parentNode = parentNode;
   return columnNode;
+};
+
+// TODO: support more complex join feature (with operation, direction, etc.)
+const generateJoinTreeNodeId = (
+  join: Join,
+  relation: Table | View,
+  parentNode: TableOrViewTreeNodeData | undefined,
+): string =>
+  parentNode
+    ? `${parentNode.id} ${JOIN_OPERATOR} ${JOIN_AT_SYMBOL}${join.name}`
+    : `${generateDatabasePointerText(
+        relation.schema.owner.path,
+      )}${JOIN_AT_SYMBOL}${join.name}`;
+
+const resolveJoinTargetRelation = (
+  join: Join,
+  sourceRelation: Table | View,
+): Table | View => {
+  const potentialTargetRelations = new Set<Table | View>();
+  join.aliases.forEach((alias) => {
+    if (alias.first.relation.value !== sourceRelation) {
+      potentialTargetRelations.add(alias.first.relation.value as Table);
+    }
+    if (alias.second.relation.value !== sourceRelation) {
+      potentialTargetRelations.add(alias.second.relation.value as Table);
+    }
+  });
+  assertTrue(
+    potentialTargetRelations.size < 2,
+    `Can't resolve target relation for join. Only self-join and cross join are currently supported`,
+  );
+  return potentialTargetRelations.size === 0
+    ? sourceRelation
+    : Array.from(potentialTargetRelations.values())[0];
 };
 
 const getJoinTreeNodeData = (
   join: Join,
-  parentTable: Table,
-  parentNode: TableElementTreeNodeData | undefined,
-): TableElementTreeNodeData => {
-  const SOURCE_PARAMETER_NAME = `[${parentTable.schema.owner.path}]`;
-  const columnNode = new JoinNodeData(
-    `${SOURCE_PARAMETER_NAME}@${join.name}`,
+  relation: Table | View,
+  parentNode: TableOrViewTreeNodeData | undefined,
+): TableOrViewTreeNodeData => {
+  const joinNode = new JoinNodeData(
+    generateJoinTreeNodeId(join, relation, parentNode),
     join.name,
+    relation,
     join,
   );
-  columnNode.childrenIds = ['asd', 'ad12'];
-  columnNode.parentNode = parentNode;
-  return columnNode;
-};
-
-const getTableTreeData = (table: Table): TreeData<TableElementTreeNodeData> => {
-  const rootIds: string[] = [];
-  const nodes = new Map<string, TableElementTreeNodeData>();
-  table.columns
+  const childrenIds: string[] = [];
+  // columns
+  relation.columns
     .slice()
     .filter((col): col is Column => col instanceof Column)
     .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
     .forEach((col) => {
-      const columnNode = getColumnTreeNodeData(col, table, undefined);
-      addUniqueEntry(rootIds, columnNode.id);
-      nodes.set(columnNode.id, columnNode);
+      addUniqueEntry(
+        childrenIds,
+        generateColumnTreeNodeId(col, relation, joinNode),
+      );
     });
-  // TODO: joins
-  table.schema.owner.joins
+  // joins
+  relation.schema.owner.joins
     .slice()
     .filter((join) =>
       join.aliases.filter(
         (alias) =>
-          alias.first.relation.value === table ||
-          alias.second.relation.value === table,
+          alias.first.relation.value === relation ||
+          alias.second.relation.value === relation,
+      ),
+    )
+    .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
+    .forEach((childJoin) => {
+      addUniqueEntry(
+        childrenIds,
+        generateJoinTreeNodeId(
+          childJoin,
+          resolveJoinTargetRelation(childJoin, relation),
+          joinNode,
+        ),
+      );
+    });
+  joinNode.childrenIds = childrenIds;
+  return joinNode;
+};
+
+const getRelationTreeData = (
+  relation: Table | View,
+): TreeData<TableOrViewTreeNodeData> => {
+  const rootIds: string[] = [];
+  const nodes = new Map<string, TableOrViewTreeNodeData>();
+  // columns
+  relation.columns
+    .slice()
+    .filter((col): col is Column => col instanceof Column)
+    .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
+    .forEach((col) => {
+      const columnNode = getColumnTreeNodeData(col, relation, undefined);
+      addUniqueEntry(rootIds, columnNode.id);
+      nodes.set(columnNode.id, columnNode);
+    });
+  // joins
+  relation.schema.owner.joins
+    .slice()
+    .filter((join) =>
+      join.aliases.filter(
+        (alias) =>
+          alias.first.relation.value === relation ||
+          alias.second.relation.value === relation,
       ),
     )
     .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
     .forEach((join) => {
-      // TODO: drill down further
-      const joinNode = getJoinTreeNodeData(join, table, undefined);
+      const joinNode = getJoinTreeNodeData(
+        join,
+        resolveJoinTargetRelation(join, relation),
+        undefined,
+      );
       addUniqueEntry(rootIds, joinNode.id);
       nodes.set(joinNode.id, joinNode);
     });
@@ -204,13 +301,13 @@ const generateColumnTypeLabel = (type: DataType): string => {
 };
 
 const RelationalOperationElementTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<TableElementTreeNodeData, { selectedType?: Type }>
+  TreeNodeContainerProps<TableOrViewTreeNodeData, { selectedType?: Type }>
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
   const [, dragRef] = useDrag(
     () => ({
       type: TABLE_ELEMENT_DND_TYPE,
-      item: new TableElementDragSource(node),
+      item: new TableOrViewTreeNodeDragSource(node),
     }),
     [node],
   );
@@ -267,26 +364,69 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
   );
 };
 
-export const TableSourceTree: React.FC<{
-  table: Table;
+export const TableOrViewSourceTree: React.FC<{
+  relation: Table | View;
   selectedType?: Type;
 }> = (props) => {
-  const { table, selectedType } = props;
+  const { relation, selectedType } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax
   // See https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
-  const [treeData, setTreeData] = useState<TreeData<TableElementTreeNodeData>>(
-    () => getTableTreeData(table),
+  const [treeData, setTreeData] = useState<TreeData<TableOrViewTreeNodeData>>(
+    () => getRelationTreeData(relation),
   );
-  const onNodeSelect = (node: TableElementTreeNodeData): void => {
+  const onNodeSelect = (node: TableOrViewTreeNodeData): void => {
+    if (node.childrenIds?.length) {
+      node.isOpen = !node.isOpen;
+      // columns
+      node.relation.columns
+        .filter((col): col is Column => col instanceof Column)
+        .forEach((col) => {
+          const columnNode = getColumnTreeNodeData(col, node.relation, node);
+          treeData.nodes.set(columnNode.id, columnNode);
+        });
+      // joins
+      node.relation.schema.owner.joins
+        .filter((join) =>
+          join.aliases.filter(
+            (alias) =>
+              alias.first.relation.value === node.relation ||
+              alias.second.relation.value === node.relation,
+          ),
+        )
+        .forEach((join) => {
+          const joinNode = getJoinTreeNodeData(
+            join,
+            resolveJoinTargetRelation(join, node.relation),
+            node,
+          );
+          treeData.nodes.set(joinNode.id, joinNode);
+        });
+    }
     setTreeData({ ...treeData });
   };
 
   const getChildNodes = (
-    node: TableElementTreeNodeData,
-  ): TableElementTreeNodeData[] => [];
+    node: TableOrViewTreeNodeData,
+  ): TableOrViewTreeNodeData[] => {
+    if (!node.childrenIds) {
+      return [];
+    }
+    const childrenNodes = node.childrenIds
+      .map((id) => treeData.nodes.get(id))
+      .filter(isNonNullable)
+      // sort so that column nodes come before join nodes
+      .sort((a, b) => a.label.localeCompare(b.label))
+      .sort(
+        (a, b) =>
+          (b instanceof ColumnNodeData ? 1 : 0) -
+          (a instanceof ColumnNodeData ? 1 : 0),
+      );
+    return childrenNodes;
+  };
+
   useEffect(() => {
-    setTreeData(() => getTableTreeData(table));
-  }, [table]);
+    setTreeData(() => getRelationTreeData(relation));
+  }, [relation]);
 
   return (
     <TreeView
