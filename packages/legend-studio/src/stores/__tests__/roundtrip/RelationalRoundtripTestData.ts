@@ -3225,9 +3225,70 @@ export const simpleEmbeddedRelationalRoundtrip = [
     path: 'mapping::db',
     content: {
       _type: 'relational',
-      filters: [],
+      filters: [
+        {
+          _type: 'filter',
+          name: 'PersonFilter',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'name',
+                table: {
+                  _type: 'Table',
+                  database: 'mapping::db',
+                  mainTableDb: 'mapping::db',
+                  schema: 'default',
+                  table: 'employeeFirmDenormTable',
+                },
+                tableAlias: 'employeeFirmDenormTable',
+              },
+              {
+                _type: 'literal',
+                value: 'Utkarsh',
+              },
+            ],
+          },
+        },
+      ],
       includedStores: [],
-      joins: [],
+      joins: [
+        {
+          name: 'testJoin',
+          operation: {
+            _type: 'dynaFunc',
+            funcName: 'equal',
+            parameters: [
+              {
+                _type: 'column',
+                column: 'name',
+                table: {
+                  _type: 'Table',
+                  database: 'mapping::db',
+                  mainTableDb: 'mapping::db',
+                  schema: 'default',
+                  table: 'employeeFirmDenormTable',
+                },
+                tableAlias: 'employeeFirmDenormTable',
+              },
+              {
+                _type: 'column',
+                column: 'name',
+                table: {
+                  _type: 'Table',
+                  database: 'mapping::db',
+                  mainTableDb: 'mapping::db',
+                  schema: 'default',
+                  table: '{target}',
+                },
+                tableAlias: '{target}',
+              },
+            ],
+          },
+        },
+      ],
       name: 'db',
       package: 'mapping',
       schemas: [
@@ -3294,6 +3355,18 @@ export const simpleEmbeddedRelationalRoundtrip = [
           _type: 'relational',
           class: 'other::Person',
           distinct: false,
+          filter: {
+            filter: {
+              db: 'mapping::db',
+              name: 'PersonFilter',
+            },
+            joins: [
+              {
+                db: 'mapping::db',
+                name: 'testJoin',
+              },
+            ],
+          },
           mainTable: {
             _type: 'Table',
             database: 'mapping::db',
