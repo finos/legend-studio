@@ -1,5 +1,13 @@
 # @finos/legend-studio
 
+## 0.1.4
+
+### Patch Changes
+
+- [#203](https://github.com/finos/legend-studio/pull/203) [`0d8c766`](https://github.com/finos/legend-studio/commit/0d8c7660f3a70d75e7d6d5265bf894ddb7088d02) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Studio now leverages the metadata server to fetch dependency entities. This helps to simplify our logic in handling project dependency.
+
+* [#205](https://github.com/finos/legend-studio/pull/205) [`e6b0425`](https://github.com/finos/legend-studio/commit/e6b04259c33ee8563391fd6833cd337b83b77d44) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - Fix rootRelationalClassMapping compilation to include filter.
+
 ## 0.1.3
 
 ### Patch Changes
