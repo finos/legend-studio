@@ -21,7 +21,7 @@ import type {
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities';
 
-export interface MetadataServerClientConfig {
+interface MetadataServerClientConfig {
   serverUrl: string;
 }
 
@@ -34,10 +34,18 @@ export class MetadataServerClient extends AbstractServerClient {
 
   private _projects = (): string => `${this.networkClient.baseUrl}/projects`;
 
-  // get version dependencies entities
   getDependencyEntities = (
+    /**
+     * List of (direct) dependencies.
+     */
     dependencies: PlainObject<ProjectVersion>[],
+    /**
+     * Flag indicating if transitive dependencies should be returned.
+     */
     transitive: boolean,
+    /**
+     * Flag indicating whether to return the root of the dependency tree.
+     */
     includeOrigin: boolean,
   ): Promise<PlainObject<ProjectVersionEntities>[]> =>
     this.post(
@@ -48,7 +56,7 @@ export class MetadataServerClient extends AbstractServerClient {
       {
         transitive,
         includeOrigin,
-        versioned: false,
+        versioned: false, // we don't need to add version prefix to entity path
       },
     );
 }
