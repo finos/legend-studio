@@ -21,11 +21,17 @@ import type {
   TreeData,
   TreeNodeData,
 } from '@finos/legend-studio-components';
-import { PrimitiveTypeIcon, TableJoinIcon } from '../../../../shared/Icon';
+import { TableJoinIcon } from '../../../../shared/Icon';
 import {
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
+  StringTypeIcon,
+  BooleanTypeIcon,
+  NumberTypeIcon,
+  DateTypeIcon,
+  BinaryTypeIcon,
+  UnknownTypeIcon,
 } from '@finos/legend-studio-components';
 import {
   addUniqueEntry,
@@ -296,7 +302,48 @@ const generateColumnTypeLabel = (type: DataType): string => {
     return `OTHER`;
   }
   throw new UnsupportedOperationError(
-    `Can't generate column type label of type '${getClass(type).name}'`,
+    `Can't generate column label of data type '${getClass(type).name}'`,
+  );
+};
+
+const renderColumnTypeIcon = (type: DataType): React.ReactNode => {
+  if (type instanceof VarChar || type instanceof Char) {
+    return (
+      <StringTypeIcon className="relation-source-tree__icon relation-source-tree__icon__string" />
+    );
+  } else if (type instanceof VarBinary || type instanceof Binary) {
+    return (
+      <BinaryTypeIcon className="relation-source-tree__icon relation-source-tree__icon__binary" />
+    );
+  } else if (type instanceof Bit) {
+    return (
+      <BooleanTypeIcon className="relation-source-tree__icon relation-source-tree__icon__boolean" />
+    );
+  } else if (
+    type instanceof Numeric ||
+    type instanceof Decimal ||
+    type instanceof Double ||
+    type instanceof Float ||
+    type instanceof Real ||
+    type instanceof Integer ||
+    type instanceof BigInt ||
+    type instanceof SmallInt ||
+    type instanceof TinyInt
+  ) {
+    return (
+      <NumberTypeIcon className="relation-source-tree__icon relation-source-tree__icon__number" />
+    );
+  } else if (type instanceof Date || type instanceof Timestamp) {
+    return (
+      <DateTypeIcon className="relation-source-tree__icon relation-source-tree__icon__time" />
+    );
+  } else if (type instanceof Other) {
+    return (
+      <UnknownTypeIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Can't render column of data type '${getClass(type).name}'`,
   );
 };
 
@@ -313,7 +360,11 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
   );
   const isExpandable = Boolean(node.childrenIds?.length);
   const nodeTypeIcon =
-    node instanceof ColumnNodeData ? <PrimitiveTypeIcon /> : <TableJoinIcon />;
+    node instanceof ColumnNodeData ? (
+      renderColumnTypeIcon(node.column.type)
+    ) : (
+      <TableJoinIcon />
+    );
   const selectNode = (): void => onNodeSelect?.(node);
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (

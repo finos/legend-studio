@@ -453,23 +453,24 @@ export class ApplicationStore {
       await navigator.clipboard.writeText(text).catch((error) => {
         this.notifyError(error);
       });
-    } else {
-      // See https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
-      if (document.queryCommandSupported('copy')) {
-        const element = document.createElement('textarea');
-        element.style.display = 'fixed';
-        element.style.opacity = '0';
-        document.documentElement.appendChild(element);
-        element.value = text;
-        element.select();
-        try {
-          document.execCommand('copy');
-        } catch (error: unknown) {
-          this.notifyError(error);
-        } finally {
-          element.remove();
-        }
+      return;
+    }
+    // See https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
+    if (document.queryCommandSupported('copy')) {
+      const element = document.createElement('textarea');
+      element.style.display = 'fixed';
+      element.style.opacity = '0';
+      document.documentElement.appendChild(element);
+      element.value = text;
+      element.select();
+      try {
+        document.execCommand('copy');
+      } catch (error: unknown) {
+        this.notifyError(error);
+      } finally {
+        element.remove();
       }
+      return;
     }
     this.notifyError('Browser does not support clipboard functionality');
   }
