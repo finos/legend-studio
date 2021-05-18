@@ -155,7 +155,10 @@ export class NetworkClientError extends Error {
 export const makeUrl = (
   baseUrl: string | undefined,
   relativeUrl: string,
-  parameters?: Parameters,
+  parameters: Parameters,
+  options?: {
+    disableAutoEncode?: boolean;
+  },
 ): string => {
   const url = new URL(relativeUrl, baseUrl ?? window.location.href);
   if (parameters instanceof Object) {
@@ -166,10 +169,20 @@ export const makeUrl = (
           value
             .filter(isNonNullable)
             .forEach((subVal) =>
-              url.searchParams.append(name, subVal.toString()),
+              url.searchParams.append(
+                name,
+                options?.disableAutoEncode
+                  ? subVal.toString()
+                  : encodeURIComponent(subVal.toString()),
+              ),
             );
         } else {
-          url.searchParams.append(name, value.toString());
+          url.searchParams.append(
+            name,
+            options?.disableAutoEncode
+              ? value.toString()
+              : encodeURIComponent(value.toString()),
+          );
         }
       }
     });
@@ -389,7 +402,7 @@ export class NetworkClient {
     requestProcessConfig?: RequestProcessConfig,
     responseProcessConfig?: ResponseProcessConfig,
   ): Promise<T> {
-    const requestUrl = makeUrl(this.baseUrl, url, parameters);
+    const requestUrl = makeUrl(this.baseUrl, url, parameters ?? {});
     if (data && requestProcessConfig?.enableCompression) {
       assertTrue(
         method !== HttpMethod.GET,

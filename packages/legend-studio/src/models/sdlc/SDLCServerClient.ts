@@ -120,7 +120,8 @@ export class SDLCServerClient extends AbstractServerClient {
 
   private _projects = (): string => `${this.networkClient.baseUrl}/projects`;
   private _project = (projectId: string): string =>
-    `${this._projects()}/${projectId}`;
+    `${this._projects()}/${encodeURIComponent(projectId)}`;
+
   getProject = (projectId: string): Promise<PlainObject<Project>> =>
     this.networkClient.get(this._project(projectId));
   getProjects = (
@@ -166,7 +167,7 @@ export class SDLCServerClient extends AbstractServerClient {
   private _workspaces = (projectId: string): string =>
     `${this._project(projectId)}/workspaces`;
   private _workspace = (projectId: string, workspaceId: string): string =>
-    `${this._workspaces(projectId)}/${workspaceId}`;
+    `${this._workspaces(projectId)}/${encodeURIComponent(workspaceId)}`;
   /**
    * This method makes it possible that we don't have to repeat the set of endpoints twice for:
    *    1. workspaceId === undefined (hence calling the project branch)
@@ -179,6 +180,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspaceId
       ? this._workspace(projectId, workspaceId)
       : this._project(projectId);
+
   getWorkspaces = (projectId: string): Promise<PlainObject<Workspace>[]> =>
     this.networkClient.get(this._workspaces(projectId));
   getWorkspace = (
@@ -239,7 +241,8 @@ export class SDLCServerClient extends AbstractServerClient {
     `${this._adaptiveWorkspace(
       projectId,
       workspaceId,
-    )}/revisions/${revisionId}`;
+    )}/revisions/${encodeURIComponent(revisionId)}`;
+
   getRevisions = (
     projectId: string,
     workspaceId: string | undefined,
@@ -257,7 +260,8 @@ export class SDLCServerClient extends AbstractServerClient {
   private _versions = (projectId: string): string =>
     `${this._project(projectId)}/versions`;
   private _version = (projectId: string, versionId: string): string =>
-    `${this._versions(projectId)}/${versionId}`;
+    `${this._versions(projectId)}/${encodeURIComponent(versionId)}`;
+
   getVersions = (projectId: string): Promise<PlainObject<Version>[]> =>
     this.networkClient.get(this._versions(projectId));
   getVersion = (
@@ -286,6 +290,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspaceId: string | undefined,
   ): string =>
     `${this._adaptiveWorkspace(projectId, workspaceId)}/configuration`;
+
   getConfiguration = (
     projectId: string,
     workspaceId: string | undefined,
@@ -321,6 +326,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspaceId: string | undefined,
   ): string => `${this._adaptiveWorkspace(projectId, workspaceId)}/builds`;
+
   getBuilds = (
     projectId: string,
     workspaceId: string | undefined,
@@ -352,6 +358,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspaceId: string | undefined,
   ): string => `${this._adaptiveWorkspace(projectId, workspaceId)}/entities`;
+
   getEntities = (
     projectId: string,
     workspaceId: string | undefined,
@@ -396,7 +403,8 @@ export class SDLCServerClient extends AbstractServerClient {
   private _reviews = (projectId: string): string =>
     `${this._project(projectId)}/reviews`;
   private _review = (projectId: string, reviewId: string): string =>
-    `${this._reviews(projectId)}/${reviewId}`;
+    `${this._reviews(projectId)}/${encodeURIComponent(reviewId)}`;
+
   getReviews = (
     projectId: string,
     state: ReviewState | undefined,
@@ -460,6 +468,7 @@ export class SDLCServerClient extends AbstractServerClient {
 
   private _reviewComparison = (projectId: string, reviewId: string): string =>
     `${this._review(projectId, reviewId)}/comparison`;
+
   getReviewFromEntities = (
     projectId: string,
     reviewId: string,
@@ -482,6 +491,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspaceId: string | undefined,
   ): string =>
     `${this._adaptiveWorkspace(projectId, workspaceId)}/conflictResolution`;
+
   getWorkspacesInConflictResolutionMode = (
     projectId: string,
   ): Promise<PlainObject<Workspace>[]> =>
