@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-fix rootRelationalClassMapping compilation to include filter
+Fix rootRelationalClassMapping compilation to include filter.
