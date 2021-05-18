@@ -27,6 +27,7 @@ import type { Mapping } from '../../../../../model/packageableElements/mapping/M
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
 import type { Class } from '../../../../../model/packageableElements/domain/Class';
 import type { InferableMappingElementRoot } from '../../../../../model/packageableElements/mapping/InferableMappingElementRoot';
+import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
 
 export class RelationalInstanceSetImplementation
   extends InstanceSetImplementation
@@ -47,7 +48,16 @@ export class RelationalInstanceSetImplementation
   }
 
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    throw new Error('Method not implemented.'); // FIXNOW
+    const embeddedPropertyMappings = this.propertyMappings.filter(
+      (
+        propertyMapping: PropertyMapping,
+      ): propertyMapping is EmbeddedRelationalInstanceSetImplementation =>
+        propertyMapping instanceof EmbeddedRelationalInstanceSetImplementation,
+    );
+    return embeddedPropertyMappings
+      .map((propertyMapping) => propertyMapping.getEmbeddedSetImplmentations())
+      .flat()
+      .concat(embeddedPropertyMappings);
   }
 
   findPropertyMapping(

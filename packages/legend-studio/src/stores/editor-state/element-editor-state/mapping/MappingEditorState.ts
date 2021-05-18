@@ -88,6 +88,7 @@ import { RootFlatDataRecordTypeExplicitReference } from '../../../../models/meta
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
 
 export interface MappingElementTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -684,7 +685,13 @@ export class MappingEditorState extends ElementEditorState {
         mappingElement,
       );
     } else if (
-      mappingElement instanceof RootRelationalInstanceSetImplementation ||
+      mappingElement instanceof RootRelationalInstanceSetImplementation
+    ) {
+      return new RootRelationalInstanceSetImplementationState(
+        this.editorStore,
+        mappingElement,
+      );
+    } else if (
       mappingElement instanceof EmbeddedRelationalInstanceSetImplementation ||
       mappingElement instanceof AggregationAwareSetImplementation
     ) {

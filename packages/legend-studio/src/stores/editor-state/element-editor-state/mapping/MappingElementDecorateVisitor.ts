@@ -47,6 +47,9 @@ import type { RootRelationalInstanceSetImplementation } from '../../../../models
 import { EnumValueExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/EnumValueReference';
 import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 import type { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import { createStubRelationalOperationElement } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -305,13 +308,113 @@ export class MappingElementDecorateVisitor
   visit_RelationalInstanceSetImplementation(
     setImplementation: RelationalInstanceSetImplementation,
   ): void {
-    throw new Error('Method not implemented.'); // FIXNOW
+    throw new Error('Method not implemented.');
   }
 
   visit_RootRelationalInstanceSetImplementation(
     setImplementation: RootRelationalInstanceSetImplementation,
   ): void {
-    throw new Error('Method not implemented.'); // FIXNOW
+    const decoratePropertyMapping = (
+      propertyMappings: PropertyMapping[] | undefined,
+      property: Property,
+    ): PropertyMapping[] => {
+      const existingPropertyMappings = propertyMappings ?? [];
+      const propertyType = property.genericType.value.rawType;
+      if (
+        propertyType instanceof PrimitiveType ||
+        propertyType instanceof Unit ||
+        propertyType instanceof Measure
+      ) {
+        // only allow one property mapping per primitive property
+        assertTrue(
+          !existingPropertyMappings.length ||
+            existingPropertyMappings.length === 1,
+          'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
+        );
+        if (existingPropertyMappings.length) {
+          // TODO?: do we want to check the type of the property mapping here?
+          return [existingPropertyMappings[0]];
+        }
+        const newPropertyMapping = new RelationalPropertyMapping(
+          setImplementation,
+          PropertyExplicitReference.create(property),
+          setImplementation,
+        );
+        newPropertyMapping.relationalOperation = createStubRelationalOperationElement();
+        return [newPropertyMapping];
+      } else if (propertyType instanceof Enumeration) {
+        // only allow one property mapping per enumeration property
+        assertTrue(
+          !existingPropertyMappings.length ||
+            existingPropertyMappings.length === 1,
+          'Only one property mapping should exist per enumeration type property',
+        );
+        let ePropertyMapping: PropertyMapping[] = [];
+        if (existingPropertyMappings.length) {
+          // TODO?: do we want to check the type of the property mapping here?
+          ePropertyMapping = [existingPropertyMappings[0]];
+        } else {
+          const newPropertyMapping = new RelationalPropertyMapping(
+            setImplementation,
+            PropertyExplicitReference.create(property),
+            setImplementation,
+          );
+          newPropertyMapping.relationalOperation = createStubRelationalOperationElement();
+          ePropertyMapping = [newPropertyMapping];
+        }
+        // Find existing enumeration mappings for the property enumeration
+        const existingEnumerationMappings = setImplementation.parent.enumerationMappingsByEnumeration(
+          ePropertyMapping[0].property.value.genericType.value.getRawType(
+            Enumeration,
+          ),
+        );
+        ePropertyMapping.forEach((epm) => {
+          assertType(
+            epm,
+            RelationalPropertyMapping,
+            'Property mapping for enumeration type property must be a simple property mapping',
+          );
+          // If there are no enumeration mappings, delete the transformer of the property mapping
+          // If there is only 1 enumeration mapping, make it the transformer of the property mapping
+          // Else, delete current transformer if it's not in the list of extisting enumeration mappings
+          if (existingEnumerationMappings.length === 1) {
+            epm.transformer = existingEnumerationMappings[0];
+          } else if (
+            existingEnumerationMappings.length === 0 ||
+            !existingEnumerationMappings.find((eem) => eem === epm.transformer)
+          ) {
+            epm.transformer = undefined;
+          }
+        });
+        return ePropertyMapping;
+      } else if (propertyType instanceof Class) {
+        // NOTE: for now for class property, the only form of mapping we support in form mode is a simple property mapping.
+        // TODO: we might need to take care of root-resolution logic like in Pure property mapping
+        assertTrue(
+          !existingPropertyMappings.length ||
+            existingPropertyMappings.length === 1,
+          'Only one property mapping should exist per class type property. Other modes for relational property mapping are currently not supported',
+        );
+        if (existingPropertyMappings.length) {
+          // TODO?: do we want to check the type of the property mapping here?
+          return [existingPropertyMappings[0]];
+        }
+        const newPropertyMapping = new RelationalPropertyMapping(
+          setImplementation,
+          PropertyExplicitReference.create(property),
+          setImplementation,
+        );
+        newPropertyMapping.relationalOperation = createStubRelationalOperationElement();
+        return [newPropertyMapping];
+      }
+      return [];
+    };
+    setImplementation.setPropertyMappings(
+      getDecoratedSetImplementationPropertyMappings<PropertyMapping>(
+        setImplementation,
+        decoratePropertyMapping,
+      ),
+    );
   }
 
   visit_AggregationAwareSetImplementation(

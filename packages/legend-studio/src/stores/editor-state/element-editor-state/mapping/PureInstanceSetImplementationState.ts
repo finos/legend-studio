@@ -22,7 +22,7 @@ import {
   PropertyMappingState,
 } from './MappingElementState';
 import type { EditorStore } from '../../../EditorStore';
-import { MappingElementDecorateVisitor } from '../../../editor-state/element-editor-state/mapping/MapingElementDecorateVisitor';
+import { MappingElementDecorateVisitor } from './MappingElementDecorateVisitor';
 import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';

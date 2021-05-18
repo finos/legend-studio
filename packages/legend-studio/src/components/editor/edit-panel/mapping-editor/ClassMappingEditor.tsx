@@ -73,9 +73,9 @@ export const OperatorSelector = observer(
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export enum CLASS_MAPPING_SOURCE_TYPE {
   CLASS = 'CLASS',
-  FLAT_DATA = 'FLAT_DATA',
+  FLAT_DATA = 'FLAT DATA',
   OPERATION = 'OPERATION',
-  RELATIONAL = 'DATBASE_TABLE',
+  RELATIONAL = 'DATABASE TABLE',
 }
 
 export const ClassMappingEditor = observer(

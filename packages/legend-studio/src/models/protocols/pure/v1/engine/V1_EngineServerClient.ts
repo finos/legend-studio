@@ -25,10 +25,7 @@ import type { V1_ServiceTestResult } from './service/V1_ServiceTestResult';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
 import type { V1_CompileResult } from './compilation/V1_CompileResult';
-import type {
-  V1_GrammarToJsonInput,
-  V1_GrammarToJsonOutput,
-} from './grammar/V1_GrammarToJson';
+import type { V1_GrammarToJsonInput } from './grammar/V1_GrammarToJson';
 import type { V1_JsonToGrammarInput } from './grammar/V1_JsonToGrammarInput';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
 import type { V1_PureModelContextGenerationInput } from './import/V1_PureModelContextGenerationInput';
@@ -48,6 +45,8 @@ import type {
   TraceData,
 } from '@finos/legend-studio-network';
 import { AbstractServerClient } from '@finos/legend-studio-network';
+import type { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
+import type { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -129,10 +128,35 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
   transformJSONToGrammar = (
     input: PlainObject<V1_JsonToGrammarInput>,
-  ): Promise<PlainObject<V1_GrammarToJsonOutput>> =>
+  ): Promise<PlainObject<V1_JsonToGrammarInput>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
       `${this._pure()}/grammar/transformJsonToGrammar`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  transformRelationalOperationElementGrammarToJSON = (
+    input: PlainObject<V1_RelationalOperationElementGrammarToJsonInput>,
+  ): Promise<PlainObject<V1_RelationalOperationElementJsonToGrammarInput>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      `${this._pure()}/grammar/transformRelationalOperationElementGrammarToJson`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+  transformRelationalOperationElementJSONToGrammar = (
+    input: PlainObject<V1_RelationalOperationElementJsonToGrammarInput>,
+  ): Promise<PlainObject<V1_RelationalOperationElementGrammarToJsonInput>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      `${this._pure()}/grammar/transformRelationalOperationElementJsonToGrammar`,
       input,
       {},
       undefined,

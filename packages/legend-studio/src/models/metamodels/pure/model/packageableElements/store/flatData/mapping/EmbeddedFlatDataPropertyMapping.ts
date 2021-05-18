@@ -129,7 +129,11 @@ export class EmbeddedFlatDataPropertyMapping
       this.id.valueForSerialization ?? '',
       this.class.value.path,
       // skip `root` since we disregard it in embedded property mappings
-      hashArray(this.propertyMappings),
+      hashArray(
+        this.propertyMappings.filter(
+          (propertyMapping) => !propertyMapping.isStub,
+        ),
+      ),
     ]);
   }
 

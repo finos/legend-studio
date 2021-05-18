@@ -1012,9 +1012,11 @@ export class GraphState {
     );
     try {
       if (directDependencies.length) {
-        const metaDataClient = this.editorStore.applicationStore
+        const metadataClient = this.editorStore.applicationStore
           .networkClientManager.metadataClient;
-        const dependencyEntitiesJson = (yield metaDataClient.getDependencyEntities(
+        // NOTE: if A@v1 is transitive dependencies of 2 or more
+        // direct dependencies, metadata server will take care of deduplication
+        const dependencyEntitiesJson = (yield metadataClient.getDependencyEntities(
           (directDependencies as unknown) as PlainObject<ProjectVersion>[],
           true,
           true,
@@ -1025,15 +1027,23 @@ export class GraphState {
         const dependencyProjects = new Set<string>();
         dependencyEntities.forEach((dependencyInfo) => {
           const projectId = dependencyInfo.projectId;
-          // validation
+          // There are a few validations that must be done:
+          // 1. Unlike above, if in the depdendency graph, we have both A@v1 and A@v2
+          //    then we need to throw. Both SDLC and metadata server should handle this
+          //    validation, but haven't, so for now, we can do that in Studio.
+          // 2. Same as the previous case, but for version-to-version transformation
+          //    This is a special case that needs handling, right now, SDLC does auto
+          //    healing, by scanning all the path and convert them into versioned path
+          //    e.g. model::someClass -> project1::v1_0_0::model::someClass
+          //    But this is a rare and advanced use-case which we will not attempt to handle now.
           if (dependencyProjects.has(projectId)) {
             const projectVersions = dependencyEntities
               .filter((e) => e.projectId === projectId)
               .map((e) => e.versionId);
             throw new UnsupportedOperationError(
-              `Depending on multiple versions of a project is not supported. Found dependency on project '${projectId}' with versions '${projectVersions.join(
+              `Depending on multiple versions of a project is not supported. Found dependency on project '${projectId}' with versions: ${projectVersions.join(
                 ', ',
-              )}.'`,
+              )}.`,
             );
           }
           const projectDependenciesMetadata = {
@@ -1049,7 +1059,7 @@ export class GraphState {
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      const message = `Can't fetch dependency entitites: ${error.message}`;
+      const message = `Can't fetch dependency entitites. Error: ${error.message}`;
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.PROJECT_DEPENDENCY_PROBLEM,
         message,

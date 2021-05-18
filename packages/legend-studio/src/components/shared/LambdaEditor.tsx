@@ -427,6 +427,10 @@ const LambdaEditorInner = observer(
   },
 );
 
+/**
+ * This is not strictly meant for lambda. The idea is to create an editor that allows
+ * editing _something_ but allows user to edit via text.
+ */
 export const LambdaEditor = observer(
   (props: {
     className?: string;

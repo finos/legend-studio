@@ -21,15 +21,30 @@ export {
   FaTimes as TimesIcon,
   FaPlus as PlusIcon,
   FaCog as CogIcon,
+  FaEye as EyeIcon,
   FaCaretDown as CaretDownIcon,
   FaFire as FireIcon,
   FaSquare as SquareIcon,
   FaCheckSquare as CheckSquareIcon,
+  FaHashtag as HashtagIcon,
+  FaHashtag as NumberTypeIcon,
+  FaClock as DateTypeIcon,
+  FaToggleOn as BooleanTypeIcon,
+  FaQuestionCircle as UnknownTypeIcon,
+  FaInfoCircle as InfoCircleIcon,
+  FaCompress as CompressIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
-export { MdModeEdit as PencilIcon } from 'react-icons/md';
+export {
+  MdModeEdit as PencilIcon,
+  MdTextFields as StringTypeIcon,
+  MdMoreVert as MoreVerticalIcon,
+  MdMoreHoriz as MoreHorizontalIcon,
+} from 'react-icons/md';
 export { VscError as ErrorIcon } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
   GoChevronUp as ChevronUpIcon,
+  GoChevronRight as ChevronRightIcon,
+  GoFileBinary as BinaryTypeIcon,
 } from 'react-icons/go';

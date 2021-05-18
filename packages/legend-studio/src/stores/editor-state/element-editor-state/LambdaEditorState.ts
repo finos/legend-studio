@@ -22,10 +22,14 @@ import type {
   CompilationError,
 } from '../../../models/metamodels/pure/action/EngineError';
 
+/**
+ * This is not strictly meant for lambda. The idea is to create an editor that allows
+ * editing _something_ but allows user to edit via text.
+ */
 export abstract class LambdaEditorState {
   uuid = uuid();
   lambdaPrefix: string;
-  lambdaString: string; // value shown in lambda editor which can be editted
+  lambdaString: string; // value shown in lambda editor which can be edited
   parserError?: ParserError;
   compilationError?: CompilationError;
 

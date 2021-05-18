@@ -26,7 +26,7 @@ import {
   guaranteeType,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { MappingElementDecorateVisitor } from '../../../editor-state/element-editor-state/mapping/MapingElementDecorateVisitor';
+import { MappingElementDecorateVisitor } from './MappingElementDecorateVisitor';
 import type { SourceInformation } from '../../../../models/metamodels/pure/action/SourceInformation';
 import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
@@ -340,21 +340,8 @@ export class RootFlatDataInstanceSetImplementationState extends FlatDataInstance
     super(editorStore, setImplementation);
 
     this.mappingElement = setImplementation;
-    this.propertyMappingStates = setImplementation.propertyMappings.map(
-      (propertyMapping) => {
-        if (propertyMapping instanceof FlatDataPropertyMapping) {
-          return new FlatDataPropertyMappingState(
-            propertyMapping,
-            this.editorStore,
-          );
-        } else if (propertyMapping instanceof EmbeddedFlatDataPropertyMapping) {
-          return new EmbeddedFlatDataInstanceSetImplementationState(
-            editorStore,
-            propertyMapping,
-          );
-        }
-        throw new UnsupportedOperationError();
-      },
+    this.propertyMappingStates = this.getPropertyMappingStates(
+      setImplementation.propertyMappings,
     );
   }
 

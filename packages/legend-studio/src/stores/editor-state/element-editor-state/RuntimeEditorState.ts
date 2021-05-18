@@ -55,7 +55,8 @@ import { FlatData } from '../../../models/metamodels/pure/model/packageableEleme
 import { FlatDataConnection } from '../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
 import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { NamedRelationalReference } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/TableReference';
+import { Table } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
+import { View } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
@@ -67,8 +68,8 @@ export const getClassMappingStore = (
     return graph.modelStore;
   } else if (sourceElement instanceof RootFlatDataRecordType) {
     return sourceElement.owner.owner;
-  } else if (sourceElement instanceof NamedRelationalReference) {
-    return sourceElement.ownerReference.value;
+  } else if (sourceElement instanceof Table || sourceElement instanceof View) {
+    return sourceElement.schema.owner;
   }
   return undefined;
 };

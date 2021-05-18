@@ -34,7 +34,7 @@ export abstract class ServiceExecution implements Hashable {
 
 export class PureExecution extends ServiceExecution implements Hashable {
   owner: Service;
-  func: RawLambda;
+  func: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor(func: RawLambda, owner: Service) {
     super();

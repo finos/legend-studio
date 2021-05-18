@@ -54,7 +54,7 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '../../../../stores/ApplicationStore';
-import { MapppingElementDecorationCleanUpVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MapingElementDecorateVisitor';
+import { MapppingElementDecorationCleanUpVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
@@ -78,6 +78,7 @@ import type { PackageableElement } from '../../../../models/metamodels/pure/mode
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
+import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 const getSourceElementLabel = (
@@ -446,7 +447,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         })}
       >
         <div className="panel__header">
-          <div className="panel__header__title">
+          <div className="panel__header__title source-panel__header__title">
             <div className="panel__header__title__label">source</div>
             <div className="panel__header__title__content">{sourceLabel}</div>
           </div>
@@ -480,6 +481,12 @@ export const InstanceSetImplementationSourceExplorer = observer(
           {srcElement instanceof RootFlatDataRecordType && (
             <FlatDataRecordTypeTree
               recordType={srcElement}
+              selectedType={mappingEditorState.selectedTypeLabel}
+            />
+          )}
+          {(srcElement instanceof Table || srcElement instanceof View) && (
+            <TableOrViewSourceTree
+              relation={srcElement}
               selectedType={mappingEditorState.selectedTypeLabel}
             />
           )}

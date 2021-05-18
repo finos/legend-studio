@@ -450,23 +450,12 @@
   }
 
   &__icon {
-    &__string {
-      color: var(--color-primitive);
-    }
+    color: var(--color-primitive);
 
-    &__boolean {
-      font-size: 1.2rem;
-      color: var(--color-primitive);
-    }
-
-    &__number {
-      font-size: 1.2rem;
-      color: var(--color-primitive);
-    }
-
+    &__boolean,
+    &__number,
     &__time {
       font-size: 1.2rem;
-      color: var(--color-primitive);
     }
   }
 

@@ -34,7 +34,7 @@ import { noop } from '@finos/legend-studio-shared';
 import {
   MappingElementDecorateVisitor,
   MapppingElementDecorationCleanUpVisitor,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MapingElementDecorateVisitor';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
 import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
   OperationSetImplementation,

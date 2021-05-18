@@ -31,7 +31,15 @@ export const SELF_JOIN_ALIAS_PREFIX = 't_';
 export class Join implements Hashable {
   owner!: Database;
   name: string;
+  /**
+   * Target is used to show the direction of the join. Since cross table join is symmetrical in nature,
+   * the direction is not required at all, whereas for self-join, the direction really matters
+   */
   target?: TableAlias;
+  /**
+   * This is an optimization for looking up tables/views involved in a join.
+   * Normally, it has 2 pairs (A,B) and (B,A)
+   */
   aliases: Pair<TableAlias, TableAlias>[] = [];
   operation: Operation;
 

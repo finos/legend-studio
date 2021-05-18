@@ -353,7 +353,7 @@ export const getWebAppBaseWebpackConfig = (
     },
     devServer: {
       compress: true, // enable gzip compression for everything served to reduce traffic size
-      dev: {
+      devMiddleware: {
         publicPath: '/',
       },
       open:

@@ -33,7 +33,7 @@ export class FlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
   implements Hashable {
   transformer?: EnumerationMapping;
-  transform: RawLambda;
+  transform: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor(
     owner: PropertyMappingsImplementation,

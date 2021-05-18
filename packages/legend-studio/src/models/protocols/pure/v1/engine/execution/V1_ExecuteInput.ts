@@ -38,7 +38,7 @@ import {
 
 export class V1_ExecuteInput {
   clientVersion!: string;
-  function!: V1_RawLambda;
+  function!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   mapping!: string;
   model!: V1_PureModelContextData;
   runtime!: V1_Runtime;

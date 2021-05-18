@@ -25,7 +25,7 @@ export class V1_PurePropertyMapping
   extends V1_PropertyMapping
   implements Hashable {
   enumMappingId?: string;
-  transform!: V1_RawLambda;
+  transform!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   explodeProperty?: boolean;
 
   get hashCode(): string {
