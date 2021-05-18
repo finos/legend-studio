@@ -156,9 +156,6 @@ export const makeUrl = (
   baseUrl: string | undefined,
   relativeUrl: string,
   parameters: Parameters,
-  options?: {
-    disableAutoEncode?: boolean;
-  },
 ): string => {
   const url = new URL(relativeUrl, baseUrl ?? window.location.href);
   if (parameters instanceof Object) {
@@ -169,20 +166,10 @@ export const makeUrl = (
           value
             .filter(isNonNullable)
             .forEach((subVal) =>
-              url.searchParams.append(
-                name,
-                options?.disableAutoEncode
-                  ? subVal.toString()
-                  : encodeURIComponent(subVal.toString()),
-              ),
+              url.searchParams.append(name, subVal.toString()),
             );
         } else {
-          url.searchParams.append(
-            name,
-            options?.disableAutoEncode
-              ? value.toString()
-              : encodeURIComponent(value.toString()),
-          );
+          url.searchParams.append(name, value.toString());
         }
       }
     });
