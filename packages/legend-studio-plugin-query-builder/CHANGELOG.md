@@ -1,5 +1,12 @@
 # @finos/legend-studio-plugin-query-builder
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [[`0d8c766`](https://github.com/finos/legend-studio/commit/0d8c7660f3a70d75e7d6d5265bf894ddb7088d02), [`e6b0425`](https://github.com/finos/legend-studio/commit/e6b04259c33ee8563391fd6833cd337b83b77d44)]:
+  - @finos/legend-studio@0.1.4
+
 ## 0.0.4
 
 ### Patch Changes
