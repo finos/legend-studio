@@ -1,0 +1,16 @@
+.relation-source-tree {
+  &__icon {
+    color: var(--color-primitive);
+
+    &__binary {
+      font-size: 1.5rem;
+    }
+
+    &__boolean,
+    &__number,
+    &__unknown,
+    &__time {
+      font-size: 1.2rem;
+    }
+  }
+}
