@@ -214,9 +214,6 @@ export const FlatDataPropertyMappingEditor = observer(
       setImplementationHasParserError,
       isReadOnly,
     } = props;
-    // const editorStore = useEditorStore();
-    // const mappingEditorState = editorStore.getCurrentEditorState(MappingEditorState);
-    // const visitEmbeddedPropertyMapping = (): void => { if (flatDataPropertyMappingState.propertyMapping instanceof EmbeddedFlatDataPropertyMapping) { mappingEditorState.openMappingElement(flatDataPropertyMappingState.propertyMapping, true) } };
     const disableEditingTransform =
       flatDataInstanceSetImplementationState.isConvertingTransformObjects ||
       isReadOnly;

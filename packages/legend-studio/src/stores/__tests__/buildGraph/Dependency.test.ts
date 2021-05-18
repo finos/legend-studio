@@ -317,7 +317,7 @@ test(
         true,
       ),
     ).rejects.toThrowError(
-      "Depending on multiple versions of a project is not supported. Found dependency on project 'PROD-A' with versions '1.0.0, 2.0.0.'",
+      "Depending on multiple versions of a project is not supported. Found dependency on project 'PROD-A' with versions: 1.0.0, 2.0.0.",
     );
   },
 );

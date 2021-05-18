@@ -205,12 +205,13 @@ const getJoinTreeNodeData = (
   // joins
   relation.schema.owner.joins
     .slice()
-    .filter((join) =>
-      join.aliases.filter(
-        (alias) =>
-          alias.first.relation.value === relation ||
-          alias.second.relation.value === relation,
-      ),
+    .filter(
+      (join) =>
+        join.aliases.filter(
+          (alias) =>
+            alias.first.relation.value === relation ||
+            alias.second.relation.value === relation,
+        ).length > 0,
     )
     .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
     .forEach((childJoin) => {
@@ -245,12 +246,13 @@ const getRelationTreeData = (
   // joins
   relation.schema.owner.joins
     .slice()
-    .filter((join) =>
-      join.aliases.filter(
-        (alias) =>
-          alias.first.relation.value === relation ||
-          alias.second.relation.value === relation,
-      ),
+    .filter(
+      (join) =>
+        join.aliases.filter(
+          (alias) =>
+            alias.first.relation.value === relation ||
+            alias.second.relation.value === relation,
+        ).length > 0,
     )
     .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
     .forEach((join) => {
@@ -437,12 +439,13 @@ export const TableOrViewSourceTree: React.FC<{
         });
       // joins
       node.relation.schema.owner.joins
-        .filter((join) =>
-          join.aliases.filter(
-            (alias) =>
-              alias.first.relation.value === node.relation ||
-              alias.second.relation.value === node.relation,
-          ),
+        .filter(
+          (join) =>
+            join.aliases.filter(
+              (alias) =>
+                alias.first.relation.value === node.relation ||
+                alias.second.relation.value === node.relation,
+            ).length > 0,
         )
         .forEach((join) => {
           const joinNode = getJoinTreeNodeData(

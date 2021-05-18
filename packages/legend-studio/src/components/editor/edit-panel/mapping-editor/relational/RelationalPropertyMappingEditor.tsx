@@ -45,7 +45,6 @@ const SimplePropertyMappingEditor = observer(
   (props: {
     propertyMappingState: RelationalPropertyMappingState;
     drop?: ConnectDropTarget;
-    dragItem?: TableOrViewTreeNodeDragSource;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;
@@ -71,7 +70,6 @@ const EnumerationPropertyMappingEditor = observer(
   (props: {
     propertyMappingState: RelationalPropertyMappingState;
     drop?: ConnectDropTarget;
-    dragItem?: TableOrViewTreeNodeDragSource;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;
@@ -169,9 +167,6 @@ export const RelationalPropertyMappingEditor = observer(
       setImplementationHasParserError,
       isReadOnly,
     } = props;
-    // const editorStore = useEditorStore();
-    // const mappingEditorState = editorStore.getCurrentEditorState(MappingEditorState);
-    // const visitEmbeddedPropertyMapping = (): void => { if (flatDataPropertyMappingState.propertyMapping instanceof EmbeddedFlatDataPropertyMapping) { mappingEditorState.openMappingElement(flatDataPropertyMappingState.propertyMapping, true) } };
     const disableEditingTransform =
       relationalInstanceSetImplementationState.isConvertingTransformObjects ||
       isReadOnly;
@@ -191,7 +186,7 @@ export const RelationalPropertyMappingEditor = observer(
       },
       [disableEditingTransform, relationalPropertyMappingState],
     );
-    const [{ item }, drop] = useDrop(
+    const [, drop] = useDrop(
       () => ({
         accept: [TABLE_ELEMENT_DND_TYPE],
         drop: (droppedItem: TableOrViewTreeNodeDragSource): void =>
@@ -202,8 +197,6 @@ export const RelationalPropertyMappingEditor = observer(
       }),
       [handleDrop],
     );
-    const dragItem =
-      item instanceof TableOrViewTreeNodeDragSource ? item : undefined;
     const transformProps = {
       disableTransform:
         relationalInstanceSetImplementationState.isConvertingTransformObjects,
@@ -222,7 +215,6 @@ export const RelationalPropertyMappingEditor = observer(
           <SimplePropertyMappingEditor
             propertyMappingState={relationalPropertyMappingState}
             drop={drop}
-            dragItem={dragItem}
             transformProps={transformProps}
             isReadOnly={isReadOnly}
           />
@@ -232,7 +224,6 @@ export const RelationalPropertyMappingEditor = observer(
           <EnumerationPropertyMappingEditor
             propertyMappingState={relationalPropertyMappingState}
             drop={drop}
-            dragItem={dragItem}
             transformProps={transformProps}
             isReadOnly={isReadOnly}
           />
@@ -252,7 +243,6 @@ export const RelationalPropertyMappingEditor = observer(
           <SimplePropertyMappingEditor
             propertyMappingState={relationalPropertyMappingState}
             drop={drop}
-            dragItem={dragItem}
             transformProps={transformProps}
             isReadOnly={isReadOnly}
           />
