@@ -216,7 +216,7 @@ const processElementWithJoinsJoins = (
   return res;
 };
 
-const buildElementWithJoinsJoinTreeNode = (
+export const V1_buildElementWithJoinsJoinTreeNode = (
   joinPointers: V1_JoinPointer[],
   context: V1_GraphBuilderContext,
 ): JoinTreeNode | undefined => {
@@ -262,7 +262,7 @@ export const V1_processRelationalOperationElement = (
     return tableAliasColumn;
   } else if (operationalElement instanceof V1_ElementWithJoins) {
     const elementWithJoins = new RelationalOperationElementWithJoin();
-    elementWithJoins.joinTreeNode = buildElementWithJoinsJoinTreeNode(
+    elementWithJoins.joinTreeNode = V1_buildElementWithJoinsJoinTreeNode(
       operationalElement.joins,
       context,
     );

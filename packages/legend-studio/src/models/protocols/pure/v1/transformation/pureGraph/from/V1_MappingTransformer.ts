@@ -39,6 +39,7 @@ import {
 } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import { FlatDataInputData } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
 import { ExpectedOutputMappingTestAssert } from '../../../../../../metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
+import { extractLine } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
 import type { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
@@ -128,6 +129,9 @@ import { XStoreAssociationImplementation } from '../../../../../../metamodels/pu
 import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
 import { V1_LocalMappingPropertyInfo } from '../../../model/packageableElements/mapping/V1_LocalMappingPropertyInfo';
 import type { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/model/packageableElements/mapping/LocalMappingPropertyInfo';
+import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
+import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
+import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -734,6 +738,26 @@ const transformRootRelationalSetImpl = (
   classMapping.primaryKey = element.primaryKey.map(
     V1_transformRelationalOperationElement,
   );
+  if (element.filter) {
+    const filter = new V1_FilterMapping();
+
+    const filterPointer = new V1_FilterPointer();
+    filterPointer.db = element.filter.database.path;
+    filterPointer.name = element.filter.filterName;
+    filter.filter = filterPointer;
+
+    filter.joins = element.filter.joinTreeNode
+      ? extractLine(element.filter.joinTreeNode).map((node) => {
+          const joinPtr = new V1_JoinPointer();
+          joinPtr.db = node.join.ownerReference.valueForSerialization;
+          joinPtr.joinType = node.joinType;
+          joinPtr.name = node.join.value.name;
+          return joinPtr;
+        })
+      : [];
+
+    classMapping.filter = filter;
+  }
   classMapping.propertyMappings = classMappingPropertyMappingsSerializer(
     element.propertyMappings,
     false,
