@@ -108,11 +108,6 @@ export * from './models/metamodels/pure/model/packageableElements/domain/Propert
 // protocols
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
 export type { V1_PureModelContextData } from './models/protocols/pure/v1/model/context/V1_PureModelContextData';
-export type { V1_DepdendencyProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/dependencyDisambiguator/V1_DependencyDisambiguatorHelper';
-export {
-  V1_processDependencyPath,
-  V1_processDependableLambda,
-} from './models/protocols/pure/v1/transformation/pureGraph/to/dependencyDisambiguator/V1_DependencyDisambiguatorHelper';
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';

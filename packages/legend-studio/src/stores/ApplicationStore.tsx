@@ -39,7 +39,7 @@ import { SdlcMode } from '../models/sdlc/models/project/Project';
 import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
 import { TelemetryService } from '@finos/legend-studio-network';
-import { MetadataSdlcServiceClient } from '../models/metada-sdlc/MetadataSdlcServiceClient';
+import { MetadataServerClient } from '../models/metadata/MetadataServerClient';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -111,7 +111,7 @@ export class Notification {
 export class NetworkClientManager {
   coreClient!: NetworkClient;
   sdlcClient!: SDLCServerClient;
-  metadataSdlcClient?: MetadataSdlcServiceClient;
+  metadataClient: MetadataServerClient;
 
   constructor(config: ApplicationConfig) {
     this.coreClient = new NetworkClient();
@@ -119,11 +119,9 @@ export class NetworkClientManager {
       env: config.env,
       serverUrl: config.sdlcServerUrl,
     });
-    this.metadataSdlcClient = config.metadataSdlcServerUrl
-      ? new MetadataSdlcServiceClient({
-          serverUrl: config.metadataSdlcServerUrl,
-        })
-      : undefined;
+    this.metadataClient = new MetadataServerClient({
+      serverUrl: config.metadataServerUrl,
+    });
   }
 }
 

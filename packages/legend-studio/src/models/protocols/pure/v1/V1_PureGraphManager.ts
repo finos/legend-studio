@@ -105,7 +105,6 @@ import {
 } from './transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
 import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json';
 import { V1_PackageableElementSerializer } from './transformation/pureProtocol/V1_PackageableElementSerialization';
-import { V1_DependencyDisambiguator } from './transformation/pureGraph/to/dependencyDisambiguator/V1_DependencyDisambiguator';
 import {
   V1_entitiesToPureModelContextData,
   V1_serializePureModelContext,
@@ -507,7 +506,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       dependencyManager.initialize(dependencyMetadataMap);
       // Parse/Build Data
       const dependencyDataMap = new Map<string, V1_PureModelContextData>();
-      const dependencyKeys = Array.from(dependencyMetadataMap.keys());
       yield Promise.all(
         Array.from(dependencyMetadataMap.entries()).map(
           ([dependencyKey, projectDependencyMetadata]) => {
@@ -521,37 +519,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ),
       );
-
-      const reservedPaths = systemModel.allElements
-        .map((e) => e.path)
-        .concat(coreModel.allElements.map((e) => e.path));
-      // Pre-process dependent element paths
-      // NOTE: we process the dependent element paths after serializing the entities and before building the metamodel graph.
-      // This is by design as it isolates the dependency entity path process logic here and save us the trouble of poking
-      // metamodel graph later to update.
-      Array.from(dependencyDataMap.entries()).forEach(
-        ([dependencyKey, pureModelContextData]) => {
-          const dependencyMetadata = dependencyMetadataMap.get(dependencyKey);
-          if (dependencyMetadata?.processVersionPackage) {
-            pureModelContextData.elements.forEach((element) =>
-              element.accept_PackageableElementVisitor(
-                new V1_DependencyDisambiguator(
-                  {
-                    versionPrefix: dependencyKey,
-                    allDependencyKeys: dependencyKeys,
-                    reservedPaths,
-                    projectEntityPaths: dependencyMetadata.entities.map(
-                      (entity) => entity.path,
-                    ),
-                  },
-                  this.pureProtocolProcessorPlugins,
-                ),
-              ),
-            );
-          }
-        },
-      );
-
       const preprocessingFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
