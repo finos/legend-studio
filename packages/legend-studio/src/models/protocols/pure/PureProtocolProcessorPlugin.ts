@@ -18,14 +18,8 @@ import { AbstractPlugin } from '@finos/legend-studio-shared';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import type { PackageableElement } from '../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement';
-import type { V1_DepdendencyProcessingContext } from './v1/transformation/pureGraph/to/dependencyDisambiguator/V1_DependencyDisambiguatorHelper';
 import type { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData';
-
-export type V1_ElementProtocolDependencyDisambiguator = (
-  protocol: V1_PackageableElement,
-  dependencyProcessingContext: V1_DepdendencyProcessingContext,
-) => void;
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -49,8 +43,6 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   V1_getExtraSystemModels?(): PlainObject<V1_PureModelContextData>[];
 
   V1_getExtraElementBuilders?(): V1_ElementBuilder<V1_PackageableElement>[];
-
-  V1_getExtraElementProtocolDependencyDisambiguators?(): V1_ElementProtocolDependencyDisambiguator[];
 
   V1_getExtraElementClassifierPathGetters?(): V1_ElementProtocolClassifierPathGetter[];
 

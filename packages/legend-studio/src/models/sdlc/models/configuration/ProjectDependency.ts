@@ -23,19 +23,15 @@ import {
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import type { Entity } from '../entity/Entity';
-import type { ProjectConfiguration } from './ProjectConfiguration';
 import { VersionId } from '../version/VersionId';
 import { observable, action, computed, makeObservable } from 'mobx';
+import type { ProjectVersion } from '../../../metadata/models/ProjectVersionEntities';
 
 const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';
 
 export interface ProjectDependencyMetadata {
   entities: Entity[];
-  config: ProjectConfiguration;
-  /**
-   * Indicates if we need to process (i.e. add version prefix) to each paths in the projects or not
-   */
-  processVersionPackage: boolean;
+  projectVersion: ProjectVersion;
 }
 
 export class ProjectDependency implements Hashable {

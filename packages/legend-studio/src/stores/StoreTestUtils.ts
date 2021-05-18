@@ -33,6 +33,9 @@ export const testApplicationConfigData = {
   engine: {
     url: 'https://testEngineUrl',
   },
+  metadata: {
+    url: 'https://testMetadataUrl',
+  },
   documentation: {
     url: 'https://testDocUrl',
   },
