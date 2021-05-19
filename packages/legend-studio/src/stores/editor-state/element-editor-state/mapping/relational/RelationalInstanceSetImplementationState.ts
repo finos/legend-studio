@@ -31,6 +31,7 @@ import {
 } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
+import { MappingElementDecorateVisitor } from '../MappingElementDecorateVisitor';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -171,22 +172,22 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
    * so here we make sure that we reuse existing state and only add new decorated ones
    */
   decorate(): void {
-    // this.mappingElement.accept_SetImplementationVisitor(
-    //   new MappingElementDecorateVisitor(),
-    // );
-    // const newPropertyMappingStates: RelationalPropertyMappingState[] = [];
-    // const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(
-    //   this.mappingElement.propertyMappings,
-    // );
-    // propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
-    //   const existingPropertyMappingState = this.propertyMappingStates.find(
-    //     (p) => p.propertyMapping === propertyMappingState.propertyMapping,
-    //   );
-    //   newPropertyMappingStates.push(
-    //     existingPropertyMappingState ?? propertyMappingState,
-    //   );
-    // });
-    // this.setPropertyMappingStates(newPropertyMappingStates);
+    this.mappingElement.accept_SetImplementationVisitor(
+      new MappingElementDecorateVisitor(),
+    );
+    const newPropertyMappingStates: RelationalPropertyMappingState[] = [];
+    const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(
+      this.mappingElement.propertyMappings,
+    );
+    propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
+      const existingPropertyMappingState = this.propertyMappingStates.find(
+        (p) => p.propertyMapping === propertyMappingState.propertyMapping,
+      );
+      newPropertyMappingStates.push(
+        existingPropertyMappingState ?? propertyMappingState,
+      );
+    });
+    this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
   convertPropertyMappingTransformObjects = flow(function* (
@@ -198,7 +199,12 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
       RelationalPropertyMappingState
     >();
     this.propertyMappingStates.forEach((pm) => {
-      if (pm.propertyMapping instanceof RelationalPropertyMapping) {
+      if (
+        pm.propertyMapping instanceof RelationalPropertyMapping &&
+        !isStubRelationalOperationElement(
+          pm.propertyMapping.relationalOperation,
+        )
+      ) {
         operations.set(
           pm.propertyMapping.lambdaId,
           pm.propertyMapping.relationalOperation,
