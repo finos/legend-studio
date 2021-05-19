@@ -76,6 +76,7 @@ import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/mode
 import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
 import { V1_rawLambdaBuilderWithResolver } from './helpers/V1_RawLambdaResolver';
+import { V1_deserializeRelationalOperationElement } from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -114,7 +115,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     immediateParent: PropertyMappingsImplementation,
     topParent: InstanceSetImplementation | undefined,
     allEnumerationMappings: EnumerationMapping[],
-    tabliaAliasMap?: Map<string, TableAlias>,
+    tableAliasMap?: Map<string, TableAlias>,
     allClassMappings?: SetImplementation[],
     xStoreParent?: XStoreAssociationImplementation,
     aggregationAwareParent?: AggregationAwareSetImplementation,
@@ -123,7 +124,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     this.immediateParent = immediateParent;
     this.topParent = topParent;
     this.allEnumerationMappings = allEnumerationMappings;
-    this.tableAliasMap = tabliaAliasMap ?? new Map<string, TableAlias>();
+    this.tableAliasMap = tableAliasMap ?? new Map<string, TableAlias>();
     this.allClassMappings = allClassMappings ?? [];
     this.xStoreParent = xStoreParent;
     this.aggregationAwareParent = aggregationAwareParent;
@@ -456,7 +457,14 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       sourceSetImplementation,
       targetSetImplementation,
     );
-    // NOTE: for now, we don't build the operation element, we will use its raw form for the editor
+    // NOTE: we only need to use the raw form of the operation for the editor
+    // but we need to process it anyway so we can do analytics on table alias map
+    V1_processRelationalOperationElement(
+      V1_deserializeRelationalOperationElement(protocol.relationalOperation),
+      this.context,
+      this.tableAliasMap,
+      [],
+    );
     relationalPropertyMapping.relationalOperation =
       protocol.relationalOperation;
     if (protocol.enumMappingId) {

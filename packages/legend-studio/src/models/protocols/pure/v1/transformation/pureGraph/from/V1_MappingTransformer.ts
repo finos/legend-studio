@@ -132,6 +132,7 @@ import type { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure
 import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
 import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer';
+import type { V1_RawRelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -417,7 +418,7 @@ const transformRelationalPropertyMapping = (
     element.property,
     isTransformingEmbeddedPropertyMapping,
   );
-  propertyMapping.relationalOperation = element.relationalOperation;
+  propertyMapping.relationalOperation = element.relationalOperation as V1_RawRelationalOperationElement;
   propertyMapping.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
