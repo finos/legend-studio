@@ -2096,7 +2096,7 @@ __metadata:
     "@finos/legend-studio-plugin-query-builder": "workspace:*"
     "@finos/legend-studio-preset-dsl-text": "workspace:*"
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*"
-    "@types/react": 17.0.5
+    "@types/react": 17.0.6
     copy-webpack-plugin: 8.1.1
     cross-env: 7.0.3
     eslint: 7.26.0
@@ -2105,7 +2105,7 @@ __metadata:
     react: 17.0.2
     rimraf: 3.0.2
     typescript: 4.2.4
-    webpack: 5.37.0
+    webpack: 5.37.1
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.7.0
     webpack-dev-server: 4.0.0-beta.3
@@ -2119,7 +2119,7 @@ __metadata:
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@material-ui/core": 4.11.4
-    "@types/react": 17.0.5
+    "@types/react": 17.0.6
     "@types/react-select": 4.0.15
     "@types/react-window": 1.8.3
     clsx: 1.1.1
@@ -2167,7 +2167,7 @@ __metadata:
     css-loader: 5.2.4
     cssnano: 5.0.2
     eslint: 7.26.0
-    fork-ts-checker-webpack-plugin: 6.2.9
+    fork-ts-checker-webpack-plugin: 6.2.10
     html-webpack-plugin: 5.3.1
     isbinaryfile: 4.0.8
     jest: 26.6.3
@@ -2189,7 +2189,7 @@ __metadata:
     strip-ansi: 7.0.0
     text-table: 0.2.0
     typescript: 4.2.4
-    webpack: 5.37.0
+    webpack: 5.37.1
     wrap-ansi: 8.0.0
   languageName: unknown
   linkType: soft
@@ -2201,7 +2201,7 @@ __metadata:
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.5
+    "@types/react": 17.0.6
     axios: 0.21.1
     cross-env: 7.0.3
     eslint: 7.26.0
@@ -2235,7 +2235,7 @@ __metadata:
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.5
+    "@types/react": 17.0.6
     "@types/react-router-dom": 5.1.7
     cross-env: 7.0.3
     eslint: 7.26.0
@@ -2265,7 +2265,7 @@ __metadata:
     "@testing-library/dom": 7.31.0
     "@testing-library/react": 11.2.7
     "@types/papaparse": 5.2.5
-    "@types/react": 17.0.5
+    "@types/react": 17.0.6
     "@types/react-dom": 17.0.5
     "@types/react-router-dom": 5.1.7
     cross-env: 7.0.3
@@ -2317,7 +2317,7 @@ __metadata:
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.5
+    "@types/react": 17.0.6
     cross-env: 7.0.3
     eslint: 7.26.0
     jest: 26.6.3
@@ -2397,7 +2397,7 @@ __metadata:
     "@testing-library/dom": 7.31.0
     "@testing-library/react": 11.2.7
     "@types/css-font-loading-module": 0.0.4
-    "@types/react": 17.0.5
+    "@types/react": 17.0.6
     "@types/react-dom": 17.0.5
     "@types/react-router-dom": 5.1.7
     cross-env: 7.0.3
@@ -3434,14 +3434,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:17.0.5":
-  version: 17.0.5
-  resolution: "@types/react@npm:17.0.5"
+"@types/react@npm:17.0.6":
+  version: 17.0.6
+  resolution: "@types/react@npm:17.0.6"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: 86bfb0be783b95771aa61a5e480f3d878a8cb9b9eeea0d02eee7978dc9899a7cba3b346a2c9bd7460d353231fcdee8af7b7e20ad036f706fbe55e1f6519efa3e
+  checksum: dd687a9620d90cc7b9e50ed06ec73beb589fcb7ddfec7b166307af79cee7c521c1f2f1084ffd4ad6eaf7c937cfa446cc0b03cc3cd18e85e952501da2f2e0e0c3
   languageName: node
   linkType: hard
 
@@ -7239,9 +7239,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fork-ts-checker-webpack-plugin@npm:6.2.9":
-  version: 6.2.9
-  resolution: "fork-ts-checker-webpack-plugin@npm:6.2.9"
+"fork-ts-checker-webpack-plugin@npm:6.2.10":
+  version: 6.2.10
+  resolution: "fork-ts-checker-webpack-plugin@npm:6.2.10"
   dependencies:
     "@babel/code-frame": ^7.8.3
     "@types/json-schema": ^7.0.5
@@ -7256,7 +7256,7 @@ __metadata:
     schema-utils: 2.7.0
     semver: ^7.3.2
     tapable: ^1.0.0
-  checksum: 6491392faf79fbb7563f3150a546052c2e1012c116df5618f6dcfc35f262ae94f948d312b169c8089d686d9541834dc94829809f62441d805f9365bdd13967b8
+  checksum: ac8c05b9467831fd7b6d964fa9abe04bcebf272bca538f781e88ff54b3d8b95e32a41ce76787433084985ede25825d5fceab29422fd135a94802ac2e739f595c
   languageName: node
   linkType: hard
 
@@ -15690,9 +15690,9 @@ typescript@4.2.4:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.37.0":
-  version: 5.37.0
-  resolution: "webpack@npm:5.37.0"
+"webpack@npm:5.37.1":
+  version: 5.37.1
+  resolution: "webpack@npm:5.37.1"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.47
@@ -15722,7 +15722,7 @@ typescript@4.2.4:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: d244880ee15028d95c1dc05a0b0d529e45a457572cf8ddb8f250c5ca1daab355fbd25bd3d957613f30a2848a2998793a0726a8a0c269908659b250f7c2b4c1c4
+  checksum: 572d3cd617bbccebbc98d9c312f8e166ddbd20620cb3e64f634bc65e08e58fa839bb2c4098960cd2172c10a0eb32f9e036860061dd03cbc9345bc424704610b8
   languageName: node
   linkType: hard
 
