@@ -49,7 +49,7 @@ export class MetadataServerClient extends AbstractServerClient {
     includeOrigin: boolean,
   ): Promise<PlainObject<ProjectVersionEntities>[]> =>
     this.post(
-      `${this._projects}/versions/dependencies`,
+      `${this._projects()}/versions/dependencies`,
       dependencies,
       undefined,
       undefined,
