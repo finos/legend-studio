@@ -1,5 +1,22 @@
 # @finos/legend-studio
 
+## 0.1.5
+
+### Patch Changes
+
+- [#207](https://github.com/finos/legend-studio/pull/207) [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a) Thanks [@akphi](https://github.com/akphi)! - Properly encode URI for query params and search params in API calls.
+
+* [#207](https://github.com/finos/legend-studio/pull/207) [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a) Thanks [@akphi](https://github.com/akphi)! - Allow user to copy link to open element in project viewer mode via context-menu.
+
+- [#210](https://github.com/finos/legend-studio/pull/210) [`b358e7f`](https://github.com/finos/legend-studio/commit/b358e7f212d90467b6536331b450f7234a970516) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Fix small bug on getDependencyEntities url.
+
+* [#207](https://github.com/finos/legend-studio/pull/207) [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a) Thanks [@akphi](https://github.com/akphi)! - Add a simple relational mapping editor with support for DnD from table source panel.
+
+* Updated dependencies [[`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a), [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a)]:
+  - @finos/legend-studio-network@0.0.12
+  - @finos/legend-studio-shared@0.0.10
+  - @finos/legend-studio-components@0.0.13
+
 ## 0.1.4
 
 ### Patch Changes
