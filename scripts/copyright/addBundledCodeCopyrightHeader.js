@@ -34,7 +34,7 @@ const file = process.argv[2];
  * As such, the best way to make this work agnostic of setup is to
  * find the path from where we can retrieve the file
  */
-[process.env.INIT_CWD, process.cwd()].map(async (basePath) => {
+[process.env.INIT_CWD, process.cwd()].forEach(async (basePath) => {
   const configPath = resolve(basePath, '_package.config.js');
   if (!existsSync(configPath)) {
     exitWithError(

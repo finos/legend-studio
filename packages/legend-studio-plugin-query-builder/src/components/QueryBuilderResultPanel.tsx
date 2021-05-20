@@ -48,10 +48,10 @@ const QueryBuilderResultValues = observer(
         : [];
     const rowData =
       executionResult instanceof TdsExecutionResult
-        ? executionResult.result.rows.map((value, idx) => {
+        ? executionResult.result.rows.map((_row) => {
             const row: Record<PropertyKey, unknown> = {};
             const cols = executionResult.result.columns;
-            value.values.forEach((value, idx) => {
+            _row.values.forEach((value, idx) => {
               row[cols[idx]] = value;
             });
             return row;

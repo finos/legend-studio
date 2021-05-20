@@ -194,7 +194,7 @@ export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
   readonly id = uuid();
   readonly label = '';
   // NOTE: we don't use the `isSelected` attribute is not used since we keep track of it from the tree data level
-  isOpen?: boolean | undefined;
+  isOpen?: boolean;
   parentId?: string;
 
   constructor(parentId: string | undefined) {
