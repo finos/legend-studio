@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-Support creating embdded relational database connection in runtime editor.
+Support creating embedded relational database connection in runtime editor.
