@@ -54,10 +54,11 @@ export class DerivedPropertyState extends LambdaEditorState {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda = (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
-          this.fullLambdaString,
-          this.derivedProperty.lambdaId,
-        )) as RawLambda | undefined;
+        const lambda =
+          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+            this.fullLambdaString,
+            this.derivedProperty.lambdaId,
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.setBodyAndParameters(lambda ?? emptyLambda);
       } catch (error: unknown) {
@@ -89,10 +90,11 @@ export class DerivedPropertyState extends LambdaEditorState {
             this.derivedProperty.body,
           ),
         );
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-          pretty,
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.derivedProperty.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -133,10 +135,11 @@ export class ConstraintState extends LambdaEditorState {
     const emptyFunctionDefinition = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda = (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
-          this.fullLambdaString,
-          this.constraint.lambdaId,
-        )) as RawLambda | undefined;
+        const lambda =
+          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+            this.fullLambdaString,
+            this.constraint.lambdaId,
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.constraint.functionDefinition = lambda ?? emptyFunctionDefinition;
       } catch (error: unknown) {
@@ -165,10 +168,11 @@ export class ConstraintState extends LambdaEditorState {
           this.constraint.lambdaId,
           this.constraint.functionDefinition,
         );
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-          pretty,
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.constraint.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -307,9 +311,10 @@ export class ClassState {
     if (lambdas.size) {
       this.isConvertingConstraintObjects = true;
       try {
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+          )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const constraintState = constraintStateMap.get(key);
           constraintState?.setLambdaString(
@@ -343,9 +348,10 @@ export class ClassState {
     if (lambdas.size) {
       this.isConvertingDerivedPropertyObjects = true;
       try {
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+          )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const derivedPropertyState = derivedPropertyStateMap.get(key);
           derivedPropertyState?.setLambdaString(

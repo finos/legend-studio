@@ -77,9 +77,8 @@ export class V1_GraphBuilderExtensions {
 
   constructor(graphManagerPlugins: PureProtocolProcessorPlugin[]) {
     this.plugins = graphManagerPlugins;
-    this.extraElementBuildersIndex = V1_GraphBuilderExtensions.indexElementBuilders(
-      this.plugins,
-    );
+    this.extraElementBuildersIndex =
+      V1_GraphBuilderExtensions.indexElementBuilders(this.plugins);
     this.sortedExtraElementBuilders = this.getSortedExtraElementBuilders();
   }
 

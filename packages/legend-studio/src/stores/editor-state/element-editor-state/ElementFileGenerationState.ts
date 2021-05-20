@@ -52,9 +52,10 @@ export class ElementFileGenerationState {
   }
 
   promoteToFileGeneration(packageName: string, name: string): void {
-    const fileGenerationPackage = this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-      packageName,
-    );
+    const fileGenerationPackage =
+      this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
+        packageName,
+      );
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
     fileGenerationPackage.addElement(fileGeneration);

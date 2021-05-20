@@ -22,7 +22,8 @@ import type { V1_PropertyMappingVisitor } from '../../../../../model/packageable
 
 export class V1_EmbeddedFlatDataPropertyMapping
   extends V1_AbstractFlatDataPropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   id!: string;
   root!: boolean; // root value for embedded property mapping should always be false
   class!: string; // the class for the property being mapped by this embedded mapping

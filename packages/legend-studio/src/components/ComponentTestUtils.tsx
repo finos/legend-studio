@@ -144,7 +144,7 @@ export const renderWithAppContext = (
       history={history}
       pluginManager={PluginManager.create()}
     >
-      <Router history={(history as unknown) as any}>{ui}</Router>
+      <Router history={history as unknown as any}>{ui}</Router>
     </ApplicationStoreProvider>,
   ),
   /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
@@ -322,11 +322,16 @@ export const setUpEditor = async (
   // skip font loader (as we have no network access in test)
   mockedEditorStore.preloadTextEditorFont = jest.fn();
   // mock change detections (since we do not test them now)
-  mockedEditorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex = jest.fn();
-  mockedEditorStore.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex = jest.fn();
-  mockedEditorStore.sdlcState.buildProjectLatestRevisionEntityHashesIndex = jest.fn();
-  mockedEditorStore.workspaceReviewState.fetchCurrentWorkspaceReview = jest.fn();
-  mockedEditorStore.workspaceUpdaterState.fetchLatestCommittedReviews = jest.fn();
+  mockedEditorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex =
+    jest.fn();
+  mockedEditorStore.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex =
+    jest.fn();
+  mockedEditorStore.sdlcState.buildProjectLatestRevisionEntityHashesIndex =
+    jest.fn();
+  mockedEditorStore.workspaceReviewState.fetchCurrentWorkspaceReview =
+    jest.fn();
+  mockedEditorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
+    jest.fn();
   MOBX__disableSpyOrMock();
   // render main editor
   const component = (
@@ -340,8 +345,8 @@ export const setUpEditor = async (
   const renderResult = renderWithAppContext(component, {
     route: generateEditorRoute(
       mockedEditorStore.applicationStore.config.sdlcServerKey,
-      ((workspace as unknown) as Workspace).projectId,
-      ((workspace as unknown) as Workspace).workspaceId,
+      (workspace as unknown as Workspace).projectId,
+      (workspace as unknown as Workspace).workspaceId,
     ),
   });
   // assert project/workspace have been set

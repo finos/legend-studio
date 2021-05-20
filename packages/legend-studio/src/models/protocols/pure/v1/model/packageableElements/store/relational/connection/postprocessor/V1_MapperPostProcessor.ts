@@ -22,7 +22,8 @@ import { hashArray } from '@finos/legend-studio-shared';
 
 export class V1_MapperPostProcessor
   extends V1_PostProcessor
-  implements Hashable {
+  implements Hashable
+{
   mappers: V1_Mapper[] = [];
 
   get hashCode(): string {

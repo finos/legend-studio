@@ -74,9 +74,11 @@ export class GenerationTreeNode implements Hashable {
 
 export class GenerationSpecification
   extends PackageableElement
-  implements Hashable {
+  implements Hashable
+{
   generationNodes: GenerationTreeNode[] = [];
-  fileGenerations: PackageableElementReference<FileGenerationSpecification>[] = [];
+  fileGenerations: PackageableElementReference<FileGenerationSpecification>[] =
+    [];
 
   constructor(name: string) {
     super(name);

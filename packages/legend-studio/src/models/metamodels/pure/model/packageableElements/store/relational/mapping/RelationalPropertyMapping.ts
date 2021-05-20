@@ -32,7 +32,8 @@ import type { RawRelationalOperationElement } from '../model/RawRelationalOperat
 
 export class RelationalPropertyMapping
   extends PropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   transformer?: EnumerationMapping;
   relationalOperation!: RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
 

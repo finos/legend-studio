@@ -75,10 +75,11 @@ export abstract class ElementEditorState extends EditorState {
 
   generateElementProtocol(): void {
     try {
-      const elementEntity = this.editorStore.graphState.graphManager.elementToEntity(
-        this.element,
-        true,
-      );
+      const elementEntity =
+        this.editorStore.graphState.graphManager.elementToEntity(
+          this.element,
+          true,
+        );
       this.setTextContent(
         JSON.stringify(elementEntity.content, undefined, TAB_SIZE),
       );
@@ -99,13 +100,15 @@ export abstract class ElementEditorState extends EditorState {
 
   generateElementGrammar = flow(function* (this: ElementEditorState) {
     try {
-      const elementEntity = this.editorStore.graphState.graphManager.elementToEntity(
-        this.element,
-        false,
-      );
-      const grammar = (yield this.editorStore.graphState.graphManager.entitiesToPureCode(
-        [elementEntity],
-      )) as string;
+      const elementEntity =
+        this.editorStore.graphState.graphManager.elementToEntity(
+          this.element,
+          false,
+        );
+      const grammar =
+        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+          elementEntity,
+        ])) as string;
       this.setTextContent(grammar);
     } catch (error: unknown) {
       assertErrorThrown(error);

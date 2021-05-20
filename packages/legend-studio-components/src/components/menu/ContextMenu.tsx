@@ -26,15 +26,8 @@ export const ContextMenu: React.FC<{
   className?: string;
   disabled?: boolean;
 }> = (props) => {
-  const {
-    className,
-    children,
-    menuProps,
-    content,
-    disabled,
-    onClose,
-    onOpen,
-  } = props;
+  const { className, children, menuProps, content, disabled, onClose, onOpen } =
+    props;
   const contextMenuRoot = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element>();

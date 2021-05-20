@@ -41,15 +41,12 @@ jest.mock('@finos/legend-studio-shared', () => ({
   /* eslint-enable @typescript-eslint/no-explicit-any */
 }));
 
-import { resolve, basename, dirname } from 'path';
+import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import type { V1_PackageableElement } from '@finos/legend-studio';
 import { EntityChangeType, getTestEditorStore } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-studio-shared';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ENGINE_SERVER_URL = 'http://localhost:6060/api';
 const TEST_CASE_DIR = resolve(__dirname, 'cases');
@@ -104,9 +101,8 @@ const checkGrammarRoundtrip = async (
   await editorStore.graphState.graph.precomputeHashes(
     editorStore.applicationStore.logger,
   );
-  const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
-    entities,
-  );
+  const protocolHashesIndex =
+    await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );

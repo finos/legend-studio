@@ -240,12 +240,13 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
               propertyType.allSubClasses
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .forEach((subClass) => {
-                  const subTypePropertyTreeNodeData = getPropertyGraphFetchTreeNodeData(
-                    editorStore,
-                    property,
-                    subClass,
-                    node,
-                  );
+                  const subTypePropertyTreeNodeData =
+                    getPropertyGraphFetchTreeNodeData(
+                      editorStore,
+                      property,
+                      subClass,
+                      node,
+                    );
                   treeData.nodes.set(
                     subTypePropertyTreeNodeData.id,
                     subTypePropertyTreeNodeData,

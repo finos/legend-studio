@@ -40,7 +40,7 @@
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
-    "@types/react": "17.0.5",
+    "@types/react": "17.0.6",
     "@types/react-router-dom": "5.1.7",
     "mobx": "6.3.1",
     "mobx-react-lite": "3.2.0",

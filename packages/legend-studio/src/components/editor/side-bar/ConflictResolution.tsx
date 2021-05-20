@@ -59,13 +59,16 @@ export const ConflictResolution = observer(() => {
   const isSelectedConflict = (conflict: EntityChangeConflict): boolean =>
     currentEditorState instanceof EntityChangeConflictEditorState &&
     conflict.entityPath === currentEditorState.entityPath;
-  const openConflict = (
-    conflict: EntityChangeConflict,
-  ): (() => void) => (): void => conflictResolutionState.openConflict(conflict);
+  const openConflict =
+    (conflict: EntityChangeConflict): (() => void) =>
+    (): void =>
+      conflictResolutionState.openConflict(conflict);
   // Changes
   const changes = conflictResolutionState.changes;
-  const openChange = (diff: EntityDiff): (() => void) => (): void =>
-    conflictResolutionState.openConflictResolutionChange(diff);
+  const openChange =
+    (diff: EntityDiff): (() => void) =>
+    (): void =>
+      conflictResolutionState.openConflictResolutionChange(diff);
   const isSelectedDiff = (diff: EntityDiff): boolean =>
     currentEditorState instanceof EntityDiffViewState &&
     diff.oldPath === currentEditorState.fromEntityPath &&

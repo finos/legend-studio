@@ -36,7 +36,8 @@ import type { PropertyMapping } from '../../../mapping/PropertyMapping';
 
 export class RootRelationalInstanceSetImplementation
   extends RelationalInstanceSetImplementation
-  implements RelationalMappingSpecification, Hashable {
+  implements RelationalMappingSpecification, Hashable
+{
   columnMappings: ColumnMapping[] = [];
   filter?: FilterMapping;
   distinct?: boolean;

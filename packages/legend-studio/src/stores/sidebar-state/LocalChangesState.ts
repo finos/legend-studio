@@ -68,9 +68,8 @@ export class LocalChangesState {
       if (!entityPath) {
         return undefined;
       }
-      const element = this.editorStore.graphState.graph.getNullableElement(
-        entityPath,
-      );
+      const element =
+        this.editorStore.graphState.graph.getNullableElement(entityPath);
       if (!element) {
         return undefined;
       }
@@ -168,7 +167,8 @@ export class LocalChangesState {
     }
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode = (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode =
+        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
@@ -184,12 +184,14 @@ export class LocalChangesState {
     }
 
     const startTime = Date.now();
-    const localChanges = this.editorStore.graphState.computeLocalEntityChanges();
+    const localChanges =
+      this.editorStore.graphState.computeLocalEntityChanges();
     if (!localChanges.length) {
       return;
     }
     this.isSyncingWithWorkspace = true;
-    const currentHashesIndex = this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
+    const currentHashesIndex =
+      this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
       const latestRevision = Revision.serialization.fromJson(
         yield this.sdlcState.sdlcClient.performEntityChanges(

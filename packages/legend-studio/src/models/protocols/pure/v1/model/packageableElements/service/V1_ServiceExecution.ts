@@ -33,7 +33,8 @@ export abstract class V1_ServiceExecution implements Hashable {
 
 export abstract class V1_PureExecution
   extends V1_ServiceExecution
-  implements Hashable {
+  implements Hashable
+{
   func!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
@@ -43,7 +44,8 @@ export abstract class V1_PureExecution
 
 export class V1_PureSingleExecution
   extends V1_PureExecution
-  implements Hashable {
+  implements Hashable
+{
   mapping!: string;
   runtime!: V1_Runtime;
 
@@ -74,7 +76,8 @@ export class V1_KeyedExecutionParameter implements Hashable {
 
 export class V1_PureMultiExecution
   extends V1_PureExecution
-  implements Hashable {
+  implements Hashable
+{
   executionKey!: string;
   executionParameters: V1_KeyedExecutionParameter[] = [];
 

@@ -55,7 +55,8 @@ import { InferableMappingElementRootExplicitValue } from '../../../../../model/p
  */
 export class EmbeddedFlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
-  implements InstanceSetImplementation, Hashable {
+  implements InstanceSetImplementation, Hashable
+{
   root = InferableMappingElementRootExplicitValue.create(false);
   isEmbedded = true;
   class: PackageableElementReference<Class>;

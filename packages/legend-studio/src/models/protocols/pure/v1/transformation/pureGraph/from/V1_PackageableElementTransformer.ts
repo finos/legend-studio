@@ -73,7 +73,8 @@ import type {
  * as in the backend (which is in alphabetical order). This helps reduce noises when showing JSON diffs.
  */
 export class V1_PackageableElementTransformer
-  implements PackageableElementVisitor<V1_PackageableElement> {
+  implements PackageableElementVisitor<V1_PackageableElement>
+{
   plugins: PureProtocolProcessorPlugin[] = [];
   extraElementTransformers: V1_ElementTransformer[] = [];
 

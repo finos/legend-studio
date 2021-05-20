@@ -27,9 +27,8 @@ export const ServiceQueryBuilder = observer(
     const { executionState } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
-    const queryBuilderState = editorStore.getEditorExtensionState(
-      QueryBuilderState,
-    );
+    const queryBuilderState =
+      editorStore.getEditorExtensionState(QueryBuilderState);
     const editWithQueryBuilder = async (): Promise<void> => {
       executionState.setOpeningQueryEditor(true);
       if (executionState.selectedExecutionConfiguration) {

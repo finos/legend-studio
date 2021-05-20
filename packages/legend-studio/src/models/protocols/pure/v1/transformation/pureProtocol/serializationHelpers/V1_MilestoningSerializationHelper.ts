@@ -100,8 +100,9 @@ export const V1_serializeMilestoning = (
   }
   const extraMilestoningProtocolSerializers = plugins.flatMap(
     (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraMilestoningProtocolSerializers?.() ??
-      [],
+      (
+        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMilestoningProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraMilestoningProtocolSerializers) {
     const milestoningProtocolJson = serializer(protocol);
@@ -130,8 +131,9 @@ export const V1_deserializeMilestoning = (
     default: {
       const extraMilestoningProtocolDeserializers = plugins.flatMap(
         (plugin) =>
-          (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraMilestoningProtocolDeserializers?.() ??
-          [],
+          (
+            plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraMilestoningProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraMilestoningProtocolDeserializers) {
         const milestoningProtocol = deserializer(json);

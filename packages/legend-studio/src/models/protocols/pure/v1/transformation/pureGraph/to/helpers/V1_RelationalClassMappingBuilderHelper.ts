@@ -46,14 +46,14 @@ export const V1_processRelationalClassMapping = (
   parentMapping: Mapping,
   embeddedRelationalPropertyMappings: EmbeddedRelationalInstanceSetImplementation[],
   enumerationMappings: EnumerationMapping[],
-  tabliaAliasMap: Map<string, TableAlias>,
+  tableAliasMap: Map<string, TableAlias>,
 ): SetImplementation => {
   const pureClass = relationalClassMapping.class
     ? context.resolveClass(relationalClassMapping.class)
     : base.class;
   // TODO localMappingProperties
   base.primaryKey = relationalClassMapping.primaryKey.map((key) =>
-    V1_processRelationalOperationElement(key, context, tabliaAliasMap, []),
+    V1_processRelationalOperationElement(key, context, tableAliasMap, []),
   );
   base.propertyMappings = relationalClassMapping.propertyMappings.map(
     (propertyMapping) =>
@@ -63,7 +63,7 @@ export const V1_processRelationalClassMapping = (
           base,
           topParent,
           enumerationMappings,
-          tabliaAliasMap,
+          tableAliasMap,
         ),
       ),
   ) as RelationalPropertyMapping[];

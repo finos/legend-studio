@@ -132,7 +132,7 @@ const resolveSetImplementationForPropertyMapping = (
   propertyMapping: PropertyMapping,
 ): SetImplementation | undefined => {
   if (propertyMapping.isEmbedded) {
-    return (propertyMapping as unknown) as SetImplementation;
+    return propertyMapping as unknown as SetImplementation;
   } else if (propertyMapping.targetSetImplementation) {
     return propertyMapping.targetSetImplementation;
   }
@@ -152,9 +152,10 @@ const getPropertyMappedData = (
   } else if (property instanceof Property) {
     const parentSetImplementation = parentNode.setImpl;
     if (parentSetImplementation) {
-      const propertyMappings = editorStore.graphState.getMappingElementPropertyMappings(
-        parentSetImplementation,
-      );
+      const propertyMappings =
+        editorStore.graphState.getMappingElementPropertyMappings(
+          parentSetImplementation,
+        );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
         .map((p) => p.property.value.name);
@@ -170,9 +171,8 @@ const getPropertyMappedData = (
           if (propertyMapping) {
             return {
               mapped: true,
-              setImpl: resolveSetImplementationForPropertyMapping(
-                propertyMapping,
-              ),
+              setImpl:
+                resolveSetImplementationForPropertyMapping(propertyMapping),
             };
           }
         }

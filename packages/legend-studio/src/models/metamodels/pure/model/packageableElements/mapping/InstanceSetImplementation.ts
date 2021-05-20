@@ -28,7 +28,8 @@ import type { InferableMappingElementRoot } from '../../../model/packageableElem
 
 export abstract class InstanceSetImplementation
   extends SetImplementation
-  implements PropertyMappingsImplementation, Hashable {
+  implements PropertyMappingsImplementation, Hashable
+{
   mappingClass?: MappingClass;
   propertyMappings: PropertyMapping[] = [];
   // aggregateSpecification: AggregateSpecification[0..1];

@@ -27,7 +27,8 @@ import type { Type } from './Type';
 
 export abstract class GenericTypeReference
   extends ReferenceWithOwner
-  implements Stubable {
+  implements Stubable
+{
   readonly ownerReference: PackageableElementReference<Type>;
   value: GenericType;
 

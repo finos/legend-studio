@@ -39,7 +39,8 @@ export class V1_GenerationTreeNode {
 
 export class V1_GenerationSpecification
   extends V1_PackageableElement
-  implements Hashable {
+  implements Hashable
+{
   generationNodes: V1_GenerationTreeNode[] = [];
   fileGenerations: V1_PackageableElementPointer[] = [];
 

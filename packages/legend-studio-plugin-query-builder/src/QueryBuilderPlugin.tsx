@@ -92,9 +92,8 @@ export class QueryBuilderPlugin extends EditorPlugin {
         ): React.ReactNode | undefined => {
           if (element instanceof Class) {
             const buildQuery = async (): Promise<void> => {
-              const queryBuilderState = editorStore.getEditorExtensionState(
-                QueryBuilderState,
-              );
+              const queryBuilderState =
+                editorStore.getEditorExtensionState(QueryBuilderState);
               await flowResult(queryBuilderState.setOpenQueryBuilder(true));
               if (queryBuilderState.openQueryBuilder) {
                 queryBuilderState.querySetupState.setClass(element);
@@ -124,9 +123,8 @@ export class QueryBuilderPlugin extends EditorPlugin {
           lambdaEditorState: LambdaEditorState,
           checkParseringError: boolean,
         ): void => {
-          const queryBuilderState = editorStore.getEditorExtensionState(
-            QueryBuilderState,
-          );
+          const queryBuilderState =
+            editorStore.getEditorExtensionState(QueryBuilderState);
           if (queryBuilderState.isEditingInTextMode()) {
             editorStore.graphState
               .checkLambdaParsingError(

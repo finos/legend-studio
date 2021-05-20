@@ -42,24 +42,25 @@ export const disposeDiffEditor = (
   editor.getModifiedEditor().getModel()?.dispose();
 };
 
-export const baseTextEditorSettings: monacoEditorAPI.IStandaloneEditorConstructionOptions = {
-  contextmenu: false,
-  copyWithSyntaxHighlighting: false,
-  // NOTE: These following font options are needed (and CSS font-size option `.monaco-editor * { font-size: ... }` as well)
-  // in order to make the editor appear properly on multiple platform, the ligatures option is needed for Mac to display properly
-  // otherwise the cursor position relatively to text would be off
-  // Another potential cause for this misaligment is that the fonts are being lazy-loaded and made available after `monaco-editor`
-  // calculated the font-width, for this, we can use `remeasureFonts`, but our case here, `fontLigatures: true` seems
-  // to do the trick
-  // See https://github.com/microsoft/monaco-editor/issues/392
-  fontSize: 14,
-  // Enforce a fixed font-family to make cross platform display consistent (i.e. Mac defaults to use `Menlo` which is bigger than
-  // `Consolas` on Windows, etc.)
-  fontFamily: 'Roboto Mono',
-  fontLigatures: true,
-  // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
-  fixedOverflowWidgets: true,
-};
+export const baseTextEditorSettings: monacoEditorAPI.IStandaloneEditorConstructionOptions =
+  {
+    contextmenu: false,
+    copyWithSyntaxHighlighting: false,
+    // NOTE: These following font options are needed (and CSS font-size option `.monaco-editor * { font-size: ... }` as well)
+    // in order to make the editor appear properly on multiple platform, the ligatures option is needed for Mac to display properly
+    // otherwise the cursor position relatively to text would be off
+    // Another potential cause for this misaligment is that the fonts are being lazy-loaded and made available after `monaco-editor`
+    // calculated the font-width, for this, we can use `remeasureFonts`, but our case here, `fontLigatures: true` seems
+    // to do the trick
+    // See https://github.com/microsoft/monaco-editor/issues/392
+    fontSize: 14,
+    // Enforce a fixed font-family to make cross platform display consistent (i.e. Mac defaults to use `Menlo` which is bigger than
+    // `Consolas` on Windows, etc.)
+    fontFamily: 'Roboto Mono',
+    fontLigatures: true,
+    // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
+    fixedOverflowWidgets: true,
+  };
 
 // There is currently no good way to `monaco-editor` to disable hotkeys as part of the settings or global state
 // See https://github.com/microsoft/monaco-editor/issues/287

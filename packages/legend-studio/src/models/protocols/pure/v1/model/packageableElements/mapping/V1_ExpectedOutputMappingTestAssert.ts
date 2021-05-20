@@ -21,7 +21,8 @@ import { V1_MappingTestAssert } from './V1_MappingTestAssert';
 
 export class V1_ExpectedOutputMappingTestAssert
   extends V1_MappingTestAssert
-  implements Hashable {
+  implements Hashable
+{
   expectedOutput!: string;
 
   get hashCode(): string {

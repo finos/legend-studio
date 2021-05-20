@@ -23,7 +23,8 @@ import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_
 
 export class V1_RawVariable
   extends V1_RawValueSpecification
-  implements Hashable {
+  implements Hashable
+{
   class!: string;
   name!: string;
   multiplicity!: V1_Multiplicity;

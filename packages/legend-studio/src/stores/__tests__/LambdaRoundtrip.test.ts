@@ -82,9 +82,8 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
     await editorStore.graphState.graph.precomputeHashes(
       editorStore.applicationStore.logger,
     );
-    const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
-      entities,
-    );
+    const protocolHashesIndex =
+      await editorStore.graphState.graphManager.buildHashesIndex(entities);
     editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
       protocolHashesIndex,
     );
@@ -94,17 +93,20 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
         .length,
     ).toBe(0);
     // roundtrip check
-    const _builtValueSpec = editorStore.graphState.graphManager.buildValueSpecificationFromJson(
-      lambda,
-      editorStore.graphState.graph,
-    );
-    const _rawLambda = editorStore.graphState.graphManager.buildRawValueSpecification(
-      _builtValueSpec,
-      editorStore.graphState.graph,
-    );
-    const _jsonLambda = editorStore.graphState.graphManager.serializeRawValueSpecification(
-      _rawLambda,
-    );
+    const _builtValueSpec =
+      editorStore.graphState.graphManager.buildValueSpecificationFromJson(
+        lambda,
+        editorStore.graphState.graph,
+      );
+    const _rawLambda =
+      editorStore.graphState.graphManager.buildRawValueSpecification(
+        _builtValueSpec,
+        editorStore.graphState.graph,
+      );
+    const _jsonLambda =
+      editorStore.graphState.graphManager.serializeRawValueSpecification(
+        _rawLambda,
+      );
     expect([_jsonLambda]).toIncludeAllMembers([lambda]);
   });
 });

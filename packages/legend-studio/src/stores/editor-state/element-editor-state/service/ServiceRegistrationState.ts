@@ -167,12 +167,11 @@ export class ServiceRegistrationState {
       this.editorStore.sdlcState.isCurrentProjectInProduction &&
       this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
     ) {
-      const options: ServiceVersionOption[] = this.editorStore.sdlcState.projectVersions.map(
-        (version) => ({
+      const options: ServiceVersionOption[] =
+        this.editorStore.sdlcState.projectVersions.map((version) => ({
           label: version.id.id,
           value: version,
-        }),
-      );
+        }));
       if (this.serviceExecutionMode !== ServiceExecutionMode.PROD) {
         return [
           {
@@ -199,14 +198,15 @@ export class ServiceRegistrationState {
           ? this.projectVersion.id.id
           : undefined;
       const projectId = this.editorStore.sdlcState.currentProjectId;
-      const serviceRegistrationResult = (yield this.editorStore.graphState.graphManager.registerService(
-        this.editorStore.graphState.graph,
-        this.serviceEditorState.service,
-        projectId,
-        serverUrl,
-        guaranteeNonNullable(this.serviceExecutionMode),
-        versionInput,
-      )) as ServiceRegistrationResult;
+      const serviceRegistrationResult =
+        (yield this.editorStore.graphState.graphManager.registerService(
+          this.editorStore.graphState.graph,
+          this.serviceEditorState.service,
+          projectId,
+          serverUrl,
+          guaranteeNonNullable(this.serviceExecutionMode),
+          versionInput,
+        )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
         yield this.editorStore.graphState.graphManager.activateService(
           serverUrl,

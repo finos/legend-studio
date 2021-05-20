@@ -180,7 +180,8 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
   }
 
   get runtime(): Runtime {
-    const engineConfig = this.editorStore.graphState.graphManager.getEngineConfig();
+    const engineConfig =
+      this.editorStore.graphState.graphManager.getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -241,7 +242,8 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
   }
 
   get runtime(): Runtime {
-    const engineConfig = this.editorStore.graphState.graphManager.getEngineConfig();
+    const engineConfig =
+      this.editorStore.graphState.graphManager.getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -362,11 +364,12 @@ export class MappingTestState {
       inputData instanceof FlatDataInputData
     ) {
       // for these kinds of input data, we only support graph fetch query at the moment
-      const graphFetchTreeContent = this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
-        this.test.query,
-        this.editorStore.graphState.graph,
-        this.mappingEditorState.mapping,
-      );
+      const graphFetchTreeContent =
+        this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
+          this.test.query,
+          this.editorStore.graphState.graph,
+          this.mappingEditorState.mapping,
+        );
       const queryState = new MappingTestGraphFetchTreeQueryState(
         this.editorStore,
       );
@@ -520,14 +523,15 @@ export class MappingTestState {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
       this.isExecutingTest = true;
-      const result = ((yield this.editorStore.graphState.graphManager.executeMapping(
-        this.editorStore.graphState.graph,
-        this.mappingEditorState.mapping,
-        query,
-        runtime,
-        CLIENT_VERSION.VX_X_X,
-        true,
-      )) as unknown) as ExecutionResult;
+      const result =
+        (yield this.editorStore.graphState.graphManager.executeMapping(
+          this.editorStore.graphState.graph,
+          this.mappingEditorState.mapping,
+          query,
+          runtime,
+          CLIENT_VERSION.VX_X_X,
+          true,
+        )) as unknown as ExecutionResult;
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
@@ -585,14 +589,15 @@ export class MappingTestState {
     try {
       const runtime = this.inputDataState.runtime;
       this.isRunningTest = true;
-      const result = ((yield this.editorStore.graphState.graphManager.executeMapping(
-        this.editorStore.graphState.graph,
-        this.mappingEditorState.mapping,
-        this.test.query,
-        runtime,
-        CLIENT_VERSION.VX_X_X,
-        true,
-      )) as unknown) as ExecutionResult;
+      const result =
+        (yield this.editorStore.graphState.graphManager.executeMapping(
+          this.editorStore.graphState.graph,
+          this.mappingEditorState.mapping,
+          this.test.query,
+          runtime,
+          CLIENT_VERSION.VX_X_X,
+          true,
+        )) as unknown as ExecutionResult;
       this.testExecutionResultText = losslessStringify(
         result.values,
         undefined,

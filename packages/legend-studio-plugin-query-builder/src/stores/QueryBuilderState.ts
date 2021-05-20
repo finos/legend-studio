@@ -209,9 +209,8 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   reset(): void {
-    const currentQueryBuilderState = this.editorStore.getEditorExtensionState(
-      QueryBuilderState,
-    );
+    const currentQueryBuilderState =
+      this.editorStore.getEditorExtensionState(QueryBuilderState);
     changeEntry(
       this.editorStore.editorExtensionStates,
       this.editorStore.getEditorExtensionState(QueryBuilderState),
@@ -271,9 +270,10 @@ export class QueryBuilderState extends EditorExtensionState {
       this.querySetupState._class,
       'Class is required to execute query',
     );
-    const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+    const multiplicityOne =
+      this.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
     const stringType = this.editorStore.graphState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
@@ -336,8 +336,8 @@ export class QueryBuilderState extends EditorExtensionState {
       this.fetchStructureState.isGraphFetchMode() &&
       this.fetchStructureState.graphFetchTreeState.graphFetchTree
     ) {
-      const graphFetchTreeState = this.fetchStructureState.graphFetchTreeState
-        .graphFetchTree;
+      const graphFetchTreeState =
+        this.fetchStructureState.graphFetchTreeState.graphFetchTree;
       const root = graphFetchTreeState.root;
       const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
         multiplicityOne,
@@ -384,9 +384,10 @@ export class QueryBuilderState extends EditorExtensionState {
     const typeAny = this.editorStore.graphState.graph.getClass(
       CORE_ELEMENT_PATH.ANY,
     );
-    const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+    const multiplicityOne =
+      this.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
     // main filter expression
     const filterExpression = new SimpleFunctionExpression(
       SUPPORTED_FUNCTIONS.FILTER,
@@ -444,10 +445,11 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   buildLambdaFunctionFromRawLambda(rawLambda: RawLambda): LambdaFunction {
-    const valueSpec = this.editorStore.graphState.graphManager.buildValueSpecification(
-      rawLambda,
-      this.editorStore.graphState.graph,
-    );
+    const valueSpec =
+      this.editorStore.graphState.graphManager.buildValueSpecification(
+        rawLambda,
+        this.editorStore.graphState.graph,
+      );
     const compiledValueSpecification = guaranteeType(
       valueSpec,
       LambdaFunctionInstanceValue,

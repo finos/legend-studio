@@ -158,9 +158,8 @@ export const checkBuildingElementsRoundtrip = async (
   await editorStore.graphState.graph.precomputeHashes(
     editorStore.applicationStore.logger,
   );
-  const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
-    entities,
-  );
+  const protocolHashesIndex =
+    await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
@@ -200,9 +199,8 @@ export const checkBuildingResolvedElements = async (
   await editorStore.graphState.graph.precomputeHashes(
     editorStore.applicationStore.logger,
   );
-  const protocolHashesIndex = await editorStore.graphState.graphManager.buildHashesIndex(
-    entities,
-  );
+  const protocolHashesIndex =
+    await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );

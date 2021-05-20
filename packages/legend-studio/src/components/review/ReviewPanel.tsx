@@ -84,20 +84,25 @@ export const ReviewPanel = observer(() => {
     (editorState): editorState is EntityDiffViewState =>
       editorState instanceof EntityDiffViewState,
   );
-  const closeTab = (diffState: EditorState): React.MouseEventHandler => (
-    event,
-  ): void => editorStore.closeState(diffState);
-  const closeTabOnMiddleClick = (
-    editorState: EditorState,
-  ): React.MouseEventHandler => (event): void => {
-    if (event.nativeEvent.button === 1) {
-      editorStore.closeState(editorState);
-    }
-  };
-  const switchTab = (editorState: EditorState): (() => void) => (): void =>
-    editorStore.openState(editorState);
-  const switchViewMode = (mode: DIFF_VIEW_MODE): (() => void) => (): void =>
-    currentEditorState?.setDiffMode(mode);
+  const closeTab =
+    (diffState: EditorState): React.MouseEventHandler =>
+    (event): void =>
+      editorStore.closeState(diffState);
+  const closeTabOnMiddleClick =
+    (editorState: EditorState): React.MouseEventHandler =>
+    (event): void => {
+      if (event.nativeEvent.button === 1) {
+        editorStore.closeState(editorState);
+      }
+    };
+  const switchTab =
+    (editorState: EditorState): (() => void) =>
+    (): void =>
+      editorStore.openState(editorState);
+  const switchViewMode =
+    (mode: DIFF_VIEW_MODE): (() => void) =>
+    (): void =>
+      currentEditorState?.setDiffMode(mode);
 
   if (!currentEditorState) {
     return <ReviewPanelSplashScreen />;

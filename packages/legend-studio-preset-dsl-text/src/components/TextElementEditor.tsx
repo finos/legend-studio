@@ -54,9 +54,11 @@ export const TextElementEditor = observer(() => {
   const textElement = textEditorState.textElement;
   const isReadOnly = textEditorState.isReadOnly;
   const typeNameRef = useRef<HTMLInputElement>(null);
-  const changeType = (val: TEXT_TYPE): (() => void) => (): void => {
-    !isReadOnly && textElement.setType(val);
-  };
+  const changeType =
+    (val: TEXT_TYPE): (() => void) =>
+    (): void => {
+      !isReadOnly && textElement.setType(val);
+    };
   const changeContent = (val: string): void => textElement.setContent(val);
 
   useEffect(() => {

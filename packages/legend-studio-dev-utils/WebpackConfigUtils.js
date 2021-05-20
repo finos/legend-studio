@@ -49,11 +49,8 @@ const getBaseWebpackConfig = (
   if (!dirname) {
     throw new Error(`\`dirname\` is required to build Webpack config`);
   }
-  const {
-    isEnvDevelopment,
-    isEnvProduction,
-    isEnvDevelopment_Advanced,
-  } = getEnvInfo(env, arg);
+  const { isEnvDevelopment, isEnvProduction, isEnvDevelopment_Advanced } =
+    getEnvInfo(env, arg);
 
   const config = {
     mode: arg.mode,

@@ -186,7 +186,8 @@ export const QueryResultModifierModal = observer(
                     className={clsx(
                       'panel__content__form__section__toggler__btn',
                       {
-                        'panel__content__form__section__toggler__btn--toggled': distinct,
+                        'panel__content__form__section__toggler__btn--toggled':
+                          distinct,
                       },
                     )}
                     tabIndex={-1}

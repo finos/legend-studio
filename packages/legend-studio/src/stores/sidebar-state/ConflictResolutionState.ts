@@ -93,9 +93,10 @@ export class ConflictResolutionState {
     return this.editorStore.changeDetectionState.resolutions
       .map((resolution) => {
         const path = resolution.entityPath;
-        const fromEntity = this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.entities.find(
-          (e) => e.path === path,
-        );
+        const fromEntity =
+          this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.entities.find(
+            (e) => e.path === path,
+          );
         const toEntity = resolution.resolvedEntity;
         if (!fromEntity && !toEntity) {
           return undefined;
@@ -204,10 +205,11 @@ export class ConflictResolutionState {
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',
     );
-    const projectConfiguration = (yield this.sdlcState.sdlcClient.getConfigurationOfWorkspaceInConflictResolutionMode(
-      this.sdlcState.currentProjectId,
-      this.sdlcState.currentWorkspaceId,
-    )) as PlainObject<ProjectConfiguration>;
+    const projectConfiguration =
+      (yield this.sdlcState.sdlcClient.getConfigurationOfWorkspaceInConflictResolutionMode(
+        this.sdlcState.currentProjectId,
+        this.sdlcState.currentWorkspaceId,
+      )) as PlainObject<ProjectConfiguration>;
     this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
       ProjectConfiguration.serialization.fromJson(projectConfiguration),
     );
@@ -299,8 +301,9 @@ export class ConflictResolutionState {
       this.editorStore.graphState.isInitializingGraph = true;
       this.editorStore.changeDetectionState.stop(); // stop change detection (because it is alreayd running) so we can build the graph
       // NOTE: here we patch conflict resolution workspace HEAD entities with the entities from resolved conflicts to build graph with those
-      const workspaceHeadEntities = this.editorStore.changeDetectionState
-        .conflictResolutionHeadRevisionState.entities;
+      const workspaceHeadEntities =
+        this.editorStore.changeDetectionState
+          .conflictResolutionHeadRevisionState.entities;
       const entities = workspaceHeadEntities
         .filter(
           (entity) =>
@@ -362,11 +365,12 @@ export class ConflictResolutionState {
           `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
         );
       }
-      const entities = (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
-        this.sdlcState.currentRevisionId,
-      )) as Entity[];
+      const entities =
+        (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+          this.sdlcState.currentProjectId,
+          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentRevisionId,
+        )) as Entity[];
       this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.setEntities(
         entities,
       );
@@ -392,11 +396,12 @@ export class ConflictResolutionState {
       'Editor must be in conflict resolution mode to call this method',
     );
     try {
-      const workspaceBaseEntities = (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
-        RevisionAlias.BASE,
-      )) as Entity[];
+      const workspaceBaseEntities =
+        (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+          this.sdlcState.currentProjectId,
+          this.sdlcState.currentWorkspaceId,
+          RevisionAlias.BASE,
+        )) as Entity[];
       this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.setEntities(
         workspaceBaseEntities,
       );
@@ -417,7 +422,8 @@ export class ConflictResolutionState {
   acceptConflictResolution = flow(function* (this: ConflictResolutionState) {
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode = (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode =
+        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
       if (!isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
@@ -449,7 +455,8 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      const entityChanges = this.editorStore.graphState.computeLocalEntityChanges();
+      const entityChanges =
+        this.editorStore.graphState.computeLocalEntityChanges();
       yield this.sdlcState.sdlcClient.acceptConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
@@ -483,7 +490,8 @@ export class ConflictResolutionState {
   ) {
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode = (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode =
+        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
       if (!isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
@@ -535,7 +543,8 @@ export class ConflictResolutionState {
   abortConflictResolution = flow(function* (this: ConflictResolutionState) {
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode = (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode =
+        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
       if (!isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
@@ -601,9 +610,8 @@ export class ConflictResolutionState {
       }
       if (this.hasResolvedAllConflicts) {
         // if the editor has already built the graph, we will get live entity
-        const element = this.editorStore.graphState.graph.getNullableElement(
-          entityPath,
-        );
+        const element =
+          this.editorStore.graphState.graph.getNullableElement(entityPath);
         if (!element) {
           return undefined;
         }

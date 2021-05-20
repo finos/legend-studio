@@ -30,7 +30,8 @@ import { Association } from '../../../model/packageableElements/domain/Associati
 
 export abstract class PropertyReference
   extends ReferenceWithOwner
-  implements Stubable {
+  implements Stubable
+{
   readonly ownerReference: PackageableElementReference<Class>;
   value: AbstractProperty;
 

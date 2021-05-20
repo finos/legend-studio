@@ -37,7 +37,8 @@ import {
 } from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
 
 export class V1_RawValueSpecificationTransformer
-  implements RawValueSpecificationVisitor<V1_RawValueSpecification> {
+  implements RawValueSpecificationVisitor<V1_RawValueSpecification>
+{
   visit_RawLambda(rawValueSpecification: RawLambda): V1_RawValueSpecification {
     const rawLambda = new V1_RawLambda();
     rawLambda.body = toJS(rawValueSpecification.body);
@@ -80,9 +81,8 @@ export class V1_RawValueSpecificationTransformer
     rawPropertyGraphFetchTree.alias = rawValueSpecification.alias;
     rawPropertyGraphFetchTree.property =
       rawValueSpecification.property.value.name;
-    rawPropertyGraphFetchTree.parameters = rawValueSpecification.parameters.map(
-      toJS,
-    );
+    rawPropertyGraphFetchTree.parameters =
+      rawValueSpecification.parameters.map(toJS);
     rawPropertyGraphFetchTree.subTrees = rawValueSpecification.subTrees.map(
       (subTree) =>
         subTree.accept_ValueSpecificationVisitor(this) as V1_RawGraphFetchTree,

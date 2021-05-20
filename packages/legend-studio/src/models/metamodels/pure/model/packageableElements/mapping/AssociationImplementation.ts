@@ -34,7 +34,8 @@ import type { PropertyMapping } from '../../../model/packageableElements/mapping
 import type { InferableMappingElementIdValue } from '../../../model/packageableElements/mapping/InferableMappingElementId';
 
 export abstract class AssociationImplementation
-  implements PropertyMappingsImplementation, Hashable {
+  implements PropertyMappingsImplementation, Hashable
+{
   association: PackageableElementReference<Association>;
   id: InferableMappingElementIdValue;
   parent: Mapping;

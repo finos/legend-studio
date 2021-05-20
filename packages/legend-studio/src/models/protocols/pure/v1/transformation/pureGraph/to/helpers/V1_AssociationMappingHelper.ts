@@ -50,16 +50,17 @@ const buildRelationalAssociationMapping = (
     .map((m) => m.classMappings)
     .flat();
   const association = context.resolveAssociation(element.association);
-  const relationalAssociationImplementation = new RelationalAssociationImplementation(
-    getInferredAssociationMappingId(association.value, element),
-    parentMapping,
-    association,
-  );
+  const relationalAssociationImplementation =
+    new RelationalAssociationImplementation(
+      getInferredAssociationMappingId(association.value, element),
+      parentMapping,
+      association,
+    );
   relationalAssociationImplementation.stores = element.stores.map(
     context.resolveStore,
   );
-  relationalAssociationImplementation.propertyMappings = element.propertyMappings.map(
-    (propertyMapping) =>
+  relationalAssociationImplementation.propertyMappings =
+    element.propertyMappings.map((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
         new V1_ProtocolToMetaModelPropertyMappingVisitor(
           context,
@@ -70,7 +71,7 @@ const buildRelationalAssociationMapping = (
           allClassMappings,
         ),
       ),
-  );
+    );
   return relationalAssociationImplementation;
 };
 
@@ -91,8 +92,8 @@ const buildXStoreAssociationMapping = (
   xStoreAssociationImplementation.stores = element.stores.map(
     context.resolveStore,
   );
-  xStoreAssociationImplementation.propertyMappings = element.propertyMappings.map(
-    (propertyMapping) =>
+  xStoreAssociationImplementation.propertyMappings =
+    element.propertyMappings.map((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
         new V1_ProtocolToMetaModelPropertyMappingVisitor(
           context,
@@ -104,7 +105,7 @@ const buildXStoreAssociationMapping = (
           xStoreAssociationImplementation,
         ),
       ),
-  );
+    );
   return xStoreAssociationImplementation;
 };
 

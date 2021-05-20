@@ -132,18 +132,16 @@ export const MappingTestExplorer = observer(
     const { isReadOnly, testState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const openTest = applicationStore.guaranteeSafeAction(() =>
       mappingEditorState.openTest(testState.test),
     );
     const runTest = applicationStore.guaranteeSafeAction(() =>
       testState.runTest(),
     );
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-      false,
-    );
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const isActive = mappingEditorState.currentTabState === testState;
@@ -279,9 +277,8 @@ export const MappingTestsExplorer = observer(
     const { isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const runAllTests = applicationStore.guaranteeSafeAction(() =>
       mappingEditorState.runTests(),
     );

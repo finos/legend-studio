@@ -152,9 +152,8 @@ const PureSingleExecutionConfigurationEditor = observer(
               className={clsx(
                 'service-execution-editor__configuration__runtime-option__pointer__label',
                 {
-                  'service-execution-editor__configuration__runtime-option__pointer__label--with-warning': Boolean(
-                    runtimePointerWarning,
-                  ),
+                  'service-execution-editor__configuration__runtime-option__pointer__label--with-warning':
+                    Boolean(runtimePointerWarning),
                 },
               )}
             >
@@ -236,9 +235,10 @@ const PureSingleExecutionConfigurationEditor = observer(
       [handleMappingOrRuntimeDrop],
     );
     // close runtime editor as we leave service editor
-    useEffect(() => (): void => executionState.closeRuntimeEditor(), [
-      executionState,
-    ]);
+    useEffect(
+      () => (): void => executionState.closeRuntimeEditor(),
+      [executionState],
+    );
 
     return (
       <div
@@ -327,12 +327,15 @@ const PureSingleExecutionEditor = observer(
     const { executionState, selectedExecution, selectedTestState } = props;
     // tab
     const selectedTab = executionState.selectedTab;
-    const changeTab = (tab: SERVICE_EXECUTION_TAB): (() => void) => (): void =>
-      executionState.setSelectedTab(tab);
+    const changeTab =
+      (tab: SERVICE_EXECUTION_TAB): (() => void) =>
+      (): void =>
+        executionState.setSelectedTab(tab);
     // close runtime editor as we leave service editor
-    useEffect(() => (): void => executionState.closeRuntimeEditor(), [
-      executionState,
-    ]);
+    useEffect(
+      () => (): void => executionState.closeRuntimeEditor(),
+      [executionState],
+    );
 
     return (
       <div className="service-execution-editor__execution">

@@ -37,7 +37,8 @@ import type { InferableMappingElementIdValue } from '../../../../../model/packag
 
 export class OtherwiseEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation
-  implements OtherwiseEmebddedSetImplementation, Hashable {
+  implements OtherwiseEmebddedSetImplementation, Hashable
+{
   otherwisePropertyMapping!: PropertyMapping;
 
   constructor(

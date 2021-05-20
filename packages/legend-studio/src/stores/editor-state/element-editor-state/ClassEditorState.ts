@@ -69,9 +69,10 @@ export class ClassEditorState extends UMLEditorState {
             }
           } else if (classTab === SOURCR_ID_LABEL.DERIVED_PROPERTY) {
             this.setSelectedTab(UML_EDITOR_TAB.DERIVED_PROPERTIES);
-            const derivedPropertyState = this.classState.derivedPropertyStates.find(
-              (state) => state.derivedProperty.lambdaId === sourceId,
-            );
+            const derivedPropertyState =
+              this.classState.derivedPropertyStates.find(
+                (state) => state.derivedProperty.lambdaId === sourceId,
+              );
             if (derivedPropertyState) {
               derivedPropertyState.setCompilationError(compilationError);
               return true;

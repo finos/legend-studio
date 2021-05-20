@@ -27,7 +27,8 @@ export abstract class AuthenticationStrategy implements Hashable {
 
 export class DelegatedKerberosAuthenticationStrategy
   extends AuthenticationStrategy
-  implements Hashable {
+  implements Hashable
+{
   serverPrincipal?: string;
   constructor() {
     super();
@@ -52,7 +53,8 @@ export class DelegatedKerberosAuthenticationStrategy
 
 export class DefaultH2AuthenticationStrategy
   extends AuthenticationStrategy
-  implements Hashable {
+  implements Hashable
+{
   constructor() {
     super();
 
@@ -68,7 +70,8 @@ export class DefaultH2AuthenticationStrategy
 
 export class TestDatabaseAuthenticationStrategy
   extends DefaultH2AuthenticationStrategy
-  implements Hashable {
+  implements Hashable
+{
   constructor() {
     super();
 
@@ -86,7 +89,8 @@ export class TestDatabaseAuthenticationStrategy
 
 export class OAuthAuthenticationStrategy
   extends AuthenticationStrategy
-  implements Hashable {
+  implements Hashable
+{
   oauthKey: string;
   scopeName: string;
 
@@ -123,7 +127,8 @@ export class OAuthAuthenticationStrategy
 
 export class SnowflakePublicAuthenticationStrategy
   extends AuthenticationStrategy
-  implements Hashable {
+  implements Hashable
+{
   privateKeyVaultReference: string;
   passPhraseVaultReference: string;
   publicUserName: string;

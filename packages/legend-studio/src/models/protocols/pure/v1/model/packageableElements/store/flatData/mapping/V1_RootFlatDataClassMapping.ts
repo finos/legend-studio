@@ -24,7 +24,8 @@ import type { V1_AbstractFlatDataPropertyMapping } from './V1_AbstractFlatDataPr
 
 export class V1_RootFlatDataClassMapping
   extends V1_ClassMapping
-  implements Hashable {
+  implements Hashable
+{
   flatData!: string;
   sectionName!: string;
   filter?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda

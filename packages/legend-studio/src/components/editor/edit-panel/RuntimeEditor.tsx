@@ -65,6 +65,7 @@ import {
 } from '../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
 import {
+  assertErrorThrown,
   getClass,
   guaranteeType,
   UnsupportedOperationError,
@@ -92,6 +93,7 @@ import { FlatDataConnection } from '../../../models/metamodels/pure/model/packag
 import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { RelationalDatabaseConnection } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import { useApplicationStore } from '../../../stores/ApplicationStore';
 
 const getConnectionTooltipText = (connection: Connection): string => {
   const connectionValue =
@@ -168,9 +170,8 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
     const openNewConnectionModal = (): void =>
       currentRuntimeEditorTabState.addIdentifiedConnection();
     // context menu
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-      false,
-    );
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     return (
@@ -442,6 +443,7 @@ const IdentifiedConnectionEditor = observer(
       isReadOnly,
     } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
     // TODO: add runtime connection id
     // connection pointer
@@ -483,7 +485,15 @@ const IdentifiedConnectionEditor = observer(
       value?: PackageableConnection;
     }): void => {
       if (val.value === undefined) {
-        const customConnection = currentRuntimeEditorTabState.createNewCustomConnection();
+        let customConnection: Connection;
+        try {
+          customConnection =
+            currentRuntimeEditorTabState.createNewCustomConnection();
+        } catch (e: unknown) {
+          assertErrorThrown(e);
+          applicationStore.notifyWarning(e.message);
+          return;
+        }
         const newIdentifiedConnection = new IdentifiedConnection(
           runtimeValue.generateIdentifiedConnectionId(),
           customConnection,
@@ -575,13 +585,11 @@ const IdentifiedConnectionsPerStoreEditor = observer(
     currentRuntimeEditorTabState: IdentifiedConnectionsEditorTabState;
     isReadOnly: boolean;
   }) => {
-    const {
-      isReadOnly,
-      currentRuntimeEditorTabState,
-      runtimeEditorState,
-    } = props;
+    const { isReadOnly, currentRuntimeEditorTabState, runtimeEditorState } =
+      props;
     const isEmbeddedRuntime = runtimeEditorState.isEmbeddedRuntime;
-    const connectionEditorState = currentRuntimeEditorTabState.getConnectionEditorState();
+    const connectionEditorState =
+      currentRuntimeEditorTabState.getConnectionEditorState();
     const identifiedConnection =
       currentRuntimeEditorTabState.identifiedConnectionEditorState
         ?.idenfitiedConnection;

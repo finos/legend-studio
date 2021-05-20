@@ -77,14 +77,14 @@ class ProjectDashboardStore {
   }
 
   *fetchProjectByType(projectType: ProjectType): GeneratorFn<void> {
-    const projects = ((yield this.applicationStore.networkClientManager.sdlcClient.getProjects(
-      projectType,
-      false,
-      undefined,
-      undefined,
-    )) as PlainObject<Project>[]).map((project) =>
-      Project.serialization.fromJson(project),
-    );
+    const projects = (
+      (yield this.applicationStore.networkClientManager.sdlcClient.getProjects(
+        projectType,
+        false,
+        undefined,
+        undefined,
+      )) as PlainObject<Project>[]
+    ).map((project) => Project.serialization.fromJson(project));
     projects.forEach((project) =>
       this.projects.set(project.projectId, project),
     );
@@ -98,13 +98,14 @@ class ProjectDashboardStore {
 
   *fetchProjectCurrentBuildStatus(project: Project): GeneratorFn<void> {
     try {
-      const builds = (yield this.applicationStore.networkClientManager.sdlcClient.getBuilds(
-        project.projectId,
-        undefined,
-        undefined,
-        undefined,
-        1,
-      )) as PlainObject<Build>[];
+      const builds =
+        (yield this.applicationStore.networkClientManager.sdlcClient.getBuilds(
+          project.projectId,
+          undefined,
+          undefined,
+          undefined,
+          1,
+        )) as PlainObject<Build>[];
       this.currentBuildByProject.set(
         project.projectId,
         builds.length !== 0 ? Build.serialization.fromJson(builds[0]) : null,
@@ -116,9 +117,8 @@ class ProjectDashboardStore {
   }
 }
 
-const ProjectDashboardStoreContext = createContext<
-  ProjectDashboardStore | undefined
->(undefined);
+const ProjectDashboardStoreContext =
+  createContext<ProjectDashboardStore | undefined>(undefined);
 
 const ProjectDashboardStoreProvider = ({
   children,

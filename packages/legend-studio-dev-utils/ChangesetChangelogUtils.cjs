@@ -28,8 +28,8 @@
  *
  * NOTE: Looks like `changeset` only support CJS for now so we cannot use ESM in this file.
  */
-const githubChangelogFunctions = require('@changesets/changelog-github')
-  .default;
+const githubChangelogFunctions =
+  require('@changesets/changelog-github').default;
 
 const getReleaseLine = async (changeset, type, options) => {
   if (!changeset.summary) {

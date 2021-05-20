@@ -42,10 +42,8 @@ export const TextDiffView = observer(
     const { from, to, language } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const [
-      editor,
-      setEditor,
-    ] = useState<monacoEditorAPI.IStandaloneDiffEditor>();
+    const [editor, setEditor] =
+      useState<monacoEditorAPI.IStandaloneDiffEditor>();
     const editorRef = useRef<HTMLDivElement>(null);
     const originalText = from ?? '';
     const modifiedText = to ?? '';

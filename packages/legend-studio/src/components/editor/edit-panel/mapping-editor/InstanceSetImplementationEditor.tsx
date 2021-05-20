@@ -22,6 +22,7 @@ import type { SelectComponent } from '@finos/legend-studio-components';
 import {
   clsx,
   CustomSelectorInput,
+  BlankPanelPlaceholder,
   createFilter,
 } from '@finos/legend-studio-components';
 import type {
@@ -30,18 +31,12 @@ import type {
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { CORE_TEST_ID } from '../../../../const';
-import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
 import {
   InstanceSetImplementationState,
   MappingElementState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import {
-  guaranteeType,
-  assertTrue,
-  guaranteeNonNullable,
-  noop,
-} from '@finos/legend-studio-shared';
+import { guaranteeNonNullable, noop } from '@finos/legend-studio-shared';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { TypeTree } from '../../../shared/TypeTree';
@@ -57,15 +52,11 @@ import {
 import { MapppingElementDecorationCleanUpVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import { SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
 import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import type { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import type { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type {
   MappingElementSourceSelectOption,
   MappingElementSource,
@@ -79,6 +70,8 @@ import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree';
+import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
+import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../models/MetaModelConst';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 const getSourceElementLabel = (
@@ -90,85 +83,82 @@ const getSourceElementLabel = (
   } else if (srcElement instanceof RootFlatDataRecordType) {
     sourceLabel = srcElement.owner.name;
   } else if (srcElement instanceof Table || srcElement instanceof View) {
-    sourceLabel = `${srcElement.schema.owner.name}.${srcElement.schema.name}.${srcElement.name}`;
+    sourceLabel = `${srcElement.schema.owner.name}.${
+      srcElement.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
+        ? ''
+        : `${srcElement.schema.name}.`
+    }${srcElement.name}`;
   }
   return sourceLabel;
+};
+
+// TODO: add more visual cue to the type of source (class vs. flat-data vs. db)
+const buildMappingElementSourceOption = (
+  source: MappingElementSource | undefined,
+): MappingElementSourceSelectOption | null => {
+  if (source instanceof Class) {
+    return source.selectOption as MappingElementSourceSelectOption;
+  } else if (source instanceof RootFlatDataRecordType) {
+    return {
+      label: `${source.owner.owner.name}.${source.owner.name}`,
+      value: source,
+    };
+  } else if (source instanceof Table || source instanceof View) {
+    return {
+      label: `${source.schema.owner.name}.${
+        source.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
+          ? ''
+          : `${source.schema.name}.`
+      }${source.name}`,
+      value: source,
+    };
+  }
+  return null;
 };
 
 const InstanceSetImplementationSourceSelectorModal = observer(
   (props: {
     mappingEditorState: MappingEditorState;
     setImplementation: InstanceSetImplementation;
-    open: boolean;
+    /**
+     * Pass in `null` when we want to open the modal using the existing source.
+     * Pass any other to open the source modal using that value as the initial state of the modal.
+     */
+    sourceElementToSelect: MappingElementSource | null;
     closeModal: () => void;
   }) => {
-    const { mappingEditorState, setImplementation, closeModal, open } = props;
+    const {
+      mappingEditorState,
+      setImplementation,
+      closeModal,
+      sourceElementToSelect,
+    } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const options = mappingEditorState.mappingElementSourceOptions;
+    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
+    const options = (
+      editorStore.graphState.graph.classes as MappingElementSource[]
+    )
+      .concat(
+        editorStore.graphState.graph.flatDatas.flatMap((e) => e.recordTypes),
+      )
+      .concat(
+        editorStore.graphState.graph.databases.flatMap((e) =>
+          e.schemas.flatMap((schema) =>
+            (schema.tables as (Table | View)[]).concat(schema.views),
+          ),
+        ),
+      )
+      .map(buildMappingElementSourceOption);
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
       stringify: getMappingElementSourceFilterText,
     });
     const sourceSelectorRef = useRef<SelectComponent>(null);
-    const instanceSetImplementationType = editorStore.graphState.getSetImplementationType(
-      setImplementation,
+    const selectedSourceType = buildMappingElementSourceOption(
+      sourceElementToSelect ?? getMappingElementSource(setImplementation),
     );
-    let sourceTypeLabel;
-    switch (instanceSetImplementationType) {
-      /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-      case SET_IMPLEMENTATION_TYPE.PUREINSTANCE:
-        sourceTypeLabel = 'class';
-        break;
-      case SET_IMPLEMENTATION_TYPE.FLAT_DATA:
-      case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA:
-        sourceTypeLabel = 'flat-data store';
-        break;
-      case SET_IMPLEMENTATION_TYPE.RELATIONAL:
-        sourceTypeLabel = 'database store';
-        break;
-      default:
-        sourceTypeLabel = 'source element';
-        break;
-    }
-    let selectedSourceType;
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-    switch (instanceSetImplementationType) {
-      case SET_IMPLEMENTATION_TYPE.PUREINSTANCE: {
-        const pureInstance = guaranteeType(
-          setImplementation,
-          PureInstanceSetImplementation,
-        );
-        selectedSourceType = pureInstance.srcClass.value
-          ? {
-              value: pureInstance.srcClass.value,
-              label: pureInstance.srcClass.value.name,
-            }
-          : null;
-        break;
-      }
-      case SET_IMPLEMENTATION_TYPE.FLAT_DATA: {
-        const flatDataInstance = setImplementation as FlatDataInstanceSetImplementation;
-        selectedSourceType = {
-          value: flatDataInstance.sourceRootRecordType.value,
-          label: flatDataInstance.sourceRootRecordType.value.owner.name,
-        };
-        break;
-      }
-      case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
-        const embeddedPropertyMapping = setImplementation as EmbeddedFlatDataPropertyMapping;
-        const flatDataInstance = embeddedPropertyMapping.rootInstanceSetImplementation as FlatDataInstanceSetImplementation;
-        selectedSourceType = {
-          value: flatDataInstance.sourceRootRecordType.value,
-          label: flatDataInstance.sourceRootRecordType.value.owner.name,
-        };
-        break;
-      }
-      default:
-        selectedSourceType = null;
-        break;
-    }
     const changeSourceType = (
       val: MappingElementSourceSelectOption | null,
     ): Promise<void> =>
@@ -180,7 +170,7 @@ const InstanceSetImplementationSourceSelectorModal = observer(
 
     return (
       <Dialog
-        open={open}
+        open={true}
         onClose={closeModal}
         onEnter={handleEnter}
         classes={{
@@ -199,75 +189,7 @@ const InstanceSetImplementationSourceSelectorModal = observer(
             options={options}
             onChange={changeSourceType}
             value={selectedSourceType}
-            placeholder={`Choose a ${sourceTypeLabel}...`}
-            isClearable={true}
-            filterOption={filterOption}
-          />
-        </div>
-      </Dialog>
-    );
-  },
-);
-
-const FlatDataSourceSelectorModal = observer(
-  (props: {
-    mappingEditorState: MappingEditorState;
-    setImplementation: InstanceSetImplementation;
-    flatData: FlatData;
-    open: boolean;
-    closeModal: () => void;
-  }) => {
-    const {
-      setImplementation,
-      closeModal,
-      open,
-      flatData,
-      mappingEditorState,
-    } = props;
-    const applicationStore = useApplicationStore();
-    const options = flatData.recordTypes.map(
-      (recordType) => recordType.selectOption,
-    );
-    const filterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: getMappingElementSourceFilterText,
-    });
-    const sourceSelectorRef = useRef<SelectComponent>(null);
-    const changeSourceType = (
-      val: MappingElementSourceSelectOption | null,
-    ): void => {
-      if (val?.value) {
-        mappingEditorState
-          .changeClassMappingSourceDriver(setImplementation, val.value)
-          .then(() => closeModal())
-          .catch(applicationStore.alertIllegalUnhandledError);
-      }
-    };
-    const handleEnter = (): void => sourceSelectorRef.current?.focus();
-
-    return (
-      <Dialog
-        open={open}
-        onClose={closeModal}
-        onEnter={handleEnter}
-        classes={{
-          container: 'search-modal__container',
-        }}
-        PaperProps={{
-          classes: {
-            root: 'search-modal__inner-container',
-          },
-        }}
-      >
-        <div className="modal search-modal">
-          <div className="modal__title">Choose a Source</div>
-          <CustomSelectorInput
-            ref={sourceSelectorRef}
-            options={options}
-            onChange={changeSourceType}
-            value={null}
-            placeholder="Choose a flat-data action..."
+            placeholder={`Select a source...`}
             isClearable={true}
             filterOption={filterOption}
           />
@@ -285,29 +207,29 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const instanceSetImplementationState =
       mappingEditorState.currentTabState instanceof MappingElementState
         ? mappingEditorState.currentTabState
         : undefined;
     const srcElement = getMappingElementSource(setImplementation);
     const sourceLabel = getSourceElementLabel(srcElement);
-    // Source Selector Modal
-    const [openSourceSelectorModal, setOpenSourceSelectorModal] = useState(
-      false,
-    );
-    const [flatDataSourceModal, setFlatDataSourceModal] = useState<
-      FlatData | undefined
-    >(undefined);
+    // `null` is when we want to open the modal using the existing source
+    // `undefined` is to close the source modal
+    // any other value to open the source modal using that value as the initial state of the modal
+    const [
+      sourceElementForSourceSelectorModal,
+      setSourceElementForSourceSelectorModal,
+    ] = useState<MappingElementSource | undefined | null>();
     const CHANGING_SOURCE_ON_EMBEDDED =
       'Changing source on mapping with embedded children will delete all its children';
     const showSourceSelectorModal = (): void => {
       if (!isReadOnly) {
-        const embeddedSetImpls = setImplementation.getEmbeddedSetImplmentations();
+        const embeddedSetImpls =
+          setImplementation.getEmbeddedSetImplmentations();
         if (!embeddedSetImpls.length) {
-          setOpenSourceSelectorModal(true);
+          setSourceElementForSourceSelectorModal(null);
         } else {
           editorStore.setActionAltertInfo({
             message: CHANGING_SOURCE_ON_EMBEDDED,
@@ -316,7 +238,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
             actions: [
               {
                 label: 'Continue',
-                handler: (): void => setOpenSourceSelectorModal(true),
+                handler: (): void =>
+                  setSourceElementForSourceSelectorModal(null),
                 type: ActionAlertActionType.PROCEED,
               },
               {
@@ -328,14 +251,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
       }
     };
     const hideSourceSelectorModal = (): void =>
-      setOpenSourceSelectorModal(false);
-    const showFlatDataActionModal = useCallback(
-      (flatData: FlatData): void =>
-        isReadOnly ? undefined : setFlatDataSourceModal(flatData),
-      [isReadOnly],
-    );
-    const hideFlatDataActionModal = (): void =>
-      setFlatDataSourceModal(undefined);
+      setSourceElementForSourceSelectorModal(undefined);
     // Drag and Drop
     /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const dndType = [
@@ -343,6 +259,9 @@ export const InstanceSetImplementationSourceExplorer = observer(
       CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
       CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
     ];
+    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
+    // smartly analyze the content of the source and automatically assign it or its sub-part
+    // as class mapping source when possible
     const changeClassMappingSourceDriver = useCallback(
       (droppedPackagableElement: PackageableElement): void => {
         if (droppedPackagableElement instanceof Class) {
@@ -353,10 +272,12 @@ export const InstanceSetImplementationSourceExplorer = observer(
             )
             .catch(applicationStore.alertIllegalUnhandledError);
         } else if (droppedPackagableElement instanceof FlatData) {
-          assertTrue(
-            droppedPackagableElement.recordTypes.length !== 0,
-            `Source flat-data store '${droppedPackagableElement.path}' must have at least one action`,
-          );
+          if (droppedPackagableElement.recordTypes.length === 0) {
+            applicationStore.notifyWarning(
+              `Source flat-data store '${droppedPackagableElement.path}' must have at least one action`,
+            );
+            return;
+          }
           if (droppedPackagableElement.recordTypes.length === 1) {
             mappingEditorState
               .changeClassMappingSourceDriver(
@@ -365,21 +286,36 @@ export const InstanceSetImplementationSourceExplorer = observer(
               )
               .catch(applicationStore.alertIllegalUnhandledError);
           } else {
-            showFlatDataActionModal(droppedPackagableElement);
+            setSourceElementForSourceSelectorModal(
+              droppedPackagableElement.recordTypes[0],
+            );
+          }
+        } else if (droppedPackagableElement instanceof Database) {
+          const relations = droppedPackagableElement.schemas.flatMap((schema) =>
+            (schema.tables as (Table | View)[]).concat(schema.views),
+          );
+          if (relations.length === 0) {
+            applicationStore.notifyWarning(
+              `Source database '${droppedPackagableElement.path}' must have at least one table or view`,
+            );
+            return;
+          }
+          if (relations.length === 1) {
+            mappingEditorState
+              .changeClassMappingSourceDriver(setImplementation, relations[0])
+              .catch(applicationStore.alertIllegalUnhandledError);
+          } else {
+            setSourceElementForSourceSelectorModal(relations[0]);
           }
         }
       },
-      [
-        applicationStore.alertIllegalUnhandledError,
-        mappingEditorState,
-        setImplementation,
-        showFlatDataActionModal,
-      ],
+      [applicationStore, mappingEditorState, setImplementation],
     );
     const handleDrop = useCallback(
       (item: MappingElementSourceDropTarget): void => {
         if (!setImplementation.isEmbedded && !isReadOnly) {
-          const embeddedSetImpls = setImplementation.getEmbeddedSetImplmentations();
+          const embeddedSetImpls =
+            setImplementation.getEmbeddedSetImplmentations();
           const droppedPackagableElement = item.data.packageableElement;
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);
@@ -410,12 +346,13 @@ export const InstanceSetImplementationSourceExplorer = observer(
         setImplementation,
       ],
     );
-    const [{ isDragOver }, dropRef] = useDrop(
+    const [{ isDragOver, canDrop }, dropRef] = useDrop(
       () => ({
         accept: dndType,
         drop: (item: ElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
           isDragOver: monitor.isOver({ shallow: true }),
+          canDrop: monitor.canDrop(),
         }),
       }),
       [handleDrop],
@@ -465,44 +402,50 @@ export const InstanceSetImplementationSourceExplorer = observer(
             </button>
           </div>
         </div>
-        {/* TODO: use BlankPanelPlaceholder */}
-        <div
-          ref={dropRef}
-          className={clsx('panel__content', {
-            'panel__content--dnd-over': isDragOver && !isReadOnly,
-          })}
-        >
-          {srcElement instanceof Type && (
-            <TypeTree
-              type={srcElement}
-              selectedType={mappingEditorState.selectedTypeLabel}
-            />
+        <div ref={dropRef} className="panel__content dnd__dropzone">
+          {srcElement && isDragOver && !isReadOnly && (
+            <div className="dnd__overlay"></div>
           )}
-          {srcElement instanceof RootFlatDataRecordType && (
-            <FlatDataRecordTypeTree
-              recordType={srcElement}
-              selectedType={mappingEditorState.selectedTypeLabel}
-            />
-          )}
-          {(srcElement instanceof Table || srcElement instanceof View) && (
-            <TableOrViewSourceTree
-              relation={srcElement}
-              selectedType={mappingEditorState.selectedTypeLabel}
-            />
+          {srcElement && (
+            <div className="source-panel__explorer">
+              {srcElement instanceof Type && (
+                <TypeTree
+                  type={srcElement}
+                  selectedType={mappingEditorState.selectedTypeLabel}
+                />
+              )}
+              {srcElement instanceof RootFlatDataRecordType && (
+                <FlatDataRecordTypeTree
+                  recordType={srcElement}
+                  selectedType={mappingEditorState.selectedTypeLabel}
+                />
+              )}
+              {(srcElement instanceof Table || srcElement instanceof View) && (
+                <TableOrViewSourceTree
+                  relation={srcElement}
+                  selectedType={mappingEditorState.selectedTypeLabel}
+                />
+              )}
+            </div>
           )}
           {!srcElement && (
-            <div
-              className="source-panel__content__source-adder"
+            <BlankPanelPlaceholder
+              placeholderText="Choose a source"
               onClick={showSourceSelectorModal}
-            >
-              <div className="source-panel__content__source-adder__text">
-                Choose a source...
-              </div>
-              <div className="source-panel__content__source-adder__action">
-                <MdVerticalAlignBottom className="source-panel__content__source-adder__action__dnd-icon" />
-                <MdAdd className="source-panel__content__source-adder__action__add-icon" />
-              </div>
-            </div>
+              clickActionType="add"
+              tooltipText="Drop a class mapping source, or click to choose one"
+              dndProps={{
+                isDragOver: isDragOver && !isReadOnly,
+                canDrop: canDrop && !isReadOnly,
+              }}
+              readOnlyProps={
+                !isReadOnly
+                  ? undefined
+                  : {
+                      placeholderText: 'No source',
+                    }
+              }
+            />
           )}
           {isUnsupported && (
             <UnsupportedEditorPanel
@@ -510,19 +453,12 @@ export const InstanceSetImplementationSourceExplorer = observer(
               text={`Can't display class mapping source in form mode`}
             ></UnsupportedEditorPanel>
           )}
-          <InstanceSetImplementationSourceSelectorModal
-            mappingEditorState={mappingEditorState}
-            setImplementation={setImplementation}
-            open={openSourceSelectorModal}
-            closeModal={hideSourceSelectorModal}
-          />
-          {flatDataSourceModal && (
-            <FlatDataSourceSelectorModal
+          {sourceElementForSourceSelectorModal !== undefined && (
+            <InstanceSetImplementationSourceSelectorModal
               mappingEditorState={mappingEditorState}
               setImplementation={setImplementation}
-              flatData={flatDataSourceModal}
-              open={true}
-              closeModal={hideFlatDataActionModal}
+              sourceElementToSelect={sourceElementForSourceSelectorModal}
+              closeModal={hideSourceSelectorModal}
             />
           )}
         </div>
@@ -548,9 +484,8 @@ export const InstanceSetImplementationEditor = observer(
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const [sortByRequired, setSortByRequired] = useState(true);
     const instanceSetImplementationState = guaranteeNonNullable(
       mappingEditorState.currentTabState instanceof

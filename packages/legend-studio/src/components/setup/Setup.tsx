@@ -139,13 +139,12 @@ const CreateProjectModal = observer(() => {
   // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
   const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
   const showAddItemInput = (): void => setShowEditInput(true);
-  const showEditItemInput = (
-    value: string,
-    idx: number,
-  ): (() => void) => (): void => {
-    setItemValue(value);
-    setShowEditInput(idx);
-  };
+  const showEditItemInput =
+    (value: string, idx: number): (() => void) =>
+    (): void => {
+      setItemValue(value);
+      setShowEditInput(idx);
+    };
   const hideAddOrEditItemInput = (): void => {
     setShowEditInput(false);
     setItemValue('');
@@ -159,22 +158,26 @@ const CreateProjectModal = observer(() => {
     }
     hideAddOrEditItemInput();
   };
-  const updateValue = (idx: number): (() => void) => (): void => {
-    if (itemValue && !tagsArray.includes(itemValue)) {
-      tagsArray[idx] = itemValue;
-      setTagsArray(tagsArray);
-      hideAddOrEditItemInput();
-    }
-  };
-  const deleteValue = (idx: number): (() => void) => (): void => {
-    const tags = [...tagsArray];
-    tags.splice(idx, 1);
-    setTagsArray(tags);
-    // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
-    if (isNumber(showEditInput) && showEditInput > idx) {
-      setShowEditInput(showEditInput - 1);
-    }
-  };
+  const updateValue =
+    (idx: number): (() => void) =>
+    (): void => {
+      if (itemValue && !tagsArray.includes(itemValue)) {
+        tagsArray[idx] = itemValue;
+        setTagsArray(tagsArray);
+        hideAddOrEditItemInput();
+      }
+    };
+  const deleteValue =
+    (idx: number): (() => void) =>
+    (): void => {
+      const tags = [...tagsArray];
+      tags.splice(idx, 1);
+      setTagsArray(tags);
+      // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
+      if (isNumber(showEditInput) && showEditInput > idx) {
+        setShowEditInput(showEditInput - 1);
+      }
+    };
 
   return (
     <Dialog

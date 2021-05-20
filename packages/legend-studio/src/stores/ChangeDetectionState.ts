@@ -81,9 +81,8 @@ class RevisionChangeDetectionState {
               new Promise((resolve) =>
                 setTimeout(() => {
                   const elementPath = element.path;
-                  const originalElementHash = this.entityHashesIndex.get(
-                    elementPath,
-                  );
+                  const originalElementHash =
+                    this.entityHashesIndex.get(elementPath);
                   if (!originalElementHash) {
                     changes.push(
                       new EntityDiff(
@@ -408,9 +407,8 @@ export class ChangeDetectionState {
           ([elementPath, hashCode]) =>
             new Promise((resolve) =>
               setTimeout(() => {
-                const originalElementHashCode = fromState.entityHashesIndex.get(
-                  elementPath,
-                );
+                const originalElementHashCode =
+                  fromState.entityHashesIndex.get(elementPath);
                 if (!originalElementHashCode) {
                   changes.push(
                     new EntityDiff(
@@ -454,11 +452,12 @@ export class ChangeDetectionState {
     this: ChangeDetectionState,
     quiet?: boolean,
   ) {
-    this.aggregatedWorkspaceChanges = (yield this.computeAggregatedChangesBetweenStates(
-      this.workspaceBaseRevisionState,
-      this.workspaceLatestRevisionState,
-      quiet,
-    )) as EntityDiff[];
+    this.aggregatedWorkspaceChanges =
+      (yield this.computeAggregatedChangesBetweenStates(
+        this.workspaceBaseRevisionState,
+        this.workspaceLatestRevisionState,
+        quiet,
+      )) as EntityDiff[];
     yield Promise.all([
       this.computeWorkspaceUpdateConflicts(quiet),
       this.computeConflictResolutionConflicts(quiet),
@@ -469,11 +468,12 @@ export class ChangeDetectionState {
     this: ChangeDetectionState,
     quiet?: boolean,
   ) {
-    this.aggregatedProjectLatestChanges = (yield this.computeAggregatedChangesBetweenStates(
-      this.workspaceBaseRevisionState,
-      this.projectLatestRevisionState,
-      quiet,
-    )) as EntityDiff[];
+    this.aggregatedProjectLatestChanges =
+      (yield this.computeAggregatedChangesBetweenStates(
+        this.workspaceBaseRevisionState,
+        this.projectLatestRevisionState,
+        quiet,
+      )) as EntityDiff[];
     yield this.computeWorkspaceUpdateConflicts(quiet);
   });
 
@@ -481,11 +481,12 @@ export class ChangeDetectionState {
     this: ChangeDetectionState,
     quiet?: boolean,
   ) {
-    this.aggregatedConflictResolutionChanges = (yield this.computeAggregatedChangesBetweenStates(
-      this.conflictResolutionBaseRevisionState,
-      this.conflictResolutionHeadRevisionState,
-      quiet,
-    )) as EntityDiff[];
+    this.aggregatedConflictResolutionChanges =
+      (yield this.computeAggregatedChangesBetweenStates(
+        this.conflictResolutionBaseRevisionState,
+        this.conflictResolutionHeadRevisionState,
+        quiet,
+      )) as EntityDiff[];
   });
 
   /**
@@ -498,12 +499,13 @@ export class ChangeDetectionState {
     quiet?: boolean,
   ) {
     const startTime = Date.now();
-    this.potentialWorkspaceUpdateConflicts = (yield this.computeEntityChangeConflicts(
-      this.aggregatedWorkspaceChanges,
-      this.aggregatedProjectLatestChanges,
-      this.workspaceLatestRevisionState.entityHashesIndex,
-      this.projectLatestRevisionState.entityHashesIndex,
-    )) as EntityChangeConflict[];
+    this.potentialWorkspaceUpdateConflicts =
+      (yield this.computeEntityChangeConflicts(
+        this.aggregatedWorkspaceChanges,
+        this.aggregatedProjectLatestChanges,
+        this.workspaceLatestRevisionState.entityHashesIndex,
+        this.projectLatestRevisionState.entityHashesIndex,
+      )) as EntityChangeConflict[];
     if (!quiet) {
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
@@ -522,11 +524,12 @@ export class ChangeDetectionState {
     this: ChangeDetectionState,
     quiet?: boolean,
   ) {
-    const aggregatedUpdateChanges = (yield this.computeAggregatedChangesBetweenStates(
-      this.workspaceBaseRevisionState,
-      this.conflictResolutionBaseRevisionState,
-      quiet,
-    )) as EntityDiff[];
+    const aggregatedUpdateChanges =
+      (yield this.computeAggregatedChangesBetweenStates(
+        this.workspaceBaseRevisionState,
+        this.conflictResolutionBaseRevisionState,
+        quiet,
+      )) as EntityDiff[];
     const startTime = Date.now();
     this.conflicts = (yield this.computeEntityChangeConflicts(
       this.aggregatedWorkspaceChanges,

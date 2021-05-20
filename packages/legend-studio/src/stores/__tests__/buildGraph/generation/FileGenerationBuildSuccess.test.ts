@@ -41,8 +41,10 @@ test(unitTest('File Generation Graph Success'), () => {
   expect(graph.generationSpecifications).toHaveLength(1);
   const scope = fileGeneration.scopeElements;
   expect(scope).toHaveLength(1);
-  const otherPackage = guaranteeType(scope[0], PackageableElementReference)
-    .value;
+  const otherPackage = guaranteeType(
+    scope[0],
+    PackageableElementReference,
+  ).value;
   expect(otherPackage).toBe(graph.getElement('model::other', true));
 });
 
@@ -50,8 +52,7 @@ test(unitTest('Generated Function paths are valid'), () => {
   const functionGen = editorStore.graphState.graph.getFunction(
     'model::functionFullPath_Firm_1__Firm_MANY__Firm_$1_MANY$__String_1__Boolean_1_',
   );
-  const entity = editorStore.graphState.graphManager.elementToEntity(
-    functionGen,
-  );
+  const entity =
+    editorStore.graphState.graphManager.elementToEntity(functionGen);
   expect(entity.path).toBe('model::functionFullPath');
 });

@@ -24,7 +24,8 @@ import type { V1_RawLambda } from '../../../../../model/rawValueSpecification/V1
 
 export class V1_PureInstanceClassMapping
   extends V1_ClassMapping
-  implements Hashable {
+  implements Hashable
+{
   srcClass?: string;
   propertyMappings: V1_PropertyMapping[] = [];
   filter?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda

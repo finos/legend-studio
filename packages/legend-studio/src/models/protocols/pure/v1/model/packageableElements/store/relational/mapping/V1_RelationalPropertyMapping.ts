@@ -24,7 +24,8 @@ import type { V1_RawRelationalOperationElement } from '../model/V1_RawRelational
 
 export class V1_RelationalPropertyMapping
   extends V1_PropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   enumMappingId?: string;
   relationalOperation!: V1_RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
 

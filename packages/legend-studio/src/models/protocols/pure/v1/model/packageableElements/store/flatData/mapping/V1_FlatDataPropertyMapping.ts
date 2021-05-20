@@ -23,7 +23,8 @@ import type { V1_PropertyMappingVisitor } from '../../../../../model/packageable
 
 export class V1_FlatDataPropertyMapping
   extends V1_AbstractFlatDataPropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   enumMappingId?: string;
   transform!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 

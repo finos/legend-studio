@@ -323,7 +323,7 @@ const V1_filterPointerModelSchema = createModelSchema(V1_FilterPointer, {
 
 const V1_joinPointerModelSchema = createModelSchema(V1_JoinPointer, {
   db: primitive(),
-  joinType: primitive(),
+  joinType: optional(primitive()),
   name: primitive(),
 });
 
@@ -387,7 +387,7 @@ const V1_tableAliasColumnModelSchema = createModelSchema(V1_TableAliasColumn, {
 
 export function V1_serializeRelationalOperationElement(
   protocol: V1_RelationalOperationElement,
-): V1_RelationalOperationElement {
+): PlainObject<V1_RelationalOperationElement> {
   if (protocol instanceof V1_DynaFunc) {
     return serialize(V1_dynaFuncModelSchema, protocol);
   } else if (protocol instanceof V1_ElementWithJoins) {

@@ -238,12 +238,13 @@ export const RawGraphFetchTreeExplorer = observer(
               propertyType.allSubClasses
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .forEach((subClass) => {
-                  const subTypePropertyTreeNodeData = getRawPropertyGraphFetchTreeNodeData(
-                    editorStore,
-                    property,
-                    subClass,
-                    node,
-                  );
+                  const subTypePropertyTreeNodeData =
+                    getRawPropertyGraphFetchTreeNodeData(
+                      editorStore,
+                      property,
+                      subClass,
+                      node,
+                    );
                   treeData.nodes.set(
                     subTypePropertyTreeNodeData.id,
                     subTypePropertyTreeNodeData,

@@ -23,7 +23,8 @@ import type { V1_Connection } from '../../../model/packageableElements/connectio
 
 export class V1_PackageableConnection
   extends V1_PackageableElement
-  implements Hashable {
+  implements Hashable
+{
   connectionValue!: V1_Connection;
 
   get hashCode(): string {

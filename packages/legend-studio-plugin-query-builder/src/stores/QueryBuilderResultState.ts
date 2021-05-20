@@ -83,23 +83,25 @@ export class QueryBuilderResultState {
         const lambdaFunction = this.queryBuilderState.buildLambdaFunction({
           isBuildingExecutionQuery: true,
         });
-        query = this.queryBuilderState.buildRawLambdaFromLambdaFunction(
-          lambdaFunction,
-        );
+        query =
+          this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+            lambdaFunction,
+          );
       } else {
         query = guaranteeNonNullable(
           this.queryBuilderState.queryUnsupportedState.rawLambda,
           'Lambda is required to execute query',
         );
       }
-      const result = (yield this.editorStore.graphState.graphManager.executeMapping(
-        this.editorStore.graphState.graph,
-        mapping,
-        query,
-        runtime,
-        CLIENT_VERSION.VX_X_X,
-        false,
-      )) as ExecutionResult;
+      const result =
+        (yield this.editorStore.graphState.graphManager.executeMapping(
+          this.editorStore.graphState.graph,
+          mapping,
+          query,
+          runtime,
+          CLIENT_VERSION.VX_X_X,
+          false,
+        )) as ExecutionResult;
       this.setExecutionResult(result);
       this.isExecutingQuery = false;
     } catch (error: unknown) {
@@ -121,13 +123,14 @@ export class QueryBuilderResultState {
       );
       const runtime = this.queryBuilderState.querySetupState.runtime;
       const query = this.queryBuilderState.getRawLambdaQuery();
-      const result = (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
-        this.editorStore.graphState.graph,
-        mapping,
-        query,
-        runtime,
-        CLIENT_VERSION.VX_X_X,
-      )) as ExecutionResult;
+      const result =
+        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+          this.editorStore.graphState.graph,
+          mapping,
+          query,
+          runtime,
+          CLIENT_VERSION.VX_X_X,
+        )) as ExecutionResult;
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;
     } catch (error: unknown) {
@@ -162,9 +165,10 @@ export class QueryBuilderResultState {
           runtime,
         ),
       );
-      const servicePackage = this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-        packageName,
-      );
+      const servicePackage =
+        this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
+          packageName,
+        );
       servicePackage.addElement(service);
       this.editorStore.graphState.graph.addElement(service);
       this.editorStore.openElement(service);

@@ -23,7 +23,8 @@ import type { V1_PropertyMappingVisitor } from '../../../../../model/packageable
 
 export class V1_OtherwiseEmbeddedRelationalPropertyMapping
   extends V1_EmbeddedRelationalPropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   otherwisePropertyMapping!: V1_RelationalPropertyMapping;
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {

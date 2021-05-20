@@ -208,10 +208,10 @@ const processResponse = async <T>(
     return Promise.reject(new NetworkClientError(response, payload));
   }
   if (responseProcessConfig?.skipProcessing) {
-    return (Promise.resolve(response) as unknown) as Promise<T>;
+    return Promise.resolve(response) as unknown as Promise<T>;
   }
   if (response.status === HttpStatus.NO_CONTENT) {
-    return (Promise.resolve(undefined) as unknown) as Promise<T>;
+    return Promise.resolve(undefined) as unknown as Promise<T>;
   }
   // TODO: might need to handle */* ContentType and other types
   // Note that right now what we support is rather simplistic, as we always expect `application/json` or `text/plain`
@@ -227,7 +227,7 @@ const processResponse = async <T>(
     case ContentType.APPLICATION_JSON:
       return response.json();
     case ContentType.TEXT_PLAIN:
-      return (response.text() as unknown) as Promise<T>;
+      return response.text() as unknown as Promise<T>;
     default:
       return Promise.reject(
         new NetworkClientError(

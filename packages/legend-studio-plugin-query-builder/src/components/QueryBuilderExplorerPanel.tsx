@@ -183,9 +183,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
   ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const { queryBuilderState } = innerProps;
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-      false,
-    );
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const applicationStore = useApplicationStore();
     const explorerState = queryBuilderState.explorerState;
     const [, dragConnector, dragPreviewConnector] = useDrag(
@@ -261,7 +260,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           className={clsx(
             'tree-view__node__container query-builder-tree__node__container',
             {
-              'query-builder-tree__node__container--selected-from-context-menu': isSelectedFromContextMenu,
+              'query-builder-tree__node__container--selected-from-context-menu':
+                isSelectedFromContextMenu,
               'query-builder-tree__node__container--unmapped': !node.mapped,
             },
           )}
@@ -303,7 +303,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 className={clsx(
                   'tree-view__node__label query-builder-tree__node__label query-builder-tree__node__label--with-action',
                   {
-                    'query-builder-tree__node__label--with-preview': allowPreview,
+                    'query-builder-tree__node__label--with-preview':
+                      allowPreview,
                   },
                 )}
               >
@@ -504,8 +505,8 @@ export const QueryBuilderExplorerPanel = observer(
     return (
       <div
         className={clsx('panel query-builder__explorer', {
-          'query-builder__explorer--expanded': !queryBuilderState
-            .querySetupState.showSetupPanel,
+          'query-builder__explorer--expanded':
+            !queryBuilderState.querySetupState.showSetupPanel,
         })}
       >
         <div className="panel__header">

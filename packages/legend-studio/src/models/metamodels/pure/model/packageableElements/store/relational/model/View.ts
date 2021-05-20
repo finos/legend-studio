@@ -28,7 +28,8 @@ import type { FilterMapping } from '../../../../../model/packageableElements/sto
 
 export class View
   extends NamedRelation
-  implements RelationalMappingSpecification, Hashable {
+  implements RelationalMappingSpecification, Hashable
+{
   schema!: Schema;
   primaryKey: Column[] = [];
   columnMappings: ColumnMapping[] = [];

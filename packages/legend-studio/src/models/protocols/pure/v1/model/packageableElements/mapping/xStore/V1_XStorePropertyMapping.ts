@@ -23,7 +23,8 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
 export class V1_XStorePropertyMapping
   extends V1_PropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   crossExpression!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {

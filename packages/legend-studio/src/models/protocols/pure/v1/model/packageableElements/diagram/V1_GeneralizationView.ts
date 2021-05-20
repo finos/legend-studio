@@ -22,7 +22,8 @@ import type { V1_Line } from './geometry/V1_Line';
 
 export class V1_GeneralizationView
   extends V1_RelationshipView
-  implements Hashable {
+  implements Hashable
+{
   declare line: V1_Line;
 
   get hashCode(): string {

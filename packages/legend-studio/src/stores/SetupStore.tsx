@@ -112,36 +112,38 @@ export class SetupStore {
   fetchProjects = flow(function* (this: SetupStore) {
     this.loadProjectsState = ACTION_STATE.IN_PROGRESS;
     try {
-      const projects = ((yield Promise.all(
-        [
-          this.applicationStore.networkClientManager.sdlcClient.getProjects(
-            ProjectType.PRODUCTION,
-            undefined,
-            undefined,
-            undefined,
+      const projects = (
+        (yield Promise.all(
+          [
+            this.applicationStore.networkClientManager.sdlcClient.getProjects(
+              ProjectType.PRODUCTION,
+              undefined,
+              undefined,
+              undefined,
+            ),
+            this.applicationStore.networkClientManager.sdlcClient.getProjects(
+              ProjectType.PROTOTYPE,
+              undefined,
+              undefined,
+              undefined,
+            ),
+          ].map((promise, idx) =>
+            promise.catch((error) => {
+              const wrappedError = new Error(
+                `Error fetching ${
+                  idx === 0 ? ProjectType.PRODUCTION : ProjectType.PROTOTYPE
+                } projects: ${error.message}`,
+              );
+              this.applicationStore.logger.error(
+                CORE_LOG_EVENT.SETUP_PROBLEM,
+                wrappedError,
+              );
+              this.applicationStore.notifyError(wrappedError);
+              return [];
+            }),
           ),
-          this.applicationStore.networkClientManager.sdlcClient.getProjects(
-            ProjectType.PROTOTYPE,
-            undefined,
-            undefined,
-            undefined,
-          ),
-        ].map((promise, idx) =>
-          promise.catch((error) => {
-            const wrappedError = new Error(
-              `Error fetching ${
-                idx === 0 ? ProjectType.PRODUCTION : ProjectType.PROTOTYPE
-              } projects: ${error.message}`,
-            );
-            this.applicationStore.logger.error(
-              CORE_LOG_EVENT.SETUP_PROBLEM,
-              wrappedError,
-            );
-            this.applicationStore.notifyError(wrappedError);
-            return [];
-          }),
-        ),
-      )) as PlainObject<Project>[][])
+        )) as PlainObject<Project>[][]
+      )
         .flat()
         .map((project) => Project.serialization.fromJson(project));
       const projectMap = observable<string, Project>(new Map());
@@ -271,13 +273,17 @@ export class SetupStore {
   fetchWorkspaces = flow(function* (this: SetupStore, projectId: string) {
     this.loadWorkspacesState = ACTION_STATE.IN_PROGRESS;
     try {
-      const workspacesInConflictResolutionIds = ((yield this.applicationStore.networkClientManager.sdlcClient.getWorkspacesInConflictResolutionMode(
-        projectId,
-      )) as Workspace[]).map((workspace) => workspace.workspaceId);
+      const workspacesInConflictResolutionIds = (
+        (yield this.applicationStore.networkClientManager.sdlcClient.getWorkspacesInConflictResolutionMode(
+          projectId,
+        )) as Workspace[]
+      ).map((workspace) => workspace.workspaceId);
       const workspaceMap = observable<string, Workspace>(new Map());
-      ((yield this.applicationStore.networkClientManager.sdlcClient.getWorkspaces(
-        projectId,
-      )) as PlainObject<Workspace>[])
+      (
+        (yield this.applicationStore.networkClientManager.sdlcClient.getWorkspaces(
+          projectId,
+        )) as PlainObject<Workspace>[]
+      )
         .map((workspace) => Workspace.serialization.fromJson(workspace))
         .forEach((workspace) => {
           // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
@@ -312,9 +318,8 @@ export class SetupStore {
           workspaceId,
         ),
       );
-      const existingWorkspaceForProject:
-        | Map<string, Workspace>
-        | undefined = this.workspacesByProject.get(projectId);
+      const existingWorkspaceForProject: Map<string, Workspace> | undefined =
+        this.workspacesByProject.get(projectId);
       if (existingWorkspaceForProject) {
         existingWorkspaceForProject.set(workspaceId, workspace);
       } else {

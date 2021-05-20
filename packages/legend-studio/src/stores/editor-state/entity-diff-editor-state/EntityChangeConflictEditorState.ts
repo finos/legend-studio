@@ -384,9 +384,10 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     entity: Entity | undefined,
   ): GeneratorFn<string> {
     if (entity) {
-      const elementGrammar = (yield this.editorStore.graphState.graphManager.entitiesToPureCode(
-        [entity],
-      )) as string;
+      const elementGrammar =
+        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+          entity,
+        ])) as string;
       return elementGrammar;
     }
     return '';
@@ -394,9 +395,10 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
 
   markAsResolved = flow(function* (this: EntityChangeConflictEditorState) {
     try {
-      const entities = (yield this.editorStore.graphState.graphManager.pureCodeToEntities(
-        this.mergedText ?? '',
-      )) as Entity[];
+      const entities =
+        (yield this.editorStore.graphState.graphManager.pureCodeToEntities(
+          this.mergedText ?? '',
+        )) as Entity[];
       if (!entities.length) {
         this.editorStore.changeDetectionState.resolutions.push(
           new EntityChangeConflictResolution(this.entityPath, undefined),
@@ -404,9 +406,10 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
       } else if (entities.length === 1) {
         const resolvedEntity = entities[0];
         // cleanup the source information since we are using this entity to compute diff
-        resolvedEntity.content = this.editorStore.graphState.graphManager.pruneSourceInformation(
-          resolvedEntity.content as object,
-        );
+        resolvedEntity.content =
+          this.editorStore.graphState.graphManager.pruneSourceInformation(
+            resolvedEntity.content as object,
+          );
         this.editorStore.changeDetectionState.resolutions.push(
           new EntityChangeConflictResolution(this.entityPath, resolvedEntity),
         );
@@ -524,9 +527,10 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
 
   onMarkAsResolved = flow(function* (this: EntityChangeConflictEditorState) {
     // swap out the current conflict editor with a normal diff editor
-    const resolvedChange = this.editorStore.conflictResolutionState.resolvedChanges.find(
-      (change) => change.entityPath === this.entityPath,
-    );
+    const resolvedChange =
+      this.editorStore.conflictResolutionState.resolvedChanges.find(
+        (change) => change.entityPath === this.entityPath,
+      );
     if (resolvedChange) {
       this.editorStore.conflictResolutionState.openConflictResolutionChange(
         resolvedChange,

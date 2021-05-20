@@ -73,11 +73,11 @@ export class ProjectOverviewState {
   fetchProjectWorkspaces = flow(function* (this: ProjectOverviewState) {
     try {
       this.isFetchingProjectWorkspaces = true;
-      this.projectWorkspaces = ((yield this.sdlcState.sdlcClient.getWorkspaces(
-        this.sdlcState.currentProjectId,
-      )) as PlainObject<Workspace>[]).map((workspace) =>
-        Workspace.serialization.fromJson(workspace),
-      );
+      this.projectWorkspaces = (
+        (yield this.sdlcState.sdlcClient.getWorkspaces(
+          this.sdlcState.currentProjectId,
+        )) as PlainObject<Workspace>[]
+      ).map((workspace) => Workspace.serialization.fromJson(workspace));
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
@@ -194,18 +194,23 @@ export class ProjectOverviewState {
             1,
           )) as PlainObject<Review>[],
         );
-        const latestProjectVersionRevisionReview = latestProjectVersionRevisionReviewObj
-          ? Review.serialization.fromJson(latestProjectVersionRevisionReviewObj)
-          : undefined;
-        this.committedReviewsBetweenMostRecentVersionAndProjectLatest = ((yield this.sdlcState.sdlcClient.getReviews(
-          this.sdlcState.currentProjectId,
-          ReviewState.COMMITTED,
-          undefined,
-          latestProjectVersionRevisionReview?.committedAt ??
-            latestProjectVersionRevision.committedAt,
-          undefined,
-          undefined,
-        )) as PlainObject<Review>[])
+        const latestProjectVersionRevisionReview =
+          latestProjectVersionRevisionReviewObj
+            ? Review.serialization.fromJson(
+                latestProjectVersionRevisionReviewObj,
+              )
+            : undefined;
+        this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
+          (yield this.sdlcState.sdlcClient.getReviews(
+            this.sdlcState.currentProjectId,
+            ReviewState.COMMITTED,
+            undefined,
+            latestProjectVersionRevisionReview?.committedAt ??
+              latestProjectVersionRevision.committedAt,
+            undefined,
+            undefined,
+          )) as PlainObject<Review>[]
+        )
           .map((review) => Review.serialization.fromJson(review))
           .filter(
             (review) =>

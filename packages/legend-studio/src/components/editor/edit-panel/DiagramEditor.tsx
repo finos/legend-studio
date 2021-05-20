@@ -122,9 +122,8 @@ export const DiagramEditorClassCreator = observer(
     ) => setName(event.target.value);
     const elementNameInputRef = useRef<HTMLInputElement>(null);
     // Package
-    const [treeData, setTreeData] = useState<TreeData<PackageTreeNodeData>>(
-      packageTree,
-    );
+    const [treeData, setTreeData] =
+      useState<TreeData<PackageTreeNodeData>>(packageTree);
     const [selectedTreeNode, setSelectedTreeNode] = useState<
       PackageTreeNodeData | undefined
     >(Array.from(packageTree.nodes.values()).find((node) => node.isSelected));
@@ -261,21 +260,19 @@ enum DIAGRAM_EDITOR_CLASS_PANEL_MODE {
 
 export const DiagramEditor = observer(() => {
   const editorStore = useEditorStore();
-  const defaultMultiplicity = editorStore.graphState.graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const diagramEditorState = editorStore.getCurrentEditorState(
-    DiagramEditorState,
-  );
+  const defaultMultiplicity =
+    editorStore.graphState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+  const diagramEditorState =
+    editorStore.getCurrentEditorState(DiagramEditorState);
   const diagram = diagramEditorState.diagram;
   const isReadOnly = diagramEditorState.isReadOnly;
   const [diagramRenderer, setDiagramRenderer] = useState<DiagramRenderer>();
-  const [selectedClassEditor, setSelectedClassEditor] = useState<
-    ClassEditorState | undefined
-  >();
-  const [createNewClassEvent, setCreateNewClassEvent] = useState<
-    MouseEvent | undefined
-  >();
+  const [selectedClassEditor, setSelectedClassEditor] =
+    useState<ClassEditorState | undefined>();
+  const [createNewClassEvent, setCreateNewClassEvent] =
+    useState<MouseEvent | undefined>();
   const [mode, setMode] = useState<DIAGRAM_EDITOR_CLASS_PANEL_MODE>(
     DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE,
   );

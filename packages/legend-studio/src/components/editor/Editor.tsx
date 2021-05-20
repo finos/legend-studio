@@ -61,16 +61,18 @@ export const EditorInner = observer(() => {
   const applicationStore = useApplicationStore();
 
   // Extensions
-  const extraEditorExtensionComponents = editorStore.applicationStore.pluginManager
-    .getEditorPlugins()
-    .flatMap(
-      (plugin) =>
-        plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],
-    )
-    .filter(isNonNullable)
-    .map((config) => (
-      <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
-    ));
+  const extraEditorExtensionComponents =
+    editorStore.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
+          [],
+      )
+      .filter(isNonNullable)
+      .map((config) => (
+        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+      ));
 
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
@@ -171,12 +173,14 @@ export const EditorInner = observer(() => {
     [HOTKEY.TOGGLE_SIDEBAR_CHANGES]: editorStore.createGlobalHotKeyAction(() =>
       editorStore.setActiveActivity(ACTIVITY_MODE.CHANGES),
     ),
-    [HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW]: editorStore.createGlobalHotKeyAction(
-      () => editorStore.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
-    ),
-    [HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER]: editorStore.createGlobalHotKeyAction(
-      () => editorStore.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
-    ),
+    [HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW]:
+      editorStore.createGlobalHotKeyAction(() =>
+        editorStore.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
+      ),
+    [HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER]:
+      editorStore.createGlobalHotKeyAction(() =>
+        editorStore.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
+      ),
   };
 
   // Cleanup the editor
@@ -227,9 +231,8 @@ export const EditorInner = observer(() => {
 
   // Route Navigation Blocking
   // See https://medium.com/@michaelchan_13570/using-react-router-v4-prompt-with-custom-modal-component-ca839f5faf39
-  const [blockedLocation, setBlockedLocation] = useState<
-    Location | undefined
-  >();
+  const [blockedLocation, setBlockedLocation] =
+    useState<Location | undefined>();
   const retryBlockedLocation = useCallback(
     (allowedNavigation: boolean): void => {
       if (allowedNavigation && blockedLocation) {
@@ -242,10 +245,8 @@ export const EditorInner = observer(() => {
   // after confirmedAllowNavigation is flipped, otherwise we would end up in the `false` case of handleBlockedNavigation again!
   // Another way to go about this is to use `setTimeout(() => history.push(...), 0)` but it can potentailly be more error prone
   // See https://www.robinwieruch.de/react-usestate-callback
-  const [
-    confirmedAllowNavigation,
-    setConfirmedAllowNavigation,
-  ] = useStateWithCallback<boolean>(false, retryBlockedLocation);
+  const [confirmedAllowNavigation, setConfirmedAllowNavigation] =
+    useStateWithCallback<boolean>(false, retryBlockedLocation);
   const onNavigationChangeIndicator = Boolean(
     editorStore.changeDetectionState.workspaceLatestRevisionState.changes
       .length,
@@ -301,7 +302,7 @@ export const EditorInner = observer(() => {
   const promptComponent = (
     <Prompt
       when={onNavigationChangeIndicator}
-      message={(handleRouteNavigationBlocking as unknown) as any} // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      message={handleRouteNavigationBlocking as unknown as any} // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
     />
   );
 

@@ -137,12 +137,14 @@ export class GraphGenerationState {
     this: GraphGenerationState,
   ) {
     try {
-      const availableFileGenerationDescriptions = ((yield this.editorStore.graphState.graphManager.getAvailableGenerationConfigurationDescriptions()) as unknown) as GenerationConfigurationDescription[];
+      const availableFileGenerationDescriptions =
+        (yield this.editorStore.graphState.graphManager.getAvailableGenerationConfigurationDescriptions()) as unknown as GenerationConfigurationDescription[];
       this.setFileGenerationConfigurations(availableFileGenerationDescriptions);
-      this.editorStore.elementGenerationStates = this.fileGenerationConfigurations.map(
-        (config) =>
-          new ElementFileGenerationState(this.editorStore, config.key),
-      );
+      this.editorStore.elementGenerationStates =
+        this.fileGenerationConfigurations.map(
+          (config) =>
+            new ElementFileGenerationState(this.editorStore, config.key),
+        );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.GENERATION_PROBLEM,
@@ -183,8 +185,8 @@ export class GraphGenerationState {
   generateModels = flow(function* (this: GraphGenerationState) {
     try {
       this.generatedEntities = new Map<string, Entity[]>(); // reset the map of generated entities
-      const generationSpecs = this.editorStore.graphState.graph
-        .generationSpecifications;
+      const generationSpecs =
+        this.editorStore.graphState.graph.generationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -200,9 +202,9 @@ export class GraphGenerationState {
         let generatedEntities: Entity[] = [];
         /* @MARKER: FIX TRY CATCH ERRORING */
         try {
-          generatedEntities = ((yield this.generateGenerationElement(
+          generatedEntities = (yield this.generateGenerationElement(
             node.generationElement.value,
-          )) as unknown) as Entity[];
+          )) as unknown as Entity[];
         } catch (error: unknown) {
           assertErrorThrown(error);
           throw new Error(
@@ -237,8 +239,8 @@ export class GraphGenerationState {
     try {
       this.emptyFileGeneration();
       const generationResultMap = new Map<string, GenerationOutput[]>();
-      const generationSpecs = this.editorStore.graphState.graph
-        .generationSpecifications;
+      const generationSpecs =
+        this.editorStore.graphState.graph.generationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -253,9 +255,10 @@ export class GraphGenerationState {
       for (const fileGeneration of fileGenerations) {
         let result: GenerationOutput[] = [];
         try {
-          const mode = this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
-            fileGeneration.value.type,
-          ).generationMode;
+          const mode =
+            this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+              fileGeneration.value.type,
+            ).generationMode;
           result = (yield this.editorStore.graphState.graphManager.generateFile(
             fileGeneration.value,
             mode,
@@ -313,14 +316,16 @@ export class GraphGenerationState {
    */
   addMissingGenerationSpecifications(): void {
     if (!this.editorStore.graphState.graph.generationSpecifications.length) {
-      const modelGenerationElements = this.editorStore.applicationStore.pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap(
-          (plugin) =>
-            (plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension).getExtraModelGenerationElementGetters?.() ??
-            [],
-        )
-        .flatMap((getter) => getter(this.editorStore.graphState.graph));
+      const modelGenerationElements =
+        this.editorStore.applicationStore.pluginManager
+          .getPureGraphManagerPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+              ).getExtraModelGenerationElementGetters?.() ?? [],
+          )
+          .flatMap((getter) => getter(this.editorStore.graphState.graph));
       const fileGenerations = this.editorStore.graphState.graph.fileGenerations;
       if (modelGenerationElements.length || fileGenerations.length) {
         const generationSpec = new GenerationSpecification(
@@ -347,8 +352,9 @@ export class GraphGenerationState {
   ): void {
     // empty file index and the directory, we keep the open nodes to reprocess them
     this.emptyFileGeneration();
-    const directoryTreeData = this.editorStore.graphState.editorStore
-      .explorerTreeState.fileGenerationTreeData;
+    const directoryTreeData =
+      this.editorStore.graphState.editorStore.explorerTreeState
+        .fileGenerationTreeData;
     const openedNodeIds = directoryTreeData
       ? Array.from(directoryTreeData.nodes.values())
           .filter((node) => node.isOpen)
@@ -357,9 +363,8 @@ export class GraphGenerationState {
     // we read the generation outputs and clean
     const generationResultMap = new Map<string, GenerationOutputResult>();
     Array.from(fileGenerationOutputMap.entries()).forEach((entry) => {
-      const fileGeneration = this.editorStore.graphState.graph.getNullableFileGeneration(
-        entry[0],
-      );
+      const fileGeneration =
+        this.editorStore.graphState.graph.getNullableFileGeneration(entry[0]);
       const rootFolder =
         fileGeneration?.generationOutputPath ??
         fileGeneration?.path.split(ELEMENT_PATH_DELIMITER).join('_');
@@ -402,11 +407,12 @@ export class GraphGenerationState {
       .filter(isNonNullable);
     const currentEditorState = this.editorStore.currentEditorState;
     if (currentEditorState instanceof FileGenerationViewerState) {
-      this.editorStore.currentEditorState = this.editorStore.openedEditorStates.find(
-        (e) =>
-          e instanceof FileGenerationViewerState &&
-          e.generatedFile.path === currentEditorState.generatedFile.path,
-      );
+      this.editorStore.currentEditorState =
+        this.editorStore.openedEditorStates.find(
+          (e) =>
+            e instanceof FileGenerationViewerState &&
+            e.generatedFile.path === currentEditorState.generatedFile.path,
+        );
     }
   }
 

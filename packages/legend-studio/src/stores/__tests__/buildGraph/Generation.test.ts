@@ -74,9 +74,8 @@ const testGeneratedElements = async (
     editorStore.graphState.graph.getElement(PARENT_ELEMENT_PATH),
   );
   generatedElementPaths.forEach((e) => {
-    const element = editorStore.graphState.graph.generationModel.getNullableElement(
-      e,
-    );
+    const element =
+      editorStore.graphState.graph.generationModel.getNullableElement(e);
     guaranteeNonNullable(
       element,
       `element ${e} not found in generated model manager`,

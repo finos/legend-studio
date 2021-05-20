@@ -22,6 +22,7 @@ import type { SelectComponent } from '@finos/legend-studio-components';
 import {
   clsx,
   CustomSelectorInput,
+  BlankPanelPlaceholder,
   createFilter,
 } from '@finos/legend-studio-components';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
@@ -40,7 +41,7 @@ import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import { EnumerationIcon } from '../../../shared/Icon';
 import { CORE_TEST_ID } from '../../../../const';
 import { useEditorStore } from '../../../../stores/EditorStore';
-import { MdVerticalAlignBottom, MdModeEdit } from 'react-icons/md';
+import { MdModeEdit } from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
 import { noop } from '@finos/legend-studio-shared';
 import {
@@ -66,10 +67,13 @@ const EnumerationMappingSourceSelectorModal = observer(
   }) => {
     const { enumerationMapping, closeModal, open } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
-    const options = mappingEditorState.enumertionMappingSourceTypeOptions;
+    const options = [
+      editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER),
+      editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+    ]
+      .map((primitiveType) => primitiveType.selectOption)
+      .concat(editorStore.enumerationOptions);
+
     const sourceSelectorRef = useRef<SelectComponent>(null);
     const filterOption = createFilter({
       ignoreCase: true,
@@ -308,9 +312,8 @@ export const EnumerationMappingEditor = observer(
   (props: { enumerationMapping: EnumerationMapping; isReadOnly: boolean }) => {
     const { enumerationMapping, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const enumeration = enumerationMapping.enumeration;
     // ID
     const showId =
@@ -318,9 +321,8 @@ export const EnumerationMappingEditor = observer(
       1;
     // Source
     const sourceType = enumerationMapping.sourceType.value;
-    const [openSourceSelectorModal, setOpenSourceSelectorModal] = useState(
-      false,
-    );
+    const [openSourceSelectorModal, setOpenSourceSelectorModal] =
+      useState(false);
     const showSourceSelectorModal = (): void =>
       isReadOnly ? undefined : setOpenSourceSelectorModal(true);
     const hideSourceSelectorModal = (): void =>
@@ -333,12 +335,13 @@ export const EnumerationMappingEditor = observer(
       },
       [enumerationMapping, isReadOnly],
     );
-    const [{ isDragOver }, dropRef] = useDrop(
+    const [{ isDragOver, canDrop }, dropRef] = useDrop(
       () => ({
         accept: CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         drop: (item: ElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
           isDragOver: monitor.isOver({ shallow: true }),
+          canDrop: monitor.canDrop(),
         }),
       }),
       [handleDrop],
@@ -392,7 +395,8 @@ export const EnumerationMappingEditor = observer(
                   'mapping-element-editor__metadata__driver-chunk',
                   'background--primitive',
                   {
-                    'mapping-element-editor__metadata__source--none': !sourceType,
+                    'mapping-element-editor__metadata__source--none':
+                      !sourceType,
                   },
                 )}
               >
@@ -466,31 +470,39 @@ export const EnumerationMappingEditor = observer(
                     </button>
                   </div>
                 </div>
-                {/* TODO: use BlankPanelPlaceholder */}
-                <div
-                  ref={dropRef}
-                  className={clsx('panel__content', {
-                    'panel__content--dnd-over': isDragOver && !isReadOnly,
-                  })}
-                >
-                  {sourceType && sourceType instanceof Enumeration && (
-                    <TypeTree
-                      type={sourceType}
-                      selectedType={mappingEditorState.selectedTypeLabel}
-                    />
+                <div ref={dropRef} className="panel__content dnd__dropzone">
+                  {sourceType && isDragOver && !isReadOnly && (
+                    <div className="dnd__overlay"></div>
+                  )}
+                  {sourceType && (
+                    <div className="source-panel__explorer">
+                      {sourceType instanceof Enumeration && (
+                        <TypeTree
+                          type={sourceType}
+                          selectedType={mappingEditorState.selectedTypeLabel}
+                        />
+                      )}
+                      {/* TODO?: do we need to show anything when the source type is string or integer */}
+                    </div>
                   )}
                   {!sourceType && (
-                    <div
-                      className="source-panel__content__source-adder"
+                    <BlankPanelPlaceholder
+                      placeholderText="Choose a source"
                       onClick={showSourceSelectorModal}
-                    >
-                      <div className="source-panel__content__source-adder__text">
-                        Choose a source...
-                      </div>
-                      <div className="source-panel__content__source-adder__action">
-                        <MdVerticalAlignBottom />
-                      </div>
-                    </div>
+                      clickActionType="add"
+                      tooltipText="Drop an enumeration"
+                      dndProps={{
+                        isDragOver: isDragOver && !isReadOnly,
+                        canDrop: canDrop && !isReadOnly,
+                      }}
+                      readOnlyProps={
+                        !isReadOnly
+                          ? undefined
+                          : {
+                              placeholderText: 'No source',
+                            }
+                      }
+                    />
                   )}
                   <EnumerationMappingSourceSelectorModal
                     enumerationMapping={enumerationMapping}

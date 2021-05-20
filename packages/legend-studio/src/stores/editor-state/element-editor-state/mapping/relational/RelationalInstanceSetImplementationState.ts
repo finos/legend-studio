@@ -31,6 +31,7 @@ import {
 } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
+import { MappingElementDecorateVisitor } from '../MappingElementDecorateVisitor';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -51,10 +52,11 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     const stubOperation = createStubRelationalOperationElement();
     if (this.lambdaString) {
       try {
-        const operation = (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
-          this.fullLambdaString,
-          this.propertyMapping.lambdaId,
-        )) as RawRelationalOperationElement | undefined;
+        const operation =
+          (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
+            this.fullLambdaString,
+            this.propertyMapping.lambdaId,
+          )) as RawRelationalOperationElement | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof RelationalPropertyMapping) {
           this.propertyMapping.relationalOperation = operation ?? stubOperation;
@@ -92,9 +94,10 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
             this.propertyMapping.lambdaId,
             this.propertyMapping.relationalOperation,
           );
-          const operationsInText = (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
-            operations,
-          )) as Map<string, string>;
+          const operationsInText =
+            (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+              operations,
+            )) as Map<string, string>;
           const grammarText = operationsInText.get(
             this.propertyMapping.lambdaId,
           );
@@ -171,22 +174,22 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
    * so here we make sure that we reuse existing state and only add new decorated ones
    */
   decorate(): void {
-    // this.mappingElement.accept_SetImplementationVisitor(
-    //   new MappingElementDecorateVisitor(),
-    // );
-    // const newPropertyMappingStates: RelationalPropertyMappingState[] = [];
-    // const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(
-    //   this.mappingElement.propertyMappings,
-    // );
-    // propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
-    //   const existingPropertyMappingState = this.propertyMappingStates.find(
-    //     (p) => p.propertyMapping === propertyMappingState.propertyMapping,
-    //   );
-    //   newPropertyMappingStates.push(
-    //     existingPropertyMappingState ?? propertyMappingState,
-    //   );
-    // });
-    // this.setPropertyMappingStates(newPropertyMappingStates);
+    this.mappingElement.accept_SetImplementationVisitor(
+      new MappingElementDecorateVisitor(),
+    );
+    const newPropertyMappingStates: RelationalPropertyMappingState[] = [];
+    const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(
+      this.mappingElement.propertyMappings,
+    );
+    propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
+      const existingPropertyMappingState = this.propertyMappingStates.find(
+        (p) => p.propertyMapping === propertyMappingState.propertyMapping,
+      );
+      newPropertyMappingStates.push(
+        existingPropertyMappingState ?? propertyMappingState,
+      );
+    });
+    this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
   convertPropertyMappingTransformObjects = flow(function* (
@@ -198,7 +201,12 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
       RelationalPropertyMappingState
     >();
     this.propertyMappingStates.forEach((pm) => {
-      if (pm.propertyMapping instanceof RelationalPropertyMapping) {
+      if (
+        pm.propertyMapping instanceof RelationalPropertyMapping &&
+        !isStubRelationalOperationElement(
+          pm.propertyMapping.relationalOperation,
+        )
+      ) {
         operations.set(
           pm.propertyMapping.lambdaId,
           pm.propertyMapping.relationalOperation,
@@ -210,9 +218,10 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
     if (operations.size) {
       this.isConvertingTransformObjects = true;
       try {
-        const operationsInText = (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
-          operations,
-        )) as Map<string, string>;
+        const operationsInText =
+          (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+            operations,
+          )) as Map<string, string>;
         operationsInText.forEach((grammarText, key) => {
           const relationalPropertyMappingState = propertyMappingStates.get(key);
           relationalPropertyMappingState?.setLambdaString(

@@ -44,8 +44,9 @@ export const V1_processEmbeddedRelationalMappingProperty = (
 } => {
   let propertyOwnerClass: Class;
   if (propertyMapping.property.class) {
-    propertyOwnerClass = context.resolveClass(propertyMapping.property.class)
-      .value;
+    propertyOwnerClass = context.resolveClass(
+      propertyMapping.property.class,
+    ).value;
   } else if (
     immediateParent instanceof RootRelationalInstanceSetImplementation ||
     immediateParent instanceof EmbeddedRelationalInstanceSetImplementation

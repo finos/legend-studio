@@ -38,9 +38,8 @@ const ShareModal = observer(
     const versions = editorStore.sdlcState.projectVersions;
     const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
     const isFetchingProject = editorStore.sdlcState.isFetchingProject;
-    const [selectedVersion, setSelectedVersion] = useState<
-      Version | undefined
-    >();
+    const [selectedVersion, setSelectedVersion] =
+      useState<Version | undefined>();
     const urlBase = window.location.origin;
     const projectId = editorStore.sdlcState.currentProjectId;
     const projectLink = selectedVersion
