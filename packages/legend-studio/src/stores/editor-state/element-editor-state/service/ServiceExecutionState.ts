@@ -202,10 +202,11 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             this.execution.func.body,
           ),
         );
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-          pretty,
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.execution.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -274,9 +275,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     });
 
     this.execution = execution;
-    this.selectedExecutionConfiguration = this.getInitiallySelectedExecution(
-      execution,
-    );
+    this.selectedExecutionConfiguration =
+      this.getInitiallySelectedExecution(execution);
     this.queryState = new ServicePureExecutionQueryState(
       this.editorStore,
       execution,
@@ -303,13 +303,14 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     try {
       this.isGeneratingPlan = true;
       const query = this.queryState.query;
-      const plan = ((yield this.editorStore.graphState.graphManager.generateExecutionPlan(
-        this.editorStore.graphState.graph,
-        this.selectedExecutionConfiguration.mapping.value,
-        query,
-        this.selectedExecutionConfiguration.runtime,
-        CLIENT_VERSION.VX_X_X,
-      )) as unknown) as object;
+      const plan =
+        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+          this.editorStore.graphState.graph,
+          this.selectedExecutionConfiguration.mapping.value,
+          query,
+          this.selectedExecutionConfiguration.runtime,
+          CLIENT_VERSION.VX_X_X,
+        )) as unknown as object;
       this.setExecutionPlan(plan);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -329,14 +330,15 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     try {
       this.isExecuting = true;
       const query = this.queryState.query;
-      const result = ((yield this.editorStore.graphState.graphManager.executeMapping(
-        this.editorStore.graphState.graph,
-        this.selectedExecutionConfiguration.mapping.value,
-        query,
-        this.selectedExecutionConfiguration.runtime,
-        CLIENT_VERSION.VX_X_X,
-        true,
-      )) as unknown) as ExecutionResult;
+      const result =
+        (yield this.editorStore.graphState.graphManager.executeMapping(
+          this.editorStore.graphState.graph,
+          this.selectedExecutionConfiguration.mapping.value,
+          query,
+          this.selectedExecutionConfiguration.runtime,
+          CLIENT_VERSION.VX_X_X,
+          true,
+        )) as unknown as ExecutionResult;
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );
@@ -418,11 +420,12 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     const selectedExecution = this.selectedExecutionConfiguration;
     if (selectedExecution) {
       const mapping = selectedExecution.mapping.value;
-      const graphFetchTreeContent = this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
-        this.execution.func,
-        this.editorStore.graphState.graph,
-        this.serviceEditorState.service,
-      );
+      const graphFetchTreeContent =
+        this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
+          this.execution.func,
+          this.editorStore.graphState.graph,
+          this.serviceEditorState.service,
+        );
       if (graphFetchTreeContent instanceof Class) {
         return [graphFetchTreeContent, mapping];
       } else if (graphFetchTreeContent instanceof RawRootGraphFetchTree) {

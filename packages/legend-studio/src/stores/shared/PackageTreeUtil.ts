@@ -83,13 +83,15 @@ const getElementProjectExplorerDnDType = (
   } else if (element instanceof FileGenerationSpecification) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION;
   }
-  const extraElementProjectExplorerDnDTypeGetters = editorStore.applicationStore.pluginManager
-    .getEditorPlugins()
-    .flatMap(
-      (plugin) =>
-        (plugin as DSL_EditorPlugin_Extension).getExtraElementProjectExplorerDnDTypeGetters?.() ??
-        [],
-    );
+  const extraElementProjectExplorerDnDTypeGetters =
+    editorStore.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_EditorPlugin_Extension
+          ).getExtraElementProjectExplorerDnDTypeGetters?.() ?? [],
+      );
   for (const dndTypeGetter of extraElementProjectExplorerDnDTypeGetters) {
     const dndType = dndTypeGetter(element);
     if (dndType) {

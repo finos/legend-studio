@@ -132,9 +132,8 @@ export const checkProjectReferenceConfig = ({
     });
 
     projectMap.forEach(({ packageJson, projectReferences }, dir) => {
-      const allDependencies = (packageJson.dependencies
-        ? Object.keys(packageJson.dependencies)
-        : []
+      const allDependencies = (
+        packageJson.dependencies ? Object.keys(packageJson.dependencies) : []
       ).concat(
         packageJson.devDependencies
           ? Object.keys(packageJson.devDependencies)

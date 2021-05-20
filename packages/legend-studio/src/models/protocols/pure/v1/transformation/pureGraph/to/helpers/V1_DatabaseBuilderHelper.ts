@@ -266,12 +266,13 @@ export const V1_processRelationalOperationElement = (
       context,
     );
     if (operationalElement.relationalElement) {
-      elementWithJoins.relationalOperationElement = V1_processRelationalOperationElement(
-        operationalElement.relationalElement,
-        context,
-        new Map<string, TableAlias>(),
-        selfJoinTargets,
-      );
+      elementWithJoins.relationalOperationElement =
+        V1_processRelationalOperationElement(
+          operationalElement.relationalElement,
+          context,
+          new Map<string, TableAlias>(),
+          selfJoinTargets,
+        );
     }
     return elementWithJoins;
   } else if (operationalElement instanceof V1_DynaFunc) {

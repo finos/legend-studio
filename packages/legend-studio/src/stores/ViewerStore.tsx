@@ -161,10 +161,11 @@ export class ViewerStore {
                 ),
               )
             : this.latestVersion;
-        entities = (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByVersion(
-          this.editorStore.sdlcState.currentProjectId,
-          versionId,
-        )) as Entity[];
+        entities =
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByVersion(
+            this.editorStore.sdlcState.currentProjectId,
+            versionId,
+          )) as Entity[];
       }
 
       if (revisionId) {
@@ -179,19 +180,21 @@ export class ViewerStore {
                 ),
               )
             : this.currentRevision;
-        entities = (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
-          this.editorStore.sdlcState.currentProjectId,
-          undefined,
-          revisionId,
-        )) as Entity[];
+        entities =
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
+            this.editorStore.sdlcState.currentProjectId,
+            undefined,
+            revisionId,
+          )) as Entity[];
       }
 
       // if no revision ID or version ID is specified, we will just get the project HEAD
       if (!revisionId && !versionId) {
-        entities = (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
-          this.editorStore.sdlcState.currentProjectId,
-          undefined,
-        )) as Entity[];
+        entities =
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
+            this.editorStore.sdlcState.currentProjectId,
+            undefined,
+          )) as Entity[];
       }
       // init engine
       yield this.editorStore.graphState.graphManager.setupEngine(

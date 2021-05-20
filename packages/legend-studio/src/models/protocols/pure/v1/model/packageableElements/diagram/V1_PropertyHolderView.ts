@@ -22,7 +22,8 @@ import type { V1_PropertyPointer } from '../../../model/packageableElements/doma
 
 export class V1_PropertyHolderView
   extends V1_RelationshipView
-  implements Hashable {
+  implements Hashable
+{
   property!: V1_PropertyPointer;
 
   get hashCode(): string {

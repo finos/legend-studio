@@ -106,8 +106,10 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
   // Tab
   const selectedTab = editorState.selectedTab;
   const tabs = [UML_EDITOR_TAB.TAGS, UML_EDITOR_TAB.STEREOTYPES];
-  const changeTab = (tab: UML_EDITOR_TAB): (() => void) => (): void =>
-    editorState.setSelectedTab(tab);
+  const changeTab =
+    (tab: UML_EDITOR_TAB): (() => void) =>
+    (): void =>
+      editorState.setSelectedTab(tab);
   // Tagged value and Stereotype
   let addButtonTitle = '';
   switch (selectedTab) {
@@ -129,10 +131,14 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
       }
     }
   };
-  const deleteStereotype = (val: Stereotype): (() => void) => (): void =>
-    profile.deleteStereotype(val);
-  const deleteTag = (val: Tag): (() => void) => (): void =>
-    profile.deleteTag(val);
+  const deleteStereotype =
+    (val: Stereotype): (() => void) =>
+    (): void =>
+      profile.deleteStereotype(val);
+  const deleteTag =
+    (val: Tag): (() => void) =>
+    (): void =>
+      profile.deleteTag(val);
   return (
     <div className="uml-element-editor profile-editor">
       <div className="panel">

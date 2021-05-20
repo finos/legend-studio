@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-const COMPUTATIONALLY_EXPENSIVE_RULES = require('./computationally-expensive')
-  .rules;
+const COMPUTATIONALLY_EXPENSIVE_RULES =
+  require('./computationally-expensive').rules;
 
 const OFF = 0;
 

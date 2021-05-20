@@ -208,7 +208,8 @@ export class MappingExecutionJsonModelConnectionRuntimeState extends MappingExec
       isValidJSONString(this.testData),
       'Model-to-model mapping execution test data is not a valid JSON string',
     );
-    const engineConfig = this.editorStore.graphState.graphManager.getEngineConfig();
+    const engineConfig =
+      this.editorStore.graphState.graphManager.getEngineConfig();
     return createRuntimeForExecution(
       this.mapping,
       new JsonModelConnection(
@@ -265,7 +266,8 @@ export class MappingExecutionFlatDataConnectionRuntimeState extends MappingExecu
     return Boolean(this.sourceFlatData);
   }
   get runtime(): Runtime {
-    const engineConfig = this.editorStore.graphState.graphManager.getEngineConfig();
+    const engineConfig =
+      this.editorStore.graphState.graphManager.getEngineConfig();
     return createRuntimeForExecution(
       this.mapping,
       new FlatDataConnection(
@@ -359,10 +361,11 @@ export class MappingExecutionState {
     populateWithMockData: boolean,
   ): void {
     if (source instanceof Class) {
-      const newRuntimeState = new MappingExecutionJsonModelConnectionRuntimeState(
-        this.editorStore,
-        this.mappingEditorState.mapping,
-      );
+      const newRuntimeState =
+        new MappingExecutionJsonModelConnectionRuntimeState(
+          this.editorStore,
+          this.mappingEditorState.mapping,
+        );
       if (populateWithMockData) {
         newRuntimeState.setSourceClass(source);
         newRuntimeState.setTestData(
@@ -371,10 +374,11 @@ export class MappingExecutionState {
       }
       this.setRuntimeState(newRuntimeState);
     } else if (source instanceof RootFlatDataRecordType) {
-      const newRuntimeState = new MappingExecutionFlatDataConnectionRuntimeState(
-        this.editorStore,
-        this.mappingEditorState.mapping,
-      );
+      const newRuntimeState =
+        new MappingExecutionFlatDataConnectionRuntimeState(
+          this.editorStore,
+          this.mappingEditorState.mapping,
+        );
       if (populateWithMockData) {
         newRuntimeState.setSourceFlatData(source.owner.owner);
         newRuntimeState.setTestData(
@@ -466,9 +470,10 @@ export class MappingExecutionState {
             singleExecutionTest,
           );
           singleExecutionTest.asserts.push(testContainer);
-          const servicePackage = this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-            packageName,
-          );
+          const servicePackage =
+            this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
+              packageName,
+            );
           service.test = singleExecutionTest;
           servicePackage.addElement(service);
           this.editorStore.graphState.graph.addElement(service);
@@ -496,14 +501,15 @@ export class MappingExecutionState {
         !this.isExecuting
       ) {
         this.isExecuting = true;
-        const result = ((yield this.editorStore.graphState.graphManager.executeMapping(
-          this.editorStore.graphState.graph,
-          this.mappingEditorState.mapping,
-          query,
-          runtime,
-          CLIENT_VERSION.VX_X_X,
-          true,
-        )) as unknown) as ExecutionResult;
+        const result =
+          (yield this.editorStore.graphState.graphManager.executeMapping(
+            this.editorStore.graphState.graph,
+            this.mappingEditorState.mapping,
+            query,
+            runtime,
+            CLIENT_VERSION.VX_X_X,
+            true,
+          )) as unknown as ExecutionResult;
         this.setExecutionResultText(
           losslessStringify(result.values, undefined, TAB_SIZE),
         );
@@ -529,13 +535,14 @@ export class MappingExecutionState {
         !this.isGeneratingPlan
       ) {
         this.isGeneratingPlan = true;
-        const plan = ((yield this.editorStore.graphState.graphManager.generateExecutionPlan(
-          this.editorStore.graphState.graph,
-          this.mappingEditorState.mapping,
-          query,
-          runtime,
-          CLIENT_VERSION.VX_X_X,
-        )) as unknown) as object;
+        const plan =
+          (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+            this.editorStore.graphState.graph,
+            this.mappingEditorState.mapping,
+            query,
+            runtime,
+            CLIENT_VERSION.VX_X_X,
+          )) as unknown as object;
         this.setExecutionPlan(plan);
       }
     } catch (error: unknown) {

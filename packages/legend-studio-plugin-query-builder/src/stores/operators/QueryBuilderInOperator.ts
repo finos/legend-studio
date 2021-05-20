@@ -53,13 +53,15 @@ export class QueryBuilderInOperator extends QueryBuilderOperator {
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
     return (
-      (([
-        PRIMITIVE_TYPE.STRING,
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-      ] as unknown) as string).includes(propertyType.path) ||
+      (
+        [
+          PRIMITIVE_TYPE.STRING,
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+        ] as unknown as string
+      ).includes(propertyType.path) ||
       // TODO: do we care if the enumeration type has no value (like in the case of `==` operator)?
       propertyType instanceof Enumeration
     );
@@ -84,19 +86,23 @@ export class QueryBuilderInOperator extends QueryBuilderOperator {
         return false;
       }
       if (
-        ([
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-        ] as string[]).includes(propertyType.path)
+        (
+          [
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+          ] as string[]
+        ).includes(propertyType.path)
       ) {
-        return ([
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-        ] as string[]).includes(collectionType.path);
+        return (
+          [
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+          ] as string[]
+        ).includes(collectionType.path);
       }
       return collectionType === propertyType;
     }
@@ -106,9 +112,10 @@ export class QueryBuilderInOperator extends QueryBuilderOperator {
   getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
-    const multiplicityOne = filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+    const multiplicityOne =
+      filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;

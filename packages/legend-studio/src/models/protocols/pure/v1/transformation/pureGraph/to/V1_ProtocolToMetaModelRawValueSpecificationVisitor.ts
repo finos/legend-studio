@@ -44,7 +44,8 @@ import type {
 } from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
 
 export class V1_ProtocolToMetaModelRawValueSpecificationVisitor
-  implements V1_RawValueSpecificationVisitor<RawValueSpecification> {
+  implements V1_RawValueSpecificationVisitor<RawValueSpecification>
+{
   context: V1_GraphBuilderContext;
   propertyGraphFetchTreeClass?: Class;
 

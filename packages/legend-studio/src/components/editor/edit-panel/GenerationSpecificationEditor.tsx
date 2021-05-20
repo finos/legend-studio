@@ -187,7 +187,8 @@ const ModelGenerationItem = observer(
         className={clsx('generation-spec-model-generation-editor__item', {
           'generation-spec-model-generation-editor__item--dragged':
             nodeState.isBeingDragged,
-          'generation-spec-model-generation-editor__item---no-hover': isRearrangingNodes,
+          'generation-spec-model-generation-editor__item---no-hover':
+            isRearrangingNodes,
         })}
       >
         {nodeState.isBeingDragged && (
@@ -202,7 +203,8 @@ const ModelGenerationItem = observer(
               className={clsx(
                 'generation-spec-model-generation-editor__item__id',
                 {
-                  'generation-spec-model-generation-editor__item__id--has-error': !isUnique,
+                  'generation-spec-model-generation-editor__item__id--has-error':
+                    !isUnique,
                 },
               )}
               spellCheck={false}
@@ -245,21 +247,25 @@ const ModelGenerationSpecifications = observer(
     const { specState } = props;
     const specNodesStates = specState.generationTreeNodeStates;
     const editorStore = useEditorStore();
-    const modelGenerationElementsInGraph = editorStore.applicationStore.pluginManager
-      .getPureGraphManagerPlugins()
-      .flatMap(
-        (plugin) =>
-          (plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension).getExtraModelGenerationElementGetters?.() ??
-          [],
-      )
-      .flatMap((getter) => getter(editorStore.graphState.graph));
-    const extraModelGenerationSpecificationElementDnDTypes = editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          (plugin as DSLGenerationSpecification_EditorPlugin_Extension).getExtraModelGenerationSpecificationElementDnDTypes?.() ??
-          [],
-      );
+    const modelGenerationElementsInGraph =
+      editorStore.applicationStore.pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+            ).getExtraModelGenerationElementGetters?.() ?? [],
+        )
+        .flatMap((getter) => getter(editorStore.graphState.graph));
+    const extraModelGenerationSpecificationElementDnDTypes =
+      editorStore.applicationStore.pluginManager
+        .getEditorPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLGenerationSpecification_EditorPlugin_Extension
+            ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
+        );
     const modelGenerationElementOptions = modelGenerationElementsInGraph.map(
       (f) => f.selectOption,
     );
@@ -361,11 +367,8 @@ const FileGenerationItem = observer(
     fileGeneraitonRef: PackageableElementReference<FileGenerationSpecification>;
     options: PackageableElementSelectOption<FileGenerationSpecification>[];
   }) => {
-    const {
-      fileGeneraitonRef,
-      generationSpecificationEditorState,
-      options,
-    } = props;
+    const { fileGeneraitonRef, generationSpecificationEditorState, options } =
+      props;
     const editorStore = useEditorStore();
     const fileGeneration = fileGeneraitonRef.value;
     const value = { label: fileGeneration.name, value: fileGeneration };
@@ -421,9 +424,10 @@ const FileGenerationSpecifications = observer(
     const { generationSpecificationEditorState } = props;
     const generationSpec = generationSpecificationEditorState.spec;
     const editorStore = useEditorStore();
-    const fileGenerations = generationSpecificationEditorState.spec.fileGenerations.map(
-      (f) => f.value,
-    );
+    const fileGenerations =
+      generationSpecificationEditorState.spec.fileGenerations.map(
+        (f) => f.value,
+      );
     const fileGenerationInGraph = editorStore.graphState.graph.fileGenerations;
     const fileGenerationsOptions = fileGenerationInGraph
       .filter((f) => !fileGenerations.includes(f))

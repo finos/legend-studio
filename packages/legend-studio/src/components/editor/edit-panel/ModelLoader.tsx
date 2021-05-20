@@ -53,14 +53,14 @@ export const ModelLoader = observer(() => {
   const currentExternalInputLabel = currentExternalInputType
     ? modelLoaderState.getImportConfiguration(currentExternalInputType).label
     : undefined;
-  const setCurrentInputType = (
-    inputType: MODEL_UPDATER_INPUT_TYPE,
-  ): (() => void) => (): void =>
-    modelLoaderState.setCurrentInputType(inputType);
-  const setCurrentExternalInput = (
-    inputType: ImportConfigurationDescription,
-  ): (() => void) => (): void =>
-    modelLoaderState.setCurrentExternalFormatInputType(inputType);
+  const setCurrentInputType =
+    (inputType: MODEL_UPDATER_INPUT_TYPE): (() => void) =>
+    (): void =>
+      modelLoaderState.setCurrentInputType(inputType);
+  const setCurrentExternalInput =
+    (inputType: ImportConfigurationDescription): (() => void) =>
+    (): void =>
+      modelLoaderState.setCurrentExternalFormatInputType(inputType);
   // replace flag
   const replace = modelLoaderState.replace;
   const toggleReplace = (): void => modelLoaderState.setReplaceFlag(!replace);

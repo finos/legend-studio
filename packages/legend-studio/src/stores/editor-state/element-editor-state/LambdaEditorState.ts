@@ -86,13 +86,8 @@ export abstract class LambdaEditorState {
   processSourceInformation(
     sourceInformation: SourceInformation,
   ): SourceInformation {
-    const {
-      sourceId,
-      startLine,
-      startColumn,
-      endLine,
-      endColumn,
-    } = sourceInformation;
+    const { sourceId, startLine, startColumn, endLine, endColumn } =
+      sourceInformation;
     const lineOffset = 0;
     const columnOffset = this.lambdaPrefix.length;
     return new SourceInformation(

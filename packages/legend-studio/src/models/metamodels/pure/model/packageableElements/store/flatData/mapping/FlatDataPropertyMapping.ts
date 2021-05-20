@@ -31,7 +31,8 @@ import type { PropertyMappingVisitor } from '../../../../../model/packageableEle
 
 export class FlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   transformer?: EnumerationMapping;
   transform: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 

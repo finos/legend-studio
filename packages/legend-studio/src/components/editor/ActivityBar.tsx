@@ -80,8 +80,10 @@ interface ActivityDisplay {
 
 export const ActivityBar = observer(() => {
   const editorStore = useEditorStore();
-  const changeActivity = (activity: ACTIVITY_MODE): (() => void) => (): void =>
-    editorStore.setActiveActivity(activity);
+  const changeActivity =
+    (activity: ACTIVITY_MODE): (() => void) =>
+    (): void =>
+      editorStore.setActiveActivity(activity);
   // local changes
   const localChanges =
     editorStore.changeDetectionState.workspaceLatestRevisionState.changes
@@ -119,27 +121,28 @@ export const ActivityBar = observer(() => {
     editorStore.conflictResolutionState.conflicts.length;
   const conflictResolutionChangesDisplayLabel =
     conflictResolutionChanges > 99 ? '99+' : conflictResolutionChanges;
-  const conflictResolutionChangesIndicatorStatusIcon = !editorStore.isInConflictResolutionMode ? (
-    <div />
-  ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
-    editorStore.changeDetectionState.workspaceBaseRevisionState
-      .isBuildingEntityHashesIndex ? (
-    <div
-      className="activity-bar__item__icon__indicator activity-bar__conflict-resolution-change-counter activity-bar__conflict-resolution-change-counter--waiting"
-      data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
-    >
-      <FaRegClock />
-    </div>
-  ) : conflictResolutionChanges ? (
-    <div
-      className="activity-bar__item__icon__indicator activity-bar__conflict-resolution-change-counter"
-      data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
-    >
-      {conflictResolutionChangesDisplayLabel}
-    </div>
-  ) : (
-    <div />
-  );
+  const conflictResolutionChangesIndicatorStatusIcon =
+    !editorStore.isInConflictResolutionMode ? (
+      <div />
+    ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
+      editorStore.changeDetectionState.workspaceBaseRevisionState
+        .isBuildingEntityHashesIndex ? (
+      <div
+        className="activity-bar__item__icon__indicator activity-bar__conflict-resolution-change-counter activity-bar__conflict-resolution-change-counter--waiting"
+        data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+      >
+        <FaRegClock />
+      </div>
+    ) : conflictResolutionChanges ? (
+      <div
+        className="activity-bar__item__icon__indicator activity-bar__conflict-resolution-change-counter"
+        data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+      >
+        {conflictResolutionChangesDisplayLabel}
+      </div>
+    ) : (
+      <div />
+    );
   // review changes
   const reviewChanges =
     editorStore.changeDetectionState.aggregatedWorkspaceChanges.length;

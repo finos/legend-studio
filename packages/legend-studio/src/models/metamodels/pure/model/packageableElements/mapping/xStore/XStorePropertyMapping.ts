@@ -24,7 +24,8 @@ import { PropertyMapping } from '../PropertyMapping';
 
 export class XStorePropertyMapping
   extends PropertyMapping
-  implements Hashable, Stubable {
+  implements Hashable, Stubable
+{
   crossExpression!: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {

@@ -41,7 +41,8 @@ import type { GenericTypeReference } from './GenericTypeReference';
 import { GenericTypeExplicitReference } from './GenericTypeReference';
 
 export class DerivedProperty
-  implements AbstractProperty, AnnotatedElement, Hashable, Stubable {
+  implements AbstractProperty, AnnotatedElement, Hashable, Stubable
+{
   uuid = uuid();
   owner: PropertyOwner; // readonly
   name: string;

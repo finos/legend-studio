@@ -81,7 +81,8 @@ import { V1_processSection } from '../../../transformation/pureGraph/to/helpers/
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
 export class V1_ProtocolToMetaModelGraphSecondPassVisitor
-  implements V1_PackageableElementVisitor<void> {
+  implements V1_PackageableElementVisitor<void>
+{
   context: V1_GraphBuilderContext;
 
   constructor(context: V1_GraphBuilderContext) {
@@ -300,9 +301,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.graph.buildPackageString(element.package, element.name),
     );
     fileGeneration.setType(element.type);
-    fileGeneration.configurationProperties = element.configurationProperties.map(
-      V1_processConfigurationProperty,
-    );
+    fileGeneration.configurationProperties =
+      element.configurationProperties.map(V1_processConfigurationProperty);
     fileGeneration.setGenerationOutputPath(element.generationOutputPath);
     fileGeneration.scopeElements = element.scopeElements.map((scopeElement) =>
       V1_processScopeElement(scopeElement, this.context),

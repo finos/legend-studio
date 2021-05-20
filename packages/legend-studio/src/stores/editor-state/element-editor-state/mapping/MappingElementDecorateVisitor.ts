@@ -61,13 +61,15 @@ import type { PropertyMapping } from '../../../../models/metamodels/pure/model/p
  * changes in the graph.
  */
 export class MappingElementDecorateVisitor
-  implements SetImplementationVisitor<void> {
+  implements SetImplementationVisitor<void>
+{
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     const enumValueMappingsToAdd: EnumValueMapping[] = [];
     enumerationMapping.enumeration.value.values.forEach((enumValue) => {
-      const matchingEnumValueMappings = enumerationMapping.enumValueMappings.find(
-        (evm) => evm.enum.value === enumValue,
-      );
+      const matchingEnumValueMappings =
+        enumerationMapping.enumValueMappings.find(
+          (evm) => evm.enum.value === enumValue,
+        );
       if (!matchingEnumValueMappings) {
         const newEnumValueMapping = new EnumValueMapping(
           EnumValueExplicitReference.create(enumValue),
@@ -143,11 +145,12 @@ export class MappingElementDecorateVisitor
               ),
             ];
         // Find existing enumeration mappings for the property enumeration
-        const existingEnumerationMappings = setImplementation.parent.enumerationMappingsByEnumeration(
-          enumerationPropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
-        );
+        const existingEnumerationMappings =
+          setImplementation.parent.enumerationMappingsByEnumeration(
+            enumerationPropertyMapping[0].property.value.genericType.value.getRawType(
+              Enumeration,
+            ),
+          );
         enumerationPropertyMapping.forEach((epm) => {
           // If there are no enumeration mappings, delete the transformer of the property mapping
           // If there is only 1 enumeration mapping, make it the transformer of the property mapping
@@ -163,9 +166,10 @@ export class MappingElementDecorateVisitor
         });
         return enumerationPropertyMapping;
       } else if (propertyType instanceof Class) {
-        const resolvedLeafSetImps = setImplementation.parent.getLeafSetImplementations(
-          property.genericType.value.getRawType(Class),
-        );
+        const resolvedLeafSetImps =
+          setImplementation.parent.getLeafSetImplementations(
+            property.genericType.value.getRawType(Class),
+          );
         // if there are no root-resolved set implementations for the class, return empty array
         if (!resolvedLeafSetImps) {
           return [];
@@ -190,7 +194,9 @@ export class MappingElementDecorateVisitor
             )
             // sort these property mappings by id of their set implementations
             .sort((a, b) =>
-              (a.targetSetImplementation as SetImplementation).id.value.localeCompare(
+              (
+                a.targetSetImplementation as SetImplementation
+              ).id.value.localeCompare(
                 (b.targetSetImplementation as SetImplementation).id.value,
               ),
             )
@@ -256,11 +262,12 @@ export class MappingElementDecorateVisitor
               ),
             ];
         // Find existing enumeration mappings for the property enumeration
-        const existingEnumerationMappings = setImplementation.parent.enumerationMappingsByEnumeration(
-          ePropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
-        );
+        const existingEnumerationMappings =
+          setImplementation.parent.enumerationMappingsByEnumeration(
+            ePropertyMapping[0].property.value.genericType.value.getRawType(
+              Enumeration,
+            ),
+          );
         ePropertyMapping.forEach((epm) => {
           assertType(
             epm,
@@ -340,7 +347,8 @@ export class MappingElementDecorateVisitor
           PropertyExplicitReference.create(property),
           setImplementation,
         );
-        newPropertyMapping.relationalOperation = createStubRelationalOperationElement();
+        newPropertyMapping.relationalOperation =
+          createStubRelationalOperationElement();
         return [newPropertyMapping];
       } else if (propertyType instanceof Enumeration) {
         // only allow one property mapping per enumeration property
@@ -359,15 +367,17 @@ export class MappingElementDecorateVisitor
             PropertyExplicitReference.create(property),
             setImplementation,
           );
-          newPropertyMapping.relationalOperation = createStubRelationalOperationElement();
+          newPropertyMapping.relationalOperation =
+            createStubRelationalOperationElement();
           ePropertyMapping = [newPropertyMapping];
         }
         // Find existing enumeration mappings for the property enumeration
-        const existingEnumerationMappings = setImplementation.parent.enumerationMappingsByEnumeration(
-          ePropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
-        );
+        const existingEnumerationMappings =
+          setImplementation.parent.enumerationMappingsByEnumeration(
+            ePropertyMapping[0].property.value.genericType.value.getRawType(
+              Enumeration,
+            ),
+          );
         ePropertyMapping.forEach((epm) => {
           assertType(
             epm,
@@ -404,7 +414,8 @@ export class MappingElementDecorateVisitor
           PropertyExplicitReference.create(property),
           setImplementation,
         );
-        newPropertyMapping.relationalOperation = createStubRelationalOperationElement();
+        newPropertyMapping.relationalOperation =
+          createStubRelationalOperationElement();
         return [newPropertyMapping];
       }
       return [];
@@ -425,12 +436,14 @@ export class MappingElementDecorateVisitor
 }
 
 export class MapppingElementDecorationCleanUpVisitor
-  implements SetImplementationVisitor<void> {
+  implements SetImplementationVisitor<void>
+{
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     // Remove the enum value mapping if all of its source values are empty
-    const nonEmptyEnumValueMappings = enumerationMapping.enumValueMappings.filter(
-      (enumValueMapping) => !enumValueMapping.isStub,
-    );
+    const nonEmptyEnumValueMappings =
+      enumerationMapping.enumValueMappings.filter(
+        (enumValueMapping) => !enumValueMapping.isStub,
+      );
     // Prune the empty source values of each enum value mapping
     nonEmptyEnumValueMappings.forEach((enumValueMapping) => {
       enumValueMapping.setSourceValues(

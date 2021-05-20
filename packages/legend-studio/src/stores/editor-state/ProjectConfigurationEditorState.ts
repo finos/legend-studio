@@ -156,12 +156,14 @@ export class ProjectConfigurationEditorState extends EditorState {
         ),
       );
       // add production projects
-      ((yield this.sdlcState.sdlcClient.getProjects(
-        ProjectType.PRODUCTION,
-        undefined,
-        undefined,
-        undefined,
-      )) as PlainObject<Project>[])
+      (
+        (yield this.sdlcState.sdlcClient.getProjects(
+          ProjectType.PRODUCTION,
+          undefined,
+          undefined,
+          undefined,
+        )) as PlainObject<Project>[]
+      )
         .map((project) => Project.serialization.fromJson(project))
         .forEach((project) => this.projects.set(project.projectId, project));
       this.associatedProjectsAndVersionsFetched = true;
@@ -224,12 +226,14 @@ export class ProjectConfigurationEditorState extends EditorState {
     if (!this.queryHistory.has(query) && query) {
       this.isQueryingProjects = true;
       try {
-        ((yield this.sdlcState.sdlcClient.getProjects(
-          ProjectType.PRODUCTION,
-          false,
-          query,
-          undefined,
-        )) as PlainObject<Project>[])
+        (
+          (yield this.sdlcState.sdlcClient.getProjects(
+            ProjectType.PRODUCTION,
+            false,
+            query,
+            undefined,
+          )) as PlainObject<Project>[]
+        )
           .map((project) => Project.serialization.fromJson(project))
           .forEach((project) => this.projects.set(project.projectId, project));
         this.queryHistory.add(query);
@@ -251,9 +255,11 @@ export class ProjectConfigurationEditorState extends EditorState {
   ) {
     try {
       const versionMap = observable<string, Version>(new Map());
-      ((yield this.sdlcState.sdlcClient.getVersions(
-        projectId,
-      )) as PlainObject<Version>[])
+      (
+        (yield this.sdlcState.sdlcClient.getVersions(
+          projectId,
+        )) as PlainObject<Version>[]
+      )
         .map((version) => Version.serialization.fromJson(version))
         .forEach((version) => versionMap.set(version.id.id, version));
       this.versionsByProject.set(projectId, versionMap);
@@ -292,24 +298,27 @@ export class ProjectConfigurationEditorState extends EditorState {
   updateConfigs = flow(function* (this: ProjectConfigurationEditorState) {
     this.isUpdatingConfiguration = true;
     try {
-      const updateProjectConfigurationCommand = new UpdateProjectConfigurationCommand(
-        this.currentProjectConfiguration.groupId,
-        this.currentProjectConfiguration.artifactId,
-        this.currentProjectConfiguration.projectStructureVersion,
-        `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
-      );
-      updateProjectConfigurationCommand.projectDependenciesToAdd = this.currentProjectConfiguration.projectDependencies.filter(
-        (dep) =>
-          !this.originalConfig.projectDependencies.find(
-            (originalProjDep) => originalProjDep.hashCode === dep.hashCode,
-          ),
-      );
-      updateProjectConfigurationCommand.projectDependenciesToRemove = this.originalConfig.projectDependencies.filter(
-        (originalProjDep) =>
-          !this.currentProjectConfiguration.projectDependencies.find(
-            (dep) => dep.hashCode === originalProjDep.hashCode,
-          ),
-      );
+      const updateProjectConfigurationCommand =
+        new UpdateProjectConfigurationCommand(
+          this.currentProjectConfiguration.groupId,
+          this.currentProjectConfiguration.artifactId,
+          this.currentProjectConfiguration.projectStructureVersion,
+          `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
+        );
+      updateProjectConfigurationCommand.projectDependenciesToAdd =
+        this.currentProjectConfiguration.projectDependencies.filter(
+          (dep) =>
+            !this.originalConfig.projectDependencies.find(
+              (originalProjDep) => originalProjDep.hashCode === dep.hashCode,
+            ),
+        );
+      updateProjectConfigurationCommand.projectDependenciesToRemove =
+        this.originalConfig.projectDependencies.filter(
+          (originalProjDep) =>
+            !this.currentProjectConfiguration.projectDependencies.find(
+              (dep) => dep.hashCode === originalProjDep.hashCode,
+            ),
+        );
       yield this.updateProjectConfiguration(updateProjectConfigurationCommand);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -330,9 +339,10 @@ export class ProjectConfigurationEditorState extends EditorState {
         .TEMPORARY__disableSDLCProjectStructureSupport
     ) {
       try {
-        this.latestProjectStructureVersion = ProjectStructureVersion.serialization.fromJson(
-          yield this.sdlcState.sdlcClient.getLatestProjectStructureVersion(),
-        );
+        this.latestProjectStructureVersion =
+          ProjectStructureVersion.serialization.fromJson(
+            yield this.sdlcState.sdlcClient.getLatestProjectStructureVersion(),
+          );
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.SDLC_PROBLEM,

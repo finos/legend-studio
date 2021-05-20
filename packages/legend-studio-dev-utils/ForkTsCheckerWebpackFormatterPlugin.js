@@ -25,9 +25,8 @@ const PLUGIN_NAME = 'ForkTsCheckerWebpackFormatterPlugin';
 
 class ForkTsCheckerWebpackFormatterPlugin {
   apply(compiler) {
-    const tsCheckerHooks = ForkTsCheckerWebpackPlugin.getCompilerHooks(
-      compiler,
-    );
+    const tsCheckerHooks =
+      ForkTsCheckerWebpackPlugin.getCompilerHooks(compiler);
     let typeCheckingStartTime;
     tsCheckerHooks.start.tap(PLUGIN_NAME, () => {
       // this hook is called when type checking is started, so we can reset the time here
@@ -151,8 +150,9 @@ class ForkTsCheckerWebpackFormatterPlugin {
       const warningCount = issues.filter(
         (issue) => issue.severity === 'warning',
       ).length;
-      const errorCount = issues.filter((issue) => issue.severity === 'error')
-        .length;
+      const errorCount = issues.filter(
+        (issue) => issue.severity === 'error',
+      ).length;
       if (!(errorCount + warningCount)) {
         console.info(
           `${chalk.gray(

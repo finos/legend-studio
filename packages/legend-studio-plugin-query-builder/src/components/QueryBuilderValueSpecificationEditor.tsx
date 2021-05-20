@@ -373,11 +373,12 @@ const CollectionValueInstanceValueEditor = observer(
   },
 );
 
-export const QueryBuilderUnsupportedValueSpecificationEditor: React.FC<{}> = () => (
-  <div className="query-builder-value-spec-editor--unsupported">
-    unsupported
-  </div>
-);
+export const QueryBuilderUnsupportedValueSpecificationEditor: React.FC<{}> =
+  () => (
+    <div className="query-builder-value-spec-editor--unsupported">
+      unsupported
+    </div>
+  );
 
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;

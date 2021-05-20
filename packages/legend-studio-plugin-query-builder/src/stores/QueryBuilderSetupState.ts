@@ -69,16 +69,16 @@ export class QueryBuilderSetupState {
   }
 
   get possibleMappings(): Mapping[] {
-    const mappingsWithClassMapped = this.editorStore.graphState.graph.mappings.filter(
-      (mapping) =>
+    const mappingsWithClassMapped =
+      this.editorStore.graphState.graph.mappings.filter((mapping) =>
         mapping.classMappings.some((cm) => cm.class.value === this._class),
-    );
-    const resolvedMappingIncludes = this.editorStore.graphState.graph.mappings.filter(
-      (mapping) =>
+      );
+    const resolvedMappingIncludes =
+      this.editorStore.graphState.graph.mappings.filter((mapping) =>
         mapping.allIncludedMappings.some((e) =>
           mappingsWithClassMapped.includes(e),
         ),
-    );
+      );
     return this._class
       ? uniq([...mappingsWithClassMapped, ...resolvedMappingIncludes])
       : [];

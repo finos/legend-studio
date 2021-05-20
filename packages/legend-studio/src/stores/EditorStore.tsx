@@ -438,10 +438,11 @@ export class EditorStore {
             message: 'Creating workspace...',
             prompt: 'Please do not close the application',
           });
-          const workspace = await this.applicationStore.networkClientManager.sdlcClient.createWorkspace(
-            projectId,
-            workspaceId,
-          );
+          const workspace =
+            await this.applicationStore.networkClientManager.sdlcClient.createWorkspace(
+              projectId,
+              workspaceId,
+            );
           this.applicationStore.setBlockingAlert(undefined);
           this.applicationStore.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
@@ -898,8 +899,9 @@ export class EditorStore {
       .getEditorPlugins()
       .flatMap(
         (plugin) =>
-          (plugin as DSL_EditorPlugin_Extension).getExtraElementEditorStateCreators?.() ??
-          [],
+          (
+            plugin as DSL_EditorPlugin_Extension
+          ).getExtraElementEditorStateCreators?.() ?? [],
       );
     for (const creator of extraElementEditorStateCreators) {
       const elementEditorState = creator(this, element);
@@ -942,9 +944,10 @@ export class EditorStore {
     if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
       return;
     }
-    const generatedChildrenElements = this.graphState.graph.generationModel.allElements.filter(
-      (e) => e.generationParentElement === element,
-    );
+    const generatedChildrenElements =
+      this.graphState.graph.generationModel.allElements.filter(
+        (e) => e.generationParentElement === element,
+      );
     const elementsToDelete = [element, ...generatedChildrenElements];
     if (
       this.currentEditorState &&
@@ -1020,24 +1023,22 @@ export class EditorStore {
     this.setCurrentEditorState(generatedFileState);
   }
 
-  createGlobalHotKeyAction = (
-    handler: () => void,
-  ): ((event: KeyboardEvent | undefined) => void) => (
-    event: KeyboardEvent | undefined,
-  ): void => {
-    event?.preventDefault();
-    // FIXME: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
-    const isResolvingConflicts =
-      this.isInConflictResolutionMode &&
-      !this.conflictResolutionState.hasResolvedAllConflicts;
-    if (
-      this.isInitialized &&
-      !isResolvingConflicts &&
-      !this.blockGlobalHotkeys
-    ) {
-      handler();
-    }
-  };
+  createGlobalHotKeyAction =
+    (handler: () => void): ((event: KeyboardEvent | undefined) => void) =>
+    (event: KeyboardEvent | undefined): void => {
+      event?.preventDefault();
+      // FIXME: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
+      const isResolvingConflicts =
+        this.isInConflictResolutionMode &&
+        !this.conflictResolutionState.hasResolvedAllConflicts;
+      if (
+        this.isInitialized &&
+        !isResolvingConflicts &&
+        !this.blockGlobalHotkeys
+      ) {
+        handler();
+      }
+    };
 
   closeAllEditorTabs(): void {
     this.setCurrentEditorState(undefined);
@@ -1054,9 +1055,10 @@ export class EditorStore {
         showLoading: true,
       });
       try {
-        const graphGrammar = (yield this.graphState.graphManager.graphToPureCode(
-          this.graphState.graph,
-        )) as string;
+        const graphGrammar =
+          (yield this.graphState.graphManager.graphToPureCode(
+            this.graphState.graph,
+          )) as string;
         yield this.grammarTextEditorState.setGraphGrammarText(graphGrammar);
       } catch (error: unknown) {
         assertErrorThrown(error);
@@ -1165,41 +1167,46 @@ export class EditorStore {
   }
 
   getSupportedElementTypes(): string[] {
-    return ([
-      /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-      PACKAGEABLE_ELEMENT_TYPE.CLASS,
-      PACKAGEABLE_ELEMENT_TYPE.ENUMERATION,
-      PACKAGEABLE_ELEMENT_TYPE.PROFILE,
-      PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION,
-      PACKAGEABLE_ELEMENT_TYPE.FUNCTION,
-      PACKAGEABLE_ELEMENT_TYPE.DIAGRAM,
-      PACKAGEABLE_ELEMENT_TYPE.MEASURE,
-      PACKAGEABLE_ELEMENT_TYPE.MAPPING,
-      PACKAGEABLE_ELEMENT_TYPE.RUNTIME,
-      PACKAGEABLE_ELEMENT_TYPE.CONNECTION,
-      PACKAGEABLE_ELEMENT_TYPE.SERVICE,
-      PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION,
-      PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
-      PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
-      PACKAGEABLE_ELEMENT_TYPE.DATABASE,
-    ] as string[])
+    return (
+      [
+        /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
+        PACKAGEABLE_ELEMENT_TYPE.CLASS,
+        PACKAGEABLE_ELEMENT_TYPE.ENUMERATION,
+        PACKAGEABLE_ELEMENT_TYPE.PROFILE,
+        PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION,
+        PACKAGEABLE_ELEMENT_TYPE.FUNCTION,
+        PACKAGEABLE_ELEMENT_TYPE.DIAGRAM,
+        PACKAGEABLE_ELEMENT_TYPE.MEASURE,
+        PACKAGEABLE_ELEMENT_TYPE.MAPPING,
+        PACKAGEABLE_ELEMENT_TYPE.RUNTIME,
+        PACKAGEABLE_ELEMENT_TYPE.CONNECTION,
+        PACKAGEABLE_ELEMENT_TYPE.SERVICE,
+        PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION,
+        PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
+        PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
+        PACKAGEABLE_ELEMENT_TYPE.DATABASE,
+      ] as string[]
+    )
       .concat(
         this.applicationStore.pluginManager
           .getEditorPlugins()
           .flatMap(
             (plugin) =>
-              (plugin as DSL_EditorPlugin_Extension).getExtraSupportedElementTypes?.() ??
-              [],
+              (
+                plugin as DSL_EditorPlugin_Extension
+              ).getExtraSupportedElementTypes?.() ?? [],
           ),
       )
       .filter(
         (type) =>
           !this.applicationStore.config.options
             .TEMPORARY__disableNonModelStoreSupports ||
-          !([
-            PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
-            PACKAGEABLE_ELEMENT_TYPE.DATABASE,
-          ] as string[]).includes(type),
+          !(
+            [
+              PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
+              PACKAGEABLE_ELEMENT_TYPE.DATABASE,
+            ] as string[]
+          ).includes(type),
       );
   }
 }

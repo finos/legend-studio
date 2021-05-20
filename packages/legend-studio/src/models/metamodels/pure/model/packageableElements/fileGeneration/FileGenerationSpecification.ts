@@ -55,13 +55,12 @@ export const getGenerationMode = (value: string): GenerationMode =>
 
 export class FileGenerationSpecification
   extends AbstractGenerationSpecification
-  implements Hashable {
+  implements Hashable
+{
   type!: string;
   generationOutputPath?: string;
-  scopeElements: (
-    | PackageableElementReference<PackageableElement>
-    | string
-  )[] = [];
+  scopeElements: (PackageableElementReference<PackageableElement> | string)[] =
+    [];
   configurationProperties: ConfigurationProperty[] = [];
 
   constructor(name: string) {

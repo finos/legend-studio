@@ -85,9 +85,8 @@ export const EntityDiffSideBarItem = observer(
 export const EntityDiffView = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const diffEditorState = editorStore.getCurrentEditorState(
-    EntityDiffViewState,
-  );
+  const diffEditorState =
+    editorStore.getCurrentEditorState(EntityDiffViewState);
   const {
     fromEntity,
     fromGrammarText,

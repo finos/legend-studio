@@ -170,9 +170,8 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
     const openNewConnectionModal = (): void =>
       currentRuntimeEditorTabState.addIdentifiedConnection();
     // context menu
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-      false,
-    );
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     return (
@@ -488,7 +487,8 @@ const IdentifiedConnectionEditor = observer(
       if (val.value === undefined) {
         let customConnection: Connection;
         try {
-          customConnection = currentRuntimeEditorTabState.createNewCustomConnection();
+          customConnection =
+            currentRuntimeEditorTabState.createNewCustomConnection();
         } catch (e: unknown) {
           assertErrorThrown(e);
           applicationStore.notifyWarning(e.message);
@@ -585,13 +585,11 @@ const IdentifiedConnectionsPerStoreEditor = observer(
     currentRuntimeEditorTabState: IdentifiedConnectionsEditorTabState;
     isReadOnly: boolean;
   }) => {
-    const {
-      isReadOnly,
-      currentRuntimeEditorTabState,
-      runtimeEditorState,
-    } = props;
+    const { isReadOnly, currentRuntimeEditorTabState, runtimeEditorState } =
+      props;
     const isEmbeddedRuntime = runtimeEditorState.isEmbeddedRuntime;
-    const connectionEditorState = currentRuntimeEditorTabState.getConnectionEditorState();
+    const connectionEditorState =
+      currentRuntimeEditorTabState.getConnectionEditorState();
     const identifiedConnection =
       currentRuntimeEditorTabState.identifiedConnectionEditorState
         ?.idenfitiedConnection;

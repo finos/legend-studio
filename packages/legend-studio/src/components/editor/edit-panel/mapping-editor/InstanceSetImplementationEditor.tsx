@@ -136,8 +136,9 @@ const InstanceSetImplementationSourceSelectorModal = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-    const options = (editorStore.graphState.graph
-      .classes as MappingElementSource[])
+    const options = (
+      editorStore.graphState.graph.classes as MappingElementSource[]
+    )
       .concat(
         editorStore.graphState.graph.flatDatas.flatMap((e) => e.recordTypes),
       )
@@ -206,9 +207,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const instanceSetImplementationState =
       mappingEditorState.currentTabState instanceof MappingElementState
         ? mappingEditorState.currentTabState
@@ -226,7 +226,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
       'Changing source on mapping with embedded children will delete all its children';
     const showSourceSelectorModal = (): void => {
       if (!isReadOnly) {
-        const embeddedSetImpls = setImplementation.getEmbeddedSetImplmentations();
+        const embeddedSetImpls =
+          setImplementation.getEmbeddedSetImplmentations();
         if (!embeddedSetImpls.length) {
           setSourceElementForSourceSelectorModal(null);
         } else {
@@ -313,7 +314,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const handleDrop = useCallback(
       (item: MappingElementSourceDropTarget): void => {
         if (!setImplementation.isEmbedded && !isReadOnly) {
-          const embeddedSetImpls = setImplementation.getEmbeddedSetImplmentations();
+          const embeddedSetImpls =
+            setImplementation.getEmbeddedSetImplmentations();
           const droppedPackagableElement = item.data.packageableElement;
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);
@@ -482,9 +484,8 @@ export const InstanceSetImplementationEditor = observer(
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const [sortByRequired, setSortByRequired] = useState(true);
     const instanceSetImplementationState = guaranteeNonNullable(
       mappingEditorState.currentTabState instanceof

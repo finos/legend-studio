@@ -148,7 +148,8 @@ export class WorkspaceUpdaterState {
   refreshWorkspaceUpdater = flow(function* (this: WorkspaceUpdaterState) {
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode = (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode =
+        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
@@ -175,10 +176,11 @@ export class WorkspaceUpdaterState {
 
     try {
       this.isRefreshingWorkspaceUpdater = true;
-      this.sdlcState.isWorkspaceOutdated = (yield this.sdlcState.sdlcClient.isWorkspaceOutdated(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
-      )) as boolean;
+      this.sdlcState.isWorkspaceOutdated =
+        (yield this.sdlcState.sdlcClient.isWorkspaceOutdated(
+          this.sdlcState.currentProjectId,
+          this.sdlcState.currentWorkspaceId,
+        )) as boolean;
 
       if (!this.sdlcState.isWorkspaceOutdated) {
         this.editorStore.changeDetectionState.setAggregatedProjectLatestChanges(
@@ -235,7 +237,8 @@ export class WorkspaceUpdaterState {
     // TODO: we might need to check if the workspace is up-to-date before allowing update
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode = (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode =
+        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
@@ -257,10 +260,11 @@ export class WorkspaceUpdaterState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      const workspaceUpdateReport = (yield this.sdlcState.sdlcClient.updateWorkspace(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
-      )) as WorkspaceUpdateReport;
+      const workspaceUpdateReport =
+        (yield this.sdlcState.sdlcClient.updateWorkspace(
+          this.sdlcState.currentProjectId,
+          this.sdlcState.currentWorkspaceId,
+        )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.SDLC_UPDATE_WORKSPACE,
         Date.now() - startTime,
@@ -318,14 +322,18 @@ export class WorkspaceUpdaterState {
       const baseReview = baseReviewObj
         ? Review.serialization.fromJson(baseReviewObj)
         : undefined;
-      this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = ((yield this.sdlcState.sdlcClient.getReviews(
-        this.sdlcState.currentProjectId,
-        ReviewState.COMMITTED,
-        undefined,
-        baseReview ? baseReview.committedAt : workspaceBaseRevision.committedAt,
-        undefined,
-        undefined,
-      )) as PlainObject<Review>[])
+      this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = (
+        (yield this.sdlcState.sdlcClient.getReviews(
+          this.sdlcState.currentProjectId,
+          ReviewState.COMMITTED,
+          undefined,
+          baseReview
+            ? baseReview.committedAt
+            : workspaceBaseRevision.committedAt,
+          undefined,
+          undefined,
+        )) as PlainObject<Review>[]
+      )
         .map((review) => Review.serialization.fromJson(review))
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error: unknown) {

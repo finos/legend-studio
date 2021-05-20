@@ -587,15 +587,13 @@ export const testMappingRoundtrip = [
           inputData: [
             {
               _type: 'object',
-              data:
-                '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}',
+              data: '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}',
               inputType: 'JSON',
               sourceClass: 'tClass',
             },
             {
               _type: 'object',
-              data:
-                '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}',
+              data: '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}',
               inputType: 'XML',
               sourceClass: 'tClass',
             },

@@ -167,9 +167,8 @@ test(
       renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL),
     );
     fireEvent.click(getByTitle(editPanel, 'Register service...'));
-    const serviceEditorState = mockedEditorStore.getCurrentEditorState(
-      ServiceEditorState,
-    );
+    const serviceEditorState =
+      mockedEditorStore.getCurrentEditorState(ServiceEditorState);
     const registrationModal = await waitFor(() =>
       renderResult.getByTestId(CORE_TEST_ID.SERVICE_REGISTRATION_MODAL),
     );
@@ -266,9 +265,8 @@ test(
     await waitFor(() => getByText(editPanel, 'owner1'));
     await waitFor(() => getByText(editPanel, 'owner2'));
     // add owner
-    const serviceEditorState = mockedEditorStore.getCurrentEditorState(
-      ServiceEditorState,
-    );
+    const serviceEditorState =
+      mockedEditorStore.getCurrentEditorState(ServiceEditorState);
     const service = serviceEditorState.service;
     expect(service.owners).toHaveLength(2);
     fireEvent.click(getByTitle(editPanel, 'Add owner'));

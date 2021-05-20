@@ -199,7 +199,8 @@ export const QueryBuilderPropertyExpressionBadge = observer(
                 className={clsx(
                   'query-builder-property-expression-badge__action',
                   {
-                    'query-builder-property-expression-badge__action--error': !isValid,
+                    'query-builder-property-expression-badge__action--error':
+                      !isValid,
                   },
                 )}
                 tabIndex={-1}

@@ -57,24 +57,24 @@ const ServiceGeneralEditor = observer(() => {
   const patternValidationResult = validateServicePattern(pattern);
   const allowUpdatingPattern =
     !patternValidationResult.messages.length && pattern !== service.pattern;
-  const removePatternParameter = (val: string): (() => void) => (): void => {
-    service.removePatternParameter(val);
-    setPattern(service.pattern);
-  };
+  const removePatternParameter =
+    (val: string): (() => void) =>
+    (): void => {
+      service.removePatternParameter(val);
+      setPattern(service.pattern);
+    };
   // Owners
   const owners = service.owners;
-  const [showOwnerEditInput, setShowOwnerEditInput] = useState<
-    boolean | number
-  >(false);
+  const [showOwnerEditInput, setShowOwnerEditInput] =
+    useState<boolean | number>(false);
   const [ownerInputValue, setOwnerInputValue] = useState<string>('');
   const showAddOwnerInput = (): void => setShowOwnerEditInput(true);
-  const showEditOwnerInput = (
-    value: string,
-    idx: number,
-  ): (() => void) => (): void => {
-    setOwnerInputValue(value);
-    setShowOwnerEditInput(idx);
-  };
+  const showEditOwnerInput =
+    (value: string, idx: number): (() => void) =>
+    (): void => {
+      setOwnerInputValue(value);
+      setShowOwnerEditInput(idx);
+    };
   const hideAddOrEditOwnerInput = (): void => {
     setShowOwnerEditInput(false);
     setOwnerInputValue('');
@@ -88,20 +88,27 @@ const ServiceGeneralEditor = observer(() => {
     }
     hideAddOrEditOwnerInput();
   };
-  const updateOwner = (idx: number): (() => void) => (): void => {
-    if (ownerInputValue && !isReadOnly && !owners.includes(ownerInputValue)) {
-      service.updateOwner(ownerInputValue, idx);
-    }
-  };
-  const deleteOwner = (idx: number): (() => void) => (): void => {
-    if (!isReadOnly) {
-      service.deleteOwner(idx);
-      // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
-      if (typeof showOwnerEditInput === 'number' && showOwnerEditInput > idx) {
-        setShowOwnerEditInput(showOwnerEditInput - 1);
+  const updateOwner =
+    (idx: number): (() => void) =>
+    (): void => {
+      if (ownerInputValue && !isReadOnly && !owners.includes(ownerInputValue)) {
+        service.updateOwner(ownerInputValue, idx);
       }
-    }
-  };
+    };
+  const deleteOwner =
+    (idx: number): (() => void) =>
+    (): void => {
+      if (!isReadOnly) {
+        service.deleteOwner(idx);
+        // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
+        if (
+          typeof showOwnerEditInput === 'number' &&
+          showOwnerEditInput > idx
+        ) {
+          setShowOwnerEditInput(showOwnerEditInput - 1);
+        }
+      }
+    };
   // Other
   const changeDocumentation: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
@@ -386,8 +393,10 @@ export const ServiceEditor = observer(() => {
   const isReadOnly = serviceState.isReadOnly;
   // Tab
   const selectedTab = serviceState.selectedTab;
-  const changeTab = (tab: SERVICE_TAB): (() => void) => (): void =>
-    serviceState.setSelectedTab(tab);
+  const changeTab =
+    (tab: SERVICE_TAB): (() => void) =>
+    (): void =>
+      serviceState.setSelectedTab(tab);
   // actions
   const serviceModal = (): void => serviceState.registrationState.openModal();
 

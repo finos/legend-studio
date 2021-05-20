@@ -277,9 +277,8 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
       isValid: computed,
     });
 
-    this.newConnectionValueDriver = this.getNewConnectionValueDriverBasedOnStore(
-      undefined,
-    );
+    this.newConnectionValueDriver =
+      this.getNewConnectionValueDriverBasedOnStore(undefined);
   }
 
   geDriverConnectionType(): CONNECTION_TYPE {
@@ -319,9 +318,8 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
   setStore(store: Store | undefined): void {
     this.store = store;
-    this.newConnectionValueDriver = this.getNewConnectionValueDriverBasedOnStore(
-      store,
-    );
+    this.newConnectionValueDriver =
+      this.getNewConnectionValueDriverBasedOnStore(store);
   }
 
   get isValid(): boolean {
@@ -488,13 +486,15 @@ export class NewElementState {
           driver = new NewGenerationSpecificationDriver(this.editorStore);
           break;
         default: {
-          const extraNewElementDriverCreators = this.editorStore.applicationStore.pluginManager
-            .getEditorPlugins()
-            .flatMap(
-              (plugin) =>
-                (plugin as DSL_EditorPlugin_Extension).getExtraNewElementDriverCreators?.() ??
-                [],
-            );
+          const extraNewElementDriverCreators =
+            this.editorStore.applicationStore.pluginManager
+              .getEditorPlugins()
+              .flatMap(
+                (plugin) =>
+                  (
+                    plugin as DSL_EditorPlugin_Extension
+                  ).getExtraNewElementDriverCreators?.() ?? [],
+              );
           for (const creator of extraNewElementDriverCreators) {
             const _driver = creator(newType, this.editorStore);
             if (_driver) {
@@ -564,8 +564,8 @@ export class NewElementState {
       element instanceof ModelGenerationSpecification
     ) {
       const generationElement = element;
-      const generationSpecifications = this.editorStore.graphState.graph
-        .generationSpecifications;
+      const generationSpecifications =
+        this.editorStore.graphState.graph.generationSpecifications;
       let generationSpec: GenerationSpecification;
       if (generationSpecifications.length) {
         // TODO? handle case when more than one generation specification
@@ -680,13 +680,15 @@ export class NewElementState {
         element = new GenerationSpecification(name);
         break;
       default: {
-        const extraNewElementFromStateCreators = this.editorStore.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (plugin as DSL_EditorPlugin_Extension).getExtraNewElementFromStateCreators?.() ??
-              [],
-          );
+        const extraNewElementFromStateCreators =
+          this.editorStore.applicationStore.pluginManager
+            .getEditorPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_EditorPlugin_Extension
+                ).getExtraNewElementFromStateCreators?.() ?? [],
+            );
         for (const creator of extraNewElementFromStateCreators) {
           const _element = creator(this.type, name, this);
           if (_element) {

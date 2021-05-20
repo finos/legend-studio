@@ -223,7 +223,8 @@ export class FlatDataRecordType extends FlatDataDataType implements Hashable {
 
 export class RootFlatDataRecordType
   extends FlatDataRecordType
-  implements Hashable {
+  implements Hashable
+{
   owner: FlatDataSection;
 
   constructor(owner: FlatDataSection) {

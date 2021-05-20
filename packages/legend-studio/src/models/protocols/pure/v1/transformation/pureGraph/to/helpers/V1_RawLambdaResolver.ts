@@ -78,7 +78,8 @@ const V1_shouldResolvePath = (fullPath: string): boolean =>
   !isValidFullPath(fullPath);
 
 export class V1_ValueSpecificationResolver
-  implements V1_ValueSpecificationVisitor<V1_ValueSpecification> {
+  implements V1_ValueSpecificationVisitor<V1_ValueSpecification>
+{
   context: V1_GraphBuilderContext;
   hasModifiedLambda = false;
   constructor(context: V1_GraphBuilderContext) {

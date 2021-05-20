@@ -169,7 +169,8 @@ const processFilterFunction = (
 };
 
 export class QueryBuilderLambdaProcessor
-  implements ValueSpecificationVisitor<void> {
+  implements ValueSpecificationVisitor<void>
+{
   queryBuilderState: QueryBuilderState;
   parentSimpleFunction?: SimpleFunctionExpression;
 
@@ -352,9 +353,10 @@ export class QueryBuilderLambdaProcessor
         const sortColumnName = getNullableStringValueFromValueSpec(
           valueSpecification.parametersValues[0],
         );
-        const queryBuilderProjectionColumnState = this.queryBuilderState.fetchStructureState.projectionColumns.find(
-          (e) => e.columnName === sortColumnName,
-        );
+        const queryBuilderProjectionColumnState =
+          this.queryBuilderState.fetchStructureState.projectionColumns.find(
+            (e) => e.columnName === sortColumnName,
+          );
         if (queryBuilderProjectionColumnState) {
           const editorStore = this.queryBuilderState.editorStore;
           const sortColumnState = new SortColumnState(
@@ -457,10 +459,11 @@ export class QueryBuilderLambdaProcessor
     valueSpecification: AbstractPropertyExpression,
   ): void {
     if (this.getParentSimpleFunctionName() === SUPPORTED_FUNCTIONS.PROJECT) {
-      const columnState = this.queryBuilderState.fetchStructureState.addPropertyExpressionProjectionColumn(
-        valueSpecification,
-        true,
-      );
+      const columnState =
+        this.queryBuilderState.fetchStructureState.addPropertyExpressionProjectionColumn(
+          valueSpecification,
+          true,
+        );
       if (
         valueSpecification.parametersValues[0] instanceof VariableExpression
       ) {

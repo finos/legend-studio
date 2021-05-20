@@ -86,13 +86,8 @@ const PropertyBasicEditor = observer(
     deleteProperty: () => void;
     isReadOnly: boolean;
   }) => {
-    const {
-      property,
-      _class,
-      selectProperty,
-      deleteProperty,
-      isReadOnly,
-    } = props;
+    const { property, _class, selectProperty, deleteProperty, isReadOnly } =
+      props;
     const editorStore = useEditorStore();
     const isInheritedProperty =
       property.owner instanceof Class && property.owner !== _class;
@@ -358,9 +353,8 @@ const DerivedPropertyBasicEditor = observer(
     const hasParserError = editorState.classState.derivedPropertyStates.some(
       (state) => state.parserError,
     );
-    const dpState = editorState.classState.getDerivedPropertyState(
-      derivedProperty,
-    );
+    const dpState =
+      editorState.classState.getDerivedPropertyState(derivedProperty);
     const isInheritedProperty = derivedProperty.owner !== _class;
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
@@ -623,22 +617,16 @@ const ConstraintEditor = observer(
     deleteConstraint: () => void;
     isReadOnly: boolean;
   }) => {
-    const {
-      constraint,
-      _class,
-      deleteConstraint,
-      editorState,
-      isReadOnly,
-    } = props;
+    const { constraint, _class, deleteConstraint, editorState, isReadOnly } =
+      props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const hasParserError = editorState.classState.constraintStates.some(
       (state) => state.parserError,
     );
     const isInheritedConstraint = constraint.owner !== _class;
-    const constraintState = editorState.classState.getConstraintState(
-      constraint,
-    );
+    const constraintState =
+      editorState.classState.getConstraintState(constraint);
     // Name
     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       constraint.setName(event.target.value);
@@ -804,12 +792,12 @@ export const ClassFormEditor = observer(
       PRIMITIVE_TYPE.STRING,
     );
     // Selected property
-    const [selectedProperty, setSelectedProperty] = useState<
-      Property | DerivedProperty | undefined
-    >();
-    const selectProperty = (
-      e: Property | DerivedProperty,
-    ): (() => void) => (): void => setSelectedProperty(e);
+    const [selectedProperty, setSelectedProperty] =
+      useState<Property | DerivedProperty | undefined>();
+    const selectProperty =
+      (e: Property | DerivedProperty): (() => void) =>
+      (): void =>
+        setSelectedProperty(e);
     // Tab
     const selectedTab = editorState.selectedTab;
     const tabs = [
@@ -820,23 +808,30 @@ export const ClassFormEditor = observer(
       UML_EDITOR_TAB.TAGGED_VALUES,
       UML_EDITOR_TAB.STEREOTYPES,
     ];
-    const changeTab = (tab: UML_EDITOR_TAB): (() => void) => (): void => {
-      editorState.setSelectedTab(tab);
-      setSelectedProperty(undefined);
-    };
-    // Tagged value and Stereotype
-    const deleteStereotype = (
-      val: StereotypeReference,
-    ): (() => void) => (): void => _class.deleteStereotype(val);
-    const deleteTaggedValue = (val: TaggedValue): (() => void) => (): void =>
-      _class.deleteTaggedValue(val);
-    // Property
-    const deleteProperty = (property: Property): (() => void) => (): void => {
-      _class.deleteProperty(property);
-      if (property === selectedProperty) {
+    const changeTab =
+      (tab: UML_EDITOR_TAB): (() => void) =>
+      (): void => {
+        editorState.setSelectedTab(tab);
         setSelectedProperty(undefined);
-      }
-    };
+      };
+    // Tagged value and Stereotype
+    const deleteStereotype =
+      (val: StereotypeReference): (() => void) =>
+      (): void =>
+        _class.deleteStereotype(val);
+    const deleteTaggedValue =
+      (val: TaggedValue): (() => void) =>
+      (): void =>
+        _class.deleteTaggedValue(val);
+    // Property
+    const deleteProperty =
+      (property: Property): (() => void) =>
+      (): void => {
+        _class.deleteProperty(property);
+        if (property === selectedProperty) {
+          setSelectedProperty(undefined);
+        }
+      };
     const indirectProperties = _class
       .getAllProperties()
       .filter((property) => !_class.properties.includes(property))
@@ -847,24 +842,24 @@ export const ClassFormEditor = observer(
       );
     const deselectProperty = (): void => setSelectedProperty(undefined);
     // Constraints
-    const deleteConstraint = (
-      constraint: Constraint,
-    ): (() => void) => (): void => {
-      _class.deleteConstraint(constraint);
-      classState.deleteConstraintState(constraint);
-    };
+    const deleteConstraint =
+      (constraint: Constraint): (() => void) =>
+      (): void => {
+        _class.deleteConstraint(constraint);
+        classState.deleteConstraintState(constraint);
+      };
     const inheritedConstraints = _class
       .getAllConstraints()
       .filter((constraint) => !_class.constraints.includes(constraint));
     // Super type
-    const deleteSuperType = (
-      superType: GenericTypeReference,
-    ): (() => void) => (): void => {
-      _class.deleteSuperType(superType);
-      if (superType.value.rawType instanceof Class) {
-        superType.value.rawType.deleteSubClass(_class);
-      }
-    };
+    const deleteSuperType =
+      (superType: GenericTypeReference): (() => void) =>
+      (): void => {
+        _class.deleteSuperType(superType);
+        if (superType.value.rawType instanceof Class) {
+          superType.value.rawType.deleteSubClass(_class);
+        }
+      };
     const possibleSupertypes = editorStore.graphState.graph.classes.filter(
       (superType) =>
         // Exclude current class
@@ -883,15 +878,15 @@ export const ClassFormEditor = observer(
         (p1, p2) =>
           (p1.owner === _class ? 1 : 0) - (p2.owner === _class ? 1 : 0),
       );
-    const deleteDerivedProperty = (
-      dp: DerivedProperty,
-    ): (() => void) => (): void => {
-      _class.deleteDerivedProperty(dp);
-      classState.deleteDerivedPropertyState(dp);
-      if (dp === selectedProperty) {
-        setSelectedProperty(undefined);
-      }
-    };
+    const deleteDerivedProperty =
+      (dp: DerivedProperty): (() => void) =>
+      (): void => {
+        _class.deleteDerivedProperty(dp);
+        classState.deleteDerivedPropertyState(dp);
+        if (dp === selectedProperty) {
+          setSelectedProperty(undefined);
+        }
+      };
     // Add button
     let addButtonTitle = '';
     switch (selectedTab) {
@@ -1339,10 +1334,8 @@ export const ClassEditor = observer((props: { _class: Class }) => {
         () => _class.hashCode,
         undefined,
       ); // attempting to read the hashCode of immutable element will throw an error
-  const [
-    diagramRenderer,
-    setDiagramRenderer,
-  ] = useState<InheritanceDiagramRenderer>();
+  const [diagramRenderer, setDiagramRenderer] =
+    useState<InheritanceDiagramRenderer>();
   const editorState = editorStore.getCurrentEditorState(ClassEditorState);
   const canvas = useRef<HTMLDivElement>(null);
   const resizeDiagram = useCallback((): void => {

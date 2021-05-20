@@ -73,7 +73,8 @@ const initAssociationProperties = (
  */
 export class Association
   extends PackageableElement
-  implements AnnotatedElement, Hashable, Stubable {
+  implements AnnotatedElement, Hashable, Stubable
+{
   properties: [Property, Property] = initAssociationProperties(this);
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];

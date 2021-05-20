@@ -25,7 +25,8 @@ import type { V1_ClassMappingVisitor } from '../../../../../model/packageableEle
 
 export class V1_RootRelationalClassMapping
   extends V1_RelationalClassMapping
-  implements Hashable {
+  implements Hashable
+{
   mainTable?: V1_TablePtr;
   distinct!: boolean;
   groupBy: V1_RelationalOperationElement[] = [];

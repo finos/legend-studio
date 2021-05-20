@@ -345,9 +345,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const { queryBuilderState } = innerProps;
     const ref = useRef<HTMLDivElement>(null);
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-      false,
-    );
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
@@ -485,7 +484,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 filterState.isRearrangingConditions,
               'query-builder-filter-tree__node__container--selected':
                 node === filterState.selectedNode,
-              'query-builder-filter-tree__node__container--selected-from-context-menu': isSelectedFromContextMenu,
+              'query-builder-filter-tree__node__container--selected-from-context-menu':
+                isSelectedFromContextMenu,
             },
           )}
         >
@@ -509,7 +509,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               className={clsx(
                 'tree-view__node__label query-builder-filter-tree__node__label',
                 {
-                  'query-builder-filter-tree__node__label--expandable': isExpandable,
+                  'query-builder-filter-tree__node__label--expandable':
+                    isExpandable,
                 },
               )}
             >

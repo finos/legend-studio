@@ -49,12 +49,14 @@ export class QueryBuilderLessThanOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return (([
-      PRIMITIVE_TYPE.NUMBER,
-      PRIMITIVE_TYPE.INTEGER,
-      PRIMITIVE_TYPE.DECIMAL,
-      PRIMITIVE_TYPE.FLOAT,
-    ] as unknown) as string).includes(propertyType.path);
+    return (
+      [
+        PRIMITIVE_TYPE.NUMBER,
+        PRIMITIVE_TYPE.INTEGER,
+        PRIMITIVE_TYPE.DECIMAL,
+        PRIMITIVE_TYPE.FLOAT,
+      ] as unknown as string
+    ).includes(propertyType.path);
   }
 
   isCompatibleWithFilterConditionValue(
@@ -65,12 +67,14 @@ export class QueryBuilderLessThanOperator extends QueryBuilderOperator {
       : undefined;
     return (
       type !== undefined &&
-      (([
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-      ] as unknown) as string).includes(type.path)
+      (
+        [
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+        ] as unknown as string
+      ).includes(type.path)
     );
   }
 

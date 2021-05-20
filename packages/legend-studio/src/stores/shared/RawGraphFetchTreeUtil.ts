@@ -97,7 +97,7 @@ const resolveSetImplementationForPropertyMapping = (
   propertyMapping: PropertyMapping,
 ): SetImplementation | undefined => {
   if (propertyMapping.isEmbedded) {
-    return (propertyMapping as unknown) as SetImplementation;
+    return propertyMapping as unknown as SetImplementation;
   } else if (propertyMapping.targetSetImplementation) {
     return propertyMapping.targetSetImplementation;
   }
@@ -117,9 +117,10 @@ const getPropertyMappedData = (
   } else if (property instanceof Property) {
     const parentSetImplementation = parentNode.setImpl;
     if (parentSetImplementation) {
-      const propertyMappings = editorStore.graphState.getMappingElementPropertyMappings(
-        parentSetImplementation,
-      );
+      const propertyMappings =
+        editorStore.graphState.getMappingElementPropertyMappings(
+          parentSetImplementation,
+        );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
         .map((p) => p.property.value.name);
@@ -135,9 +136,8 @@ const getPropertyMappedData = (
           if (propertyMapping) {
             return {
               mapped: true,
-              setImpl: resolveSetImplementationForPropertyMapping(
-                propertyMapping,
-              ),
+              setImpl:
+                resolveSetImplementationForPropertyMapping(propertyMapping),
             };
           }
         }
@@ -160,12 +160,13 @@ export const getRawPropertyGraphFetchTreeNodeData = (
     `Type of parent node for class property node must be 'class'`,
   );
   const mappingData = getPropertyMappedData(editorStore, property, parent);
-  const existingPropertyGraphFetchNode = parent.graphFetchTreeNode.subTrees.find(
-    (subTree) =>
-      subTree instanceof RawPropertyGraphFetchTree &&
-      subTree.property.value === property &&
-      subTree.subType.value === subType,
-  );
+  const existingPropertyGraphFetchNode =
+    parent.graphFetchTreeNode.subTrees.find(
+      (subTree) =>
+        subTree instanceof RawPropertyGraphFetchTree &&
+        subTree.property.value === property &&
+        subTree.subType.value === subType,
+    );
   const newPropertyGraphFetchNode = new RawPropertyGraphFetchTree(
     PropertyExplicitReference.create(property),
   ).withSubType(
@@ -279,12 +280,13 @@ const walkPropertySubTreeAndBuild = (
   parent: RawGraphFetchTreeNodeData,
   nodes: Map<string, RawGraphFetchTreeNodeData>,
 ): RawGraphFetchTreeNodeData => {
-  const existingPropertyGraphFetchNode = parent.graphFetchTreeNode.subTrees.find(
-    (subTree) =>
-      subTree instanceof RawPropertyGraphFetchTree &&
-      subTree.property.value === property &&
-      subTree.subType.value === subType,
-  );
+  const existingPropertyGraphFetchNode =
+    parent.graphFetchTreeNode.subTrees.find(
+      (subTree) =>
+        subTree instanceof RawPropertyGraphFetchTree &&
+        subTree.property.value === property &&
+        subTree.subType.value === subType,
+    );
   const newPropertyGraphFetchNode = new RawPropertyGraphFetchTree(
     PropertyExplicitReference.create(property),
   ).withSubType(

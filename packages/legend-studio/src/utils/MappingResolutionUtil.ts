@@ -111,7 +111,7 @@ export const getLeafSetImplementations = (
  * and add property mappings for each
  */
 export const getDecoratedSetImplementationPropertyMappings = <
-  T extends PropertyMapping
+  T extends PropertyMapping,
 >(
   setImp: InstanceSetImplementation,
   decoratePropertyMapping: (

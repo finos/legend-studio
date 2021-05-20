@@ -7311,8 +7311,7 @@ export const testRelationalAssociationMapping = [
             upperBound: 1,
           },
           name: 'nested',
-          type:
-            'apps::meta::pure::tests::model::simple::PersonNameParameterNested',
+          type: 'apps::meta::pure::tests::model::simple::PersonNameParameterNested',
         },
       ],
     },

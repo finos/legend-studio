@@ -84,8 +84,9 @@ export const V1_transformMilestoning = (
   }
   const extraMilestoningTransformers = plugins.flatMap(
     (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraMilestoningTransformers?.() ??
-      [],
+      (
+        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMilestoningTransformers?.() ?? [],
   );
   for (const transformer of extraMilestoningTransformers) {
     const protocol = transformer(metamodel);

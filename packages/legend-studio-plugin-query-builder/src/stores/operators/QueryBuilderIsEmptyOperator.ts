@@ -44,14 +44,16 @@ export class QueryBuilderIsEmptyOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return (([
-      PRIMITIVE_TYPE.STRING,
-      PRIMITIVE_TYPE.BOOLEAN,
-      PRIMITIVE_TYPE.NUMBER,
-      PRIMITIVE_TYPE.INTEGER,
-      PRIMITIVE_TYPE.DECIMAL,
-      PRIMITIVE_TYPE.FLOAT,
-    ] as unknown) as string).includes(propertyType.path);
+    return (
+      [
+        PRIMITIVE_TYPE.STRING,
+        PRIMITIVE_TYPE.BOOLEAN,
+        PRIMITIVE_TYPE.NUMBER,
+        PRIMITIVE_TYPE.INTEGER,
+        PRIMITIVE_TYPE.DECIMAL,
+        PRIMITIVE_TYPE.FLOAT,
+      ] as unknown as string
+    ).includes(propertyType.path);
   }
 
   isCompatibleWithFilterConditionValue(

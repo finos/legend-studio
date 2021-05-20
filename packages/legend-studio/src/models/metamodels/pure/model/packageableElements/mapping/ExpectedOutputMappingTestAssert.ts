@@ -29,7 +29,8 @@ import { createValidationError } from '../../../action/validator/ValidationResul
 
 export class ExpectedOutputMappingTestAssert
   extends MappingTestAssert
-  implements Hashable {
+  implements Hashable
+{
   expectedOutput: string;
 
   constructor(expectedOutput: string) {

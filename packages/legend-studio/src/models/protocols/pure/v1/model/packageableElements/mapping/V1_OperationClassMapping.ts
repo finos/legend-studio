@@ -29,7 +29,8 @@ export enum V1_MappingOperationType {
 
 export class V1_OperationClassMapping
   extends V1_ClassMapping
-  implements Hashable {
+  implements Hashable
+{
   parameters: string[] = [];
   operation!: V1_MappingOperationType;
 

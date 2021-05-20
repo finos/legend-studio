@@ -40,12 +40,14 @@ describe('Conflict Demo Script Test', () => {
     testerForWorkspaceAhead.createOrReplaceWorkspace(true);
     testerForWorkspaceConf.createOrReplaceWorkspace(true);
 
-    const testerForWorkspaceAheadHelper = testerForWorkspaceAhead.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
-    const testerForWorkspaceConfigHelper = testerForWorkspaceConf.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
+    const testerForWorkspaceAheadHelper =
+      testerForWorkspaceAhead.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
+    const testerForWorkspaceConfigHelper =
+      testerForWorkspaceConf.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
 
     testerForWorkspaceAhead.openWorkspace();
     const TEXT =
@@ -88,9 +90,10 @@ describe('Conflict Demo Script Test', () => {
   it('should successfully test no conflict update as both branches make the same changes', () => {
     const TITLE = testerForWorkspaceAhead._domTitles;
     testerForWorkspaceAhead.initEditorWithWorkspace(true);
-    const testerForWorkspaceAheadHelper = testerForWorkspaceAhead.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
+    const testerForWorkspaceAheadHelper =
+      testerForWorkspaceAhead.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
 
     const TEXT =
       'Class model::Person \n' +
@@ -121,9 +124,10 @@ describe('Conflict Demo Script Test', () => {
     testerForWorkspaceAheadHelper.refreshProject();
 
     testerForWorkspaceConf.initEditorWithWorkspace();
-    const testerForWorkspaceConfigHelper = testerForWorkspaceConf.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
+    const testerForWorkspaceConfigHelper =
+      testerForWorkspaceConf.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
     testerForWorkspaceConf.buildGraphWithText(TEXT);
     testerForWorkspaceConfigHelper.saveLocalChanges();
 
@@ -155,12 +159,14 @@ describe('Conflict Demo Script Test', () => {
     testerForWorkspaceAhead.createOrReplaceWorkspace(true);
     testerForWorkspaceConf.createOrReplaceWorkspace(true);
 
-    const testerForWorkspaceAheadHelper = testerForWorkspaceAhead.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
-    const testerForWorkspaceConfigHelper = testerForWorkspaceConf.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
+    const testerForWorkspaceAheadHelper =
+      testerForWorkspaceAhead.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
+    const testerForWorkspaceConfigHelper =
+      testerForWorkspaceConf.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
 
     testerForWorkspaceAhead.openWorkspace();
     testerForWorkspaceAheadHelper.createPackage(PACKAGE_NAME);
@@ -249,12 +255,14 @@ describe('Conflict Demo Script Test', () => {
     testerForWorkspaceAhead.createOrReplaceWorkspace(true);
     testerForWorkspaceConf.createOrReplaceWorkspace(true);
 
-    const testerForWorkspaceAheadHelper = testerForWorkspaceAhead.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
-    const testerForWorkspaceConfigHelper = testerForWorkspaceConf.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
+    const testerForWorkspaceAheadHelper =
+      testerForWorkspaceAhead.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
+    const testerForWorkspaceConfigHelper =
+      testerForWorkspaceConf.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
 
     testerForWorkspaceAhead.openWorkspace();
     const TEXT =
@@ -312,12 +320,14 @@ describe('Conflict Demo Script Test', () => {
     testerForWorkspaceAhead.createOrReplaceWorkspace(true);
     testerForWorkspaceConf.createOrReplaceWorkspace(true);
 
-    const testerForWorkspaceAheadHelper = testerForWorkspaceAhead.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
-    const testerForWorkspaceConfigHelper = testerForWorkspaceConf.getHelperExtension(
-      ConflictResolutionHelperExtension,
-    );
+    const testerForWorkspaceAheadHelper =
+      testerForWorkspaceAhead.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
+    const testerForWorkspaceConfigHelper =
+      testerForWorkspaceConf.getHelperExtension(
+        ConflictResolutionHelperExtension,
+      );
 
     testerForWorkspaceAhead.openWorkspace();
     const TEXT =

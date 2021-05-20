@@ -31,8 +31,10 @@ import { DevTool } from './DevTool';
 
 export const AuxiliaryPanel = observer(() => {
   const editorStore = useEditorStore();
-  const changeMode = (mode: AUX_PANEL_MODE): (() => void) => (): void =>
-    editorStore.setActiveAuxPanelMode(mode);
+  const changeMode =
+    (mode: AUX_PANEL_MODE): (() => void) =>
+    (): void =>
+      editorStore.setActiveAuxPanelMode(mode);
   const closePanel = (): void => editorStore.toggleAuxPanel();
   const toggleExpandAuxPanel = (): void => editorStore.toggleExpandAuxPanel();
 

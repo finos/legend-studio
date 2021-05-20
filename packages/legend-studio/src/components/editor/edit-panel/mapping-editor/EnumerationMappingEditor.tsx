@@ -312,9 +312,8 @@ export const EnumerationMappingEditor = observer(
   (props: { enumerationMapping: EnumerationMapping; isReadOnly: boolean }) => {
     const { enumerationMapping, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const enumeration = enumerationMapping.enumeration;
     // ID
     const showId =
@@ -322,9 +321,8 @@ export const EnumerationMappingEditor = observer(
       1;
     // Source
     const sourceType = enumerationMapping.sourceType.value;
-    const [openSourceSelectorModal, setOpenSourceSelectorModal] = useState(
-      false,
-    );
+    const [openSourceSelectorModal, setOpenSourceSelectorModal] =
+      useState(false);
     const showSourceSelectorModal = (): void =>
       isReadOnly ? undefined : setOpenSourceSelectorModal(true);
     const hideSourceSelectorModal = (): void =>
@@ -397,7 +395,8 @@ export const EnumerationMappingEditor = observer(
                   'mapping-element-editor__metadata__driver-chunk',
                   'background--primitive',
                   {
-                    'mapping-element-editor__metadata__source--none': !sourceType,
+                    'mapping-element-editor__metadata__source--none':
+                      !sourceType,
                   },
                 )}
               >

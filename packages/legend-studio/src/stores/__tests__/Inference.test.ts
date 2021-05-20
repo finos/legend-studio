@@ -88,9 +88,8 @@ test(
       testReferenceModification.original as Entity[],
       { TEMPORARY__keepSectionIndex: true },
     );
-    let enumeration = editorStore.graphState.graph.getEnumeration(
-      'test::tEnum',
-    );
+    let enumeration =
+      editorStore.graphState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(
       editorStore.graphState.graph.getProfile('test::tProf').getTag('s4'),
     );

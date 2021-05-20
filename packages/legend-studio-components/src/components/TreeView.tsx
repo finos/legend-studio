@@ -39,7 +39,7 @@ export interface TreeData<T extends TreeNodeData> {
  */
 export interface TreeNodeContainerProps<
   T extends TreeNodeData,
-  S extends InnerProps
+  S extends InnerProps,
 > {
   node: T;
   classPrefix?: string;
@@ -99,7 +99,7 @@ interface TreeViewComponents<T extends TreeNodeData, S extends InnerProps> {
  */
 export interface TreeNodeViewProps<
   T extends TreeNodeData,
-  S extends InnerProps
+  S extends InnerProps,
 > {
   node: T;
   classPrefix?: string;

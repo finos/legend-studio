@@ -151,11 +151,12 @@ export class WorkspaceReviewState {
   *fetchCurrentWorkspaceReview(): GeneratorFn<void> {
     try {
       this.isFetchingCurrentWorkspaceReview = true;
-      const currentWorkspaceRevision = (yield this.sdlcState.sdlcClient.getRevision(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
-        RevisionAlias.CURRENT,
-      )) as Revision;
+      const currentWorkspaceRevision =
+        (yield this.sdlcState.sdlcClient.getRevision(
+          this.sdlcState.currentProjectId,
+          this.sdlcState.currentWorkspaceId,
+          RevisionAlias.CURRENT,
+        )) as Revision;
       const reviews = (yield this.sdlcState.sdlcClient.getReviews(
         this.sdlcState.currentProjectId,
         ReviewState.OPEN,
@@ -282,7 +283,8 @@ export class WorkspaceReviewState {
 
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode = (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode =
+        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',

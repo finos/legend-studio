@@ -24,7 +24,8 @@ import type { Connection } from './Connection';
 
 export class PackageableConnection
   extends PackageableElement
-  implements Hashable {
+  implements Hashable
+{
   connectionValue!: Connection;
 
   constructor(name: string) {

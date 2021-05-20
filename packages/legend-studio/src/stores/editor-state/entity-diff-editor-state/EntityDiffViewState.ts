@@ -173,9 +173,10 @@ export class EntityDiffViewState extends EntityDiffEditorState {
   getFromGrammar = flow(function* (this: EntityDiffViewState) {
     if (this.fromEntity) {
       try {
-        const elementGrammar = (yield this.editorStore.graphState.graphManager.entitiesToPureCode(
-          [this.fromEntity],
-        )) as string;
+        const elementGrammar =
+          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+            this.fromEntity,
+          ])) as string;
         this.setFromGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(
@@ -194,9 +195,10 @@ export class EntityDiffViewState extends EntityDiffEditorState {
   getToGrammar = flow(function* (this: EntityDiffViewState) {
     if (this.toEntity) {
       try {
-        const elementGrammar = (yield this.editorStore.graphState.graphManager.entitiesToPureCode(
-          [this.toEntity],
-        )) as string;
+        const elementGrammar =
+          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+            this.toEntity,
+          ])) as string;
         this.setToGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(

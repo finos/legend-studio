@@ -479,11 +479,11 @@ export const FunctionMainEditor = observer(
         RawVariableExpression.createStub(defaultType),
       );
     };
-    const deleteParameter = (
-      val: RawVariableExpression,
-    ): (() => void) => (): void => {
-      functionElement.deleteParameter(val);
-    };
+    const deleteParameter =
+      (val: RawVariableExpression): (() => void) =>
+      (): void => {
+        functionElement.deleteParameter(val);
+      };
     const handleDropParameter = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
@@ -579,9 +579,8 @@ export const FunctionMainEditor = observer(
 export const FunctionEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const functionEditorState = editorStore.getCurrentEditorState(
-    FunctionEditorState,
-  );
+  const functionEditorState =
+    editorStore.getCurrentEditorState(FunctionEditorState);
   const isReadOnly = functionEditorState.isReadOnly;
   const functionElement = functionEditorState.functionElement;
   const selectedTab = functionEditorState.selectedTab;
@@ -654,13 +653,18 @@ export const FunctionEditor = observer(() => {
     }),
     [handleDropStereotype],
   );
-  const deleteStereotype = (
-    val: StereotypeReference,
-  ): (() => void) => (): void => functionElement.deleteStereotype(val);
-  const deleteTaggedValue = (val: TaggedValue): (() => void) => (): void =>
-    functionElement.deleteTaggedValue(val);
-  const changeTab = (tab: FUNCTION_SPEC_TAB): (() => void) => (): void =>
-    functionEditorState.setSelectedTab(tab);
+  const deleteStereotype =
+    (val: StereotypeReference): (() => void) =>
+    (): void =>
+      functionElement.deleteStereotype(val);
+  const deleteTaggedValue =
+    (val: TaggedValue): (() => void) =>
+    (): void =>
+      functionElement.deleteTaggedValue(val);
+  const changeTab =
+    (tab: FUNCTION_SPEC_TAB): (() => void) =>
+    (): void =>
+      functionEditorState.setSelectedTab(tab);
 
   useEffect(() => {
     functionEditorState.functionBodyEditorState

@@ -103,7 +103,8 @@ export class SingleExecutionTest extends ServiceTest implements Hashable {
 
 export class KeyedSingleExecutionTest
   extends SingleExecutionTest
-  implements Hashable {
+  implements Hashable
+{
   key: string;
 
   constructor(key: string, parentService: Service, data: string) {

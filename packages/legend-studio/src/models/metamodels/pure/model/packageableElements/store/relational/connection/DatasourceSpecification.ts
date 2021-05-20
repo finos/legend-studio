@@ -27,7 +27,8 @@ export abstract class DatasourceSpecification implements Hashable {
 
 export class StaticDatasourceSpecification
   extends DatasourceSpecification
-  implements Hashable {
+  implements Hashable
+{
   host: string;
   port: number;
   databaseName: string;
@@ -73,7 +74,8 @@ export class StaticDatasourceSpecification
 
 export class EmbeddedH2DatasourceSpecification
   extends DatasourceSpecification
-  implements Hashable {
+  implements Hashable
+{
   databaseName: string;
   directory: string;
   autoServerMode: boolean;
@@ -123,7 +125,8 @@ export class EmbeddedH2DatasourceSpecification
 
 export class LocalH2DatasourceSpecification
   extends DatasourceSpecification
-  implements Hashable {
+  implements Hashable
+{
   testDataSetupCsv?: string;
   testDataSetupSqls: string[] = [];
 
@@ -153,7 +156,8 @@ export class LocalH2DatasourceSpecification
 
 export class SnowflakeDatasourceSpecification
   extends DatasourceSpecification
-  implements Hashable {
+  implements Hashable
+{
   accountName: string;
   region: string;
   warehouseName: string;

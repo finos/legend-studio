@@ -99,9 +99,11 @@ const processEnumValueMapping = (
       (sourceValue) => new SourceValue(sourceValue.value as string | number),
     );
   } else if (sourceType instanceof Enumeration) {
-    enumValueMapping.sourceValues = (srcEnumValueMapping.sourceValues.map(
-      (sourceValue) => sourceValue.value,
-    ) as string[]).map((sourceValue) => {
+    enumValueMapping.sourceValues = (
+      srcEnumValueMapping.sourceValues.map(
+        (sourceValue) => sourceValue.value,
+      ) as string[]
+    ).map((sourceValue) => {
       const matchingEnum = sourceType.values.find(
         (value) => value.name === sourceValue,
       );
@@ -160,14 +162,14 @@ export const V1_processEnumerationMapping = (
       sourceTypeReference?.isInferred,
     ),
   );
-  enumerationMapping.enumValueMappings = srcEnumerationMapping.enumValueMappings.map(
-    (enumValueMapping) =>
+  enumerationMapping.enumValueMappings =
+    srcEnumerationMapping.enumValueMappings.map((enumValueMapping) =>
       processEnumValueMapping(
         enumValueMapping,
         targetEnumeration,
         sourceTypeReference?.value,
       ),
-  );
+    );
   return enumerationMapping;
 };
 

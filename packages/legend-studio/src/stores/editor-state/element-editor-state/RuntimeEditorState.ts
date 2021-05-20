@@ -132,9 +132,11 @@ export const decorateRuntimeWithNewMapping = (
         )
         .map(
           (identifiedConnection) =>
-            (identifiedConnection.connection as
-              | JsonModelConnection
-              | XmlModelConnection).class.value,
+            (
+              identifiedConnection.connection as
+                | JsonModelConnection
+                | XmlModelConnection
+            ).class.value,
         );
     }
   });
@@ -774,8 +776,9 @@ export class RuntimeEditorState {
    */
   reprocessCurrentTabState(): void {
     if (this.currentTabState instanceof IdentifiedConnectionsEditorTabState) {
-      const connection = this.currentTabState.identifiedConnectionEditorState
-        ?.connectionEditorState.connection;
+      const connection =
+        this.currentTabState.identifiedConnectionEditorState
+          ?.connectionEditorState.connection;
       const connectionValue =
         connection instanceof ConnectionPointer
           ? connection.packageableConnection.value.connectionValue

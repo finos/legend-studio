@@ -24,7 +24,8 @@ import { V1_ClassMapping } from '../../../../../model/packageableElements/mappin
 
 export class V1_RelationalClassMapping
   extends V1_ClassMapping
-  implements Hashable {
+  implements Hashable
+{
   primaryKey: V1_RelationalOperationElement[] = [];
   propertyMappings: V1_PropertyMapping[] = [];
 

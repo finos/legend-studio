@@ -21,7 +21,8 @@ import { V1_PackageableElement } from '../../../model/packageableElements/V1_Pac
 
 export abstract class V1_Store
   extends V1_PackageableElement
-  implements Hashable {
+  implements Hashable
+{
   includedStores: string[] = [];
 
   get hashCode(): string {

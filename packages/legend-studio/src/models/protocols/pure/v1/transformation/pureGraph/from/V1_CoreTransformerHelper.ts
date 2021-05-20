@@ -28,7 +28,7 @@ import type {
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement';
 
 export const V1_transformOptionalElementReference = <
-  T extends PackageableElement
+  T extends PackageableElement,
 >(
   ref: OptionalPackageableElementReference<T>,
 ): string | undefined => ref.valueForSerialization;
@@ -38,7 +38,7 @@ export const V1_transformElementReference = <T extends PackageableElement>(
 ): string => ref.valueForSerialization;
 
 export const V1_transformElementReferencePointer = <
-  T extends PackageableElement
+  T extends PackageableElement,
 >(
   pointerType: V1_PackageableElementPointerType,
   ref: PackageableElementReference<T>,

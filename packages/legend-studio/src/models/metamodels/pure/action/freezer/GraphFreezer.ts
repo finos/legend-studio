@@ -92,7 +92,8 @@ export class GraphFreezer
     PackageableElementVisitor<void>,
     SetImplementationVisitor<void>,
     PropertyMappingVisitor<void>,
-    ConnectionVisitor<void> {
+    ConnectionVisitor<void>
+{
   extraElementFreezerPlugins: ElementFreezer[] = [];
 
   constructor(plugins: PureGraphManagerPlugin[]) {

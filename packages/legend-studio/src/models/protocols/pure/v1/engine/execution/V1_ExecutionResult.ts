@@ -151,12 +151,16 @@ export class V1_TdsExecutionResult extends V1_ExecutionResult {
     const tdsExecutionResult = new TdsExecutionResult(this.result);
     tdsExecutionResult.builder = this.builder.build();
     tdsExecutionResult.activities = this.activities.map((e) => e.build());
-    tdsExecutionResult.result.columns = (this.result as {
-      columns: string[];
-    }).columns;
-    tdsExecutionResult.result.rows = (this.result as {
-      rows: { values: (string | number)[] }[];
-    }).rows.map((r) => {
+    tdsExecutionResult.result.columns = (
+      this.result as {
+        columns: string[];
+      }
+    ).columns;
+    tdsExecutionResult.result.rows = (
+      this.result as {
+        rows: { values: (string | number)[] }[];
+      }
+    ).rows.map((r) => {
       const val = new TdsRow();
       val.values = r.values;
       return val;

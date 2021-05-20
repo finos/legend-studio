@@ -55,9 +55,8 @@ const SimplePropertyMappingEditor = observer(
   }) => {
     const { propertyMappingState, drop, dragItem, transformProps } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
     const expectedType =
       propertyMapping.property.value.genericType.value.rawType;
@@ -100,25 +99,18 @@ const EnumerationPropertyMappingEditor = observer(
     };
     isReadOnly: boolean;
   }) => {
-    const {
-      propertyMappingState,
-      drop,
-      dragItem,
-      transformProps,
-      isReadOnly,
-    } = props;
+    const { propertyMappingState, drop, dragItem, transformProps, isReadOnly } =
+      props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = guaranteeType(
       propertyMappingState.propertyMapping,
       FlatDataPropertyMapping,
       'Flat-data property mapping for enumeration type property must be a simple property mapping',
     );
-    const enumeration = propertyMapping.property.value.genericType.value.getRawType(
-      Enumeration,
-    );
+    const enumeration =
+      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
     const expectedType = propertyMapping.transformer
       ? propertyMapping.transformer.sourceType.value
       : enumeration;

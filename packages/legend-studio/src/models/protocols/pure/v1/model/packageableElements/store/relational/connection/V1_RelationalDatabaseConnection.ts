@@ -45,7 +45,8 @@ export abstract class V1_DatabaseConnection extends V1_Connection {
 
 export class V1_RelationalDatabaseConnection
   extends V1_DatabaseConnection
-  implements Hashable {
+  implements Hashable
+{
   datasourceSpecification!: V1_DatasourceSpecification;
   authenticationStrategy!: V1_AuthenticationStrategy;
   postProcessors: V1_PostProcessor[] = [];

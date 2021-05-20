@@ -648,8 +648,7 @@ export const simpleCoreModelData = [
           inputData: [
             {
               _type: 'object',
-              data:
-                '{"employees":[{"firstName":"Tyler","lastName":"Durden"},{"firstName":"Big","lastName":"Lebowski"},{"firstName":"Geralt","lastName":"Witcher"}],"legalName":"MCDataTeam","incType":"Corporation"}',
+              data: '{"employees":[{"firstName":"Tyler","lastName":"Durden"},{"firstName":"Big","lastName":"Lebowski"},{"firstName":"Geralt","lastName":"Witcher"}],"legalName":"MCDataTeam","incType":"Corporation"}',
               inputType: 'JSON',
               sourceClass: 'demo::Firm',
             },

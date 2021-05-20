@@ -78,9 +78,8 @@ test(
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
     MOBX__disableSpyOrMock();
-    const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-      QueryBuilderState,
-    );
+    const queryBuilderState =
+      mockedEditorStore.getEditorExtensionState(QueryBuilderState);
     await flowResult(queryBuilderState.setOpenQueryBuilder(true));
     queryBuilderState.querySetupState.setClass(_personClass);
     queryBuilderState.resetData();
@@ -349,9 +348,8 @@ test(
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
     MOBX__disableSpyOrMock();
-    const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-      QueryBuilderState,
-    );
+    const queryBuilderState =
+      mockedEditorStore.getEditorExtensionState(QueryBuilderState);
     await flowResult(queryBuilderState.setOpenQueryBuilder(true));
     queryBuilderState.querySetupState.setClass(_personClass);
     queryBuilderState.resetData();
@@ -393,9 +391,8 @@ test(
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
     MOBX__disableSpyOrMock();
-    const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-      QueryBuilderState,
-    );
+    const queryBuilderState =
+      mockedEditorStore.getEditorExtensionState(QueryBuilderState);
     await flowResult(queryBuilderState.setOpenQueryBuilder(true));
     queryBuilderState.querySetupState.setClass(
       mockedEditorStore.graphState.graph.getClass(

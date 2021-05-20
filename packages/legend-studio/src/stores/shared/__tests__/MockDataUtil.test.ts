@@ -59,9 +59,11 @@ test(unitTest('Test mock data with classes cycle'), () => {
   // 1st level
   const applicationKeys = ['applicant', 'employee', 'previousEmployeer'];
   expect(applicationInstance).toContainAllKeys(applicationKeys);
-  const applicantInstance = (applicationInstance as {
-    applicant: Record<PropertyKey, unknown>;
-  }).applicant;
+  const applicantInstance = (
+    applicationInstance as {
+      applicant: Record<PropertyKey, unknown>;
+    }
+  ).applicant;
   // 2nd level
   expect(applicantInstance).toContainKeys([
     'userName',
@@ -70,14 +72,18 @@ test(unitTest('Test mock data with classes cycle'), () => {
     'firstName',
     'dateOfBirth',
   ]);
-  const secondApplicationInstance = (applicantInstance as {
-    previousApplication: Record<PropertyKey, unknown>;
-  }).previousApplication;
+  const secondApplicationInstance = (
+    applicantInstance as {
+      previousApplication: Record<PropertyKey, unknown>;
+    }
+  ).previousApplication;
   expect(secondApplicationInstance).toContainAllKeys(applicationKeys);
   // 3rd level
-  const secondApplicantInstance = (secondApplicationInstance as {
-    applicant: Record<PropertyKey, unknown>;
-  }).applicant;
+  const secondApplicantInstance = (
+    secondApplicationInstance as {
+      applicant: Record<PropertyKey, unknown>;
+    }
+  ).applicant;
   expect(secondApplicantInstance).toContainKeys([
     'userName',
     'password',

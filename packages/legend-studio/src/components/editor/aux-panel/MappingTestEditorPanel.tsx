@@ -105,9 +105,8 @@ const MappingTestGraphFetchQueryEditor = observer(
     );
     // Target
     const targetSelectorRef = useRef<SelectComponent>(null);
-    const [openTargetSelectorModal, setOpenTargetSelectorModal] = useState(
-      false,
-    );
+    const [openTargetSelectorModal, setOpenTargetSelectorModal] =
+      useState(false);
     const showTargetSelectorModal = (): void =>
       setOpenTargetSelectorModal(true);
     const hideTargetSelectorModal = (): void =>
@@ -313,9 +312,8 @@ export const MappingTestObjectInputDataBuilder = observer(
           .sort(compareLabelFn)
       : [];
     const sourceSelectorRef = useRef<SelectComponent>(null);
-    const [openSourceSelectorModal, setOpenSourceSelectorModal] = useState(
-      false,
-    );
+    const [openSourceSelectorModal, setOpenSourceSelectorModal] =
+      useState(false);
     const showSourceSelectorModal = (): void =>
       setOpenSourceSelectorModal(true);
     const hideSourceSelectorModal = (): void =>
@@ -433,9 +431,8 @@ export const MappingTestFlatDataInputDataBuilder = observer(
           .sort(compareLabelFn)
       : [];
     const sourceSelectorRef = useRef<SelectComponent>(null);
-    const [openSourceSelectorModal, setOpenSourceSelectorModal] = useState(
-      false,
-    );
+    const [openSourceSelectorModal, setOpenSourceSelectorModal] =
+      useState(false);
     const showSourceSelectorModal = (): void =>
       setOpenSourceSelectorModal(true);
     const hideSourceSelectorModal = (): void =>

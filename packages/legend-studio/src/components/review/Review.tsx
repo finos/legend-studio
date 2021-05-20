@@ -179,8 +179,10 @@ const ReviewInner = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const changeActivity = (activity: ACTIVITY_MODE): (() => void) => (): void =>
-    editorStore.setActiveActivity(activity);
+  const changeActivity =
+    (activity: ACTIVITY_MODE): (() => void) =>
+    (): void =>
+      editorStore.setActiveActivity(activity);
 
   useEffect(() => {
     reviewStore.setProjectIdAndReviewId(projectId, reviewId);

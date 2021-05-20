@@ -106,9 +106,8 @@ const constructMappingElementNodeData = (
 const getMappingElementTreeNodeData = (
   mappingElement: MappingElement,
 ): MappingElementTreeNodeData => {
-  const nodeData: MappingElementTreeNodeData = constructMappingElementNodeData(
-    mappingElement,
-  );
+  const nodeData: MappingElementTreeNodeData =
+    constructMappingElementNodeData(mappingElement);
   if (
     mappingElement instanceof FlatDataInstanceSetImplementation ||
     mappingElement instanceof EmbeddedFlatDataPropertyMapping
@@ -144,9 +143,8 @@ const getMappingElementTreeData = (
       ),
     );
   rootMappingElements.forEach((mappingElement) => {
-    const mappingElementTreeNodeData = getMappingElementTreeNodeData(
-      mappingElement,
-    );
+    const mappingElementTreeNodeData =
+      getMappingElementTreeNodeData(mappingElement);
     addUniqueEntry(rootIds, mappingElementTreeNodeData.id);
     nodes.set(mappingElementTreeNodeData.id, mappingElementTreeNodeData);
   });
@@ -158,9 +156,8 @@ const reprocessMappingElement = (
   treeNodes: Map<string, MappingElementTreeNodeData>,
   openNodes: string[],
 ): MappingElementTreeNodeData => {
-  const nodeData: MappingElementTreeNodeData = constructMappingElementNodeData(
-    mappingElement,
-  );
+  const nodeData: MappingElementTreeNodeData =
+    constructMappingElementNodeData(mappingElement);
   if (
     mappingElement instanceof FlatDataInstanceSetImplementation ||
     mappingElement instanceof EmbeddedFlatDataPropertyMapping
@@ -492,19 +489,21 @@ export class MappingEditorState extends ElementEditorState {
             OptionalPackageableElementExplicitReference.create(newSource),
           );
         } else if (newSource instanceof Table || newSource instanceof View) {
-          const newRootRelationalInstanceSetImplementation = new RootRelationalInstanceSetImplementation(
-            setImplementation.id,
-            this.mapping,
-            setImplementation.class,
-            setImplementation.root,
-          );
+          const newRootRelationalInstanceSetImplementation =
+            new RootRelationalInstanceSetImplementation(
+              setImplementation.id,
+              this.mapping,
+              setImplementation.class,
+              setImplementation.root,
+            );
           const mainTableAlias = new TableAlias();
           mainTableAlias.relation =
             newSource instanceof Table
               ? TableExplicitReference.create(newSource)
               : ViewExplicitReference.create(newSource);
           mainTableAlias.name = mainTableAlias.relation.value.name;
-          newRootRelationalInstanceSetImplementation.mainTableAlias = mainTableAlias;
+          newRootRelationalInstanceSetImplementation.mainTableAlias =
+            mainTableAlias;
           newSetImp = newRootRelationalInstanceSetImplementation;
         } else {
           throw new UnsupportedOperationError(
@@ -711,9 +710,8 @@ export class MappingEditorState extends ElementEditorState {
               me instanceof EmbeddedFlatDataPropertyMapping,
           )
           .forEach((embeddedPM) => {
-            const embeddedPropertyNode = getMappingElementTreeNodeData(
-              embeddedPM,
-            );
+            const embeddedPropertyNode =
+              getMappingElementTreeNodeData(embeddedPM);
             treeData.nodes.set(embeddedPropertyNode.id, embeddedPropertyNode);
           });
       }
@@ -831,12 +829,8 @@ export class MappingEditorState extends ElementEditorState {
         if (errorElementCoordinates) {
           const sourceId = compilationError.sourceInformation.sourceId;
           assertTrue(errorElementCoordinates.coordinates.length > 4);
-          const [
-            mappingType,
-            mappingId,
-            propertyName,
-            targetPropertyId,
-          ] = errorElementCoordinates.coordinates;
+          const [mappingType, mappingId, propertyName, targetPropertyId] =
+            errorElementCoordinates.coordinates;
           const newMappingElement = this.mapping.getMappingElementByTypeAndId(
             mappingType,
             mappingId,
@@ -866,9 +860,10 @@ export class MappingEditorState extends ElementEditorState {
                 this.currentTabState instanceof
                   FlatDataInstanceSetImplementationState
               ) {
-                const propertyMappingState = this.currentTabState.propertyMappingStates.find(
-                  (state) => state.propertyMapping.lambdaId === sourceId,
-                );
+                const propertyMappingState =
+                  this.currentTabState.propertyMappingStates.find(
+                    (state) => state.propertyMapping.lambdaId === sourceId,
+                  );
                 if (propertyMappingState) {
                   propertyMappingState.setCompilationError(compilationError);
                   revealed = true;
@@ -901,10 +896,11 @@ export class MappingEditorState extends ElementEditorState {
             (testState) => testState.test.name === tabState.test.name,
           );
         }
-        const mappingElement = mappingEditorState.mapping.getMappingElementByTypeAndId(
-          getMappingElementType(tabState.mappingElement),
-          tabState.mappingElement.id.value,
-        );
+        const mappingElement =
+          mappingEditorState.mapping.getMappingElementByTypeAndId(
+            getMappingElementType(tabState.mappingElement),
+            tabState.mappingElement.id.value,
+          );
         return this.createMappingElementState(mappingElement);
       })
       .filter(isNonNullable);
@@ -949,9 +945,10 @@ export class MappingEditorState extends ElementEditorState {
     targetClass: Class,
   ) {
     // TODO? should we auto-select everything?
-    const query = this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
-      targetClass,
-    );
+    const query =
+      this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+        targetClass,
+      );
     // smartly choose the first source in the list of possible sources by default
     const possibleSources = this.mapping
       .getAllMappingElements()

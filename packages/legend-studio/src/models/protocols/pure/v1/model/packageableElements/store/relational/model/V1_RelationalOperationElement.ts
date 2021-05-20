@@ -28,7 +28,8 @@ export abstract class V1_RelationalOperationElement implements Hashable {
 
 export class V1_DynaFunc
   extends V1_RelationalOperationElement
-  implements Hashable {
+  implements Hashable
+{
   funcName!: string;
   parameters: V1_RelationalOperationElement[] = [];
 
@@ -43,7 +44,8 @@ export class V1_DynaFunc
 
 export class V1_ElementWithJoins
   extends V1_RelationalOperationElement
-  implements Hashable {
+  implements Hashable
+{
   joins: V1_JoinPointer[] = [];
   relationalElement?: V1_RelationalOperationElement;
 
@@ -58,7 +60,8 @@ export class V1_ElementWithJoins
 
 export class V1_TableAliasColumn
   extends V1_RelationalOperationElement
-  implements Hashable {
+  implements Hashable
+{
   table!: V1_TablePtr;
   tableAlias!: string;
   column!: string;
@@ -75,7 +78,8 @@ export class V1_TableAliasColumn
 
 export class V1_Literal
   extends V1_RelationalOperationElement
-  implements Hashable {
+  implements Hashable
+{
   value!: string | number | V1_RelationalOperationElement;
 
   get hashCode(): string {
@@ -88,7 +92,8 @@ export class V1_Literal
 
 export class V1_LiteralList
   extends V1_RelationalOperationElement
-  implements Hashable {
+  implements Hashable
+{
   values: V1_Literal[] = [];
 
   get hashCode(): string {

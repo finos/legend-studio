@@ -278,13 +278,15 @@ export const EditPanel = observer(() => {
           ) {
             return <UnsupportedElementEditor key={currentEditorState.uuid} />;
           }
-          const extraElementEditorCreators = editorStore.applicationStore.pluginManager
-            .getEditorPlugins()
-            .flatMap(
-              (plugin) =>
-                (plugin as DSL_EditorPlugin_Extension).getExtraElementEditorCreators?.() ??
-                [],
-            );
+          const extraElementEditorCreators =
+            editorStore.applicationStore.pluginManager
+              .getEditorPlugins()
+              .flatMap(
+                (plugin) =>
+                  (
+                    plugin as DSL_EditorPlugin_Extension
+                  ).getExtraElementEditorCreators?.() ?? [],
+              );
           for (const elementEditorCreators of extraElementEditorCreators) {
             const elementEditor = elementEditorCreators(currentEditorState);
             if (elementEditor) {
@@ -352,18 +354,21 @@ export const EditPanel = observer(() => {
   };
 
   // actions
-  const closeTab = (editorState: EditorState): React.MouseEventHandler => (
-    event,
-  ): void => editorStore.closeState(editorState);
-  const closeTabOnMiddleClick = (
-    editorState: EditorState,
-  ): React.MouseEventHandler => (event): void => {
-    if (event.nativeEvent.button === 1) {
+  const closeTab =
+    (editorState: EditorState): React.MouseEventHandler =>
+    (event): void =>
       editorStore.closeState(editorState);
-    }
-  };
-  const openTab = (editorState: EditorState): (() => void) => (): void =>
-    editorStore.openState(editorState);
+  const closeTabOnMiddleClick =
+    (editorState: EditorState): React.MouseEventHandler =>
+    (event): void => {
+      if (event.nativeEvent.button === 1) {
+        editorStore.closeState(editorState);
+      }
+    };
+  const openTab =
+    (editorState: EditorState): (() => void) =>
+    (): void =>
+      editorStore.openState(editorState);
 
   if (!currentEditorState) {
     return editorStore.isInViewerMode ? (

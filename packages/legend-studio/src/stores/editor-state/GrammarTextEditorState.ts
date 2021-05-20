@@ -128,13 +128,15 @@ export class GrammarTextEditorState {
     } else if (element instanceof PackageableRuntime) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME;
     } else {
-      const extraPureGrammarElementLabelers = this.editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
-        .flatMap(
-          (plugin) =>
-            (plugin as DSL_EditorPlugin_Extension).getExtraPureGrammarElementLabelers?.() ??
-            [],
-        );
+      const extraPureGrammarElementLabelers =
+        this.editorStore.applicationStore.pluginManager
+          .getEditorPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_EditorPlugin_Extension
+              ).getExtraPureGrammarElementLabelers?.() ?? [],
+          );
       for (const labeler of extraPureGrammarElementLabelers) {
         const _typeLabel = labeler(element);
         if (_typeLabel) {

@@ -58,10 +58,11 @@ export class FunctionBodyEditorState extends LambdaEditorState {
   ) {
     if (this.lambdaString) {
       try {
-        const lambda = (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
-          this.fullLambdaString,
-          this.functionElement.lambdaId,
-        )) as RawLambda | undefined;
+        const lambda =
+          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+            this.fullLambdaString,
+            this.functionElement.lambdaId,
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.functionElement.body = lambda ? (lambda.body as object[]) : [];
       } catch (error: unknown) {
@@ -93,10 +94,11 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           this.functionElement.body as object,
         );
         lambdas.set(this.functionElement.lambdaId, functionLamba);
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-          pretty,
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.functionElement.lambdaId);
         if (grammarText) {
           let grammarString = this.extractLambdaString(grammarText);

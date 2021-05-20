@@ -100,7 +100,8 @@ import type {
 } from '../../../PureProtocolProcessorPlugin';
 
 export class V1_PackageableElementSerializer
-  implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>> {
+  implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
+{
   extraElementProtocolSerializers: V1_ElementProtocolSerializer[] = [];
 
   constructor(plugins: PureProtocolProcessorPlugin[]) {

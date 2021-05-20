@@ -40,12 +40,10 @@ export const TextInputEditor: React.FC<{
   const { inputValue, updateInput, language, isReadOnly, showMiniMap } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const [editor, setEditor] = useState<
-    monacoEditorAPI.IStandaloneCodeEditor | undefined
-  >();
-  const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
-    undefined,
-  );
+  const [editor, setEditor] =
+    useState<monacoEditorAPI.IStandaloneCodeEditor | undefined>();
+  const onDidChangeModelContentEventDisposer =
+    useRef<IDisposable | undefined>(undefined);
   const textInputRef = useRef<HTMLDivElement>(null);
 
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
@@ -95,14 +93,13 @@ export const TextInputEditor: React.FC<{
     // dispose the old editor content setter in case the `updateInput` handler changes
     // for a more extensive note on this, see `LambdaEditor`
     onDidChangeModelContentEventDisposer.current?.dispose();
-    onDidChangeModelContentEventDisposer.current = editor.onDidChangeModelContent(
-      () => {
+    onDidChangeModelContentEventDisposer.current =
+      editor.onDidChangeModelContent(() => {
         const currentVal = editor.getValue();
         if (currentVal !== inputValue) {
           updateInput?.(currentVal);
         }
-      },
-    );
+      });
 
     // Set the text value and editor options
     const currentValue = editor.getValue();

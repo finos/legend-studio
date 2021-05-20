@@ -47,8 +47,10 @@ export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
 }
 
-export type QueryBuilderProjectionDropTarget = QueryBuilderExplorerTreeDragSource;
-export type QueryBuilderProjectionColumnRearrangeDropTarget = QueryBuilderProjectionColumnDragSource;
+export type QueryBuilderProjectionDropTarget =
+  QueryBuilderExplorerTreeDragSource;
+export type QueryBuilderProjectionColumnRearrangeDropTarget =
+  QueryBuilderProjectionColumnDragSource;
 
 export class QueryBuilderProjectionColumnState {
   uuid = uuid();

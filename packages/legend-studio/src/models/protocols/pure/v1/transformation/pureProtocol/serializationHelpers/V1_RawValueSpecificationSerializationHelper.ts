@@ -119,7 +119,8 @@ const V1_rawRootGraphFetchTreeModelSchema = createModelSchema(
 
 class V1_RawValueSpecificationSerializer
   implements
-    V1_RawValueSpecificationVisitor<PlainObject<V1_RawValueSpecification>> {
+    V1_RawValueSpecificationVisitor<PlainObject<V1_RawValueSpecification>>
+{
   visit_Lambda(
     rawValueSpecification: V1_RawLambda,
   ): PlainObject<V1_RawValueSpecification> {

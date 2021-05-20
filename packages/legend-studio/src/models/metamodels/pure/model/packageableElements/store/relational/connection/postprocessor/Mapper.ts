@@ -22,7 +22,8 @@ export class PostProcessorParameter {}
 
 export abstract class Mapper
   extends PostProcessorParameter
-  implements Hashable {
+  implements Hashable
+{
   from: string;
   to: string;
 

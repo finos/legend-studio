@@ -78,17 +78,15 @@ const EnumerationPropertyMappingEditor = observer(
   }) => {
     const { propertyMappingState, drop, transformProps, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = guaranteeType(
       propertyMappingState.propertyMapping,
       RelationalPropertyMapping,
       'Relational property mapping for enumeration type property must be a simple property mapping',
     );
-    const enumeration = propertyMapping.property.value.genericType.value.getRawType(
-      Enumeration,
-    );
+    const enumeration =
+      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
     // Enumeration Mapping Selector
     const options = mappingEditorState.mapping
       .enumerationMappingsByEnumeration(enumeration)

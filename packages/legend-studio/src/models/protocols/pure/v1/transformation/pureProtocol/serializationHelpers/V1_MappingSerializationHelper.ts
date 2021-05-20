@@ -290,9 +290,8 @@ const embeddedRelationalPropertyMappingModelSchema = createModelSchema(
   },
 );
 
-const otherwiseEmbeddedRelationalPropertyMappingModelSchgema = createModelSchema(
-  V1_OtherwiseEmbeddedRelationalPropertyMapping,
-  {
+const otherwiseEmbeddedRelationalPropertyMappingModelSchgema =
+  createModelSchema(V1_OtherwiseEmbeddedRelationalPropertyMapping, {
     _type: usingConstantValueSchema(
       V1_PropertyMappingType.OTHERWISE_EMBEDDED_RELATIONAL,
     ),
@@ -308,8 +307,7 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema = createModelSchema
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-  },
-);
+  });
 
 const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
   V1_InlineEmbeddedPropertyMapping,
@@ -898,7 +896,7 @@ const enumValueMappingModelSchema = createModelSchema(V1_EnumValueMapping, {
     custom(serializeEnumValueMappingSourceValue, (value, context) =>
       V1_deserializeEnumValueMappingSourceValue(
         value,
-        (context as unknown) as { args?: V1_EnumerationMapping },
+        context as unknown as { args?: V1_EnumerationMapping },
       ),
     ),
   ), //TODO look into why args is private in context

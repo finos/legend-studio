@@ -86,19 +86,20 @@ const ExplorerContextMenu = observer(
     const { node } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const extraExplorerContextMenuItems = editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
-          [],
-      )
-      .filter(isNonNullable)
-      .map((config) => (
-        <Fragment key={config.key}>
-          {config.renderer(editorStore, node?.packageableElement)}
-        </Fragment>
-      ));
+    const extraExplorerContextMenuItems =
+      editorStore.applicationStore.pluginManager
+        .getEditorPlugins()
+        .flatMap(
+          (plugin) =>
+            plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
+            [],
+        )
+        .filter(isNonNullable)
+        .map((config) => (
+          <Fragment key={config.key}>
+            {config.renderer(editorStore, node?.packageableElement)}
+          </Fragment>
+        ));
     const projectId = editorStore.sdlcState.currentProjectId;
     const _package = node
       ? node.packageableElement instanceof Package
@@ -146,8 +147,10 @@ const ExplorerContextMenu = observer(
       }
     };
 
-    const createNewElement = (type: string): (() => void) => (): void =>
-      editorStore.newElementState.openModal(type, _package);
+    const createNewElement =
+      (type: string): (() => void) =>
+      (): void =>
+        editorStore.newElementState.openModal(type, _package);
 
     const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
       .concat(editorStore.getSupportedElementTypes())
@@ -252,9 +255,8 @@ const PackageTreeNodeContainer = observer(
   (props: PackageTreeNodeContainerProps) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const editorStore = useEditorStore();
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-      false,
-    );
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const { disableContextMenu } = innerProps;
     const [, dragRef] = useDrag(
       () => ({
@@ -347,8 +349,10 @@ const ExplorerDropdownMenu = observer(
   (props: {}, ref: React.Ref<HTMLDivElement>) => {
     const editorStore = useEditorStore();
     const _package = editorStore.explorerTreeState.getSelectedNodePackage();
-    const createNewElement = (type: string): (() => void) => (): void =>
-      editorStore.newElementState.openModal(type, _package);
+    const createNewElement =
+      (type: string): (() => void) =>
+      (): void =>
+        editorStore.newElementState.openModal(type, _package);
 
     const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
       .concat(editorStore.getSupportedElementTypes())
@@ -414,7 +418,8 @@ const ExplorerTrees = observer(() => {
     getTreeChildNodes(editorStore, node, generationTreeData);
 
   // Generated Files Tree
-  const generationFileTreeData = editorStore.explorerTreeState.getFileGenerationTreeData();
+  const generationFileTreeData =
+    editorStore.explorerTreeState.getFileGenerationTreeData();
   const onGenerationFileTreeNodeSelect = (node: GenerationTreeNodeData): void =>
     editorStore.graphState.graphGenerationState.onTreeNodeSelect(
       node,

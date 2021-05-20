@@ -71,9 +71,8 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const applicationStore = useApplicationStore();
   const isActive =
     editorStore.sdlcState.currentWorkspaceId === workspace.workspaceId;
-  const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-    false,
-  );
+  const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+    useState(false);
   const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
   const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
   return (
@@ -437,13 +436,12 @@ const OverviewViewer = observer(() => {
   // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
   const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
   const showAddItemInput = (): void => setShowEditInput(true);
-  const showEditItemInput = (
-    value: string,
-    idx: number,
-  ): (() => void) => (): void => {
-    setItemValue(value);
-    setShowEditInput(idx);
-  };
+  const showEditItemInput =
+    (value: string, idx: number): (() => void) =>
+    (): void => {
+      setItemValue(value);
+      setShowEditInput(idx);
+    };
   const hideAddOrEditItemInput = (): void => {
     setShowEditInput(false);
     setItemValue('');
@@ -457,22 +455,26 @@ const OverviewViewer = observer(() => {
     }
     hideAddOrEditItemInput();
   };
-  const updateValue = (idx: number): (() => void) => (): void => {
-    if (itemValue && !tagsArray.includes(itemValue)) {
-      tagsArray[idx] = itemValue;
-      setTagsArray(tagsArray);
-      hideAddOrEditItemInput();
-    }
-  };
-  const deleteValue = (idx: number): (() => void) => (): void => {
-    const tags = [...tagsArray];
-    tags.splice(idx, 1);
-    setTagsArray(tags);
-    // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
-    if (typeof showEditInput === 'number' && showEditInput > idx) {
-      setShowEditInput(showEditInput - 1);
-    }
-  };
+  const updateValue =
+    (idx: number): (() => void) =>
+    (): void => {
+      if (itemValue && !tagsArray.includes(itemValue)) {
+        tagsArray[idx] = itemValue;
+        setTagsArray(tagsArray);
+        hideAddOrEditItemInput();
+      }
+    };
+  const deleteValue =
+    (idx: number): (() => void) =>
+    (): void => {
+      const tags = [...tagsArray];
+      tags.splice(idx, 1);
+      setTagsArray(tags);
+      // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
+      if (typeof showEditInput === 'number' && showEditInput > idx) {
+        setShowEditInput(showEditInput - 1);
+      }
+    };
   const handleUpdate = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ): void => {
@@ -664,9 +666,10 @@ interface ProjectOverviewActivityDisplay {
 export const ProjectOverviewActivityBar = observer(() => {
   const editorStore = useEditorStore();
   const projectOverviewState = editorStore.projectOverviewState;
-  const changeActivity = (
-    activity: PROJECT_OVERVIEW_ACTIVITY_MODE,
-  ): (() => void) => (): void => projectOverviewState.setActivityMode(activity);
+  const changeActivity =
+    (activity: PROJECT_OVERVIEW_ACTIVITY_MODE): (() => void) =>
+    (): void =>
+      projectOverviewState.setActivityMode(activity);
   const activities: ProjectOverviewActivityDisplay[] = [
     { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW, title: 'Overview' },
     editorStore.sdlcState.isCurrentProjectInProduction && {

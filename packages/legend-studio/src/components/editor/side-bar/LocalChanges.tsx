@@ -51,8 +51,10 @@ export const LocalChanges = observer(() => {
     diff.newPath === currentEditorState.toEntityPath;
   const changes =
     editorStore.changeDetectionState.workspaceLatestRevisionState.changes;
-  const openChange = (diff: EntityDiff): (() => void) => (): void =>
-    localChangesState.openLocalChange(diff);
+  const openChange =
+    (diff: EntityDiff): (() => void) =>
+    (): void =>
+      localChangesState.openLocalChange(diff);
 
   return (
     <div className="panel local-changes">

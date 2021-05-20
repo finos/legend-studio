@@ -49,7 +49,8 @@ import type { V1_ServiceStore } from '../../../model/packageableElements/store/r
 import { V1_buildAssociationMapping } from '../../../transformation/pureGraph/to/helpers/V1_AssociationMappingHelper';
 
 export class V1_ProtocolToMetaModelGraphFourthPassVisitor
-  implements V1_PackageableElementVisitor<void> {
+  implements V1_PackageableElementVisitor<void>
+{
   context: V1_GraphBuilderContext;
 
   constructor(context: V1_GraphBuilderContext) {

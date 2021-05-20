@@ -23,7 +23,8 @@ import type { V1_EngineRuntime } from '../../../model/packageableElements/runtim
 
 export class V1_PackageableRuntime
   extends V1_PackageableElement
-  implements Hashable {
+  implements Hashable
+{
   runtimeValue!: V1_EngineRuntime;
 
   get hashCode(): string {

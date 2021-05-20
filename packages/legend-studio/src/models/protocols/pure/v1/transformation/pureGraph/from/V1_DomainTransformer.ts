@@ -105,9 +105,10 @@ export const V1_transformEnumeration = (
 const transformUnit = (element: Unit): V1_Unit => {
   const unit = new V1_Unit();
   V1_initPackageableElement(unit, element);
-  unit.conversionFunction = element.conversionFunction?.accept_ValueSpecificationVisitor(
-    new V1_RawValueSpecificationTransformer(),
-  ) as V1_RawLambda | undefined;
+  unit.conversionFunction =
+    element.conversionFunction?.accept_ValueSpecificationVisitor(
+      new V1_RawValueSpecificationTransformer(),
+    ) as V1_RawLambda | undefined;
   unit.measure = element.measure.path;
   return unit;
 };
@@ -124,16 +125,18 @@ export const V1_transformMeasure = (element: Measure): V1_Measure => {
 
 const transformConstraint = (element: Constraint): V1_Constraint => {
   const constraint = new V1_Constraint();
-  constraint.functionDefinition = element.functionDefinition.accept_ValueSpecificationVisitor(
-    new V1_RawValueSpecificationTransformer(),
-  ) as V1_RawLambda;
+  constraint.functionDefinition =
+    element.functionDefinition.accept_ValueSpecificationVisitor(
+      new V1_RawValueSpecificationTransformer(),
+    ) as V1_RawLambda;
   constraint.name = element.name;
   constraint.externalId = element.externalId;
   constraint.enforcementLevel = element.enforcementLevel;
   if (element.messageFunction && !element.messageFunction.isStub) {
-    constraint.messageFunction = element.messageFunction.accept_ValueSpecificationVisitor(
-      new V1_RawValueSpecificationTransformer(),
-    ) as V1_RawLambda;
+    constraint.messageFunction =
+      element.messageFunction.accept_ValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(),
+      ) as V1_RawLambda;
   }
   return constraint;
 };

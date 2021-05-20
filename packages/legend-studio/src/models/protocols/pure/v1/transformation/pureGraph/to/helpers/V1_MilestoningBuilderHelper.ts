@@ -116,8 +116,9 @@ export const V1_buildMilestoning = (
   }
   const extraMilestoningBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraMilestoningBuilders?.() ??
-      [],
+      (
+        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMilestoningBuilders?.() ?? [],
   );
   for (const builder of extraMilestoningBuilders) {
     const metamodel = builder(protocol, context);

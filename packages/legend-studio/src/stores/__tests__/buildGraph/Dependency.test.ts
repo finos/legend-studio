@@ -176,7 +176,8 @@ const testDependencyElements = async (
     .mockResolvedValue(dependencyEntities);
   await editorStore.graphState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
-  const dependencyMap = await editorStore.graphState.getProjectDependencyEntities();
+  const dependencyMap =
+    await editorStore.graphState.getProjectDependencyEntities();
   editorStore.graphState.graph.setDependencyManager(dependencyManager);
   await editorStore.graphState.graphManager.buildDependencies(
     editorStore.graphState.coreModel,

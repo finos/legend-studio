@@ -52,10 +52,11 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     const stubOperation = createStubRelationalOperationElement();
     if (this.lambdaString) {
       try {
-        const operation = (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
-          this.fullLambdaString,
-          this.propertyMapping.lambdaId,
-        )) as RawRelationalOperationElement | undefined;
+        const operation =
+          (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
+            this.fullLambdaString,
+            this.propertyMapping.lambdaId,
+          )) as RawRelationalOperationElement | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof RelationalPropertyMapping) {
           this.propertyMapping.relationalOperation = operation ?? stubOperation;
@@ -93,9 +94,10 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
             this.propertyMapping.lambdaId,
             this.propertyMapping.relationalOperation,
           );
-          const operationsInText = (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
-            operations,
-          )) as Map<string, string>;
+          const operationsInText =
+            (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+              operations,
+            )) as Map<string, string>;
           const grammarText = operationsInText.get(
             this.propertyMapping.lambdaId,
           );
@@ -216,9 +218,10 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
     if (operations.size) {
       this.isConvertingTransformObjects = true;
       try {
-        const operationsInText = (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
-          operations,
-        )) as Map<string, string>;
+        const operationsInText =
+          (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+            operations,
+          )) as Map<string, string>;
         operationsInText.forEach((grammarText, key) => {
           const relationalPropertyMappingState = propertyMappingStates.get(key);
           relationalPropertyMappingState?.setLambdaString(

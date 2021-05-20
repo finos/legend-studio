@@ -31,7 +31,8 @@ import type { InferableMappingElementIdValue } from '../../../../../model/packag
 
 export class InlineEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation
-  implements InlineEmbeddedSetImplementation {
+  implements InlineEmbeddedSetImplementation
+{
   inlineSetImplementation!: SetImplementation;
 
   constructor(
