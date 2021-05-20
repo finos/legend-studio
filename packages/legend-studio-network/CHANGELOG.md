@@ -1,5 +1,12 @@
 # @finos/legend-studio-network
 
+## 0.0.13
+
+### Patch Changes
+
+- Updated dependencies [[`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1)]:
+  - @finos/legend-studio-shared@0.0.11
+
 ## 0.0.12
 
 ### Patch Changes
