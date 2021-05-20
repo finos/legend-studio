@@ -116,8 +116,7 @@ import {
 import type { V1_JoinPointer } from '../../../../model/packageableElements/store/relational/model/V1_JoinPointer';
 import type { V1_Filter } from '../../../../model/packageableElements/store/relational/model/V1_Filter';
 import { V1_buildMilestoning } from './V1_MilestoningBuilderHelper';
-
-const DEFAULT_SCHEMA_NAME = 'default';
+import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../../../../MetaModelConst';
 
 export const V1_schemaExistsInDatabase = (
   dbVisited: Set<Database>,
@@ -148,7 +147,7 @@ export const V1_schemaExistsInDatabase = (
   return false;
 };
 const schemaExists = (database: Database, _schema: string): boolean =>
-  DEFAULT_SCHEMA_NAME === _schema ||
+  DEFAULT_DATABASE_SCHEMA_NAME === _schema ||
   V1_schemaExistsInDatabase(new Set<Database>(), database, _schema);
 
 export const V1_findRelation = (

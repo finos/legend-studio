@@ -228,16 +228,7 @@ export class RootFlatDataRecordType
 
   constructor(owner: FlatDataSection) {
     super();
-
-    makeObservable(this, {
-      selectOption: computed,
-    });
-
     this.owner = owner;
-  }
-
-  get selectOption(): { label: string; value: RootFlatDataRecordType } {
-    return { label: this.owner.name, value: this };
   }
 
   get hashCode(): string {

@@ -36,6 +36,7 @@ import {
   isValidJSONString,
   createUrlStringFromData,
   losslessStringify,
+  getClass,
 } from '@finos/legend-studio-shared';
 import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
@@ -389,7 +390,11 @@ export class MappingExecutionState {
         ),
       );
     } else {
-      throw new UnsupportedOperationError();
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't build runtime for unsupported source of type '${
+          getClass(source).name
+        }'`,
+      );
     }
   }
 

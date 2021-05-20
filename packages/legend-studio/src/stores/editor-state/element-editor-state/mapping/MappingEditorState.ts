@@ -50,7 +50,6 @@ import { Enumeration } from '../../../../models/metamodels/pure/model/packageabl
 import type {
   MappingElement,
   MappingElementSource,
-  MappingElementSourceSelectOption,
 } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
   Mapping,
@@ -62,10 +61,7 @@ import {
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type {
-  PackageableElement,
-  PackageableElementSelectOption,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
 import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
@@ -89,6 +85,11 @@ import { RootRelationalInstanceSetImplementation } from '../../../../models/meta
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
+import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
+import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
+import { TableAlias } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
+import { TableExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/TableReference';
+import { ViewExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/ViewReference';
 
 export interface MappingElementTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -250,7 +251,6 @@ export class MappingEditorState extends ElementEditorState {
       mappingElementsTreeData: observable.ref,
       mapping: computed,
       testSuiteResult: computed,
-      mappingElementSourceOptions: computed,
       setSelectedTypeLabel: action,
       setNewMappingElementSpec: action,
       setMappingElementTreeNodeData: action,
@@ -293,30 +293,6 @@ export class MappingEditorState extends ElementEditorState {
       : numberOfTestPassed
       ? TEST_RESULT.PASSED
       : TEST_RESULT.NONE;
-  }
-
-  get mappingElementSourceOptions(): MappingElementSourceSelectOption[] {
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-    return (this.editorStore
-      .classOptions as MappingElementSourceSelectOption[]).concat(
-      this.editorStore.graphState.graph.flatDatas
-        .map((f) => f.recordTypes)
-        .flat()
-        .map((e) => e.selectOption as MappingElementSourceSelectOption),
-    );
-  }
-
-  get enumertionMappingSourceTypeOptions(): PackageableElementSelectOption<PackageableElement>[] {
-    // NOTE: we only support Integer, for floats are imprecise and if people want it, they can use String instead
-    const acceptedPrimitiveTypes = [
-      this.editorStore.graphState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.INTEGER,
-      ),
-      this.editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
-    ];
-    return acceptedPrimitiveTypes
-      .map((primitiveType) => primitiveType.selectOption)
-      .concat(this.editorStore.enumerationOptions);
   }
 
   setSelectedTypeLabel(type: Type | undefined): void {
@@ -515,6 +491,21 @@ export class MappingEditorState extends ElementEditorState {
             setImplementation.root,
             OptionalPackageableElementExplicitReference.create(newSource),
           );
+        } else if (newSource instanceof Table || newSource instanceof View) {
+          const newRootRelationalInstanceSetImplementation = new RootRelationalInstanceSetImplementation(
+            setImplementation.id,
+            this.mapping,
+            setImplementation.class,
+            setImplementation.root,
+          );
+          const mainTableAlias = new TableAlias();
+          mainTableAlias.relation =
+            newSource instanceof Table
+              ? TableExplicitReference.create(newSource)
+              : ViewExplicitReference.create(newSource);
+          mainTableAlias.name = mainTableAlias.relation.value.name;
+          newRootRelationalInstanceSetImplementation.mainTableAlias = mainTableAlias;
+          newSetImp = newRootRelationalInstanceSetImplementation;
         } else {
           throw new UnsupportedOperationError(
             `Can't use class mapping source of type '${

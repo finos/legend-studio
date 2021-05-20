@@ -29,8 +29,11 @@
     }
 
     &__content {
-      padding: 0.3rem;
       background: var(--color-light-grey-100);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
     }
 
     &__content--dnd-over {
@@ -43,63 +46,9 @@
     max-width: calc(100% - 2.8rem);
   }
 
-  &__content__source-adder {
-    @include flexCenter;
-
-    flex-direction: column;
+  &__explorer {
     height: 100%;
-    cursor: pointer;
-    margin-top: 0 !important;
-  }
-
-  &__content__source-adder__text {
-    @include flexHCenter;
-
-    color: var(--color-dark-grey-300);
-    font-weight: bold;
-  }
-
-  &__content__source-adder__action {
-    @include flexCenter;
-
-    padding: 1rem;
-    border: 0.3rem dashed var(--color-light-grey-300);
-    border-radius: 0.3rem;
-    margin-top: 2rem;
-    width: 10rem;
-    height: 10rem;
-  }
-
-  &__content__source-adder__action svg {
-    font-size: 4rem;
-    color: var(--color-light-grey-300);
-  }
-
-  &__content__source-adder:hover &__content__source-adder__action {
-    border-color: var(--color-light-grey-400);
-  }
-
-  &__content__source-adder__action__add-icon {
-    display: none;
-  }
-
-  &__content__source-adder__action__dnd-icon {
-    display: flex;
-  }
-
-  &__content__source-adder:hover &__content__source-adder__action__add-icon {
-    display: flex;
-  }
-
-  &__content__source-adder:hover &__content__source-adder__action__dnd-icon {
-    display: none;
-  }
-
-  .panel__content--dnd-over &__content__source-adder__action svg {
-    animation: dnd-bounceup 0.2s alternate ease infinite;
-  }
-
-  &__content__source-adder:hover &__content__source-adder__action svg {
-    color: var(--color-light-grey-400);
+    width: 100%;
+    padding: 0.8rem 0.3rem 0.5rem 0.3rem;
   }
 }

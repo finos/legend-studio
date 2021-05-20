@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
-export type V1_RawRelationalOperationElement = object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
+import type { PlainObject } from '@finos/legend-studio-shared';
+import type { V1_RelationalOperationElement } from './V1_RelationalOperationElement';
+
+export type V1_RawRelationalOperationElement = PlainObject<V1_RelationalOperationElement>; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
