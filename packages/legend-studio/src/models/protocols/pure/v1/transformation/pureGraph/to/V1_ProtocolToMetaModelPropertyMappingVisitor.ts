@@ -76,7 +76,11 @@ import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/mode
 import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
 import { V1_rawLambdaBuilderWithResolver } from './helpers/V1_RawLambdaResolver';
-import { V1_deserializeRelationalOperationElement } from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
+import {
+  V1_deserializeRelationalOperationElement,
+  V1_serializeRelationalOperationElement,
+} from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
+import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -461,14 +465,27 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     );
     // NOTE: we only need to use the raw form of the operation for the editor
     // but we need to process it anyway so we can do analytics on table alias map
-    V1_processRelationalOperationElement(
-      V1_deserializeRelationalOperationElement(protocol.relationalOperation),
-      this.context,
-      this.tableAliasMap,
-      [],
-    );
-    relationalPropertyMapping.relationalOperation =
-      protocol.relationalOperation;
+    // and to resolve paths (similar to lambda). In order to resolve the path, we
+    // will need to do a full round-trip processing for the operation
+    // See https://github.com/finos/legend-studio/pull/173
+    try {
+      relationalPropertyMapping.relationalOperation =
+        V1_serializeRelationalOperationElement(
+          V1_transformRelationalOperationElement(
+            V1_processRelationalOperationElement(
+              V1_deserializeRelationalOperationElement(
+                protocol.relationalOperation,
+              ),
+              this.context,
+              this.tableAliasMap,
+              [],
+            ),
+          ),
+        );
+    } catch {
+      relationalPropertyMapping.relationalOperation =
+        protocol.relationalOperation;
+    }
     if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
         (em) => em.id.value === protocol.enumMappingId,
