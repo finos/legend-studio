@@ -1,5 +1,20 @@
 # @finos/legend-studio
 
+## 0.1.6
+
+### Patch Changes
+
+- [#211](https://github.com/finos/legend-studio/pull/211) [`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1) Thanks [@akphi](https://github.com/akphi)! - Do a non-throwing processing of relational property mapping operation to make sure that paths resolved and that we can infer the main table properly.
+
+* [#211](https://github.com/finos/legend-studio/pull/211) [`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1) Thanks [@akphi](https://github.com/akphi)! - Support creating embedded relational database connection in runtime editor.
+
+- [#211](https://github.com/finos/legend-studio/pull/211) [`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1) Thanks [@akphi](https://github.com/akphi)! - Support selecting database table/view as class mapping source.
+
+- Updated dependencies [[`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1)]:
+  - @finos/legend-studio-components@0.0.14
+  - @finos/legend-studio-shared@0.0.11
+  - @finos/legend-studio-network@0.0.13
+
 ## 0.1.5
 
 ### Patch Changes
