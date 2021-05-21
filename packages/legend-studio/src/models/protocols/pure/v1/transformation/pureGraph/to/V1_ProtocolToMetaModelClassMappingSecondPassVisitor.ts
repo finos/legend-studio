@@ -19,6 +19,7 @@ import {
   assertType,
   isNonNullable,
   guaranteeType,
+  assertNonEmptyString,
 } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../../../../../utils/Logger';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
@@ -63,6 +64,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
   }
 
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): void {
+    assertNonEmptyString(
+      classMapping.class,
+      'Operation class mapping class is missing',
+    );
     const id = V1_getInferredClassMappingId(
       this.context.resolveClass(classMapping.class).value,
       classMapping,
@@ -96,6 +101,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
   visit_PureInstanceClassMapping(
     classMapping: V1_PureInstanceClassMapping,
   ): void {
+    assertNonEmptyString(
+      classMapping.class,
+      'Model-to-model class mapping class is missing',
+    );
     const pureInstanceSetImplementation = guaranteeType(
       this.parent.getClassMapping(
         V1_getInferredClassMappingId(
@@ -124,6 +133,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
   visit_RootFlatDataClassMapping(
     classMapping: V1_RootFlatDataClassMapping,
   ): void {
+    assertNonEmptyString(
+      classMapping.class,
+      'Flat-data class mapping class is missing',
+    );
     const flatDataInstanceSetImplementation = guaranteeType(
       this.parent.getClassMapping(
         V1_getInferredClassMappingId(
@@ -153,6 +166,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
   visit_RootRelationalClassMapping(
     classMapping: V1_RootRelationalClassMapping,
   ): SetImplementation {
+    assertNonEmptyString(
+      classMapping.class,
+      'Relational class mapping class is missing',
+    );
     const rootRelationalInstanceSetImplementation = guaranteeType(
       this.parent.getClassMapping(
         V1_getInferredClassMappingId(
@@ -232,6 +249,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
   visit_AggregationAwareClassMapping(
     classMapping: V1_AggregationAwareClassMapping,
   ): SetImplementation {
+    assertNonEmptyString(
+      classMapping.class,
+      'Aggregation-aware class mapping class is missing',
+    );
     const aggragetionAwareInstanceSetImplementation = guaranteeType(
       this.parent.getClassMapping(
         V1_getInferredClassMappingId(

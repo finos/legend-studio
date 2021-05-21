@@ -168,7 +168,10 @@ export class ServiceRegistrationState {
       this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
     ) {
       const options: ServiceVersionOption[] = this.editorStore.sdlcState.projectVersions.map(
-        (version) => ({ label: version.id.id, value: version }),
+        (version) => ({
+          label: version.id.id,
+          value: version,
+        }),
       );
       if (this.serviceExecutionMode !== ServiceExecutionMode.PROD) {
         return [

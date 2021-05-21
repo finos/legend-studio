@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-const { getConfigLoader } = require('@finos/legend-studio-dev-utils/DevUtils');
+import { getConfigLoader } from '@finos/legend-studio-dev-utils/DevUtils';
 
-const configLoader = getConfigLoader('_package');
+// NOTE: `cosmiconfig` does not work with ESM config so unfortunately
+// we cannot rely on this right now to load config, we will temporarily
+// hard-code the config path
+// See https://github.com/davidtheclark/cosmiconfig/issues/224
+export const configLoader = getConfigLoader('_package');
 
-const resolvePackageConfig = (filePath) => {
+export const resolvePackageConfig = (filePath) => {
   const result = configLoader.search(filePath);
   return result?.config;
-};
-
-module.exports = {
-  resolvePackageConfig,
-  configLoader,
 };

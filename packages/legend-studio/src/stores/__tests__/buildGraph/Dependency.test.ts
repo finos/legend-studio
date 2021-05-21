@@ -15,6 +15,7 @@
  */
 
 import type { Entity } from '../../../models/sdlc/models/entity/Entity';
+import type { PlainObject } from '@finos/legend-studio-shared';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import {
   simpleDebuggingCase,
@@ -22,27 +23,104 @@ import {
   testAutoImportsWithSystemProfiles,
 } from '../roundtrip/RoundtripTestData';
 import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
-import type { ProjectDependencyMetadata } from '../../../models/sdlc/models/configuration/ProjectDependency';
 import { ProjectConfiguration } from '../../../models/sdlc/models/configuration/ProjectConfiguration';
 import { waitFor } from '@testing-library/dom';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { simpleCoreModelData } from './CoreTestData';
 import { DependencyManager } from '../../../models/metamodels/pure/graph/DependencyManager';
 import { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import { ProjectVersionEntities } from '../../../models/metadata/models/ProjectVersionEntities';
 
-const addDependencyEntities = (
-  dependencyEntities: Entity[],
-  dependencies: Map<string, ProjectDependencyMetadata>,
-  projectId?: string,
-): void => {
-  const config = new ProjectConfiguration();
-  config.projectId = projectId ?? 'UAT-TEST_DEPENDENCY';
-  const dependencyMetaData = {
-    entities: dependencyEntities,
-    config,
-    processVersionPackage: false,
-  };
-  dependencies.set(config.projectId, dependencyMetaData);
+const testDependingOnDifferentProjectVersions = [
+  {
+    projectId: 'PROD-A',
+    versionId: '1.0.0',
+    versionedEntity: false,
+    entities: [],
+  },
+  {
+    projectId: 'PROD-A',
+    versionId: '2.0.0',
+    versionedEntity: false,
+    entities: [],
+  },
+];
+
+const testDependingOnMoreThanOneproject = [
+  {
+    projectId: 'PROD-A',
+    versionId: '2.0.0',
+    versionedEntity: false,
+    entities: [
+      {
+        path: 'org::finos::legend::model::ProfileExtensionA',
+        content: {
+          _type: 'profile',
+          name: 'ProfileExtensionA',
+          package: 'org::finos::legend::model',
+          stereotypes: [],
+          tags: ['docs'],
+        },
+        classifierPath: 'meta::pure::metamodel::extension::Profile',
+      },
+    ],
+  },
+  {
+    projectId: 'PROD-B',
+    versionId: '2.0.0',
+    versionedEntity: false,
+    entities: [
+      {
+        path: 'org::finos::legend::model::ProfileExtensionB',
+        content: {
+          _type: 'profile',
+          name: 'ProfileExtensionB',
+          package: 'org::finos::legend::model',
+          stereotypes: [],
+          tags: ['docs'],
+        },
+        classifierPath: 'meta::pure::metamodel::extension::Profile',
+      },
+    ],
+  },
+  {
+    projectId: 'PROD-C',
+    versionId: '3.0.0',
+    versionedEntity: false,
+    entities: [
+      {
+        path: 'org::finos::legend::model::ProfileExtensionC',
+        content: {
+          _type: 'profile',
+          name: 'ProfileExtensionC',
+          package: 'org::finos::legend::model',
+          stereotypes: [],
+          tags: ['docs'],
+        },
+        classifierPath: 'meta::pure::metamodel::extension::Profile',
+      },
+    ],
+  },
+];
+
+const TEST_DEPENDENCY_PROJECT_ID = 'UAT-TEST_DEPENDENCY';
+const PROJECT_CONFIG = {
+  projectStructureVersion: { version: 6, extensionVersion: 1 },
+  projectId: TEST_DEPENDENCY_PROJECT_ID,
+  projectType: 'PROTOTYPE',
+  groupId: 'com.test',
+  artifactId: 'string',
+  projectDependencies: [
+    {
+      projectId: 'PROD_1',
+      versionId: {
+        majorVersion: 1,
+        minorVersion: 0,
+        patchVersion: 0,
+      },
+    },
+  ],
+  metamodelDependencies: [],
 };
 
 const FILE_GENERATION_PATH = 'model::myFileGeneration';
@@ -67,20 +145,38 @@ const buildFileGenerationDepentOnDependencyElements = (
 
 const testDependencyElements = async (
   entities: Entity[],
-  dependencyEntities: Entity[],
+  dependencyEntities: PlainObject<ProjectVersionEntities>[],
   includeDependencyInFileGenerationScopeElements?: boolean,
 ): Promise<void> => {
-  const dependencyElementPaths = dependencyEntities.map((e) => e.path);
+  const projectVersionEntities = dependencyEntities.map((e) =>
+    ProjectVersionEntities.serialization.fromJson(e),
+  );
+  const keys = projectVersionEntities.map((e) => e.projectId);
+  const dependencyElementPaths = projectVersionEntities
+    .map((e) => e.entities)
+    .flat()
+    .map((e) => e.path);
   if (includeDependencyInFileGenerationScopeElements) {
     entities.push(
       buildFileGenerationDepentOnDependencyElements(dependencyElementPaths),
     );
   }
   const editorStore = getTestEditorStore();
+  editorStore.projectConfigurationEditorState.setProjectConfiguration(
+    ProjectConfiguration.serialization.fromJson(PROJECT_CONFIG),
+  );
+  // mock version entities api return
+  jest
+    .spyOn(
+      guaranteeNonNullable(
+        editorStore.applicationStore.networkClientManager.metadataClient,
+      ),
+      'getDependencyEntities',
+    )
+    .mockResolvedValue(dependencyEntities);
   await editorStore.graphState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
-  const dependencyMap = new Map<string, ProjectDependencyMetadata>();
-  addDependencyEntities(dependencyEntities, dependencyMap);
+  const dependencyMap = await editorStore.graphState.getProjectDependencyEntities();
   editorStore.graphState.graph.setDependencyManager(dependencyManager);
   await editorStore.graphState.graphManager.buildDependencies(
     editorStore.graphState.coreModel,
@@ -101,7 +197,9 @@ const testDependencyElements = async (
   Array.from(dependencyMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
-
+  Array.from(keys).forEach((k) =>
+    expect(dependencyManager.getModel(k)).toBeDefined(),
+  );
   expect(dependencyManager.allElements.length).toBe(
     dependencyElementPaths.length,
   );
@@ -153,15 +251,26 @@ const testDependencyElements = async (
   }
 };
 
+const buildProjectVersionEntities = (
+  entities: Entity[],
+): PlainObject<ProjectVersionEntities>[] => [
+  {
+    projectId: TEST_DEPENDENCY_PROJECT_ID,
+    versionId: '1.0.0',
+    entities,
+    versionedEntity: false,
+  },
+];
+
 test(unitTest('M2M graph dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    m2mGraphEntities as Entity[],
+    buildProjectVersionEntities(m2mGraphEntities as Entity[]),
     true,
   );
   await testDependencyElements(
     [] as Entity[],
-    simpleDebuggingCase as Entity[],
+    buildProjectVersionEntities(simpleDebuggingCase as Entity[]),
     true,
   );
 });
@@ -169,12 +278,12 @@ test(unitTest('M2M graph dependency check'), async () => {
 test(unitTest('Auto-imports dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    testAutoImportsWithSystemProfiles as Entity[],
+    buildProjectVersionEntities(testAutoImportsWithSystemProfiles as Entity[]),
     true,
   );
   await testDependencyElements(
     [] as Entity[],
-    testAutoImportsWithAny as Entity[],
+    buildProjectVersionEntities(testAutoImportsWithAny as Entity[]),
     true,
   );
 });
@@ -182,7 +291,33 @@ test(unitTest('Auto-imports dependency check'), async () => {
 test(unitTest('Core model dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    simpleCoreModelData as Entity[],
+    buildProjectVersionEntities(simpleCoreModelData as Entity[]),
     true,
   );
 });
+
+test(
+  unitTest('Depending on more than one project dependency check'),
+  async () => {
+    await testDependencyElements(
+      [] as Entity[],
+      testDependingOnMoreThanOneproject,
+      true,
+    );
+  },
+);
+
+test(
+  unitTest('Same project different versions dependency error check'),
+  async () => {
+    await expect(
+      testDependencyElements(
+        [] as Entity[],
+        testDependingOnDifferentProjectVersions,
+        true,
+      ),
+    ).rejects.toThrowError(
+      "Depending on multiple versions of a project is not supported. Found dependency on project 'PROD-A' with versions: 1.0.0, 2.0.0.",
+    );
+  },
+);

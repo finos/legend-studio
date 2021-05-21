@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-const chalk = require('chalk');
-const strip = require('strip-ansi');
-const table = require('text-table');
-const wrap = require('wrap-ansi');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+import chalk from 'chalk';
+import strip from 'strip-ansi';
+import table from 'text-table';
+import wrap from 'wrap-ansi';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 
 const CONTENT_LINE_LENGTH = 72;
 const PLUGIN_NAME = 'ForkTsCheckerWebpackFormatterPlugin';
@@ -89,7 +89,6 @@ class ForkTsCheckerWebpackFormatterPlugin {
       const fileLineMap = new Map();
       issuesByFile.forEach((items, filePath) => {
         let lineNumber = 0;
-        const { dim } = chalk;
         const colors = { error: 'red', warning: 'yellow' };
         items.forEach((item) => {
           const message = wrap(item.message, CONTENT_LINE_LENGTH, {
@@ -98,7 +97,7 @@ class ForkTsCheckerWebpackFormatterPlugin {
           const lines = message.split('\n');
           rows.push([
             '',
-            dim(`${item.line}:${item.column}`),
+            chalk.dim(`${item.line}:${item.column}`),
             chalk[colors[item.level]](item.level),
             chalk.blue(lines[0]),
             item.code,
@@ -181,4 +180,4 @@ class ForkTsCheckerWebpackFormatterPlugin {
   }
 }
 
-module.exports = ForkTsCheckerWebpackFormatterPlugin;
+export default ForkTsCheckerWebpackFormatterPlugin;

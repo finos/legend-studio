@@ -1,5 +1,13 @@
 # @finos/legend-studio-shared
 
+## 0.0.10
+
+### Patch Changes
+
+- [#207](https://github.com/finos/legend-studio/pull/207) [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a) Thanks [@akphi](https://github.com/akphi)! - Properly encode URI for query params and search params in API calls.
+
+## 0.0.9
+
 ## 0.0.8
 
 ## 0.0.7

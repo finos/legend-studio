@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const {
-  getBaseConfig,
-} = require('@finos/legend-studio-dev-utils/JestConfigUtils');
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { getBaseConfig } from '@finos/legend-studio-dev-utils/JestConfigUtils';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const baseConfig = getBaseConfig({
-  babelConfigPath: path.resolve(__dirname, '../../babel.config.js'),
+  babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
 });
 
-module.exports = {
+export default {
   ...baseConfig,
   setupFiles: [
     '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
@@ -50,6 +51,9 @@ module.exports = {
   ],
   collectCoverageFrom: [
     '<rootDir>/packages/*/**/*.[jt]s?(x)',
+    '!<rootDir>/packages/*/webpack.config.js',
+    '!<rootDir>/packages/*/jest.config.js',
+    '!<rootDir>/packages/*/_package.config.js',
     '!<rootDir>/packages/*/build/**',
     '!<rootDir>/packages/*/lib/**',
     '!<rootDir>/packages/*/dev/**',
@@ -59,11 +63,18 @@ module.exports = {
     '!**/__tests__/**',
     '!**/vendor/**',
     '!**/scripts/**',
+    '!<rootDir>/packages/legend-studio-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
     '!<rootDir>/packages/legend-studio-app/cypress/**', // TODO: update this when restructure `e2e` test suite
   ],
   coverageDirectory: '<rootDir>/build/coverage',
   watchPathIgnorePatterns: [
     ...baseConfig.watchPathIgnorePatterns,
-    '/packages/.*/lib',
+    '<rootDir>/packages/.*/build',
+    '<rootDir>/packages/.*/lib',
+    '<rootDir>/packages/.*/dist',
+    '<rootDir>/packages/.*/dev',
+    '<rootDir>/build',
+    '<rootDir>/docs',
+    '<rootDir>/temp',
   ],
 };

@@ -43,6 +43,7 @@ import { AggregationAwareSetImplementation } from '../../../../../../metamodels/
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
 import { V1_processAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper';
 import { V1_rawLambdaBuilderWithResolver } from './helpers/V1_RawLambdaResolver';
+import { V1_processRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
   implements V1_ClassMappingVisitor<SetImplementation> {
@@ -103,7 +104,7 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
         srcClassReference?.value,
         classMapping.srcClass,
         this.context.section,
-        srcClassReference?.isResolvedFromAutoImports,
+        srcClassReference?.isInferred,
       ),
     );
     pureInstanceSetImplementation.filter = classMapping.filter
@@ -172,6 +173,9 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
       targetClass,
       InferableMappingElementRootExplicitValue.create(classMapping.root),
     );
+    rootRelationalInstanceSetImplementation.filter = classMapping.filter
+      ? V1_processRelationalMappingFilter(classMapping.filter, this.context)
+      : undefined;
     return rootRelationalInstanceSetImplementation;
   }
 
@@ -180,11 +184,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Aggregation Aware class mapping class is missing',
+      'Aggregation-aware class mapping class is missing',
     );
     assertNonNullable(
       classMapping.root,
-      'Aggregation Aware class mapping root flag is missing',
+      'Aggregation-aware class mapping root flag is missing',
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     const mapping = this.context.graph.getMapping(this.parent.path);

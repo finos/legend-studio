@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const chalk = require('chalk');
-const git = require('@changesets/git');
-const getReleasePlan = require('@changesets/get-release-plan').default;
-const { error, warn, info, log } = require('@changesets/logger');
-const { getPackages } = require('@manypkg/get-packages');
-const { read } = require('@changesets/config');
-const writeChangeset = require('@changesets/write').default;
+import { resolve } from 'path';
+import chalk from 'chalk';
+import { getChangedPackagesSinceRef } from '@changesets/git';
+import getReleasePlan from '@changesets/get-release-plan';
+import { error, warn, info, log } from '@changesets/logger';
+import { getPackages } from '@manypkg/get-packages';
+import { read } from '@changesets/config';
+import writeChangeset from '@changesets/write';
 
 /**
  * Ref `master` does not seem to be available in github-actions pipeline when using with action/checkout
@@ -44,19 +44,19 @@ const DEFAULT_SINCE_REF = 'origin/master';
  * By using this check, for whatever changes made, at least a `patch` bump is required. This covers the base
  * for any PR.
  */
-async function validateChangesets(cwd, sinceRef) {
+export async function validateChangesets(cwd, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
   const changesetPackageNames = (
-    await getReleasePlan(cwd, sinceBranch, config)
+    await getReleasePlan.default(cwd, sinceBranch, config)
   ).releases
     // packages whose versions are bumped because they depend on a package
     // whose version is explicitly bumped is not of our concern
     .filter((pkg) => pkg.changesets.length)
     .map((pkg) => pkg.name);
   const changedPackageNames = (
-    await git.getChangedPackagesSinceRef({
+    await getChangedPackagesSinceRef({
       cwd,
       ref: sinceBranch || config.baseBranch,
     })
@@ -110,13 +110,13 @@ async function validateChangesets(cwd, sinceRef) {
   }
 }
 
-async function generateChangeset(cwd, message, sinceRef) {
+export async function generateChangeset(cwd, message, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
   const changedPackages = new Set(
     (
-      await git.getChangedPackagesSinceRef({
+      await getChangedPackagesSinceRef({
         cwd,
         ref: sinceBranch || config.baseBranch,
       })
@@ -132,20 +132,11 @@ async function generateChangeset(cwd, message, sinceRef) {
     })),
     summary: message,
   };
-  const changesetID = await writeChangeset(newChangeset, cwd);
+  const changesetID = await writeChangeset.default(newChangeset, cwd);
   log(
     chalk.green(
       'Sucessfully generated changeset! If you want to modify or expand on the changeset summary, you can find it here:',
     ),
   );
-  info(
-    chalk.blue(
-      path.resolve(path.resolve(cwd, '.changeset'), `${changesetID}.md`),
-    ),
-  );
+  info(chalk.blue(resolve(resolve(cwd, '.changeset'), `${changesetID}.md`)));
 }
-
-module.exports = {
-  validateChangesets,
-  generateChangeset,
-};

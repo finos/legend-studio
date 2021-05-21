@@ -81,7 +81,7 @@ export const V1_modelChainConnectionModelSchema = createModelSchema(
   V1_ModelChainConnection,
   {
     _type: usingConstantValueSchema(V1_ConnectionType.MODEL_CHAIN_CONNECTION),
-    store: alias('element', primitive()),
+    store: alias('element', optional(primitive())), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     mappings: list(primitive()),
   },
 );
@@ -91,7 +91,7 @@ export const V1_jsonModelConnectionModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ConnectionType.JSON_MODEL_CONNECTION),
     class: primitive(),
-    store: alias('element', primitive()),
+    store: alias('element', optional(primitive())), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     url: primitive(),
   },
 );
@@ -101,7 +101,7 @@ export const V1_xmlModelConnectionModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ConnectionType.XML_MODEL_CONNECTION),
     class: primitive(),
-    store: alias('element', primitive()),
+    store: alias('element', optional(primitive())), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     url: primitive(),
   },
 );

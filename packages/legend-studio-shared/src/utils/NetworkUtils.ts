@@ -155,7 +155,7 @@ export class NetworkClientError extends Error {
 export const makeUrl = (
   baseUrl: string | undefined,
   relativeUrl: string,
-  parameters?: Parameters,
+  parameters: Parameters,
 ): string => {
   const url = new URL(relativeUrl, baseUrl ?? window.location.href);
   if (parameters instanceof Object) {
@@ -389,7 +389,7 @@ export class NetworkClient {
     requestProcessConfig?: RequestProcessConfig,
     responseProcessConfig?: ResponseProcessConfig,
   ): Promise<T> {
-    const requestUrl = makeUrl(this.baseUrl, url, parameters);
+    const requestUrl = makeUrl(this.baseUrl, url, parameters ?? {});
     if (data && requestProcessConfig?.enableCompression) {
       assertTrue(
         method !== HttpMethod.GET,

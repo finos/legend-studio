@@ -21,8 +21,8 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 import { hashLambda } from '../../../../../../../../../MetaModelUtility';
 
 export class V1_AggregateFunction implements Hashable {
-  mapFn!: V1_RawLambda; // LAMBDA
-  aggregateFn!: V1_RawLambda; // LAMBDA
+  mapFn!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  aggregateFn!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
     return hashArray([

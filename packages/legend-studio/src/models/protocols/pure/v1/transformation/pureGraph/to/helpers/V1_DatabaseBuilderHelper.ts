@@ -24,6 +24,7 @@ import {
   getClass,
 } from '@finos/legend-studio-shared';
 import { Database } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
+import { getAllIncludedDbs } from '../../../../../../../metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
 import { Schema } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Schema';
 import { Table } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { Column } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Column';
@@ -117,38 +118,6 @@ import type { V1_Filter } from '../../../../model/packageableElements/store/rela
 import { V1_buildMilestoning } from './V1_MilestoningBuilderHelper';
 
 const DEFAULT_SCHEMA_NAME = 'default';
-
-const collectIncludedDBs = (
-  results: Set<Database>,
-  databases: Database[],
-): void => {
-  databases.forEach((i) => {
-    const includedDb = guaranteeType(i, Database);
-    if (!results.has(includedDb)) {
-      results.add(includedDb);
-      collectIncludedDBs(
-        results,
-        includedDb.includes.map((s) => guaranteeType(s.value, Database)),
-      );
-    }
-  });
-};
-
-const getAllIncludedDbs = (db: Database): Set<Database> => {
-  const includes = db.includes;
-  const results = new Set<Database>();
-  results.add(db);
-  if (!includes.length) {
-    return results;
-  }
-  collectIncludedDBs(
-    results,
-    db.includes.map((includedStore) =>
-      guaranteeType(includedStore.value, Database),
-    ),
-  );
-  return results;
-};
 
 export const V1_schemaExistsInDatabase = (
   dbVisited: Set<Database>,
@@ -247,7 +216,7 @@ const processElementWithJoinsJoins = (
   return res;
 };
 
-const buildElementWithJoinsJoinTreeNode = (
+export const V1_buildElementWithJoinsJoinTreeNode = (
   joinPointers: V1_JoinPointer[],
   context: V1_GraphBuilderContext,
 ): JoinTreeNode | undefined => {
@@ -293,7 +262,7 @@ export const V1_processRelationalOperationElement = (
     return tableAliasColumn;
   } else if (operationalElement instanceof V1_ElementWithJoins) {
     const elementWithJoins = new RelationalOperationElementWithJoin();
-    elementWithJoins.joinTreeNode = buildElementWithJoinsJoinTreeNode(
+    elementWithJoins.joinTreeNode = V1_buildElementWithJoinsJoinTreeNode(
       operationalElement.joins,
       context,
     );

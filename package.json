@@ -1,6 +1,7 @@
 {
   "name": "legend-studio",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*"
   ],
@@ -13,27 +14,28 @@
     "check:ci": "yarn check:pkg-constraints && yarn check:project-ref && yarn check:tsc && yarn check:format && yarn check:copyright && yarn check:changeset",
     "check:changeset": "node ./scripts/workflow/checkChangesets.js",
     "check:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js",
-    "check:format": "prettier --list-different \"(scripts|docs)/**/*.{md,json,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,js,ts,tsx,html,scss,css}\" && yarn sort-package-json --check \"package.json\" \"packages/*/package.json\"",
+    "check:format": "prettier --list-different \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json --check \"package.json\" \"packages/*/package.json\"",
     "check:pkg-constraints": "yarn constraints",
     "check:project-ref": "node ./scripts/typescript/checkProjectReferenceConfigs.js",
     "check:tsc": "yarn build:tsc",
     "check:update": "yarn upgrade-interactive",
     "clean": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean",
-    "commit:cli": "git-cz",
     "dev": "yarn workspace @finos/legend-studio-app dev",
     "dev:tsc": "tsc --build --watch",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
     "fix:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js --update",
-    "fix:format": "prettier --write --loglevel=warn \"(scripts|docs)/**/*.{md,json,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{js,ts,tsx}\" --report-unused-disable-directives --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --verbose run lint:js --fix",
+    "fix:format": "prettier --write --loglevel=warn \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
+    "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --verbose run lint:js --fix",
     "fix:style": "yarn lint:style --fix",
+    "git:install-hooks": "husky install",
+    "git:pre-commit": "lint-staged",
     "lint": "yarn lint:js && yarn lint:style",
     "lint:ci": "yarn lint:js --max-warnings=0 && yarn lint:style --max-warnings=0",
-    "lint:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{js,ts,tsx}\" --report-unused-disable-directives && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --verbose run lint:js",
+    "lint:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --verbose run lint:js",
     "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\"",
     "publish:prepare": "cross-env FORCE_COLOR=1 yarn build:setup && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:prepare",
     "release": "yarn publish:prepare && changeset publish",
-    "setup": "yarn install && yarn workspaces foreach --topological-dev --verbose run setup && yarn build:setup",
+    "setup": "node ./scripts/workflow/checkNodeversion.js && yarn install && yarn git:install-hooks && yarn workspaces foreach --topological-dev --verbose run setup && yarn build:setup",
     "start": "yarn dev",
     "test": "jest",
     "test:ci": "yarn build:setup && yarn test:coverage",
@@ -41,11 +43,6 @@
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "test:watch": "jest --watch",
     "version": "changeset version && yarn install && yarn fix:format"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "*.{html,md,mdx}": [
@@ -63,16 +60,11 @@
       "sort-package-json"
     ]
   },
-  "config": {
-    "commitizen": {
-      "path": "./scripts/workflow/buildCommitPrompt.js"
-    }
-  },
   "browserslist": [
     "last 2 Chrome versions"
   ],
   "devDependencies": {
-    "@babel/core": "7.14.0",
+    "@babel/core": "7.14.3",
     "@changesets/cli": "2.16.0",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
@@ -80,23 +72,23 @@
     "@finos/stylelint-config-legend-studio": "workspace:*",
     "@juggle/resize-observer": "3.3.1",
     "@types/jest": "26.0.23",
-    "@types/node": "15.0.1",
+    "@types/node": "15.3.0",
     "chalk": "4.1.1",
-    "commitizen": "4.2.3",
     "cross-env": "7.0.3",
-    "eslint": "7.25.0",
-    "fs-extra": "9.1.0",
-    "husky": "4.3.8",
+    "eslint": "7.26.0",
+    "fs-extra": "10.0.0",
+    "husky": "6.0.0",
     "jest": "26.6.3",
-    "lint-staged": "10.5.4",
+    "lint-staged": "11.0.0",
     "prettier": "2.2.1",
     "rimraf": "3.0.2",
-    "sort-package-json": "1.49.0",
+    "semver": "7.3.5",
+    "sort-package-json": "1.50.0",
     "stylelint": "13.13.1",
     "typescript": "4.2.4"
   },
   "engines": {
-    "node": ">=14.16.0",
+    "node": ">=14.15.3",
     "yarn": ">=1.22.10"
   }
 }

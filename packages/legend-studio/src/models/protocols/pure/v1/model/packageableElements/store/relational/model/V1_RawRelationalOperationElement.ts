@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-module.exports = {
-  extends: ['@finos/stylelint-config-legend-studio'],
-};
+export type V1_RawRelationalOperationElement = object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element

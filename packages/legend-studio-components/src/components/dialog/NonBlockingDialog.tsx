@@ -17,7 +17,7 @@
 import type { DialogProps } from '@material-ui/core';
 import type { DialogClassKey } from '@material-ui/core/Dialog';
 import Dialog from '@material-ui/core/Dialog';
-import makeStyles from '@material-ui/core/styles/makeStyles';
+import { makeStyles } from '@material-ui/core/styles';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';

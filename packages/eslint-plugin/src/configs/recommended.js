@@ -210,6 +210,7 @@ const STUDIO_RULES = {
 
 const config = {
   parser: '@typescript-eslint/parser',
+  parserOptions: { extraFileExtensions: ['.mjs', '.cjs'] },
   env: {
     browser: true,
     node: true,

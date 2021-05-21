@@ -29,11 +29,10 @@ import {
 import { nominateRootSetImplementation } from '../../../../utils/MappingResolutionUtil';
 import { clsx } from '@finos/legend-studio-components';
 import { guaranteeType } from '@finos/legend-studio-shared';
-import {
-  FlatDataInstanceSetImplementationState,
-  FlatDataPropertyMappingState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
+import type { FlatDataPropertyMappingState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
+import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor';
+import { RelationalPropertyMappingEditor } from './relational/RelationalPropertyMappingEditor';
 import {
   Class,
   CLASS_PROPERTY_TYPE,
@@ -48,6 +47,10 @@ import { PrimitiveType } from '../../../../models/metamodels/pure/model/packagea
 import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import type {
+  RelationalPropertyMappingState,
+  RootRelationalInstanceSetImplementationState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 
 export const PropertyMappingsEditor = observer(
   (props: {
@@ -71,21 +74,12 @@ export const PropertyMappingsEditor = observer(
     const propertyMappingStates = instanceSetImplementationState.propertyMappingStates.filter(
       (pm) => pm.propertyMapping.property.value.name === property.name,
     );
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const propertyHasParserError = Boolean(
-      propertyMappingStates.find(
-        (pm) =>
-          (pm instanceof PurePropertyMappingState ||
-            pm instanceof FlatDataPropertyMappingState) &&
-          pm.parserError,
-      ),
+      propertyMappingStates.find((pm) => pm.parserError),
     );
     const setImplementationHasParserError = Boolean(
       instanceSetImplementationState.propertyMappingStates.find(
-        (pm) =>
-          (pm instanceof PurePropertyMappingState ||
-            pm instanceof FlatDataPropertyMappingState) &&
-          pm.parserError,
+        (pm) => pm.parserError,
       ),
     );
     // Walker
@@ -192,7 +186,7 @@ export const PropertyMappingsEditor = observer(
           {propertyMappingStates.map((propertyMappingState) => {
             /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
             switch (instanceSetImplementationType) {
-              case SET_IMPLEMENTATION_TYPE.PUREINSTANCE:
+              case SET_IMPLEMENTATION_TYPE.PUREINSTANCE: {
                 return (
                   <PurePropertyMappingEditor
                     key={propertyMappingState.uuid}
@@ -210,8 +204,9 @@ export const PropertyMappingsEditor = observer(
                     }
                   />
                 );
+              }
               case SET_IMPLEMENTATION_TYPE.FLAT_DATA:
-              case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA:
+              case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
                 return (
                   <FlatDataPropertyMappingEditor
                     key={propertyMappingState.uuid}
@@ -227,6 +222,24 @@ export const PropertyMappingsEditor = observer(
                     }
                   />
                 );
+              }
+              case SET_IMPLEMENTATION_TYPE.RELATIONAL: {
+                return (
+                  <RelationalPropertyMappingEditor
+                    key={propertyMappingState.uuid}
+                    isReadOnly={isReadOnly}
+                    relationalInstanceSetImplementationState={
+                      instanceSetImplementationState as RootRelationalInstanceSetImplementationState
+                    }
+                    relationalPropertyMappingState={
+                      propertyMappingState as RelationalPropertyMappingState
+                    }
+                    setImplementationHasParserError={
+                      setImplementationHasParserError
+                    }
+                  />
+                );
+              }
               default:
                 return null;
             }

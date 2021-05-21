@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-module.exports = {
+export default {
   /**
    * `favicon` [string, optional]
    * Relative path to the favicon file

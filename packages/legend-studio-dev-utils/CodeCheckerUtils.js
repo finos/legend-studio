@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const fs = require('fs');
-const micromatch = require('micromatch');
-const { execSync } = require('child_process');
-const { isBinaryFileSync } = require('isbinaryfile');
-const { getFileContent, exitWithError } = require('./DevUtils');
-const chalk = require('chalk');
+import { dirname } from 'path';
+import { existsSync, lstatSync } from 'fs';
+import micromatch from 'micromatch';
+import { execSync } from 'child_process';
+import { isBinaryFileSync } from 'isbinaryfile';
+import chalk from 'chalk';
+import { getFileContent, exitWithError } from './DevUtils.js';
 
 const GENERIC_EXCLUDE_PATTERNS = [
   // nothing
@@ -57,7 +57,7 @@ const collectMarkerStats = (filesWithMarker, markerSet, groupByDirectory) => {
   filesWithMarker.forEach((file) => {
     const fileContent = getFileContent(file).trim();
     if (fileContent.includes(markerSet.dirMarker)) {
-      dirs.add(path.dirname(file));
+      dirs.add(dirname(file));
     }
     if (fileContent.includes(markerSet.fileMarker)) {
       files.add(file);
@@ -89,7 +89,7 @@ const collectMarkerStats = (filesWithMarker, markerSet, groupByDirectory) => {
   return result;
 };
 
-const findFiles = ({
+export const findFiles = ({
   marker,
   phrases,
   /* micromatch glob patterns */
@@ -107,8 +107,8 @@ const findFiles = ({
         (!includePatterns.length ||
           micromatch.isMatch(file, includePatterns)) &&
         !micromatch.isMatch(file, excludePatterns) &&
-        fs.existsSync(file) &&
-        !fs.lstatSync(file).isDirectory() &&
+        existsSync(file) &&
+        !lstatSync(file).isDirectory() &&
         !isBinaryFileSync(file),
     );
 
@@ -163,7 +163,7 @@ const findFiles = ({
   return result;
 };
 
-const findMatches = ({
+export const findMatches = ({
   /* e.g. marker: { key: 'internal' } */
   marker,
   /* e.g. phrases: { list: [], excludePatterns: [] } */
@@ -203,8 +203,8 @@ const findMatches = ({
             forceMatchPatterns.length &&
             micromatch.isMatch(file, forceMatchPatterns) &&
             !micromatch.isMatch(file, excludePatterns) &&
-            fs.existsSync(file) &&
-            !fs.lstatSync(file).isDirectory() &&
+            existsSync(file) &&
+            !lstatSync(file).isDirectory() &&
             !isBinaryFileSync(file),
         ),
     ).values(),
@@ -224,7 +224,7 @@ const findMatches = ({
   return foundFiles;
 };
 
-const reportMatches = ({
+export const reportMatches = ({
   /* e.g. marker: { key: 'internal' } */
   marker,
   /* e.g. phrases: { list: [], excludePatterns: [] } */
@@ -275,10 +275,4 @@ const reportMatches = ({
   } else {
     console.log('No issues found!');
   }
-};
-
-module.exports = {
-  findFiles,
-  findMatches,
-  reportMatches,
 };

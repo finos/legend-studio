@@ -1,5 +1,11 @@
 # @finos/eslint-plugin-legend-studio
 
+## 0.0.10
+
+## 0.0.9
+
+## 0.0.8
+
 ## 0.0.7
 
 ## 0.0.6
@@ -10,7 +16,7 @@
 
 ### Patch Changes
 
-- [#102](https://github.com/finos/legend-studio/pull/102) [`492e022`](https://github.com/finos/legend-studio/commit/492e02229d27fc5ef0e1bafbbd8672de0449081f) Thanks [@akphi](https://github.com/akphi)! - Update publish content avoid list
+- [#102](https://github.com/finos/legend-studio/pull/102) [`492e022`](https://github.com/finos/legend-studio/commit/492e02229d27fc5ef0e1bafbbd8672de0449081f) Thanks [@akphi](https://github.com/akphi)! - Update publish content avoid list.
 
 ## 0.0.3
 

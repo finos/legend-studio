@@ -28,8 +28,8 @@ export class V1_DerivedProperty implements Hashable {
   returnMultiplicity!: V1_Multiplicity;
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
-  body?: object;
-  parameters?: object;
+  body?: object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  parameters?: object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
     return hashArray([

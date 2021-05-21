@@ -27,10 +27,16 @@ import type { Column } from '../../../../../../../metamodels/pure/model/packagea
 import { Table } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { View } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/View';
 import { ColumnExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/ColumnReference';
+import { FilterExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/FilterReference';
+import { FilterMapping } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/FilterMapping';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_RelationalClassMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
+import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
 import { V1_ProtocolToMetaModelPropertyMappingVisitor } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingVisitor';
-import { V1_processRelationalOperationElement } from './V1_DatabaseBuilderHelper';
+import {
+  V1_buildElementWithJoinsJoinTreeNode,
+  V1_processRelationalOperationElement,
+} from './V1_DatabaseBuilderHelper';
 
 export const V1_processRelationalClassMapping = (
   relationalClassMapping: V1_RelationalClassMapping,
@@ -85,4 +91,24 @@ export const V1_processRelationalPrimaryKey = (
       return mainTableAlias;
     });
   }
+};
+
+export const V1_processRelationalMappingFilter = (
+  v1_filter: V1_FilterMapping,
+  context: V1_GraphBuilderContext,
+): FilterMapping => {
+  const db = context.resolveDatabase(v1_filter.filter.db).value;
+  const filter = db.getFilter(v1_filter.filter.name);
+  const filterMapping = new FilterMapping(
+    db,
+    filter.name,
+    FilterExplicitReference.create(filter),
+  );
+  if (v1_filter.joins) {
+    filterMapping.joinTreeNode = V1_buildElementWithJoinsJoinTreeNode(
+      v1_filter.joins,
+      context,
+    );
+  }
+  return filterMapping;
 };

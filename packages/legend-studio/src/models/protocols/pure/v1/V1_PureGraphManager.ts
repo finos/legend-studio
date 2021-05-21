@@ -105,7 +105,6 @@ import {
 } from './transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
 import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json';
 import { V1_PackageableElementSerializer } from './transformation/pureProtocol/V1_PackageableElementSerialization';
-import { V1_DependencyDisambiguator } from './transformation/pureGraph/to/dependencyDisambiguator/V1_DependencyDisambiguator';
 import {
   V1_entitiesToPureModelContextData,
   V1_serializePureModelContext,
@@ -198,6 +197,8 @@ import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Mult
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
+import type { RawRelationalOperationElement } from '../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import type { V1_RawRelationalOperationElement } from './model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 
 export const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -507,7 +508,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       dependencyManager.initialize(dependencyMetadataMap);
       // Parse/Build Data
       const dependencyDataMap = new Map<string, V1_PureModelContextData>();
-      const dependencyKeys = Array.from(dependencyMetadataMap.keys());
       yield Promise.all(
         Array.from(dependencyMetadataMap.entries()).map(
           ([dependencyKey, projectDependencyMetadata]) => {
@@ -521,37 +521,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ),
       );
-
-      const reservedPaths = systemModel.allElements
-        .map((e) => e.path)
-        .concat(coreModel.allElements.map((e) => e.path));
-      // Pre-process dependent element paths
-      // NOTE: we process the dependent element paths after serializing the entities and before building the metamodel graph.
-      // This is by design as it isolates the dependency entity path process logic here and save us the trouble of poking
-      // metamodel graph later to update.
-      Array.from(dependencyDataMap.entries()).forEach(
-        ([dependencyKey, pureModelContextData]) => {
-          const dependencyMetadata = dependencyMetadataMap.get(dependencyKey);
-          if (dependencyMetadata?.processVersionPackage) {
-            pureModelContextData.elements.forEach((element) =>
-              element.accept_PackageableElementVisitor(
-                new V1_DependencyDisambiguator(
-                  {
-                    versionPrefix: dependencyKey,
-                    allDependencyKeys: dependencyKeys,
-                    reservedPaths,
-                    projectEntityPaths: dependencyMetadata.entities.map(
-                      (entity) => entity.path,
-                    ),
-                  },
-                  this.pureProtocolProcessorPlugins,
-                ),
-              ),
-            );
-          }
-        },
-      );
-
       const preprocessingFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
@@ -1532,6 +1501,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     pretty?: boolean,
   ): Promise<Map<string, string>> {
     return this.engine.transformLambdasToCode(lambdas, pretty);
+  }
+
+  pureCodeToRelationalOperationElement = flow(function* (
+    this: V1_PureGraphManager,
+    operation: string,
+    operationId: string,
+  ): GeneratorFn<RawRelationalOperationElement | undefined> {
+    return (yield this.engine.transformPureCodeToRelationalOperationElement(
+      operation,
+      operationId,
+    )) as V1_RawRelationalOperationElement | undefined;
+  });
+
+  relationalOperationElementToPureCode(
+    operations: Map<string, RawRelationalOperationElement>,
+  ): Promise<Map<string, string>> {
+    return this.engine.transformRelationalOperationElementsToPureCode(
+      operations,
+    );
   }
 
   // ------------------------------------------- Compile -------------------------------------------

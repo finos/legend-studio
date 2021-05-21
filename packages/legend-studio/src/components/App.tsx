@@ -164,7 +164,18 @@ export const AppRoot = observer(() => {
       )}
       {applicationStore.isSDLCAuthorized && (
         <Switch>
-          <Route exact={true} path={ROUTE_PATTERN.VIEW} component={Viewer} />
+          <Route
+            exact={true}
+            path={[
+              ROUTE_PATTERN.VIEW,
+              ROUTE_PATTERN.VIEW_BY_ENTITY,
+              ROUTE_PATTERN.VIEW_BY_REVISION,
+              ROUTE_PATTERN.VIEW_BY_VERSION,
+              ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
+              ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+            ]}
+            component={Viewer}
+          />
           <Route exact={true} path={ROUTE_PATTERN.REVIEW} component={Review} />
           <Route
             exact={true}

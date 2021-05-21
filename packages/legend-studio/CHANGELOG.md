@@ -1,5 +1,66 @@
 # @finos/legend-studio
 
+## 0.1.5
+
+### Patch Changes
+
+- [#207](https://github.com/finos/legend-studio/pull/207) [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a) Thanks [@akphi](https://github.com/akphi)! - Properly encode URI for query params and search params in API calls.
+
+* [#207](https://github.com/finos/legend-studio/pull/207) [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a) Thanks [@akphi](https://github.com/akphi)! - Allow user to copy link to open element in project viewer mode via context-menu.
+
+- [#210](https://github.com/finos/legend-studio/pull/210) [`b358e7f`](https://github.com/finos/legend-studio/commit/b358e7f212d90467b6536331b450f7234a970516) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Fix small bug on getDependencyEntities url.
+
+* [#207](https://github.com/finos/legend-studio/pull/207) [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a) Thanks [@akphi](https://github.com/akphi)! - Add a simple relational mapping editor with support for DnD from table source panel.
+
+* Updated dependencies [[`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a), [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a)]:
+  - @finos/legend-studio-network@0.0.12
+  - @finos/legend-studio-shared@0.0.10
+  - @finos/legend-studio-components@0.0.13
+
+## 0.1.4
+
+### Patch Changes
+
+- [#203](https://github.com/finos/legend-studio/pull/203) [`0d8c766`](https://github.com/finos/legend-studio/commit/0d8c7660f3a70d75e7d6d5265bf894ddb7088d02) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Studio now leverages the metadata server to fetch dependency entities. This helps to simplify our logic in handling project dependency.
+
+* [#205](https://github.com/finos/legend-studio/pull/205) [`e6b0425`](https://github.com/finos/legend-studio/commit/e6b04259c33ee8563391fd6833cd337b83b77d44) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - Fix rootRelationalClassMapping compilation to include filter.
+
+## 0.1.3
+
+### Patch Changes
+
+- [#199](https://github.com/finos/legend-studio/pull/199) [`2aab88e`](https://github.com/finos/legend-studio/commit/2aab88e797eec37760a646f7c6ee9d9f612d31cc) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Use meta::alloy::service::metamodel::Service for service classifierPath.
+
+* [#200](https://github.com/finos/legend-studio/pull/200) [`20b4e8f`](https://github.com/finos/legend-studio/commit/20b4e8f21d4c4abc1fd8ef06e826b9b8df883bc5) Thanks [@akphi](https://github.com/akphi)! - Improve the UX when users launch the editor with either not-found project or workspace. In particular, if the workspace is not found, we give them the option to create the workspace to start making changes or just view the project without the need to create any workspace. This will help with the case where users share URLs to a particular project/workspace; before, they are redirected back to the setup page with no clear message, which is _very confusing_.
+
+* Updated dependencies [[`20b4e8f`](https://github.com/finos/legend-studio/commit/20b4e8f21d4c4abc1fd8ef06e826b9b8df883bc5)]:
+  - @finos/legend-studio-components@0.0.12
+  - @finos/legend-studio-network@0.0.11
+  - @finos/legend-studio-shared@0.0.9
+
+## 0.1.2
+
+### Patch Changes
+
+- [#181](https://github.com/finos/legend-studio/pull/181) [`1deb5ab`](https://github.com/finos/legend-studio/commit/1deb5ab5b398c5da55bc482695457804f8407be8) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - Add `quoteIdentifiers` support to database connection.
+
+* [#190](https://github.com/finos/legend-studio/pull/190) [`c4ef316`](https://github.com/finos/legend-studio/commit/c4ef3165b7d344e771e1bb741ddc48ed5786cb04) Thanks [@kshradhan](https://github.com/kshradhan)! - Fix a bug in association editor where it crashes when users attempt to modify the property type(s) of a newly created association.
+
+- [#189](https://github.com/finos/legend-studio/pull/189) [`cf36a42`](https://github.com/finos/legend-studio/commit/cf36a42f658ac8bbab9a054010948b29707255d0) Thanks [@akphi](https://github.com/akphi)! - Modify Pure protocol, (de)serialization, and hash computation of relational mapping to match with what grammar parser in engine yields.
+
+* [#193](https://github.com/finos/legend-studio/pull/193) [`38a25d3`](https://github.com/finos/legend-studio/commit/38a25d3973ae771097ebfc169a21e021c24a4179) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - Check for joins in included databases.
+
+- [#187](https://github.com/finos/legend-studio/pull/187) [`cbccdc0`](https://github.com/finos/legend-studio/commit/cbccdc0fcb81cf873d50a9d41b04054a6efbf5fd) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Use `meta::legend::service::metamodel::Service` for service classifierPath.
+
+* [#194](https://github.com/finos/legend-studio/pull/194) [`80bd86a`](https://github.com/finos/legend-studio/commit/80bd86a5add9011f1ce7df33d700a1c1f28d5e08) Thanks [@akphi](https://github.com/akphi)! - Use ES module (ESM) throughout the codebase.
+
+- [#183](https://github.com/finos/legend-studio/pull/183) [`1ace102`](https://github.com/finos/legend-studio/commit/1ace102d50364645ec5d9efdbde2d4ca778f0544) Thanks [@akphi](https://github.com/akphi)! - Add support for Snowflake Public authentication strategy.
+
+- Updated dependencies [[`1ace102`](https://github.com/finos/legend-studio/commit/1ace102d50364645ec5d9efdbde2d4ca778f0544), [`80bd86a`](https://github.com/finos/legend-studio/commit/80bd86a5add9011f1ce7df33d700a1c1f28d5e08), [`80bd86a`](https://github.com/finos/legend-studio/commit/80bd86a5add9011f1ce7df33d700a1c1f28d5e08), [`46a6c4a`](https://github.com/finos/legend-studio/commit/46a6c4a761e6a8b7f1291e574524fd85e7124b08), [`1ace102`](https://github.com/finos/legend-studio/commit/1ace102d50364645ec5d9efdbde2d4ca778f0544), [`6705d7f`](https://github.com/finos/legend-studio/commit/6705d7f38982dcac70fb7a5586c1cd18d21a33e0)]:
+  - @finos/legend-studio-components@0.0.11
+  - @finos/legend-studio-network@0.0.11
+  - @finos/legend-studio-shared@0.0.9
+
 ## 0.1.1
 
 ### Patch Changes

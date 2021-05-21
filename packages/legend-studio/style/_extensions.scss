@@ -31,6 +31,7 @@
   --color-dependency: var(--color-lime-50);
   --color-config: var(--color-orange-100);
   --color-flat-data: var(--color-orange-100);
+  --color-relational: var(--color-blue-500);
   --color-file-generation: var(--color-blue-50);
   --color-database: var(--color-orange-100);
   --color-association: var(--color-light-grey-400);
@@ -183,5 +184,9 @@
 
   &--runtime {
     background: var(--color-runtime);
+  }
+
+  &--relational {
+    background: var(--color-relational);
   }
 }

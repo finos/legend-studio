@@ -27,7 +27,7 @@ import { createValidationError } from '../../../action/validator/ValidationResul
 export class MappingTest implements Hashable {
   uuid = uuid();
   name: string;
-  query: RawLambda;
+  query: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   inputData: InputData[] = [];
   assert: MappingTestAssert;
 

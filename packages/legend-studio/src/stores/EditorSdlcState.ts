@@ -104,6 +104,7 @@ export class EditorSdlcState {
   fetchCurrentProject = flow(function* (
     this: EditorSdlcState,
     projectId: string,
+    options?: { suppressNotification?: boolean },
   ) {
     try {
       this.isFetchingProject = true;
@@ -115,7 +116,9 @@ export class EditorSdlcState {
         CORE_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      if (!options?.suppressNotification) {
+        this.editorStore.applicationStore.notifyError(error);
+      }
     } finally {
       this.isFetchingProject = false;
     }
@@ -125,6 +128,7 @@ export class EditorSdlcState {
     this: EditorSdlcState,
     projectId: string,
     workspaceId: string,
+    options?: { suppressNotification?: boolean },
   ) {
     try {
       this.currentWorkspace = Workspace.serialization.fromJson(
@@ -141,7 +145,9 @@ export class EditorSdlcState {
         CORE_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      if (!options?.suppressNotification) {
+        this.editorStore.applicationStore.notifyError(error);
+      }
     }
   });
 

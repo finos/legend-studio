@@ -439,7 +439,6 @@ export const testServiceRoundtrip = [
                   connection: {
                     _type: 'JsonModelConnection',
                     class: 'tClass',
-                    element: 'ModelStore',
                     url: 'my_url',
                   },
                   id: 'id3',
@@ -474,7 +473,6 @@ export const testServiceRoundtrip = [
       connectionValue: {
         _type: 'JsonModelConnection',
         class: 'test::tClass',
-        element: 'ModelStore',
         url: 'dummy',
       },
       name: 'myConnection',

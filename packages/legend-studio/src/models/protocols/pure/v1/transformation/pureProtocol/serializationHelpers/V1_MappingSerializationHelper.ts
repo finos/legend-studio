@@ -23,6 +23,7 @@ import {
   SKIP,
   custom,
   optional,
+  raw,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -241,7 +242,7 @@ const relationalClassMappingModelSchema = createModelSchema(
   V1_RelationalClassMapping,
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.RELATIONAL),
-    class: primitive(),
+    class: optional(primitive()),
     id: optional(primitive()),
     primaryKey: list(
       custom(
@@ -268,11 +269,8 @@ const relationalPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    relationalOperation: custom(
-      (val) => V1_serializeRelationalOperationElement(val),
-      (val) => V1_deserializeRelationalOperationElement(val),
-    ),
-    source: primitive(),
+    relationalOperation: raw(),
+    source: optional(primitive()),
     target: optional(primitive()),
   },
 );
@@ -287,7 +285,7 @@ const embeddedRelationalPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: primitive(),
+    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     target: optional(primitive()),
   },
 );
@@ -305,7 +303,7 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema = createModelSchema
       (val) => V1_deserializeRelationalPropertyMapping(val),
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: primitive(),
+    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     target: optional(primitive()),
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
@@ -324,7 +322,7 @@ const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: primitive(),
+    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     setImplementationId: primitive(),
     target: optional(primitive()),
   },

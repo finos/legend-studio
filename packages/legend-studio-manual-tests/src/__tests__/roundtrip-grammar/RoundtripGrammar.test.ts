@@ -15,15 +15,47 @@
  */
 
 /// <reference types="jest-extended" />
-import path from 'path';
+
+// NOTE: mock these methods to make sure we rule out false positive. The grammar parser for any List type field,
+// will generate empty array, however, in Studio, we avoid that to lessen the size of the serialized graph
+// to save bandwidth, as such the best action is just to mock these methods so in the scope of this test, Studio
+// serializers return empty array for these fields just like the parser's
+jest.mock('@finos/legend-studio-shared', () => ({
+  ...jest.requireActual('@finos/legend-studio-shared'),
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  serializeArray: (
+    values: any,
+    itemSerializer: (val: any) => any,
+    skipIfEmpty: boolean,
+  ): any[] =>
+    Array.isArray(values)
+      ? values.length
+        ? values.map((value) => itemSerializer(value))
+        : []
+      : [],
+  deserializeArray: (
+    values: any,
+    itemDeserializer: (val: any) => any,
+    skipIfEmpty: boolean,
+  ): any[] => (Array.isArray(values) ? values.map(itemDeserializer) : []),
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}));
+
+import { resolve, basename, dirname } from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import type { V1_PackageableElement } from '@finos/legend-studio';
 import { EntityChangeType, getTestEditorStore } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-studio-shared';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ENGINE_SERVER_URL = 'http://localhost:6060/api';
-const TEST_CASE_DIR = path.resolve(__dirname, 'cases');
+const TEST_CASE_DIR = resolve(__dirname, 'cases');
+const EXCLUDED_CASE_FILES: string[] = [
+  'embedded-relational-mapping-with-imports.pure', // TODO?
+];
 
 const checkGrammarRoundtrip = async (
   file: string,
@@ -91,13 +123,14 @@ const checkGrammarRoundtrip = async (
 };
 
 const testNameFrom = (fileName: string): string => {
-  const name = path.basename(fileName, '.pure').split('-').join(' ');
+  const name = basename(fileName, '.pure').split('-').join(' ');
   return `${name[0].toUpperCase()}${name.substring(1, name.length)}`;
 };
 
 const cases = fs
   .readdirSync(TEST_CASE_DIR)
-  .map((filePath) => path.resolve(TEST_CASE_DIR, filePath))
+  .filter((caseName) => !EXCLUDED_CASE_FILES.includes(caseName))
+  .map((caseName) => resolve(TEST_CASE_DIR, caseName))
   .filter((filePath) => fs.statSync(filePath).isFile())
   .map((filePath) => [testNameFrom(filePath), filePath]);
 

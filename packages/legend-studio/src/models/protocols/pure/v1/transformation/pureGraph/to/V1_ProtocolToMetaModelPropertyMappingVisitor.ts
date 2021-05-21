@@ -38,9 +38,15 @@ import type { Association } from '../../../../../../metamodels/pure/model/packag
 import type { TableAlias } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
 import { InferableMappingElementIdExplicitValue } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
 import type { PackageableElementReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import {
+  PackageableElementImplicitReference,
+  PackageableElementExplicitReference,
+} from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { PropertyReference } from '../../../../../../metamodels/pure/model/packageableElements/domain/PropertyReference';
-import { PropertyExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/domain/PropertyReference';
+import {
+  PropertyImplicitReference,
+  PropertyExplicitReference,
+} from '../../../../../../metamodels/pure/model/packageableElements/domain/PropertyReference';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
@@ -60,7 +66,7 @@ import type { V1_FlatDataPropertyMapping } from '../../../model/packageableEleme
 import type { V1_OtherwiseEmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_OtherwiseEmbeddedRelationalPropertyMapping';
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
 import { V1_processRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
-import { V1_processEmbeddedRelationalMappingProperties } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder';
+import { V1_processEmbeddedRelationalMappingProperty } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder';
 import type { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
 import { XStorePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStorePropertyMapping';
 import type { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
@@ -406,12 +412,6 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     }
     // NOTE: mapping for derived property is not supported
     const property = propertyOwner.getProperty(protocol.property.property);
-    const operation = V1_processRelationalOperationElement(
-      protocol.relationalOperation,
-      this.context,
-      this.tableAliasMap,
-      [],
-    );
     // since we are not doing embedded property mappings yet, the target must have already been added to the mapping
     const propertyType = property.genericType.value.rawType;
     let targetSetImplementation: SetImplementation | undefined;
@@ -442,11 +442,23 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     );
     const relationalPropertyMapping = new RelationalPropertyMapping(
       this.topParent ?? this.immediateParent,
-      PropertyExplicitReference.create(property),
-      operation,
+      propertyOwner instanceof Class // TODO: we also probably need to handle this for association mapping
+        ? PropertyImplicitReference.create(
+            PackageableElementImplicitReference.create(
+              propertyOwner,
+              protocol.property.class ?? '',
+              this.context.section,
+              true,
+            ),
+            property,
+          )
+        : PropertyExplicitReference.create(property),
       sourceSetImplementation,
       targetSetImplementation,
     );
+    // NOTE: for now, we don't build the operation element, we will use its raw form for the editor
+    relationalPropertyMapping.relationalOperation =
+      protocol.relationalOperation;
     if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
         (em) => em.id.value === protocol.enumMappingId,
@@ -468,11 +480,11 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Embedded Relational property mapping property is missing',
+      'Inline embedded property mapping property is missing',
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Embedded property mapping property name is missing',
+      'Inline embedded property mapping property name is missing',
     );
     let propertyOwnerClass: Class;
     if (protocol.property.class) {
@@ -505,7 +517,15 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         : topParent;
     const inline = new InlineEmbeddedRelationalInstanceSetImplementation(
       this.immediateParent,
-      PropertyExplicitReference.create(property),
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          propertyOwnerClass,
+          protocol.property.class ?? '',
+          this.context.section,
+          true,
+        ),
+        property,
+      ),
       guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
       sourceSetImplementation,
       _class,
@@ -522,13 +542,13 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Embedded Relational property mapping property is missing',
+      'Embedded relational property mapping property is missing',
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Embedded property mapping property name is missing',
+      'Embedded relational property mapping property name is missing',
     );
-    const properties = V1_processEmbeddedRelationalMappingProperties(
+    const property = V1_processEmbeddedRelationalMappingProperty(
       protocol,
       this.immediateParent,
       guaranteeNonNullable(this.topParent),
@@ -536,14 +556,19 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     );
     const embedded = new EmbeddedRelationalInstanceSetImplementation(
       this.immediateParent,
-      PropertyExplicitReference.create(properties.property),
-      guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-      properties.sourceSetImplementation,
-      properties._class,
-      InferableMappingElementIdExplicitValue.create(
-        `${properties.id.value}`,
-        '',
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          property.propertyOwnerClass,
+          protocol.property.class ?? '',
+          this.context.section,
+          true,
+        ),
+        property.property,
       ),
+      guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
+      property.sourceSetImplementation,
+      property._class,
+      InferableMappingElementIdExplicitValue.create(`${property.id.value}`, ''),
     );
     embedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
       V1_processRelationalOperationElement(
@@ -573,13 +598,13 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Otherwise Embedded Relational property mapping property is missing',
+      'Otherwise embedded relational property mapping property is missing',
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Otherwise Embedded property mapping property name is missing',
+      'Otherwise embedded relational property mapping property name is missing',
     );
-    const properties = V1_processEmbeddedRelationalMappingProperties(
+    const property = V1_processEmbeddedRelationalMappingProperty(
       protocol,
       this.immediateParent,
       guaranteeNonNullable(this.topParent),
@@ -587,14 +612,19 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     );
     const otherwiseEmbedded = new OtherwiseEmbeddedRelationalInstanceSetImplementation(
       this.immediateParent,
-      PropertyExplicitReference.create(properties.property),
-      guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-      properties.sourceSetImplementation,
-      properties._class,
-      InferableMappingElementIdExplicitValue.create(
-        `${properties.id.value}`,
-        '',
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          property.propertyOwnerClass,
+          protocol.property.class ?? '',
+          this.context.section,
+          true,
+        ),
+        property.property,
       ),
+      guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
+      property.sourceSetImplementation,
+      property._class,
+      InferableMappingElementIdExplicitValue.create(`${property.id.value}`, ''),
     );
     otherwiseEmbedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
       V1_processRelationalOperationElement(
@@ -653,7 +683,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
 
     const xStoreParent = guaranteeNonNullable(
       this.xStoreParent,
-      'XStoreAssociation expected to be parent of XStore PropertyMapping',
+      'XStore property mapping parent is missing',
     );
     const _association = xStoreParent.association.value;
     const property = _association.getProperty(protocol.property.property);
@@ -682,19 +712,19 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Model-to-model property mapping property is missing',
+      'Aggregation-aware property mapping property is missing',
     );
     assertNonEmptyString(
       protocol.property.class,
-      'Model-to-model property mapping property class is missing',
+      'Aggregation-aware property mapping property class is missing',
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Model-to-model property mapping property name is missing',
+      'Aggregation-aware property mapping property name is missing',
     );
     const aggregationAwareParent = guaranteeNonNullable(
       this.aggregationAwareParent,
-      'AggregationAware expected to be parent of Aggregation Aware PropertyMapping',
+      'Aggregation-aware property mapping parent is missing',
     );
 
     const propertyMapping = aggregationAwareParent.mainSetImplementation.propertyMappings.find(

@@ -22,7 +22,7 @@ export class V1_TablePtr implements Hashable {
   table!: string;
   schema!: string;
   database!: string;
-  //  mainTableDb!: string; // NOTE: seems like this field is deprecated, we will take it out for now
+  mainTableDb!: string; // NOTE: this field is likely deprecated, we will not account for it in Studio
 
   get hashCode(): string {
     return hashArray([

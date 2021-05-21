@@ -148,11 +148,11 @@ const QueryBuilderProjectionColumn = observer(
     );
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        item: {
-          type: QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN,
-          columnState: projectionColumnState,
+        type: QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN,
+        item: (): QueryBuilderProjectionColumnDragSource => {
+          projectionColumnState.setIsBeingDragged(true);
+          return { columnState: projectionColumnState };
         },
-        begin: (): void => projectionColumnState.setIsBeingDragged(true),
         end: (item: QueryBuilderProjectionColumnDragSource | undefined): void =>
           item?.columnState.setIsBeingDragged(false),
       }),

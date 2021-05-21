@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const { ResizeObserver } = require('@juggle/resize-observer');
+import { ResizeObserver } from '@juggle/resize-observer';
 
 // Polyfills
 window.ResizeObserver = ResizeObserver;

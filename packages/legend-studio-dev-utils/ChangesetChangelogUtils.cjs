@@ -25,6 +25,8 @@
  * NOTE: We try not to customize too far from the default changelog generator `@changesets/changelog-github`.
  *
  * See https://github.com/atlassian/changesets/blob/master/docs/modifying-changelog-format.md
+ *
+ * NOTE: Looks like `changeset` only support CJS for now so we cannot use ESM in this file.
  */
 const githubChangelogFunctions = require('@changesets/changelog-github')
   .default;

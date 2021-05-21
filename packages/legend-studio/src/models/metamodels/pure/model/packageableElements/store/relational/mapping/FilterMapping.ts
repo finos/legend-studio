@@ -17,6 +17,7 @@
 import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-studio-shared';
+import { extractLine } from '../../../../../model/packageableElements/store/relational/model/RelationalOperationElement';
 import type { Hashable } from '@finos/legend-studio-shared';
 import type { Database } from '../../../../../model/packageableElements/store/relational/model/Database';
 import type { JoinTreeNode } from '../../../../../model/packageableElements/store/relational/model/RelationalOperationElement';
@@ -49,7 +50,7 @@ export class FilterMapping implements Hashable {
       CORE_HASH_STRUCTURE.FILTER_MAPPING,
       this.filter.ownerReference.valueForSerialization,
       this.filter.value.name,
-      this.joinTreeNode ?? '',
+      hashArray(this.joinTreeNode ? extractLine(this.joinTreeNode) : []),
     ]);
   }
 }

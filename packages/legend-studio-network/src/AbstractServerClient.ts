@@ -257,7 +257,11 @@ export abstract class AbstractServerClient {
     responseProcessConfig?: ResponseProcessConfig,
     traceData?: TraceData,
   ): Promise<T> {
-    const requestUrl = makeUrl(this.networkClient.baseUrl, url, parameters);
+    const requestUrl = makeUrl(
+      this.networkClient.baseUrl,
+      url,
+      parameters ?? {},
+    );
     // tracing
     const trace = this.tracerService.createTrace(
       traceData,

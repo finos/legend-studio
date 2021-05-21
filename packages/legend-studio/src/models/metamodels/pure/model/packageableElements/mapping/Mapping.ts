@@ -38,7 +38,6 @@ import {
   SOURCR_ID_LABEL,
 } from '../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
-import type { NamedRelationalReference } from '../../../model/packageableElements/store/relational/model/TableReference';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../model/packageableElements/store//relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { Table } from '../../../model/packageableElements/store/relational/model/Table';
 import { View } from '../../../model/packageableElements/store/relational/model/View';
@@ -93,7 +92,8 @@ export type MappingElementSource =
   | Type
   | Class
   | RootFlatDataRecordType
-  | NamedRelationalReference;
+  | View
+  | Table;
 
 export class Mapping extends PackageableElement implements Hashable, Stubable {
   includes: MappingInclude[] = [];
@@ -501,11 +501,12 @@ export const getMappingElementSource = (
   } else if (
     mappingElement instanceof RootRelationalInstanceSetImplementation
   ) {
-    return mappingElement.mainTableAlias.relation;
+    return mappingElement.mainTableAlias.relation.value;
   } else if (
     mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
   ) {
-    return mappingElement.rootInstanceSetImplementation.mainTableAlias.relation;
+    return mappingElement.rootInstanceSetImplementation.mainTableAlias.relation
+      .value;
   } else if (mappingElement instanceof AggregationAwareSetImplementation) {
     return getMappingElementSource(mappingElement.mainSetImplementation);
   }

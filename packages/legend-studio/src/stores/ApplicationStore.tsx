@@ -39,6 +39,7 @@ import { SdlcMode } from '../models/sdlc/models/project/Project';
 import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
 import { TelemetryService } from '@finos/legend-studio-network';
+import { MetadataServerClient } from '../models/metadata/MetadataServerClient';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -110,12 +111,16 @@ export class Notification {
 export class NetworkClientManager {
   coreClient!: NetworkClient;
   sdlcClient!: SDLCServerClient;
+  metadataClient: MetadataServerClient;
 
   constructor(config: ApplicationConfig) {
     this.coreClient = new NetworkClient();
     this.sdlcClient = new SDLCServerClient({
       env: config.env,
       serverUrl: config.sdlcServerUrl,
+    });
+    this.metadataClient = new MetadataServerClient({
+      serverUrl: config.metadataServerUrl,
     });
   }
 }
@@ -448,23 +453,24 @@ export class ApplicationStore {
       await navigator.clipboard.writeText(text).catch((error) => {
         this.notifyError(error);
       });
-    } else {
-      // See https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
-      if (document.queryCommandSupported('copy')) {
-        const element = document.createElement('textarea');
-        element.style.display = 'fixed';
-        element.style.opacity = '0';
-        document.documentElement.appendChild(element);
-        element.value = text;
-        element.select();
-        try {
-          document.execCommand('copy');
-        } catch (error: unknown) {
-          this.notifyError(error);
-        } finally {
-          element.remove();
-        }
+      return;
+    }
+    // See https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
+    if (document.queryCommandSupported('copy')) {
+      const element = document.createElement('textarea');
+      element.style.display = 'fixed';
+      element.style.opacity = '0';
+      document.documentElement.appendChild(element);
+      element.value = text;
+      element.select();
+      try {
+        document.execCommand('copy');
+      } catch (error: unknown) {
+        this.notifyError(error);
+      } finally {
+        element.remove();
       }
+      return;
     }
     this.notifyError('Browser does not support clipboard functionality');
   }

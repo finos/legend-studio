@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const fs = require('fs');
+import { resolve, dirname } from 'path';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 
-module.exports = {
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export default {
   extensions: ['js', 'ts', 'tsx', 'css', 'scss'],
   excludePatterns: [],
-  copyrightText: fs.readFileSync(
-    path.resolve(__dirname, './COPYRIGHT_HEADER.txt'),
-    { encoding: 'utf-8' },
-  ),
+  copyrightText: readFileSync(resolve(__dirname, './COPYRIGHT_HEADER.txt'), {
+    encoding: 'utf-8',
+  }),
 };

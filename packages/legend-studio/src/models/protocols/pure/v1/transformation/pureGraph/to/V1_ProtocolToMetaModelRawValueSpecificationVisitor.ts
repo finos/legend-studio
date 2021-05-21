@@ -129,7 +129,7 @@ export class V1_ProtocolToMetaModelRawValueSpecificationVisitor
             _classReference.value,
             valueSpecification.subType,
             this.context.section,
-            _classReference.isResolvedFromAutoImports,
+            _classReference.isInferred,
           ),
         );
         _class = _classReference.value;

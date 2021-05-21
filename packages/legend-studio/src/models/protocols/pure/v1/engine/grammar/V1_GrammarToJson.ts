@@ -20,10 +20,6 @@ import {
   SerializationFactory,
   serializeMap,
 } from '@finos/legend-studio-shared';
-import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
-import type { V1_RenderStyle } from './V1_JsonToGrammarInput';
-import type { V1_LambdaInput } from './V1_LambdaInput';
-import type { V1_ParserError } from './V1_ParserError';
 
 export class V1_GrammarToJsonInput {
   isolatedLambdas?: Map<string, string>;
@@ -38,11 +34,4 @@ export class V1_GrammarToJsonInput {
       code: primitive(),
     }),
   );
-}
-
-export class V1_GrammarToJsonOutput {
-  modelDataContext?: V1_PureModelContextData;
-  isolatedLambdas?: V1_LambdaInput;
-  renderStyle?: V1_RenderStyle;
-  codeError?: V1_ParserError;
 }

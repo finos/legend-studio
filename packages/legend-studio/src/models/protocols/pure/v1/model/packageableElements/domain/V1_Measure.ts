@@ -26,7 +26,7 @@ import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLa
 
 export class V1_Unit extends V1_PackageableElement implements Hashable {
   measure!: string;
-  conversionFunction?: V1_RawLambda;
+  conversionFunction?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   //  superType!: string; // no clear purpose to this so we won't add it for now
 
   get hashCode(): string {

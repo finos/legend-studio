@@ -19,13 +19,14 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import type { V1_PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
 import { V1_PropertyMapping } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
-import type { V1_RelationalOperationElement } from '../../../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
+import { hashObjectWithoutSourceInformation } from '../../../../../../../../MetaModelUtility';
+import type { V1_RawRelationalOperationElement } from '../model/V1_RawRelationalOperationElement';
 
 export class V1_RelationalPropertyMapping
   extends V1_PropertyMapping
   implements Hashable {
   enumMappingId?: string;
-  relationalOperation!: V1_RelationalOperationElement;
+  relationalOperation!: V1_RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {
     return visitor.visit_RelationalPropertyMapping(this);
@@ -36,7 +37,7 @@ export class V1_RelationalPropertyMapping
       CORE_HASH_STRUCTURE.REALTIONAL_PROPERTY_MAPPPING,
       super.hashCode,
       this.enumMappingId ?? '',
-      this.relationalOperation,
+      hashObjectWithoutSourceInformation(this.relationalOperation),
     ]);
   }
 }

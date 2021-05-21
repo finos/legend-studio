@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const appConfig = require('./studio.config');
-const {
+import { resolve, dirname } from 'path';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import appConfig from './studio.config.js';
+import {
   getEnvInfo,
   getWebAppBaseWebpackConfig,
-} = require('@finos/legend-studio-dev-utils/WebpackConfigUtils');
+} from '@finos/legend-studio-dev-utils/WebpackConfigUtils';
+import { fileURLToPath } from 'url';
 
-module.exports = (env, arg) => {
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export default (env, arg) => {
   const { isEnvDevelopment } = getEnvInfo(env, arg);
 
   const baseConfig = getWebAppBaseWebpackConfig(env, arg, __dirname, {
-    mainEntryPath: path.resolve(__dirname, './src/index.tsx'),
-    indexHtmlPath: path.resolve(__dirname, './src/index.html'),
+    mainEntryPath: resolve(__dirname, './src/index.tsx'),
+    indexHtmlPath: resolve(__dirname, './src/index.html'),
     appConfig,
-    babelConfigPath: path.resolve(__dirname, '../../babel.config.js'),
+    babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
   });
   const config = {
     ...baseConfig,
@@ -44,7 +47,7 @@ module.exports = (env, arg) => {
         new CopyWebpackPlugin({
           patterns: [
             {
-              from: path.resolve(__dirname, './dev/config.json'),
+              from: resolve(__dirname, './dev/config.json'),
               // trim the leading and trailing slash
               to:
                 appConfig.baseUrl.length === 1
@@ -52,7 +55,7 @@ module.exports = (env, arg) => {
                   : appConfig.baseUrl.slice(1, -1),
             },
             {
-              from: path.resolve(__dirname, './dev/version.json'),
+              from: resolve(__dirname, './dev/version.json'),
               // trim the leading and trailing slash
               to:
                 appConfig.baseUrl.length === 1

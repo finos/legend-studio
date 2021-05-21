@@ -139,13 +139,16 @@ export class Association
       Class,
       `Association property '${property.name}' must be of type 'class'`,
     );
-    assertTrue(
-      deleteEntry(
-        otherPropertyAssociatedClass.propertiesFromAssociations,
-        otherProperty,
-      ),
-      `Can't find property '${otherProperty.name}' from association '${this.path}' in associated class '${otherPropertyAssociatedClass.path}'`,
-    );
+    // don't invoke deletion if the class is a stub (otherProperty is not present)
+    if (!otherPropertyAssociatedClass.isStub) {
+      assertTrue(
+        deleteEntry(
+          otherPropertyAssociatedClass.propertiesFromAssociations,
+          otherProperty,
+        ),
+        `Can't find property '${otherProperty.name}' from association '${this.path}' in associated class '${otherPropertyAssociatedClass.path}'`,
+      );
+    }
     // set up the relationship between the other property and the new class
     addUniqueEntry(type.propertiesFromAssociations, otherProperty);
     // set new type for the property

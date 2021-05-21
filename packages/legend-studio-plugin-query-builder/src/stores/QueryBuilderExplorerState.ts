@@ -50,7 +50,6 @@ export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
 }
 
 export interface QueryBuilderExplorerTreeDragSource {
-  type: QUERY_BUILDER_EXPLORER_TREE_DND_TYPE; // needed for `react-dnd`
   node: QueryBuilderExplorerTreePropertyNodeData;
 }
 

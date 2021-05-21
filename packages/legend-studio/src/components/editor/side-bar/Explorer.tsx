@@ -125,6 +125,27 @@ const ExplorerContextMenu = observer(
         );
       }
     };
+    const getElementLinkInViewerMode = (): void => {
+      if (node) {
+        applicationStore
+          .copyTextToClipboard(
+            `${
+              window.location.origin
+            }${applicationStore.historyApiClient.createHref({
+              pathname: generateViewEntityRoute(
+                applicationStore.config.sdlcServerKey,
+                projectId,
+                node.packageableElement.path,
+              ),
+            })}`,
+          )
+          .then(() =>
+            applicationStore.notifySuccess('Copied element link to clipboard'),
+          )
+          .catch(applicationStore.alertIllegalUnhandledError);
+      }
+    };
+
     const createNewElement = (type: string): (() => void) => (): void =>
       editorStore.newElementState.openModal(type, _package);
 
@@ -172,7 +193,12 @@ const ExplorerContextMenu = observer(
         )}
         {node && (
           <MenuContentItem onClick={openElementInViewerMode}>
-            Open Viewer
+            View in Project
+          </MenuContentItem>
+        )}
+        {node && (
+          <MenuContentItem onClick={getElementLinkInViewerMode}>
+            Copy Link
           </MenuContentItem>
         )}
       </MenuContent>
@@ -232,7 +258,8 @@ const PackageTreeNodeContainer = observer(
     const { disableContextMenu } = innerProps;
     const [, dragRef] = useDrag(
       () => ({
-        item: new ElementDragSource(node.dndType, node),
+        type: node.dndType,
+        item: new ElementDragSource(node),
       }),
       [node],
     );

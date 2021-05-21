@@ -214,9 +214,6 @@ export const FlatDataPropertyMappingEditor = observer(
       setImplementationHasParserError,
       isReadOnly,
     } = props;
-    // const editorStore = useEditorStore();
-    // const mappingEditorState = editorStore.getCurrentEditorState(MappingEditorState);
-    // const visitEmbeddedPropertyMapping = (): void => { if (flatDataPropertyMappingState.propertyMapping instanceof EmbeddedFlatDataPropertyMapping) { mappingEditorState.openMappingElement(flatDataPropertyMappingState.propertyMapping, true) } };
     const disableEditingTransform =
       flatDataInstanceSetImplementationState.isConvertingTransformObjects ||
       isReadOnly;
@@ -299,7 +296,7 @@ export const FlatDataPropertyMappingEditor = observer(
         return (
           <div className="property-mapping-editor__entry--embedded">
             Editing property mapping for complex property is currently not
-            allowed in form mode
+            supported in form mode
           </div>
         );
       default:

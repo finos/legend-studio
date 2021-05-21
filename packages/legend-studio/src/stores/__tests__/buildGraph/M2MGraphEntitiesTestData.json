@@ -1643,6 +1643,21 @@
       "_type": "association",
       "name": "TestAssociation",
       "package": "ui",
+      "stereotypes": [
+        {
+          "profile": "ui::test1::ProfileTest",
+          "value": "stereotype2"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "ui::test1::ProfileTest",
+            "value": "tag1"
+          },
+          "value": "Association Tag"
+        }
+      ],
       "properties": [
         {
           "multiplicity": {
@@ -1657,6 +1672,21 @@
             "lowerBound": 1,
             "upperBound": 1
           },
+          "stereotypes": [
+            {
+              "profile": "ui::test1::ProfileTest",
+              "value": "stereotype1"
+            }
+          ],
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "ui::test1::ProfileTest",
+                "value": "tag1"
+              },
+              "value": "association tag"
+            }
+          ],
           "name": "testClassSibling",
           "type": "ui::TestClassSibling"
         }
@@ -1681,7 +1711,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "fullName"
               },
-              "source": "ui_test1_Target_Something",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1720,7 +1750,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "age"
               },
-              "source": "ui_test1_Target_Something",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1750,7 +1780,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "description"
               },
-              "source": "ui_test1_Target_Something",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1798,7 +1828,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "fullName"
               },
-              "source": "targetSomething",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1828,7 +1858,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "age"
               },
-              "source": "targetSomething",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [
@@ -1858,7 +1888,7 @@
                 "class": "ui::test1::Target_Something",
                 "property": "description"
               },
-              "source": "targetSomething",
+              "source": "",
               "transform": {
                 "_type": "lambda",
                 "body": [

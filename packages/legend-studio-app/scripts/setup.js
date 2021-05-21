@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-const fs = require('fs');
-const path = require('path');
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
+import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const outputDir = process.argv[2];
-const resolvedOutputDir = path.resolve(__dirname, `../${outputDir}`);
-const { execSync } = require('child_process');
+const resolvedOutputDir = resolve(__dirname, `../${outputDir}`);
 
-if (!fs.existsSync(resolvedOutputDir)) {
-  fs.mkdirSync(resolvedOutputDir);
+if (!existsSync(resolvedOutputDir)) {
+  mkdirSync(resolvedOutputDir);
 }
 
-fs.writeFileSync(
-  path.resolve(resolvedOutputDir, 'version.json'),
+writeFileSync(
+  resolve(resolvedOutputDir, 'version.json'),
   JSON.stringify(
     {
       buildTime: new Date().toISOString(),
-      version: `${require(path.resolve(__dirname, '../package.json')).version}`,
+      version: `${loadJSON(resolve(__dirname, '../package.json')).version}`,
       commitSHA: execSync(`git rev-parse HEAD`, {
         encoding: 'utf-8',
       }).trim(),
@@ -40,8 +44,8 @@ fs.writeFileSync(
   ),
 );
 
-fs.writeFileSync(
-  path.resolve(resolvedOutputDir, 'config.json'),
+writeFileSync(
+  resolve(resolvedOutputDir, 'config.json'),
   JSON.stringify(
     {
       appName: 'studio',
@@ -51,6 +55,9 @@ fs.writeFileSync(
       },
       engine: {
         url: 'http://localhost:6060/api',
+      },
+      metadata: {
+        url: 'http://localhost:8080/api',
       },
       documentation: {
         url: 'https://legend.finos.org',

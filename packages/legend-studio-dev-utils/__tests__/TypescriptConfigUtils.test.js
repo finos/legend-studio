@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const {
+import { resolve } from 'path';
+import {
   getTsConfigJSON,
   resolveFullTsConfig,
   resolveFullTsConfigWithoutValidation,
-} = require('../TypescriptConfigUtils');
-const { unitTest } = require('../JestConfigUtils');
+} from '../TypescriptConfigUtils.js';
+import { unitTest } from '../JestConfigUtils.js';
 
 test(
   unitTest('Resolve full Typescript config through inheritance chain'),
   () => {
     expect(
       resolveFullTsConfig(
-        path.resolve(__dirname, './fixtures/testTsConfigExtend.json'),
+        resolve(__dirname, './fixtures/testTsConfigExtend.json'),
       ),
     ).toEqual({
       // compiler options is merged and overwritten
@@ -57,7 +57,7 @@ test(
       // This invalid config doesn't have `files` nor `include`
       // would fail `tsc --showConfig`
       resolveFullTsConfigWithoutValidation(
-        path.resolve(__dirname, './fixtures/testTsConfigExtend_invalid.json'),
+        resolve(__dirname, './fixtures/testTsConfigExtend_invalid.json'),
       ),
     ).toEqual({
       // compiler options is merged and overwritten
@@ -81,7 +81,7 @@ test(
 test(unitTest('Parse Typescript config non-recursively'), () => {
   expect(
     getTsConfigJSON(
-      path.resolve(__dirname, './fixtures/testTsConfigWithTrailingCommas.json'),
+      resolve(__dirname, './fixtures/testTsConfigWithTrailingCommas.json'),
     ),
   ).toEqual({
     compilerOptions: {
@@ -95,7 +95,7 @@ test(unitTest('Parse Typescript config non-recursively'), () => {
   });
   expect(() =>
     getTsConfigJSON(
-      path.resolve(__dirname, './fixtures/testTsConfigWithTrailingCommas.json'),
+      resolve(__dirname, './fixtures/testTsConfigWithTrailingCommas.json'),
       true,
     ),
   ).toThrow();

@@ -44,7 +44,6 @@ const getRecordTypeTreeNodeData = (
   }]`,
   label: field.label,
   field: field,
-  dndType: CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
   parentType: parentRecordType,
   isOpen: true,
 });
@@ -78,6 +77,7 @@ const RecordFieldTreeNodeContainer: React.FC<
   const { selectedType } = innerProps;
   const [, dragRef] = useDrag(
     () => ({
+      type: CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
       item: new FlatDataColumnDragSource(node),
     }),
     [node],
