@@ -35,9 +35,20 @@ export const TextInputEditor: React.FC<{
   isReadOnly?: boolean;
   language: EDITOR_LANGUAGE;
   showMiniMap?: boolean;
+  hideGutter?: boolean;
+  extraEditorOptions?: monacoEditorAPI.IEditorOptions &
+    monacoEditorAPI.IGlobalEditorOptions;
   updateInput?: (val: string) => void;
 }> = (props) => {
-  const { inputValue, updateInput, language, isReadOnly, showMiniMap } = props;
+  const {
+    inputValue,
+    updateInput,
+    language,
+    isReadOnly,
+    showMiniMap,
+    hideGutter,
+    extraEditorOptions,
+  } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const [editor, setEditor] =
@@ -109,6 +120,18 @@ export const TextInputEditor: React.FC<{
     editor.updateOptions({
       readOnly: Boolean(isReadOnly),
       minimap: { enabled: Boolean(showMiniMap) },
+      // Hide the line number gutter
+      // See https://github.com/microsoft/vscode/issues/30795
+      ...(hideGutter
+        ? {
+            glyphMargin: false,
+            folding: false,
+            lineNumbers: 'off',
+            lineDecorationsWidth: 10,
+            lineNumbersMinChars: 0,
+          }
+        : {}),
+      ...(extraEditorOptions ?? {}),
     });
     const model = editor.getModel();
     model?.updateOptions({ tabSize: TAB_SIZE });

@@ -17,19 +17,17 @@
 import { useState, useRef, useCallback } from 'react';
 import SplitPane from 'react-split-pane';
 import { useEditorStore } from '../../../stores/EditorStore';
-import type { RawGraphFetchTreeData } from '../../../stores/shared/RawGraphFetchTreeUtil';
-import { getRawGraphFetchTreeData } from '../../../stores/shared/RawGraphFetchTreeUtil';
 import {
   createFilter,
   CustomSelectorInput,
+  BlankPanelPlaceholder,
   PanelLoadingIndicator,
-  clsx,
+  PencilIcon,
 } from '@finos/legend-studio-components';
-import { FaEdit, FaPlay, FaScroll, FaSave, FaRobot } from 'react-icons/fa';
+import { FaPlay, FaScroll, FaSave, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-studio-components';
 import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type {
   MappingElementDragSource,
@@ -40,215 +38,86 @@ import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
 import { TAB_SIZE, EDITOR_LANGUAGE } from '../../../stores/EditorConfig';
 import {
-  isNonNullable,
   guaranteeType,
-  assertType,
   uniq,
   compareLabelFn,
-  UnsupportedOperationError,
-  getClass,
 } from '@finos/legend-studio-shared';
-import { RawGraphFetchTreeExplorer } from './RawGraphFetchTreeExplorer';
 import {
-  MappingExecutionGraphFetchQueryState,
   MappingExecutionEmptyRuntimeState,
-  MappingExecutionJsonModelConnectionRuntimeState,
+  MappingExecutionModelConnectionRuntimeState,
   MappingExecutionFlatDataConnectionRuntimeState,
 } from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
-import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type {
-  MappingElementSource,
-  MappingElementSourceSelectOption,
-} from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
   getMappingElementTarget,
   getMappingElementSource,
-  getMappingElementSourceFilterText,
 } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { RootFlatDataRecordType } from '../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { NamedRelation } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
-import { Type } from '../../../models/metamodels/pure/model/packageableElements/domain/Type';
+import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import { SetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 
-export const getMappingElementSourceSelectOption = (
-  source: MappingElementSource,
-): { label: string; value: MappingElementSource } => {
-  if (source instanceof RootFlatDataRecordType) {
-    return { label: source.owner.name, value: source };
-  } else if (source instanceof NamedRelation) {
-    return { label: source.name, value: source };
-  } else if (source instanceof Class || source instanceof Type) {
-    return { label: source.name, value: source };
-  }
-  throw new UnsupportedOperationError(
-    `Can't build select option for mapping element source of type '${
-      getClass(source).name
-    }'`,
-  );
-};
+interface ClassMappingSelectOption {
+  label: string;
+  value: SetImplementation;
+}
 
-const MappingExecutionGraphFetchQueryEditor = observer(
+const ClassMappingSelectorModal = observer(
   (props: {
     mappingEditorState: MappingEditorState;
-    queryState: MappingExecutionGraphFetchQueryState;
+    hideClassMappingSelectorModal: () => void;
+    changeClassMapping: (
+      setImplementation: SetImplementation | undefined,
+    ) => void;
   }) => {
-    const { mappingEditorState, queryState } = props;
-    const editorStore = useEditorStore();
-    const executionState = mappingEditorState.executionState;
-    const { target: targetElement, graphFetchTree } = queryState;
+    const {
+      mappingEditorState,
+      changeClassMapping,
+      hideClassMappingSelectorModal,
+    } = props;
+
+    // Class mapping selector
+    const classMappingSelectorRef = useRef<SelectComponent>(null);
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Class>): string =>
-        option.value.path,
+      stringify: (option: ClassMappingSelectOption): string =>
+        option.value.label.value,
     });
-    const targetOptions = uniq(
-      mappingEditorState.mapping
-        .getAllMappingElements()
-        .map((mappingElement) => getMappingElementTarget(mappingElement))
-        .filter((target): target is Class => target instanceof Class)
-        .map((target) => target.selectOption)
+    const classMappingOptions = uniq(
+      mappingEditorState.mapping.allClassMappings
+        .map((classMapping) => ({
+          label: classMapping.label.value,
+          value: classMapping,
+        }))
         .sort(compareLabelFn),
     );
-    // Target
-    const targetSelectorRef = useRef<SelectComponent>(null);
-    const [openTargetSelectorModal, setOpenTargetSelectorModal] =
-      useState(false);
-    const showTargetSelectorModal = (): void =>
-      setOpenTargetSelectorModal(true);
-    const hideTargetSelectorModal = (): void =>
-      setOpenTargetSelectorModal(false);
-    const handleEnterTargetSelectorModal = (): void =>
-      targetSelectorRef.current?.focus();
-    const changeTarget = useCallback(
-      (target: Class | undefined): void => {
-        queryState.setTarget(target);
-        executionState.setExecutionResultText(undefined);
-        if (target) {
-          queryState.setGraphFetchTree(
-            getRawGraphFetchTreeData(
-              editorStore,
-              target,
-              mappingEditorState.mapping,
-            ),
-          );
-          // update source if possible based on the selected target, if there is only one available source, use it
-          const possibleSources = mappingEditorState.mapping
-            .getAllMappingElements()
-            .filter(
-              (mappingElement) =>
-                getMappingElementTarget(mappingElement) === target,
-            )
-            .map((mappingElement) => getMappingElementSource(mappingElement))
-            .filter(isNonNullable);
-          executionState.setRuntimeStateBasedOnSource(
-            possibleSources.length ? possibleSources[0] : undefined,
-            true,
-          );
-        } else {
-          queryState.setGraphFetchTree(undefined);
-        }
-        hideTargetSelectorModal();
-      },
-      [editorStore, executionState, mappingEditorState.mapping, queryState],
-    );
-    const changeTargetOption = (
-      val: PackageableElementSelectOption<Class>,
-    ): void => changeTarget(val.value);
+    const handleEnterClassMappingSelectorModal = (): void =>
+      classMappingSelectorRef.current?.focus();
+    const changeClassMappingOption = (val: ClassMappingSelectOption): void =>
+      changeClassMapping(val.value);
 
-    // Drag and Drop
-    const handleDrop = useCallback(
-      (item: MappingExecutionTargetDropTarget): void =>
-        changeTarget(guaranteeType(getMappingElementTarget(item.data), Class)),
-      [changeTarget],
-    );
-    const [{ isDragOver }, dropRef] = useDrop(
-      () => ({
-        accept: CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING,
-        drop: (item: MappingElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean } => ({
-          isDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDrop],
-    );
-
-    const updateTreeData = (data: RawGraphFetchTreeData): void =>
-      queryState.setGraphFetchTree(data);
-    // Deep/Graph Fetch Tree
     return (
-      <div className="panel mapping-execution-panel__target-panel">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">target</div>
-            <div className="panel__header__title__content">
-              {targetElement?.name ?? '(none)'}
-            </div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={showTargetSelectorModal}
-              title={'Select Target...'}
-            >
-              <FaEdit />
-            </button>
-          </div>
+      <Dialog
+        open={true}
+        onClose={hideClassMappingSelectorModal}
+        onEnter={handleEnterClassMappingSelectorModal}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <div className="modal search-modal">
+          <div className="modal__title">Choose a class mapping</div>
+          <CustomSelectorInput
+            ref={classMappingSelectorRef}
+            options={classMappingOptions}
+            onChange={changeClassMappingOption}
+            value={null}
+            placeholder={'Choose a class mapping...'}
+            filterOption={filterOption}
+            isClearable={true}
+          />
         </div>
-        <div
-          ref={dropRef}
-          className={clsx('panel__content', {
-            'panel__content--dnd-over': isDragOver,
-          })}
-        >
-          {graphFetchTree && (
-            <div className="mapping-execution-panel__target-panel__query-container">
-              <RawGraphFetchTreeExplorer
-                treeData={graphFetchTree}
-                updateTreeData={updateTreeData}
-                parentMapping={mappingEditorState.mapping}
-                isReadOnly={false}
-              />
-            </div>
-          )}
-          {!graphFetchTree && (
-            <div
-              className="mapping-execution-panel__target"
-              onClick={showTargetSelectorModal}
-            >
-              <div className="mapping-execution-panel__target__text">
-                Choose a target...
-              </div>
-              <div className="mapping-execution-panel__target__action">
-                <MdVerticalAlignBottom />
-              </div>
-            </div>
-          )}
-        </div>
-        <Dialog
-          open={openTargetSelectorModal}
-          onClose={hideTargetSelectorModal}
-          onEnter={handleEnterTargetSelectorModal}
-          classes={{ container: 'search-modal__container' }}
-          PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-        >
-          <div className="modal search-modal">
-            <div className="modal__title">Choose a target</div>
-            <CustomSelectorInput
-              ref={targetSelectorRef}
-              options={targetOptions}
-              onChange={changeTargetOption}
-              value={targetElement ? targetElement.selectOption : null}
-              placeholder={'Choose a class that has been mapped...'}
-              filterOption={filterOption}
-              isClearable={true}
-            />
-          </div>
-        </Dialog>
-      </div>
+      </Dialog>
     );
   },
 );
@@ -257,119 +126,108 @@ const MappingExecutionQueryEditor = observer(
   (props: { mappingEditorState: MappingEditorState }) => {
     const { mappingEditorState } = props;
     const queryState = mappingEditorState.executionState.queryState;
-    // TODO: we might need to let user choose the type of query they want to build, but by default, it can be graph fetch tree
-    if (queryState instanceof MappingExecutionGraphFetchQueryState) {
-      return (
-        <MappingExecutionGraphFetchQueryEditor
-          mappingEditorState={mappingEditorState}
-          queryState={queryState}
-        />
-      );
-    }
-    return null;
-  },
-);
-
-export const MappingExecutionEmptyRuntimeBuilder = observer(
-  (props: { mappingEditorState: MappingEditorState; target?: Class }) => {
-    const { mappingEditorState, target } = props;
+    const editorStore = useEditorStore();
     const executionState = mappingEditorState.executionState;
-    // Source
-    const filterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: getMappingElementSourceFilterText,
-    });
-    const sourceOptions = target
-      ? uniq(
-          mappingEditorState.mapping
-            .getAllMappingElements()
-            .filter(
-              (mappingElement) =>
-                getMappingElementTarget(mappingElement) === target,
-            )
-            .map((mappingElement) => getMappingElementSource(mappingElement))
-            .filter(isNonNullable),
-        )
-          .map((source) => getMappingElementSourceSelectOption(source))
-          .sort(compareLabelFn)
-      : [];
-    const sourceSelectorRef = useRef<SelectComponent>(null);
-    const [openSourceSelectorModal, setOpenSourceSelectorModal] =
+
+    // Class mapping selector
+    const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
       useState(false);
-    const showSourceSelectorModal = (): void =>
-      setOpenSourceSelectorModal(true);
-    const hideSourceSelectorModal = (): void =>
-      setOpenSourceSelectorModal(false);
-    const handleEnterSourceSelectorModal = (): void =>
-      sourceSelectorRef.current?.focus();
-    const changeSource = (source: MappingElementSource | undefined): void => {
-      executionState.setRuntimeStateBasedOnSource(source, true);
-      executionState.setExecutionResultText(undefined);
-      hideSourceSelectorModal();
-    };
-    const changeSourceOption = (val: MappingElementSourceSelectOption): void =>
-      changeSource(val.value);
+    const showClassMappingSelectorModal = (): void =>
+      setOpenClassMappingSelectorModal(true);
+    const hideClassMappingSelectorModal = (): void =>
+      setOpenClassMappingSelectorModal(false);
+    const changeClassMapping = useCallback(
+      (setImplementation: SetImplementation | undefined): void => {
+        executionState.setExecutionResultText(undefined);
+        queryState.updateLamba(
+          setImplementation
+            ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+                guaranteeType(
+                  getMappingElementTarget(setImplementation),
+                  Class,
+                ),
+              )
+            : RawLambda.createStub(),
+        );
+        hideClassMappingSelectorModal();
+      },
+      [editorStore, executionState, queryState],
+    );
+
+    // Drag and Drop
+    const handleDrop = useCallback(
+      (item: MappingExecutionTargetDropTarget): void => {
+        changeClassMapping(guaranteeType(item.data, SetImplementation));
+      },
+      [changeClassMapping],
+    );
+    const [{ isDragOver, canDrop }, dropRef] = useDrop(
+      () => ({
+        accept: CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING,
+        drop: (item: MappingElementDragSource): void => handleDrop(item),
+        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
+          canDrop: monitor.canDrop(),
+        }),
+      }),
+      [handleDrop],
+    );
 
     return (
-      <div className="panel mapping-execution-panel__source-panel">
+      <div className="panel mapping-execution-panel__query-panel">
         <div className="panel__header">
           <div className="panel__header__title">
-            <div className="panel__header__title__label">source</div>
-            <div className="panel__header__title__content">(none)</div>
+            <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
             <button
               className="panel__header__action"
-              disabled={!target}
               tabIndex={-1}
-              onClick={showSourceSelectorModal}
-              title={'Select Source...'}
+              onClick={showClassMappingSelectorModal}
+              title={'Choose target...'}
             >
-              <FaEdit />
+              <PencilIcon />
             </button>
           </div>
         </div>
-        <div className="panel__content mapping-execution-panel__json-editor">
-          {target && (
-            <div
-              className="mapping-execution-panel__source"
-              onClick={showSourceSelectorModal}
-            >
-              <div className="mapping-execution-panel__source__text">
-                Choose a source...
-              </div>
-              <div className="mapping-execution-panel__source__action">
-                <MdAdd />
-              </div>
+        {!queryState.query.isStub && (
+          <div className="panel__content">
+            <div className="mapping-execution-panel__query-panel__query">
+              <TextInputEditor
+                inputValue={queryState.lambdaString}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.PURE}
+                showMiniMap={false}
+                hideGutter={true}
+              />
             </div>
-          )}
-          {!target && (
-            <div className="panel__content mapping-execution-panel--empty">
-              No source options available as target is not specified
+            <div className="mapping-execution-panel__query-panel__query-edit">
+              {/* TODO: wire up query builder from extension here */}
+              <button className="btn btn--dark">Edit Query</button>
             </div>
-          )}
-        </div>
-        <Dialog
-          open={openSourceSelectorModal}
-          onClose={hideSourceSelectorModal}
-          onEnter={handleEnterSourceSelectorModal}
-          classes={{ container: 'search-modal__container' }}
-          PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-        >
-          <div className="modal search-modal">
-            <div className="modal__title">Choose a source</div>
-            <CustomSelectorInput
-              ref={sourceSelectorRef}
-              options={sourceOptions}
-              onChange={changeSourceOption}
-              value={null}
-              placeholder={'Choose a source...'}
-              filterOption={filterOption}
-              isClearable={true}
+          </div>
+        )}
+        {queryState.query.isStub && (
+          <div ref={dropRef} className="panel__content">
+            <BlankPanelPlaceholder
+              placeholderText="Choose a class mapping"
+              onClick={showClassMappingSelectorModal}
+              clickActionType="add"
+              tooltipText="Drop a class mapping, or click to choose one to start building the query"
+              dndProps={{
+                isDragOver: isDragOver,
+                canDrop: canDrop,
+              }}
             />
           </div>
-        </Dialog>
+        )}
+        {openClassMappingSelectorModal && (
+          <ClassMappingSelectorModal
+            mappingEditorState={mappingEditorState}
+            hideClassMappingSelectorModal={hideClassMappingSelectorModal}
+            changeClassMapping={changeClassMapping}
+          />
+        )}
       </div>
     );
   },
@@ -378,195 +236,48 @@ export const MappingExecutionEmptyRuntimeBuilder = observer(
 export const MappingExecutionFlatDataConnectionRuntimeBuilder = observer(
   (props: {
     mappingEditorState: MappingEditorState;
-    queryState: MappingExecutionGraphFetchQueryState;
     runtimeState: MappingExecutionFlatDataConnectionRuntimeState;
   }) => {
-    const { mappingEditorState, runtimeState, queryState } = props;
-    const executionState = mappingEditorState.executionState;
-    const { testData, sourceFlatData } = runtimeState;
-    // Source
-    const filterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: getMappingElementSourceFilterText,
-    });
-    const sourceOptions = queryState.target
-      ? mappingEditorState.mapping
-          .getAllMappingElements()
-          .filter(
-            (mappingElement) =>
-              getMappingElementTarget(mappingElement) === queryState.target,
-          )
-          .map((mappingElement) => getMappingElementSource(mappingElement))
-          .filter(isNonNullable)
-          .map((source) => getMappingElementSourceSelectOption(source))
-          .sort(compareLabelFn)
-      : [];
-    const sourceSelectorRef = useRef<SelectComponent>(null);
-    const [openSourceSelectorModal, setOpenSourceSelectorModal] =
-      useState(false);
-    const showSourceSelectorModal = (): void =>
-      setOpenSourceSelectorModal(true);
-    const hideSourceSelectorModal = (): void =>
-      setOpenSourceSelectorModal(false);
-    const handleEnterSourceSelectorModal = (): void =>
-      sourceSelectorRef.current?.focus();
-    const changeSource = (source: MappingElementSource | undefined): void => {
-      executionState.setRuntimeStateBasedOnSource(source, true);
-      executionState.setExecutionResultText(undefined);
-      hideSourceSelectorModal();
-    };
-    const changeSourceOption = (val: MappingElementSourceSelectOption): void =>
-      changeSource(val.value);
-    // TODO: input type
+    const { runtimeState } = props;
+    const { testData } = runtimeState;
+
+    // TODO?: input type
+
     // Input Data
     const updateInput = (val: string): void => runtimeState.setTestData(val);
 
     return (
-      <div className="panel mapping-execution-panel__source-panel">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">source</div>
-            <div className="panel__header__title__content">
-              {sourceFlatData?.name ?? '(none)'}
-            </div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={showSourceSelectorModal}
-              title={'Choose a source...'}
-            >
-              <FaEdit />
-            </button>
-          </div>
-        </div>
-        <div className="panel__content mapping-execution-panel__json-editor">
-          <TextInputEditor
-            language={EDITOR_LANGUAGE.TEXT}
-            inputValue={testData}
-            updateInput={updateInput}
-          />
-        </div>
-        <Dialog
-          open={openSourceSelectorModal}
-          onClose={hideSourceSelectorModal}
-          onEnter={handleEnterSourceSelectorModal}
-          classes={{ container: 'search-modal__container' }}
-          PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-        >
-          <div className="modal search-modal">
-            <div className="modal__title">Choose a source</div>
-            <CustomSelectorInput
-              ref={sourceSelectorRef}
-              options={sourceOptions}
-              onChange={changeSourceOption}
-              value={sourceFlatData?.selectOption ?? null}
-              placeholder={'Choose a flat-data section action...'}
-              filterOption={filterOption}
-              isClearable={true}
-            />
-          </div>
-        </Dialog>
+      <div className="panel__content mapping-execution-panel__input-data-panel__content">
+        <TextInputEditor
+          language={EDITOR_LANGUAGE.TEXT}
+          inputValue={testData}
+          updateInput={updateInput}
+        />
       </div>
     );
   },
 );
 
-export const MappingExecutionJsonModelConnectionRuntimeBuilder = observer(
+export const MappingExecutionModelConnectionRuntimeBuilder = observer(
   (props: {
     mappingEditorState: MappingEditorState;
-    queryState: MappingExecutionGraphFetchQueryState;
-    runtimeState: MappingExecutionJsonModelConnectionRuntimeState;
+    runtimeState: MappingExecutionModelConnectionRuntimeState;
   }) => {
-    const { mappingEditorState, runtimeState, queryState } = props;
-    const executionState = mappingEditorState.executionState;
-    const { testData, sourceClass } = runtimeState;
-    // Source
-    const filterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: getMappingElementSourceFilterText,
-    });
-    const sourceOptions = queryState.target
-      ? mappingEditorState.mapping
-          .getAllMappingElements()
-          .filter(
-            (mappingElement) =>
-              getMappingElementTarget(mappingElement) === queryState.target,
-          )
-          .map((mappingElement) => getMappingElementSource(mappingElement))
-          .filter(isNonNullable)
-          .map((source) => getMappingElementSourceSelectOption(source))
-          .sort(compareLabelFn)
-      : [];
-    const sourceSelectorRef = useRef<SelectComponent>(null);
-    const [openSourceSelectorModal, setOpenSourceSelectorModal] =
-      useState(false);
-    const showSourceSelectorModal = (): void =>
-      setOpenSourceSelectorModal(true);
-    const hideSourceSelectorModal = (): void =>
-      setOpenSourceSelectorModal(false);
-    const handleEnterSourceSelectorModal = (): void =>
-      sourceSelectorRef.current?.focus();
-    const changeSource = (source: MappingElementSource | undefined): void => {
-      executionState.setRuntimeStateBasedOnSource(source, true);
-      executionState.setExecutionResultText(undefined);
-      hideSourceSelectorModal();
-    };
-    const changeSourceOption = (val: MappingElementSourceSelectOption): void =>
-      changeSource(val.value);
+    const { runtimeState } = props;
+    const { testData } = runtimeState;
+
     // Input Data
     const updateInput = (val: string): void => runtimeState.setTestData(val);
 
+    // TODO?: handle XML/type
+
     return (
-      <div className="panel mapping-execution-panel__source-panel">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">source</div>
-            <div className="panel__header__title__content">
-              {sourceClass?.name ?? '(none)'}
-            </div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={showSourceSelectorModal}
-              title={'Choose a source'}
-            >
-              <FaEdit />
-            </button>
-          </div>
-        </div>
-        <div className="panel__content mapping-execution-panel__json-editor">
-          <TextInputEditor
-            inputValue={testData}
-            updateInput={updateInput}
-            language={EDITOR_LANGUAGE.JSON}
-          />
-        </div>
-        <Dialog
-          open={openSourceSelectorModal}
-          onClose={hideSourceSelectorModal}
-          onEnter={handleEnterSourceSelectorModal}
-          classes={{ container: 'search-modal__container' }}
-          PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-        >
-          <div className="modal search-modal">
-            <div className="modal__title">Choose a source</div>
-            <CustomSelectorInput
-              ref={sourceSelectorRef}
-              options={sourceOptions}
-              onChange={changeSourceOption}
-              value={sourceClass?.selectOption ?? null}
-              placeholder={'Choose a class...'}
-              filterOption={filterOption}
-              isClearable={true}
-            />
-          </div>
-        </Dialog>
+      <div className="panel__content mapping-execution-panel__input-data-panel__content">
+        <TextInputEditor
+          inputValue={testData}
+          updateInput={updateInput}
+          language={EDITOR_LANGUAGE.JSON}
+        />
       </div>
     );
   },
@@ -575,51 +286,114 @@ export const MappingExecutionJsonModelConnectionRuntimeBuilder = observer(
 export const MappingExecutionRuntimeBuilder = observer(
   (props: { mappingEditorState: MappingEditorState }) => {
     const { mappingEditorState } = props;
-    const queryState = mappingEditorState.executionState.queryState;
     const runtimeState = mappingEditorState.executionState.runtimeState;
+
+    // Class mapping selector
+    const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
+      useState(false);
+    const showClassMappingSelectorModal = (): void =>
+      setOpenClassMappingSelectorModal(true);
+    const hideClassMappingSelectorModal = (): void =>
+      setOpenClassMappingSelectorModal(false);
+    const changeClassMapping = useCallback(
+      (setImplementation: SetImplementation | undefined): void => {
+        mappingEditorState.executionState.setRuntimeStateBasedOnSource(
+          setImplementation
+            ? getMappingElementSource(setImplementation)
+            : undefined,
+          true,
+        );
+        mappingEditorState.executionState.setExecutionResultText(undefined);
+        hideClassMappingSelectorModal();
+      },
+      [mappingEditorState.executionState],
+    );
+
+    // Drag and Drop
+    const handleDrop = useCallback(
+      (item: MappingExecutionTargetDropTarget): void => {
+        changeClassMapping(guaranteeType(item.data, SetImplementation));
+      },
+      [changeClassMapping],
+    );
+    const [{ isDragOver, canDrop }, dropRef] = useDrop(
+      () => ({
+        accept: CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING,
+        drop: (item: MappingElementDragSource): void => handleDrop(item),
+        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
+          canDrop: monitor.canDrop(),
+        }),
+      }),
+      [handleDrop],
+    );
+
+    // Runtime builder
+    let runtimeBuilder: React.ReactNode;
     if (runtimeState instanceof MappingExecutionEmptyRuntimeState) {
-      let currentTarget: Class | undefined = undefined;
-      if (queryState instanceof MappingExecutionGraphFetchQueryState) {
-        currentTarget = queryState.target;
-      }
-      return (
-        <MappingExecutionEmptyRuntimeBuilder
-          mappingEditorState={mappingEditorState}
-          target={currentTarget}
-        />
+      runtimeBuilder = (
+        <div ref={dropRef} className="panel__content">
+          <BlankPanelPlaceholder
+            placeholderText="Choose a class mapping"
+            onClick={showClassMappingSelectorModal}
+            clickActionType="add"
+            tooltipText="Drop a class mapping, or click to choose one to generate input data"
+            dndProps={{
+              isDragOver: isDragOver,
+              canDrop: canDrop,
+            }}
+          />
+        </div>
       );
     } else if (
-      runtimeState instanceof MappingExecutionJsonModelConnectionRuntimeState
+      runtimeState instanceof MappingExecutionModelConnectionRuntimeState
     ) {
-      assertType(
-        queryState,
-        MappingExecutionGraphFetchQueryState,
-        'Model-to-model mapping execution only support graph fetch tree query type',
-      );
-      return (
-        <MappingExecutionJsonModelConnectionRuntimeBuilder
+      runtimeBuilder = (
+        <MappingExecutionModelConnectionRuntimeBuilder
           mappingEditorState={mappingEditorState}
-          queryState={queryState}
           runtimeState={runtimeState}
         />
       );
     } else if (
       runtimeState instanceof MappingExecutionFlatDataConnectionRuntimeState
     ) {
-      assertType(
-        queryState,
-        MappingExecutionGraphFetchQueryState,
-        'Flat-data mapping execution only support graph fetch tree query type',
-      );
-      return (
+      runtimeBuilder = (
         <MappingExecutionFlatDataConnectionRuntimeBuilder
           mappingEditorState={mappingEditorState}
-          queryState={queryState}
           runtimeState={runtimeState}
         />
       );
+    } else {
+      runtimeBuilder = null;
     }
-    return null;
+
+    return (
+      <div className="panel mapping-execution-panel__input-data-panel">
+        <div className="panel__header">
+          <div className="panel__header__title">
+            <div className="panel__header__title__label">input data</div>
+          </div>
+          <div className="panel__header__actions">
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              onClick={showClassMappingSelectorModal}
+              title={'Choose a class mapping...'}
+            >
+              <PencilIcon />
+            </button>
+          </div>
+        </div>
+        {runtimeBuilder}
+        {openClassMappingSelectorModal && (
+          <ClassMappingSelectorModal
+            mappingEditorState={mappingEditorState}
+            hideClassMappingSelectorModal={hideClassMappingSelectorModal}
+            changeClassMapping={changeClassMapping}
+          />
+        )}
+      </div>
+    );
   },
 );
 
@@ -688,7 +462,7 @@ export const MappingExecutionBuilder = observer(
                 <button
                   className="panel__header__action"
                   disabled={
-                    !queryState.isValid ||
+                    queryState.query.isStub ||
                     !runtimeState.isValid ||
                     executionState.isExecuting
                   }
@@ -701,7 +475,7 @@ export const MappingExecutionBuilder = observer(
                 <button
                   className="panel__header__action mapping-execution-panel__generate-plan-btn"
                   disabled={
-                    !queryState.isValid ||
+                    queryState.query.isStub ||
                     !runtimeState.isValid ||
                     executionState.isGeneratingPlan
                   }
@@ -715,7 +489,7 @@ export const MappingExecutionBuilder = observer(
                   <button
                     className="panel__header__action"
                     disabled={
-                      !queryState.isValid ||
+                      queryState.query.isStub ||
                       !runtimeState.isValid ||
                       executionState.isExecuting ||
                       !executionState.executionResultText
@@ -731,7 +505,7 @@ export const MappingExecutionBuilder = observer(
                   <button
                     className="panel__header__action"
                     disabled={
-                      !queryState.isValid ||
+                      queryState.query.isStub ||
                       !runtimeState.isValid ||
                       executionState.isExecuting ||
                       !executionState.executionResultText

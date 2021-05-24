@@ -18,7 +18,6 @@ import { observable, action, flow, makeObservable } from 'mobx';
 import {
   losslessStringify,
   tryToFormatLosslessJSONString,
-  uniq,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import { SingleExecutionTestState } from './ServiceTestState';
@@ -136,7 +135,6 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
   execution: PureExecution;
   isConvertingLambdaToString = false;
   isInitializingLambda = false;
-  targetClass: Class | undefined;
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', LAMBDA_START);
@@ -144,10 +142,8 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
       execution: observable,
       isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
-      targetClass: observable,
       setIsInitializingLambda: action,
       setLambda: action,
-      setTargetClass: action,
       convertLambdaObjectToGrammarString: action,
       convertLambdaGrammarStringToObject: action,
       updateLamba: action,
@@ -161,22 +157,12 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     return this.execution.func;
   }
 
-  get mappedClasses(): Class[] {
-    return uniq(
-      this.editorStore.graphState.graph.mappings
-        .map((e) => e.classMappings.map((c) => c.class.value))
-        .flat(),
-    );
-  }
-
   setIsInitializingLambda(val: boolean): void {
     this.isInitializingLambda = val;
   }
+
   setLambda(val: RawLambda): void {
     this.execution.setFunction(val);
-  }
-  setTargetClass(val: Class | undefined): void {
-    this.targetClass = val;
   }
 
   updateLamba = flow(function* (
@@ -228,6 +214,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     }
   });
 
+  // NOTE: since we don't allow edition in text mode, we don't need to implement this
   convertLambdaGrammarStringToObject(): Promise<void> {
     throw new Error('Method not implemented.');
   }

@@ -81,7 +81,7 @@ export abstract class EditorPlugin extends AbstractPlugin {
 
   /**
    * NOTE: this is temporary since we want to eventually move Service out to its own DSL
-   * preset/plugin so this would go away
+   * preset/plugin so this should also be moved there
    */
   TEMP__getExtraServiceQueryEditorRendererConfigurations?(): TEMP__ServiceQueryEditorRendererConfiguration[];
 }

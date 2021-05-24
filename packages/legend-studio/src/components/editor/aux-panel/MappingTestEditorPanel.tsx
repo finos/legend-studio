@@ -56,20 +56,20 @@ import {
 import { RawGraphFetchTreeExplorer } from './RawGraphFetchTreeExplorer';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
-import { getMappingElementSourceSelectOption } from '../../editor/aux-panel/MappingExecution';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type {
-  MappingElementSource,
-  MappingElementSourceSelectOption,
-} from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import type { MappingElementSource } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
   getMappingElementSource,
   getMappingElementTarget,
-  getMappingElementSourceFilterText,
 } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { createValidationError } from '../../../models/metamodels/pure/action/validator/ValidationResult';
+import type { MappingElementSourceSelectOption } from '../edit-panel/mapping-editor/InstanceSetImplementationSourceSelectorModal';
+import {
+  buildMappingElementSourceOption,
+  getMappingElementSourceFilterText,
+} from '../edit-panel/mapping-editor/InstanceSetImplementationSourceSelectorModal';
 
 const MappingTestGraphFetchQueryEditor = observer(
   (props: {
@@ -307,8 +307,8 @@ export const MappingTestObjectInputDataBuilder = observer(
               getMappingElementTarget(mappingElement) === queryState.target,
           )
           .map((mappingElement) => getMappingElementSource(mappingElement))
+          .map((source) => buildMappingElementSourceOption(source))
           .filter(isNonNullable)
-          .map((source) => getMappingElementSourceSelectOption(source))
           .sort(compareLabelFn)
       : [];
     const sourceSelectorRef = useRef<SelectComponent>(null);
@@ -426,8 +426,8 @@ export const MappingTestFlatDataInputDataBuilder = observer(
               getMappingElementTarget(mappingElement) === queryState.target,
           )
           .map((mappingElement) => getMappingElementSource(mappingElement))
+          .map((source) => buildMappingElementSourceOption(source))
           .filter(isNonNullable)
-          .map((source) => getMappingElementSourceSelectOption(source))
           .sort(compareLabelFn)
       : [];
     const sourceSelectorRef = useRef<SelectComponent>(null);

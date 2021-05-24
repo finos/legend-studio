@@ -24,7 +24,6 @@ import {
   makeObservable,
   makeAutoObservable,
 } from 'mobx';
-import type { RawGraphFetchTreeData } from '../../../shared/RawGraphFetchTreeUtil';
 import {
   guaranteeNonNullable,
   assertTrue,
@@ -38,7 +37,10 @@ import {
   losslessStringify,
   getClass,
 } from '@finos/legend-studio-shared';
-import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
+import {
+  CLIENT_VERSION,
+  LAMBDA_START,
+} from '../../../../models/MetaModelConst';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
@@ -48,7 +50,7 @@ import {
   OBJECT_INPUT_TYPE,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
-import type { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import {
   IdentifiedConnection,
@@ -74,59 +76,86 @@ import type { Connection } from '../../../../models/metamodels/pure/model/packag
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
+import { LambdaEditorState } from '../LambdaEditorState';
 
-abstract class MappingExecutionQueryState {
+export class MappingExecutionQueryState extends LambdaEditorState {
   uuid = uuid();
   editorStore: EditorStore;
-  abstract get isValid(): boolean;
-  abstract get query(): RawLambda;
+  isConvertingLambdaToString = false;
+  isInitializingLambda = false;
+  query: RawLambda;
 
-  constructor(editorStore: EditorStore) {
-    this.editorStore = editorStore;
-  }
-}
-
-export class MappingExecutionGraphFetchQueryState extends MappingExecutionQueryState {
-  target?: Class;
-  graphFetchTree?: RawGraphFetchTreeData;
-
-  constructor(editorStore: EditorStore) {
-    super(editorStore);
+  constructor(editorStore: EditorStore, query: RawLambda) {
+    super('', LAMBDA_START);
 
     makeObservable(this, {
-      target: observable,
-      graphFetchTree: observable,
-      setTarget: action,
-      setGraphFetchTree: action,
-      isValid: computed,
+      query: observable,
+      isConvertingLambdaToString: observable,
+      isInitializingLambda: observable,
+      setIsInitializingLambda: action,
+      setQuery: action,
+      convertLambdaObjectToGrammarString: action,
+      convertLambdaGrammarStringToObject: action,
+      updateLamba: action,
     });
+
+    this.editorStore = editorStore;
+    this.query = query;
   }
 
-  setTarget = (target: Class | undefined): void => {
-    this.target = target;
-  };
-  setGraphFetchTree = (
-    graphFetchTree: RawGraphFetchTreeData | undefined,
-  ): void => {
-    this.graphFetchTree = graphFetchTree;
-  };
-
-  get isValid(): boolean {
-    return Boolean(this.target);
+  setIsInitializingLambda(val: boolean): void {
+    this.isInitializingLambda = val;
   }
 
-  get query(): RawLambda {
-    const rootGraphFetchTree = guaranteeNonNullable(
-      this.graphFetchTree?.root.graphFetchTreeNode,
-    );
-    return rootGraphFetchTree.isEmpty
-      ? this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
-          guaranteeNonNullable(this.target),
-        )
-      : this.editorStore.graphState.graphManager.HACKY_createGraphFetchLambda(
-          rootGraphFetchTree,
-          guaranteeNonNullable(this.target),
+  setQuery(val: RawLambda): void {
+    this.query = val;
+  }
+
+  updateLamba = flow(function* (
+    this: MappingExecutionQueryState,
+    val: RawLambda,
+  ) {
+    this.setQuery(val);
+    yield this.convertLambdaObjectToGrammarString(true);
+  });
+
+  convertLambdaObjectToGrammarString = flow(function* (
+    this: MappingExecutionQueryState,
+    pretty?: boolean,
+  ) {
+    if (!this.query.isStub) {
+      this.isConvertingLambdaToString = true;
+      try {
+        const lambdas = new Map<string, RawLambda>();
+        lambdas.set(this.uuid, this.query);
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
+        const grammarText = isolatedLambdas.get(this.uuid);
+        this.setLambdaString(
+          grammarText !== undefined
+            ? this.extractLambdaString(grammarText)
+            : '',
         );
+        this.clearErrors();
+        this.isConvertingLambdaToString = false;
+      } catch (error: unknown) {
+        this.editorStore.applicationStore.logger.error(
+          CORE_LOG_EVENT.PARSING_PROBLEM,
+          error,
+        );
+        this.isConvertingLambdaToString = false;
+      }
+    } else {
+      this.clearErrors();
+      this.setLambdaString('');
+    }
+  });
+
+  convertLambdaGrammarStringToObject(): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }
 
@@ -176,7 +205,7 @@ export class MappingExecutionEmptyRuntimeState extends MappingExecutionRuntimeSt
   }
 }
 
-export class MappingExecutionJsonModelConnectionRuntimeState extends MappingExecutionRuntimeState {
+export class MappingExecutionModelConnectionRuntimeState extends MappingExecutionRuntimeState {
   sourceClass?: Class;
   testData = '{}';
 
@@ -322,7 +351,10 @@ export class MappingExecutionState {
 
     this.editorStore = editorStore;
     this.mappingEditorState = mappingEditorState;
-    this.queryState = new MappingExecutionGraphFetchQueryState(editorStore);
+    this.queryState = new MappingExecutionQueryState(
+      editorStore,
+      RawLambda.createStub(),
+    );
     this.runtimeState = new MappingExecutionEmptyRuntimeState(
       editorStore,
       mappingEditorState.mapping,
@@ -346,8 +378,9 @@ export class MappingExecutionState {
   };
 
   reset(): void {
-    this.queryState = new MappingExecutionGraphFetchQueryState(
+    this.queryState = new MappingExecutionQueryState(
       this.editorStore,
+      RawLambda.createStub(),
     );
     this.runtimeState = new MappingExecutionEmptyRuntimeState(
       this.editorStore,
@@ -361,11 +394,10 @@ export class MappingExecutionState {
     populateWithMockData: boolean,
   ): void {
     if (source instanceof Class) {
-      const newRuntimeState =
-        new MappingExecutionJsonModelConnectionRuntimeState(
-          this.editorStore,
-          this.mappingEditorState.mapping,
-        );
+      const newRuntimeState = new MappingExecutionModelConnectionRuntimeState(
+        this.editorStore,
+        this.mappingEditorState.mapping,
+      );
       if (populateWithMockData) {
         newRuntimeState.setSourceClass(source);
         newRuntimeState.setTestData(
@@ -406,7 +438,7 @@ export class MappingExecutionState {
     try {
       const query = this.queryState.query;
       if (
-        this.queryState.isValid &&
+        !this.queryState.query.isStub &&
         this.runtimeState.isValid &&
         this.executionResultText
       ) {
@@ -440,13 +472,13 @@ export class MappingExecutionState {
     try {
       const query = this.queryState.query;
       if (
-        this.queryState.isValid &&
+        !this.queryState.query.isStub &&
         this.runtimeState.isValid &&
         this.executionResultText
       ) {
         if (
           this.runtimeState instanceof
-          MappingExecutionJsonModelConnectionRuntimeState
+          MappingExecutionModelConnectionRuntimeState
         ) {
           const service = new Service(serviceName);
           service.initNewService();
@@ -496,7 +528,7 @@ export class MappingExecutionState {
       const query = this.queryState.query;
       const runtime = this.runtimeState.runtime;
       if (
-        this.queryState.isValid &&
+        !this.queryState.query.isStub &&
         this.runtimeState.isValid &&
         !this.isExecuting
       ) {
@@ -530,7 +562,7 @@ export class MappingExecutionState {
       const query = this.queryState.query;
       const runtime = this.runtimeState.runtime;
       if (
-        this.queryState.isValid &&
+        !this.queryState.query.isStub &&
         this.runtimeState.isValid &&
         !this.isGeneratingPlan
       ) {
