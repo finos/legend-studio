@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.1.7
+
+### Patch Changes
+
+- [#216](https://github.com/finos/legend-studio/pull/216) [`5c35ef1`](https://github.com/finos/legend-studio/commit/5c35ef132a1cf60a5a067895e68b54f4cb363c3a) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Use meta::legend::service::metamodel::Service for service classifierPath.
+
 ## 0.1.6
 
 ### Patch Changes

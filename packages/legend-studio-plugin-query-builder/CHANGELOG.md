@@ -1,5 +1,14 @@
 # @finos/legend-studio-plugin-query-builder
 
+## 0.0.8
+
+### Patch Changes
+
+- [#216](https://github.com/finos/legend-studio/pull/216) [`5c35ef1`](https://github.com/finos/legend-studio/commit/5c35ef132a1cf60a5a067895e68b54f4cb363c3a) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Use meta::legend::service::metamodel::Service for service classifierPath.
+
+- Updated dependencies [[`5c35ef1`](https://github.com/finos/legend-studio/commit/5c35ef132a1cf60a5a067895e68b54f4cb363c3a)]:
+  - @finos/legend-studio@0.1.7
+
 ## 0.0.7
 
 ### Patch Changes
