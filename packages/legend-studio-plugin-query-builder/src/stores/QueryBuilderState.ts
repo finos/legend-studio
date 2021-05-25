@@ -99,7 +99,6 @@ export class QueryBuilderState extends EditorExtensionState {
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   openQueryBuilder = false;
-  TEMPORARY__enableGraphFetch = false;
   operators: QueryBuilderOperator[] = [
     new QueryBuilderEqualOperator(),
     new QueryBuilderNotEqualOperator(),
@@ -119,12 +118,7 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderIsNotEmptyOperator(),
   ];
 
-  constructor(
-    editorStore: EditorStore,
-    options?: {
-      TEMPORARY__enableGraphFetch?: boolean;
-    },
-  ) {
+  constructor(editorStore: EditorStore) {
     super();
 
     makeObservable(this, {
@@ -166,10 +160,6 @@ export class QueryBuilderState extends EditorExtensionState {
       editorStore,
       this,
     );
-
-    this.TEMPORARY__enableGraphFetch = Boolean(
-      options?.TEMPORARY__enableGraphFetch,
-    );
   }
 
   getRawLambdaQuery(): RawLambda {
@@ -208,15 +198,10 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   reset(): void {
-    const currentQueryBuilderState =
-      this.editorStore.getEditorExtensionState(QueryBuilderState);
     changeEntry(
       this.editorStore.editorExtensionStates,
       this.editorStore.getEditorExtensionState(QueryBuilderState),
-      new QueryBuilderState(this.editorStore, {
-        TEMPORARY__enableGraphFetch:
-          currentQueryBuilderState.TEMPORARY__enableGraphFetch,
-      }),
+      new QueryBuilderState(this.editorStore),
     );
   }
 

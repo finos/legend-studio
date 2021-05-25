@@ -18,8 +18,9 @@ import type { MappingExecutionState, RawLambda } from '@finos/legend-studio';
 import {
   EngineRuntime,
   PackageableElementExplicitReference,
+  useApplicationStore,
+  useEditorStore,
 } from '@finos/legend-studio';
-import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 
