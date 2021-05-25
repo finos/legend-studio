@@ -492,6 +492,7 @@ export class GraphState {
   *globalCompileInFormMode(options?: {
     message?: string;
     disableNotificationOnSuccess?: boolean;
+    openConsole?: boolean;
   }): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInFormMode,
@@ -503,7 +504,9 @@ export class GraphState {
     this.isRunningGlobalCompile = true;
     try {
       this.clearCompilationError();
-      this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      if (options?.openConsole) {
+        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      }
       yield this.graphManager.compileGraph(this.graph);
       if (!options?.disableNotificationOnSuccess) {
         this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
@@ -589,6 +592,7 @@ export class GraphState {
     options?: {
       ignoreBlocking?: boolean;
       suppressCompilationFailureMessage?: boolean;
+      openConsole?: boolean;
     },
   ): GeneratorFn<void> {
     assertTrue(
@@ -604,7 +608,9 @@ export class GraphState {
     try {
       this.isRunningGlobalCompile = true;
       this.clearCompilationError();
-      this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      if (options?.openConsole) {
+        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      }
       const entities = (yield this.graphManager.compileText(
         this.editorStore.grammarTextEditorState.graphGrammarText,
         this.graph,

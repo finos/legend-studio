@@ -27,11 +27,14 @@ import type {
   ExplorerContextMenuItemRendererConfiguration,
   TEMP__ServiceQueryEditorRendererConfiguration,
   ServicePureExecutionState,
+  MappingExecutionQueryEditorRendererConfiguration,
+  MappingExecutionState,
 } from '@finos/legend-studio';
 import { Class, EditorPlugin } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-studio-components';
 import { QueryBuilderDialog } from './components/QueryBuilderDialog';
 import { ServiceQueryBuilder } from './components/ServiceQueryBuilder';
+import { MappingExecutionQueryBuilder } from './components/MappingExecutionQueryBuilder';
 import { QueryBuilderState } from './stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import type { IKeyboardEvent } from 'monaco-editor';
@@ -134,6 +137,21 @@ export class QueryBuilderPlugin extends EditorPlugin {
               )
               .catch(editorStore.applicationStore.alertIllegalUnhandledError);
           }
+        },
+      },
+    ];
+  }
+
+  getExtraMappingExecutionQueryEditorRendererConfigurations(): MappingExecutionQueryEditorRendererConfiguration[] {
+    return [
+      {
+        key: 'build-query-context-menu-action',
+        renderer: function MappingExecutionQueryBuilderRenderer(
+          executionState: MappingExecutionState,
+        ): React.ReactNode | undefined {
+          return (
+            <MappingExecutionQueryBuilder executionState={executionState} />
+          );
         },
       },
     ];

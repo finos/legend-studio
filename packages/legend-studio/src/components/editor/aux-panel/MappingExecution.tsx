@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { Fragment, useState, useRef, useCallback } from 'react';
 import SplitPane from 'react-split-pane';
 import { useEditorStore } from '../../../stores/EditorStore';
 import {
@@ -42,6 +42,7 @@ import {
   guaranteeType,
   uniq,
   compareLabelFn,
+  isNonNullable,
 } from '@finos/legend-studio-shared';
 import {
   MappingExecutionEmptyInputDataState,
@@ -143,6 +144,25 @@ const MappingExecutionQueryEditor = observer(
     const applicationStore = useApplicationStore();
     const executionState = mappingEditorState.executionState;
 
+    const extraQueryEditors = applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          plugin.getExtraMappingExecutionQueryEditorRendererConfigurations?.() ??
+          [],
+      )
+      .filter(isNonNullable)
+      .map((config) => (
+        <Fragment key={config.key}>{config.renderer(executionState)}</Fragment>
+      ));
+    if (extraQueryEditors.length === 0) {
+      extraQueryEditors.push(
+        <Fragment key={'unsupported-query-editor'}>
+          <div>{`No query editor available`}</div>
+        </Fragment>,
+      );
+    }
+
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
       useState(false);
@@ -154,16 +174,18 @@ const MappingExecutionQueryEditor = observer(
       (setImplementation: SetImplementation | undefined): void => {
         // do all the necessary updates
         executionState.setExecutionResultText(undefined);
-        queryState.updateLamba(
-          setImplementation
-            ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
-                guaranteeType(
-                  getMappingElementTarget(setImplementation),
-                  Class,
-                ),
-              )
-            : RawLambda.createStub(),
-        );
+        queryState
+          .updateLamba(
+            setImplementation
+              ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+                  guaranteeType(
+                    getMappingElementTarget(setImplementation),
+                    Class,
+                  ),
+                )
+              : RawLambda.createStub(),
+          )
+          .catch(applicationStore.alertIllegalUnhandledError);
         hideClassMappingSelectorModal();
 
         // Attempt to generate data for input data panel as we pick the class mapping:
@@ -216,7 +238,7 @@ const MappingExecutionQueryEditor = observer(
 
         // TODO: open query builder
       },
-      [editorStore, executionState, queryState],
+      [applicationStore, editorStore, executionState, queryState],
     );
 
     // Drag and Drop
@@ -279,9 +301,8 @@ const MappingExecutionQueryEditor = observer(
                 hideGutter={true}
               />
             </div>
-            <div className="mapping-execution-panel__query-panel__query-edit">
-              {/* TODO: wire up query builder from extension here */}
-              <button className="btn btn--dark">Edit Query</button>
+            <div className="mapping-execution-panel__query-panel__query-editor">
+              {extraQueryEditors}
             </div>
           </div>
         )}

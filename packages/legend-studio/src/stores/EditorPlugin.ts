@@ -19,6 +19,7 @@ import type { IKeyboardEvent } from 'monaco-editor';
 import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
+import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
@@ -55,6 +56,13 @@ export type LambdaEditorHotkeyConfiguration = {
   ) => void;
 };
 
+export type MappingExecutionQueryEditorRendererConfiguration = {
+  key: string;
+  renderer: (
+    executionState: MappingExecutionState,
+  ) => React.ReactNode | undefined;
+};
+
 /**
  * NOTE: this is temporary since we want to eventually move Service out to its own DSL
  * preset/plugin so this would go away
@@ -78,6 +86,8 @@ export abstract class EditorPlugin extends AbstractPlugin {
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
 
   getExtraLambdaEditorHotkeyConfigurations?(): LambdaEditorHotkeyConfiguration[];
+
+  getExtraMappingExecutionQueryEditorRendererConfigurations?(): MappingExecutionQueryEditorRendererConfiguration[];
 
   /**
    * NOTE: this is temporary since we want to eventually move Service out to its own DSL

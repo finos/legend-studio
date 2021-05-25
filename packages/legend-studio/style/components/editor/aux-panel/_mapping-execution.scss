@@ -83,17 +83,16 @@
     height: calc(100% - 3.6rem);
   }
 
-  &__query-panel__query-edit {
+  &__query-panel__query-editor {
     @include flexCenter;
 
     height: 3.6rem;
     border-top: 0.1rem solid var(--color-dark-grey-200);
-
-    button {
-      height: 2.6rem;
-      width: calc(100% - 1rem);
-    }
   }
+
+  // &__query-panel__query-editor--empty {
+
+  // }
 
   .Resizer.vertical {
     background: padding-box var(--color-dark-grey-100);

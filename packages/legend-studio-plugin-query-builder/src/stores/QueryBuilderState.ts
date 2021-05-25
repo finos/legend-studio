@@ -38,7 +38,6 @@ import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type { EditorStore } from '@finos/legend-studio';
 import {
   EditorExtensionState,
-  AUX_PANEL_MODE,
   CollectionInstanceValue,
   CompilationError,
   CORE_ELEMENT_PATH,
@@ -474,12 +473,12 @@ export class QueryBuilderState extends EditorExtensionState {
     );
   }
 
-  saveQuery(): void {
+  async saveQuery(): Promise<void> {
     const onQuerySave = this.querySetupState.onSave;
     if (onQuerySave) {
       try {
         const rawLambda = this.getRawLambdaQuery();
-        onQuerySave(rawLambda);
+        await onQuerySave(rawLambda);
       } catch (error: unknown) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.notifyError(
@@ -504,7 +503,6 @@ export class QueryBuilderState extends EditorExtensionState {
     if (this.isEditingInTextMode()) {
       try {
         this.editorStore.graphState.clearCompilationError();
-        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
         (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
           this.queryTextEditorState.rawLambdaState.lambda,
           this.editorStore.graphState.graph,
