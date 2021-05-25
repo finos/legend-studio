@@ -48,20 +48,8 @@ import { EnumValueExplicitReference } from '../../../../models/metamodels/pure/m
 import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 import type { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import {
-  createStubRelationalOperationElement,
-  isStubRelationalOperationElement,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import { createStubRelationalOperationElement } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-
-const isStubPropertyMapping = (propertyMapping: PropertyMapping): boolean => {
-  if (propertyMapping instanceof RelationalPropertyMapping) {
-    return isStubRelationalOperationElement(
-      propertyMapping.relationalOperation,
-    );
-  }
-  return propertyMapping.isStub;
-};
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -119,7 +107,7 @@ export class MappingElementDecorateVisitor
       // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
       // with the set implemenetation (this happens when we switch sources)
       const existingPropertyMappings = (propertyMappings ?? []).filter(
-        (pm) => !isStubPropertyMapping(pm),
+        (pm) => !pm.isStub,
       );
       const propertyType = property.genericType.value.rawType;
       if (
@@ -240,7 +228,7 @@ export class MappingElementDecorateVisitor
       // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
       // with the set implemenetation (this happens when we switch sources)
       const existingPropertyMappings = (propertyMappings ?? []).filter(
-        (pm) => !isStubPropertyMapping(pm),
+        (pm) => !pm.isStub,
       );
       const propertyType = property.genericType.value.rawType;
       if (
@@ -348,7 +336,7 @@ export class MappingElementDecorateVisitor
       // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
       // with the set implemenetation (this happens when we switch sources)
       const existingPropertyMappings = (propertyMappings ?? []).filter(
-        (pm) => !isStubPropertyMapping(pm),
+        (pm) => !pm.isStub,
       );
       const propertyType = property.genericType.value.rawType;
       if (
