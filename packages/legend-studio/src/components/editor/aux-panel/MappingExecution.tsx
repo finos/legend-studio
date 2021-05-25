@@ -50,7 +50,11 @@ import {
   MappingExecutionRelationalInputDataState,
 } from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { TextInputEditor } from '../../shared/TextInputEditor';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '../../../stores/ApplicationStore';
 import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import {
   getMappingElementTarget,
@@ -58,6 +62,7 @@ import {
 } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import { SetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+import { OperationSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -71,11 +76,13 @@ const ClassMappingSelectorModal = observer(
     changeClassMapping: (
       setImplementation: SetImplementation | undefined,
     ) => void;
+    classMappingFilterFn?: (setImplementation: SetImplementation) => boolean;
   }) => {
     const {
       mappingEditorState,
       changeClassMapping,
       hideClassMappingSelectorModal,
+      classMappingFilterFn,
     } = props;
 
     // Class mapping selector
@@ -88,6 +95,10 @@ const ClassMappingSelectorModal = observer(
     });
     const classMappingOptions = uniq(
       mappingEditorState.mapping.allClassMappings
+        .filter(
+          (classMapping) =>
+            !classMappingFilterFn || classMappingFilterFn(classMapping),
+        )
         .map((classMapping) => ({
           label: classMapping.label.value,
           value: classMapping,
@@ -141,6 +152,7 @@ const MappingExecutionQueryEditor = observer(
       setOpenClassMappingSelectorModal(false);
     const changeClassMapping = useCallback(
       (setImplementation: SetImplementation | undefined): void => {
+        // do all the necessary updates
         executionState.setExecutionResultText(undefined);
         queryState.updateLamba(
           setImplementation
@@ -153,6 +165,56 @@ const MappingExecutionQueryEditor = observer(
             : RawLambda.createStub(),
         );
         hideClassMappingSelectorModal();
+
+        // Attempt to generate data for input data panel as we pick the class mapping:
+        // - If the source panel is empty right now, automatically try to generate input data:
+        //   - We generate based on the class mapping, if it's concrete
+        //   - If the class mapping is operation, output a warning message
+        // - If the source panel is non-empty (show modal), show an option to keep current input data
+
+        if (setImplementation) {
+          if (
+            executionState.inputDataState instanceof
+            MappingExecutionEmptyInputDataState
+          ) {
+            if (setImplementation instanceof OperationSetImplementation) {
+              editorStore.applicationStore.notifyWarning(
+                `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+              );
+            } else {
+              executionState.setInputDataStateBasedOnSource(
+                getMappingElementSource(setImplementation),
+                true,
+              );
+            }
+          } else {
+            editorStore.setActionAltertInfo({
+              message: 'Mapping execution input data is already set',
+              prompt: 'Do you want to regenerate the input data?',
+              type: ActionAlertType.CAUTION,
+              onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
+              onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
+              actions: [
+                {
+                  label: 'Regenerate',
+                  type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                  handler: (): void =>
+                    executionState.setInputDataStateBasedOnSource(
+                      getMappingElementSource(setImplementation),
+                      true,
+                    ),
+                },
+                {
+                  label: 'Keep my input data',
+                  type: ActionAlertActionType.PROCEED,
+                  default: true,
+                },
+              ],
+            });
+          }
+        }
+
+        // TODO: open query builder
       },
       [editorStore, executionState, queryState],
     );
@@ -394,6 +456,8 @@ export const MappingExecutionInputDataBuilder = observer(
       },
       [mappingEditorState.executionState],
     );
+    const classMappingFilterFn = (setImp: SetImplementation): boolean =>
+      setImp instanceof OperationSetImplementation;
 
     // Input data builder
     let inputDataBuilder: React.ReactNode;
@@ -475,6 +539,7 @@ export const MappingExecutionInputDataBuilder = observer(
             mappingEditorState={mappingEditorState}
             hideClassMappingSelectorModal={hideClassMappingSelectorModal}
             changeClassMapping={changeClassMapping}
+            classMappingFilterFn={classMappingFilterFn}
           />
         )}
       </div>
