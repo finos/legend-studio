@@ -413,7 +413,7 @@ export const getWebAppBaseWebpackConfig = (
       new MonacoWebpackPlugin({
         // Only include what we need to lessen the bundle loads
         // See https://github.com/microsoft/monaco-editor-webpack-plugin
-        languages: ['json', 'java', 'markdown'],
+        languages: ['json', 'java', 'markdown', 'sql'],
         // Here we can choose to also exclude/include features but this really does not
         // significantly affect the bundle size anyhow, but it's also strange that we
         // need to turn off features in `monaco-editor` on creation anyway

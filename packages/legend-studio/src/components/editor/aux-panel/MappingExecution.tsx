@@ -332,6 +332,31 @@ const MappingExecutionQueryEditor = observer(
   },
 );
 
+export const MappingExecutionObjectInputDataBuilder = observer(
+  (props: {
+    mappingEditorState: MappingEditorState;
+    inputDataState: MappingExecutionObjectInputDataState;
+  }) => {
+    const { inputDataState } = props;
+
+    // TODO?: handle XML/type
+
+    // Input data
+    const updateInput = (val: string): void =>
+      inputDataState.inputData.setData(val);
+
+    return (
+      <div className="panel__content mapping-execution-panel__input-data-panel__content">
+        <TextInputEditor
+          language={EDITOR_LANGUAGE.JSON}
+          inputValue={inputDataState.inputData.data}
+          updateInput={updateInput}
+        />
+      </div>
+    );
+  },
+);
+
 export const MappingExecutionFlatDataInputDataBuilder = observer(
   (props: {
     mappingEditorState: MappingEditorState;
@@ -339,9 +364,7 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
   }) => {
     const { inputDataState } = props;
 
-    // TODO?: input type
-
-    // Input Data
+    // Input data
     const updateInput = (val: string): void =>
       inputDataState.inputData.setData(val);
 
@@ -357,31 +380,9 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
   },
 );
 
-export const MappingExecutionObjectInputDataBuilder = observer(
-  (props: {
-    mappingEditorState: MappingEditorState;
-    inputDataState: MappingExecutionObjectInputDataState;
-  }) => {
-    const { inputDataState } = props;
-
-    // Input Data
-    const updateInput = (val: string): void =>
-      inputDataState.inputData.setData(val);
-
-    // TODO?: handle XML/type
-
-    return (
-      <div className="panel__content mapping-execution-panel__input-data-panel__content">
-        <TextInputEditor
-          language={EDITOR_LANGUAGE.JSON}
-          inputValue={inputDataState.inputData.data}
-          updateInput={updateInput}
-        />
-      </div>
-    );
-  },
-);
-
+/**
+ * Right now, we always default this to use Local H2 connection.
+ */
 export const MappingExecutionRelationalInputDataBuilder = observer(
   (props: {
     mappingEditorState: MappingEditorState;
@@ -389,14 +390,14 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
   }) => {
     const { inputDataState } = props;
 
-    // Input Data
+    // Input data
     const updateInput = (val: string): void =>
       inputDataState.inputData.setData(val);
 
     return (
       <div className="panel__content mapping-execution-panel__input-data-panel__content">
         <TextInputEditor
-          language={EDITOR_LANGUAGE.JSON}
+          language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
         />

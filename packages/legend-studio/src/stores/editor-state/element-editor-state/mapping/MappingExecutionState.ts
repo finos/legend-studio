@@ -342,6 +342,16 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
   }
 
   get runtime(): Runtime {
+    const datasourceSpecification = new LocalH2DatasourceSpecification();
+    datasourceSpecification.setTestDataSetupSqls(
+      // TODO: we need to properly review this gross simplification of formatting SQL strings
+      this.inputData.data
+        .trim()
+        .replace(/\n/g, '')
+        .split(';')
+        .filter((val) => Boolean(val))
+        .map((val) => `${val};`),
+    );
     return createRuntimeForExecution(
       this.mapping,
       new RelationalDatabaseConnection(
@@ -349,7 +359,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
           guaranteeNonNullable(this.inputData.sourceDatabase.value),
         ),
         DatabaseType.H2,
-        new LocalH2DatasourceSpecification(),
+        datasourceSpecification,
         new DefaultH2AuthenticationStrategy(),
       ),
     );
