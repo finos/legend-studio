@@ -957,12 +957,14 @@ export class MappingEditorState extends ElementEditorState {
           source ?? Class.createStub(),
         ),
         OBJECT_INPUT_TYPE.JSON,
-        source ? createMockDataForMappingElementSource(source) : '{}',
+        source
+          ? createMockDataForMappingElementSource(source, this.editorStore)
+          : '{}',
       );
     } else if (source instanceof RootFlatDataRecordType) {
       inputData = new FlatDataInputData(
         PackageableElementExplicitReference.create(source.owner.owner),
-        createMockDataForMappingElementSource(source),
+        createMockDataForMappingElementSource(source, this.editorStore),
       );
     } else {
       throw new UnsupportedOperationError();

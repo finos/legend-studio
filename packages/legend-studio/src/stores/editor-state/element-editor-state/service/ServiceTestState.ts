@@ -505,7 +505,10 @@ export class SingleExecutionTestState {
             if (sourceToGenerate instanceof Class) {
               // TODO: create mock data based on the content type
               this.test.setData(
-                createMockDataForMappingElementSource(sourceToGenerate),
+                createMockDataForMappingElementSource(
+                  sourceToGenerate,
+                  this.editorStore,
+                ),
               );
             } else {
               // TODO: add flat-data when we're ready

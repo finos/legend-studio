@@ -76,6 +76,15 @@ import { PackageableElementExplicitReference } from '../../../../models/metamode
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
 import { LambdaEditorState } from '../LambdaEditorState';
+import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
+import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
+import { RelationalInputData } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
+import {
+  DatabaseType,
+  RelationalDatabaseConnection,
+} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import { LocalH2DatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
+import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   uuid = uuid();
@@ -304,6 +313,49 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
   }
 }
 
+export class MappingExecutionRelationalInputDataState extends MappingExecutionInputDataState {
+  declare inputData: RelationalInputData;
+
+  constructor(
+    editorStore: EditorStore,
+    mapping: Mapping,
+    tableOrView: Table | View,
+  ) {
+    super(
+      editorStore,
+      mapping,
+      new RelationalInputData(
+        PackageableElementExplicitReference.create(
+          guaranteeNonNullable(tableOrView.schema.owner),
+        ),
+        '',
+      ),
+    );
+
+    makeObservable(this, {
+      isValid: computed,
+    });
+  }
+
+  get isValid(): boolean {
+    return true;
+  }
+
+  get runtime(): Runtime {
+    return createRuntimeForExecution(
+      this.mapping,
+      new RelationalDatabaseConnection(
+        PackageableElementExplicitReference.create(
+          guaranteeNonNullable(this.inputData.sourceDatabase.value),
+        ),
+        DatabaseType.H2,
+        new LocalH2DatasourceSpecification(),
+        new DefaultH2AuthenticationStrategy(),
+      ),
+    );
+  }
+}
+
 export class MappingExecutionState {
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;
@@ -386,7 +438,7 @@ export class MappingExecutionState {
       );
       if (populateWithMockData) {
         newRuntimeState.inputData.setData(
-          createMockDataForMappingElementSource(source),
+          createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
       this.setInputDataState(newRuntimeState);
@@ -398,7 +450,19 @@ export class MappingExecutionState {
       );
       if (populateWithMockData) {
         newRuntimeState.inputData.setData(
-          createMockDataForMappingElementSource(source),
+          createMockDataForMappingElementSource(source, this.editorStore),
+        );
+      }
+      this.setInputDataState(newRuntimeState);
+    } else if (source instanceof Table || source instanceof View) {
+      const newRuntimeState = new MappingExecutionRelationalInputDataState(
+        this.editorStore,
+        this.mappingEditorState.mapping,
+        source,
+      );
+      if (populateWithMockData) {
+        newRuntimeState.inputData.setData(
+          createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
       this.setInputDataState(newRuntimeState);

@@ -23,6 +23,7 @@ import {
   BlankPanelPlaceholder,
   PanelLoadingIndicator,
   PencilIcon,
+  TimesIcon,
 } from '@finos/legend-studio-components';
 import { FaPlay, FaScroll, FaSave, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
@@ -46,6 +47,7 @@ import {
   MappingExecutionEmptyInputDataState,
   MappingExecutionObjectInputDataState,
   MappingExecutionFlatDataInputDataState,
+  MappingExecutionRelationalInputDataState,
 } from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
@@ -127,6 +129,7 @@ const MappingExecutionQueryEditor = observer(
     const { mappingEditorState } = props;
     const queryState = mappingEditorState.executionState.queryState;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const executionState = mappingEditorState.executionState;
 
     // Class mapping selector
@@ -173,6 +176,11 @@ const MappingExecutionQueryEditor = observer(
       [handleDrop],
     );
 
+    const clearQuery = (): Promise<void> =>
+      mappingEditorState.executionState.queryState
+        .updateLamba(RawLambda.createStub())
+        .catch(applicationStore.alertIllegalUnhandledError);
+
     return (
       <div className="panel mapping-execution-panel__query-panel">
         <div className="panel__header">
@@ -180,6 +188,14 @@ const MappingExecutionQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              onClick={clearQuery}
+              title={'Clear query'}
+            >
+              <TimesIcon />
+            </button>
             <button
               className="panel__header__action"
               tabIndex={-1}
@@ -270,6 +286,29 @@ export const MappingExecutionObjectInputDataBuilder = observer(
       inputDataState.inputData.setData(val);
 
     // TODO?: handle XML/type
+
+    return (
+      <div className="panel__content mapping-execution-panel__input-data-panel__content">
+        <TextInputEditor
+          language={EDITOR_LANGUAGE.JSON}
+          inputValue={inputDataState.inputData.data}
+          updateInput={updateInput}
+        />
+      </div>
+    );
+  },
+);
+
+export const MappingExecutionRelationalInputDataBuilder = observer(
+  (props: {
+    mappingEditorState: MappingEditorState;
+    inputDataState: MappingExecutionRelationalInputDataState;
+  }) => {
+    const { inputDataState } = props;
+
+    // Input Data
+    const updateInput = (val: string): void =>
+      inputDataState.inputData.setData(val);
 
     return (
       <div className="panel__content mapping-execution-panel__input-data-panel__content">
@@ -383,9 +422,27 @@ export const MappingExecutionInputDataBuilder = observer(
           inputDataState={inputDataState}
         />
       );
+    } else if (
+      inputDataState instanceof MappingExecutionRelationalInputDataState
+    ) {
+      inputDataBuilder = (
+        <MappingExecutionRelationalInputDataBuilder
+          mappingEditorState={mappingEditorState}
+          inputDataState={inputDataState}
+        />
+      );
     } else {
       inputDataBuilder = null;
     }
+
+    const clearInputData = (): void =>
+      mappingEditorState.executionState.setInputDataState(
+        new MappingExecutionEmptyInputDataState(
+          mappingEditorState.editorStore,
+          mappingEditorState.mapping,
+          undefined,
+        ),
+      );
 
     return (
       <div className="panel mapping-execution-panel__input-data-panel">
@@ -394,6 +451,14 @@ export const MappingExecutionInputDataBuilder = observer(
             <div className="panel__header__title__label">input data</div>
           </div>
           <div className="panel__header__actions">
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              onClick={clearInputData}
+              title={'Clear input data'}
+            >
+              <TimesIcon />
+            </button>
             <button
               className="panel__header__action"
               tabIndex={-1}
