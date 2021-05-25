@@ -48,12 +48,24 @@ import { EnumValueExplicitReference } from '../../../../models/metamodels/pure/m
 import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 import type { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { createStubRelationalOperationElement } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import {
+  createStubRelationalOperationElement,
+  isStubRelationalOperationElement,
+} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
+
+const isStubPropertyMapping = (propertyMapping: PropertyMapping): boolean => {
+  if (propertyMapping instanceof RelationalPropertyMapping) {
+    return isStubRelationalOperationElement(
+      propertyMapping.relationalOperation,
+    );
+  }
+  return propertyMapping.isStub;
+};
 
 /* @MARKER: ACTION ANALYTICS */
 /**
- * This logic plays a vital role in how `smart` our editor is.
+ * This logic helps making the mapping editor smart.
  * Its first purpose is to prepoluate empty property mapping so as to allow user
  * jump straight in to edit the property mappings without the need to hit button
  * like `add property mapping`.
@@ -104,7 +116,11 @@ export class MappingElementDecorateVisitor
       propertyMappings: PurePropertyMapping[] | undefined,
       property: Property,
     ): PurePropertyMapping[] => {
-      const existingPropertyMappings = propertyMappings ?? [];
+      // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
+      // with the set implemenetation (this happens when we switch sources)
+      const existingPropertyMappings = (propertyMappings ?? []).filter(
+        (pm) => !isStubPropertyMapping(pm),
+      );
       const propertyType = property.genericType.value.rawType;
       if (
         propertyType instanceof PrimitiveType ||
@@ -221,7 +237,11 @@ export class MappingElementDecorateVisitor
       propertyMappings: AbstractFlatDataPropertyMapping[] | undefined,
       property: Property,
     ): AbstractFlatDataPropertyMapping[] => {
-      const existingPropertyMappings = propertyMappings ?? [];
+      // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
+      // with the set implemenetation (this happens when we switch sources)
+      const existingPropertyMappings = (propertyMappings ?? []).filter(
+        (pm) => !isStubPropertyMapping(pm),
+      );
       const propertyType = property.genericType.value.rawType;
       if (
         propertyType instanceof PrimitiveType ||
@@ -325,7 +345,11 @@ export class MappingElementDecorateVisitor
       propertyMappings: PropertyMapping[] | undefined,
       property: Property,
     ): PropertyMapping[] => {
-      const existingPropertyMappings = propertyMappings ?? [];
+      // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
+      // with the set implemenetation (this happens when we switch sources)
+      const existingPropertyMappings = (propertyMappings ?? []).filter(
+        (pm) => !isStubPropertyMapping(pm),
+      );
       const propertyType = property.genericType.value.rawType;
       if (
         propertyType instanceof PrimitiveType ||
