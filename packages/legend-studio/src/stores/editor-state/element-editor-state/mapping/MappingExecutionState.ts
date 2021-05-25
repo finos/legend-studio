@@ -71,7 +71,6 @@ import {
 } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
 import { PureSingleExecution } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import type { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
 import type { Connection } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
@@ -159,19 +158,24 @@ export class MappingExecutionQueryState extends LambdaEditorState {
   }
 }
 
-abstract class MappingExecutionRuntimeState {
+abstract class MappingExecutionInputDataState {
   uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
+  inputData?: InputData;
 
-  constructor(editorStore: EditorStore, mapping: Mapping) {
+  constructor(
+    editorStore: EditorStore,
+    mapping: Mapping,
+    inputData: InputData | undefined,
+  ) {
     this.editorStore = editorStore;
     this.mapping = mapping;
+    this.inputData = inputData;
   }
 
   abstract get isValid(): boolean;
   abstract get runtime(): Runtime;
-  abstract get inputData(): InputData;
 }
 
 export const createRuntimeForExecution = (
@@ -189,52 +193,47 @@ export const createRuntimeForExecution = (
   return runtime;
 };
 
-export class MappingExecutionEmptyRuntimeState extends MappingExecutionRuntimeState {
+export class MappingExecutionEmptyInputDataState extends MappingExecutionInputDataState {
   get isValid(): boolean {
     return false;
   }
+
   get runtime(): Runtime {
-    throw new IllegalStateError(
-      'Mapping execution runtime information is not specified',
-    );
-  }
-  get inputData(): InputData {
     throw new IllegalStateError(
       'Mapping execution runtime information is not specified',
     );
   }
 }
 
-export class MappingExecutionModelConnectionRuntimeState extends MappingExecutionRuntimeState {
-  sourceClass?: Class;
-  testData = '{}';
+// TODO?: handle XML
+export class MappingExecutionObjectInputDataState extends MappingExecutionInputDataState {
+  declare inputData: ObjectInputData;
 
-  constructor(editorStore: EditorStore, mapping: Mapping) {
-    super(editorStore, mapping);
+  constructor(editorStore: EditorStore, mapping: Mapping, _class: Class) {
+    super(
+      editorStore,
+      mapping,
+      new ObjectInputData(
+        PackageableElementExplicitReference.create(
+          guaranteeNonNullable(_class),
+        ),
+        OBJECT_INPUT_TYPE.JSON,
+        tryToMinifyJSONString('{}'),
+      ),
+    );
 
     makeObservable(this, {
-      sourceClass: observable,
-      testData: observable,
-      setSourceClass: action,
-      setTestData: action,
       isValid: computed,
     });
   }
 
-  setSourceClass = (sourceClass: Class | undefined): void => {
-    this.sourceClass = sourceClass;
-  };
-  setTestData = (testData: string): void => {
-    this.testData = testData;
-  };
-
   get isValid(): boolean {
-    return isValidJSONString(this.testData) && Boolean(this.sourceClass);
+    return isValidJSONString(this.inputData.data);
   }
 
   get runtime(): Runtime {
     assertTrue(
-      isValidJSONString(this.testData),
+      this.isValid,
       'Model-to-model mapping execution test data is not a valid JSON string',
     );
     const engineConfig =
@@ -246,54 +245,46 @@ export class MappingExecutionModelConnectionRuntimeState extends MappingExecutio
           this.editorStore.graphState.graph.modelStore,
         ),
         PackageableElementExplicitReference.create(
-          guaranteeNonNullable(this.sourceClass),
+          guaranteeNonNullable(this.inputData.sourceClass.value),
         ),
         createUrlStringFromData(
-          tryToMinifyJSONString(this.testData),
+          tryToMinifyJSONString(this.inputData.data),
           JsonModelConnection.CONTENT_TYPE,
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
     );
   }
-
-  get inputData(): InputData {
-    return new ObjectInputData(
-      PackageableElementExplicitReference.create(
-        guaranteeNonNullable(this.sourceClass),
-      ),
-      OBJECT_INPUT_TYPE.JSON,
-      tryToMinifyJSONString(this.testData),
-    );
-  }
 }
 
-export class MappingExecutionFlatDataConnectionRuntimeState extends MappingExecutionRuntimeState {
-  sourceFlatData?: FlatData;
-  testData = '';
+export class MappingExecutionFlatDataInputDataState extends MappingExecutionInputDataState {
+  declare inputData: FlatDataInputData;
 
-  constructor(editorStore: EditorStore, mapping: Mapping) {
-    super(editorStore, mapping);
+  constructor(
+    editorStore: EditorStore,
+    mapping: Mapping,
+    rootFlatDataRecordType: RootFlatDataRecordType,
+  ) {
+    super(
+      editorStore,
+      mapping,
+      new FlatDataInputData(
+        PackageableElementExplicitReference.create(
+          guaranteeNonNullable(rootFlatDataRecordType.owner.owner),
+        ),
+        '',
+      ),
+    );
 
     makeObservable(this, {
-      sourceFlatData: observable,
-      testData: observable,
-      setSourceFlatData: action,
-      setTestData: action,
       isValid: computed,
     });
   }
 
-  setSourceFlatData = (sourceFlatData: FlatData | undefined): void => {
-    this.sourceFlatData = sourceFlatData;
-  };
-  setTestData = (testData: string): void => {
-    this.testData = testData;
-  };
-
   get isValid(): boolean {
-    return Boolean(this.sourceFlatData);
+    return true;
   }
+
   get runtime(): Runtime {
     const engineConfig =
       this.editorStore.graphState.graphManager.getEngineConfig();
@@ -301,22 +292,14 @@ export class MappingExecutionFlatDataConnectionRuntimeState extends MappingExecu
       this.mapping,
       new FlatDataConnection(
         PackageableElementExplicitReference.create(
-          guaranteeNonNullable(this.sourceFlatData),
+          guaranteeNonNullable(this.inputData.sourceFlatData.value),
         ),
         createUrlStringFromData(
-          this.testData,
+          this.inputData.data,
           FlatDataConnection.CONTENT_TYPE,
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
-    );
-  }
-  get inputData(): InputData {
-    return new FlatDataInputData(
-      PackageableElementExplicitReference.create(
-        guaranteeNonNullable(this.sourceFlatData),
-      ),
-      this.testData,
     );
   }
 }
@@ -327,7 +310,7 @@ export class MappingExecutionState {
   isExecuting = false;
   isGeneratingPlan = false;
   queryState: MappingExecutionQueryState;
-  runtimeState: MappingExecutionRuntimeState;
+  inputDataState: MappingExecutionInputDataState;
   executionPlan?: object;
   executionResultText?: string; // NOTE: stored as lessless JSON text
   showServicePathModal = false;
@@ -341,11 +324,11 @@ export class MappingExecutionState {
       mappingEditorState: false,
       executionPlan: observable.ref,
       setQueryState: action,
-      setRuntimeState: action,
+      setInputDataState: action,
       setExecutionResultText: action,
       setExecutionPlan: action,
       setShowServicePathModal: action,
-      setRuntimeStateBasedOnSource: action,
+      setInputDataStateBasedOnSource: action,
       reset: action,
     });
 
@@ -355,26 +338,27 @@ export class MappingExecutionState {
       editorStore,
       RawLambda.createStub(),
     );
-    this.runtimeState = new MappingExecutionEmptyRuntimeState(
+    this.inputDataState = new MappingExecutionEmptyInputDataState(
       editorStore,
       mappingEditorState.mapping,
+      undefined,
     );
   }
 
-  setQueryState = (queryState: MappingExecutionQueryState): void => {
-    this.queryState = queryState;
+  setQueryState = (val: MappingExecutionQueryState): void => {
+    this.queryState = val;
   };
-  setRuntimeState = (runtimeState: MappingExecutionRuntimeState): void => {
-    this.runtimeState = runtimeState;
+  setInputDataState = (val: MappingExecutionInputDataState): void => {
+    this.inputDataState = val;
   };
-  setExecutionResultText = (executionResult: string | undefined): void => {
-    this.executionResultText = executionResult;
+  setExecutionResultText = (val: string | undefined): void => {
+    this.executionResultText = val;
   };
-  setExecutionPlan = (executionPlan: object | undefined): void => {
-    this.executionPlan = executionPlan;
+  setExecutionPlan = (val: object | undefined): void => {
+    this.executionPlan = val;
   };
-  setShowServicePathModal = (showModal: boolean): void => {
-    this.showServicePathModal = showModal;
+  setShowServicePathModal = (val: boolean): void => {
+    this.showServicePathModal = val;
   };
 
   reset(): void {
@@ -382,52 +366,53 @@ export class MappingExecutionState {
       this.editorStore,
       RawLambda.createStub(),
     );
-    this.runtimeState = new MappingExecutionEmptyRuntimeState(
+    this.inputDataState = new MappingExecutionEmptyInputDataState(
       this.editorStore,
       this.mappingEditorState.mapping,
+      undefined,
     );
     this.setExecutionResultText(undefined);
   }
 
-  setRuntimeStateBasedOnSource(
+  setInputDataStateBasedOnSource(
     source: MappingElementSource | undefined,
     populateWithMockData: boolean,
   ): void {
     if (source instanceof Class) {
-      const newRuntimeState = new MappingExecutionModelConnectionRuntimeState(
+      const newRuntimeState = new MappingExecutionObjectInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
+        source,
       );
       if (populateWithMockData) {
-        newRuntimeState.setSourceClass(source);
-        newRuntimeState.setTestData(
+        newRuntimeState.inputData.setData(
           createMockDataForMappingElementSource(source),
         );
       }
-      this.setRuntimeState(newRuntimeState);
+      this.setInputDataState(newRuntimeState);
     } else if (source instanceof RootFlatDataRecordType) {
-      const newRuntimeState =
-        new MappingExecutionFlatDataConnectionRuntimeState(
-          this.editorStore,
-          this.mappingEditorState.mapping,
-        );
+      const newRuntimeState = new MappingExecutionFlatDataInputDataState(
+        this.editorStore,
+        this.mappingEditorState.mapping,
+        source,
+      );
       if (populateWithMockData) {
-        newRuntimeState.setSourceFlatData(source.owner.owner);
-        newRuntimeState.setTestData(
+        newRuntimeState.inputData.setData(
           createMockDataForMappingElementSource(source),
         );
       }
-      this.setRuntimeState(newRuntimeState);
+      this.setInputDataState(newRuntimeState);
     } else if (source === undefined) {
-      this.setRuntimeState(
-        new MappingExecutionEmptyRuntimeState(
+      this.setInputDataState(
+        new MappingExecutionEmptyInputDataState(
           this.editorStore,
           this.mappingEditorState.mapping,
+          undefined,
         ),
       );
     } else {
       this.editorStore.applicationStore.notifyWarning(
-        `Can't build runtime for unsupported source of type '${
+        `Can't build input data for unsupported source of type '${
           getClass(source).name
         }'`,
       );
@@ -439,10 +424,11 @@ export class MappingExecutionState {
       const query = this.queryState.query;
       if (
         !this.queryState.query.isStub &&
-        this.runtimeState.isValid &&
+        this.inputDataState.isValid &&
+        this.inputDataState.inputData &&
         this.executionResultText
       ) {
-        const inputData = this.runtimeState.inputData;
+        const inputData = this.inputDataState.inputData;
         const assert = new ExpectedOutputMappingTestAssert(
           toGrammarString(this.executionResultText),
         );
@@ -473,12 +459,11 @@ export class MappingExecutionState {
       const query = this.queryState.query;
       if (
         !this.queryState.query.isStub &&
-        this.runtimeState.isValid &&
+        this.inputDataState.isValid &&
         this.executionResultText
       ) {
         if (
-          this.runtimeState instanceof
-          MappingExecutionModelConnectionRuntimeState
+          this.inputDataState instanceof MappingExecutionObjectInputDataState
         ) {
           const service = new Service(serviceName);
           service.initNewService();
@@ -488,12 +473,12 @@ export class MappingExecutionState {
             PackageableElementExplicitReference.create(
               this.mappingEditorState.mapping,
             ),
-            this.runtimeState.runtime,
+            this.inputDataState.runtime,
           );
           service.setExecution(pureSingleExecution);
           const singleExecutionTest = new SingleExecutionTest(
             service,
-            tryToMinifyJSONString(this.runtimeState.testData),
+            tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
           const testContainer = new TestContainer(
             this.editorStore.graphState.graphManager.HACKY_createAssertLambda(
@@ -511,7 +496,11 @@ export class MappingExecutionState {
           this.editorStore.graphState.graph.addElement(service);
           this.editorStore.openElement(service);
         } else {
-          throw new UnsupportedOperationError();
+          throw new UnsupportedOperationError(
+            `Can't build service from input data of unsupported type '${
+              getClass(this.inputDataState).name
+            }'`,
+          );
         }
       }
     } catch (error: unknown) {
@@ -526,10 +515,10 @@ export class MappingExecutionState {
   executeMapping = flow(function* (this: MappingExecutionState) {
     try {
       const query = this.queryState.query;
-      const runtime = this.runtimeState.runtime;
+      const runtime = this.inputDataState.runtime;
       if (
         !this.queryState.query.isStub &&
-        this.runtimeState.isValid &&
+        this.inputDataState.isValid &&
         !this.isExecuting
       ) {
         this.isExecuting = true;
@@ -560,10 +549,10 @@ export class MappingExecutionState {
   generatePlan = flow(function* (this: MappingExecutionState) {
     try {
       const query = this.queryState.query;
-      const runtime = this.runtimeState.runtime;
+      const runtime = this.inputDataState.runtime;
       if (
         !this.queryState.query.isStub &&
-        this.runtimeState.isValid &&
+        this.inputDataState.isValid &&
         !this.isGeneratingPlan
       ) {
         this.isGeneratingPlan = true;

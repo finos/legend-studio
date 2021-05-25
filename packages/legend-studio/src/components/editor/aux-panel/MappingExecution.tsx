@@ -43,9 +43,9 @@ import {
   compareLabelFn,
 } from '@finos/legend-studio-shared';
 import {
-  MappingExecutionEmptyRuntimeState,
-  MappingExecutionModelConnectionRuntimeState,
-  MappingExecutionFlatDataConnectionRuntimeState,
+  MappingExecutionEmptyInputDataState,
+  MappingExecutionObjectInputDataState,
+  MappingExecutionFlatDataInputDataState,
 } from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
@@ -233,24 +233,24 @@ const MappingExecutionQueryEditor = observer(
   },
 );
 
-export const MappingExecutionFlatDataConnectionRuntimeBuilder = observer(
+export const MappingExecutionFlatDataInputDataBuilder = observer(
   (props: {
     mappingEditorState: MappingEditorState;
-    runtimeState: MappingExecutionFlatDataConnectionRuntimeState;
+    inputDataState: MappingExecutionFlatDataInputDataState;
   }) => {
-    const { runtimeState } = props;
-    const { testData } = runtimeState;
+    const { inputDataState } = props;
 
     // TODO?: input type
 
     // Input Data
-    const updateInput = (val: string): void => runtimeState.setTestData(val);
+    const updateInput = (val: string): void =>
+      inputDataState.inputData.setData(val);
 
     return (
       <div className="panel__content mapping-execution-panel__input-data-panel__content">
         <TextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
-          inputValue={testData}
+          inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
         />
       </div>
@@ -258,56 +258,41 @@ export const MappingExecutionFlatDataConnectionRuntimeBuilder = observer(
   },
 );
 
-export const MappingExecutionModelConnectionRuntimeBuilder = observer(
+export const MappingExecutionObjectInputDataBuilder = observer(
   (props: {
     mappingEditorState: MappingEditorState;
-    runtimeState: MappingExecutionModelConnectionRuntimeState;
+    inputDataState: MappingExecutionObjectInputDataState;
   }) => {
-    const { runtimeState } = props;
-    const { testData } = runtimeState;
+    const { inputDataState } = props;
 
     // Input Data
-    const updateInput = (val: string): void => runtimeState.setTestData(val);
+    const updateInput = (val: string): void =>
+      inputDataState.inputData.setData(val);
 
     // TODO?: handle XML/type
 
     return (
       <div className="panel__content mapping-execution-panel__input-data-panel__content">
         <TextInputEditor
-          inputValue={testData}
-          updateInput={updateInput}
           language={EDITOR_LANGUAGE.JSON}
+          inputValue={inputDataState.inputData.data}
+          updateInput={updateInput}
         />
       </div>
     );
   },
 );
 
-export const MappingExecutionRuntimeBuilder = observer(
-  (props: { mappingEditorState: MappingEditorState }) => {
-    const { mappingEditorState } = props;
-    const runtimeState = mappingEditorState.executionState.runtimeState;
-
-    // Class mapping selector
-    const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
-      useState(false);
-    const showClassMappingSelectorModal = (): void =>
-      setOpenClassMappingSelectorModal(true);
-    const hideClassMappingSelectorModal = (): void =>
-      setOpenClassMappingSelectorModal(false);
-    const changeClassMapping = useCallback(
-      (setImplementation: SetImplementation | undefined): void => {
-        mappingEditorState.executionState.setRuntimeStateBasedOnSource(
-          setImplementation
-            ? getMappingElementSource(setImplementation)
-            : undefined,
-          true,
-        );
-        mappingEditorState.executionState.setExecutionResultText(undefined);
-        hideClassMappingSelectorModal();
-      },
-      [mappingEditorState.executionState],
-    );
+export const MappingExecutionEmptyInputDataBuilder = observer(
+  (props: {
+    mappingEditorState: MappingEditorState;
+    inputDataState: MappingExecutionEmptyInputDataState;
+    changeClassMapping: (
+      setImplementation: SetImplementation | undefined,
+    ) => void;
+    showClassMappingSelectorModal: () => void;
+  }) => {
+    const { changeClassMapping, showClassMappingSelectorModal } = props;
 
     // Drag and Drop
     const handleDrop = useCallback(
@@ -328,43 +313,78 @@ export const MappingExecutionRuntimeBuilder = observer(
       [handleDrop],
     );
 
-    // Runtime builder
-    let runtimeBuilder: React.ReactNode;
-    if (runtimeState instanceof MappingExecutionEmptyRuntimeState) {
-      runtimeBuilder = (
-        <div ref={dropRef} className="panel__content">
-          <BlankPanelPlaceholder
-            placeholderText="Choose a class mapping"
-            onClick={showClassMappingSelectorModal}
-            clickActionType="add"
-            tooltipText="Drop a class mapping, or click to choose one to generate input data"
-            dndProps={{
-              isDragOver: isDragOver,
-              canDrop: canDrop,
-            }}
-          />
-        </div>
-      );
-    } else if (
-      runtimeState instanceof MappingExecutionModelConnectionRuntimeState
-    ) {
-      runtimeBuilder = (
-        <MappingExecutionModelConnectionRuntimeBuilder
+    return (
+      <div ref={dropRef} className="panel__content">
+        <BlankPanelPlaceholder
+          placeholderText="Choose a class mapping"
+          onClick={showClassMappingSelectorModal}
+          clickActionType="add"
+          tooltipText="Drop a class mapping, or click to choose one to generate input data"
+          dndProps={{
+            isDragOver: isDragOver,
+            canDrop: canDrop,
+          }}
+        />
+      </div>
+    );
+  },
+);
+
+export const MappingExecutionInputDataBuilder = observer(
+  (props: { mappingEditorState: MappingEditorState }) => {
+    const { mappingEditorState } = props;
+    const inputDataState = mappingEditorState.executionState.inputDataState;
+
+    // Class mapping selector
+    const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
+      useState(false);
+    const showClassMappingSelectorModal = (): void =>
+      setOpenClassMappingSelectorModal(true);
+    const hideClassMappingSelectorModal = (): void =>
+      setOpenClassMappingSelectorModal(false);
+    const changeClassMapping = useCallback(
+      (setImplementation: SetImplementation | undefined): void => {
+        mappingEditorState.executionState.setInputDataStateBasedOnSource(
+          setImplementation
+            ? getMappingElementSource(setImplementation)
+            : undefined,
+          true,
+        );
+        mappingEditorState.executionState.setExecutionResultText(undefined);
+        hideClassMappingSelectorModal();
+      },
+      [mappingEditorState.executionState],
+    );
+
+    // Input data builder
+    let inputDataBuilder: React.ReactNode;
+    if (inputDataState instanceof MappingExecutionEmptyInputDataState) {
+      inputDataBuilder = (
+        <MappingExecutionEmptyInputDataBuilder
           mappingEditorState={mappingEditorState}
-          runtimeState={runtimeState}
+          inputDataState={inputDataState}
+          showClassMappingSelectorModal={showClassMappingSelectorModal}
+          changeClassMapping={changeClassMapping}
+        />
+      );
+    } else if (inputDataState instanceof MappingExecutionObjectInputDataState) {
+      inputDataBuilder = (
+        <MappingExecutionObjectInputDataBuilder
+          mappingEditorState={mappingEditorState}
+          inputDataState={inputDataState}
         />
       );
     } else if (
-      runtimeState instanceof MappingExecutionFlatDataConnectionRuntimeState
+      inputDataState instanceof MappingExecutionFlatDataInputDataState
     ) {
-      runtimeBuilder = (
-        <MappingExecutionFlatDataConnectionRuntimeBuilder
+      inputDataBuilder = (
+        <MappingExecutionFlatDataInputDataBuilder
           mappingEditorState={mappingEditorState}
-          runtimeState={runtimeState}
+          inputDataState={inputDataState}
         />
       );
     } else {
-      runtimeBuilder = null;
+      inputDataBuilder = null;
     }
 
     return (
@@ -384,7 +404,7 @@ export const MappingExecutionRuntimeBuilder = observer(
             </button>
           </div>
         </div>
-        {runtimeBuilder}
+        {inputDataBuilder}
         {openClassMappingSelectorModal && (
           <ClassMappingSelectorModal
             mappingEditorState={mappingEditorState}
@@ -402,7 +422,7 @@ export const MappingExecutionBuilder = observer(
     const { mappingEditorState } = props;
     const applicationStore = useApplicationStore();
     const executionState = mappingEditorState.executionState;
-    const { queryState, runtimeState, executionPlan } = executionState;
+    const { queryState, inputDataState, executionPlan } = executionState;
     // plan
     const closePlanViewer = (): void =>
       executionState.setExecutionPlan(undefined);
@@ -448,8 +468,8 @@ export const MappingExecutionBuilder = observer(
               key={executionState.queryState.uuid}
               mappingEditorState={mappingEditorState}
             />
-            <MappingExecutionRuntimeBuilder
-              key={executionState.runtimeState.uuid}
+            <MappingExecutionInputDataBuilder
+              key={executionState.inputDataState.uuid}
               mappingEditorState={mappingEditorState}
             />
           </SplitPane>
@@ -463,7 +483,7 @@ export const MappingExecutionBuilder = observer(
                   className="panel__header__action"
                   disabled={
                     queryState.query.isStub ||
-                    !runtimeState.isValid ||
+                    !inputDataState.isValid ||
                     executionState.isExecuting
                   }
                   onClick={execute}
@@ -476,7 +496,7 @@ export const MappingExecutionBuilder = observer(
                   className="panel__header__action mapping-execution-panel__generate-plan-btn"
                   disabled={
                     queryState.query.isStub ||
-                    !runtimeState.isValid ||
+                    !inputDataState.isValid ||
                     executionState.isGeneratingPlan
                   }
                   onClick={generatePlan}
@@ -490,7 +510,7 @@ export const MappingExecutionBuilder = observer(
                     className="panel__header__action"
                     disabled={
                       queryState.query.isStub ||
-                      !runtimeState.isValid ||
+                      !inputDataState.isValid ||
                       executionState.isExecuting ||
                       !executionState.executionResultText
                     }
@@ -506,7 +526,7 @@ export const MappingExecutionBuilder = observer(
                     className="panel__header__action"
                     disabled={
                       queryState.query.isStub ||
-                      !runtimeState.isValid ||
+                      !inputDataState.isValid ||
                       executionState.isExecuting ||
                       !executionState.executionResultText
                     }
