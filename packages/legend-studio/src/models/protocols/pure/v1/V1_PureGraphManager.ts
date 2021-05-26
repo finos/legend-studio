@@ -1794,17 +1794,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graphData = this.getFullGraphModelData(graph);
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
-    prunedGraphData.elements = graphData.elements.filter(
-      (element) =>
-        element instanceof V1_Class ||
-        element instanceof V1_Enumeration ||
-        element instanceof V1_Profile ||
-        element instanceof V1_Association ||
-        element instanceof V1_ConcreteFunctionDefinition ||
-        element instanceof V1_Measure ||
-        element instanceof V1_Store ||
-        element instanceof V1_PackageableConnection,
+    const extraExecutionElements = this.pureProtocolProcessorPlugins.flatMap(
+      (e) => e.V1_getExtraExecutionInputElements?.() ?? [],
     );
+    prunedGraphData.elements = graphData.elements
+      .filter(
+        (element) =>
+          element instanceof V1_Class ||
+          element instanceof V1_Enumeration ||
+          element instanceof V1_Profile ||
+          element instanceof V1_Association ||
+          element instanceof V1_ConcreteFunctionDefinition ||
+          element instanceof V1_Measure ||
+          element instanceof V1_Store ||
+          element instanceof V1_PackageableConnection,
+      )
+      .concat(extraExecutionElements);
     // TODO further optimize mappings/runtimes needed for execution to lessen load
     let runtimeMappings: Mapping[] = [];
     if (runtime instanceof EngineRuntime) {
