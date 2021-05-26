@@ -145,6 +145,10 @@ export class LocalH2DatasourceSpecification
     this.testDataSetupCsv = val;
   }
 
+  setTestDataSetupSqls(val: string[]): void {
+    this.testDataSetupSqls = val;
+  }
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.LOCAL_H2_DATASOURCE_SPECIFICATION,

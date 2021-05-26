@@ -27,23 +27,20 @@ import type {
   ExplorerContextMenuItemRendererConfiguration,
   TEMP__ServiceQueryEditorRendererConfiguration,
   ServicePureExecutionState,
+  MappingExecutionQueryEditorRendererConfiguration,
+  MappingExecutionState,
 } from '@finos/legend-studio';
 import { Class, EditorPlugin } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-studio-components';
 import { QueryBuilderDialog } from './components/QueryBuilderDialog';
 import { ServiceQueryBuilder } from './components/ServiceQueryBuilder';
+import { MappingExecutionQueryBuilder } from './components/MappingExecutionQueryBuilder';
 import { QueryBuilderState } from './stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import type { IKeyboardEvent } from 'monaco-editor';
 import { KeyCode } from 'monaco-editor';
 
-interface QueryBuilderPluginConfigData {
-  TEMPORARY__enableGraphFetch: boolean;
-}
-
 export class QueryBuilderPlugin extends EditorPlugin {
-  TEMPORARY__enableGraphFetch = false;
-
   constructor() {
     super(packageJson.name, packageJson.version);
   }
@@ -53,10 +50,6 @@ export class QueryBuilderPlugin extends EditorPlugin {
   }
 
   configure(_configData: object): QueryBuilderPlugin {
-    const configData = _configData as QueryBuilderPluginConfigData;
-    this.TEMPORARY__enableGraphFetch = Boolean(
-      configData.TEMPORARY__enableGraphFetch,
-    );
     return this;
   }
 
@@ -76,9 +69,7 @@ export class QueryBuilderPlugin extends EditorPlugin {
   getExtraEditorExtensionStateCreators(): EditorExtensionStateCreator[] {
     return [
       (editorStore: EditorStore): EditorExtensionState | undefined =>
-        new QueryBuilderState(editorStore, {
-          TEMPORARY__enableGraphFetch: this.TEMPORARY__enableGraphFetch,
-        }),
+        new QueryBuilderState(editorStore),
     ];
   }
 
@@ -134,6 +125,21 @@ export class QueryBuilderPlugin extends EditorPlugin {
               )
               .catch(editorStore.applicationStore.alertIllegalUnhandledError);
           }
+        },
+      },
+    ];
+  }
+
+  getExtraMappingExecutionQueryEditorRendererConfigurations(): MappingExecutionQueryEditorRendererConfiguration[] {
+    return [
+      {
+        key: 'build-query-context-menu-action',
+        renderer: function MappingExecutionQueryBuilderRenderer(
+          executionState: MappingExecutionState,
+        ): React.ReactNode | undefined {
+          return (
+            <MappingExecutionQueryBuilder executionState={executionState} />
+          );
         },
       },
     ];

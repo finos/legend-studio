@@ -28,6 +28,7 @@ import type { PropertyMappingsImplementation } from '../../../../../model/packag
 import type { PropertyReference } from '../../../../../model/packageableElements/domain/PropertyReference';
 import type { SetImplementation } from '../../../../../model/packageableElements/mapping/SetImplementation';
 import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtility';
+import { isStubRelationalOperationElement } from '../model/RawRelationalOperationElement';
 import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement';
 
 export class RelationalPropertyMapping
@@ -76,8 +77,7 @@ export class RelationalPropertyMapping
   }
 
   get isStub(): boolean {
-    // TODO figure out isStub conditions
-    return false;
+    return isStubRelationalOperationElement(this.relationalOperation);
   }
 
   get hashCode(): string {

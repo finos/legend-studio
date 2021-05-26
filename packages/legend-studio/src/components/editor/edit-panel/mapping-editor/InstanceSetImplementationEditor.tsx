@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaAsterisk, FaLongArrowAltDown, FaEdit } from 'react-icons/fa';
 import SplitPane from 'react-split-pane';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import {
-  clsx,
-  CustomSelectorInput,
-  BlankPanelPlaceholder,
-  createFilter,
-} from '@finos/legend-studio-components';
+import { clsx, BlankPanelPlaceholder } from '@finos/legend-studio-components';
 import type {
   ElementDragSource,
   MappingElementSourceDropTarget,
@@ -42,7 +36,6 @@ import { useEditorStore } from '../../../../stores/EditorStore';
 import { TypeTree } from '../../../shared/TypeTree';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
 import { PropertyMappingsEditor } from './PropertyMappingsEditor';
-import Dialog from '@material-ui/core/Dialog';
 import { useDrop } from 'react-dnd';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import {
@@ -57,147 +50,18 @@ import type { Property } from '../../../../models/metamodels/pure/model/packagea
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import type {
-  MappingElementSourceSelectOption,
-  MappingElementSource,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import {
-  getMappingElementSource,
-  getMappingElementSourceFilterText,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import type { MappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import { getMappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree';
 import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../models/MetaModelConst';
-
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-const getSourceElementLabel = (
-  srcElement: MappingElementSource | undefined,
-): string => {
-  let sourceLabel = '(none)';
-  if (srcElement instanceof Class) {
-    sourceLabel = srcElement.name;
-  } else if (srcElement instanceof RootFlatDataRecordType) {
-    sourceLabel = srcElement.owner.name;
-  } else if (srcElement instanceof Table || srcElement instanceof View) {
-    sourceLabel = `${srcElement.schema.owner.name}.${
-      srcElement.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
-        ? ''
-        : `${srcElement.schema.name}.`
-    }${srcElement.name}`;
-  }
-  return sourceLabel;
-};
-
-// TODO: add more visual cue to the type of source (class vs. flat-data vs. db)
-const buildMappingElementSourceOption = (
-  source: MappingElementSource | undefined,
-): MappingElementSourceSelectOption | null => {
-  if (source instanceof Class) {
-    return source.selectOption as MappingElementSourceSelectOption;
-  } else if (source instanceof RootFlatDataRecordType) {
-    return {
-      label: `${source.owner.owner.name}.${source.owner.name}`,
-      value: source,
-    };
-  } else if (source instanceof Table || source instanceof View) {
-    return {
-      label: `${source.schema.owner.name}.${
-        source.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
-          ? ''
-          : `${source.schema.name}.`
-      }${source.name}`,
-      value: source,
-    };
-  }
-  return null;
-};
-
-const InstanceSetImplementationSourceSelectorModal = observer(
-  (props: {
-    mappingEditorState: MappingEditorState;
-    setImplementation: InstanceSetImplementation;
-    /**
-     * Pass in `null` when we want to open the modal using the existing source.
-     * Pass any other to open the source modal using that value as the initial state of the modal.
-     */
-    sourceElementToSelect: MappingElementSource | null;
-    closeModal: () => void;
-  }) => {
-    const {
-      mappingEditorState,
-      setImplementation,
-      closeModal,
-      sourceElementToSelect,
-    } = props;
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-    const options = (
-      editorStore.graphState.graph.classes as MappingElementSource[]
-    )
-      .concat(
-        editorStore.graphState.graph.flatDatas.flatMap((e) => e.recordTypes),
-      )
-      .concat(
-        editorStore.graphState.graph.databases.flatMap((e) =>
-          e.schemas.flatMap((schema) =>
-            (schema.tables as (Table | View)[]).concat(schema.views),
-          ),
-        ),
-      )
-      .map(buildMappingElementSourceOption);
-    const filterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: getMappingElementSourceFilterText,
-    });
-    const sourceSelectorRef = useRef<SelectComponent>(null);
-    const selectedSourceType = buildMappingElementSourceOption(
-      sourceElementToSelect ?? getMappingElementSource(setImplementation),
-    );
-    const changeSourceType = (
-      val: MappingElementSourceSelectOption | null,
-    ): Promise<void> =>
-      mappingEditorState
-        .changeClassMappingSourceDriver(setImplementation, val?.value)
-        .then(() => closeModal())
-        .catch(applicationStore.alertIllegalUnhandledError);
-    const handleEnter = (): void => sourceSelectorRef.current?.focus();
-
-    return (
-      <Dialog
-        open={true}
-        onClose={closeModal}
-        onEnter={handleEnter}
-        classes={{
-          container: 'search-modal__container',
-        }}
-        PaperProps={{
-          classes: {
-            root: 'search-modal__inner-container',
-          },
-        }}
-      >
-        <div className="modal search-modal">
-          <div className="modal__title">Choose a Source</div>
-          <CustomSelectorInput
-            ref={sourceSelectorRef}
-            options={options}
-            onChange={changeSourceType}
-            value={selectedSourceType}
-            placeholder={`Select a source...`}
-            isClearable={true}
-            filterOption={filterOption}
-          />
-        </div>
-      </Dialog>
-    );
-  },
-);
+import {
+  getSourceElementLabel,
+  InstanceSetImplementationSourceSelectorModal,
+} from './InstanceSetImplementationSourceSelectorModal';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {

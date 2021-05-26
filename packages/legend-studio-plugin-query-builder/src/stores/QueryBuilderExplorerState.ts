@@ -54,8 +54,8 @@ export interface QueryBuilderExplorerTreeDragSource {
 }
 
 export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
-  isSelected?: boolean | undefined;
-  isOpen?: boolean | undefined;
+  isSelected?: boolean;
+  isOpen?: boolean;
   id: string;
   label: string;
   childrenIds: string[] = [];

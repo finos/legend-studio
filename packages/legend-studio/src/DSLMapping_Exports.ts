@@ -41,6 +41,7 @@ export {
   RuntimeEditorState,
   decorateRuntimeWithNewMapping,
 } from './stores/editor-state/element-editor-state/RuntimeEditorState';
+export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 
 // components
 export { EmbeddedRuntimeEditor } from './components/editor/edit-panel/RuntimeEditor';

@@ -119,7 +119,7 @@ export const ServiceExecutionQueryEditor = observer(
     const queryState = executionState.queryState;
     const editorStore = useEditorStore();
     const applicationStore = editorStore.applicationStore;
-    // extensions
+    // query editor extensions
     const extraServiceQueryEditors = applicationStore.pluginManager
       .getEditorPlugins()
       .flatMap(

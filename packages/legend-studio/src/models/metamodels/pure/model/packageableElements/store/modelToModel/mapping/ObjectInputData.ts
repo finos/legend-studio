@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import {
   hashArray,
   UnsupportedOperationError,
@@ -62,6 +62,7 @@ export class ObjectInputData extends InputData implements Hashable {
     makeObservable(this, {
       inputType: observable,
       data: observable,
+      setData: action,
       validationResult: computed,
       hashCode: computed,
     });
@@ -73,6 +74,10 @@ export class ObjectInputData extends InputData implements Hashable {
       inputType === OBJECT_INPUT_TYPE.JSON
         ? tryToMinifyLosslessJSONString(data)
         : data;
+  }
+
+  setData(val: string): void {
+    this.data = val;
   }
 
   get validationResult(): ValidationIssue | undefined {

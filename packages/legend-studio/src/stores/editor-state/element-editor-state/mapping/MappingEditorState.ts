@@ -512,10 +512,34 @@ export class MappingEditorState extends ElementEditorState {
             }'`,
           );
         }
-        yield this.replaceOpenedInstanceSetImplmentation(
-          setImplementation,
-          newSetImp,
+
+        // replace the instance set implementation in mapping
+        const idx = guaranteeNonNullable(
+          this.mapping.classMappings.findIndex(
+            (classMapping) => classMapping === setImplementation,
+          ),
+          `Can't find class mapping with ID '${setImplementation.id.value}' in mapping '${this.mapping.path}'`,
         );
+        this.mapping.classMappings[idx] = newSetImp;
+
+        // replace the instance set implementation in opened tab state
+        const setImplStateIdx = guaranteeNonNullable(
+          this.openedTabStates.findIndex(
+            (tabState) =>
+              tabState instanceof MappingElementState &&
+              tabState.mappingElement === setImplementation,
+          ),
+          `Can't find any mapping state for class mapping with ID '${setImplementation.id.value}'`,
+        );
+        const newMappingElementState = guaranteeNonNullable(
+          this.createMappingElementState(newSetImp),
+        );
+        this.openedTabStates[setImplStateIdx] = newMappingElementState;
+        this.currentTabState = newMappingElementState;
+
+        // close all children
+        yield this.closeMappingElementTabState(setImplementation);
+        this.reprocessMappingElementTree(true);
       }
     }
   });
@@ -527,38 +551,6 @@ export class MappingEditorState extends ElementEditorState {
     yield this.mapping.deleteMappingElement(mappingElement);
     yield this.closeMappingElementTabState(mappingElement);
     this.reprocessMappingElementTree();
-  });
-
-  replaceOpenedInstanceSetImplmentation = flow(function* (
-    this: MappingEditorState,
-    setImplementation: InstanceSetImplementation,
-    newSetImp: InstanceSetImplementation,
-  ) {
-    // repalce in mapping
-    const idx = guaranteeNonNullable(
-      this.mapping.classMappings.findIndex(
-        (classMapping) => classMapping === setImplementation,
-      ),
-      `Class mapping with ID '${setImplementation.id.value}' not found in mapping '${this.mapping.path}'`,
-    );
-    this.mapping.classMappings[idx] = newSetImp;
-    // replace in opened tab state
-    const setImplStateIdx = guaranteeNonNullable(
-      this.openedTabStates.findIndex(
-        (tabState) =>
-          tabState instanceof MappingElementState &&
-          tabState.mappingElement === setImplementation,
-      ),
-      `no mapping state found for class mapping with ID '${setImplementation.id.value}'`,
-    );
-    const newMappingElementState = guaranteeNonNullable(
-      this.createMappingElementState(newSetImp),
-    );
-    this.openedTabStates[setImplStateIdx] = newMappingElementState;
-    this.currentTabState = newMappingElementState;
-    // close all children
-    yield this.closeMappingElementTabState(setImplementation);
-    this.reprocessMappingElementTree(true);
   });
 
   private closeMappingElementTabState = flow(function* (
@@ -965,12 +957,14 @@ export class MappingEditorState extends ElementEditorState {
           source ?? Class.createStub(),
         ),
         OBJECT_INPUT_TYPE.JSON,
-        source ? createMockDataForMappingElementSource(source) : '{}',
+        source
+          ? createMockDataForMappingElementSource(source, this.editorStore)
+          : '{}',
       );
     } else if (source instanceof RootFlatDataRecordType) {
       inputData = new FlatDataInputData(
         PackageableElementExplicitReference.create(source.owner.owner),
-        createMockDataForMappingElementSource(source),
+        createMockDataForMappingElementSource(source, this.editorStore),
       );
     } else {
       throw new UnsupportedOperationError();

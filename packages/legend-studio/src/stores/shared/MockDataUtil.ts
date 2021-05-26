@@ -33,7 +33,9 @@ import {
   getRandomFloat,
   getRandomPositiveInteger,
   getRandomItemInCollection,
+  getClass,
 } from '@finos/legend-studio-shared';
+import type { EditorStore } from '../EditorStore';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,
@@ -162,9 +164,15 @@ export const createMockDataForClass = (
 
 export const createMockDataForMappingElementSource = (
   srcElement: MappingElementSource,
+  editorStore: EditorStore,
 ): string => {
   if (srcElement instanceof Class) {
     return JSON.stringify(createMockDataForClass(srcElement), undefined, 2);
   }
+  editorStore.applicationStore.notifyWarning(
+    `Can't generate test data for mapping source of unsupported type '${
+      getClass(srcElement).name
+    }'`,
+  );
   return '';
 };

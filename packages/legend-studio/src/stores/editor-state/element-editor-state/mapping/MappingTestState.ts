@@ -474,7 +474,7 @@ export class MappingTestState {
         newInputDataState.setSourceClass(source);
         if (source) {
           newInputDataState.setData(
-            createMockDataForMappingElementSource(source),
+            createMockDataForMappingElementSource(source, this.editorStore),
           );
         }
       }
@@ -487,7 +487,7 @@ export class MappingTestState {
       if (populateWithMockData) {
         newInputDataState.setSourceFlatData(source.owner.owner);
         newInputDataState.setData(
-          createMockDataForMappingElementSource(source),
+          createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
       this.setInputDataState(newInputDataState);

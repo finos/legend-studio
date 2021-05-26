@@ -38,7 +38,6 @@ import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type { EditorStore } from '@finos/legend-studio';
 import {
   EditorExtensionState,
-  AUX_PANEL_MODE,
   CollectionInstanceValue,
   CompilationError,
   CORE_ELEMENT_PATH,
@@ -100,7 +99,6 @@ export class QueryBuilderState extends EditorExtensionState {
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   openQueryBuilder = false;
-  TEMPORARY__enableGraphFetch = false;
   operators: QueryBuilderOperator[] = [
     new QueryBuilderEqualOperator(),
     new QueryBuilderNotEqualOperator(),
@@ -120,12 +118,7 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderIsNotEmptyOperator(),
   ];
 
-  constructor(
-    editorStore: EditorStore,
-    options?: {
-      TEMPORARY__enableGraphFetch?: boolean;
-    },
-  ) {
+  constructor(editorStore: EditorStore) {
     super();
 
     makeObservable(this, {
@@ -167,10 +160,6 @@ export class QueryBuilderState extends EditorExtensionState {
       editorStore,
       this,
     );
-
-    this.TEMPORARY__enableGraphFetch = Boolean(
-      options?.TEMPORARY__enableGraphFetch,
-    );
   }
 
   getRawLambdaQuery(): RawLambda {
@@ -209,15 +198,10 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   reset(): void {
-    const currentQueryBuilderState =
-      this.editorStore.getEditorExtensionState(QueryBuilderState);
     changeEntry(
       this.editorStore.editorExtensionStates,
       this.editorStore.getEditorExtensionState(QueryBuilderState),
-      new QueryBuilderState(this.editorStore, {
-        TEMPORARY__enableGraphFetch:
-          currentQueryBuilderState.TEMPORARY__enableGraphFetch,
-      }),
+      new QueryBuilderState(this.editorStore),
     );
   }
 
@@ -474,12 +458,12 @@ export class QueryBuilderState extends EditorExtensionState {
     );
   }
 
-  saveQuery(): void {
+  async saveQuery(): Promise<void> {
     const onQuerySave = this.querySetupState.onSave;
     if (onQuerySave) {
       try {
         const rawLambda = this.getRawLambdaQuery();
-        onQuerySave(rawLambda);
+        await onQuerySave(rawLambda);
       } catch (error: unknown) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.notifyError(
@@ -504,7 +488,6 @@ export class QueryBuilderState extends EditorExtensionState {
     if (this.isEditingInTextMode()) {
       try {
         this.editorStore.graphState.clearCompilationError();
-        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
         (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
           this.queryTextEditorState.rawLambdaState.lambda,
           this.editorStore.graphState.graph,

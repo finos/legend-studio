@@ -46,8 +46,8 @@ import {
 } from '@finos/legend-studio';
 
 export class GraphFetchTreeNodeData implements TreeNodeData {
-  isSelected?: boolean | undefined;
-  isOpen?: boolean | undefined;
+  isSelected?: boolean;
+  isOpen?: boolean;
   id: string;
   label: string;
   childrenIds: string[] = [];

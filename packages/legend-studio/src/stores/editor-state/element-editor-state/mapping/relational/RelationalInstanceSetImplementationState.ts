@@ -25,10 +25,7 @@ import type { PropertyMapping } from '../../../../../models/metamodels/pure/mode
 import type { RelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import type { RawRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import {
-  createStubRelationalOperationElement,
-  isStubRelationalOperationElement,
-} from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import { createStubRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
 import { MappingElementDecorateVisitor } from '../MappingElementDecorateVisitor';
@@ -83,11 +80,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     pretty: boolean,
   ) {
     if (this.propertyMapping instanceof RelationalPropertyMapping) {
-      if (
-        !isStubRelationalOperationElement(
-          this.propertyMapping.relationalOperation,
-        )
-      ) {
+      if (!this.propertyMapping.isStub) {
         try {
           const operations = new Map<string, RawRelationalOperationElement>();
           operations.set(
@@ -201,12 +194,7 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
       RelationalPropertyMappingState
     >();
     this.propertyMappingStates.forEach((pm) => {
-      if (
-        pm.propertyMapping instanceof RelationalPropertyMapping &&
-        !isStubRelationalOperationElement(
-          pm.propertyMapping.relationalOperation,
-        )
-      ) {
+      if (!pm.propertyMapping.isStub) {
         operations.set(
           pm.propertyMapping.lambdaId,
           pm.propertyMapping.relationalOperation,
