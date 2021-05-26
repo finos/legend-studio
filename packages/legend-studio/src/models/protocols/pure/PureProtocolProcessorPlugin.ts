@@ -53,4 +53,12 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   V1_getExtraElementTransformers?(): V1_ElementTransformer[];
 
   V1_getExtraSourceInformationKeys?(): string[];
+
+  /**
+   * Used to specify any additional packageable elements added to the graph that is
+   * used when executing a query against the engine server. We prune the graph to avoid
+   * sending the server additional elements not needed for execution. This would provide a mechanism
+   * to add more elements in this reduced graph.
+   */
+  V1_getExtraExecutionInputElements?(): V1_PackageableElement[];
 }
