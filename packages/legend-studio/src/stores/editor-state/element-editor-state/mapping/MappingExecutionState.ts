@@ -185,6 +185,7 @@ abstract class MappingExecutionInputDataState {
 
   abstract get isValid(): boolean;
   abstract get runtime(): Runtime;
+  abstract buildInputDataForTest(): InputData;
 }
 
 export const createRuntimeForExecution = (
@@ -208,6 +209,12 @@ export class MappingExecutionEmptyInputDataState extends MappingExecutionInputDa
   }
 
   get runtime(): Runtime {
+    throw new IllegalStateError(
+      'Mapping execution runtime information is not specified',
+    );
+  }
+
+  buildInputDataForTest(): InputData {
     throw new IllegalStateError(
       'Mapping execution runtime information is not specified',
     );
@@ -264,6 +271,16 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
       ),
     );
   }
+
+  buildInputDataForTest(): InputData {
+    return new ObjectInputData(
+      PackageableElementExplicitReference.create(
+        guaranteeNonNullable(this.inputData.sourceClass.value),
+      ),
+      this.inputData.inputType,
+      tryToMinifyJSONString(this.inputData.data),
+    );
+  }
 }
 
 export class MappingExecutionFlatDataInputDataState extends MappingExecutionInputDataState {
@@ -311,6 +328,15 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
       ),
     );
   }
+
+  buildInputDataForTest(): InputData {
+    return new FlatDataInputData(
+      PackageableElementExplicitReference.create(
+        guaranteeNonNullable(this.inputData.sourceFlatData.value),
+      ),
+      this.inputData.data,
+    );
+  }
 }
 
 export class MappingExecutionRelationalInputDataState extends MappingExecutionInputDataState {
@@ -344,24 +370,28 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
   get runtime(): Runtime {
     const datasourceSpecification = new LocalH2DatasourceSpecification();
     datasourceSpecification.setTestDataSetupSqls(
-      // TODO: we need to properly review this gross simplification of formatting SQL strings
-      this.inputData.data
-        .trim()
-        .replace(/\n/g, '')
-        .split(';')
-        .filter((val) => Boolean(val))
-        .map((val) => `${val};`),
+      // NOTE: this is a gross simplification of handling the input for relational input data
+      [this.inputData.data],
     );
     return createRuntimeForExecution(
       this.mapping,
       new RelationalDatabaseConnection(
         PackageableElementExplicitReference.create(
-          guaranteeNonNullable(this.inputData.sourceDatabase.value),
+          guaranteeNonNullable(this.inputData.database.value),
         ),
         DatabaseType.H2,
         datasourceSpecification,
         new DefaultH2AuthenticationStrategy(),
       ),
+    );
+  }
+
+  buildInputDataForTest(): InputData {
+    return new RelationalInputData(
+      PackageableElementExplicitReference.create(
+        guaranteeNonNullable(this.inputData.database.value),
+      ),
+      this.inputData.data,
     );
   }
 }
@@ -502,7 +532,7 @@ export class MappingExecutionState {
         this.inputDataState.inputData &&
         this.executionResultText
       ) {
-        const inputData = this.inputDataState.inputData;
+        const inputData = this.inputDataState.buildInputDataForTest();
         const assert = new ExpectedOutputMappingTestAssert(
           toGrammarString(this.executionResultText),
         );

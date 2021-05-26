@@ -29,7 +29,7 @@ import {
 import type { Database } from '../model/Database';
 
 export class RelationalInputData extends InputData implements Hashable {
-  sourceDatabase: PackageableElementReference<Database>;
+  database: PackageableElementReference<Database>;
   data: string;
 
   constructor(
@@ -46,19 +46,19 @@ export class RelationalInputData extends InputData implements Hashable {
       hashCode: computed,
     });
 
-    this.sourceDatabase = sourceDatabase;
+    this.database = sourceDatabase;
     this.data = data;
   }
 
   setSourceDatabase(value: Database): void {
-    this.sourceDatabase.setValue(value);
+    this.database.setValue(value);
   }
   setData(value: string): void {
     this.data = value;
   }
 
   get validationResult(): ValidationIssue | undefined {
-    if (this.sourceDatabase.value.isStub) {
+    if (this.database.value.isStub) {
       return createValidationError([
         'Relational input data source database store is missing',
       ]);
@@ -71,7 +71,7 @@ export class RelationalInputData extends InputData implements Hashable {
       CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
       getElementPointerHashCode(
         PACKAGEABLE_ELEMENT_POINTER_TYPE.STORE,
-        this.sourceDatabase.valueForSerialization,
+        this.database.valueForSerialization,
       ),
       this.data,
     ]);
