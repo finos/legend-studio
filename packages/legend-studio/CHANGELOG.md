@@ -1,5 +1,20 @@
 # @finos/legend-studio
 
+## 0.1.9
+
+### Patch Changes
+
+- [#214](https://github.com/finos/legend-studio/pull/214) [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221) Thanks [@akphi](https://github.com/akphi)! - Rework mapping execution panel to make its behavior more consistent across different types of mappings (related to #202 and #204).
+
+* [#223](https://github.com/finos/legend-studio/pull/223) [`16696ae`](https://github.com/finos/legend-studio/commit/16696ae2513806e8128cff6a4d50c364601f0275) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Fix extension that selects additional elements for execution input from `V1_getExtraExecutionInputElements` to the function `V1_getExtraExecutionInputGetters`. This allows the extensions to be used by the plugins by implementing the function.
+
+- [#214](https://github.com/finos/legend-studio/pull/214) [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221) Thanks [@akphi](https://github.com/akphi)! - Fix a bug with mapping editor not properly pruning stubbed property mapping, causing compilation to fail.
+
+- Updated dependencies [[`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221)]:
+  - @finos/legend-studio-components@0.0.15
+  - @finos/legend-studio-network@0.0.14
+  - @finos/legend-studio-shared@0.0.12
+
 ## 0.1.8
 
 ### Patch Changes
