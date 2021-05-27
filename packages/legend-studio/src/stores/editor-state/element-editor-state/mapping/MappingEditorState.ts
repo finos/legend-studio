@@ -94,6 +94,7 @@ import {
   RelationalInputData,
   RelationalInputType,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
+import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 
 export interface MappingElementTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -938,22 +939,18 @@ export class MappingEditorState extends ElementEditorState {
 
   createNewTest = flow(function* (
     this: MappingEditorState,
-    targetClass: Class,
+    setImplementation: SetImplementation,
   ) {
-    // TODO? should we auto-select everything?
     const query =
       this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
-        targetClass,
+        setImplementation.class.value,
       );
-    // smartly choose the first source in the list of possible sources by default
-    const possibleSources = this.mapping
-      .getAllMappingElements()
-      .filter(
-        (mappingElement) =>
-          getMappingElementTarget(mappingElement) === targetClass,
-      )
-      .map((mappingElement) => getMappingElementSource(mappingElement));
-    const source = possibleSources.length ? possibleSources[0] : undefined;
+    const source = getMappingElementSource(setImplementation);
+    if (setImplementation instanceof OperationSetImplementation) {
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+      );
+    }
     let inputData: InputData;
     if (source === undefined || source instanceof Class) {
       inputData = new ObjectInputData(

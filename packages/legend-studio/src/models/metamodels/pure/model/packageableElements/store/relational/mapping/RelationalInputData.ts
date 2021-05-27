@@ -25,10 +25,6 @@ import { InputData } from '../../../../../model/packageableElements/mapping/Inpu
 import type { ValidationIssue } from '../../../../../action/validator/ValidationResult';
 import { createValidationError } from '../../../../../action/validator/ValidationResult';
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
-import {
-  PACKAGEABLE_ELEMENT_POINTER_TYPE,
-  getElementPointerHashCode,
-} from '../../../../../model/packageableElements/PackageableElement';
 import type { Database } from '../model/Database';
 
 export enum RelationalInputType {
@@ -89,11 +85,8 @@ export class RelationalInputData extends InputData implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
-      getElementPointerHashCode(
-        PACKAGEABLE_ELEMENT_POINTER_TYPE.STORE,
-        this.database.valueForSerialization,
-      ),
+      CORE_HASH_STRUCTURE.RELATIONAL_INPUT_DATA,
+      this.database.valueForSerialization,
       this.data,
       this.inputType,
     ]);

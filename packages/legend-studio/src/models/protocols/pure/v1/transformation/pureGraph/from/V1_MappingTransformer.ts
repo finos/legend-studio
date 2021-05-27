@@ -248,7 +248,7 @@ const transformRelationalInputData = (
 ): V1_RelationalInputData => {
   const inputData = new V1_RelationalInputData();
   inputData.data = element.data;
-  inputData.inputType = element.data;
+  inputData.inputType = element.inputType;
   inputData.database = V1_transformElementReference(element.database);
   return inputData;
 };

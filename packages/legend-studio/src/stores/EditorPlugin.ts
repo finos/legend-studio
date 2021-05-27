@@ -20,6 +20,7 @@ import type { PackageableElement } from '../models/metamodels/pure/model/package
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
+import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
@@ -63,6 +64,11 @@ export type MappingExecutionQueryEditorRendererConfiguration = {
   ) => React.ReactNode | undefined;
 };
 
+export type MappingTestQueryEditorRendererConfiguration = {
+  key: string;
+  renderer: (executionState: MappingTestState) => React.ReactNode | undefined;
+};
+
 /**
  * NOTE: this is temporary since we want to eventually move Service out to its own DSL
  * preset/plugin so this would go away
@@ -88,6 +94,8 @@ export abstract class EditorPlugin extends AbstractPlugin {
   getExtraLambdaEditorHotkeyConfigurations?(): LambdaEditorHotkeyConfiguration[];
 
   getExtraMappingExecutionQueryEditorRendererConfigurations?(): MappingExecutionQueryEditorRendererConfiguration[];
+
+  getExtraMappingTestQueryEditorRendererConfigurations?(): MappingTestQueryEditorRendererConfiguration[];
 
   /**
    * NOTE: this is temporary since we want to eventually move Service out to its own DSL

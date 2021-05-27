@@ -625,9 +625,9 @@ const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
 });
 
 const V1_relationalInputData = createModelSchema(V1_RelationalInputData, {
-  _type: usingConstantValueSchema(V1_InputDataType.FLAT_DATA),
+  _type: usingConstantValueSchema(V1_InputDataType.RELATIONAL),
   data: primitive(),
-  database: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
+  database: primitive(),
   inputType: primitive(),
 });
 

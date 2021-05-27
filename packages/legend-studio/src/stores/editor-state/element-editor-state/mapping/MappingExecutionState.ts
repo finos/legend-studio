@@ -104,7 +104,6 @@ export class MappingExecutionQueryState extends LambdaEditorState {
       isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
-      setQuery: action,
       convertLambdaObjectToGrammarString: action,
       convertLambdaGrammarStringToObject: action,
       updateLamba: action,
@@ -118,15 +117,11 @@ export class MappingExecutionQueryState extends LambdaEditorState {
     this.isInitializingLambda = val;
   }
 
-  setQuery(val: RawLambda): void {
-    this.query = val;
-  }
-
   updateLamba = flow(function* (
     this: MappingExecutionQueryState,
     val: RawLambda,
   ) {
-    this.setQuery(val);
+    this.query = val;
     yield this.convertLambdaObjectToGrammarString(true);
   });
 
@@ -165,6 +160,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
     }
   });
 
+  // NOTE: since we don't allow edition in text mode, we don't need to implement this
   convertLambdaGrammarStringToObject(): Promise<void> {
     throw new Error('Method not implemented.');
   }

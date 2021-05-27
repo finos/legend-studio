@@ -30,10 +30,7 @@ import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-studio-components';
 import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useDrop } from 'react-dnd';
-import type {
-  MappingElementDragSource,
-  MappingExecutionTargetDropTarget,
-} from '../../../stores/shared/DnDUtil';
+import type { MappingElementDragSource } from '../../../stores/shared/DnDUtil';
 import { NewServiceModal } from '../../editor/edit-panel/service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
@@ -70,7 +67,7 @@ interface ClassMappingSelectOption {
   value: SetImplementation;
 }
 
-const ClassMappingSelectorModal = observer(
+export const ClassMappingSelectorModal = observer(
   (props: {
     mappingEditorState: MappingEditorState;
     hideClassMappingSelectorModal: () => void;
@@ -243,7 +240,7 @@ const MappingExecutionQueryEditor = observer(
 
     // Drag and Drop
     const handleDrop = useCallback(
-      (item: MappingExecutionTargetDropTarget): void => {
+      (item: MappingElementDragSource): void => {
         changeClassMapping(guaranteeType(item.data, SetImplementation));
       },
       [changeClassMapping],
@@ -261,7 +258,7 @@ const MappingExecutionQueryEditor = observer(
     );
 
     const clearQuery = (): Promise<void> =>
-      mappingEditorState.executionState.queryState
+      executionState.queryState
         .updateLamba(RawLambda.createStub())
         .catch(applicationStore.alertIllegalUnhandledError);
 
@@ -394,6 +391,8 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
     const updateInput = (val: string): void =>
       inputDataState.inputData.setData(val);
 
+    // TODO: handle CSV input type
+
     return (
       <div className="panel__content mapping-execution-panel__input-data-panel__content">
         <TextInputEditor
@@ -419,7 +418,7 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
 
     // Drag and Drop
     const handleDrop = useCallback(
-      (item: MappingExecutionTargetDropTarget): void => {
+      (item: MappingElementDragSource): void => {
         changeClassMapping(guaranteeType(item.data, SetImplementation));
       },
       [changeClassMapping],
