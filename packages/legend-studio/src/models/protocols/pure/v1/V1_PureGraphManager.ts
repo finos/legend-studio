@@ -1794,9 +1794,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graphData = this.getFullGraphModelData(graph);
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
-    const extraExecutionElements = this.pureProtocolProcessorPlugins.flatMap(
-      (e) => e.V1_getExtraExecutionInputElements?.() ?? [],
-    );
+    const extraExecutionElements = this.pureProtocolProcessorPlugins
+      .flatMap((e) => e.V1_getExtraExecutionInputSelectors?.() ?? [])
+      .flatMap((selector) => selector(graph, mapping, runtime, graphData));
     prunedGraphData.elements = graphData.elements
       .filter(
         (element) =>
