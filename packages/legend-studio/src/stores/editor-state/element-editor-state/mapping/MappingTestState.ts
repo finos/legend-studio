@@ -71,7 +71,6 @@ import type {
   Mapping,
 } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
 import {
@@ -82,7 +81,6 @@ import {
   DatabaseType,
   RelationalDatabaseConnection,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
 import { LocalH2DatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
@@ -231,7 +229,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
         this.editorStore.graphState.graph.modelStore,
       ),
       PackageableElementExplicitReference.create(
-        this.inputData.sourceClass.value ?? Class.createStub(),
+        this.inputData.sourceClass.value,
       ),
       createUrlStringFromData(
         this.inputData.data,
@@ -261,7 +259,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
     );
     const connection = new FlatDataConnection(
       PackageableElementExplicitReference.create(
-        this.inputData.sourceFlatData.value ?? FlatData.createStub(),
+        this.inputData.sourceFlatData.value,
       ),
       createUrlStringFromData(
         this.inputData.data,
@@ -293,9 +291,7 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new RelationalDatabaseConnection(
-      PackageableElementExplicitReference.create(
-        this.inputData.database.value ?? Database.createStub(),
-      ),
+      PackageableElementExplicitReference.create(this.inputData.database.value),
       DatabaseType.H2,
       datasourceSpecification,
       new DefaultH2AuthenticationStrategy(),
@@ -402,7 +398,9 @@ export class MappingTestState {
       this.test,
       this.test.query,
     );
-    queryState.updateLamba(this.test.query);
+    queryState
+      .updateLamba(this.test.query)
+      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
     return queryState;
   }
 
