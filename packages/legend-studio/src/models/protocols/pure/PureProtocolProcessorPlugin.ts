@@ -20,6 +20,9 @@ import type { PackageableElement } from '../../metamodels/pure/model/packageable
 import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement';
 import type { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData';
+import type { PureModel } from '../../metamodels/pure/graph/PureModel';
+import type { Mapping } from '../../metamodels/pure/model/packageableElements/mapping/Mapping';
+import type { Runtime } from '../../metamodels/pure/model/packageableElements/runtime/Runtime';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -36,6 +39,13 @@ export type V1_ElementProtocolDeserializer = (
 export type V1_ElementTransformer = (
   metamodel: PackageableElement,
 ) => V1_PackageableElement | undefined;
+
+export type V1_ExecutionInputGetter = (
+  graph: PureModel,
+  mapping: Mapping,
+  runtime: Runtime,
+  protocolGraph: V1_PureModelContextData,
+) => V1_PackageableElement[];
 
 export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureProtocolProcessorPlugin';
@@ -60,5 +70,5 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * sending the server additional elements not needed for execution. This would provide a mechanism
    * to add more elements in this reduced graph.
    */
-  V1_getExtraExecutionInputElements?(): V1_PackageableElement[];
+  V1_getExtraExecutionInputGetters?(): V1_ExecutionInputGetter[];
 }
