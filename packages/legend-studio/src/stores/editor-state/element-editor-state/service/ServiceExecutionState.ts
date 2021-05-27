@@ -29,7 +29,6 @@ import {
   LAMBDA_START,
 } from '../../../../models/MetaModelConst';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
-import { buildRawGraphFetchTreeData } from '../../../shared/RawGraphFetchTreeUtil';
 import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
@@ -54,7 +53,6 @@ import {
 } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
-import { RawRootGraphFetchTree } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawGraphFetchTree';
 import { TAB_SIZE } from '../../../EditorConfig';
 
 export enum SERVICE_EXECUTION_TAB {
@@ -415,16 +413,6 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         );
       if (graphFetchTreeContent instanceof Class) {
         return [graphFetchTreeContent, mapping];
-      } else if (graphFetchTreeContent instanceof RawRootGraphFetchTree) {
-        const graphFetchTreeData = buildRawGraphFetchTreeData(
-          this.editorStore,
-          graphFetchTreeContent,
-          mapping,
-        );
-        return [
-          graphFetchTreeData.root.graphFetchTreeNode.class.value,
-          mapping,
-        ];
       }
       return [undefined, selectedExecution.mapping.value];
     }
