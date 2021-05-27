@@ -118,6 +118,7 @@ export const V1_processDatasourceSpecification = (
       protocol.region,
       protocol.warehouseName,
       protocol.databaseName,
+      protocol.quotedIdentifiersIgnoreCase,
     );
     return snowflakeSpec;
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {

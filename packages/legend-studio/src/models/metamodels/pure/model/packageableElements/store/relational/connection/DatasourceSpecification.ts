@@ -166,6 +166,7 @@ export class SnowflakeDatasourceSpecification
   region: string;
   warehouseName: string;
   databaseName: string;
+  quotedIdentifiersIgnoreCase?: string;
 
   constructor(
     accountName: string,
@@ -212,6 +213,7 @@ export class SnowflakeDatasourceSpecification
       this.region,
       this.warehouseName,
       this.databaseName,
+      this.quotedIdentifiersIgnoreCase ?? '',
     ]);
   }
 }
