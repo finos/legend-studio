@@ -54,7 +54,7 @@ import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpec
 import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import {
   ObjectInputData,
-  OBJECT_INPUT_TYPE,
+  ObjectInputType,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import {
@@ -174,7 +174,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
       PackageableElementExplicitReference.create(
         this.sourceClass ?? Class.createStub(),
       ),
-      OBJECT_INPUT_TYPE.JSON,
+      ObjectInputType.JSON,
       this.data,
     );
   }

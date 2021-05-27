@@ -95,6 +95,7 @@ import { V1_AggregationAwarePropertyMapping } from '../../../model/packageableEl
 import type { V1_AbstractFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_AbstractFlatDataPropertyMapping';
 import { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
 import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
+import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -601,11 +602,19 @@ function V1_deserializeClassMapping(
 enum V1_InputDataType {
   OBJECT = 'object',
   FLAT_DATA = 'flatData',
+  RELATIONAL = 'relational',
 }
 
 enum V1_MappingTestAssertType {
   EXPECTED_OUTPUT_MAPPING_TEST_ASSERT = 'expectedOutputMappingTestAssert',
 }
+
+const V1_objectInputData = createModelSchema(V1_ObjectInputData, {
+  _type: usingConstantValueSchema(V1_InputDataType.OBJECT),
+  data: primitive(),
+  inputType: primitive(),
+  sourceClass: primitive(),
+});
 
 const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
   _type: usingConstantValueSchema(V1_InputDataType.FLAT_DATA),
@@ -615,11 +624,11 @@ const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
   ),
 });
 
-const V1_objectInputData = createModelSchema(V1_ObjectInputData, {
-  _type: usingConstantValueSchema(V1_InputDataType.OBJECT),
+const V1_relationalInputData = createModelSchema(V1_RelationalInputData, {
+  _type: usingConstantValueSchema(V1_InputDataType.FLAT_DATA),
   data: primitive(),
+  database: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
   inputType: primitive(),
-  sourceClass: primitive(),
 });
 
 const V1_expectedOutputMappingTestAssertModelSchema = createModelSchema(
@@ -639,6 +648,8 @@ const V1_serializeInputData = (
     return serialize(V1_objectInputData, protocol);
   } else if (protocol instanceof V1_FlatDataInputData) {
     return serialize(V1_flatDataInputData, protocol);
+  } else if (protocol instanceof V1_RelationalInputData) {
+    return serialize(V1_relationalInputData, protocol);
   }
   return SKIP;
 };
@@ -651,6 +662,8 @@ const V1_deserializeInputData = (
       return deserialize(V1_objectInputData, json);
     case V1_InputDataType.FLAT_DATA:
       return deserialize(V1_flatDataInputData, json);
+    case V1_InputDataType.RELATIONAL:
+      return deserialize(V1_relationalInputData, json);
     default:
       return SKIP;
   }

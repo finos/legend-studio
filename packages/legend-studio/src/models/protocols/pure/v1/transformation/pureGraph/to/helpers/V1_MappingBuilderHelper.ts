@@ -21,6 +21,7 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
+  getClass,
 } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
 import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtility';
@@ -61,6 +62,11 @@ import { V1_FlatDataInputData } from '../../../../model/packageableElements/stor
 import type { V1_ClassMapping } from '../../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude';
 import { V1_rawLambdaBuilderWithResolver } from './V1_RawLambdaResolver';
+import { V1_RelationalInputData } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
+import {
+  getRelationalInputType,
+  RelationalInputData,
+} from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -229,8 +235,28 @@ export const V1_processMappingTestInputData = (
       context.resolveFlatDataStore(inputData.sourceFlatData.path),
       inputData.data,
     );
+  } else if (inputData instanceof V1_RelationalInputData) {
+    assertNonNullable(
+      inputData.database,
+      'Mapping test relational input data database is missing',
+    );
+    assertNonNullable(
+      inputData.inputType,
+      'Mapping test relational input data input type is missing',
+    );
+    assertNonNullable(
+      inputData.data,
+      'Mapping test relational input data data is missing',
+    );
+    return new RelationalInputData(
+      context.resolveDatabase(inputData.database),
+      inputData.data,
+      getRelationalInputType(inputData.inputType),
+    );
   }
-  throw new UnsupportedOperationError();
+  throw new UnsupportedOperationError(
+    `Can't build mapping test input data of type '${getClass(inputData).name}'`,
+  );
 };
 
 export const V1_processMappingTest = (

@@ -35,7 +35,7 @@ import type { InputData } from '../../../../../../metamodels/pure/model/packagea
 import type { MappingTestAssert } from '../../../../../../metamodels/pure/model/packageableElements/mapping/MappingTestAssert';
 import {
   ObjectInputData,
-  OBJECT_INPUT_TYPE,
+  ObjectInputType,
 } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import { FlatDataInputData } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
 import { ExpectedOutputMappingTestAssert } from '../../../../../../metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
@@ -133,6 +133,8 @@ import { V1_FilterMapping } from '../../../model/packageableElements/store/relat
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
 import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer';
 import type { V1_RawRelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
+import { RelationalInputData } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
+import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -208,9 +210,9 @@ const transformEnumerationMapping = (
 
 export const V1_getObjectInputType = (type: string): V1_ObjectInputType => {
   switch (type) {
-    case OBJECT_INPUT_TYPE.JSON:
+    case ObjectInputType.JSON:
       return V1_ObjectInputType.JSON;
-    case OBJECT_INPUT_TYPE.XML:
+    case ObjectInputType.XML:
       return V1_ObjectInputType.XML;
     default:
       throw new UnsupportedOperationError(
@@ -241,6 +243,16 @@ const transformFlatDataInputData = (
   return inputData;
 };
 
+const transformRelationalInputData = (
+  element: RelationalInputData,
+): V1_RelationalInputData => {
+  const inputData = new V1_RelationalInputData();
+  inputData.data = element.data;
+  inputData.inputType = element.data;
+  inputData.database = V1_transformElementReference(element.database);
+  return inputData;
+};
+
 const transformExpectedOutputMappingTestAssert = (
   element: ExpectedOutputMappingTestAssert,
 ): V1_ExpectedOutputMappingTestAssert => {
@@ -254,6 +266,8 @@ const transformMappingTestInputData = (inputData: InputData): V1_InputData => {
     return transformObjectInputData(inputData);
   } else if (inputData instanceof FlatDataInputData) {
     return transformFlatDataInputData(inputData);
+  } else if (inputData instanceof RelationalInputData) {
+    return transformRelationalInputData(inputData);
   }
   throw new UnsupportedOperationError(
     `Can't serialize mapping test input data of type '${
