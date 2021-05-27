@@ -1,5 +1,16 @@
 # @finos/legend-studio-plugin-query-builder
 
+## 0.0.10
+
+### Patch Changes
+
+- [#214](https://github.com/finos/legend-studio/pull/214) [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221) Thanks [@akphi](https://github.com/akphi)! - Remove `TEMPORARY__enableGraphFetch` flag and allow editing mapping execution query in query builder.
+
+- Updated dependencies [[`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221), [`16696ae`](https://github.com/finos/legend-studio/commit/16696ae2513806e8128cff6a4d50c364601f0275), [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221), [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221)]:
+  - @finos/legend-studio@0.1.9
+  - @finos/legend-studio-components@0.0.15
+  - @finos/legend-studio-shared@0.0.12
+
 ## 0.0.9
 
 ### Patch Changes
