@@ -308,46 +308,40 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
 
 abstract class MappingTestAssertionState {
   uuid = uuid();
-  abstract get assert(): MappingTestAssert;
+  assert: MappingTestAssert;
+
+  constructor(assert: MappingTestAssert) {
+    this.assert = assert;
+  }
 }
 
 export class MappingTestExpectedOutputAssertionState extends MappingTestAssertionState {
-  expectedResult = '{}';
-  expectedTestExecutionResult?: string;
+  declare assert: ExpectedOutputMappingTestAssert;
+  /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+  expectedResult: string;
 
-  constructor() {
-    super();
+  constructor(assert: ExpectedOutputMappingTestAssert) {
+    super(assert);
 
     makeObservable(this, {
       expectedResult: observable,
-      expectedTestExecutionResult: observable,
-      updateExpectedTestExecutionResult: action,
       setExpectedResult: action,
     });
+
+    this.expectedResult = fromGrammarString(
+      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+      tryToFormatLosslessJSONString(assert.expectedOutput),
+    );
   }
 
-  updateExpectedTestExecutionResult(): void {
-    this.expectedTestExecutionResult = this.expectedResult;
-  }
   setExpectedResult(val: string): void {
     this.expectedResult = val;
-  }
-
-  get assert(): MappingTestAssert {
-    return new ExpectedOutputMappingTestAssert(
-      toGrammarString(this.expectedResult),
+    this.assert.setExpectedOutput(
+      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+      toGrammarString(tryToMinifyLosslessJSONString(this.expectedResult)),
     );
   }
 }
-
-// NOTE: right now we only support one input data per test
-const getTestInputData = (mappingTest: MappingTest): InputData => {
-  assertTrue(
-    mappingTest.inputData.length > 0,
-    'Mapping test input data must contain at least one item',
-  );
-  return mappingTest.inputData[0];
-};
 
 export class MappingTestState {
   uuid = uuid();
@@ -405,7 +399,12 @@ export class MappingTestState {
   }
 
   buildInputDataState(): MappingTestInputDataState {
-    const inputData = getTestInputData(this.test);
+    // NOTE: right now we only support one input data per test
+    assertTrue(
+      this.test.inputData.length > 0,
+      'Mapping test input data must contain at least one item',
+    );
+    const inputData = this.test.inputData[0];
     if (inputData instanceof ObjectInputData) {
       return new MappingTestObjectInputDataState(
         this.editorStore,
@@ -435,16 +434,13 @@ export class MappingTestState {
   buildAssertionState(): MappingTestAssertionState {
     const testAssertion = this.test.assert;
     if (testAssertion instanceof ExpectedOutputMappingTestAssert) {
-      const assertionState = new MappingTestExpectedOutputAssertionState();
-      assertionState.setExpectedResult(
-        fromGrammarString(
-          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-          tryToFormatLosslessJSONString(testAssertion.expectedOutput),
-        ),
-      );
-      return assertionState;
+      return new MappingTestExpectedOutputAssertionState(testAssertion);
     }
-    throw new UnsupportedOperationError();
+    throw new UnsupportedOperationError(
+      `Can't build state of mapping assertion of type '${
+        getClass(testAssertion).name
+      }'`,
+    );
   }
 
   resetTestRunStatus(): void {
@@ -628,8 +624,7 @@ export class MappingTestState {
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
-        this.assertionState.updateExpectedTestExecutionResult();
-        // NOTE: maybe it's not that nice to
+        // TODO: this logic should probably be better handled in by engine mapping test runner
         assertionMatched =
           hashObject(result.values) ===
           hashObject(losslessParse(this.assertionState.expectedResult));
