@@ -159,6 +159,7 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.SNOWFLAKE),
     accountName: primitive(),
     databaseName: primitive(),
+    quotedIdentifiersIgnoreCase: primitive(),
     region: primitive(),
     warehouseName: primitive(),
   },

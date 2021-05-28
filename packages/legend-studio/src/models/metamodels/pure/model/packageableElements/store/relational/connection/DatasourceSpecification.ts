@@ -166,6 +166,7 @@ export class SnowflakeDatasourceSpecification
   region: string;
   warehouseName: string;
   databaseName: string;
+  quotedIdentifiersIgnoreCase?: boolean;
 
   constructor(
     accountName: string,
@@ -180,6 +181,7 @@ export class SnowflakeDatasourceSpecification
       region: observable,
       warehouseName: observable,
       databaseName: observable,
+      quotedIdentifiersIgnoreCase: observable,
       hashCode: computed,
       setAccountName: action,
       setRegion: action,
@@ -212,6 +214,7 @@ export class SnowflakeDatasourceSpecification
       this.region,
       this.warehouseName,
       this.databaseName,
+      this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }
 }

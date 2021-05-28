@@ -119,6 +119,8 @@ export const V1_processDatasourceSpecification = (
       protocol.warehouseName,
       protocol.databaseName,
     );
+    snowflakeSpec.quotedIdentifiersIgnoreCase =
+      protocol.quotedIdentifiersIgnoreCase;
     return snowflakeSpec;
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
     const metamodel = new LocalH2DatasourceSpecification();
