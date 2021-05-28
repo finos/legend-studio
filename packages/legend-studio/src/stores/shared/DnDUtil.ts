@@ -101,6 +101,5 @@ export type OperationSetImplementationDropTarget = MappingElementDragSource;
 export type DiagramEditorDropTarget = ElementDragSource;
 export type MappingElementSourceDropTarget = ElementDragSource;
 export type MappingExplorerDropTarget = ElementDragSource;
-export type MappingExecutionTargetDropTarget = MappingElementDragSource;
 export type UMLEditorElementDropTarget = ElementDragSource;
 export type FileGenerationSourceDropTarget = ElementDragSource;

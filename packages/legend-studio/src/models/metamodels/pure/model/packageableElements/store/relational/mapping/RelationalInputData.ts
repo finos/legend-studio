@@ -15,44 +15,61 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-studio-shared';
+import {
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../../../model/packageableElements/mapping/InputData';
 import type { ValidationIssue } from '../../../../../action/validator/ValidationResult';
 import { createValidationError } from '../../../../../action/validator/ValidationResult';
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
-import {
-  PACKAGEABLE_ELEMENT_POINTER_TYPE,
-  getElementPointerHashCode,
-} from '../../../../../model/packageableElements/PackageableElement';
 import type { Database } from '../model/Database';
+
+export enum RelationalInputType {
+  SQL = 'SQL',
+  CSV = 'CSV',
+}
+
+export const getRelationalInputType = (type: string): RelationalInputType => {
+  switch (type) {
+    case RelationalInputType.SQL:
+      return RelationalInputType.SQL;
+    case RelationalInputType.CSV:
+      return RelationalInputType.CSV;
+    default:
+      throw new UnsupportedOperationError(
+        `Encountered unsupported relational input type '${type}'`,
+      );
+  }
+};
 
 export class RelationalInputData extends InputData implements Hashable {
   database: PackageableElementReference<Database>;
   data: string;
+  inputType: RelationalInputType;
 
   constructor(
-    sourceDatabase: PackageableElementReference<Database>,
+    database: PackageableElementReference<Database>,
     data: string,
+    inputType: RelationalInputType,
   ) {
     super();
 
     makeObservable(this, {
       data: observable,
-      setSourceDatabase: action,
+      inputType: observable,
       setData: action,
       validationResult: computed,
       hashCode: computed,
     });
 
-    this.database = sourceDatabase;
+    this.database = database;
     this.data = data;
+    this.inputType = inputType;
   }
 
-  setSourceDatabase(value: Database): void {
-    this.database.setValue(value);
-  }
   setData(value: string): void {
     this.data = value;
   }
@@ -68,12 +85,10 @@ export class RelationalInputData extends InputData implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
-      getElementPointerHashCode(
-        PACKAGEABLE_ELEMENT_POINTER_TYPE.STORE,
-        this.database.valueForSerialization,
-      ),
+      CORE_HASH_STRUCTURE.RELATIONAL_INPUT_DATA,
+      this.database.valueForSerialization,
       this.data,
+      this.inputType,
     ]);
   }
 }

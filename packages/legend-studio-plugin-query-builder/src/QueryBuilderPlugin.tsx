@@ -29,12 +29,15 @@ import type {
   ServicePureExecutionState,
   MappingExecutionQueryEditorRendererConfiguration,
   MappingExecutionState,
+  MappingTestQueryEditorRendererConfiguration,
+  MappingTestState,
 } from '@finos/legend-studio';
 import { Class, EditorPlugin } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-studio-components';
 import { QueryBuilderDialog } from './components/QueryBuilderDialog';
 import { ServiceQueryBuilder } from './components/ServiceQueryBuilder';
 import { MappingExecutionQueryBuilder } from './components/MappingExecutionQueryBuilder';
+import { MappingTestQueryBuilder } from './components/MappingTestQueryBuilder';
 import { QueryBuilderState } from './stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import type { IKeyboardEvent } from 'monaco-editor';
@@ -140,6 +143,19 @@ export class QueryBuilderPlugin extends EditorPlugin {
           return (
             <MappingExecutionQueryBuilder executionState={executionState} />
           );
+        },
+      },
+    ];
+  }
+
+  getExtraMappingTestQueryEditorRendererConfigurations(): MappingTestQueryEditorRendererConfiguration[] {
+    return [
+      {
+        key: 'build-query-context-menu-action',
+        renderer: function MappingTestQueryBuilderRenderer(
+          testState: MappingTestState,
+        ): React.ReactNode | undefined {
+          return <MappingTestQueryBuilder testState={testState} />;
         },
       },
     ];

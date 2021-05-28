@@ -67,7 +67,7 @@ import { MappingTest } from '../../../../models/metamodels/pure/model/packageabl
 import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import {
   ObjectInputData,
-  OBJECT_INPUT_TYPE,
+  ObjectInputType,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
@@ -90,6 +90,11 @@ import { View } from '../../../../models/metamodels/pure/model/packageableElemen
 import { TableAlias } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
 import { TableExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/TableReference';
 import { ViewExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/ViewReference';
+import {
+  RelationalInputData,
+  RelationalInputType,
+} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
+import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 
 export interface MappingElementTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -934,29 +939,25 @@ export class MappingEditorState extends ElementEditorState {
 
   createNewTest = flow(function* (
     this: MappingEditorState,
-    targetClass: Class,
+    setImplementation: SetImplementation,
   ) {
-    // TODO? should we auto-select everything?
     const query =
       this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
-        targetClass,
+        setImplementation.class.value,
       );
-    // smartly choose the first source in the list of possible sources by default
-    const possibleSources = this.mapping
-      .getAllMappingElements()
-      .filter(
-        (mappingElement) =>
-          getMappingElementTarget(mappingElement) === targetClass,
-      )
-      .map((mappingElement) => getMappingElementSource(mappingElement));
-    const source = possibleSources.length ? possibleSources[0] : undefined;
+    const source = getMappingElementSource(setImplementation);
+    if (setImplementation instanceof OperationSetImplementation) {
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+      );
+    }
     let inputData: InputData;
     if (source === undefined || source instanceof Class) {
       inputData = new ObjectInputData(
         PackageableElementExplicitReference.create(
           source ?? Class.createStub(),
         ),
-        OBJECT_INPUT_TYPE.JSON,
+        ObjectInputType.JSON,
         source
           ? createMockDataForMappingElementSource(source, this.editorStore)
           : '{}',
@@ -966,8 +967,18 @@ export class MappingEditorState extends ElementEditorState {
         PackageableElementExplicitReference.create(source.owner.owner),
         createMockDataForMappingElementSource(source, this.editorStore),
       );
+    } else if (source instanceof Table || source instanceof View) {
+      inputData = new RelationalInputData(
+        PackageableElementExplicitReference.create(source.schema.owner),
+        createMockDataForMappingElementSource(source, this.editorStore),
+        RelationalInputType.SQL,
+      );
     } else {
-      throw new UnsupportedOperationError();
+      throw new UnsupportedOperationError(
+        `Can't create new mapping test input data with source of type '${
+          getClass(source).name
+        }'`,
+      );
     }
     const newTest = new MappingTest(
       this.mapping.generateTestName(),

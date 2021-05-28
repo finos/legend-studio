@@ -14,7 +14,22 @@
  * limitations under the License.
  */
 
-@forward 'query-builder';
-@forward 'mapping-execution-query-builder';
-@forward 'mapping-test-query-builder';
-@forward 'graph-fetch-tree';
+import { hashArray } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
+import { V1_InputData } from '../../../../../model/packageableElements/mapping/V1_InputData';
+
+export class V1_RelationalInputData extends V1_InputData implements Hashable {
+  database!: string;
+  data!: string;
+  inputType!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATIONAL_INPUT_DATA,
+      this.database,
+      this.data,
+      this.inputType,
+    ]);
+  }
+}

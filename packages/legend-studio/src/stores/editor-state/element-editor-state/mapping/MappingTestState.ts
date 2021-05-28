@@ -30,6 +30,8 @@ import {
   losslessStringify,
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
+  tryToMinifyJSONString,
+  getClass,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
@@ -40,21 +42,19 @@ import {
   makeObservable,
   makeAutoObservable,
 } from 'mobx';
-import type { RawGraphFetchTreeData } from '../../../shared/RawGraphFetchTreeUtil';
-import {
-  buildRawGraphFetchTreeData,
-  getRawGraphFetchTreeData,
-} from '../../../shared/RawGraphFetchTreeUtil';
 import { AUX_PANEL_MODE, TAB_SIZE } from '../../../EditorConfig';
-import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
+import {
+  CLIENT_VERSION,
+  LAMBDA_START,
+} from '../../../../models/MetaModelConst';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import type { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import {
   ObjectInputData,
-  OBJECT_INPUT_TYPE,
+  ObjectInputType,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import {
@@ -71,10 +71,21 @@ import type {
   Mapping,
 } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { createValidationError } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
+import {
+  RelationalInputData,
+  RelationalInputType,
+} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
+import {
+  DatabaseType,
+  RelationalDatabaseConnection,
+} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import { LocalH2DatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
+import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
+import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
+import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
+import { LambdaEditorState } from '../LambdaEditorState';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -83,53 +94,80 @@ export enum TEST_RESULT {
   PASSED = 'PASSED',
 }
 
-abstract class MappingTestQueryState {
+export class MappingTestQueryState extends LambdaEditorState {
   uuid = uuid();
   editorStore: EditorStore;
-  abstract get query(): RawLambda;
+  test: MappingTest;
+  isConvertingLambdaToString = false;
+  isInitializingLambda = false;
+  query: RawLambda;
 
-  constructor(editorStore: EditorStore) {
-    this.editorStore = editorStore;
-  }
-}
-
-export class MappingTestGraphFetchTreeQueryState extends MappingTestQueryState {
-  target?: Class;
-  graphFetchTree?: RawGraphFetchTreeData;
-
-  constructor(editorStore: EditorStore) {
-    super(editorStore);
+  constructor(editorStore: EditorStore, test: MappingTest, query: RawLambda) {
+    super('', LAMBDA_START);
 
     makeObservable(this, {
-      target: observable,
-      graphFetchTree: observable,
-      setTarget: action,
-      setGraphFetchTree: action,
+      query: observable,
+      isConvertingLambdaToString: observable,
+      isInitializingLambda: observable,
+      setIsInitializingLambda: action,
+      convertLambdaObjectToGrammarString: action,
+      convertLambdaGrammarStringToObject: action,
+      updateLamba: action,
     });
+
+    this.test = test;
+    this.editorStore = editorStore;
+    this.query = query;
   }
 
-  setTarget = (target: Class | undefined): void => {
-    this.target = target;
-  };
-  setGraphFetchTree = (
-    graphFetchTree: RawGraphFetchTreeData | undefined,
-  ): void => {
-    this.graphFetchTree = graphFetchTree;
-  };
+  setIsInitializingLambda(val: boolean): void {
+    this.isInitializingLambda = val;
+  }
 
-  get query(): RawLambda {
-    const rootGraphFetchTree = this.graphFetchTree?.root.graphFetchTreeNode;
-    if (!rootGraphFetchTree) {
-      return RawLambda.createStub();
-    }
-    return rootGraphFetchTree.isEmpty
-      ? this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
-          guaranteeNonNullable(this.target),
-        )
-      : this.editorStore.graphState.graphManager.HACKY_createGraphFetchLambda(
-          rootGraphFetchTree,
-          guaranteeNonNullable(this.target),
+  updateLamba = flow(function* (this: MappingTestQueryState, val: RawLambda) {
+    this.query = val;
+    this.test.setQuery(val);
+    yield this.convertLambdaObjectToGrammarString(true);
+  });
+
+  convertLambdaObjectToGrammarString = flow(function* (
+    this: MappingTestQueryState,
+    pretty?: boolean,
+  ) {
+    if (!this.query.isStub) {
+      this.isConvertingLambdaToString = true;
+      try {
+        const lambdas = new Map<string, RawLambda>();
+        lambdas.set(this.uuid, this.query);
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
+        const grammarText = isolatedLambdas.get(this.uuid);
+        this.setLambdaString(
+          grammarText !== undefined
+            ? this.extractLambdaString(grammarText)
+            : '',
         );
+        this.clearErrors();
+        this.isConvertingLambdaToString = false;
+      } catch (error: unknown) {
+        this.editorStore.applicationStore.logger.error(
+          CORE_LOG_EVENT.PARSING_PROBLEM,
+          error,
+        );
+        this.isConvertingLambdaToString = false;
+      }
+    } else {
+      this.clearErrors();
+      this.setLambdaString('');
+    }
+  });
+
+  // NOTE: since we don't allow edition in text mode, we don't need to implement this
+  convertLambdaGrammarStringToObject(): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }
 
@@ -137,46 +175,46 @@ abstract class MappingTestInputDataState {
   uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
+  inputData: InputData;
 
-  constructor(editorStore: EditorStore, mapping: Mapping) {
+  constructor(
+    editorStore: EditorStore,
+    mapping: Mapping,
+    inputData: InputData,
+  ) {
     this.editorStore = editorStore;
     this.mapping = mapping;
+    this.inputData = inputData;
   }
 
-  abstract get inputData(): InputData;
   abstract get runtime(): Runtime;
 }
 
 export class MappingTestObjectInputDataState extends MappingTestInputDataState {
-  sourceClass?: Class;
-  data = '{}';
+  declare inputData: ObjectInputData;
+  /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+  data: string;
 
-  constructor(editorStore: EditorStore, mapping: Mapping) {
-    super(editorStore, mapping);
+  constructor(
+    editorStore: EditorStore,
+    mapping: Mapping,
+    inputData: ObjectInputData,
+  ) {
+    super(editorStore, mapping, inputData);
 
     makeObservable(this, {
-      sourceClass: observable,
       data: observable,
-      setSourceClass: action,
       setData: action,
     });
+
+    /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+    this.data = tryToFormatLosslessJSONString(inputData.data);
   }
 
-  setSourceClass = (sourceClass: Class | undefined): void => {
-    this.sourceClass = sourceClass;
-  };
-  setData = (data: string): void => {
-    this.data = data;
-  };
-
-  get inputData(): InputData {
-    return new ObjectInputData(
-      PackageableElementExplicitReference.create(
-        this.sourceClass ?? Class.createStub(),
-      ),
-      OBJECT_INPUT_TYPE.JSON,
-      this.data,
-    );
+  setData(val: string): void {
+    this.data = val;
+    /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+    this.inputData.setData(tryToMinifyLosslessJSONString(val));
   }
 
   get runtime(): Runtime {
@@ -191,11 +229,10 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
         this.editorStore.graphState.graph.modelStore,
       ),
       PackageableElementExplicitReference.create(
-        this.sourceClass ?? Class.createStub(),
+        this.inputData.sourceClass.value,
       ),
       createUrlStringFromData(
-        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-        tryToMinifyLosslessJSONString(this.data),
+        this.inputData.data,
         JsonModelConnection.CONTENT_TYPE,
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
@@ -211,35 +248,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
 }
 
 export class MappingTestFlatDataInputDataState extends MappingTestInputDataState {
-  sourceFlatData?: FlatData;
-  data = '';
-
-  constructor(editorStore: EditorStore, mapping: Mapping) {
-    super(editorStore, mapping);
-
-    makeObservable(this, {
-      sourceFlatData: observable,
-      data: observable,
-      setSourceFlatData: action,
-      setData: action,
-    });
-  }
-
-  setSourceFlatData = (sourceFlatData: FlatData | undefined): void => {
-    this.sourceFlatData = sourceFlatData;
-  };
-  setData = (data: string): void => {
-    this.data = data;
-  };
-
-  get inputData(): InputData {
-    return new FlatDataInputData(
-      PackageableElementExplicitReference.create(
-        this.sourceFlatData ?? FlatData.createStub(),
-      ),
-      this.data,
-    );
-  }
+  declare inputData: FlatDataInputData;
 
   get runtime(): Runtime {
     const engineConfig =
@@ -250,13 +259,42 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
     );
     const connection = new FlatDataConnection(
       PackageableElementExplicitReference.create(
-        this.sourceFlatData ?? FlatData.createStub(),
+        this.inputData.sourceFlatData.value,
       ),
       createUrlStringFromData(
-        this.data,
+        this.inputData.data,
         FlatDataConnection.CONTENT_TYPE,
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
+    );
+    runtime.addIdentifiedConnection(
+      new IdentifiedConnection(
+        runtime.generateIdentifiedConnectionId(),
+        connection,
+      ),
+    );
+    return runtime;
+  }
+}
+
+export class MappingTestRelationalInputDataState extends MappingTestInputDataState {
+  declare inputData: RelationalInputData;
+
+  get runtime(): Runtime {
+    const datasourceSpecification = new LocalH2DatasourceSpecification();
+    datasourceSpecification.setTestDataSetupSqls(
+      // NOTE: this is a gross simplification of handling the input for relational input data
+      [this.inputData.data],
+    );
+    const runtime = new EngineRuntime();
+    runtime.addMapping(
+      PackageableElementExplicitReference.create(this.mapping),
+    );
+    const connection = new RelationalDatabaseConnection(
+      PackageableElementExplicitReference.create(this.inputData.database.value),
+      DatabaseType.H2,
+      datasourceSpecification,
+      new DefaultH2AuthenticationStrategy(),
     );
     runtime.addIdentifiedConnection(
       new IdentifiedConnection(
@@ -343,8 +381,6 @@ export class MappingTestState {
       setInputDataState: action,
       setAssertionState: action,
       setInputDataStateBasedOnSource: action,
-      updateTestQuery: action,
-      updateInputData: action,
       updateAssertion: action,
     });
 
@@ -357,71 +393,43 @@ export class MappingTestState {
   }
 
   buildQueryState(): MappingTestQueryState {
-    // NOTE: we use input data type here to guess the class mapping type, need to review this when this fact changes
-    const inputData = getTestInputData(this.test);
-    if (
-      inputData instanceof ObjectInputData ||
-      inputData instanceof FlatDataInputData
-    ) {
-      // for these kinds of input data, we only support graph fetch query at the moment
-      const graphFetchTreeContent =
-        this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
-          this.test.query,
-          this.editorStore.graphState.graph,
-          this.mappingEditorState.mapping,
-        );
-      const queryState = new MappingTestGraphFetchTreeQueryState(
-        this.editorStore,
-      );
-      if (!graphFetchTreeContent) {
-        queryState.setTarget(undefined);
-        queryState.setGraphFetchTree(undefined);
-      } else if (graphFetchTreeContent instanceof Class) {
-        queryState.setTarget(graphFetchTreeContent);
-        queryState.setGraphFetchTree(
-          getRawGraphFetchTreeData(
-            this.editorStore,
-            graphFetchTreeContent,
-            this.mappingEditorState.mapping,
-          ),
-        );
-      } else {
-        const graphFetchTreeData = buildRawGraphFetchTreeData(
-          this.editorStore,
-          graphFetchTreeContent,
-          this.mappingEditorState.mapping,
-        );
-        queryState.setTarget(
-          graphFetchTreeData.root.graphFetchTreeNode.class.value,
-        );
-        queryState.setGraphFetchTree(graphFetchTreeData);
-      }
-      return queryState;
-    }
-    throw new UnsupportedOperationError();
+    const queryState = new MappingTestQueryState(
+      this.editorStore,
+      this.test,
+      this.test.query,
+    );
+    queryState
+      .updateLamba(this.test.query)
+      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
+    return queryState;
   }
 
   buildInputDataState(): MappingTestInputDataState {
     const inputData = getTestInputData(this.test);
     if (inputData instanceof ObjectInputData) {
-      const inputDataState = new MappingTestObjectInputDataState(
+      return new MappingTestObjectInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
+        inputData,
       );
-      inputDataState.setSourceClass(inputData.sourceClass.value);
-      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-      inputDataState.setData(tryToFormatLosslessJSONString(inputData.data)); // TODO: account for XML when we support it
-      return inputDataState;
     } else if (inputData instanceof FlatDataInputData) {
-      const inputDataState = new MappingTestFlatDataInputDataState(
+      return new MappingTestFlatDataInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
+        inputData,
       );
-      inputDataState.setSourceFlatData(inputData.sourceFlatData.value);
-      inputDataState.setData(inputData.data);
-      return inputDataState;
+    } else if (inputData instanceof RelationalInputData) {
+      return new MappingTestRelationalInputDataState(
+        this.editorStore,
+        this.mappingEditorState.mapping,
+        inputData,
+      );
     }
-    throw new UnsupportedOperationError();
+    throw new UnsupportedOperationError(
+      `Can't build state for mapping test input data of type '${
+        getClass(inputData).name
+      }'`,
+    );
   }
 
   buildAssertionState(): MappingTestAssertionState {
@@ -469,11 +477,17 @@ export class MappingTestState {
       const newInputDataState = new MappingTestObjectInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
+        new ObjectInputData(
+          PackageableElementExplicitReference.create(
+            source ?? Class.createStub(),
+          ),
+          ObjectInputType.JSON,
+          tryToMinifyJSONString('{}'),
+        ),
       );
       if (populateWithMockData) {
-        newInputDataState.setSourceClass(source);
         if (source) {
-          newInputDataState.setData(
+          newInputDataState.inputData.setData(
             createMockDataForMappingElementSource(source, this.editorStore),
           );
         }
@@ -483,16 +497,43 @@ export class MappingTestState {
       const newInputDataState = new MappingTestFlatDataInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
+        new FlatDataInputData(
+          PackageableElementExplicitReference.create(
+            guaranteeNonNullable(source.owner.owner),
+          ),
+          '',
+        ),
       );
       if (populateWithMockData) {
-        newInputDataState.setSourceFlatData(source.owner.owner);
-        newInputDataState.setData(
+        newInputDataState.inputData.setData(
+          createMockDataForMappingElementSource(source, this.editorStore),
+        );
+      }
+      this.setInputDataState(newInputDataState);
+    } else if (source instanceof Table || source instanceof View) {
+      const newInputDataState = new MappingTestRelationalInputDataState(
+        this.editorStore,
+        this.mappingEditorState.mapping,
+        new RelationalInputData(
+          PackageableElementExplicitReference.create(
+            guaranteeNonNullable(source.schema.owner),
+          ),
+          '',
+          RelationalInputType.SQL,
+        ),
+      );
+      if (populateWithMockData) {
+        newInputDataState.inputData.setData(
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
       this.setInputDataState(newInputDataState);
     } else {
-      throw new UnsupportedOperationError();
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't build input data for unsupported source of type '${
+          getClass(source).name
+        }'`,
+      );
     }
   }
 
@@ -500,15 +541,7 @@ export class MappingTestState {
    * Execute mapping using current info in the test detail panel then set the execution result value as test expected result
    */
   regenerateExpectedResult = flow(function* (this: MappingTestState) {
-    const validationResult =
-      this.test.validationResult ??
-      // NOTE: This is temporary, when lambda is properly processed, the type of execution query can be checked without using the graph manager in this manner
-      this.editorStore.graphState.graphManager.HACKY_isGetAllLambda(
-        this.test.query,
-      )
-        ? createValidationError(['Service execution function cannot be empty'])
-        : undefined;
-    if (validationResult || this.test.hasInvalidInputData) {
+    if (this.test.validationResult) {
       this.editorStore.applicationStore.notifyError(
         `Can't execute test '${this.test.name}'. Please make sure that the test query and input data are valid`,
       );
@@ -562,19 +595,7 @@ export class MappingTestState {
   });
 
   runTest = flow(function* (this: MappingTestState) {
-    const validationResult =
-      this.test.validationResult ??
-      // NOTE: This is temporary, when lambda is properly processed, the type of execution query can be checked without using the graph manager in this manner
-      this.editorStore.graphState.graphManager.HACKY_isGetAllLambda(
-        this.test.query,
-      )
-        ? createValidationError(['Service execution function cannot be empty'])
-        : undefined;
-    if (
-      validationResult ||
-      this.test.hasInvalidInputData ||
-      this.test.assert.validationResult
-    ) {
+    if (this.test.validationResult) {
       this.editorStore.applicationStore.notifyError(
         `Can't run test '${this.test.name}'. Please make sure that the test is valid`,
       );
@@ -655,12 +676,6 @@ export class MappingTestState {
     }
   });
 
-  updateTestQuery(): void {
-    this.test.setQuery(this.queryState.query);
-  }
-  updateInputData(): void {
-    this.test.setInputData([this.inputDataState.inputData]);
-  }
   updateAssertion(): void {
     this.test.setAssert(this.assertionState.assert);
   }

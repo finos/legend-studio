@@ -47,7 +47,7 @@ import { MappingTest } from '../../../../models/metamodels/pure/model/packageabl
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import {
   ObjectInputData,
-  OBJECT_INPUT_TYPE,
+  ObjectInputType,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
@@ -78,13 +78,16 @@ import { TAB_SIZE } from '../../../EditorConfig';
 import { LambdaEditorState } from '../LambdaEditorState';
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { RelationalInputData } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
 import {
   DatabaseType,
   RelationalDatabaseConnection,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { LocalH2DatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
+import {
+  RelationalInputData,
+  RelationalInputType,
+} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   uuid = uuid();
@@ -101,7 +104,6 @@ export class MappingExecutionQueryState extends LambdaEditorState {
       isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
-      setQuery: action,
       convertLambdaObjectToGrammarString: action,
       convertLambdaGrammarStringToObject: action,
       updateLamba: action,
@@ -115,15 +117,11 @@ export class MappingExecutionQueryState extends LambdaEditorState {
     this.isInitializingLambda = val;
   }
 
-  setQuery(val: RawLambda): void {
-    this.query = val;
-  }
-
   updateLamba = flow(function* (
     this: MappingExecutionQueryState,
     val: RawLambda,
   ) {
-    this.setQuery(val);
+    this.query = val;
     yield this.convertLambdaObjectToGrammarString(true);
   });
 
@@ -162,6 +160,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
     }
   });
 
+  // NOTE: since we don't allow edition in text mode, we don't need to implement this
   convertLambdaGrammarStringToObject(): Promise<void> {
     throw new Error('Method not implemented.');
   }
@@ -233,7 +232,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
         PackageableElementExplicitReference.create(
           guaranteeNonNullable(_class),
         ),
-        OBJECT_INPUT_TYPE.JSON,
+        ObjectInputType.JSON,
         tryToMinifyJSONString('{}'),
       ),
     );
@@ -355,6 +354,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
           guaranteeNonNullable(tableOrView.schema.owner),
         ),
         '',
+        RelationalInputType.SQL,
       ),
     );
 
@@ -392,6 +392,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
         guaranteeNonNullable(this.inputData.database.value),
       ),
       this.inputData.data,
+      this.inputData.inputType,
     );
   }
 }
