@@ -1,5 +1,18 @@
 # @finos/legend-studio
 
+## 0.1.10
+
+### Patch Changes
+
+- [#224](https://github.com/finos/legend-studio/pull/224) [`de511da`](https://github.com/finos/legend-studio/commit/de511daf935680ce1a61a2eb85d445c2d3c5dcba) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - Added quotedIdentifiersIgnoreCaseFlag in snowflakeDatasourceSpecification.
+
+* [#225](https://github.com/finos/legend-studio/pull/225) [`8159c1f`](https://github.com/finos/legend-studio/commit/8159c1f02eafcd52fbbb3add7358afc718cf03d2) Thanks [@akphi](https://github.com/akphi)! - Add support for relational mapping test.
+
+* Updated dependencies [[`8159c1f`](https://github.com/finos/legend-studio/commit/8159c1f02eafcd52fbbb3add7358afc718cf03d2)]:
+  - @finos/legend-studio-components@0.0.16
+  - @finos/legend-studio-network@0.0.15
+  - @finos/legend-studio-shared@0.0.13
+
 ## 0.1.9
 
 ### Patch Changes
