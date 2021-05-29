@@ -48,7 +48,7 @@ export type EditorExtensionStateCreator = (
 ) => EditorExtensionState | undefined;
 
 export type LambdaEditorHotkeyConfiguration = {
-  eventMatcher: (event: IKeyboardEvent) => boolean;
+  eventMatcher: (editorStore: EditorStore, event: IKeyboardEvent) => boolean;
   skipGlobalAction: boolean;
   action: (
     editorStore: EditorStore,

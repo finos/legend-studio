@@ -107,8 +107,12 @@ export class QueryBuilderPlugin extends EditorPlugin {
   getExtraLambdaEditorHotkeyConfigurations(): LambdaEditorHotkeyConfiguration[] {
     return [
       {
-        eventMatcher: (event: IKeyboardEvent): boolean =>
-          event.keyCode === KeyCode.F9,
+        eventMatcher: (
+          editorStore: EditorStore,
+          event: IKeyboardEvent,
+        ): boolean =>
+          editorStore.getEditorExtensionState(QueryBuilderState)
+            .openQueryBuilder && event.keyCode === KeyCode.F9,
         skipGlobalAction: true,
         action: (
           editorStore: EditorStore,
