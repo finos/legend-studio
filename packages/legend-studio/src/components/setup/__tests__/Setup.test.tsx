@@ -22,12 +22,16 @@ import {
   MOBX__enableSpyOrMock,
 } from '@finos/legend-studio-shared';
 import {
+  getApplicationNavigationHistory,
   getMockedApplicationStore,
-  renderWithAppContext,
   SDLC_TestData,
 } from '../../ComponentTestUtils';
 import type { ApplicationStore } from '../../../stores/ApplicationStore';
+import { ApplicationStoreProvider } from '../../../stores/ApplicationStore';
 import { getTestApplicationConfig } from '../../../stores/StoreTestUtils';
+import { Router } from 'react-router-dom';
+import { PluginManager } from '../../../application/PluginManager';
+import { render } from '@testing-library/react';
 
 let appStore: ApplicationStore;
 beforeEach(() => {
@@ -45,7 +49,20 @@ test(
       .mockResolvedValueOnce([SDLC_TestData.project])
       .mockResolvedValueOnce([]);
     MOBX__disableSpyOrMock();
-    const { queryByText } = renderWithAppContext(<Setup />);
+
+    const history = getApplicationNavigationHistory();
+    const { queryByText } = render(
+      <ApplicationStoreProvider
+        config={getTestApplicationConfig()}
+        history={history}
+        pluginManager={PluginManager.create()}
+      >
+        <Router history={history}>
+          <Setup />
+        </Router>
+      </ApplicationStoreProvider>,
+    );
+
     // NOTE: react-select is not like a normal input box where we could set the placeholder, so we just
     // cannot use `queryByPlaceholderText` but have to use `queryByText`
     await waitFor(() =>
@@ -63,7 +80,19 @@ test(
       .mockResolvedValue([]);
     MOBX__disableSpyOrMock();
 
-    const { queryByText } = renderWithAppContext(<Setup />);
+    const history = getApplicationNavigationHistory();
+    const { queryByText } = render(
+      <ApplicationStoreProvider
+        config={getTestApplicationConfig()}
+        history={history}
+        pluginManager={PluginManager.create()}
+      >
+        <Router history={history}>
+          <Setup />
+        </Router>
+      </ApplicationStoreProvider>,
+    );
+
     await waitFor(() =>
       expect(
         queryByText(

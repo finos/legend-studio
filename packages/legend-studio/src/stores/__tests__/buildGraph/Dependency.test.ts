@@ -153,8 +153,7 @@ const testDependencyElements = async (
   );
   const keys = projectVersionEntities.map((e) => e.projectId);
   const dependencyElementPaths = projectVersionEntities
-    .map((e) => e.entities)
-    .flat()
+    .flatMap((e) => e.entities)
     .map((e) => e.path);
   if (includeDependencyInFileGenerationScopeElements) {
     entities.push(

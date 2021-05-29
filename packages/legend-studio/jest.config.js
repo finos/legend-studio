@@ -24,7 +24,12 @@ export default {
   displayName: packageJson.name,
   name: packageJson.name,
   rootDir: '../..',
-  setupFiles: [...base.setupFiles, 'jest-canvas-mock'],
+  testEnvironment: 'jsdom',
+  setupFiles: [
+    ...base.setupFiles,
+    '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
+    'jest-canvas-mock',
+  ],
   moduleNameMapper: {
     ...base.moduleNameMapper,
     // Mock for testing `react-dnd`
