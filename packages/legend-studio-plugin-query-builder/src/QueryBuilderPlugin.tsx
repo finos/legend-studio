@@ -95,9 +95,7 @@ export class QueryBuilderPlugin extends EditorPlugin {
               }
             };
             return (
-              <MenuContentItem onClick={buildQuery}>
-                Build Query (WIP)...
-              </MenuContentItem>
+              <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
             );
           }
           return undefined;

@@ -419,6 +419,7 @@ const QueryBuilderExplorerTree = observer(
       if (node.childrenIds.length) {
         node.isOpen = !node.isOpen;
         if (
+          node.isOpen &&
           node instanceof QueryBuilderExplorerTreePropertyNodeData &&
           node.type instanceof Class
         ) {
