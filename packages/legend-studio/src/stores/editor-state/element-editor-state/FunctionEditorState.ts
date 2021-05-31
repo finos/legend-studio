@@ -180,9 +180,7 @@ export class FunctionEditorState extends ElementEditorState {
     let revealed = false;
     try {
       if (compilationError.sourceInformation) {
-        if (this.selectedTab !== FUNCTION_SPEC_TAB.GENERAL) {
-          this.selectedTab = FUNCTION_SPEC_TAB.GENERAL;
-        }
+        this.setSelectedTab(FUNCTION_SPEC_TAB.GENERAL);
         this.functionBodyEditorState.setCompilationError(compilationError);
         revealed = true;
       }
@@ -194,6 +192,10 @@ export class FunctionEditorState extends ElementEditorState {
       );
     }
     return revealed;
+  }
+
+  clearCompilationError(): void {
+    this.functionBodyEditorState.setCompilationError(undefined);
   }
 
   reprocess(

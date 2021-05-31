@@ -159,8 +159,15 @@ export class GraphState {
   setCompilationError(error: EngineError): void {
     this.compilationError = error;
   }
+
   clearCompilationError(): void {
     this.compilationError = undefined;
+    this.editorStore.openedEditorStates
+      .filter(
+        (editorState): editorState is ElementEditorState =>
+          editorState instanceof ElementEditorState,
+      )
+      .forEach((editorState) => editorState.clearCompilationError());
   }
 
   get isApplicationUpdateOperationIsRunning(): boolean {
@@ -551,6 +558,7 @@ export class GraphState {
           }
         }
       }
+
       // decide if we need to fall back to text mode for debugging
       if (fallbackToTextModeForDebugging) {
         // FIXME: when we support showing multiple notifications, we can split this into 2
@@ -615,7 +623,6 @@ export class GraphState {
         this.editorStore.grammarTextEditorState.graphGrammarText,
         this.graph,
       )) as Entity[];
-      this.clearCompilationError();
       this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       yield this.updateGraphAndApplication(entities);
     } catch (error: unknown) {

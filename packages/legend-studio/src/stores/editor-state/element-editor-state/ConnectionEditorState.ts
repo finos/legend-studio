@@ -26,7 +26,6 @@ import {
   getClass,
 } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PackageableConnection } from '../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
 import type { Connection } from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
@@ -499,10 +498,6 @@ export class PackageableConnectionEditorState extends ElementEditorState {
       PackageableConnection,
       `Element inside connection editor state must be a packageable connection`,
     );
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

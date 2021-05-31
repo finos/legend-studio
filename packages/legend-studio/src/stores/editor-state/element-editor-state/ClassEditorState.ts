@@ -90,6 +90,15 @@ export class ClassEditorState extends UMLEditorState {
     return false;
   }
 
+  clearCompilationError(): void {
+    this.classState.constraintStates.forEach((constraintState) =>
+      constraintState.setCompilationError(undefined),
+    );
+    this.classState.derivedPropertyStates.forEach((dpState) =>
+      dpState.setCompilationError(undefined),
+    );
+  }
+
   reprocess(newElement: Class, editorStore: EditorStore): ClassEditorState {
     const classEditorState = new ClassEditorState(editorStore, newElement);
     classEditorState.selectedTab = this.selectedTab;

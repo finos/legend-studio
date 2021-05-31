@@ -18,7 +18,10 @@ import { observable, action, computed, flow, makeObservable } from 'mobx';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import type { EditorStore } from '../../../EditorStore';
-import { MappingElementState } from './MappingElementState';
+import {
+  InstanceSetImplementationState,
+  MappingElementState,
+} from './MappingElementState';
 import { PureInstanceSetImplementationState } from './PureInstanceSetImplementationState';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState';
 import { MappingTestState, TEST_RESULT } from './MappingTestState';
@@ -882,6 +885,19 @@ export class MappingEditorState extends ElementEditorState {
       );
     }
     return revealed;
+  }
+
+  clearCompilationError(): void {
+    this.openedTabStates
+      .filter(
+        (tabState): tabState is InstanceSetImplementationState =>
+          tabState instanceof InstanceSetImplementationState,
+      )
+      .forEach((tabState) => {
+        tabState.propertyMappingStates.forEach((pmState) =>
+          pmState.setCompilationError(undefined),
+        );
+      });
   }
 
   reprocess(newElement: Mapping, editorStore: EditorStore): MappingEditorState {
