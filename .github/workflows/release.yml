@@ -54,9 +54,13 @@ jobs:
           username: finos
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Publish to Docker
-        # NOTE: we enforce this condition because publishing `legend-studio-app` should only be
-        # attempted if other packages are published, to ensure it uses the latest tagged versions
+        # NOTE: we enforce this condition because publishing `@finos/legend-studio-app` should only
+        # be attempted if other packages are published, to ensure it uses the latest tagged versions
         # for all of its dependencies instead of their snapshots.
+        #
+        # This change has some limtation in that, if somehow Docker publish step failed, there is
+        # no quick way to rerun this step, but to do a bump in a dependent modules (e.g.
+        # `@finos/legend-studio` in order to trigger a version bump in `@finos/legend-studio-app`
         if: steps.changesets.outputs.published == 'true'
         run: yarn workspace @finos/legend-studio-app publish:docker
       - name: Upload publish content
