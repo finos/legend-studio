@@ -78,7 +78,7 @@
     "eslint": "7.27.0",
     "fs-extra": "10.0.0",
     "husky": "6.0.0",
-    "jest": "27.0.1",
+    "jest": "27.0.3",
     "lint-staged": "11.0.0",
     "prettier": "2.3.0",
     "rimraf": "3.0.2",
