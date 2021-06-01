@@ -1,5 +1,13 @@
 # @finos/legend-studio-manual-tests
 
+## 0.0.10
+
+### Patch Changes
+
+- Updated dependencies [[`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8), [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8), [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8), [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8)]:
+  - @finos/legend-studio@0.1.11
+  - @finos/legend-studio-shared@0.0.14
+
 ## 0.0.9
 
 ### Patch Changes
