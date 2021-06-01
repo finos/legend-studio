@@ -43,7 +43,6 @@ export class PureExecution extends ServiceExecution implements Hashable {
       func: observable,
       queryValidationResult: computed,
       setFunction: action,
-      lambdaId: computed,
     });
 
     this.func = func;
@@ -65,11 +64,6 @@ export class PureExecution extends ServiceExecution implements Hashable {
 
   setFunction(value: RawLambda): void {
     this.func = value;
-  }
-
-  get lambdaId(): string {
-    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
-    return `${this.owner.path}-execution`;
   }
 
   get hashCode(): string {

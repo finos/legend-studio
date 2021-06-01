@@ -15,7 +15,10 @@
  */
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import { LAMBDA_START } from '../../../../models/MetaModelConst';
+import {
+  LAMBDA_START,
+  SOURCR_ID_LABEL,
+} from '../../../../models/MetaModelConst';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
   InstanceSetImplementationState,
@@ -24,6 +27,7 @@ import {
 import {
   UnsupportedOperationError,
   guaranteeType,
+  IllegalStateError,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorateVisitor } from './MappingElementDecorateVisitor';
@@ -55,6 +59,16 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     this.editorStore = editorStore;
   }
 
+  get lambdaId(): string {
+    return `${this.propertyMapping.owner.parent.path}-${
+      SOURCR_ID_LABEL.FLAT_DATA_CLASS_MAPPING
+    }-${this.propertyMapping.owner.id.value}-${
+      this.propertyMapping.property.value.name
+    }-${this.propertyMapping.owner.propertyMappings.indexOf(
+      this.propertyMapping,
+    )}`;
+  }
+
   convertLambdaGrammarStringToObject = flow(function* (
     this: FlatDataPropertyMappingState,
   ) {
@@ -64,7 +78,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         const lambda =
           (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
-            this.propertyMapping.lambdaId,
+            this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof FlatDataPropertyMapping) {
@@ -95,18 +109,13 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
       if (!this.propertyMapping.transform.isStub) {
         try {
           const lambdas = new Map<string, RawLambda>();
-          lambdas.set(
-            this.propertyMapping.lambdaId,
-            this.propertyMapping.transform,
-          );
+          lambdas.set(this.lambdaId, this.propertyMapping.transform);
           const isolatedLambdas =
             (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
               lambdas,
               pretty,
             )) as Map<string, string>;
-          const grammarText = isolatedLambdas.get(
-            this.propertyMapping.lambdaId,
-          );
+          const grammarText = isolatedLambdas.get(this.lambdaId);
           this.setLambdaString(
             grammarText !== undefined
               ? this.extractLambdaString(grammarText)
@@ -202,8 +211,8 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
         pm.propertyMapping instanceof FlatDataPropertyMapping &&
         !pm.propertyMapping.transform.isStub
       ) {
-        lambdas.set(pm.propertyMapping.lambdaId, pm.propertyMapping.transform);
-        propertyMappingStates.set(pm.propertyMapping.lambdaId, pm);
+        lambdas.set(pm.lambdaId, pm.propertyMapping.transform);
+        propertyMappingStates.set(pm.lambdaId, pm);
       }
       // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
     });
@@ -274,6 +283,12 @@ export class EmbeddedFlatDataInstanceSetImplementationState
     this.propertyMapping = setImplementation;
     this.propertyMappingStates = this.getPropertyMappingStates(
       setImplementation.propertyMappings,
+    );
+  }
+
+  get lambdaId(): string {
+    throw new IllegalStateError(
+      `Can't build lambda ID for embedded flat data instance set implementation state`,
     );
   }
 

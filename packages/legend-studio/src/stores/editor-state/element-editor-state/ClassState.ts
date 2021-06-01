@@ -15,7 +15,7 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import { LAMBDA_START } from '../../../models/MetaModelConst';
+import { LAMBDA_START, SOURCR_ID_LABEL } from '../../../models/MetaModelConst';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
@@ -43,6 +43,17 @@ export class DerivedPropertyState extends LambdaEditorState {
     this.editorStore = editorStore;
   }
 
+  get lambdaId(): string {
+    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
+    return `${this.derivedProperty.owner.path}-${
+      SOURCR_ID_LABEL.DERIVED_PROPERTY
+    }-${
+      this.derivedProperty.name
+    }[${this.derivedProperty.owner.derivedProperties.indexOf(
+      this.derivedProperty,
+    )}]`;
+  }
+
   setBodyAndParameters(lambda: RawLambda): void {
     this.derivedProperty.setBody(lambda.body);
     this.derivedProperty.setParameters(lambda.parameters);
@@ -57,7 +68,7 @@ export class DerivedPropertyState extends LambdaEditorState {
         const lambda =
           (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
-            this.derivedProperty.lambdaId,
+            this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.setBodyAndParameters(lambda ?? emptyLambda);
@@ -84,7 +95,7 @@ export class DerivedPropertyState extends LambdaEditorState {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(
-          this.derivedProperty.lambdaId,
+          this.lambdaId,
           new RawLambda(
             this.derivedProperty.parameters,
             this.derivedProperty.body,
@@ -95,7 +106,7 @@ export class DerivedPropertyState extends LambdaEditorState {
             lambdas,
             pretty,
           )) as Map<string, string>;
-        const grammarText = isolatedLambdas.get(this.derivedProperty.lambdaId);
+        const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)
@@ -131,6 +142,13 @@ export class ConstraintState extends LambdaEditorState {
     this.editorStore = editorStore;
   }
 
+  get lambdaId(): string {
+    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
+    return `${this.constraint.owner.path}-${SOURCR_ID_LABEL.CONSTRAINT}-${
+      this.constraint.name
+    }[${this.constraint.owner.constraints.indexOf(this.constraint)}]`;
+  }
+
   convertLambdaGrammarStringToObject = flow(function* (this: ConstraintState) {
     const emptyFunctionDefinition = RawLambda.createStub();
     if (this.lambdaString) {
@@ -138,7 +156,7 @@ export class ConstraintState extends LambdaEditorState {
         const lambda =
           (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
-            this.constraint.lambdaId,
+            this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.constraint.functionDefinition = lambda ?? emptyFunctionDefinition;
@@ -164,16 +182,13 @@ export class ConstraintState extends LambdaEditorState {
     if (!this.constraint.functionDefinition.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
-        lambdas.set(
-          this.constraint.lambdaId,
-          this.constraint.functionDefinition,
-        );
+        lambdas.set(this.lambdaId, this.constraint.functionDefinition);
         const isolatedLambdas =
           (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
-        const grammarText = isolatedLambdas.get(this.constraint.lambdaId);
+        const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)
@@ -299,13 +314,10 @@ export class ClassState {
     this.constraintStates.forEach((constraintState) => {
       if (!constraintState.constraint.functionDefinition.isStub) {
         lambdas.set(
-          constraintState.constraint.lambdaId,
+          constraintState.lambdaId,
           constraintState.constraint.functionDefinition,
         );
-        constraintStateMap.set(
-          constraintState.constraint.lambdaId,
-          constraintState,
-        );
+        constraintStateMap.set(constraintState.lambdaId, constraintState);
       }
     });
     if (lambdas.size) {
@@ -341,8 +353,8 @@ export class ClassState {
         state.derivedProperty.body,
       );
       if (!lambda.isStub) {
-        lambdas.set(state.derivedProperty.lambdaId, lambda);
-        derivedPropertyStateMap.set(state.derivedProperty.lambdaId, state);
+        lambdas.set(state.lambdaId, lambda);
+        derivedPropertyStateMap.set(state.lambdaId, state);
       }
     });
     if (lambdas.size) {

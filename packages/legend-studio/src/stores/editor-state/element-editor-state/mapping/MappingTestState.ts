@@ -120,6 +120,10 @@ export class MappingTestQueryState extends LambdaEditorState {
     this.query = query;
   }
 
+  get lambdaId(): string {
+    return this.uuid;
+  }
+
   setIsInitializingLambda(val: boolean): void {
     this.isInitializingLambda = val;
   }
@@ -138,13 +142,13 @@ export class MappingTestQueryState extends LambdaEditorState {
       this.isConvertingLambdaToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
-        lambdas.set(this.uuid, this.query);
+        lambdas.set(this.lambdaId, this.query);
         const isolatedLambdas =
           (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
-        const grammarText = isolatedLambdas.get(this.uuid);
+        const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)

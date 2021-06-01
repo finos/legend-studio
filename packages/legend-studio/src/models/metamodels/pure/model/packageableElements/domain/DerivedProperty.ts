@@ -23,10 +23,7 @@ import {
   changeEntry,
 } from '@finos/legend-studio-shared';
 import { hashLambda } from '../../../../../MetaModelUtility';
-import {
-  CORE_HASH_STRUCTURE,
-  SOURCR_ID_LABEL,
-} from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { Multiplicity } from './Multiplicity';
 import type { TaggedValue } from './TaggedValue';
@@ -76,7 +73,6 @@ export class DerivedProperty
       addStereotype: action,
       setBody: action,
       setParameters: action,
-      lambdaId: computed,
       isStub: computed,
       hashCode: computed,
     });
@@ -119,13 +115,6 @@ export class DerivedProperty
   }
   setParameters(value: object | undefined): void {
     this.parameters = value;
-  }
-
-  get lambdaId(): string {
-    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
-    return `${this.owner.path}-${SOURCR_ID_LABEL.DERIVED_PROPERTY}-${
-      this.name
-    }[${this.owner.derivedProperties.indexOf(this)}]`;
   }
 
   static createStub = (type: Type, _class: Class): DerivedProperty =>

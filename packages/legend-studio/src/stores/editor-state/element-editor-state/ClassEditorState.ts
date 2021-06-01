@@ -61,7 +61,7 @@ export class ClassEditorState extends UMLEditorState {
           if (classTab === SOURCR_ID_LABEL.CONSTRAINT) {
             this.setSelectedTab(UML_EDITOR_TAB.CONSTRAINTS);
             const constraintState = this.classState.constraintStates.find(
-              (state) => state.constraint.lambdaId === sourceId,
+              (state) => state.lambdaId === sourceId,
             );
             if (constraintState) {
               constraintState.setCompilationError(compilationError);
@@ -71,7 +71,7 @@ export class ClassEditorState extends UMLEditorState {
             this.setSelectedTab(UML_EDITOR_TAB.DERIVED_PROPERTIES);
             const derivedPropertyState =
               this.classState.derivedPropertyStates.find(
-                (state) => state.derivedProperty.lambdaId === sourceId,
+                (state) => state.lambdaId === sourceId,
               );
             if (derivedPropertyState) {
               derivedPropertyState.setCompilationError(compilationError);

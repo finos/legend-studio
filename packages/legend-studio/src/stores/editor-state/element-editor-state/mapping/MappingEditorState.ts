@@ -862,7 +862,7 @@ export class MappingEditorState extends ElementEditorState {
               ) {
                 const propertyMappingState =
                   this.currentTabState.propertyMappingStates.find(
-                    (state) => state.propertyMapping.lambdaId === sourceId,
+                    (state) => state.lambdaId === sourceId,
                   );
                 if (propertyMappingState) {
                   propertyMappingState.setCompilationError(compilationError);
