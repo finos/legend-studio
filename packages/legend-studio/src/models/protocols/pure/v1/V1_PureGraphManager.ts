@@ -1757,12 +1757,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  entitiesToPureProtocolText = (entities: Entity[]): string =>
+  entitiesToPureProtocolText = async (entities: Entity[]): Promise<string> =>
     JSON.stringify(
-      this.V1_entitiesToPureModelContextData(entities),
+      V1_serializePureModelContext(
+        await this.V1_entitiesToPureModelContextData(entities),
+      ),
       undefined,
       this.engine.config.tabSize,
     );
+
   pureProtocolToEntities = (protocol: string): Entity[] => {
     const graphData = V1_deserializePureModelContextData(JSON.parse(protocol));
     return this.pureModelContextDataToEntities(graphData);

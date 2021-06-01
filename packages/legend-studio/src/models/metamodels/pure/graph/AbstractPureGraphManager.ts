@@ -226,7 +226,7 @@ export abstract class AbstractPureGraphManager {
   ): Promise<Entity[]>;
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
-  abstract entitiesToPureProtocolText(entities: Entity[]): string;
+  abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;
   abstract pureProtocolToEntities(protocol: string): Entity[];
 
   // ------------------------------------------- Execute -------------------------------------------

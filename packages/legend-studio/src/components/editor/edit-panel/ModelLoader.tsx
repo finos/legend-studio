@@ -40,6 +40,7 @@ import {
   MenuContentItem,
 } from '@finos/legend-studio-components';
 import type { ImportConfigurationDescription } from '../../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
+import { flowResult } from 'mobx';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -65,8 +66,11 @@ export const ModelLoader = observer(() => {
   const replace = modelLoaderState.replace;
   const toggleReplace = (): void => modelLoaderState.setReplaceFlag(!replace);
   // actions
-  const loadCurrentProjectEntities = (): void =>
-    modelLoaderState.loadCurrentProjectEntities();
+  const loadCurrentProjectEntities = (): void => {
+    flowResult(modelLoaderState.loadCurrentProjectEntities()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+  };
   const loadModel = (): void => {
     if (editorStore.hasUnsyncedChanges) {
       editorStore.setActionAltertInfo({

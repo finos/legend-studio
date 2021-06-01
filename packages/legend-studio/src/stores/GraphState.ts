@@ -460,6 +460,7 @@ export class GraphState {
     this.editorStore.modelLoaderState.setCurrentInputType(
       MODEL_UPDATER_INPUT_TYPE.ENTITIES,
     );
+    // Making an async call
     this.editorStore.modelLoaderState.loadCurrentProjectEntities();
     this.editorStore.openState(this.editorStore.modelLoaderState);
   }
