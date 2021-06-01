@@ -28,8 +28,8 @@ import type {
   GeneratorFn,
   PlainObject,
 } from '@finos/legend-studio-shared';
-import { assertType } from '@finos/legend-studio-shared';
 import {
+  assertType,
   uniq,
   getClass,
   UnsupportedOperationError,
@@ -156,14 +156,14 @@ export class GraphState {
   }
 
   get hasCompilationError(): boolean {
-    return Boolean(
-      this.editorStore.grammarTextEditorState.error ||
-        this.editorStore.openedEditorStates
-          .filter(
-            (editorState): editorState is ElementEditorState =>
-              editorState instanceof ElementEditorState,
-          )
-          .some((editorState) => editorState.hasCompilationError),
+    return (
+      Boolean(this.editorStore.grammarTextEditorState.error) ||
+      this.editorStore.openedEditorStates
+        .filter(
+          (editorState): editorState is ElementEditorState =>
+            editorState instanceof ElementEditorState,
+        )
+        .some((editorState) => editorState.hasCompilationError)
     );
   }
 
