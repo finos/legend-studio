@@ -1,5 +1,20 @@
 # @finos/legend-studio
 
+## 0.1.11
+
+### Patch Changes
+
+- [#227](https://github.com/finos/legend-studio/pull/227) [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8) Thanks [@akphi](https://github.com/akphi)! - Show all class mapping ID corresponding to the class of class properties in relational mapping editor. This would allow users to specify one property mapping per class mapping.
+
+* [#227](https://github.com/finos/legend-studio/pull/227) [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where global compile (using F9) does not clear the compilation of each lambda editor.
+
+- [#227](https://github.com/finos/legend-studio/pull/227) [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where compilation hotkey (F9) does not work when the focus is in lambda editor.
+
+- Updated dependencies [[`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8)]:
+  - @finos/legend-studio-components@0.0.17
+  - @finos/legend-studio-network@0.0.16
+  - @finos/legend-studio-shared@0.0.14
+
 ## 0.1.10
 
 ### Patch Changes
