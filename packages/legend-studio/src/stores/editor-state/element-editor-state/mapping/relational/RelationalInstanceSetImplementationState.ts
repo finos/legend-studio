@@ -29,6 +29,7 @@ import { createStubRelationalOperationElement } from '../../../../../models/meta
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
 import { MappingElementDecorateVisitor } from '../MappingElementDecorateVisitor';
+import { SOURCR_ID_LABEL } from '../../../../../models/MetaModelConst';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -43,6 +44,23 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     this.editorStore = editorStore;
   }
 
+  // `operationId` is properly the more appropriate term to use, but we are just following what we
+  // do for other property mapping for consistency
+  get lambdaId(): string {
+    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
+    return `${this.propertyMapping.owner.parent.path}-${
+      SOURCR_ID_LABEL.RELATIONAL_CLASS_MAPPING
+    }-${this.propertyMapping.owner.id.value}-${
+      this.propertyMapping.property.value.name
+    }-${
+      this.propertyMapping.targetSetImplementation
+        ? `-${this.propertyMapping.targetSetImplementation.id.value}`
+        : ''
+    }-${this.propertyMapping.owner.propertyMappings.indexOf(
+      this.propertyMapping,
+    )}`;
+  }
+
   convertLambdaGrammarStringToObject = flow(function* (
     this: RelationalPropertyMappingState,
   ) {
@@ -52,7 +70,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         const operation =
           (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
             this.fullLambdaString,
-            this.propertyMapping.lambdaId,
+            this.lambdaId,
           )) as RawRelationalOperationElement | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof RelationalPropertyMapping) {
@@ -84,16 +102,14 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         try {
           const operations = new Map<string, RawRelationalOperationElement>();
           operations.set(
-            this.propertyMapping.lambdaId,
+            this.lambdaId,
             this.propertyMapping.relationalOperation,
           );
           const operationsInText =
             (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
               operations,
             )) as Map<string, string>;
-          const grammarText = operationsInText.get(
-            this.propertyMapping.lambdaId,
-          );
+          const grammarText = operationsInText.get(this.lambdaId);
           this.setLambdaString(
             grammarText !== undefined
               ? this.extractLambdaString(grammarText)
@@ -195,11 +211,8 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
     >();
     this.propertyMappingStates.forEach((pm) => {
       if (!pm.propertyMapping.isStub) {
-        operations.set(
-          pm.propertyMapping.lambdaId,
-          pm.propertyMapping.relationalOperation,
-        );
-        propertyMappingStates.set(pm.propertyMapping.lambdaId, pm);
+        operations.set(pm.lambdaId, pm.propertyMapping.relationalOperation);
+        propertyMappingStates.set(pm.lambdaId, pm);
       }
       // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
     });

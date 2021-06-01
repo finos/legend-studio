@@ -68,7 +68,6 @@ export class ConcreteFunctionDefinition
       deleteStereotype: action,
       changeStereotype: action,
       addStereotype: action,
-      lambdaId: computed,
       hashCode: computed({ keepAlive: true }),
     });
 
@@ -105,10 +104,6 @@ export class ConcreteFunctionDefinition
   }
   addStereotype(val: StereotypeReference): void {
     addUniqueEntry(this.stereotypes, val);
-  }
-
-  get lambdaId(): string {
-    return `${this.path}`;
   }
 
   get hashCode(): string {

@@ -83,7 +83,6 @@ export class EmbeddedFlatDataPropertyMapping
       parent: observable,
       label: computed,
       setPropertyMappings: action,
-      lambdaId: computed,
       isStub: computed,
       hashCode: computed,
     });
@@ -115,9 +114,6 @@ export class EmbeddedFlatDataPropertyMapping
     this.propertyMappings = propertyMappings;
   }
 
-  get lambdaId(): string {
-    throw new UnsupportedOperationError();
-  }
   // As of now, there is no stub cases of Embedded Flat Property Mapping since they are created with an existing property mapping
   get isStub(): boolean {
     return false;

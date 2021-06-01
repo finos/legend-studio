@@ -16,10 +16,7 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import { hashArray, uuid } from '@finos/legend-studio-shared';
-import {
-  CORE_HASH_STRUCTURE,
-  SOURCR_ID_LABEL,
-} from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { RawLambda } from '../../../model/rawValueSpecification/RawLambda';
 import type { Class } from './Class';
@@ -44,7 +41,6 @@ export class Constraint implements Hashable, Stubable {
       messageFunction: observable,
       setName: action,
       setFunctionDefinition: action,
-      lambdaId: computed,
       isStub: computed,
       hashCode: computed,
     });
@@ -59,13 +55,6 @@ export class Constraint implements Hashable, Stubable {
   }
   setFunctionDefinition(lambda: RawLambda): void {
     this.functionDefinition = lambda;
-  }
-
-  get lambdaId(): string {
-    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
-    return `${this.owner.path}-${SOURCR_ID_LABEL.CONSTRAINT}-${
-      this.name
-    }[${this.owner.constraints.indexOf(this)}]`;
   }
 
   static createStub = (_class: Class): Constraint =>

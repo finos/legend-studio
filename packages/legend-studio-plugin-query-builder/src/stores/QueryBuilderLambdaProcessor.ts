@@ -468,7 +468,7 @@ export class QueryBuilderLambdaProcessor
         valueSpecification.parametersValues[0] instanceof VariableExpression
       ) {
         columnState.setLambdaVariableName(
-          (valueSpecification.parametersValues[0] as VariableExpression).name,
+          valueSpecification.parametersValues[0].name,
         );
       }
       return;

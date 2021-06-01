@@ -18,7 +18,10 @@ import { observable, action, computed, flow, makeObservable } from 'mobx';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import type { EditorStore } from '../../../EditorStore';
-import { MappingElementState } from './MappingElementState';
+import {
+  InstanceSetImplementationState,
+  MappingElementState,
+} from './MappingElementState';
 import { PureInstanceSetImplementationState } from './PureInstanceSetImplementationState';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState';
 import { MappingTestState, TEST_RESULT } from './MappingTestState';
@@ -253,6 +256,7 @@ export class MappingEditorState extends ElementEditorState {
       mappingElementsTreeData: observable.ref,
       mapping: computed,
       testSuiteResult: computed,
+      hasCompilationError: computed,
       setSelectedTypeLabel: action,
       setNewMappingElementSpec: action,
       setMappingElementTreeNodeData: action,
@@ -859,7 +863,7 @@ export class MappingEditorState extends ElementEditorState {
               ) {
                 const propertyMappingState =
                   this.currentTabState.propertyMappingStates.find(
-                    (state) => state.propertyMapping.lambdaId === sourceId,
+                    (state) => state.lambdaId === sourceId,
                   );
                 if (propertyMappingState) {
                   propertyMappingState.setCompilationError(compilationError);
@@ -882,6 +886,32 @@ export class MappingEditorState extends ElementEditorState {
       );
     }
     return revealed;
+  }
+
+  get hasCompilationError(): boolean {
+    return this.openedTabStates
+      .filter(
+        (tabState): tabState is InstanceSetImplementationState =>
+          tabState instanceof InstanceSetImplementationState,
+      )
+      .some((tabState) =>
+        tabState.propertyMappingStates.some((pmState) =>
+          Boolean(pmState.compilationError),
+        ),
+      );
+  }
+
+  clearCompilationError(): void {
+    this.openedTabStates
+      .filter(
+        (tabState): tabState is InstanceSetImplementationState =>
+          tabState instanceof InstanceSetImplementationState,
+      )
+      .forEach((tabState) => {
+        tabState.propertyMappingStates.forEach((pmState) =>
+          pmState.setCompilationError(undefined),
+        );
+      });
   }
 
   reprocess(newElement: Mapping, editorStore: EditorStore): MappingEditorState {

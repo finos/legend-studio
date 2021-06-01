@@ -35,6 +35,7 @@ export class ClassEditorState extends UMLEditorState {
     makeObservable(this, {
       classState: observable,
       class: computed,
+      hasCompilationError: computed,
       reprocess: override,
     });
 
@@ -61,7 +62,7 @@ export class ClassEditorState extends UMLEditorState {
           if (classTab === SOURCR_ID_LABEL.CONSTRAINT) {
             this.setSelectedTab(UML_EDITOR_TAB.CONSTRAINTS);
             const constraintState = this.classState.constraintStates.find(
-              (state) => state.constraint.lambdaId === sourceId,
+              (state) => state.lambdaId === sourceId,
             );
             if (constraintState) {
               constraintState.setCompilationError(compilationError);
@@ -71,7 +72,7 @@ export class ClassEditorState extends UMLEditorState {
             this.setSelectedTab(UML_EDITOR_TAB.DERIVED_PROPERTIES);
             const derivedPropertyState =
               this.classState.derivedPropertyStates.find(
-                (state) => state.derivedProperty.lambdaId === sourceId,
+                (state) => state.lambdaId === sourceId,
               );
             if (derivedPropertyState) {
               derivedPropertyState.setCompilationError(compilationError);
@@ -88,6 +89,26 @@ export class ClassEditorState extends UMLEditorState {
       );
     }
     return false;
+  }
+
+  get hasCompilationError(): boolean {
+    return (
+      this.classState.constraintStates.some((state) =>
+        Boolean(state.compilationError),
+      ) ||
+      this.classState.derivedPropertyStates.some((state) =>
+        Boolean(state.compilationError),
+      )
+    );
+  }
+
+  clearCompilationError(): void {
+    this.classState.constraintStates.forEach((constraintState) =>
+      constraintState.setCompilationError(undefined),
+    );
+    this.classState.derivedPropertyStates.forEach((dpState) =>
+      dpState.setCompilationError(undefined),
+    );
   }
 
   reprocess(newElement: Class, editorStore: EditorStore): ClassEditorState {

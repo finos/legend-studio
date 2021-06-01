@@ -95,9 +95,7 @@ export class QueryBuilderPlugin extends EditorPlugin {
               }
             };
             return (
-              <MenuContentItem onClick={buildQuery}>
-                Build Query (WIP)...
-              </MenuContentItem>
+              <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
             );
           }
           return undefined;
@@ -109,8 +107,12 @@ export class QueryBuilderPlugin extends EditorPlugin {
   getExtraLambdaEditorHotkeyConfigurations(): LambdaEditorHotkeyConfiguration[] {
     return [
       {
-        eventMatcher: (event: IKeyboardEvent): boolean =>
-          event.keyCode === KeyCode.F9,
+        eventMatcher: (
+          editorStore: EditorStore,
+          event: IKeyboardEvent,
+        ): boolean =>
+          editorStore.getEditorExtensionState(QueryBuilderState)
+            .openQueryBuilder && event.keyCode === KeyCode.F9,
         skipGlobalAction: true,
         action: (
           editorStore: EditorStore,

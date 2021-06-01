@@ -410,25 +410,45 @@ export class MappingElementDecorateVisitor
         });
         return ePropertyMapping;
       } else if (propertyType instanceof Class) {
-        // NOTE: for now for class property, the only form of mapping we support in form mode is a simple property mapping.
-        // TODO: we might need to take care of root-resolution logic like in Pure property mapping
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per class type property. Other modes for relational property mapping are currently not supported',
-        );
-        if (existingPropertyMappings.length) {
-          // TODO?: do we want to check the type of the property mapping here?
-          return [existingPropertyMappings[0]];
+        const resolvedLeafSetImps =
+          setImplementation.parent.getLeafSetImplementations(
+            property.genericType.value.getRawType(Class),
+          );
+        // if there are no root-resolved set implementations for the class, return empty array
+        if (!resolvedLeafSetImps) {
+          return [];
         }
-        const newPropertyMapping = new RelationalPropertyMapping(
-          setImplementation,
-          PropertyExplicitReference.create(property),
-          setImplementation,
+        return (
+          resolvedLeafSetImps
+            // from root of the class property, resolve leaf set implementations and add property mappings for them
+            // NOTE: here we actually remove existing property mapping if it no longer part of resolved
+            // leaf set implementation of the class property
+            .map((setImp) => {
+              const existingPropertyMapping = existingPropertyMappings.find(
+                (pm) => pm.targetSetImplementation === setImp,
+              );
+              if (existingPropertyMapping) {
+                return existingPropertyMapping;
+              }
+              const newPropertyMapping = new RelationalPropertyMapping(
+                setImplementation,
+                PropertyExplicitReference.create(property),
+                setImplementation,
+                setImp,
+              );
+              newPropertyMapping.relationalOperation =
+                createStubRelationalOperationElement();
+              return newPropertyMapping;
+            })
+            // sort these property mappings by id of their set implementations
+            .sort((a, b) =>
+              (
+                a.targetSetImplementation as SetImplementation
+              ).id.value.localeCompare(
+                (b.targetSetImplementation as SetImplementation).id.value,
+              ),
+            )
         );
-        newPropertyMapping.relationalOperation =
-          createStubRelationalOperationElement();
-        return [newPropertyMapping];
       }
       return [];
     };

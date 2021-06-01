@@ -121,37 +121,12 @@ export const SDLC_TestData = {
   ],
 };
 
-// NOTE: use get by (i.e getByTestId) functions to assert as these functions will throw an error when no elements
-// are returned or if more than one element is returned. This will ensure you are isolating where you want to test.
-// To assert null you can assert query by functions to be null or empty (query by -> null), (queryAll -> empty)
-
-// A handy function to test any component that relies on the router being in context
-// See https://testing-library.com/docs/example-react-router
-export const renderWithAppContext = (
-  ui: React.ReactNode,
-  {
-    route = `/${URL_PATH_PLACEHOLDER}/`,
-    history = createMemoryHistory({ initialEntries: [route] }),
-  }: { route?: string; history?: History } = {},
-  config = getTestApplicationConfig(),
-): RenderResult & { history: History } => ({
-  // NOTE: this type any cast is needed to handle the outdated typings of `history` used by `react-router@5`.
-  // TODO: We will fix this when we move to `react-router@6`
-  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
-  ...render(
-    <ApplicationStoreProvider
-      config={config}
-      history={history}
-      pluginManager={PluginManager.create()}
-    >
-      <Router history={history as unknown as any}>{ui}</Router>
-    </ApplicationStoreProvider>,
-  ),
-  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
-  // adding `history` to the returned utilities to allow us
-  // to reference it in our tests (just try to avoid using this to test implementation details).
-  history,
-});
+export const getApplicationNavigationHistory = (
+  initialRoute?: string,
+): History =>
+  createMemoryHistory({
+    initialEntries: [initialRoute ?? `/${URL_PATH_PLACEHOLDER}/`],
+  });
 
 export const getMockedApplicationStore = (
   config: ApplicationConfig,
@@ -342,13 +317,22 @@ export const setUpEditor = async (
       component={Editor}
     />
   );
-  const renderResult = renderWithAppContext(component, {
-    route: generateEditorRoute(
+  const history = getApplicationNavigationHistory(
+    generateEditorRoute(
       mockedEditorStore.applicationStore.config.sdlcServerKey,
       (workspace as unknown as Workspace).projectId,
       (workspace as unknown as Workspace).workspaceId,
     ),
-  });
+  );
+  const renderResult = render(
+    <ApplicationStoreProvider
+      config={getTestApplicationConfig()}
+      history={history}
+      pluginManager={PluginManager.create()}
+    >
+      <Router history={history}>{component}</Router>
+    </ApplicationStoreProvider>,
+  );
   // assert project/workspace have been set
   await waitFor(() =>
     expect(mockedEditorStore.sdlcState.currentProject).toBeDefined(),

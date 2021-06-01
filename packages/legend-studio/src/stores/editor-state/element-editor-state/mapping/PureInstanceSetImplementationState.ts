@@ -15,7 +15,10 @@
  */
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import { LAMBDA_START } from '../../../../models/MetaModelConst';
+import {
+  LAMBDA_START,
+  SOURCR_ID_LABEL,
+} from '../../../../models/MetaModelConst';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
   InstanceSetImplementationState,
@@ -38,6 +41,21 @@ export class PurePropertyMappingState extends PropertyMappingState {
     this.editorStore = editorStore;
   }
 
+  get lambdaId(): string {
+    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
+    return `${this.propertyMapping.owner.parent.path}-${
+      SOURCR_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING
+    }-${this.propertyMapping.owner.id.value}-${
+      this.propertyMapping.property.value.name
+    }-${
+      this.propertyMapping.targetSetImplementation
+        ? `-${this.propertyMapping.targetSetImplementation.id.value}`
+        : ''
+    }-${this.propertyMapping.owner.propertyMappings.indexOf(
+      this.propertyMapping,
+    )}`;
+  }
+
   convertLambdaGrammarStringToObject = flow(function* (
     this: PurePropertyMappingState,
   ) {
@@ -47,7 +65,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
         const lambda =
           (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
-            this.propertyMapping.lambdaId,
+            this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.propertyMapping.transform = lambda ?? emptyLambda;
@@ -73,16 +91,13 @@ export class PurePropertyMappingState extends PropertyMappingState {
     if (!this.propertyMapping.transform.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
-        lambdas.set(
-          this.propertyMapping.lambdaId,
-          this.propertyMapping.transform,
-        );
+        lambdas.set(this.lambdaId, this.propertyMapping.transform);
         const isolatedLambdas =
           (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
-        const grammarText = isolatedLambdas.get(this.propertyMapping.lambdaId);
+        const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)
@@ -168,8 +183,8 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     const propertyMappingsMap = new Map<string, PurePropertyMappingState>();
     this.propertyMappingStates.forEach((pm) => {
       if (!pm.propertyMapping.transform.isStub) {
-        lambdas.set(pm.propertyMapping.lambdaId, pm.propertyMapping.transform);
-        propertyMappingsMap.set(pm.propertyMapping.lambdaId, pm);
+        lambdas.set(pm.lambdaId, pm.propertyMapping.transform);
+        propertyMappingsMap.set(pm.lambdaId, pm);
       }
     });
     if (lambdas.size) {

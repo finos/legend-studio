@@ -44,8 +44,6 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
   // See https://github.com/facebook/jest/issues/7914#issuecomment-464352069
   testMatch: ['**/__tests__/**/*(*.)test.[jt]s?(x)'],
   testPathIgnorePatterns: ['/node_modules/'],
-  testRunner: 'jest-circus/runner',
-  testEnvironment: 'jsdom',
   verbose: true,
   collectCoverage: false,
   watchPathIgnorePatterns: ['/node_modules/'],

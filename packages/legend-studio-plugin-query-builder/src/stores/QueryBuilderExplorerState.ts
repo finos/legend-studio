@@ -136,6 +136,10 @@ const resolveSetImplementationForPropertyMapping = (
   } else if (propertyMapping.targetSetImplementation) {
     return propertyMapping.targetSetImplementation;
   }
+
+  // TODO: handle operation class mapping logic - if we get an operation class mapping
+  // do we resolve all the leaves and then overlap them somehow to help identifying
+  // the mapped properties?
   return undefined;
 };
 

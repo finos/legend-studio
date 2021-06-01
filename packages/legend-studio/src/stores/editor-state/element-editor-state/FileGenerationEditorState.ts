@@ -19,7 +19,6 @@ import { ElementEditorState } from './ElementEditorState';
 import { assertType, guaranteeType } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../EditorStore';
 import { FileGenerationState } from '../../editor-state/FileGenerationState';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 
@@ -57,10 +56,6 @@ export class FileGenerationEditorState extends ElementEditorState {
       FileGenerationSpecification,
       'Element file generation editor state must be a file generation',
     );
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

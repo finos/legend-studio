@@ -72,6 +72,7 @@ export const disableEditorHotKeys = (
 ): void => {
   editor.addCommand(KeyCode.F1, noop()); // disable command pallete
   editor.addCommand(KeyCode.F8, noop()); // disable show error command
+  editor.addCommand(KeyCode.F9, noop()); // disable debugger breakpoint
 };
 
 export const moveToPosition = (

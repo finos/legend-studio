@@ -151,6 +151,10 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     this.execution = execution;
   }
 
+  get lambdaId(): string {
+    return `${this.execution.owner.path}-execution`;
+  }
+
   get query(): RawLambda {
     return this.execution.func;
   }
@@ -180,7 +184,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(
-          this.execution.lambdaId,
+          this.lambdaId,
           new RawLambda(
             this.execution.func.parameters,
             this.execution.func.body,
@@ -191,7 +195,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             lambdas,
             pretty,
           )) as Map<string, string>;
-        const grammarText = isolatedLambdas.get(this.execution.lambdaId);
+        const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)

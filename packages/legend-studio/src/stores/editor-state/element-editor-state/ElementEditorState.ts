@@ -125,7 +125,22 @@ export abstract class ElementEditorState extends EditorState {
     }
   });
 
-  abstract revealCompilationError(compilationError: CompilationError): boolean;
+  /**
+   * Takes the compilation and based on its source information, attempts to reveal the error
+   * in the editor. The return values indicates if the editor has revealed the error successfully or not.
+   */
+  revealCompilationError(compilationError: CompilationError): boolean {
+    return false;
+  }
+
+  get hasCompilationError(): boolean {
+    return false;
+  }
+
+  clearCompilationError(): void {
+    return;
+  }
+
   abstract reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,

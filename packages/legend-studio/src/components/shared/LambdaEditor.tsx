@@ -276,7 +276,9 @@ const LambdaEditorInner = observer(
               (plugin) =>
                 plugin.getExtraLambdaEditorHotkeyConfigurations?.() ?? [],
             )
-            .filter((configuration) => configuration.eventMatcher(event));
+            .filter((configuration) =>
+              configuration.eventMatcher(editorStore, event),
+            );
         const enableGlobalAction =
           !applicableLambdaEditorHotkeyConfigurations.length ||
           applicableLambdaEditorHotkeyConfigurations.every(

@@ -16,14 +16,9 @@
 
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import type { EditorStore } from '../EditorStore';
-import type { CompilationError } from '../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
 
 export class UnsupportedElementEditorState extends ElementEditorState {
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
-  }
-
   reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,

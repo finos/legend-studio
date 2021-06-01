@@ -30,7 +30,6 @@ import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';
 import { ConnectionEditorState } from './ConnectionEditorState';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PackageableRuntime } from '../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
 import {
@@ -829,10 +828,6 @@ export class PackageableRuntimeEditorState extends ElementEditorState {
       PackageableRuntime,
       'Element inside runtime editor state must be a packageable runtime',
     );
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

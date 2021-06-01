@@ -18,7 +18,6 @@ import { computed, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 
@@ -38,10 +37,6 @@ export class DiagramEditorState extends ElementEditorState {
       Diagram,
       'Element inside diagram editor state must be a diagram',
     );
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

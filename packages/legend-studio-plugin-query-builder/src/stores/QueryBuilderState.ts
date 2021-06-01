@@ -42,7 +42,6 @@ import {
   CompilationError,
   CORE_ELEMENT_PATH,
   CORE_LOG_EVENT,
-  EngineError,
   FunctionType,
   GenericType,
   GenericTypeExplicitReference,
@@ -189,7 +188,7 @@ export class QueryBuilderState extends EditorExtensionState {
           }),
         );
       }
-      if (!this.editorStore.graphState.compilationError) {
+      if (!this.editorStore.graphState.hasCompilationError) {
         this.openQueryBuilder = val;
       }
     } else {
@@ -487,7 +486,7 @@ export class QueryBuilderState extends EditorExtensionState {
   compileQuery = flow(function* (this: QueryBuilderState) {
     if (this.isEditingInTextMode()) {
       try {
-        this.editorStore.graphState.clearCompilationError();
+        this.queryTextEditorState.setCompilationError(undefined);
         (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
           this.queryTextEditorState.rawLambdaState.lambda,
           this.editorStore.graphState.graph,
@@ -495,20 +494,16 @@ export class QueryBuilderState extends EditorExtensionState {
         this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       } catch (error: unknown) {
         assertErrorThrown(error);
-        if (error instanceof EngineError) {
-          this.editorStore.graphState.setCompilationError(error);
-        }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.COMPILATION_PROBLEM,
-          error,
-        );
-        const compilationError = this.editorStore.graphState.compilationError;
-        if (compilationError instanceof CompilationError) {
+        if (error instanceof CompilationError) {
+          this.editorStore.applicationStore.logger.error(
+            CORE_LOG_EVENT.COMPILATION_PROBLEM,
+            error,
+          );
           const errorElementCoordinates = getElementCoordinates(
-            compilationError.sourceInformation,
+            error.sourceInformation,
           );
           if (errorElementCoordinates) {
-            this.queryTextEditorState.setCompilationError(compilationError);
+            this.queryTextEditorState.setCompilationError(error);
           }
         }
       }

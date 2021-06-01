@@ -38,10 +38,6 @@ export class QueryRawLambdaState {
     });
   }
 
-  get lambdaId(): string {
-    return 'query-builder';
-  }
-
   setLambda(lambda: RawLambda): void {
     this.lambda = lambda;
   }
@@ -82,6 +78,10 @@ export class QueryTextEditorState extends LambdaEditorState {
     this.rawLambdaState = new QueryRawLambdaState(RawLambda.createStub());
   }
 
+  get lambdaId(): string {
+    return 'query-builder';
+  }
+
   setQueryRawLambdaState(rawLambdaState: QueryRawLambdaState): void {
     this.rawLambdaState = rawLambdaState;
   }
@@ -103,7 +103,7 @@ export class QueryTextEditorState extends LambdaEditorState {
         const lambda =
           (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
-            this.rawLambdaState.lambdaId,
+            this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.rawLambdaState.setLambda(lambda ?? emptyLambda);
@@ -131,7 +131,7 @@ export class QueryTextEditorState extends LambdaEditorState {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(
-          this.rawLambdaState.lambdaId,
+          this.lambdaId,
           new RawLambda(
             this.rawLambdaState.lambda.parameters,
             this.rawLambdaState.lambda.body,
@@ -142,7 +142,7 @@ export class QueryTextEditorState extends LambdaEditorState {
             lambdas,
             pretty,
           )) as Map<string, string>;
-        const grammarText = isolatedLambdas.get(this.rawLambdaState.lambdaId);
+        const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)
