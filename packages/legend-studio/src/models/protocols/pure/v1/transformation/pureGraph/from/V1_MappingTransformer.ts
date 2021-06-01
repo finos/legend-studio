@@ -16,6 +16,7 @@
 import {
   getClass,
   isNonNullable,
+  recursiveOmit,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
@@ -135,6 +136,7 @@ import { V1_JoinPointer } from '../../../model/packageableElements/store/relatio
 import type { V1_RawRelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import { RelationalInputData } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
+import { SOURCE_INFORMATION_KEY } from '../../../../../../MetaModelConst';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -432,8 +434,14 @@ const transformRelationalPropertyMapping = (
     element.property,
     isTransformingEmbeddedPropertyMapping,
   );
-  propertyMapping.relationalOperation =
-    element.relationalOperation as V1_RawRelationalOperationElement;
+  // Prune source information from the operation
+  // NOTE: if in the future, source information is stored under different key,
+  // e.g. { "classPointerSourceInformation": ... }
+  // we need to use the prune source information method from `V1_PureGraphManager`
+  propertyMapping.relationalOperation = recursiveOmit(
+    element.relationalOperation as Record<PropertyKey, unknown>,
+    [SOURCE_INFORMATION_KEY],
+  ) as V1_RawRelationalOperationElement;
   propertyMapping.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,

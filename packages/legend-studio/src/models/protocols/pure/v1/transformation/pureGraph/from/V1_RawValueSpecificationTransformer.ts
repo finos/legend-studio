@@ -35,14 +35,34 @@ import {
   V1_RawPropertyGraphFetchTree,
   V1_RawRootGraphFetchTree,
 } from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
+import { SOURCE_INFORMATION_KEY } from '../../../../../../MetaModelConst';
+import { recursiveOmit } from '@finos/legend-studio-shared';
 
 export class V1_RawValueSpecificationTransformer
   implements RawValueSpecificationVisitor<V1_RawValueSpecification>
 {
   visit_RawLambda(rawValueSpecification: RawLambda): V1_RawValueSpecification {
     const rawLambda = new V1_RawLambda();
-    rawLambda.body = toJS(rawValueSpecification.body);
-    rawLambda.parameters = toJS(rawValueSpecification.parameters);
+    // Prune source information from the lambda
+    // NOTE: if in the future, source information is stored under different key,
+    // e.g. { "classPointerSourceInformation": ... }
+    // we need to use the prune source information method from `V1_PureGraphManager`
+    rawLambda.body = rawValueSpecification.body
+      ? toJS(
+          recursiveOmit(
+            rawValueSpecification.body as Record<PropertyKey, unknown>,
+            [SOURCE_INFORMATION_KEY],
+          ),
+        )
+      : undefined;
+    rawLambda.parameters = rawValueSpecification.parameters
+      ? toJS(
+          recursiveOmit(
+            rawValueSpecification.parameters as Record<PropertyKey, unknown>,
+            [SOURCE_INFORMATION_KEY],
+          ),
+        )
+      : undefined;
     return rawLambda;
   }
 
