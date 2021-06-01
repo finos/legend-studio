@@ -67,7 +67,7 @@ export const GrammarTextEditor = observer(() => {
   const grammarTextEditorState = editorStore.grammarTextEditorState;
   const currentElementLabelRegexString =
     grammarTextEditorState.currentElementLabelRegexString;
-  const error = editorStore.graphState.compilationError;
+  const error = grammarTextEditorState.error;
   const graphGrammarText = grammarTextEditorState.graphGrammarText;
   const textInput = useRef<HTMLDivElement>(null);
 

@@ -256,6 +256,7 @@ export class MappingEditorState extends ElementEditorState {
       mappingElementsTreeData: observable.ref,
       mapping: computed,
       testSuiteResult: computed,
+      hasCompilationError: computed,
       setSelectedTypeLabel: action,
       setNewMappingElementSpec: action,
       setMappingElementTreeNodeData: action,
@@ -885,6 +886,19 @@ export class MappingEditorState extends ElementEditorState {
       );
     }
     return revealed;
+  }
+
+  get hasCompilationError(): boolean {
+    return this.openedTabStates
+      .filter(
+        (tabState): tabState is InstanceSetImplementationState =>
+          tabState instanceof InstanceSetImplementationState,
+      )
+      .some((tabState) =>
+        tabState.propertyMappingStates.some((pmState) =>
+          Boolean(pmState.compilationError),
+        ),
+      );
   }
 
   clearCompilationError(): void {

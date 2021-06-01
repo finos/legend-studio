@@ -153,6 +153,7 @@ export class FunctionEditorState extends ElementEditorState {
     makeObservable(this, {
       selectedTab: observable,
       functionElement: computed,
+      hasCompilationError: computed,
       setSelectedTab: action,
       reprocess: action,
     });
@@ -196,6 +197,10 @@ export class FunctionEditorState extends ElementEditorState {
       );
     }
     return revealed;
+  }
+
+  get hasCompilationError(): boolean {
+    return Boolean(this.functionBodyEditorState.compilationError);
   }
 
   clearCompilationError(): void {

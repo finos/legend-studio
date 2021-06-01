@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, makeAutoObservable } from 'mobx';
+import { action, computed, flow, makeAutoObservable } from 'mobx';
 import { CORE_LOG_EVENT } from '../utils/Logger';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
@@ -28,11 +28,11 @@ import type {
   GeneratorFn,
   PlainObject,
 } from '@finos/legend-studio-shared';
+import { assertType } from '@finos/legend-studio-shared';
 import {
   uniq,
   getClass,
   UnsupportedOperationError,
-  IllegalStateError,
   assertErrorThrown,
   assertTrue,
   isNonNullable,
@@ -115,7 +115,6 @@ export class GraphState {
   isUpdatingApplication = false; // including graph update and async operations such as change detection
   graph: PureModel;
   graphManager: AbstractPureGraphManager;
-  compilationError?: EngineError;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
@@ -123,11 +122,11 @@ export class GraphState {
       graphGenerationState: false,
       coreModel: false,
       systemModel: false,
-      setCompilationError: action,
-      clearCompilationError: action,
       getPackageableElementType: false,
       getSetImplementationType: false,
       isInstanceSetImplementation: false,
+      hasCompilationError: computed,
+      clearCompilationError: action,
     });
 
     this.editorStore = editorStore;
@@ -156,12 +155,20 @@ export class GraphState {
     );
   }
 
-  setCompilationError(error: EngineError): void {
-    this.compilationError = error;
+  get hasCompilationError(): boolean {
+    return Boolean(
+      this.editorStore.grammarTextEditorState.error ||
+        this.editorStore.openedEditorStates
+          .filter(
+            (editorState): editorState is ElementEditorState =>
+              editorState instanceof ElementEditorState,
+          )
+          .some((editorState) => editorState.hasCompilationError),
+    );
   }
 
   clearCompilationError(): void {
-    this.compilationError = undefined;
+    this.editorStore.grammarTextEditorState.setError(undefined);
     this.editorStore.openedEditorStates
       .filter(
         (editorState): editorState is ElementEditorState =>
@@ -520,12 +527,9 @@ export class GraphState {
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      if (error instanceof EngineError) {
-        this.setCompilationError(error);
-      } else {
-        // TODO: we should make this the handling for all other exceptions in the codebase
-        throw new IllegalStateError(`Unhandled exception:\n${error}`);
-      }
+      // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
+      // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
+      assertType(error, EngineError, `Unhandled exception:\n${error}`);
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.COMPILATION_PROBLEM,
         error,
@@ -533,9 +537,9 @@ export class GraphState {
       let fallbackToTextModeForDebugging = true;
       // if compilation failed, we try to reveal the error in form mode,
       // if even this fail, we will fall back to show it in text mode
-      if (this.compilationError instanceof CompilationError) {
+      if (error instanceof CompilationError) {
         const errorElementCoordinates = getElementCoordinates(
-          this.compilationError.sourceInformation,
+          error.sourceInformation,
         );
         if (errorElementCoordinates) {
           const element = this.graph.getNullableElement(
@@ -545,14 +549,12 @@ export class GraphState {
           if (element) {
             this.editorStore.openElement(element);
             if (
-              this.editorStore.currentEditorState instanceof
-                ElementEditorState &&
-              this.compilationError instanceof CompilationError
+              this.editorStore.currentEditorState instanceof ElementEditorState
             ) {
               // check if we can reveal the error in the element editor state
               fallbackToTextModeForDebugging =
                 !this.editorStore.currentEditorState.revealCompilationError(
-                  this.compilationError,
+                  error,
                 );
             }
           }
@@ -628,7 +630,7 @@ export class GraphState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       if (error instanceof EngineError) {
-        this.setCompilationError(error);
+        this.editorStore.grammarTextEditorState.setError(error);
       }
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.COMPILATION_PROBLEM,
@@ -686,7 +688,7 @@ export class GraphState {
       } catch (error: unknown) {
         assertErrorThrown(error);
         if (error instanceof EngineError) {
-          this.setCompilationError(error);
+          this.editorStore.grammarTextEditorState.setError(error);
         }
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.COMPILATION_PROBLEM,
