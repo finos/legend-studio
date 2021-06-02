@@ -20,7 +20,7 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
 import { CgOptions } from 'react-icons/cg';
-import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel';
+import { DEPRECATED_QueryBuilderGraphFetchTreePanel } from './DEPRECATED_QueryBuilderGraphFetchTreePanel';
 import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState';
 
 const QueryBuilderUnsupportedFetchStructure = observer(
@@ -58,7 +58,7 @@ export const QueryBuilderFetchStructurePanel = observer(
           );
         case FETCH_STRUCTURE_MODE.GRAPH_FETCH:
           return (
-            <QueryBuilderGraphFetchTreePanel
+            <DEPRECATED_QueryBuilderGraphFetchTreePanel
               queryBuilderState={queryBuilderState}
             />
           );
@@ -70,6 +70,15 @@ export const QueryBuilderFetchStructurePanel = observer(
           );
       }
     };
+    const onChangeFetchStructureMode =
+      (fetchMode: FETCH_STRUCTURE_MODE): (() => void) =>
+      (): void => {
+        if (fetchStructureState.fetchStructureMode !== fetchMode) {
+          fetchStructureState.setFetchStructureMode(fetchMode);
+          // TODO: might want to add alert modal to alert user changing fetch structure resets state
+          queryBuilderState.resetData();
+        }
+      };
 
     return (
       <div className="panel">
@@ -80,13 +89,8 @@ export const QueryBuilderFetchStructurePanel = observer(
           <div className="panel__header__actions">
             <div className="query-builder__fetch__structure__modes">
               {Object.values(FETCH_STRUCTURE_MODE).map((fetchMode) => (
-                // TODO: might want to add alert modal to alert user changing fetch structure rests state
                 <button
-                  onClick={(): void =>
-                    fetchStructureState.handleFetchStructureModeChange(
-                      fetchMode,
-                    )
-                  }
+                  onClick={onChangeFetchStructureMode(fetchMode)}
                   className={clsx('query-builder__fetch__structure__mode', {
                     'query-builder__fetch__structure__mode--selected':
                       fetchMode === fetchStructureState.fetchStructureMode,

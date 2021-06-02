@@ -135,6 +135,7 @@ export enum FETCH_STRUCTURE_MODE {
   PROJECTION = 'PROJECTION',
   GRAPH_FETCH = 'GRAPH_FETCH',
 }
+
 export class QueryBuilderFetchStructureState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
@@ -149,7 +150,6 @@ export class QueryBuilderFetchStructureState {
       removeProjectionColumn: action,
       addProjectionColumn: action,
       moveProjectionColumn: action,
-      handleFetchStructureModeChange: action,
       setFetchStructureMode: action,
     });
 
@@ -202,15 +202,6 @@ export class QueryBuilderFetchStructureState {
 
   setFetchStructureMode(val: FETCH_STRUCTURE_MODE): void {
     this.fetchStructureMode = val;
-  }
-
-  handleFetchStructureModeChange(
-    fetchStructureMode: FETCH_STRUCTURE_MODE,
-  ): void {
-    if (this.fetchStructureMode !== fetchStructureMode) {
-      this.setFetchStructureMode(fetchStructureMode);
-      this.queryBuilderState.resetData();
-    }
   }
 
   isGraphFetchMode(): boolean {

@@ -16,17 +16,17 @@
 
 import type { QueryBuilderState } from './QueryBuilderState';
 import { makeAutoObservable, action } from 'mobx';
-import type { GraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
+import type { DEPRECATED_GraphFetchTreeData } from './DEPRECATED_QueryBuilderGraphFetchTreeUtil';
 import {
-  buildGraphFetchTreeData,
-  getGraphFetchTreeData,
-} from './QueryBuilderGraphFetchTreeUtil';
+  DEPRECATED_buildGraphFetchTreeData,
+  DEPREACTED_getGraphFetchTreeData,
+} from './DEPRECATED_QueryBuilderGraphFetchTreeUtil';
 import type { EditorStore, RootGraphFetchTree } from '@finos/legend-studio';
 
 export class QueryBuilderGraphFetchTreeState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
-  graphFetchTree?: GraphFetchTreeData;
+  DEPRECATED_graphFetchTree?: DEPRECATED_GraphFetchTreeData;
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -39,15 +39,17 @@ export class QueryBuilderGraphFetchTreeState {
     this.queryBuilderState = queryBuilderState;
   }
 
-  setGraphFetchTree(graphFetchTree: GraphFetchTreeData | undefined): void {
-    this.graphFetchTree = graphFetchTree;
+  setGraphFetchTree(
+    graphFetchTree: DEPRECATED_GraphFetchTreeData | undefined,
+  ): void {
+    this.DEPRECATED_graphFetchTree = graphFetchTree;
   }
 
   init(rootGraphFetchTree?: RootGraphFetchTree): void {
     if (this.queryBuilderState.fetchStructureState.isGraphFetchMode()) {
       if (rootGraphFetchTree) {
         this.setGraphFetchTree(
-          buildGraphFetchTreeData(
+          DEPRECATED_buildGraphFetchTreeData(
             this.editorStore,
             rootGraphFetchTree,
             this.queryBuilderState.querySetupState.mapping,
@@ -57,7 +59,7 @@ export class QueryBuilderGraphFetchTreeState {
         const _class = this.queryBuilderState.querySetupState._class;
         if (_class) {
           this.setGraphFetchTree(
-            getGraphFetchTreeData(
+            DEPREACTED_getGraphFetchTreeData(
               this.editorStore,
               _class,
               this.queryBuilderState.querySetupState.mapping,

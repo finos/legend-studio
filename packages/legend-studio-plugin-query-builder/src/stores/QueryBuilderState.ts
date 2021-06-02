@@ -317,10 +317,10 @@ export class QueryBuilderState extends EditorExtensionState {
       lambdaFunction.expressionSequence[0] = projectFunction;
     } else if (
       this.fetchStructureState.isGraphFetchMode() &&
-      this.fetchStructureState.graphFetchTreeState.graphFetchTree
+      this.fetchStructureState.graphFetchTreeState.DEPRECATED_graphFetchTree
     ) {
       const graphFetchTreeState =
-        this.fetchStructureState.graphFetchTreeState.graphFetchTree;
+        this.fetchStructureState.graphFetchTreeState.DEPRECATED_graphFetchTree;
       const root = graphFetchTreeState.root;
       const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
         multiplicityOne,

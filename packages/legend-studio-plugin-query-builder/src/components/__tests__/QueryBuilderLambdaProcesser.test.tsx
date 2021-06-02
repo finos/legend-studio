@@ -368,7 +368,8 @@ test(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
     const firmGraphFetchTree = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.graphFetchTreeState.graphFetchTree,
+      queryBuilderState.fetchStructureState.graphFetchTreeState
+        .DEPRECATED_graphFetchTree,
     );
     const firmGraphFetchTreeNode = firmGraphFetchTree.root.graphFetchTreeNode;
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);

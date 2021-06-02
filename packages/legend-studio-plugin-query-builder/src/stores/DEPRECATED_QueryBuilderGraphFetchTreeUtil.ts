@@ -45,7 +45,7 @@ import {
   RootGraphFetchTree,
 } from '@finos/legend-studio';
 
-export class GraphFetchTreeNodeData implements TreeNodeData {
+export class DEPRECATED_GraphFetchTreeNodeData implements TreeNodeData {
   isSelected?: boolean;
   isOpen?: boolean;
   id: string;
@@ -85,7 +85,7 @@ export class GraphFetchTreeNodeData implements TreeNodeData {
   }
 }
 
-export class RootGraphFetchTreeNodeData extends GraphFetchTreeNodeData {
+export class DEPRECATED_RootGraphFetchTreeNodeData extends DEPRECATED_GraphFetchTreeNodeData {
   declare graphFetchTreeNode: RootGraphFetchTree;
 }
 
@@ -105,7 +105,7 @@ const resolveSetImplementationForPropertyMapping = (
 const getPropertyMappedData = (
   editorStore: EditorStore,
   property: AbstractProperty,
-  parentNode: GraphFetchTreeNodeData,
+  parentNode: DEPRECATED_GraphFetchTreeNodeData,
 ): { mapped: boolean; setImpl?: SetImplementation } => {
   // For now, derived properties will be considered mapped if its parent class is mapped.
   // TODO: we probably need to do complex analytics such as to drill down into the body of the derived properties to see if each properties being used are
@@ -146,12 +146,12 @@ const getPropertyMappedData = (
   return { mapped: false };
 };
 
-export const getPropertyGraphFetchTreeNodeData = (
+export const DEPRECATED_getPropertyGraphFetchTreeNodeData = (
   editorStore: EditorStore,
   property: Property,
   subType: Class | undefined,
-  parent: GraphFetchTreeNodeData,
-): GraphFetchTreeNodeData => {
+  parent: DEPRECATED_GraphFetchTreeNodeData,
+): DEPRECATED_GraphFetchTreeNodeData => {
   assertType(
     parent.type,
     Class,
@@ -173,7 +173,7 @@ export const getPropertyGraphFetchTreeNodeData = (
   newPropertyGraphFetchNode.subType.setValue(subType);
   const propertyGraphFetchNode =
     existingPropertyGraphFetchNode ?? newPropertyGraphFetchNode;
-  const propertyNode = new GraphFetchTreeNodeData(
+  const propertyNode = new DEPRECATED_GraphFetchTreeNodeData(
     `${parent.id}.${property.name}${subType ? subType.path : ''}`,
     property.name,
     property.genericType.value.rawType,
@@ -194,22 +194,23 @@ export const getPropertyGraphFetchTreeNodeData = (
   return propertyNode;
 };
 
-export interface GraphFetchTreeData extends TreeData<GraphFetchTreeNodeData> {
-  root: RootGraphFetchTreeNodeData;
+export interface DEPRECATED_GraphFetchTreeData
+  extends TreeData<DEPRECATED_GraphFetchTreeNodeData> {
+  root: DEPRECATED_RootGraphFetchTreeNodeData;
 }
 
-export const getGraphFetchTreeData = (
+export const DEPREACTED_getGraphFetchTreeData = (
   editorStore: EditorStore,
   type: Type,
   mapping?: Mapping,
-): GraphFetchTreeData => {
+): DEPRECATED_GraphFetchTreeData => {
   const rootIds: string[] = [];
-  const nodes = new Map<string, GraphFetchTreeNodeData>();
+  const nodes = new Map<string, DEPRECATED_GraphFetchTreeNodeData>();
   if (type instanceof Class) {
     const rootGraphFetchTreeNode = new RootGraphFetchTree(
       PackageableElementExplicitReference.create(type),
     );
-    const treeRootNode = new RootGraphFetchTreeNodeData(
+    const treeRootNode = new DEPRECATED_RootGraphFetchTreeNodeData(
       GRAPH_FETCH_TREE_ROOT_ID,
       type.name,
       type,
@@ -236,12 +237,13 @@ export const getGraphFetchTreeData = (
           (a instanceof Class ? 2 : a instanceof Enumeration ? 1 : 0),
       )
       .forEach((property) => {
-        const propertyTreeNodeData = getPropertyGraphFetchTreeNodeData(
-          editorStore,
-          property,
-          undefined,
-          treeRootNode,
-        );
+        const propertyTreeNodeData =
+          DEPRECATED_getPropertyGraphFetchTreeNodeData(
+            editorStore,
+            property,
+            undefined,
+            treeRootNode,
+          );
         addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
         nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
         const propertyType = property.genericType.value.rawType;
@@ -249,7 +251,7 @@ export const getGraphFetchTreeData = (
           propertyType.allSubClasses
             .sort((a, b) => a.name.localeCompare(b.name))
             .forEach((subClass) => {
-              const nodeData = getPropertyGraphFetchTreeNodeData(
+              const nodeData = DEPRECATED_getPropertyGraphFetchTreeNodeData(
                 editorStore,
                 property,
                 subClass,
@@ -274,9 +276,9 @@ const walkPropertySubTreeAndBuild = (
   editorStore: EditorStore,
   property: Property,
   subType: Class | undefined,
-  parent: GraphFetchTreeNodeData,
-  nodes: Map<string, GraphFetchTreeNodeData>,
-): GraphFetchTreeNodeData => {
+  parent: DEPRECATED_GraphFetchTreeNodeData,
+  nodes: Map<string, DEPRECATED_GraphFetchTreeNodeData>,
+): DEPRECATED_GraphFetchTreeNodeData => {
   const existingPropertyGraphFetchNode =
     parent.graphFetchTreeNode.subTrees.find(
       (subTree) =>
@@ -293,7 +295,7 @@ const walkPropertySubTreeAndBuild = (
   const propertyGraphFetchNode =
     existingPropertyGraphFetchNode ?? newPropertyGraphFetchNode;
   const mappingData = getPropertyMappedData(editorStore, property, parent);
-  const propertyNode = new GraphFetchTreeNodeData(
+  const propertyNode = new DEPRECATED_GraphFetchTreeNodeData(
     `${parent.id}.${property.name}${subType ? subType.path : ''}`,
     property.name,
     property.genericType.value.rawType,
@@ -339,14 +341,14 @@ const walkPropertySubTreeAndBuild = (
 /**
  * Build graph fetch tree data from an existing graph fetch tree root
  */
-export const buildGraphFetchTreeData = (
+export const DEPRECATED_buildGraphFetchTreeData = (
   editorStore: EditorStore,
   rootGraphFetchTree: RootGraphFetchTree,
   mapping?: Mapping,
-): GraphFetchTreeData => {
+): DEPRECATED_GraphFetchTreeData => {
   const rootIds: string[] = [];
-  const nodes = new Map<string, GraphFetchTreeNodeData>();
-  const treeRootNode = new RootGraphFetchTreeNodeData(
+  const nodes = new Map<string, DEPRECATED_GraphFetchTreeNodeData>();
+  const treeRootNode = new DEPRECATED_RootGraphFetchTreeNodeData(
     GRAPH_FETCH_TREE_ROOT_ID,
     rootGraphFetchTree.class.value.name,
     rootGraphFetchTree.class.value,
@@ -403,9 +405,9 @@ export const buildGraphFetchTreeData = (
  * Given a node, a graph fetch tree and a mapping, we select (by checking off) all the properties in the node
  * that have been mapped through the root setImplementation class
  */
-export const selectMappedGraphFetchProperties = (
-  graphFetchTree: GraphFetchTreeData,
-  node: GraphFetchTreeNodeData,
+export const DEPRECATED_selectMappedGraphFetchProperties = (
+  graphFetchTree: DEPRECATED_GraphFetchTreeData,
+  node: DEPRECATED_GraphFetchTreeNodeData,
 ): void => {
   const childNodes = node.childrenIds
     .map((nodeId) => graphFetchTree.nodes.get(nodeId))

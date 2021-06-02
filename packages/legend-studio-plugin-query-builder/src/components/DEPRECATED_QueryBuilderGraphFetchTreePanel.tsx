@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-import { isNonNullable, addUniqueEntry } from '@finos/legend-studio-shared';
 import { observer } from 'mobx-react-lite';
+import { BlankPanelPlaceholder } from '@finos/legend-studio-components';
+import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Constants';
+import { isNonNullable, addUniqueEntry } from '@finos/legend-studio-shared';
 import {
   FaChevronDown,
   FaChevronRight,
@@ -25,15 +28,15 @@ import {
 } from 'react-icons/fa';
 import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
 import { clsx, TreeView, ContextMenu } from '@finos/legend-studio-components';
-import type {
-  GraphFetchTreeNodeData,
-  GraphFetchTreeData,
-} from '../stores/QueryBuilderGraphFetchTreeUtil';
 import {
-  RootGraphFetchTreeNodeData,
-  getPropertyGraphFetchTreeNodeData,
-  selectMappedGraphFetchProperties,
-} from '../stores/QueryBuilderGraphFetchTreeUtil';
+  DEPRECATED_RootGraphFetchTreeNodeData,
+  DEPRECATED_getPropertyGraphFetchTreeNodeData,
+  DEPRECATED_selectMappedGraphFetchProperties,
+} from '../stores/DEPRECATED_QueryBuilderGraphFetchTreeUtil';
+import type {
+  DEPRECATED_GraphFetchTreeData,
+  DEPRECATED_GraphFetchTreeNodeData,
+} from '../stores/DEPRECATED_QueryBuilderGraphFetchTreeUtil';
 import type { Mapping } from '@finos/legend-studio';
 import {
   getClassPropertyIcon,
@@ -43,7 +46,7 @@ import {
   Enumeration,
 } from '@finos/legend-studio';
 
-export const QueryBuilderGraphFetchTreeContextMenu = observer(
+const DEPRECATED_QueryBuilderGraphFetchTreeContextMenu = observer(
   (
     props: {
       selectAllMappedPropertiesCallback?: () => void;
@@ -69,11 +72,11 @@ export const QueryBuilderGraphFetchTreeContextMenu = observer(
 
 const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
-    GraphFetchTreeNodeData,
+    DEPRECATED_GraphFetchTreeNodeData,
     {
-      toggleCheckNode: (node: GraphFetchTreeNodeData) => void;
+      toggleCheckNode: (node: DEPRECATED_GraphFetchTreeNodeData) => void;
       isReadOnly: boolean;
-      checkAllProperties?: (node: GraphFetchTreeNodeData) => void;
+      checkAllProperties?: (node: DEPRECATED_GraphFetchTreeNodeData) => void;
     }
   >
 > = (props) => {
@@ -91,7 +94,7 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
     <div />
   );
   const nodeTypeIcon = getClassPropertyIcon(node.type);
-  const isRoot = node instanceof RootGraphFetchTreeNodeData;
+  const isRoot = node instanceof DEPRECATED_RootGraphFetchTreeNodeData;
   const toggleCheck = (): void => toggleCheckNode(node);
   const toggleExpandNode = (): void => {
     onNodeSelect?.(node);
@@ -105,7 +108,7 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
     <ContextMenu
       disabled={!isExpandable || isReadOnly}
       content={
-        <QueryBuilderGraphFetchTreeContextMenu
+        <DEPRECATED_QueryBuilderGraphFetchTreeContextMenu
           selectAllMappedPropertiesCallback={(): void =>
             checkAllProperties?.(node)
           }
@@ -210,17 +213,17 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   );
 };
 
-export const QueryBuilderGraphFetchTreeExplorer = observer(
+export const DEPRECATED_QueryBuilderGraphFetchTreeExplorer = observer(
   (props: {
-    treeData: GraphFetchTreeData;
-    updateTreeData: (data: GraphFetchTreeData) => void;
+    treeData: DEPRECATED_GraphFetchTreeData;
+    updateTreeData: (data: DEPRECATED_GraphFetchTreeData) => void;
     isReadOnly: boolean;
     parentMapping?: Mapping;
   }) => {
     const { treeData, updateTreeData, isReadOnly, parentMapping } = props;
     const editorStore = useEditorStore();
     const onNodeSelect = (
-      node: GraphFetchTreeNodeData,
+      node: DEPRECATED_GraphFetchTreeNodeData,
       leaveOpen?: boolean,
     ): void => {
       if (node.childrenIds.length) {
@@ -228,12 +231,13 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
         const type = node.subType ?? node.type;
         if (type instanceof Class) {
           type.getAllProperties().forEach((property) => {
-            const propertyTreeNodeData = getPropertyGraphFetchTreeNodeData(
-              editorStore,
-              property,
-              undefined,
-              node,
-            );
+            const propertyTreeNodeData =
+              DEPRECATED_getPropertyGraphFetchTreeNodeData(
+                editorStore,
+                property,
+                undefined,
+                node,
+              );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
             const propertyType = property.genericType.value.rawType;
             if (propertyType instanceof Class) {
@@ -241,7 +245,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .forEach((subClass) => {
                   const subTypePropertyTreeNodeData =
-                    getPropertyGraphFetchTreeNodeData(
+                    DEPRECATED_getPropertyGraphFetchTreeNodeData(
                       editorStore,
                       property,
                       subClass,
@@ -263,17 +267,19 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
       updateTreeData({ ...treeData });
     };
 
-    const checkAllProperties = (node: GraphFetchTreeNodeData): void => {
+    const checkAllProperties = (
+      node: DEPRECATED_GraphFetchTreeNodeData,
+    ): void => {
       if (parentMapping) {
         onNodeSelect(node, true);
-        selectMappedGraphFetchProperties(treeData, node);
+        DEPRECATED_selectMappedGraphFetchProperties(treeData, node);
         updateTreeData({ ...treeData });
       }
     };
 
     const getChildNodes = (
-      node: GraphFetchTreeNodeData,
-    ): GraphFetchTreeNodeData[] =>
+      node: DEPRECATED_GraphFetchTreeNodeData,
+    ): DEPRECATED_GraphFetchTreeNodeData[] =>
       node.childrenIds
         .map((id) => treeData.nodes.get(id))
         .filter(isNonNullable)
@@ -293,7 +299,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
               : 0),
         );
 
-    const toggleCheckNode = (node: GraphFetchTreeNodeData): void => {
+    const toggleCheckNode = (node: DEPRECATED_GraphFetchTreeNodeData): void => {
       if (!isReadOnly) {
         const isChecking = !node.isChecked;
         if (isChecking) {
@@ -346,6 +352,45 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
           checkAllProperties: parentMapping ? checkAllProperties : undefined,
         }}
       />
+    );
+  },
+);
+
+export const DEPRECATED_QueryBuilderGraphFetchTreePanel = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const _class = queryBuilderState.querySetupState._class;
+    const _mapping = queryBuilderState.querySetupState.mapping;
+    const fetchStructureState = queryBuilderState.fetchStructureState;
+    const graphFetchState = fetchStructureState.graphFetchTreeState;
+    const graphFetchTree = graphFetchState.DEPRECATED_graphFetchTree;
+    // Deep/Graph Fetch Tree
+    const updateTreeData = (data: DEPRECATED_GraphFetchTreeData): void => {
+      graphFetchState.setGraphFetchTree(data);
+    };
+
+    return (
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_GRAPH_FETCH}
+        className="panel__content"
+      >
+        {!_class && (
+          <BlankPanelPlaceholder
+            placeholderText="No class selected for graph fetch tree"
+            tooltipText="Please select class to get a graph fetch tree"
+          />
+        )}
+        {graphFetchTree && (
+          <div className="mapping-test-editor-panel__target-panel__query-container">
+            <DEPRECATED_QueryBuilderGraphFetchTreeExplorer
+              treeData={graphFetchTree}
+              isReadOnly={false}
+              updateTreeData={updateTreeData}
+              parentMapping={_mapping}
+            />
+          </div>
+        )}
+      </div>
     );
   },
 );
