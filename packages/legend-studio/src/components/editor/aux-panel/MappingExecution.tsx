@@ -478,7 +478,7 @@ export const MappingExecutionInputDataBuilder = observer(
       [mappingEditorState.executionState],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
-      setImp instanceof OperationSetImplementation;
+      !(setImp instanceof OperationSetImplementation);
 
     // Input data builder
     let inputDataBuilder: React.ReactNode;
@@ -690,7 +690,7 @@ export const MappingExecutionBuilder = observer(
                 )}
               </div>
             </div>
-            <div className="panel__content mapping-execution-panel__json-editor">
+            <div className="panel__content mapping-execution-panel__result-panel__content">
               <TextInputEditor
                 inputValue={executionResultText ?? ''}
                 isReadOnly={true}

@@ -89,13 +89,11 @@ export const QueryBuilderLambdaEditor = observer(
                 />
               )}
               {mode === QueryTextEditorMode.JSON && (
-                <div className="panel__content mapping-execution-panel__json-editor">
-                  <TextInputEditor
-                    language={EDITOR_LANGUAGE.JSON}
-                    inputValue={queryTextEditorState.readOnlylambdaJson}
-                    isReadOnly={true}
-                  />
-                </div>
+                <TextInputEditor
+                  language={EDITOR_LANGUAGE.JSON}
+                  inputValue={queryTextEditorState.readOnlylambdaJson}
+                  isReadOnly={true}
+                />
               )}
             </div>
           </div>

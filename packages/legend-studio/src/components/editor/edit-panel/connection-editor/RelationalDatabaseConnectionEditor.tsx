@@ -868,7 +868,7 @@ const GenerateStoreEditor = observer(
                     </div>
                   </div>
 
-                  <div className="panel__content mapping-execution-panel__json-editor">
+                  <div className="panel__content">
                     <TextInputEditor
                       language={EDITOR_LANGUAGE.PURE}
                       inputValue={generateStoreState.storeGrammar}
