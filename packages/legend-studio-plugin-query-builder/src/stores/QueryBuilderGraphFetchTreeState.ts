@@ -22,8 +22,10 @@ import {
   RootGraphFetchTree,
 } from '@finos/legend-studio';
 import type { QueryBuilderGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
-import { addQueryBuilderPropertyNode } from './QueryBuilderGraphFetchTreeUtil';
-import { buildGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
+import {
+  addQueryBuilderPropertyNode,
+  buildGraphFetchTreeData,
+} from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 
 export class QueryBuilderGraphFetchTreeState {

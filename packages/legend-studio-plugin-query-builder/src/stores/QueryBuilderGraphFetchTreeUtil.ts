@@ -27,9 +27,11 @@ import type {
   Type,
   RootGraphFetchTree,
 } from '@finos/legend-studio';
-import { PropertyExplicitReference } from '@finos/legend-studio';
-import { Class } from '@finos/legend-studio';
-import { PropertyGraphFetchTree } from '@finos/legend-studio';
+import {
+  PropertyExplicitReference,
+  Class,
+  PropertyGraphFetchTree,
+} from '@finos/legend-studio';
 import type { QueryBuilderExplorerTreeNodeData } from './QueryBuilderExplorerState';
 import { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 

@@ -35,8 +35,10 @@ import type {
   QueryBuilderGraphFetchTreeData,
   QueryBuilderGraphFetchTreeNodeData,
 } from '../stores/QueryBuilderGraphFetchTreeUtil';
-import { removeNodeRecursively } from '../stores/QueryBuilderGraphFetchTreeUtil';
-import { isGraphFetchTreeDataEmpty } from '../stores/QueryBuilderGraphFetchTreeUtil';
+import {
+  removeNodeRecursively,
+  isGraphFetchTreeDataEmpty,
+} from '../stores/QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderExplorerTreeDragSource } from '../stores/QueryBuilderExplorerState';
 import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
 
