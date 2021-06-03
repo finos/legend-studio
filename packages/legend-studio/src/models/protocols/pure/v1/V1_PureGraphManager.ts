@@ -199,6 +199,7 @@ import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/ser
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { V1_RawRelationalOperationElement } from './model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
+import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
 
 export const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1545,10 +1546,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   compileGraph = flow(function* (
     this: V1_PureGraphManager,
     graph: PureModel,
-    options?: { onError?: () => void },
+    options?: { onError?: () => void; keepSourceInformation?: boolean },
   ) {
-    const fullModel = this.getFullGraphModelData(graph);
-    yield this.engine.compilePureModelContextData(fullModel, options);
+    const fullModel = this.getFullGraphModelData(graph, {
+      keepSourceInformation: options?.keepSourceInformation,
+    });
+    yield this.engine.compilePureModelContextData(fullModel, {
+      onError: options?.onError,
+    });
   });
 
   compileText = flow(function* (
@@ -1573,7 +1578,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): GeneratorFn<string> {
     return (yield this.engine.getLambdaReturnType(
       lambda.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(),
+        new V1_RawValueSpecificationTransformer(
+          new V1_GraphTransformerContextBuilder(false).build(),
+        ),
       ) as V1_RawLambda,
       this.getFullGraphModelData(graph),
     )) as string;
@@ -1707,7 +1714,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Record<PropertyKey, unknown> {
     return V1_serializeRawValueSpecification(
       metamodel.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(),
+        new V1_RawValueSpecificationTransformer(
+          new V1_GraphTransformerContextBuilder(false).build(),
+        ),
       ),
     );
   }
@@ -1840,7 +1849,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // packageable runtime and connection just to play with execution.
     const executeInput = new V1_ExecuteInput();
     executeInput.clientVersion = clientVersion;
-    executeInput.function = V1_transformRawLambda(lambda);
+    executeInput.function = V1_transformRawLambda(
+      lambda,
+      new V1_GraphTransformerContextBuilder(false).build(),
+    );
     executeInput.mapping = mapping.path;
     executeInput.runtime = V1_transformRuntime(
       runtime,
@@ -2231,8 +2243,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return graphData;
   });
 
-  private getFullGraphModelData(graph: PureModel): V1_PureModelContextData {
-    const contextData1 = this.graphToPureModelContextData(graph);
+  private getFullGraphModelData(
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): V1_PureModelContextData {
+    const contextData1 = this.graphToPureModelContextData(graph, {
+      keepSourceInformation: options?.keepSourceInformation,
+    });
     const contextData2 = this.getGraphCompileContext(graph);
     contextData1.elements = [
       ...contextData1.elements,
@@ -2243,9 +2260,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private elementToProtocol = <T extends V1_PackageableElement>(
     element: PackageableElement,
+    options?: { keepSourceInformation?: boolean },
   ): T =>
     element.accept_PackageableElementVisitor(
-      new V1_PackageableElementTransformer(this.pureProtocolProcessorPlugins),
+      new V1_PackageableElementTransformer(
+        this.pureProtocolProcessorPlugins,
+        new V1_GraphTransformerContextBuilder(
+          Boolean(options?.keepSourceInformation),
+        ).build(),
+      ),
     ) as T;
 
   private pureModelContextDataToEntities = (
@@ -2336,11 +2359,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private graphToPureModelContextData = (
     graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
   ): V1_PureModelContextData => {
     const startTime = Date.now();
     const graphData = new V1_PureModelContextData();
     graphData.elements = graph.allElements.map((e) =>
-      this.elementToProtocol(e),
+      this.elementToProtocol(e, {
+        keepSourceInformation: options?.keepSourceInformation,
+      }),
     );
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED,
@@ -2390,7 +2416,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): RawLambda {
     const fetchTreeJson = V1_serializeRawValueSpecification(
       graphFetchTree.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(),
+        new V1_RawValueSpecificationTransformer(
+          new V1_GraphTransformerContextBuilder(false).build(),
+        ),
       ),
     );
     return new RawLambda(

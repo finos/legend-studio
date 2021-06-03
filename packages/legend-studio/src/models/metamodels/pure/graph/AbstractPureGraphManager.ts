@@ -166,7 +166,7 @@ export abstract class AbstractPureGraphManager {
 
   abstract compileGraph(
     graph: PureModel,
-    options?: { onError?: () => void },
+    options?: { onError?: () => void; keepSourceInformation?: boolean },
   ): Promise<void>;
   abstract compileText(
     graphGrammar: string,

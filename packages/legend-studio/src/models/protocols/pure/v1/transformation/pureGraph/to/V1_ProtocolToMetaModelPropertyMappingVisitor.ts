@@ -81,6 +81,7 @@ import {
   V1_serializeRelationalOperationElement,
 } from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
+import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -480,6 +481,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
               this.tableAliasMap,
               [],
             ),
+            new V1_GraphTransformerContextBuilder(false).build(),
           ),
         );
     } catch {

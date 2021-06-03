@@ -522,7 +522,13 @@ export class GraphState {
       if (options?.openConsole) {
         this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
       }
-      yield this.graphManager.compileGraph(this.graph);
+      // NOTE: here we always keep the source information while compiling in form mode
+      // so that the form parts where the user interacted with (i.e. where the lamdbas source
+      // information are populated), can reveal compilation error. If compilation errors
+      // show up in other parts, the user will get redirected to text-mode
+      yield this.graphManager.compileGraph(this.graph, {
+        keepSourceInformation: true,
+      });
       if (!options?.disableNotificationOnSuccess) {
         this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       }
