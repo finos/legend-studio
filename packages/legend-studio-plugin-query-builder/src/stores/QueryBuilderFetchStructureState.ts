@@ -16,7 +16,6 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import { uuid, deleteEntry } from '@finos/legend-studio-shared';
-import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
 import {
   QueryBuilderExplorerTreePropertyNodeData,
   getPropertyExpression,
@@ -46,11 +45,6 @@ export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
 export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
 }
-
-export type QueryBuilderProjectionDropTarget =
-  QueryBuilderExplorerTreeDragSource;
-export type QueryBuilderProjectionColumnRearrangeDropTarget =
-  QueryBuilderProjectionColumnDragSource;
 
 export class QueryBuilderProjectionColumnState {
   uuid = uuid();

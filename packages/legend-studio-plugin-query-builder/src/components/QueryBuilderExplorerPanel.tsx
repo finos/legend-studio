@@ -453,14 +453,14 @@ const QueryBuilderExplorerTree = observer(
         .sort(
           (a, b) =>
             (b.type instanceof Class
-              ? 1
-              : b.type instanceof Enumeration
               ? 2
+              : b.type instanceof Enumeration
+              ? 1
               : 0) -
             (a.type instanceof Class
-              ? 1
-              : a.type instanceof Enumeration
               ? 2
+              : a.type instanceof Enumeration
+              ? 1
               : 0),
         );
 

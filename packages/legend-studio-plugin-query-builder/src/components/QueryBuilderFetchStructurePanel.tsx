@@ -20,7 +20,7 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
 import { CgOptions } from 'react-icons/cg';
-import { DEPRECATED_QueryBuilderGraphFetchTreePanel } from './DEPRECATED_QueryBuilderGraphFetchTreePanel';
+import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel';
 import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState';
 
 const QueryBuilderUnsupportedFetchStructure = observer(
@@ -58,7 +58,7 @@ export const QueryBuilderFetchStructurePanel = observer(
           );
         case FETCH_STRUCTURE_MODE.GRAPH_FETCH:
           return (
-            <DEPRECATED_QueryBuilderGraphFetchTreePanel
+            <QueryBuilderGraphFetchTreePanel
               queryBuilderState={queryBuilderState}
             />
           );

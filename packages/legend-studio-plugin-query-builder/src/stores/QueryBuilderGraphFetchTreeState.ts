@@ -16,17 +16,20 @@
 
 import type { QueryBuilderState } from './QueryBuilderState';
 import { makeAutoObservable, action } from 'mobx';
-import type { DEPRECATED_GraphFetchTreeData } from './DEPRECATED_QueryBuilderGraphFetchTreeUtil';
+import type { EditorStore } from '@finos/legend-studio';
 import {
-  DEPRECATED_buildGraphFetchTreeData,
-  DEPREACTED_getGraphFetchTreeData,
-} from './DEPRECATED_QueryBuilderGraphFetchTreeUtil';
-import type { EditorStore, RootGraphFetchTree } from '@finos/legend-studio';
+  PackageableElementExplicitReference,
+  RootGraphFetchTree,
+} from '@finos/legend-studio';
+import type { QueryBuilderGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
+import { addQueryBuilderPropertyNode } from './QueryBuilderGraphFetchTreeUtil';
+import { buildGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
+import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 
 export class QueryBuilderGraphFetchTreeState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
-  DEPRECATED_graphFetchTree?: DEPRECATED_GraphFetchTreeData;
+  treeData?: QueryBuilderGraphFetchTreeData;
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -39,36 +42,39 @@ export class QueryBuilderGraphFetchTreeState {
     this.queryBuilderState = queryBuilderState;
   }
 
-  setGraphFetchTree(
-    graphFetchTree: DEPRECATED_GraphFetchTreeData | undefined,
-  ): void {
-    this.DEPRECATED_graphFetchTree = graphFetchTree;
+  setGraphFetchTree(val: QueryBuilderGraphFetchTreeData | undefined): void {
+    this.treeData = val;
   }
 
-  init(rootGraphFetchTree?: RootGraphFetchTree): void {
+  init(tree?: RootGraphFetchTree): void {
     if (this.queryBuilderState.fetchStructureState.isGraphFetchMode()) {
-      if (rootGraphFetchTree) {
-        this.setGraphFetchTree(
-          DEPRECATED_buildGraphFetchTreeData(
-            this.editorStore,
-            rootGraphFetchTree,
-            this.queryBuilderState.querySetupState.mapping,
-          ),
-        );
+      if (tree) {
+        this.setGraphFetchTree(buildGraphFetchTreeData(tree));
       } else {
         const _class = this.queryBuilderState.querySetupState._class;
         if (_class) {
           this.setGraphFetchTree(
-            DEPREACTED_getGraphFetchTreeData(
-              this.editorStore,
-              _class,
-              this.queryBuilderState.querySetupState.mapping,
+            buildGraphFetchTreeData(
+              new RootGraphFetchTree(
+                PackageableElementExplicitReference.create(_class),
+              ),
             ),
           );
         } else {
           this.setGraphFetchTree(undefined);
         }
       }
+    }
+  }
+
+  addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
+    if (this.treeData) {
+      addQueryBuilderPropertyNode(
+        this.treeData,
+        this.queryBuilderState.explorerState.nonNullableTreeData,
+        node,
+      );
+      this.setGraphFetchTree({ ...this.treeData });
     }
   }
 }
