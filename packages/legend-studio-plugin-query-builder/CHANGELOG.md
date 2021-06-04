@@ -1,5 +1,17 @@
 # @finos/legend-studio-plugin-query-builder
 
+## 0.0.15
+
+### Patch Changes
+
+- [#237](https://github.com/finos/legend-studio/pull/237) [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341) Thanks [@akphi](https://github.com/akphi)! - Rework graph-fetch tree editor: instead of showing the full tree and allow picking the properties using radio buttons, we let users drag-and-drop the properties from the explorer tree. This makes the behavior more in-synced with projection. See https://github.com/finos/legend-studio/issues/204 for more details.
+
+* [#239](https://github.com/finos/legend-studio/pull/239) [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66) Thanks [@akphi](https://github.com/akphi)! - Support `PackageableElementPtr` in response to [change in engine](https://github.com/finos/legend-engine/pull/255).
+
+* Updated dependencies [[`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341), [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341), [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66), [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66), [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341), [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341)]:
+  - @finos/legend-studio@0.1.12
+  - @finos/legend-studio-components@0.0.18
+
 ## 0.0.14
 
 ## 0.0.13
