@@ -34,60 +34,17 @@ export const simpleCoreModelData = [
                     parameters: [
                       {
                         _type: 'property',
-                        parameters: [
-                          {
-                            _type: 'var',
-                            name: 'this',
-                            sourceInformation: {
-                              endColumn: 23,
-                              endLine: 3,
-                              sourceId: '',
-                              startColumn: 19,
-                              startLine: 3,
-                            },
-                          },
-                        ],
+                        parameters: [{ _type: 'var', name: 'this' }],
                         property: 'employees',
-                        sourceInformation: {
-                          endColumn: 33,
-                          endLine: 3,
-                          sourceId: '',
-                          startColumn: 25,
-                          startLine: 3,
-                        },
                       },
                     ],
-                    sourceInformation: {
-                      endColumn: 39,
-                      endLine: 3,
-                      sourceId: '',
-                      startColumn: 36,
-                      startLine: 3,
-                    },
                   },
                   {
                     _type: 'integer',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    sourceInformation: {
-                      endColumn: 45,
-                      endLine: 3,
-                      sourceId: '',
-                      startColumn: 45,
-                      startLine: 3,
-                    },
+                    multiplicity: { lowerBound: 1, upperBound: 1 },
                     values: [2],
                   },
                 ],
-                sourceInformation: {
-                  endColumn: 45,
-                  endLine: 3,
-                  sourceId: '',
-                  startColumn: 43,
-                  startLine: 3,
-                },
               },
             ],
             parameters: [],
@@ -99,25 +56,17 @@ export const simpleCoreModelData = [
       package: 'demo',
       properties: [
         {
-          multiplicity: {
-            lowerBound: 1,
-          },
+          multiplicity: { lowerBound: 1 },
           name: 'employees',
           type: 'demo::Person',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'legalName',
           type: 'String',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'incType',
           type: 'String',
         },
@@ -131,44 +80,15 @@ export const simpleCoreModelData = [
               parameters: [
                 {
                   _type: 'property',
-                  parameters: [
-                    {
-                      _type: 'var',
-                      name: 'this',
-                      sourceInformation: {
-                        endColumn: 24,
-                        endLine: 9,
-                        sourceId: '',
-                        startColumn: 20,
-                        startLine: 9,
-                      },
-                    },
-                  ],
+                  parameters: [{ _type: 'var', name: 'this' }],
                   property: 'employees',
-                  sourceInformation: {
-                    endColumn: 34,
-                    endLine: 9,
-                    sourceId: '',
-                    startColumn: 26,
-                    startLine: 9,
-                  },
                 },
               ],
-              sourceInformation: {
-                endColumn: 41,
-                endLine: 9,
-                sourceId: '',
-                startColumn: 37,
-                startLine: 9,
-              },
             },
           ],
           name: 'firstEmployee',
           parameters: [],
-          returnMultiplicity: {
-            lowerBound: 0,
-            upperBound: 1,
-          },
+          returnMultiplicity: { lowerBound: 0, upperBound: 1 },
           returnType: 'demo::Person',
         },
       ],
@@ -178,11 +98,7 @@ export const simpleCoreModelData = [
   },
   {
     path: 'demo::LegalEntity',
-    content: {
-      _type: 'class',
-      name: 'LegalEntity',
-      package: 'demo',
-    },
+    content: { _type: 'class', name: 'LegalEntity', package: 'demo' },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
   {
@@ -193,28 +109,17 @@ export const simpleCoreModelData = [
       package: 'demo',
       properties: [
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'firstName',
           type: 'String',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'lastName',
           type: 'String',
         },
       ],
-      stereotypes: [
-        {
-          profile: 'demo::ProfileExtension',
-          value: 'important',
-        },
-      ],
+      stereotypes: [{ profile: 'demo::ProfileExtension', value: 'important' }],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -226,10 +131,7 @@ export const simpleCoreModelData = [
       package: 'demo::other',
       properties: [
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'fullName',
           type: 'String',
         },
@@ -252,51 +154,15 @@ export const simpleCoreModelData = [
                 parameters: [
                   {
                     _type: 'property',
-                    parameters: [
-                      {
-                        _type: 'var',
-                        name: 'this',
-                        sourceInformation: {
-                          endColumn: 19,
-                          endLine: 29,
-                          sourceId: '',
-                          startColumn: 15,
-                          startLine: 29,
-                        },
-                      },
-                    ],
+                    parameters: [{ _type: 'var', name: 'this' }],
                     property: 'name',
-                    sourceInformation: {
-                      endColumn: 24,
-                      endLine: 29,
-                      sourceId: '',
-                      startColumn: 21,
-                      startLine: 29,
-                    },
                   },
                   {
                     _type: 'string',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    sourceInformation: {
-                      endColumn: 41,
-                      endLine: 29,
-                      sourceId: '',
-                      startColumn: 38,
-                      startLine: 29,
-                    },
+                    multiplicity: { lowerBound: 1, upperBound: 1 },
                     values: ['MC'],
                   },
                 ],
-                sourceInformation: {
-                  endColumn: 36,
-                  endLine: 29,
-                  sourceId: '',
-                  startColumn: 27,
-                  startLine: 29,
-                },
               },
             ],
             parameters: [],
@@ -308,25 +174,17 @@ export const simpleCoreModelData = [
       package: 'demo::other',
       properties: [
         {
-          multiplicity: {
-            lowerBound: 1,
-          },
+          multiplicity: { lowerBound: 1 },
           name: 'nEmployees',
           type: 'demo::other::NPerson',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'name',
           type: 'String',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'incType',
           type: 'demo::other::IncType',
         },
@@ -340,14 +198,7 @@ export const simpleCoreModelData = [
       _type: 'Enumeration',
       name: 'IncType',
       package: 'demo::other',
-      values: [
-        {
-          value: 'LLC',
-        },
-        {
-          value: 'CORP',
-        },
-      ],
+      values: [{ value: 'LLC' }, { value: 'CORP' }],
     },
     classifierPath: 'meta::pure::metamodel::type::Enumeration',
   },
@@ -388,41 +239,12 @@ export const simpleCoreModelData = [
                     parameters: [
                       {
                         _type: 'collection',
-                        multiplicity: {
-                          lowerBound: 3,
-                          upperBound: 3,
-                        },
-                        sourceInformation: {
-                          endColumn: 50,
-                          endLine: 56,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 30,
-                          startLine: 56,
-                        },
+                        multiplicity: { lowerBound: 3, upperBound: 3 },
                         values: [
                           {
                             _type: 'property',
-                            parameters: [
-                              {
-                                _type: 'var',
-                                name: 'src',
-                                sourceInformation: {
-                                  endColumn: 18,
-                                  endLine: 56,
-                                  sourceId: 'demo::MyMapping',
-                                  startColumn: 15,
-                                  startLine: 56,
-                                },
-                              },
-                            ],
+                            parameters: [{ _type: 'var', name: 'src' }],
                             property: 'firstName',
-                            sourceInformation: {
-                              endColumn: 28,
-                              endLine: 56,
-                              sourceId: 'demo::MyMapping',
-                              startColumn: 20,
-                              startLine: 56,
-                            },
                           },
                           {
                             _type: 'string',
@@ -430,49 +252,16 @@ export const simpleCoreModelData = [
                               lowerBound: 1,
                               upperBound: 1,
                             },
-                            sourceInformation: {
-                              endColumn: 34,
-                              endLine: 56,
-                              sourceId: 'demo::MyMapping',
-                              startColumn: 32,
-                              startLine: 56,
-                            },
                             values: [' '],
                           },
                           {
                             _type: 'property',
-                            parameters: [
-                              {
-                                _type: 'var',
-                                name: 'src',
-                                sourceInformation: {
-                                  endColumn: 41,
-                                  endLine: 56,
-                                  sourceId: 'demo::MyMapping',
-                                  startColumn: 38,
-                                  startLine: 56,
-                                },
-                              },
-                            ],
+                            parameters: [{ _type: 'var', name: 'src' }],
                             property: 'lastName',
-                            sourceInformation: {
-                              endColumn: 50,
-                              endLine: 56,
-                              sourceId: 'demo::MyMapping',
-                              startColumn: 43,
-                              startLine: 56,
-                            },
                           },
                         ],
                       },
                     ],
-                    sourceInformation: {
-                      endColumn: 50,
-                      endLine: 56,
-                      sourceId: 'demo::MyMapping',
-                      startColumn: 30,
-                      startLine: 56,
-                    },
                   },
                 ],
                 parameters: [],
@@ -500,27 +289,8 @@ export const simpleCoreModelData = [
                 body: [
                   {
                     _type: 'property',
-                    parameters: [
-                      {
-                        _type: 'var',
-                        name: 'src',
-                        sourceInformation: {
-                          endColumn: 40,
-                          endLine: 61,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 37,
-                          startLine: 61,
-                        },
-                      },
-                    ],
+                    parameters: [{ _type: 'var', name: 'src' }],
                     property: 'employees',
-                    sourceInformation: {
-                      endColumn: 50,
-                      endLine: 61,
-                      sourceId: 'demo::MyMapping',
-                      startColumn: 42,
-                      startLine: 61,
-                    },
                   },
                 ],
                 parameters: [],
@@ -529,37 +299,15 @@ export const simpleCoreModelData = [
             },
             {
               _type: 'purePropertyMapping',
-              property: {
-                class: 'demo::other::NFirm',
-                property: 'name',
-              },
+              property: { class: 'demo::other::NFirm', property: 'name' },
               source: 'demo_other_NFirm',
               transform: {
                 _type: 'lambda',
                 body: [
                   {
                     _type: 'property',
-                    parameters: [
-                      {
-                        _type: 'var',
-                        name: 'src',
-                        sourceInformation: {
-                          endColumn: 14,
-                          endLine: 62,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 11,
-                          startLine: 62,
-                        },
-                      },
-                    ],
+                    parameters: [{ _type: 'var', name: 'src' }],
                     property: 'legalName',
-                    sourceInformation: {
-                      endColumn: 24,
-                      endLine: 62,
-                      sourceId: 'demo::MyMapping',
-                      startColumn: 16,
-                      startLine: 62,
-                    },
                   },
                 ],
                 parameters: [],
@@ -579,27 +327,8 @@ export const simpleCoreModelData = [
                 body: [
                   {
                     _type: 'property',
-                    parameters: [
-                      {
-                        _type: 'var',
-                        name: 'src',
-                        sourceInformation: {
-                          endColumn: 56,
-                          endLine: 63,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 53,
-                          startLine: 63,
-                        },
-                      },
-                    ],
+                    parameters: [{ _type: 'var', name: 'src' }],
                     property: 'incType',
-                    sourceInformation: {
-                      endColumn: 64,
-                      endLine: 63,
-                      sourceId: 'demo::MyMapping',
-                      startColumn: 58,
-                      startLine: 63,
-                    },
                   },
                 ],
                 parameters: [],
@@ -616,20 +345,12 @@ export const simpleCoreModelData = [
           enumValueMappings: [
             {
               enumValue: 'LLC',
-              sourceValues: [
-                {
-                  _type: 'stringSourceValue',
-                  value: 'Llc',
-                },
-              ],
+              sourceValues: [{ _type: 'stringSourceValue', value: 'Llc' }],
             },
             {
               enumValue: 'CORP',
               sourceValues: [
-                {
-                  _type: 'stringSourceValue',
-                  value: 'Corporation',
-                },
+                { _type: 'stringSourceValue', value: 'Corporation' },
               ],
             },
           ],
@@ -672,83 +393,34 @@ export const simpleCoreModelData = [
                           {
                             _type: 'packageableElementPtr',
                             fullPath: 'demo::other::NFirm',
-                            sourceInformation: {
-                              endColumn: 32,
-                              endLine: 76,
-                              sourceId: 'demo::MyMapping',
-                              startColumn: 15,
-                              startLine: 76,
-                            },
                           },
                         ],
-                        sourceInformation: {
-                          endColumn: 38,
-                          endLine: 76,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 33,
-                          startLine: 76,
-                        },
                       },
                       {
                         _type: 'rootGraphFetchTree',
                         class: 'demo::other::NFirm',
-                        sourceInformation: {
-                          endColumn: 78,
-                          endLine: 76,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 61,
-                          startLine: 76,
-                        },
                         subTrees: [
                           {
                             _type: 'propertyGraphFetchTree',
                             parameters: [],
                             property: 'incType',
-                            sourceInformation: {
-                              endColumn: 86,
-                              endLine: 76,
-                              sourceId: 'demo::MyMapping',
-                              startColumn: 80,
-                              startLine: 76,
-                            },
                             subTrees: [],
                           },
                           {
                             _type: 'propertyGraphFetchTree',
                             parameters: [],
                             property: 'name',
-                            sourceInformation: {
-                              endColumn: 91,
-                              endLine: 76,
-                              sourceId: 'demo::MyMapping',
-                              startColumn: 88,
-                              startLine: 76,
-                            },
                             subTrees: [],
                           },
                           {
                             _type: 'propertyGraphFetchTree',
                             parameters: [],
                             property: 'nEmployees',
-                            sourceInformation: {
-                              endColumn: 102,
-                              endLine: 76,
-                              sourceId: 'demo::MyMapping',
-                              startColumn: 93,
-                              startLine: 76,
-                            },
                             subTrees: [
                               {
                                 _type: 'propertyGraphFetchTree',
                                 parameters: [],
                                 property: 'fullName',
-                                sourceInformation: {
-                                  endColumn: 111,
-                                  endLine: 76,
-                                  sourceId: 'demo::MyMapping',
-                                  startColumn: 104,
-                                  startLine: 76,
-                                },
                                 subTrees: [],
                               },
                             ],
@@ -756,74 +428,32 @@ export const simpleCoreModelData = [
                         ],
                       },
                     ],
-                    sourceInformation: {
-                      endColumn: 57,
-                      endLine: 76,
-                      sourceId: 'demo::MyMapping',
-                      startColumn: 41,
-                      startLine: 76,
-                    },
                   },
                   {
                     _type: 'rootGraphFetchTree',
                     class: 'demo::other::NFirm',
-                    sourceInformation: {
-                      endColumn: 148,
-                      endLine: 76,
-                      sourceId: 'demo::MyMapping',
-                      startColumn: 131,
-                      startLine: 76,
-                    },
                     subTrees: [
                       {
                         _type: 'propertyGraphFetchTree',
                         parameters: [],
                         property: 'incType',
-                        sourceInformation: {
-                          endColumn: 156,
-                          endLine: 76,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 150,
-                          startLine: 76,
-                        },
                         subTrees: [],
                       },
                       {
                         _type: 'propertyGraphFetchTree',
                         parameters: [],
                         property: 'name',
-                        sourceInformation: {
-                          endColumn: 161,
-                          endLine: 76,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 158,
-                          startLine: 76,
-                        },
                         subTrees: [],
                       },
                       {
                         _type: 'propertyGraphFetchTree',
                         parameters: [],
                         property: 'nEmployees',
-                        sourceInformation: {
-                          endColumn: 172,
-                          endLine: 76,
-                          sourceId: 'demo::MyMapping',
-                          startColumn: 163,
-                          startLine: 76,
-                        },
                         subTrees: [
                           {
                             _type: 'propertyGraphFetchTree',
                             parameters: [],
                             property: 'fullName',
-                            sourceInformation: {
-                              endColumn: 181,
-                              endLine: 76,
-                              sourceId: 'demo::MyMapping',
-                              startColumn: 174,
-                              startLine: 76,
-                            },
                             subTrees: [],
                           },
                         ],
@@ -831,13 +461,6 @@ export const simpleCoreModelData = [
                     ],
                   },
                 ],
-                sourceInformation: {
-                  endColumn: 127,
-                  endLine: 76,
-                  sourceId: 'demo::MyMapping',
-                  startColumn: 119,
-                  startLine: 76,
-                },
               },
             ],
             parameters: [],
