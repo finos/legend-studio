@@ -25,7 +25,7 @@ import { ValueSpecification } from './ValueSpecification';
 import type { Function } from '../../model/packageableElements/domain/Function';
 import type { AbstractProperty } from '../../model/packageableElements/domain/AbstractProperty';
 import type { Class } from '../../model/packageableElements/domain/Class';
-import { ClassInstanceValue } from '../../model/valueSpecification/InstanceValue';
+import { InstanceValue } from '../../model/valueSpecification/InstanceValue';
 import { GenericType } from '../../model/packageableElements/domain/GenericType';
 
 export enum SUPPORTED_FUNCTIONS {
@@ -102,9 +102,9 @@ export function getAllFunction(
     SUPPORTED_FUNCTIONS.GET_ALL,
     multiplicity,
   );
-  const classInstance = new ClassInstanceValue(
-    GenericTypeExplicitReference.create(new GenericType(_class)),
+  const classInstance = new InstanceValue(
     multiplicity,
+    GenericTypeExplicitReference.create(new GenericType(_class)),
   );
   classInstance.values[0] = PackageableElementExplicitReference.create(_class);
   _func.parametersValues.push(classInstance);

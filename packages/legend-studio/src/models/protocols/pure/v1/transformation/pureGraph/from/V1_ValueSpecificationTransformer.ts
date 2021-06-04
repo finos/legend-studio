@@ -31,8 +31,6 @@ import {
 } from '../../../../../../metamodels/pure/model/valueSpecification/GraphFetchTree';
 import type {
   PrimitiveInstanceValue,
-  ClassInstanceValue,
-  EnumerationInstanceValue,
   EnumValueInstanceValue,
   RuntimeInstanceValue,
   PairInstanceValue,
@@ -56,7 +54,6 @@ import type { VariableExpression } from '../../../../../../metamodels/pure/model
 import { V1_Lambda } from '../../../model/valueSpecification/raw/V1_Lambda';
 import type { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
 import { V1_Variable } from '../../../model/valueSpecification/V1_Variable';
-import { V1_Class } from '../../../model/valueSpecification/raw/V1_Class';
 import { V1_AppliedFunction } from '../../../model/valueSpecification/application/V1_AppliedFunction';
 import { V1_AppliedProperty } from '../../../model/valueSpecification/application/V1_AppliedProperty';
 import { V1_CString } from '../../../model/valueSpecification/raw/V1_CString';
@@ -69,12 +66,14 @@ import { V1_CStrictDate } from '../../../model/valueSpecification/raw/V1_CStrict
 import { V1_CStrictTime } from '../../../model/valueSpecification/raw/V1_CStrictTime';
 import { V1_CLatestDate } from '../../../model/valueSpecification/raw/V1_CLatestDate';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import { V1_Enum } from '../../../model/valueSpecification/raw/V1_Enum';
 import { V1_EnumValue } from '../../../model/valueSpecification/raw/V1_EnumValue';
 import { V1_PropertyGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree';
 import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
 import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_GraphFetchTree';
 import { V1_Collection } from '../../../model/valueSpecification/raw/V1_Collection';
+import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr';
+import type { PackageableElementReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 
 export class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -191,20 +190,16 @@ export class V1_ValueSpecificationTransformer
     }
   }
 
-  visit_ClassInstanceValue(
-    valueSpecification: ClassInstanceValue,
+  visit_InstanceValue(
+    valueSpecification: InstanceValue,
   ): V1_ValueSpecification {
-    const _class = new V1_Class();
-    _class.fullPath = valueSpecification.values[0].value.path;
-    return _class;
-  }
-
-  visit_EnumerationInstanceValue(
-    valueSpecification: EnumerationInstanceValue,
-  ): V1_ValueSpecification {
-    const _enum = new V1_Enum();
-    _enum.fullPath = valueSpecification.values[0].value.path;
-    return _enum;
+    const protocol = new V1_PackageableElementPtr();
+    // TODO: not too sure if this is safe to do
+    protocol.fullPath = (
+      valueSpecification
+        .values[0] as PackageableElementReference<PackageableElement>
+    ).value.path;
+    return protocol;
   }
 
   visit_EnumValueInstanceValue(
@@ -317,12 +312,6 @@ export class V1_ValueSpecificationTransformer
   ): V1_ValueSpecification {
     const _lambda = guaranteeNonNullable(valueSpecification.values[0]);
     return V1_transformLambdaFunction(_lambda);
-  }
-
-  visit_InstanceValue(
-    valueSpecification: InstanceValue,
-  ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
   }
 
   visit_AbstractPropertyExpression(
