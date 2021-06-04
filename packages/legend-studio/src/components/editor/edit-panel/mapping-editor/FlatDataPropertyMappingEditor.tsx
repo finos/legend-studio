@@ -54,9 +54,6 @@ const SimplePropertyMappingEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { propertyMappingState, drop, dragItem, transformProps } = props;
-    const editorStore = useEditorStore();
-    const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
     const expectedType =
       propertyMapping.property.value.genericType.value.rawType;
@@ -65,10 +62,13 @@ const SimplePropertyMappingEditor = observer(
       dragItem.data.field.flatDataDataType.correspondingPrimitiveType ===
         expectedType;
     const onExpectedTypeLabelSelect = (): void =>
-      mappingEditorState.setSelectedTypeLabel(expectedType);
+      propertyMappingState.instanceSetImplementationState.setSelectedType(
+        expectedType,
+      );
     const matchedExpectedTypeLabel = (): boolean =>
       Boolean(expectedType) &&
-      mappingEditorState.selectedTypeLabel === expectedType;
+      propertyMappingState.instanceSetImplementationState.selectedType ===
+        expectedType;
 
     return (
       <div className="property-mapping-editor__entry__container">
@@ -115,10 +115,13 @@ const EnumerationPropertyMappingEditor = observer(
       ? propertyMapping.transformer.sourceType.value
       : enumeration;
     const onExpectedTypeLabelSelect = (): void =>
-      mappingEditorState.setSelectedTypeLabel(expectedType);
+      propertyMappingState.instanceSetImplementationState.setSelectedType(
+        expectedType,
+      );
     const matchedExpectedTypeLabel = (): boolean =>
       Boolean(expectedType) &&
-      mappingEditorState.selectedTypeLabel === expectedType;
+      propertyMappingState.instanceSetImplementationState.selectedType ===
+        expectedType;
     // Enumeration Mapping Selector
     const options = mappingEditorState.mapping
       .enumerationMappingsByEnumeration(enumeration)

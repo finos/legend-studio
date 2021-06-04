@@ -41,7 +41,7 @@ export {
   RuntimeEditorState,
   decorateRuntimeWithNewMapping,
 } from './stores/editor-state/element-editor-state/RuntimeEditorState';
-export { DEPRECATED_MappingExecutionState as MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/DEPRECATED_MappingExecutionState';
+export { MappingExecutionState as MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
 
 // components

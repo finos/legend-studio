@@ -19,7 +19,7 @@ import type { IKeyboardEvent } from 'monaco-editor';
 import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
-import type { DEPRECATED_MappingExecutionState } from './editor-state/element-editor-state/mapping/DEPRECATED_MappingExecutionState';
+import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
@@ -60,7 +60,7 @@ export type LambdaEditorHotkeyConfiguration = {
 export type MappingExecutionQueryEditorRendererConfiguration = {
   key: string;
   renderer: (
-    executionState: DEPRECATED_MappingExecutionState,
+    executionState: MappingExecutionState,
   ) => React.ReactNode | undefined;
 };
 

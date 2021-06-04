@@ -41,12 +41,13 @@ import {
   compareLabelFn,
   isNonNullable,
 } from '@finos/legend-studio-shared';
+import type { MappingExecutionState } from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,
   MappingExecutionObjectInputDataState,
   MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
-} from '../../../stores/editor-state/element-editor-state/mapping/DEPRECATED_MappingExecutionState';
+} from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import {
   ActionAlertActionType,
@@ -61,7 +62,6 @@ import {
 import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import { SetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import type { DEPRECATED_MappingExecutionState } from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -135,7 +135,7 @@ export const ClassMappingSelectorModal = observer(
 );
 
 const MappingExecutionQueryEditor = observer(
-  (props: { executionState: DEPRECATED_MappingExecutionState }) => {
+  (props: { executionState: MappingExecutionState }) => {
     const { executionState } = props;
     const queryState = executionState.queryState;
     const mappingEditorState = executionState.mappingEditorState;
@@ -444,7 +444,7 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
 );
 
 export const MappingExecutionInputDataBuilder = observer(
-  (props: { executionState: DEPRECATED_MappingExecutionState }) => {
+  (props: { executionState: MappingExecutionState }) => {
     const { executionState } = props;
     const mappingEditorState = executionState.mappingEditorState;
     const inputDataState = executionState.inputDataState;
@@ -557,7 +557,7 @@ export const MappingExecutionInputDataBuilder = observer(
 );
 
 export const MappingExecutionBuilder = observer(
-  (props: { executionState: DEPRECATED_MappingExecutionState }) => {
+  (props: { executionState: MappingExecutionState }) => {
     const { executionState } = props;
     const mappingEditorState = executionState.mappingEditorState;
     const applicationStore = useApplicationStore();

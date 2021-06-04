@@ -275,19 +275,19 @@ export const InstanceSetImplementationSourceExplorer = observer(
               {srcElement instanceof Type && (
                 <TypeTree
                   type={srcElement}
-                  selectedType={mappingEditorState.selectedTypeLabel}
+                  selectedType={instanceSetImplementationState.selectedType}
                 />
               )}
               {srcElement instanceof RootFlatDataRecordType && (
                 <FlatDataRecordTypeTree
                   recordType={srcElement}
-                  selectedType={mappingEditorState.selectedTypeLabel}
+                  selectedType={instanceSetImplementationState.selectedType}
                 />
               )}
               {(srcElement instanceof Table || srcElement instanceof View) && (
                 <TableOrViewSourceTree
                   relation={srcElement}
-                  selectedType={mappingEditorState.selectedTypeLabel}
+                  selectedType={instanceSetImplementationState.selectedType}
                 />
               )}
             </div>
@@ -372,6 +372,7 @@ export const InstanceSetImplementationEditor = observer(
     const isUnsupported =
       instanceSetImplementationState instanceof
       UnsupportedInstanceSetImplementationState;
+
     useEffect(() => {
       if (!isReadOnly) {
         instanceSetImplementationState.decorate();
@@ -391,6 +392,10 @@ export const InstanceSetImplementationEditor = observer(
       isReadOnly,
       instanceSetImplementationState,
     ]);
+
+    useEffect(() => {
+      instanceSetImplementationState.setSelectedType(undefined);
+    }, [instanceSetImplementationState]);
 
     return (
       <div className="mapping-element-editor__content">

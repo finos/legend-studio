@@ -64,7 +64,7 @@ export const MappingTestExplorerContextMenu = observer(
     };
     const removeMappingTest = (): void => {
       mappingTestState?.mappingEditorState
-        .deleteMappingTest(mappingTestState.test)
+        .deleteTest(mappingTestState.test)
         ?.catch(applicationStore.alertIllegalUnhandledError);
     };
     const toggleSkipTest = (): void => mappingTestState?.toggleSkipTest();

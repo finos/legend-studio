@@ -48,13 +48,15 @@ import { PropertyExplicitReference } from '../../../../models/metamodels/pure/mo
 
 export class FlatDataPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
+  declare instanceSetImplementationState: FlatDataInstanceSetImplementationState;
   declare propertyMapping: AbstractFlatDataPropertyMapping;
 
   constructor(
-    propertyMapping: AbstractFlatDataPropertyMapping,
     editorStore: EditorStore,
+    instanceSetImplementationState: FlatDataInstanceSetImplementationState,
+    propertyMapping: AbstractFlatDataPropertyMapping,
   ) {
-    super('', LAMBDA_START, propertyMapping);
+    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_START);
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -270,15 +272,17 @@ export class EmbeddedFlatDataInstanceSetImplementationState
   extends FlatDataInstanceSetImplementationState
   implements FlatDataPropertyMappingState
 {
-  // might need to have a root property pointing to the root set implementation state
+  declare instanceSetImplementationState: FlatDataInstanceSetImplementationState;
   declare mappingElement: EmbeddedFlatDataPropertyMapping;
   declare propertyMapping: EmbeddedFlatDataPropertyMapping;
 
   constructor(
     editorStore: EditorStore,
+    instanceSetImplementationState: FlatDataInstanceSetImplementationState,
     setImplementation: EmbeddedFlatDataPropertyMapping,
   ) {
     super(editorStore, setImplementation);
+    this.instanceSetImplementationState = instanceSetImplementationState;
     this.mappingElement = setImplementation;
     this.propertyMapping = setImplementation;
     this.propertyMappingStates = this.getPropertyMappingStates(
@@ -297,10 +301,15 @@ export class EmbeddedFlatDataInstanceSetImplementationState
   ): FlatDataPropertyMappingState[] {
     return propertyMappings.map((pm) => {
       if (pm instanceof FlatDataPropertyMapping) {
-        return new FlatDataPropertyMappingState(pm, this.editorStore);
+        return new FlatDataPropertyMappingState(
+          this.editorStore,
+          this.instanceSetImplementationState,
+          pm,
+        );
       } else if (pm instanceof EmbeddedFlatDataPropertyMapping) {
         return new EmbeddedFlatDataInstanceSetImplementationState(
           this.editorStore,
+          this.instanceSetImplementationState,
           pm,
         );
       }
@@ -370,12 +379,14 @@ export class RootFlatDataInstanceSetImplementationState extends FlatDataInstance
     return propertyMappings.map((propertyMapping) => {
       if (propertyMapping instanceof FlatDataPropertyMapping) {
         return new FlatDataPropertyMappingState(
-          propertyMapping,
           this.editorStore,
+          this,
+          propertyMapping,
         );
       } else if (propertyMapping instanceof EmbeddedFlatDataPropertyMapping) {
         return new EmbeddedFlatDataInstanceSetImplementationState(
           this.editorStore,
+          this,
           propertyMapping,
         );
       }

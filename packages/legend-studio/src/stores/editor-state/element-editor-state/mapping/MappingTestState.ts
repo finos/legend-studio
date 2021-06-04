@@ -356,7 +356,7 @@ export class MappingTestState {
   runTime = 0;
   isSkipped = false;
   errorRunningTest?: Error;
-  testExecutionResultText?: string; // NOTE: stored as lessless JSON object text
+  testExecutionResultText?: string; // NOTE: stored as lossless JSON object text
   isRunningTest = false;
   isExecutingTest = false;
   queryState: MappingTestQueryState;

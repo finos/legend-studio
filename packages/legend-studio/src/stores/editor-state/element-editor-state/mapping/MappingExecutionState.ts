@@ -401,7 +401,8 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
   }
 }
 
-export class DEPRECATED_MappingExecutionState {
+export class MappingExecutionState {
+  uuid = uuid();
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;
   isExecuting = false;
@@ -409,7 +410,7 @@ export class DEPRECATED_MappingExecutionState {
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
   executionPlan?: object;
-  executionResultText?: string; // NOTE: stored as lessless JSON text
+  executionResultText?: string; // NOTE: stored as lossless JSON text
   showServicePathModal = false;
 
   constructor(
@@ -528,7 +529,7 @@ export class DEPRECATED_MappingExecutionState {
     }
   }
 
-  promoteToTest = flow(function* (this: DEPRECATED_MappingExecutionState) {
+  promoteToTest = flow(function* (this: MappingExecutionState) {
     try {
       const query = this.queryState.query;
       if (
@@ -560,7 +561,7 @@ export class DEPRECATED_MappingExecutionState {
   });
 
   promoteToService = flow(function* (
-    this: DEPRECATED_MappingExecutionState,
+    this: MappingExecutionState,
     packageName: string,
     serviceName: string,
   ) {
@@ -621,7 +622,7 @@ export class DEPRECATED_MappingExecutionState {
     }
   });
 
-  executeMapping = flow(function* (this: DEPRECATED_MappingExecutionState) {
+  executeMapping = flow(function* (this: MappingExecutionState) {
     try {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
@@ -655,7 +656,7 @@ export class DEPRECATED_MappingExecutionState {
     }
   });
 
-  generatePlan = flow(function* (this: DEPRECATED_MappingExecutionState) {
+  generatePlan = flow(function* (this: MappingExecutionState) {
     try {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
