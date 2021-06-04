@@ -69,6 +69,7 @@ import {
   ClassIcon,
   CheckIcon,
 } from '@finos/legend-studio';
+import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil';
 
 const QueryBuilderExplorerPropertyDragLayer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -118,16 +119,99 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
 const QueryBuilderExplorerContextMenu = observer(
   (
     props: {
-      node?: QueryBuilderExplorerTreeNodeData;
+      queryBuilderState: QueryBuilderState;
+      node: QueryBuilderExplorerTreeNodeData;
     },
     ref: React.Ref<HTMLDivElement>,
   ) => {
+    const { queryBuilderState, node } = props;
     const applicationStore = useApplicationStore();
     const viewType = (): void =>
       applicationStore.notifyUnsupportedFeature('View Type');
+    const addNodeToFetchStructure = (): void => {
+      if (
+        node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+        !(node.type instanceof Class)
+      ) {
+        if (queryBuilderState.fetchStructureState.isGraphFetchMode()) {
+          queryBuilderState.fetchStructureState.graphFetchTreeState.addProperty(
+            node,
+          );
+        } else if (queryBuilderState.fetchStructureState.isProjectionMode()) {
+          queryBuilderState.fetchStructureState.addProjectionColumn(node);
+        }
+      }
+    };
+    const addAllChildrenToFetchStructure = (): void => {
+      if (
+        node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+        node.type instanceof Class
+      ) {
+        // NOTE: here we require the node to already been expanded so the child nodes are generated
+        // we don't allow adding unopened node. Maybe if it helps, we can show a warning.
+        const nodesToAdd = node.childrenIds
+          .map((childId) =>
+            queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
+              childId,
+            ),
+          )
+          .filter(
+            (
+              childNode,
+            ): childNode is QueryBuilderExplorerTreePropertyNodeData =>
+              childNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+              !(childNode.type instanceof Class) &&
+              childNode.mapped,
+          );
+        if (queryBuilderState.fetchStructureState.isGraphFetchMode()) {
+          const graphFetchTreeData =
+            queryBuilderState.fetchStructureState.graphFetchTreeState.treeData;
+          if (graphFetchTreeData) {
+            nodesToAdd.forEach((nodeToAdd) =>
+              addQueryBuilderPropertyNode(
+                graphFetchTreeData,
+                queryBuilderState.explorerState.nonNullableTreeData,
+                nodeToAdd,
+              ),
+            );
+            queryBuilderState.fetchStructureState.graphFetchTreeState.setGraphFetchTree(
+              {
+                ...graphFetchTreeData,
+              },
+            );
+          }
+        } else if (queryBuilderState.fetchStructureState.isProjectionMode()) {
+          nodesToAdd.forEach((nodeToAdd) =>
+            queryBuilderState.fetchStructureState.addProjectionColumn(
+              nodeToAdd,
+            ),
+          );
+        }
+      }
+    };
 
     return (
       <div ref={ref} className="query-builder-tree__context-menu">
+        {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
+          <>
+            {!(node.type instanceof Class) && (
+              <div
+                className="query-builder-tree__context-menu__item"
+                onClick={addNodeToFetchStructure}
+              >
+                Add Property to Fetch Structure
+              </div>
+            )}
+            {node.type instanceof Class && (
+              <div
+                className="query-builder-tree__context-menu__item"
+                onClick={addAllChildrenToFetchStructure}
+              >
+                Add All Properties to Fetch Structure
+              </div>
+            )}
+          </>
+        )}
         <div
           className="query-builder-tree__context-menu__item"
           onClick={viewType}
@@ -250,7 +334,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
     }
     return (
       <ContextMenu
-        content={<QueryBuilderExplorerContextMenu node={node} />}
+        content={
+          <QueryBuilderExplorerContextMenu
+            queryBuilderState={queryBuilderState}
+            node={node}
+          />
+        }
         disabled={!showContextMenu}
         menuProps={{ elevation: 7 }}
         onOpen={onContextMenuOpen}
