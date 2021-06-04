@@ -39,8 +39,8 @@ import {
 } from '../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../model/packageableElements/store//relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { Table } from '../../../model/packageableElements/store/relational/model/Table';
-import { View } from '../../../model/packageableElements/store/relational/model/View';
+import type { Table } from '../../../model/packageableElements/store/relational/model/Table';
+import type { View } from '../../../model/packageableElements/store/relational/model/View';
 import {
   PackageableElementExplicitReference,
   OptionalPackageableElementExplicitReference,
@@ -55,7 +55,7 @@ import {
 } from '../../../model/packageableElements/mapping/SetImplementation';
 import { AssociationImplementation } from '../../../model/packageableElements/mapping/AssociationImplementation';
 import type { Type } from '../../../model/packageableElements/domain/Type';
-import { Class } from '../../../model/packageableElements/domain/Class';
+import type { Class } from '../../../model/packageableElements/domain/Class';
 import type { Enumeration } from '../../../model/packageableElements/domain/Enumeration';
 import {
   OperationSetImplementation,
@@ -68,9 +68,8 @@ import { isStubArray } from '../../../model/Stubable';
 import type { MappingTest } from '../../../model/packageableElements/mapping/MappingTest';
 import { InstanceSetImplementation } from './InstanceSetImplementation';
 import type { PropertyMapping } from './PropertyMapping';
-import { RootFlatDataRecordType } from '../../../model/packageableElements/store/flatData/model/FlatDataDataType';
+import type { RootFlatDataRecordType } from '../../../model/packageableElements/store/flatData/model/FlatDataDataType';
 import { RootRelationalInstanceSetImplementation } from '../../../model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { NamedRelation } from '../../../model/packageableElements/store/relational/model/RelationalOperationElement';
 import { InferableMappingElementIdExplicitValue } from '../../../model/packageableElements/mapping/InferableMappingElementId';
 import type { MappingInclude } from './MappingInclude';
 import { InferableMappingElementRootExplicitValue } from './InferableMappingElementRoot';
@@ -516,28 +515,6 @@ export const getMappingElementSource = (
     }'`,
   );
 };
-
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-export const getMappingElementSourceFilterText = (
-  option: MappingElementSourceSelectOption,
-): string => {
-  const val = option.value;
-  if (val instanceof Class) {
-    return val.path;
-  } else if (val instanceof RootFlatDataRecordType) {
-    return val.owner.name;
-  } else if (val instanceof NamedRelation) {
-    if (val instanceof Table || val instanceof View) {
-      return `${val.schema.owner.path}.${val.schema.name}.${val.name}`;
-    }
-  }
-  throw new UnsupportedOperationError();
-};
-
-export interface MappingElementSourceSelectOption {
-  label: string;
-  value: MappingElementSource;
-}
 
 export interface MappingElementLabel {
   value: string;

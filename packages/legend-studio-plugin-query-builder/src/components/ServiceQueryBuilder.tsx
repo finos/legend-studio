@@ -27,9 +27,8 @@ export const ServiceQueryBuilder = observer(
     const { executionState } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
-    const queryBuilderState = editorStore.getEditorExtensionState(
-      QueryBuilderState,
-    );
+    const queryBuilderState =
+      editorStore.getEditorExtensionState(QueryBuilderState);
     const editWithQueryBuilder = async (): Promise<void> => {
       executionState.setOpeningQueryEditor(true);
       if (executionState.selectedExecutionConfiguration) {
@@ -41,14 +40,15 @@ export const ServiceQueryBuilder = observer(
             executionState.execution.func,
             mapping,
             runtime,
-            (lambda: RawLambda): void => {
+            async (lambda: RawLambda): Promise<void> =>
               executionState.queryState
                 .updateLamba(lambda)
-                .catch(applicationStore.alertIllegalUnhandledError);
-              executionState.queryState.editorStore.applicationStore.notifySuccess(
-                `Service ${executionState.execution.owner.name} has been updated`,
-              );
-            },
+                .then(() =>
+                  editorStore.applicationStore.notifySuccess(
+                    `Service '${executionState.execution.owner.name}' execution query is updated`,
+                  ),
+                )
+                .catch(applicationStore.alertIllegalUnhandledError),
             executionState.queryState.query.isStub,
           );
           executionState.setOpeningQueryEditor(false);

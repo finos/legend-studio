@@ -340,7 +340,8 @@ export class ApplicationStore {
         );
       } else {
         // Only proceed to check terms of service agreement status after the passing authorization check
-        this.SDLCServerTermsOfServicesUrlsToView = (yield this.networkClientManager.sdlcClient.hasAcceptedTermsOfService()) as string[];
+        this.SDLCServerTermsOfServicesUrlsToView =
+          (yield this.networkClientManager.sdlcClient.hasAcceptedTermsOfService()) as string[];
         if (this.SDLCServerTermsOfServicesUrlsToView.length) {
           this.setActionAltertInfo({
             message:
@@ -441,10 +442,10 @@ export class ApplicationStore {
   /**
    * Guarantee that the action being used by the component does not throw unhandled errors
    */
-  guaranteeSafeAction = (
-    actionFn: () => Promise<void>,
-  ): (() => Promise<void>) => (): Promise<void> =>
-    actionFn().catch(this.alertIllegalUnhandledError);
+  guaranteeSafeAction =
+    (actionFn: () => Promise<void>): (() => Promise<void>) =>
+    (): Promise<void> =>
+      actionFn().catch(this.alertIllegalUnhandledError);
 
   async copyTextToClipboard(text: string): Promise<void> {
     if (typeof navigator.clipboard.writeText === 'function') {
@@ -480,9 +481,8 @@ export class ApplicationStore {
   }
 }
 
-const ApplicationStoreContext = createContext<ApplicationStore | undefined>(
-  undefined,
-);
+const ApplicationStoreContext =
+  createContext<ApplicationStore | undefined>(undefined);
 
 export const ApplicationStoreProvider = ({
   children,

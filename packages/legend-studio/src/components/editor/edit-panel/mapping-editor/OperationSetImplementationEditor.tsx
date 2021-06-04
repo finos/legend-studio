@@ -60,9 +60,8 @@ export const OperationSetImplementationEditor = observer(
   }) => {
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const mapping = mappingEditorState.mapping;
     // Parameters
     const setImplementationOptions = mapping
@@ -86,24 +85,25 @@ export const OperationSetImplementationEditor = observer(
           ),
         ),
       );
-    const deleteParameter = (
-      val: SetImplementationContainer,
-    ): (() => void) => (): void => setImplementation.deleteParameter(val);
-    const changeParamater = (
-      val: SetImplementationContainer,
-    ): ((option: SetImplementationOption | null) => void) => (
-      option: SetImplementationOption | null,
-    ): void => {
-      const setImpl = option?.value;
-      if (setImpl) {
-        setImplementation.changeParameter(
-          val,
-          new SetImplementationContainer(
-            SetImplementationExplicitReference.create(setImpl),
-          ),
-        );
-      }
-    };
+    const deleteParameter =
+      (val: SetImplementationContainer): (() => void) =>
+      (): void =>
+        setImplementation.deleteParameter(val);
+    const changeParamater =
+      (
+        val: SetImplementationContainer,
+      ): ((option: SetImplementationOption | null) => void) =>
+      (option: SetImplementationOption | null): void => {
+        const setImpl = option?.value;
+        if (setImpl) {
+          setImplementation.changeParameter(
+            val,
+            new SetImplementationContainer(
+              SetImplementationExplicitReference.create(setImpl),
+            ),
+          );
+        }
+      };
     // Drag and Drop
     const handleDrop = useCallback(
       (item: OperationSetImplementationDropTarget): void => {
@@ -136,13 +136,13 @@ export const OperationSetImplementationEditor = observer(
       [handleDrop],
     );
     // actions
-    const visit = (
-      param: SetImplementationContainer,
-    ): (() => void) => (): void =>
-      mappingEditorState.openMappingElement(
-        param.setImplementation.value,
-        true,
-      );
+    const visit =
+      (param: SetImplementationContainer): (() => void) =>
+      (): void =>
+        mappingEditorState.openMappingElement(
+          param.setImplementation.value,
+          true,
+        );
 
     useEffect(() => {
       if (!isReadOnly) {

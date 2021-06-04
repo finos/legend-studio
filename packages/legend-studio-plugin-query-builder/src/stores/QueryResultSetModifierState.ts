@@ -64,9 +64,10 @@ export class SortColumnState {
   }
 
   buildFunctionExpression(): SimpleFunctionExpression {
-    const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+    const multiplicityOne =
+      this.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
     const func = new SimpleFunctionExpression(
       this.sortType.toString(),
       multiplicityOne,
@@ -146,9 +147,10 @@ export class QueryResultSetModifierState {
     },
   ): LambdaFunction {
     let currentExpression = lambda.expressionSequence[0];
-    const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+    const multiplicityOne =
+      this.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
     if (this.canModifyLambdaInProjectionMode(lambda) && this.distinct) {
       const val = new SimpleFunctionExpression(
         SUPPORTED_FUNCTIONS.DISTINCT,

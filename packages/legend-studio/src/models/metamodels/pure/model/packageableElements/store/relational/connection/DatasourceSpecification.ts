@@ -27,7 +27,8 @@ export abstract class DatasourceSpecification implements Hashable {
 
 export class StaticDatasourceSpecification
   extends DatasourceSpecification
-  implements Hashable {
+  implements Hashable
+{
   host: string;
   port: number;
   databaseName: string;
@@ -73,7 +74,8 @@ export class StaticDatasourceSpecification
 
 export class EmbeddedH2DatasourceSpecification
   extends DatasourceSpecification
-  implements Hashable {
+  implements Hashable
+{
   databaseName: string;
   directory: string;
   autoServerMode: boolean;
@@ -123,7 +125,8 @@ export class EmbeddedH2DatasourceSpecification
 
 export class LocalH2DatasourceSpecification
   extends DatasourceSpecification
-  implements Hashable {
+  implements Hashable
+{
   testDataSetupCsv?: string;
   testDataSetupSqls: string[] = [];
 
@@ -142,6 +145,10 @@ export class LocalH2DatasourceSpecification
     this.testDataSetupCsv = val;
   }
 
+  setTestDataSetupSqls(val: string[]): void {
+    this.testDataSetupSqls = val;
+  }
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.LOCAL_H2_DATASOURCE_SPECIFICATION,
@@ -153,11 +160,13 @@ export class LocalH2DatasourceSpecification
 
 export class SnowflakeDatasourceSpecification
   extends DatasourceSpecification
-  implements Hashable {
+  implements Hashable
+{
   accountName: string;
   region: string;
   warehouseName: string;
   databaseName: string;
+  quotedIdentifiersIgnoreCase?: boolean;
 
   constructor(
     accountName: string,
@@ -172,6 +181,7 @@ export class SnowflakeDatasourceSpecification
       region: observable,
       warehouseName: observable,
       databaseName: observable,
+      quotedIdentifiersIgnoreCase: observable,
       hashCode: computed,
       setAccountName: action,
       setRegion: action,
@@ -204,6 +214,7 @@ export class SnowflakeDatasourceSpecification
       this.region,
       this.warehouseName,
       this.databaseName,
+      this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }
 }

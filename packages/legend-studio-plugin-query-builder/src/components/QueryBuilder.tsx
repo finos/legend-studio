@@ -31,6 +31,7 @@ import {
 } from './QueryBuilderUnsupportedPanel';
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Constants';
+import { useApplicationStore } from '@finos/legend-studio';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -68,9 +69,13 @@ const QueryBuilderStatusBar = observer(
 const QueryBuilderHeader = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const promoteToService = (): void =>
       queryBuilderState.resultState.setShowServicePathModal(true);
-    const saveQuery = (): void => queryBuilderState.saveQuery();
+    const saveQuery = (): Promise<void> =>
+      queryBuilderState
+        .saveQuery()
+        .catch(applicationStore.alertIllegalUnhandledError);
     const disablePromoteToService = !queryBuilderState.querySetupState.mapping;
 
     return (

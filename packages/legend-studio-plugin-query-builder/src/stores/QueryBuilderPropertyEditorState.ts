@@ -128,9 +128,10 @@ export class DerivedPropertyExpressionEditorState {
     );
     this.initDerivedParameters();
     if (!parametersBuilt) {
-      this.propertyExpression.parametersValues = this.propertyExpression.parametersValues.concat(
-        this.buildDerivedPropertyParameters(),
-      );
+      this.propertyExpression.parametersValues =
+        this.propertyExpression.parametersValues.concat(
+          this.buildDerivedPropertyParameters(),
+        );
     }
   }
 
@@ -242,8 +243,8 @@ export class QueryBuilderPropertyEditorState {
     let canHaveMultipleValues = false;
     let hasDerivedPropertyInChain = false;
     const result: DerivedPropertyExpressionEditorState[] = [];
-    let currentExpression: ValueSpecification | undefined = this
-      .propertyExpression;
+    let currentExpression: ValueSpecification | undefined =
+      this.propertyExpression;
     while (currentExpression instanceof AbstractPropertyExpression) {
       // Check if the property chain can results in column that have multiple values
       if (
@@ -254,11 +255,12 @@ export class QueryBuilderPropertyEditorState {
       }
       if (currentExpression.func instanceof DerivedProperty) {
         hasDerivedPropertyInChain = true;
-        const derivedPropertyExpressionState = new DerivedPropertyExpressionEditorState(
-          this.editorStore,
-          currentExpression,
-          expressionProcessed,
-        );
+        const derivedPropertyExpressionState =
+          new DerivedPropertyExpressionEditorState(
+            this.editorStore,
+            currentExpression,
+            expressionProcessed,
+          );
         result.push(derivedPropertyExpressionState);
       }
       currentExpression = getNullableFirstElement(

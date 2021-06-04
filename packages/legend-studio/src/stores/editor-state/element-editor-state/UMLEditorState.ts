@@ -21,7 +21,6 @@ import {
   getClass,
 } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Profile } from '../../../models/metamodels/pure/model/packageableElements/domain/Profile';
@@ -35,8 +34,8 @@ export enum UML_EDITOR_TAB {
   PROPERTIES = 'PROPERTIES',
   // Class
   DERIVED_PROPERTIES = 'DERIVED_PROPERTIES',
-  SUPER_TYPES = 'SUPER_TYPES',
   CONSTRAINTS = 'CONSTRAINTS',
+  SUPER_TYPES = 'SUPER_TYPES',
   // Enumeration
   ENUM_VALUES = 'VALUES',
   // Profile
@@ -74,10 +73,6 @@ export class UMLEditorState extends ElementEditorState {
 
   setSelectedTab(tab: UML_EDITOR_TAB): void {
     this.selectedTab = tab;
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

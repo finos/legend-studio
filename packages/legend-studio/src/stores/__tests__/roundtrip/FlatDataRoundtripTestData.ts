@@ -14759,8 +14759,7 @@ export const testEmbeddedFlatDataMappingRoundtrip = [
           _type: 'flatData',
           class: 'myFlatDataTest::Residential',
           flatData: 'myFlatDataTest::Tape',
-          id:
-            'datamarts_rmd_domain_cerebro_instruments_residential_1_0_0_referenceData_product_loans_v2_resi_Residential',
+          id: 'datamarts_rmd_domain_cerebro_instruments_residential_1_0_0_referenceData_product_loans_v2_resi_Residential',
           propertyMappings: [
             {
               _type: 'flatDataPropertyMapping',
@@ -14798,8 +14797,7 @@ export const testEmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'embeddedFlatDataPropertyMapping',
               class: 'myFlatDataTest::Origination',
-              id:
-                'datamarts_rmd_domain_cerebro_instruments_residential_1_0_0_referenceData_product_loans_v2_resi_Residential.resiOrigination',
+              id: 'datamarts_rmd_domain_cerebro_instruments_residential_1_0_0_referenceData_product_loans_v2_resi_Residential.resiOrigination',
               property: {
                 class: 'myFlatDataTest::Residential',
                 property: 'resiOrigination',

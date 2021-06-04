@@ -21,7 +21,8 @@ import { hashArray } from '@finos/legend-studio-shared';
 
 export abstract class V1_CDate
   extends V1_ValueSpecification
-  implements Hashable {
+  implements Hashable
+{
   multiplicity!: V1_Multiplicity;
 
   get hashCode(): string {

@@ -60,20 +60,21 @@ export const PropertyMappingsEditor = observer(
   }) => {
     const { instanceSetImplementationState, property, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyRawType = property.genericType.value.rawType;
     const propertyBasicType = getClassPropertyType(propertyRawType);
-    const instanceSetImplementationType = editorStore.graphState.getSetImplementationType(
-      instanceSetImplementationState.setImplementation,
-    );
+    const instanceSetImplementationType =
+      editorStore.graphState.getSetImplementationType(
+        instanceSetImplementationState.setImplementation,
+      );
     const isEmbedded =
       instanceSetImplementationState.setImplementation.isEmbedded;
     // Parser Error
-    const propertyMappingStates = instanceSetImplementationState.propertyMappingStates.filter(
-      (pm) => pm.propertyMapping.property.value.name === property.name,
-    );
+    const propertyMappingStates =
+      instanceSetImplementationState.propertyMappingStates.filter(
+        (pm) => pm.propertyMapping.property.value.name === property.name,
+      );
     const propertyHasParserError = Boolean(
       propertyMappingStates.find((pm) => pm.parserError),
     );
@@ -89,9 +90,10 @@ export const PropertyMappingsEditor = observer(
           instanceSetImplementationState.mappingElement instanceof
           PureInstanceSetImplementation
         ) {
-          const rootMappingElement = mappingEditorState.mapping.getRootSetImplementation(
-            propertyRawType,
-          );
+          const rootMappingElement =
+            mappingEditorState.mapping.getRootSetImplementation(
+              propertyRawType,
+            );
           if (rootMappingElement) {
             mappingEditorState.openMappingElement(rootMappingElement, true);
           } else {
@@ -125,9 +127,10 @@ export const PropertyMappingsEditor = observer(
               true,
             );
           } else if (!propertyMappingStates.length) {
-            const embedded = instanceSetImplementationState.addEmbeddedPropertyMapping(
-              property,
-            );
+            const embedded =
+              instanceSetImplementationState.addEmbeddedPropertyMapping(
+                property,
+              );
             mappingEditorState.openMappingElement(embedded, true);
           }
         }

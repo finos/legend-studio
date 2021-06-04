@@ -24,7 +24,6 @@ import type { ServiceExecutionState } from './ServiceExecutionState';
 import { ServicePureExecutionState } from './ServiceExecutionState';
 import { ServiceRegistrationState } from '../../../editor-state/element-editor-state/service/ServiceRegistrationState';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState';
-import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Service } from '../../../../models/metamodels/pure/model/packageableElements/service/Service';
 import { PureExecution } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
@@ -76,10 +75,6 @@ export class ServiceEditorState extends ElementEditorState {
       Service,
       'Element inside service editor state must be a service',
     );
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

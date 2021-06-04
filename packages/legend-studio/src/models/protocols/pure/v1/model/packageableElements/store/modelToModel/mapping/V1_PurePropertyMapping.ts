@@ -23,7 +23,8 @@ import type { V1_RawLambda } from '../../../../../model/rawValueSpecification/V1
 
 export class V1_PurePropertyMapping
   extends V1_PropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   enumMappingId?: string;
   transform!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   explodeProperty?: boolean;

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-app",
-  "version": "0.2.28",
+  "version": "0.2.37",
   "private": true,
   "description": "Legend Studio web application",
   "keywords": [
@@ -29,7 +29,7 @@
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "dev:webpack": "cross-env NODE_ENV=development webpack serve --mode development",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
-    "publish:docker": "echo 'Building webapp content...' && yarn workspace @finos/legend-studio-app build && ./scripts/publish-docker.sh",
+    "publish:docker": "echo 'Building webapp content...' && yarn build && ./scripts/publish-docker.sh",
     "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /studio",
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev",
     "test": "jest",
@@ -41,19 +41,19 @@
     "@finos/legend-studio-plugin-query-builder": "workspace:*",
     "@finos/legend-studio-preset-dsl-text": "workspace:*",
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*",
-    "@types/react": "17.0.5",
+    "@types/react": "17.0.8",
     "react": "17.0.2"
   },
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
-    "copy-webpack-plugin": "8.1.1",
+    "copy-webpack-plugin": "9.0.0",
     "cross-env": "7.0.3",
-    "eslint": "7.26.0",
-    "jest": "26.6.3",
+    "eslint": "7.27.0",
+    "jest": "27.0.3",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "typescript": "4.2.4",
-    "webpack": "5.37.0",
+    "typescript": "4.3.2",
+    "webpack": "5.38.1",
     "webpack-bundle-analyzer": "4.4.2",
     "webpack-cli": "4.7.0",
     "webpack-dev-server": "4.0.0-beta.3"

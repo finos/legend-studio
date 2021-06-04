@@ -91,10 +91,10 @@ export const WorkspaceUpdater = observer(() => {
   const isSelectedConflict = (conflict: EntityChangeConflict): boolean =>
     currentEditorState instanceof EntityChangeConflictEditorState &&
     conflict.entityPath === currentEditorState.entityPath;
-  const openPotentialConflict = (
-    conflict: EntityChangeConflict,
-  ): (() => void) => (): void =>
-    workspaceUpdaterState.openPotentialWorkspaceUpdateConflict(conflict);
+  const openPotentialConflict =
+    (conflict: EntityChangeConflict): (() => void) =>
+    (): void =>
+      workspaceUpdaterState.openPotentialWorkspaceUpdateConflict(conflict);
   // Changes
   const changes =
     editorStore.changeDetectionState.aggregatedProjectLatestChanges;
@@ -108,8 +108,10 @@ export const WorkspaceUpdater = observer(() => {
     currentEditorState instanceof EntityDiffViewState &&
     diff.oldPath === currentEditorState.fromEntityPath &&
     diff.newPath === currentEditorState.toEntityPath;
-  const openChange = (diff: EntityDiff): (() => void) => (): void =>
-    workspaceUpdaterState.openProjectLatestChange(diff);
+  const openChange =
+    (diff: EntityDiff): (() => void) =>
+    (): void =>
+      workspaceUpdaterState.openProjectLatestChange(diff);
   // Committed Reviews
   const commitedReviews =
     workspaceUpdaterState.committedReviewsBetweenWorkspaceBaseAndProjectLatest;

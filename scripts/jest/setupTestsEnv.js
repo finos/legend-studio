@@ -17,5 +17,4 @@
 // increase timeout for some long running tests
 jest.setTimeout(10000);
 // Runs failed tests n-times until they pass or until the max number of retries is exhausted.
-// NOTE: This only works with `jest-circus`
 jest.retryTimes(2);

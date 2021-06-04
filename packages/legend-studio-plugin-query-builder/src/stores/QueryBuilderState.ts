@@ -38,12 +38,10 @@ import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type { EditorStore } from '@finos/legend-studio';
 import {
   EditorExtensionState,
-  AUX_PANEL_MODE,
   CollectionInstanceValue,
   CompilationError,
   CORE_ELEMENT_PATH,
   CORE_LOG_EVENT,
-  EngineError,
   FunctionType,
   GenericType,
   GenericTypeExplicitReference,
@@ -100,7 +98,6 @@ export class QueryBuilderState extends EditorExtensionState {
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   openQueryBuilder = false;
-  TEMPORARY__enableGraphFetch = false;
   operators: QueryBuilderOperator[] = [
     new QueryBuilderEqualOperator(),
     new QueryBuilderNotEqualOperator(),
@@ -120,12 +117,7 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderIsNotEmptyOperator(),
   ];
 
-  constructor(
-    editorStore: EditorStore,
-    options?: {
-      TEMPORARY__enableGraphFetch?: boolean;
-    },
-  ) {
+  constructor(editorStore: EditorStore) {
     super();
 
     makeObservable(this, {
@@ -167,10 +159,6 @@ export class QueryBuilderState extends EditorExtensionState {
       editorStore,
       this,
     );
-
-    this.TEMPORARY__enableGraphFetch = Boolean(
-      options?.TEMPORARY__enableGraphFetch,
-    );
   }
 
   getRawLambdaQuery(): RawLambda {
@@ -200,7 +188,7 @@ export class QueryBuilderState extends EditorExtensionState {
           }),
         );
       }
-      if (!this.editorStore.graphState.compilationError) {
+      if (!this.editorStore.graphState.hasCompilationError) {
         this.openQueryBuilder = val;
       }
     } else {
@@ -209,16 +197,10 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   reset(): void {
-    const currentQueryBuilderState = this.editorStore.getEditorExtensionState(
-      QueryBuilderState,
-    );
     changeEntry(
       this.editorStore.editorExtensionStates,
       this.editorStore.getEditorExtensionState(QueryBuilderState),
-      new QueryBuilderState(this.editorStore, {
-        TEMPORARY__enableGraphFetch:
-          currentQueryBuilderState.TEMPORARY__enableGraphFetch,
-      }),
+      new QueryBuilderState(this.editorStore),
     );
   }
 
@@ -271,9 +253,10 @@ export class QueryBuilderState extends EditorExtensionState {
       this.querySetupState._class,
       'Class is required to execute query',
     );
-    const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+    const multiplicityOne =
+      this.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
     const stringType = this.editorStore.graphState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
@@ -336,8 +319,8 @@ export class QueryBuilderState extends EditorExtensionState {
       this.fetchStructureState.isGraphFetchMode() &&
       this.fetchStructureState.graphFetchTreeState.graphFetchTree
     ) {
-      const graphFetchTreeState = this.fetchStructureState.graphFetchTreeState
-        .graphFetchTree;
+      const graphFetchTreeState =
+        this.fetchStructureState.graphFetchTreeState.graphFetchTree;
       const root = graphFetchTreeState.root;
       const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
         multiplicityOne,
@@ -384,9 +367,10 @@ export class QueryBuilderState extends EditorExtensionState {
     const typeAny = this.editorStore.graphState.graph.getClass(
       CORE_ELEMENT_PATH.ANY,
     );
-    const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+    const multiplicityOne =
+      this.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
     // main filter expression
     const filterExpression = new SimpleFunctionExpression(
       SUPPORTED_FUNCTIONS.FILTER,
@@ -444,10 +428,11 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   buildLambdaFunctionFromRawLambda(rawLambda: RawLambda): LambdaFunction {
-    const valueSpec = this.editorStore.graphState.graphManager.buildValueSpecification(
-      rawLambda,
-      this.editorStore.graphState.graph,
-    );
+    const valueSpec =
+      this.editorStore.graphState.graphManager.buildValueSpecification(
+        rawLambda,
+        this.editorStore.graphState.graph,
+      );
     const compiledValueSpecification = guaranteeType(
       valueSpec,
       LambdaFunctionInstanceValue,
@@ -472,12 +457,12 @@ export class QueryBuilderState extends EditorExtensionState {
     );
   }
 
-  saveQuery(): void {
+  async saveQuery(): Promise<void> {
     const onQuerySave = this.querySetupState.onSave;
     if (onQuerySave) {
       try {
         const rawLambda = this.getRawLambdaQuery();
-        onQuerySave(rawLambda);
+        await onQuerySave(rawLambda);
       } catch (error: unknown) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.notifyError(
@@ -501,8 +486,7 @@ export class QueryBuilderState extends EditorExtensionState {
   compileQuery = flow(function* (this: QueryBuilderState) {
     if (this.isEditingInTextMode()) {
       try {
-        this.editorStore.graphState.clearCompilationError();
-        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+        this.queryTextEditorState.setCompilationError(undefined);
         (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
           this.queryTextEditorState.rawLambdaState.lambda,
           this.editorStore.graphState.graph,
@@ -510,20 +494,16 @@ export class QueryBuilderState extends EditorExtensionState {
         this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       } catch (error: unknown) {
         assertErrorThrown(error);
-        if (error instanceof EngineError) {
-          this.editorStore.graphState.setCompilationError(error);
-        }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.COMPILATION_PROBLEM,
-          error,
-        );
-        const compilationError = this.editorStore.graphState.compilationError;
-        if (compilationError instanceof CompilationError) {
+        if (error instanceof CompilationError) {
+          this.editorStore.applicationStore.logger.error(
+            CORE_LOG_EVENT.COMPILATION_PROBLEM,
+            error,
+          );
           const errorElementCoordinates = getElementCoordinates(
-            compilationError.sourceInformation,
+            error.sourceInformation,
           );
           if (errorElementCoordinates) {
-            this.queryTextEditorState.setCompilationError(compilationError);
+            this.queryTextEditorState.setCompilationError(error);
           }
         }
       }

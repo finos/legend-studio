@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import {
   hashArray,
   UnsupportedOperationError,
@@ -29,17 +29,17 @@ import type { ValidationIssue } from '../../../../../action/validator/Validation
 import { createValidationError } from '../../../../../action/validator/ValidationResult';
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
 
-export enum OBJECT_INPUT_TYPE {
+export enum ObjectInputType {
   JSON = 'JSON',
   XML = 'XML',
 }
 
-export const getObjectInputType = (type: string): OBJECT_INPUT_TYPE => {
+export const getObjectInputType = (type: string): ObjectInputType => {
   switch (type) {
-    case OBJECT_INPUT_TYPE.JSON:
-      return OBJECT_INPUT_TYPE.JSON;
-    case OBJECT_INPUT_TYPE.XML:
-      return OBJECT_INPUT_TYPE.XML;
+    case ObjectInputType.JSON:
+      return ObjectInputType.JSON;
+    case ObjectInputType.XML:
+      return ObjectInputType.XML;
     default:
       throw new UnsupportedOperationError(
         `Encountered unsupported object input type '${type}'`,
@@ -49,12 +49,12 @@ export const getObjectInputType = (type: string): OBJECT_INPUT_TYPE => {
 
 export class ObjectInputData extends InputData implements Hashable {
   sourceClass: PackageableElementReference<Class>;
-  inputType: OBJECT_INPUT_TYPE;
+  inputType: ObjectInputType;
   data: string;
 
   constructor(
     sourceClass: PackageableElementReference<Class>,
-    inputType: OBJECT_INPUT_TYPE,
+    inputType: ObjectInputType,
     data: string,
   ) {
     super();
@@ -62,6 +62,7 @@ export class ObjectInputData extends InputData implements Hashable {
     makeObservable(this, {
       inputType: observable,
       data: observable,
+      setData: action,
       validationResult: computed,
       hashCode: computed,
     });
@@ -70,9 +71,13 @@ export class ObjectInputData extends InputData implements Hashable {
     this.inputType = inputType;
     /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/66 */
     this.data =
-      inputType === OBJECT_INPUT_TYPE.JSON
+      inputType === ObjectInputType.JSON
         ? tryToMinifyLosslessJSONString(data)
         : data;
+  }
+
+  setData(val: string): void {
+    this.data = val;
   }
 
   get validationResult(): ValidationIssue | undefined {
@@ -81,7 +86,7 @@ export class ObjectInputData extends InputData implements Hashable {
         'Object input data source class is missing',
       ]);
     }
-    if (this.inputType === OBJECT_INPUT_TYPE.JSON) {
+    if (this.inputType === ObjectInputType.JSON) {
       return !isValidJSONString(this.data)
         ? createValidationError([
             'JSON object input data is not a valid JSON string',

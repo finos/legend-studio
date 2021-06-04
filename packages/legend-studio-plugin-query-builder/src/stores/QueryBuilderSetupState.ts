@@ -46,7 +46,7 @@ export class QueryBuilderSetupState {
   runtimeEditorState?: RuntimeEditorState;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
-  onSave?: (lambda: RawLambda) => void;
+  onSave?: (lambda: RawLambda) => Promise<void>;
   showSetupPanel = true;
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
@@ -69,16 +69,16 @@ export class QueryBuilderSetupState {
   }
 
   get possibleMappings(): Mapping[] {
-    const mappingsWithClassMapped = this.editorStore.graphState.graph.mappings.filter(
-      (mapping) =>
+    const mappingsWithClassMapped =
+      this.editorStore.graphState.graph.mappings.filter((mapping) =>
         mapping.classMappings.some((cm) => cm.class.value === this._class),
-    );
-    const resolvedMappingIncludes = this.editorStore.graphState.graph.mappings.filter(
-      (mapping) =>
+      );
+    const resolvedMappingIncludes =
+      this.editorStore.graphState.graph.mappings.filter((mapping) =>
         mapping.allIncludedMappings.some((e) =>
           mappingsWithClassMapped.includes(e),
         ),
-    );
+      );
     return this._class
       ? uniq([...mappingsWithClassMapped, ...resolvedMappingIncludes])
       : [];
@@ -114,7 +114,7 @@ export class QueryBuilderSetupState {
     }
   }
   setOnSaveQuery(
-    val: ((lambda: RawLambda) => void | undefined) | undefined,
+    val: ((lambda: RawLambda) => Promise<void>) | undefined,
   ): void {
     this.onSave = val;
   }
@@ -160,7 +160,7 @@ export class QueryBuilderSetupState {
     func: RawLambda,
     mapping: Mapping | undefined,
     runtime: Runtime,
-    onSave: (lambda: RawLambda) => void,
+    onSave: (lambda: RawLambda) => Promise<void>,
     disableCompile: boolean,
   ) {
     this.setMapping(mapping);

@@ -24,7 +24,7 @@ import { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import { Package } from '../model/packageableElements/domain/Package';
 import {
   ObjectInputData,
-  OBJECT_INPUT_TYPE,
+  ObjectInputType,
 } from '../model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import { Class } from '../model/packageableElements/domain/Class';
 import { PackageableElementExplicitReference } from '../model/packageableElements/PackageableElementReference';
@@ -89,19 +89,19 @@ test(
 test(unitTest('JSON Object input data should be minified'), () => {
   const test1 = new ObjectInputData(
     PackageableElementExplicitReference.create(Class.createStub()),
-    OBJECT_INPUT_TYPE.JSON,
+    ObjectInputType.JSON,
     '{"a":1}',
   );
 
   const test2 = new ObjectInputData(
     PackageableElementExplicitReference.create(Class.createStub()),
-    OBJECT_INPUT_TYPE.JSON,
+    ObjectInputType.JSON,
     '{\n  "a":1\n}',
   );
 
   const test3 = new ObjectInputData(
     PackageableElementExplicitReference.create(Class.createStub()),
-    OBJECT_INPUT_TYPE.JSON,
+    ObjectInputType.JSON,
     '{\n  "a":1, \n "b" : {\n  "b1":"hello"\n} \n}',
   );
 

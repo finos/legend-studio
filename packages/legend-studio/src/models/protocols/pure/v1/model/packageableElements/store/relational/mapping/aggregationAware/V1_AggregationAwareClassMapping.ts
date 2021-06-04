@@ -24,7 +24,8 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 
 export class V1_AggregationAwareClassMapping
   extends V1_ClassMapping
-  implements Hashable {
+  implements Hashable
+{
   mainSetImplementation!: V1_ClassMapping;
   propertyMappings: V1_PropertyMapping[] = [];
   aggregateSetImplementations: V1_AggregateSetImplementationContainer[] = [];

@@ -48,7 +48,8 @@ export class EmbeddedRelationalInstanceSetImplementation
   implements
     EmbeddedSetImplementation,
     RelationalInstanceSetImplementation,
-    Hashable {
+    Hashable
+{
   root = InferableMappingElementRootExplicitValue.create(false);
   isEmbedded = true;
   id: InferableMappingElementIdValue;

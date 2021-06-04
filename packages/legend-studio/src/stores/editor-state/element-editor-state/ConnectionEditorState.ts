@@ -26,7 +26,6 @@ import {
   getClass,
 } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PackageableConnection } from '../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
 import type { Connection } from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
@@ -165,9 +164,10 @@ export class GenerateStoreState {
       generateStoreInput.enrichPrimaryKeys = true;
       generateStoreInput.enrichColumns = true;
       generateStoreInput.patterns = this.patterns;
-      const storeGrammar = ((yield this.editorStore.graphState.graphManager.generateStore(
-        generateStoreInput,
-      )) as unknown) as string;
+      const storeGrammar =
+        (yield this.editorStore.graphState.graphManager.generateStore(
+          generateStoreInput,
+        )) as unknown as string;
       this.setStoreGrammar(storeGrammar);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -184,10 +184,10 @@ export class GenerateStoreState {
     try {
       this.isSavingStore = true;
       assertNonEmptyString(this.storeGrammar, 'Store Grammar cannot be empty');
-      const store = ((yield this.editorStore.graphState.graphManager.saveStore(
+      const store = (yield this.editorStore.graphState.graphManager.saveStore(
         this.storeGrammar,
         this.editorStore.graphState.graph,
-      )) as unknown) as Store;
+      )) as unknown as Store;
       this.editorStore.applicationStore.notifySuccess(
         `Store ${store.path} saved`,
       );
@@ -250,13 +250,15 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     } else if (spec instanceof LocalH2DatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL;
     }
-    const extraDatasourceSpecificationTypeGetters = this.editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          (plugin as StoreRelational_EditorPlugin_Extension).getExtraDatasourceSpecificationTypeGetters?.() ??
-          [],
-      );
+    const extraDatasourceSpecificationTypeGetters =
+      this.editorStore.applicationStore.pluginManager
+        .getEditorPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as StoreRelational_EditorPlugin_Extension
+            ).getExtraDatasourceSpecificationTypeGetters?.() ?? [],
+        );
     for (const typeGetter of extraDatasourceSpecificationTypeGetters) {
       const type = typeGetter(spec);
       if (type) {
@@ -297,13 +299,15 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         return;
       }
       default: {
-        const extraDatasourceSpecificationCreators = this.editorStore.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (plugin as StoreRelational_EditorPlugin_Extension).getExtraDatasourceSpecificationCreators?.() ??
-              [],
-          );
+        const extraDatasourceSpecificationCreators =
+          this.editorStore.applicationStore.pluginManager
+            .getEditorPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as StoreRelational_EditorPlugin_Extension
+                ).getExtraDatasourceSpecificationCreators?.() ?? [],
+            );
         for (const creator of extraDatasourceSpecificationCreators) {
           const spec = creator(type);
           if (spec) {
@@ -330,13 +334,15 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     } else if (auth instanceof SnowflakePublicAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
     }
-    const extraAuthenticationStrategyTypeGetters = this.editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          (plugin as StoreRelational_EditorPlugin_Extension).getExtraAuthenticationStrategyTypeGetters?.() ??
-          [],
-      );
+    const extraAuthenticationStrategyTypeGetters =
+      this.editorStore.applicationStore.pluginManager
+        .getEditorPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as StoreRelational_EditorPlugin_Extension
+            ).getExtraAuthenticationStrategyTypeGetters?.() ?? [],
+        );
     for (const typeGetter of extraAuthenticationStrategyTypeGetters) {
       const type = typeGetter(auth);
       if (type) {
@@ -382,13 +388,15 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       default: {
-        const extraAuthenticationStrategyCreators = this.editorStore.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (plugin as StoreRelational_EditorPlugin_Extension).getExtraAuthenticationStrategyCreators?.() ??
-              [],
-          );
+        const extraAuthenticationStrategyCreators =
+          this.editorStore.applicationStore.pluginManager
+            .getEditorPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as StoreRelational_EditorPlugin_Extension
+                ).getExtraAuthenticationStrategyCreators?.() ?? [],
+            );
         for (const creator of extraAuthenticationStrategyCreators) {
           const auth = creator(type);
           if (auth) {
@@ -490,10 +498,6 @@ export class PackageableConnectionEditorState extends ElementEditorState {
       PackageableConnection,
       `Element inside connection editor state must be a packageable connection`,
     );
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

@@ -31,7 +31,8 @@ import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationa
 
 export class RelationalInstanceSetImplementation
   extends InstanceSetImplementation
-  implements Hashable {
+  implements Hashable
+{
   primaryKey: RelationalOperationElement[] = [];
 
   constructor(

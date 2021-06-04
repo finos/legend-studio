@@ -353,8 +353,10 @@ export const ProjectConfigurationEditor = observer(() => {
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
   ];
-  const changeTab = (tab: CONFIGURATION_EDITOR_TAB): (() => void) => (): void =>
-    configurationEditorState.setSelectedTab(tab);
+  const changeTab =
+    (tab: CONFIGURATION_EDITOR_TAB): (() => void) =>
+    (): void =>
+      configurationEditorState.setSelectedTab(tab);
   let addButtonTitle = '';
   switch (selectedTab) {
     case CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES:
@@ -365,10 +367,10 @@ export const ProjectConfigurationEditor = observer(() => {
   }
   const currentProjectConfiguration =
     configurationEditorState.currentProjectConfiguration;
-  const deleteProjectDependency = (
-    val: ProjectDependency,
-  ): (() => void) => (): void =>
-    currentProjectConfiguration.deleteProjectDependency(val);
+  const deleteProjectDependency =
+    (val: ProjectDependency): (() => void) =>
+    (): void =>
+      currentProjectConfiguration.deleteProjectDependency(val);
   const addValue = (): void => {
     if (!isReadOnly) {
       if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {

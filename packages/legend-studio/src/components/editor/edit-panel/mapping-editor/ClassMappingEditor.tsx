@@ -82,12 +82,10 @@ export const ClassMappingEditor = observer(
   (props: { setImplementation: SetImplementation; isReadOnly: boolean }) => {
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
-    const setImplementationType = editorStore.graphState.getSetImplementationType(
-      setImplementation,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
+    const setImplementationType =
+      editorStore.graphState.getSetImplementationType(setImplementation);
     const _class = setImplementation.class;
     // ID
     const isDefaultId =
@@ -121,15 +119,18 @@ export const ClassMappingEditor = observer(
       }
       case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
         sourceType = CLASS_MAPPING_SOURCE_TYPE.FLAT_DATA;
-        const flatDataInstanceSetImpl = setImplementation as EmbeddedFlatDataPropertyMapping;
-        sourceName = (flatDataInstanceSetImpl.rootInstanceSetImplementation as FlatDataInstanceSetImplementation)
-          .sourceRootRecordType.value.owner.name;
+        const flatDataInstanceSetImpl =
+          setImplementation as EmbeddedFlatDataPropertyMapping;
+        sourceName = (
+          flatDataInstanceSetImpl.rootInstanceSetImplementation as FlatDataInstanceSetImplementation
+        ).sourceRootRecordType.value.owner.name;
         break;
       }
       case SET_IMPLEMENTATION_TYPE.RELATIONAL: {
         sourceType = CLASS_MAPPING_SOURCE_TYPE.RELATIONAL;
-        sourceName = (setImplementation as RootRelationalInstanceSetImplementation)
-          .mainTableAlias.relation.value.name;
+        sourceName = (
+          setImplementation as RootRelationalInstanceSetImplementation
+        ).mainTableAlias.relation.value.name;
         break;
       }
       case SET_IMPLEMENTATION_TYPE.OPERATION:
@@ -205,7 +206,8 @@ export const ClassMappingEditor = observer(
                   'mapping-element-editor__metadata__source-chunk',
                   `background--${setImplementationType.toLowerCase()}`,
                   {
-                    'mapping-element-editor__metadata__source-chunk--none': !sourceName,
+                    'mapping-element-editor__metadata__source-chunk--none':
+                      !sourceName,
                   },
                 )}
               >

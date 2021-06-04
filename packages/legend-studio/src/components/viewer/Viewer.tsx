@@ -124,8 +124,10 @@ const ViewerStatusBar = observer(() => {
 
 const ViewerActivityBar = observer(() => {
   const editorStore = useEditorStore();
-  const changeActivity = (activity: ACTIVITY_MODE): (() => void) => (): void =>
-    editorStore.setActiveActivity(activity);
+  const changeActivity =
+    (activity: ACTIVITY_MODE): (() => void) =>
+    (): void =>
+      editorStore.setActiveActivity(activity);
 
   return (
     <div className="activity-bar">

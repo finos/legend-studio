@@ -84,9 +84,8 @@ const MappingEditorHeaderTabContextMenu = observer(
     const { tabState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const close = applicationStore.guaranteeSafeAction(() =>
       mappingEditorState.closeTab(tabState),
     );
@@ -139,9 +138,8 @@ const getMappingElementTargetIcon = (
 export const MappingEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const mappingEditorState = editorStore.getCurrentEditorState(
-    MappingEditorState,
-  );
+  const mappingEditorState =
+    editorStore.getCurrentEditorState(MappingEditorState);
   const isReadOnly = mappingEditorState.isReadOnly;
   const currentMappingElement =
     mappingEditorState.currentTabState instanceof MappingElementState
@@ -185,15 +183,15 @@ export const MappingEditor = observer(() => {
       .closeTab(tabState)
       .catch(applicationStore.alertIllegalUnhandledError);
   };
-  const closeTabOnMiddleClick = (
-    tabState: MappingEditorTabState,
-  ): React.MouseEventHandler => (event): void => {
-    if (event.nativeEvent.button === 1) {
-      mappingEditorState
-        .closeTab(tabState)
-        .catch(applicationStore.alertIllegalUnhandledError);
-    }
-  };
+  const closeTabOnMiddleClick =
+    (tabState: MappingEditorTabState): React.MouseEventHandler =>
+    (event): void => {
+      if (event.nativeEvent.button === 1) {
+        mappingEditorState
+          .closeTab(tabState)
+          .catch(applicationStore.alertIllegalUnhandledError);
+      }
+    };
   const openTab = (tabState: MappingEditorTabState): (() => Promise<void>) =>
     applicationStore.guaranteeSafeAction(() =>
       mappingEditorState.openTab(tabState),

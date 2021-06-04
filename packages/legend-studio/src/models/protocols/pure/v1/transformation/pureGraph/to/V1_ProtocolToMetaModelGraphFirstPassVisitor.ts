@@ -60,7 +60,8 @@ import type { V1_SectionIndex } from '../../../model/packageableElements/section
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
 export class V1_ProtocolToMetaModelGraphFirstPassVisitor
-  implements V1_PackageableElementVisitor<PackageableElement> {
+  implements V1_PackageableElementVisitor<PackageableElement>
+{
   context: V1_GraphBuilderContext;
 
   constructor(context: V1_GraphBuilderContext) {

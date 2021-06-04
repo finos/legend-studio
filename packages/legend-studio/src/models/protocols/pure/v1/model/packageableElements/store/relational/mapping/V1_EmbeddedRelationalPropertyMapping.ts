@@ -23,7 +23,8 @@ import { V1_PropertyMapping } from '../../../../../model/packageableElements/map
 
 export class V1_EmbeddedRelationalPropertyMapping
   extends V1_PropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   id?: string;
   classMapping!: V1_RelationalClassMapping;
 

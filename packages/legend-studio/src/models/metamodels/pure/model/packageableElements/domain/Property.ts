@@ -38,7 +38,8 @@ import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';
 
 export class Property
-  implements AbstractProperty, AnnotatedElement, Hashable, Stubable {
+  implements AbstractProperty, AnnotatedElement, Hashable, Stubable
+{
   uuid = uuid();
   owner: PropertyOwner; // readonly
   name: string;

@@ -48,9 +48,8 @@ interface ClassMappingSubTypeOption {
 export const NewMappingElementModal = observer(() => {
   const editorStore = useEditorStore();
   const config = editorStore.applicationStore.config;
-  const mappingEditorState = editorStore.getCurrentEditorState(
-    MappingEditorState,
-  );
+  const mappingEditorState =
+    editorStore.getCurrentEditorState(MappingEditorState);
   const spec = mappingEditorState.newMappingElementSpec;
 
   // ID
@@ -105,10 +104,8 @@ export const NewMappingElementModal = observer(() => {
     { value: BASIC_SET_IMPLEMENTATION_TYPE.OPERATION, label: 'Operation' },
   ];
   const initialClassMappingType = classMappingTypeOptions[0];
-  const [
-    classMappingType,
-    setClassMappingType,
-  ] = useState<ClassMappingSubTypeOption | null>(initialClassMappingType);
+  const [classMappingType, setClassMappingType] =
+    useState<ClassMappingSubTypeOption | null>(initialClassMappingType);
   const changeClassMappingType = (val: ClassMappingSubTypeOption): void =>
     setClassMappingType(val);
 

@@ -3832,6 +3832,60 @@ export const testRelationalDatabaseConnectionRoundtrip = [
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
   {
+    path: 'apps::mySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'oauth',
+          oauthKey: 'dummy',
+          scopeName: 'UserPass',
+        },
+        datasourceSpecification: {
+          _type: 'snowflake',
+          accountName: 'dummy',
+          databaseName: 'test',
+          quotedIdentifiersIgnoreCase: true,
+          region: 'EMEA',
+          warehouseName: 'test',
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'H2',
+      },
+      name: 'mySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag',
+      package: 'apps',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
+    path: 'apps::mySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag2',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'oauth',
+          oauthKey: 'dummy',
+          scopeName: 'UserPass',
+        },
+        datasourceSpecification: {
+          _type: 'snowflake',
+          accountName: 'dummy',
+          databaseName: 'test',
+          quotedIdentifiersIgnoreCase: false,
+          region: 'EMEA',
+          warehouseName: 'test',
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'H2',
+      },
+      name: 'mySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag2',
+      package: 'apps',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: 'simple::H2Connection',
     content: {
       _type: 'connection',
@@ -7311,8 +7365,7 @@ export const testRelationalAssociationMapping = [
             upperBound: 1,
           },
           name: 'nested',
-          type:
-            'apps::meta::pure::tests::model::simple::PersonNameParameterNested',
+          type: 'apps::meta::pure::tests::model::simple::PersonNameParameterNested',
         },
       ],
     },

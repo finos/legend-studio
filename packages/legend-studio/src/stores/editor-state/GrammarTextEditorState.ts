@@ -43,6 +43,7 @@ import { Database } from '../../models/metamodels/pure/model/packageableElements
 import { RelationalDatabaseConnection } from '../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { ServiceStore } from '../../models/metamodels/pure/model/packageableElements/store/relational/model/ServiceStore';
 import type { DSL_EditorPlugin_Extension } from '../EditorPlugin';
+import type { EngineError } from '../../models/metamodels/pure/action/EngineError';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -61,16 +62,22 @@ export class GrammarTextEditorState {
   editorStore: EditorStore;
   graphGrammarText = '';
   currentElementLabelRegexString?: string;
+  error?: EngineError;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
       editorStore: false,
+      setError: action,
       setGraphGrammarText: action,
       resetCurrentElementLabelRegexString: action,
       setCurrentElementLabelRegexString: action,
     });
 
     this.editorStore = editorStore;
+  }
+
+  setError(error: EngineError | undefined): void {
+    this.error = error;
   }
 
   setGraphGrammarText(code: string): void {
@@ -128,13 +135,15 @@ export class GrammarTextEditorState {
     } else if (element instanceof PackageableRuntime) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME;
     } else {
-      const extraPureGrammarElementLabelers = this.editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
-        .flatMap(
-          (plugin) =>
-            (plugin as DSL_EditorPlugin_Extension).getExtraPureGrammarElementLabelers?.() ??
-            [],
-        );
+      const extraPureGrammarElementLabelers =
+        this.editorStore.applicationStore.pluginManager
+          .getEditorPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_EditorPlugin_Extension
+              ).getExtraPureGrammarElementLabelers?.() ?? [],
+          );
       for (const labeler of extraPureGrammarElementLabelers) {
         const _typeLabel = labeler(element);
         if (_typeLabel) {

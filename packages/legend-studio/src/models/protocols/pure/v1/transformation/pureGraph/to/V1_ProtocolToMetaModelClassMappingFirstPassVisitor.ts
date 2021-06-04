@@ -46,7 +46,8 @@ import { V1_rawLambdaBuilderWithResolver } from './helpers/V1_RawLambdaResolver'
 import { V1_processRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
-  implements V1_ClassMappingVisitor<SetImplementation> {
+  implements V1_ClassMappingVisitor<SetImplementation>
+{
   context: V1_GraphBuilderContext;
   parent: Mapping;
 
@@ -129,16 +130,16 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
       'Flat-data class mapping root flag is missing',
     );
     const targetClass = this.context.resolveClass(classMapping.class);
-    const sourceRootRecordType = this.context.resolveRootFlatDataRecordType(
-      classMapping,
-    );
-    const flatDataInstanceSetImplementation = new FlatDataInstanceSetImplementation(
-      V1_getInferredClassMappingId(targetClass.value, classMapping),
-      this.parent,
-      targetClass,
-      InferableMappingElementRootExplicitValue.create(classMapping.root),
-      sourceRootRecordType,
-    );
+    const sourceRootRecordType =
+      this.context.resolveRootFlatDataRecordType(classMapping);
+    const flatDataInstanceSetImplementation =
+      new FlatDataInstanceSetImplementation(
+        V1_getInferredClassMappingId(targetClass.value, classMapping),
+        this.parent,
+        targetClass,
+        InferableMappingElementRootExplicitValue.create(classMapping.root),
+        sourceRootRecordType,
+      );
     flatDataInstanceSetImplementation.filter = classMapping.filter
       ? V1_rawLambdaBuilderWithResolver(
           this.context,
@@ -167,12 +168,13 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
       'Relational class mapping root flag is missing',
     );
     const targetClass = this.context.resolveClass(classMapping.class);
-    const rootRelationalInstanceSetImplementation = new RootRelationalInstanceSetImplementation(
-      V1_getInferredClassMappingId(targetClass.value, classMapping),
-      this.parent,
-      targetClass,
-      InferableMappingElementRootExplicitValue.create(classMapping.root),
-    );
+    const rootRelationalInstanceSetImplementation =
+      new RootRelationalInstanceSetImplementation(
+        V1_getInferredClassMappingId(targetClass.value, classMapping),
+        this.parent,
+        targetClass,
+        InferableMappingElementRootExplicitValue.create(classMapping.root),
+      );
     rootRelationalInstanceSetImplementation.filter = classMapping.filter
       ? V1_processRelationalMappingFilter(classMapping.filter, this.context)
       : undefined;
@@ -192,22 +194,23 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     const mapping = this.context.graph.getMapping(this.parent.path);
-    const aggragetionAwareInstanceSetImplementation = new AggregationAwareSetImplementation(
-      V1_getInferredClassMappingId(targetClass.value, classMapping),
-      this.parent,
-      targetClass,
-      InferableMappingElementRootExplicitValue.create(classMapping.root),
-      classMapping.mainSetImplementation.accept_ClassMappingVisitor(
-        new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(
-          this.context,
-          mapping,
-        ),
-      ) as InstanceSetImplementation,
-    );
-    aggragetionAwareInstanceSetImplementation.aggregateSetImplementations = classMapping.aggregateSetImplementations.map(
-      (setImplementation) =>
+    const aggragetionAwareInstanceSetImplementation =
+      new AggregationAwareSetImplementation(
+        V1_getInferredClassMappingId(targetClass.value, classMapping),
+        this.parent,
+        targetClass,
+        InferableMappingElementRootExplicitValue.create(classMapping.root),
+        classMapping.mainSetImplementation.accept_ClassMappingVisitor(
+          new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(
+            this.context,
+            mapping,
+          ),
+        ) as InstanceSetImplementation,
+      );
+    aggragetionAwareInstanceSetImplementation.aggregateSetImplementations =
+      classMapping.aggregateSetImplementations.map((setImplementation) =>
         V1_processAggregateContainer(setImplementation, this.context, mapping),
-    );
+      );
     return aggragetionAwareInstanceSetImplementation;
   }
 }

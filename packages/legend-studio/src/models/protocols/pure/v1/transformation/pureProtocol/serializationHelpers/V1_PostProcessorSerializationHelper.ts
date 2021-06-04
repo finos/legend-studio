@@ -111,8 +111,9 @@ export const V1_serializePostProcessor = (
   }
   const extraPostprocessorProtocolSerializers = plugins.flatMap(
     (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionPostProcessorProtocolSerializers?.() ??
-      [],
+      (
+        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraConnectionPostProcessorProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraPostprocessorProtocolSerializers) {
     const postprocessorProtocolJson = serializer(value);
@@ -137,8 +138,9 @@ export const V1_deserializePostProcessor = (
     default: {
       const extraPostprocessorProtocolDeserializers = plugins.flatMap(
         (plugin) =>
-          (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionPostProcessorProtocolDeserializers?.() ??
-          [],
+          (
+            plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraConnectionPostProcessorProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraPostprocessorProtocolDeserializers) {
         const postprocessorProtocol = deserializer(value);

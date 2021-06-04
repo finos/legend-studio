@@ -54,7 +54,8 @@ import { AggregationAwareSetImplementation } from '../../../../../../metamodels/
 import type { V1_AggregateSetImplementationContainer } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer';
 
 export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
-  implements V1_ClassMappingVisitor<void> {
+  implements V1_ClassMappingVisitor<void>
+{
   context: V1_GraphBuilderContext;
   parent: Mapping;
 
@@ -117,8 +118,8 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
     // NOTE: we have to process property mappings here instead of in the first pass like the backend because we actually resolve `target` and `source`
     // at this point instead of just passing in the IDs. This means we have to go through the first pass to create basic mapping elements first
     // before we can finally use/resolve them in this pass
-    pureInstanceSetImplementation.propertyMappings = classMapping.propertyMappings.map(
-      (propertyMapping) =>
+    pureInstanceSetImplementation.propertyMappings =
+      classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
           new V1_ProtocolToMetaModelPropertyMappingVisitor(
             this.context,
@@ -127,7 +128,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
             this.parent.enumerationMappings,
           ),
         ),
-    ) as PurePropertyMapping[];
+      ) as PurePropertyMapping[];
   }
 
   visit_RootFlatDataClassMapping(
@@ -146,8 +147,8 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
       ),
       FlatDataInstanceSetImplementation,
     );
-    flatDataInstanceSetImplementation.propertyMappings = classMapping.propertyMappings.map(
-      (propertyMapping) =>
+    flatDataInstanceSetImplementation.propertyMappings =
+      classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
           new V1_ProtocolToMetaModelPropertyMappingVisitor(
             this.context,
@@ -156,7 +157,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
             this.parent.allEnumerationMappings,
           ),
         ),
-    ) as AbstractFlatDataPropertyMapping[];
+      ) as AbstractFlatDataPropertyMapping[];
   }
 
   visit_RelationalClassMapping(classMapping: V1_RelationalClassMapping): void {
@@ -270,8 +271,8 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
       ),
     );
 
-    aggragetionAwareInstanceSetImplementation.propertyMappings = classMapping.propertyMappings.map(
-      (propertyMapping) =>
+    aggragetionAwareInstanceSetImplementation.propertyMappings =
+      classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
           new V1_ProtocolToMetaModelPropertyMappingVisitor(
             this.context,
@@ -284,7 +285,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
             aggragetionAwareInstanceSetImplementation,
           ),
         ),
-    );
+      );
 
     classMapping.aggregateSetImplementations.forEach(
       (aggregateSetImpl: V1_AggregateSetImplementationContainer) =>

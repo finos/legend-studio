@@ -26,7 +26,8 @@ import type { PackageableElementReference } from '../../../../../model/packageab
 
 export class XmlModelConnection
   extends PureModelConnection
-  implements Hashable {
+  implements Hashable
+{
   public static readonly CONTENT_TYPE = ContentType.APPLICATION_XML;
 
   class: PackageableElementReference<Class>;

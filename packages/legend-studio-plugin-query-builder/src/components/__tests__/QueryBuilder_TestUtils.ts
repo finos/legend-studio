@@ -27,13 +27,7 @@ export const buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = PluginManager.create();
   pluginManager.usePlugins([new QueryBuilderPlugin()]).install();
   const mockedApplicationStore = getMockedApplicationStore(
-    getTestApplicationConfig({
-      options: {
-        '@finos/legend-studio-plugin-query-builder': {
-          TEMPORARY__enableGraphFetch: true,
-        },
-      },
-    }),
+    getTestApplicationConfig(),
     pluginManager,
   );
   return getMockedEditorStore(mockedApplicationStore);

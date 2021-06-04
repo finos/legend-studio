@@ -18,7 +18,6 @@ import { observable, action, flow, makeObservable } from 'mobx';
 import {
   losslessStringify,
   tryToFormatLosslessJSONString,
-  uniq,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import { SingleExecutionTestState } from './ServiceTestState';
@@ -30,7 +29,6 @@ import {
   LAMBDA_START,
 } from '../../../../models/MetaModelConst';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
-import { buildRawGraphFetchTreeData } from '../../../shared/RawGraphFetchTreeUtil';
 import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
@@ -55,7 +53,6 @@ import {
 } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
-import { RawRootGraphFetchTree } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawGraphFetchTree';
 import { TAB_SIZE } from '../../../EditorConfig';
 
 export enum SERVICE_EXECUTION_TAB {
@@ -136,7 +133,6 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
   execution: PureExecution;
   isConvertingLambdaToString = false;
   isInitializingLambda = false;
-  targetClass: Class | undefined;
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', LAMBDA_START);
@@ -144,10 +140,8 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
       execution: observable,
       isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
-      targetClass: observable,
       setIsInitializingLambda: action,
       setLambda: action,
-      setTargetClass: action,
       convertLambdaObjectToGrammarString: action,
       convertLambdaGrammarStringToObject: action,
       updateLamba: action,
@@ -157,26 +151,20 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     this.execution = execution;
   }
 
-  get query(): RawLambda {
-    return this.execution.func;
+  get lambdaId(): string {
+    return `${this.execution.owner.path}-execution`;
   }
 
-  get mappedClasses(): Class[] {
-    return uniq(
-      this.editorStore.graphState.graph.mappings
-        .map((e) => e.classMappings.map((c) => c.class.value))
-        .flat(),
-    );
+  get query(): RawLambda {
+    return this.execution.func;
   }
 
   setIsInitializingLambda(val: boolean): void {
     this.isInitializingLambda = val;
   }
+
   setLambda(val: RawLambda): void {
     this.execution.setFunction(val);
-  }
-  setTargetClass(val: Class | undefined): void {
-    this.targetClass = val;
   }
 
   updateLamba = flow(function* (
@@ -196,17 +184,18 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(
-          this.execution.lambdaId,
+          this.lambdaId,
           new RawLambda(
             this.execution.func.parameters,
             this.execution.func.body,
           ),
         );
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-          pretty,
-        )) as Map<string, string>;
-        const grammarText = isolatedLambdas.get(this.execution.lambdaId);
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
+        const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)
@@ -227,6 +216,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     }
   });
 
+  // NOTE: since we don't allow edition in text mode, we don't need to implement this
   convertLambdaGrammarStringToObject(): Promise<void> {
     throw new Error('Method not implemented.');
   }
@@ -274,9 +264,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     });
 
     this.execution = execution;
-    this.selectedExecutionConfiguration = this.getInitiallySelectedExecution(
-      execution,
-    );
+    this.selectedExecutionConfiguration =
+      this.getInitiallySelectedExecution(execution);
     this.queryState = new ServicePureExecutionQueryState(
       this.editorStore,
       execution,
@@ -303,13 +292,14 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     try {
       this.isGeneratingPlan = true;
       const query = this.queryState.query;
-      const plan = ((yield this.editorStore.graphState.graphManager.generateExecutionPlan(
-        this.editorStore.graphState.graph,
-        this.selectedExecutionConfiguration.mapping.value,
-        query,
-        this.selectedExecutionConfiguration.runtime,
-        CLIENT_VERSION.VX_X_X,
-      )) as unknown) as object;
+      const plan =
+        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+          this.editorStore.graphState.graph,
+          this.selectedExecutionConfiguration.mapping.value,
+          query,
+          this.selectedExecutionConfiguration.runtime,
+          CLIENT_VERSION.VX_X_X,
+        )) as unknown as object;
       this.setExecutionPlan(plan);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -329,14 +319,15 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     try {
       this.isExecuting = true;
       const query = this.queryState.query;
-      const result = ((yield this.editorStore.graphState.graphManager.executeMapping(
-        this.editorStore.graphState.graph,
-        this.selectedExecutionConfiguration.mapping.value,
-        query,
-        this.selectedExecutionConfiguration.runtime,
-        CLIENT_VERSION.VX_X_X,
-        true,
-      )) as unknown) as ExecutionResult;
+      const result =
+        (yield this.editorStore.graphState.graphManager.executeMapping(
+          this.editorStore.graphState.graph,
+          this.selectedExecutionConfiguration.mapping.value,
+          query,
+          this.selectedExecutionConfiguration.runtime,
+          CLIENT_VERSION.VX_X_X,
+          true,
+        )) as unknown as ExecutionResult;
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );
@@ -418,23 +409,14 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     const selectedExecution = this.selectedExecutionConfiguration;
     if (selectedExecution) {
       const mapping = selectedExecution.mapping.value;
-      const graphFetchTreeContent = this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
-        this.execution.func,
-        this.editorStore.graphState.graph,
-        this.serviceEditorState.service,
-      );
+      const graphFetchTreeContent =
+        this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
+          this.execution.func,
+          this.editorStore.graphState.graph,
+          this.serviceEditorState.service,
+        );
       if (graphFetchTreeContent instanceof Class) {
         return [graphFetchTreeContent, mapping];
-      } else if (graphFetchTreeContent instanceof RawRootGraphFetchTree) {
-        const graphFetchTreeData = buildRawGraphFetchTreeData(
-          this.editorStore,
-          graphFetchTreeContent,
-          mapping,
-        );
-        return [
-          graphFetchTreeData.root.graphFetchTreeNode.class.value,
-          mapping,
-        ];
       }
       return [undefined, selectedExecution.mapping.value];
     }

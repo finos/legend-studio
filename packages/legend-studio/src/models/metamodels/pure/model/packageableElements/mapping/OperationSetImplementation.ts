@@ -50,7 +50,8 @@ export const getClassMappingOperationType = (value: string): OperationType =>
 
 export class OperationSetImplementation
   extends SetImplementation
-  implements Hashable, Stubable {
+  implements Hashable, Stubable
+{
   parameters: SetImplementationContainer[] = [];
   operation: OperationType;
 

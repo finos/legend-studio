@@ -125,7 +125,8 @@ export const FileGenerationTreeNodeContainer: React.FC<
       className={clsx(
         'tree-view__node__container generation-result-viewer__explorer__package-tree__node__container',
         {
-          'generation-result-viewer__explorer__package-tree__node__container--selected': isSelected,
+          'generation-result-viewer__explorer__package-tree__node__container--selected':
+            isSelected,
         },
       )}
       onClick={selectNode}
@@ -324,13 +325,15 @@ const FileGenerationScopeEditor = observer(
       setShowEditInput(false);
       setItemValue('');
     };
-    const showEditItemInput = (
-      value: PackageableElementReference<PackageableElement> | string,
-      idx: number,
-    ): (() => void) => (): void => {
-      setItemValue(scopeElementPath(value));
-      setShowEditInput(idx);
-    };
+    const showEditItemInput =
+      (
+        value: PackageableElementReference<PackageableElement> | string,
+        idx: number,
+      ): (() => void) =>
+      (): void => {
+        setItemValue(scopeElementPath(value));
+        setShowEditInput(idx);
+      };
     const showAddItemInput = (): void => {
       setShowEditInput(true);
       setItemValue('');
@@ -363,31 +366,33 @@ const FileGenerationScopeEditor = observer(
         hideAddOrEditItemInput();
       }
     };
-    const updateValue = (
-      value: PackageableElementReference<PackageableElement> | string,
-    ): (() => void) => (): void => {
-      if (
-        itemValue &&
-        !isReadOnly &&
-        !scopeElements
-          .map((element) => scopeElementPath(element))
-          .includes(itemValue)
-      ) {
-        const element = editorStore.graphState.graph.getNullableElement(
-          itemValue,
-          true,
-        );
-        if (element) {
-          regenerate.cancel();
-          fileGeneration.changeScopeElement(
-            value,
-            PackageableElementExplicitReference.create(element),
+    const updateValue =
+      (
+        value: PackageableElementReference<PackageableElement> | string,
+      ): (() => void) =>
+      (): void => {
+        if (
+          itemValue &&
+          !isReadOnly &&
+          !scopeElements
+            .map((element) => scopeElementPath(element))
+            .includes(itemValue)
+        ) {
+          const element = editorStore.graphState.graph.getNullableElement(
+            itemValue,
+            true,
           );
-          regenerate()?.catch(applicationStore.alertIllegalUnhandledError);
+          if (element) {
+            regenerate.cancel();
+            fileGeneration.changeScopeElement(
+              value,
+              PackageableElementExplicitReference.create(element),
+            );
+            regenerate()?.catch(applicationStore.alertIllegalUnhandledError);
+          }
         }
-      }
-      hideAddOrEditItemInput();
-    };
+        hideAddOrEditItemInput();
+      };
 
     return (
       <div className="panel__content__form__section">
@@ -554,7 +559,7 @@ const GenerationStringPropertyEditor = observer(
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       update(
         property,
-        (event.target.value as unknown) as Record<PropertyKey, unknown>,
+        event.target.value as unknown as Record<PropertyKey, unknown>,
       );
     return (
       <div className="panel__content__form__section">
@@ -596,7 +601,7 @@ const GenerationIntegerPropertyEditor = observer(
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       update(
         property,
-        (event.target.value as unknown) as Record<PropertyKey, unknown>,
+        event.target.value as unknown as Record<PropertyKey, unknown>,
       );
     return (
       <div className="panel__content__form__section">
@@ -638,7 +643,7 @@ const GenerationBooleanPropertyEditor = observer(
       defaultValue;
     const toggle = (): void => {
       if (!isReadOnly) {
-        update(property, (!value as unknown) as Record<PropertyKey, unknown>);
+        update(property, !value as unknown as Record<PropertyKey, unknown>);
       }
     };
     return (
@@ -694,10 +699,7 @@ const GenerationEnumPropertyEditor = observer(
       property.defaultValue;
     const onChange = (val: { label: string; value: string } | null): void => {
       if (val !== null && val.value !== value) {
-        update(
-          property,
-          (val.value as unknown) as Record<PropertyKey, unknown>,
-        );
+        update(property, val.value as unknown as Record<PropertyKey, unknown>);
       }
     };
     return (
@@ -748,13 +750,12 @@ const GenerationArrayPropertyEditor = observer(
     const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
     const [itemValue, setItemValue] = useState<string>('');
     const showAddItemInput = (): void => setShowEditInput(true);
-    const showEditItemInput = (
-      value: string,
-      idx: number,
-    ): (() => void) => (): void => {
-      setItemValue(value);
-      setShowEditInput(idx);
-    };
+    const showEditItemInput =
+      (value: string, idx: number): (() => void) =>
+      (): void => {
+        setItemValue(value);
+        setShowEditInput(idx);
+      };
     const hideAddOrEditItemInput = (): void => {
       setShowEditInput(false);
       setItemValue('');
@@ -768,25 +769,29 @@ const GenerationArrayPropertyEditor = observer(
       }
       hideAddOrEditItemInput();
     };
-    const updateValue = (idx: number): (() => void) => (): void => {
-      if (itemValue && !isReadOnly && !arrayValues.includes(itemValue)) {
-        runInAction(() => {
-          arrayValues[idx] = itemValue;
-        });
-        update(property, arrayValues);
-      }
-      hideAddOrEditItemInput();
-    };
-    const deleteValue = (idx: number): (() => void) => (): void => {
-      if (!isReadOnly) {
-        runInAction(() => arrayValues.splice(idx, 1));
-        update(property, arrayValues);
-        // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
-        if (typeof showEditInput === 'number' && showEditInput > idx) {
-          setShowEditInput(showEditInput - 1);
+    const updateValue =
+      (idx: number): (() => void) =>
+      (): void => {
+        if (itemValue && !isReadOnly && !arrayValues.includes(itemValue)) {
+          runInAction(() => {
+            arrayValues[idx] = itemValue;
+          });
+          update(property, arrayValues);
         }
-      }
-    };
+        hideAddOrEditItemInput();
+      };
+    const deleteValue =
+      (idx: number): (() => void) =>
+      (): void => {
+        if (!isReadOnly) {
+          runInAction(() => arrayValues.splice(idx, 1));
+          update(property, arrayValues);
+          // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
+          if (typeof showEditInput === 'number' && showEditInput > idx) {
+            setShowEditInput(showEditInput - 1);
+          }
+        }
+      };
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -939,15 +944,13 @@ const GenerationMapPropertyEditor = observer(
     const [itemKey, setItemKey] = useState<string>('');
     const [itemValue, setItemValue] = useState<string>('');
     const showAddItemInput = (): void => setShowEditInput(true);
-    const showEditItemInput = (
-      key: string,
-      value: string,
-      idx: number,
-    ): (() => void) => (): void => {
-      setItemKey(key);
-      setItemValue(value);
-      setShowEditInput(idx);
-    };
+    const showEditItemInput =
+      (key: string, value: string, idx: number): (() => void) =>
+      (): void => {
+        setItemKey(key);
+        setItemValue(value);
+        setShowEditInput(idx);
+      };
     const hideAddOrEditItemInput = (): void => {
       setShowEditInput(false);
       setItemKey('');
@@ -973,29 +976,30 @@ const GenerationMapPropertyEditor = observer(
       }
       hideAddOrEditItemInput();
     };
-    const updateValue = (key: string): (() => void) => (): void => {
-      if (itemValue && !isReadOnly) {
-        runInAction(() => {
-          delete mapValues[key];
-          mapValues[itemKey] = itemValue;
-        });
-        update(property, mapValues);
-      }
-      hideAddOrEditItemInput();
-    };
-    const deleteValue = (
-      key: string,
-      idx: number,
-    ): (() => void) => (): void => {
-      if (!isReadOnly) {
-        runInAction(() => delete mapValues[key]);
-        update(property, mapValues);
-        // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
-        if (typeof showEditInput === 'number' && showEditInput > idx) {
-          setShowEditInput(showEditInput - 1);
+    const updateValue =
+      (key: string): (() => void) =>
+      (): void => {
+        if (itemValue && !isReadOnly) {
+          runInAction(() => {
+            delete mapValues[key];
+            mapValues[itemKey] = itemValue;
+          });
+          update(property, mapValues);
         }
-      }
-    };
+        hideAddOrEditItemInput();
+      };
+    const deleteValue =
+      (key: string, idx: number): (() => void) =>
+      (): void => {
+        if (!isReadOnly) {
+          runInAction(() => delete mapValues[key]);
+          update(property, mapValues);
+          // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
+          if (typeof showEditInput === 'number' && showEditInput > idx) {
+            setShowEditInput(showEditInput - 1);
+          }
+        }
+      };
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -1241,9 +1245,10 @@ export const FileGenerationConfigurationEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const fileGeneration = fileGenerationState.fileGeneration;
-    const fileGenerationConfiguration = editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
-      fileGeneration.type,
-    ).properties;
+    const fileGenerationConfiguration =
+      editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+        fileGeneration.type,
+      ).properties;
     const debouncedRegenerate = useMemo(
       () => debounce(() => fileGenerationState.generate(), 500),
       [fileGenerationState],

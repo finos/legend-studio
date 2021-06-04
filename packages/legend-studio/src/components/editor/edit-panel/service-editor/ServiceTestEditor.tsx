@@ -99,9 +99,8 @@ export const TestContainerItem = observer(
     isReadOnly: boolean;
     testIdx: number;
   }) => {
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-      false,
-    );
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const { testState, testContainer, isReadOnly, testIdx } = props;
     const openTestContainer = (): void =>
       testState.openTestContainer(testContainer);
@@ -262,8 +261,10 @@ export const ServiceTestEditorEditPanel = observer(
     );
     // tab
     const [selectedTab, setSelectedTab] = useState(SERVICE_TEST_TAB.RESULT);
-    const changeTab = (tab: SERVICE_TEST_TAB): (() => void) => (): void =>
-      setSelectedTab(tab);
+    const changeTab =
+      (tab: SERVICE_TEST_TAB): (() => void) =>
+      (): void =>
+        setSelectedTab(tab);
     // expected result
     const expectedResult = selectedTestContainerState.assertionData;
     const formatExpectedResultJSONString = (): void => {
@@ -312,9 +313,10 @@ export const ServiceTestEditorEditPanel = observer(
       selectedTestContainerState.fetchActualResultForComparison(),
     );
 
-    useEffect(() => setSelectedTab(SERVICE_TEST_TAB.RESULT), [
-      selectedTestContainerState,
-    ]); // reset selected tab
+    useEffect(
+      () => setSelectedTab(SERVICE_TEST_TAB.RESULT),
+      [selectedTestContainerState],
+    ); // reset selected tab
 
     return (
       <div className="panel service-test-editor__test">

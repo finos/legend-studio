@@ -16079,8 +16079,7 @@ export const targetSetImplementationThroughAssociation = [
           ],
           mappings: [
             {
-              path:
-                'apps::pure::studio::model::simple::simpleRelationalMapping',
+              path: 'apps::pure::studio::model::simple::simpleRelationalMapping',
               type: 'MAPPING',
             },
           ],
@@ -16196,11 +16195,10 @@ export const targetSetImplementationThroughAssociation = [
             },
           },
         ],
-        data:
-          'default\npersonTable\nFIRSTNAME,ID\nfirstName1,1\nfirstName2,2\nfirstName3,3\nfirstName4,4\nfirstName5,5\nfirstName6,6\nfirstName7,7\n-----\n',
+        data: 'default\npersonTable\nFIRSTNAME,ID\nfirstName1,1\nfirstName2,2\nfirstName3,3\nfirstName4,4\nfirstName5,5\nfirstName6,6\nfirstName7,7\n-----\n',
       },
     },
-    classifierPath: 'meta::alloy::service::metamodel::Service',
+    classifierPath: 'meta::legend::service::metamodel::Service',
   },
   {
     path: 'simple::H2Connection',
@@ -23403,8 +23401,7 @@ export const embeddedRelational = [
     classifierPath: 'meta::servicestore::metamodel::ServiceStore',
   },
   {
-    path:
-      'meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded',
+    path: 'meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded',
     content: {
       _type: 'mapping',
       includedMappings: [],

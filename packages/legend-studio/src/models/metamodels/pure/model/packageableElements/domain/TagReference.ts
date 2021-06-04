@@ -29,7 +29,8 @@ import { ReferenceWithOwner } from '../../../model/Reference';
 
 export abstract class TagReference
   extends ReferenceWithOwner
-  implements Stubable {
+  implements Stubable
+{
   readonly ownerReference: PackageableElementReference<Profile>;
   value: Tag;
 

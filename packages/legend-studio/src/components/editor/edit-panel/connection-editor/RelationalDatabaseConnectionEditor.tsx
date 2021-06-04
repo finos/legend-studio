@@ -170,13 +170,12 @@ export const ConnectionEditor_ArrayEditor = observer(
     const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
     const [itemValue, setItemValue] = useState<string>('');
     const showAddItemInput = (): void => setShowEditInput(true);
-    const showEditItemInput = (
-      value: string,
-      idx: number,
-    ): (() => void) => (): void => {
-      setItemValue(value);
-      setShowEditInput(idx);
-    };
+    const showEditItemInput =
+      (value: string, idx: number): (() => void) =>
+      (): void => {
+        setItemValue(value);
+        setShowEditInput(idx);
+      };
     const hideAddOrEditItemInput = (): void => {
       setShowEditInput(false);
       setItemValue('');
@@ -190,25 +189,29 @@ export const ConnectionEditor_ArrayEditor = observer(
       }
       hideAddOrEditItemInput();
     };
-    const updateValue = (idx: number): (() => void) => (): void => {
-      if (itemValue && !isReadOnly && !arrayValues.includes(itemValue)) {
-        runInAction(() => {
-          arrayValues[idx] = itemValue;
-        });
-        update(arrayValues);
-      }
-      hideAddOrEditItemInput();
-    };
-    const deleteValue = (idx: number): (() => void) => (): void => {
-      if (!isReadOnly) {
-        runInAction(() => arrayValues.splice(idx, 1));
-        update(arrayValues);
-        // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
-        if (typeof showEditInput === 'number' && showEditInput > idx) {
-          setShowEditInput(showEditInput - 1);
+    const updateValue =
+      (idx: number): (() => void) =>
+      (): void => {
+        if (itemValue && !isReadOnly && !arrayValues.includes(itemValue)) {
+          runInAction(() => {
+            arrayValues[idx] = itemValue;
+          });
+          update(arrayValues);
         }
-      }
-    };
+        hideAddOrEditItemInput();
+      };
+    const deleteValue =
+      (idx: number): (() => void) =>
+      (): void => {
+        if (!isReadOnly) {
+          runInAction(() => arrayValues.splice(idx, 1));
+          update(arrayValues);
+          // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
+          if (typeof showEditInput === 'number' && showEditInput > idx) {
+            setShowEditInput(showEditInput - 1);
+          }
+        }
+      };
 
     return (
       <div className="panel__content__form__section">
@@ -583,19 +586,18 @@ const StorePatternsEditor = observer(
   (props: { generateStoreState: GenerateStoreState; isReadOnly: boolean }) => {
     const { generateStoreState, isReadOnly } = props;
     const patterns = generateStoreState.patterns;
-    const [showEditInput, setShowEditInput] = useState<boolean | StorePattern>(
-      false,
-    );
+    const [showEditInput, setShowEditInput] =
+      useState<boolean | StorePattern>(false);
     const [stateSchemaPattern, setStateSchemaPattern] = useState<string>('');
     const [tableStatePattern, setStateTablePattern] = useState<string>('');
     const showAddItemInput = (): void => setShowEditInput(true);
-    const showEditItemInput = (
-      pattern: StorePattern,
-    ): (() => void) => (): void => {
-      setStateSchemaPattern(pattern.schemaPattern);
-      setStateTablePattern(pattern.tablePattern);
-      setShowEditInput(pattern);
-    };
+    const showEditItemInput =
+      (pattern: StorePattern): (() => void) =>
+      (): void => {
+        setStateSchemaPattern(pattern.schemaPattern);
+        setStateTablePattern(pattern.tablePattern);
+        setShowEditInput(pattern);
+      };
     const hideAddOrEditItemInput = (): void => {
       setShowEditInput(false);
       setStateSchemaPattern('');
@@ -616,18 +618,22 @@ const StorePatternsEditor = observer(
       }
       hideAddOrEditItemInput();
     };
-    const updateValue = (pattern: StorePattern): (() => void) => (): void => {
-      if (!isReadOnly && stateSchemaPattern && tableStatePattern) {
-        pattern.setSchemaPattern(stateSchemaPattern);
-        pattern.setTablePattern(tableStatePattern);
-      }
-      hideAddOrEditItemInput();
-    };
-    const deleteValue = (pattern: StorePattern): (() => void) => (): void => {
-      if (!isReadOnly) {
-        generateStoreState.deletePattern(pattern);
-      }
-    };
+    const updateValue =
+      (pattern: StorePattern): (() => void) =>
+      (): void => {
+        if (!isReadOnly && stateSchemaPattern && tableStatePattern) {
+          pattern.setSchemaPattern(stateSchemaPattern);
+          pattern.setTablePattern(tableStatePattern);
+        }
+        hideAddOrEditItemInput();
+      };
+    const deleteValue =
+      (pattern: StorePattern): (() => void) =>
+      (): void => {
+        if (!isReadOnly) {
+          generateStoreState.deletePattern(pattern);
+        }
+      };
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -989,8 +995,9 @@ const renderDatasourceSpecificationEditor = (
   } else {
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
-        (plugin as StoreRelational_EditorPlugin_Extension).getExtraDatasourceSpecificationEditorRenderers?.() ??
-        [],
+        (
+          plugin as StoreRelational_EditorPlugin_Extension
+        ).getExtraDatasourceSpecificationEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraDatasourceSpecificationEditorRenderers) {
       const editor = editorRenderer(sourceSpec, isReadOnly);
@@ -1037,8 +1044,9 @@ const renderAuthenticationStrategyEditor = (
   } else {
     const extraAuthenticationStrategyEditorRenderers = plugins.flatMap(
       (plugin) =>
-        (plugin as StoreRelational_EditorPlugin_Extension).getExtraAuthenticationStrategyEditorRenderers?.() ??
-        [],
+        (
+          plugin as StoreRelational_EditorPlugin_Extension
+        ).getExtraAuthenticationStrategyEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraAuthenticationStrategyEditorRenderers) {
       const editor = editorRenderer(authSpec, isReadOnly);
@@ -1076,14 +1084,15 @@ const RelationalConnectionGeneralEditor = observer(
     };
 
     // source spec type
-    const sourceSpecOptions = (Object.values(
-      CORE_DATASOURCE_SPEC_TYPE,
-    ) as string[])
+    const sourceSpecOptions = (
+      Object.values(CORE_DATASOURCE_SPEC_TYPE) as string[]
+    )
       .concat(
         plugins.flatMap(
           (plugin) =>
-            (plugin as StoreRelational_EditorPlugin_Extension).getExtraDatasourceSpecificationTypes?.() ??
-            [],
+            (
+              plugin as StoreRelational_EditorPlugin_Extension
+            ).getExtraDatasourceSpecificationTypes?.() ?? [],
         ),
       )
       .map((e) => ({
@@ -1103,14 +1112,15 @@ const RelationalConnectionGeneralEditor = observer(
     };
 
     // auth type
-    const authOptions = (Object.values(
-      CORE_AUTHENTICATION_STRATEGY_TYPE,
-    ) as string[])
+    const authOptions = (
+      Object.values(CORE_AUTHENTICATION_STRATEGY_TYPE) as string[]
+    )
       .concat(
         plugins.flatMap(
           (plugin) =>
-            (plugin as StoreRelational_EditorPlugin_Extension).getExtraAuthenticationStrategyTypes?.() ??
-            [],
+            (
+              plugin as StoreRelational_EditorPlugin_Extension
+            ).getExtraAuthenticationStrategyTypes?.() ?? [],
         ),
       )
       .map((e) => ({
@@ -1237,9 +1247,10 @@ export const RelationalDatabaseConnectionEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly } = props;
     const selectedTab = connectionValueState.selectedTab;
-    const changeTab = (
-      tab: RELATIONAL_DATABASE_TABE,
-    ): (() => void) => (): void => connectionValueState.setSelectedTab(tab);
+    const changeTab =
+      (tab: RELATIONAL_DATABASE_TABE): (() => void) =>
+      (): void =>
+        connectionValueState.setSelectedTab(tab);
     return (
       <>
         <div className="panel__header">

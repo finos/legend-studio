@@ -54,8 +54,8 @@ export interface QueryBuilderExplorerTreeDragSource {
 }
 
 export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
-  isSelected?: boolean | undefined;
-  isOpen?: boolean | undefined;
+  isSelected?: boolean;
+  isOpen?: boolean;
   id: string;
   label: string;
   childrenIds: string[] = [];
@@ -132,10 +132,14 @@ const resolveSetImplementationForPropertyMapping = (
   propertyMapping: PropertyMapping,
 ): SetImplementation | undefined => {
   if (propertyMapping.isEmbedded) {
-    return (propertyMapping as unknown) as SetImplementation;
+    return propertyMapping as unknown as SetImplementation;
   } else if (propertyMapping.targetSetImplementation) {
     return propertyMapping.targetSetImplementation;
   }
+
+  // TODO: handle operation class mapping logic - if we get an operation class mapping
+  // do we resolve all the leaves and then overlap them somehow to help identifying
+  // the mapped properties?
   return undefined;
 };
 
@@ -152,9 +156,10 @@ const getPropertyMappedData = (
   } else if (property instanceof Property) {
     const parentSetImplementation = parentNode.setImpl;
     if (parentSetImplementation) {
-      const propertyMappings = editorStore.graphState.getMappingElementPropertyMappings(
-        parentSetImplementation,
-      );
+      const propertyMappings =
+        editorStore.graphState.getMappingElementPropertyMappings(
+          parentSetImplementation,
+        );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
         .map((p) => p.property.value.name);
@@ -170,9 +175,8 @@ const getPropertyMappedData = (
           if (propertyMapping) {
             return {
               mapped: true,
-              setImpl: resolveSetImplementationForPropertyMapping(
-                propertyMapping,
-              ),
+              setImpl:
+                resolveSetImplementationForPropertyMapping(propertyMapping),
             };
           }
         }

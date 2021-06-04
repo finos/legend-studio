@@ -214,17 +214,17 @@ export class V1_Engine {
       PlainObject<V1_RawRelationalOperationElement>
     > = {};
     inputOperations.forEach((inputOperation, key) => {
-      operations[
-        key
-      ] = inputOperation as PlainObject<V1_RawRelationalOperationElement>;
+      operations[key] =
+        inputOperation as PlainObject<V1_RawRelationalOperationElement>;
     });
-    const result = V1_RelationalOperationElementGrammarToJsonInput.serialization.fromJson(
-      (yield this.engineServerClient.transformRelationalOperationElementJSONToGrammar(
-        {
-          operations,
-        },
-      )) as PlainObject<V1_RelationalOperationElementGrammarToJsonInput>,
-    );
+    const result =
+      V1_RelationalOperationElementGrammarToJsonInput.serialization.fromJson(
+        (yield this.engineServerClient.transformRelationalOperationElementJSONToGrammar(
+          {
+            operations,
+          },
+        )) as PlainObject<V1_RelationalOperationElementGrammarToJsonInput>,
+      );
     return result.operations;
   });
 
@@ -233,13 +233,14 @@ export class V1_Engine {
     operation: string,
     operationId: string,
   ): GeneratorFn<V1_RawRelationalOperationElement | undefined> {
-    const result = V1_RelationalOperationElementJsonToGrammarInput.serialization.fromJson(
-      (yield this.engineServerClient.transformRelationalOperationElementGrammarToJSON(
-        {
-          operations: { [operationId]: operation },
-        },
-      )) as PlainObject<V1_RelationalOperationElementJsonToGrammarInput>,
-    );
+    const result =
+      V1_RelationalOperationElementJsonToGrammarInput.serialization.fromJson(
+        (yield this.engineServerClient.transformRelationalOperationElementGrammarToJSON(
+          {
+            operations: { [operationId]: operation },
+          },
+        )) as PlainObject<V1_RelationalOperationElementJsonToGrammarInput>,
+      );
     const parserError = result.operationErrors?.get(operationId);
     if (parserError) {
       throw parserError.build();
@@ -354,19 +355,17 @@ export class V1_Engine {
   getAvailableImportConfigurationDescriptions = flow(function* (
     this: V1_Engine,
   ): GeneratorFn<ImportConfigurationDescription[]> {
-    const schemaImportDescriptions = ((yield this.engineServerClient.getAvailableSchemaImportDescriptions()) as PlainObject<V1_ImportConfigurationDescription>[]).map(
-      (gen) => ({ ...gen, modelImportMode: ImportMode.SCHEMA_IMPORT }),
-    );
-    const codeImportDescriptions = ((yield this.engineServerClient.getAvailableCodeImportDescriptions()) as PlainObject<V1_ImportConfigurationDescription>[]).map(
-      (gen) => ({ ...gen, modelImportMode: ImportMode.CODE_IMPORT }),
-    );
-    return [
-      ...schemaImportDescriptions,
-      ...codeImportDescriptions,
-    ].map((description) =>
-      V1_ImportConfigurationDescription.serialization
-        .fromJson(description)
-        .build(),
+    const schemaImportDescriptions = (
+      (yield this.engineServerClient.getAvailableSchemaImportDescriptions()) as PlainObject<V1_ImportConfigurationDescription>[]
+    ).map((gen) => ({ ...gen, modelImportMode: ImportMode.SCHEMA_IMPORT }));
+    const codeImportDescriptions = (
+      (yield this.engineServerClient.getAvailableCodeImportDescriptions()) as PlainObject<V1_ImportConfigurationDescription>[]
+    ).map((gen) => ({ ...gen, modelImportMode: ImportMode.CODE_IMPORT }));
+    return [...schemaImportDescriptions, ...codeImportDescriptions].map(
+      (description) =>
+        V1_ImportConfigurationDescription.serialization
+          .fromJson(description)
+          .build(),
     );
   });
 
@@ -375,25 +374,23 @@ export class V1_Engine {
   getAvailableGenerationConfigurationDescriptions = flow(function* (
     this: V1_Engine,
   ): GeneratorFn<GenerationConfigurationDescription[]> {
-    const schemaGenerationDescriptions = ((yield this.engineServerClient.getAvailableSchemaGenerationDescriptions()) as PlainObject<V1_GenerationConfigurationDescription>[]).map(
-      (gen) => ({
-        ...gen,
-        generationMode: GenerationMode.SCHEMA_GENERATION,
-      }),
-    );
-    const codeGenerationDescriptions = ((yield this.engineServerClient.getAvailableCodeGenerationDescriptions()) as PlainObject<V1_GenerationConfigurationDescription>[]).map(
-      (gen) => ({
-        ...gen,
-        generationMode: GenerationMode.CODE_GENERATION,
-      }),
-    );
-    return [
-      ...schemaGenerationDescriptions,
-      ...codeGenerationDescriptions,
-    ].map((description) =>
-      V1_GenerationConfigurationDescription.serialization
-        .fromJson(description)
-        .build(),
+    const schemaGenerationDescriptions = (
+      (yield this.engineServerClient.getAvailableSchemaGenerationDescriptions()) as PlainObject<V1_GenerationConfigurationDescription>[]
+    ).map((gen) => ({
+      ...gen,
+      generationMode: GenerationMode.SCHEMA_GENERATION,
+    }));
+    const codeGenerationDescriptions = (
+      (yield this.engineServerClient.getAvailableCodeGenerationDescriptions()) as PlainObject<V1_GenerationConfigurationDescription>[]
+    ).map((gen) => ({
+      ...gen,
+      generationMode: GenerationMode.CODE_GENERATION,
+    }));
+    return [...schemaGenerationDescriptions, ...codeGenerationDescriptions].map(
+      (description) =>
+        V1_GenerationConfigurationDescription.serialization
+          .fromJson(description)
+          .build(),
     );
   });
 
@@ -405,13 +402,13 @@ export class V1_Engine {
     model: V1_PureModelContextData,
   ): GeneratorFn<V1_GenerationOutput[]> {
     const input = new V1_GenerateFileInput(model, configs);
-    return ((yield this.engineServerClient.generateFile(
-      generationMode,
-      type,
-      V1_GenerateFileInput.serialization.toJson(input),
-    )) as PlainObject<V1_GenerationOutput>[]).map((output) =>
-      V1_GenerationOutput.serialization.fromJson(output),
-    );
+    return (
+      (yield this.engineServerClient.generateFile(
+        generationMode,
+        type,
+        V1_GenerateFileInput.serialization.toJson(input),
+      )) as PlainObject<V1_GenerationOutput>[]
+    ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
   });
 
   // ------------------------------------------- Service -------------------------------------------
@@ -421,10 +418,10 @@ export class V1_Engine {
     servicePath: string,
     model: V1_PureModelContextData,
   ): GeneratorFn<V1_ServiceTestResult[]> {
-    return ((yield this.engineServerClient.runServiceTests(
-      V1_serializePureModelContextData(model),
-    )) as PlainObject<V1_ServiceTestResult>[]).map((result) =>
-      V1_ServiceTestResult.serialization.fromJson(result),
-    );
+    return (
+      (yield this.engineServerClient.runServiceTests(
+        V1_serializePureModelContextData(model),
+      )) as PlainObject<V1_ServiceTestResult>[]
+    ).map((result) => V1_ServiceTestResult.serialization.fromJson(result));
   });
 }

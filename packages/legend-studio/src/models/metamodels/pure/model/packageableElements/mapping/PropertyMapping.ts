@@ -95,9 +95,6 @@ export abstract class PropertyMapping implements Hashable, Stubable {
   get isStub(): boolean {
     throw new UnsupportedOperationError();
   }
-  get lambdaId(): string {
-    throw new UnsupportedOperationError();
-  }
 
   get hashCode(): string {
     return hashArray([

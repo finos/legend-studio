@@ -47,7 +47,6 @@ export class MappingTest implements Hashable {
       setQuery: action,
       setAssert: action,
       validationResult: computed,
-      hasInvalidInputData: computed,
       hashCode: computed,
     });
 
@@ -60,33 +59,36 @@ export class MappingTest implements Hashable {
   setName(value: string): void {
     this.name = value;
   }
+
   setInputData(value: InputData[]): void {
     this.inputData = value;
   }
+
   setQuery(value: RawLambda): void {
     this.query = value;
   }
+
   setAssert(value: MappingTestAssert): void {
     this.assert = value;
   }
 
-  get validationResult(): ValidationIssue | undefined {
+  get validationResult(): ValidationIssue[] | undefined {
+    let problems: ValidationIssue[] = [];
+    // query
     if (this.query.isStub) {
-      return createValidationError(['Mapping test query cannot be empty']);
+      problems.push(
+        createValidationError(['Mapping test query cannot be empty']),
+      );
     }
-    // TODO: put this logic back when we properly process lambda - we can't pass the graph manager here to check this
-    // else if (isGetAllLambda(this.query)) {
-    //   return createValidationError(['Non-empty graph fetch tree is required']);
-    // }
-    return undefined;
-  }
-
-  get hasInvalidInputData(): ValidationIssue[] | undefined {
-    const validationResults = this.inputData.flatMap((i) => {
-      const inputDataValidationResult = i.validationResult;
-      return inputDataValidationResult ?? [];
-    });
-    return validationResults.length ? validationResults : undefined;
+    // input data
+    problems = problems.concat(
+      this.inputData.flatMap((i) => i.validationResult ?? []),
+    );
+    // assertion
+    if (this.assert.validationResult) {
+      problems.push(this.assert.validationResult);
+    }
+    return problems.length ? problems : undefined;
   }
 
   get hashCode(): string {

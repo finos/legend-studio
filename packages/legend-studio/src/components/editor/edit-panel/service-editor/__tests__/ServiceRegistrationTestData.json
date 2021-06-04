@@ -270,7 +270,7 @@
         "data": "default\npersonTable\nid,firstName\n1,firstName1\n2,firstName2\n3,firstName3\n4,firstName4\n5,firstName5\n6,firstName6\n7,firstName7\n\n\n\n"
       }
     },
-    "classifierPath": "meta::alloy::service::metamodel::Service"
+    "classifierPath": "meta::legend::service::metamodel::Service"
   },
   {
     "path": "test::H2Connection",

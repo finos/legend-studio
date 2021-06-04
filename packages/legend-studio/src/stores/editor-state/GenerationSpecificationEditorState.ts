@@ -29,7 +29,6 @@ import {
   action,
 } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import type { CompilationError } from '../../models/metamodels/pure/action/EngineError';
 import type { GenerationTreeNode } from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
 import { GenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
 import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
@@ -106,10 +105,6 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
     const dragColumn = this.generationTreeNodeStates[dragIndex];
     this.generationTreeNodeStates.splice(dragIndex, 1);
     this.generationTreeNodeStates.splice(hoverIndex, 0, dragColumn);
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

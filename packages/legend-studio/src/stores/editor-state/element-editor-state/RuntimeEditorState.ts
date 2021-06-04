@@ -23,12 +23,13 @@ import {
   UnsupportedOperationError,
   uniq,
   addUniqueEntry,
+  getClass,
+  assertErrorThrown,
 } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';
 import { ConnectionEditorState } from './ConnectionEditorState';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PackageableRuntime } from '../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
 import {
@@ -57,6 +58,13 @@ import type { PackageableElementReference } from '../../../models/metamodels/pur
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { Table } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { View } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
+import { Database } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
+import {
+  DatabaseType,
+  RelationalDatabaseConnection,
+} from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import { StaticDatasourceSpecification } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
+import { DefaultH2AuthenticationStrategy } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
@@ -123,9 +131,11 @@ export const decorateRuntimeWithNewMapping = (
         )
         .map(
           (identifiedConnection) =>
-            (identifiedConnection.connection as
-              | JsonModelConnection
-              | XmlModelConnection).class.value,
+            (
+              identifiedConnection.connection as
+                | JsonModelConnection
+                | XmlModelConnection
+            ).class.value,
         );
     }
   });
@@ -344,7 +354,13 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
         ),
       );
     } else {
-      newConnection = this.createNewCustomConnection();
+      try {
+        newConnection = this.createNewCustomConnection();
+      } catch (e: unknown) {
+        assertErrorThrown(e);
+        this.editorStore.applicationStore.notifyWarning(e.message);
+        return;
+      }
     }
     const newIdentifiedConnection = new IdentifiedConnection(
       this.runtimeEditorState.runtimeValue.generateIdentifiedConnectionId(),
@@ -417,8 +433,19 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
       return new FlatDataConnection(
         PackageableElementExplicitReference.create(this.store),
       );
+    } else if (this.store instanceof Database) {
+      return new RelationalDatabaseConnection(
+        PackageableElementExplicitReference.create(this.store),
+        DatabaseType.H2,
+        new StaticDatasourceSpecification('host', 80, 'db'),
+        new DefaultH2AuthenticationStrategy(),
+      );
     }
-    throw new UnsupportedOperationError();
+    throw new UnsupportedOperationError(
+      `Can't create custom connection for unsupported store type '${
+        getClass(this.store).name
+      }'`,
+    );
   }
 
   deleteIdentifiedConnection(identifiedConnection: IdentifiedConnection): void {
@@ -748,8 +775,9 @@ export class RuntimeEditorState {
    */
   reprocessCurrentTabState(): void {
     if (this.currentTabState instanceof IdentifiedConnectionsEditorTabState) {
-      const connection = this.currentTabState.identifiedConnectionEditorState
-        ?.connectionEditorState.connection;
+      const connection =
+        this.currentTabState.identifiedConnectionEditorState
+          ?.connectionEditorState.connection;
       const connectionValue =
         connection instanceof ConnectionPointer
           ? connection.packageableConnection.value.connectionValue
@@ -800,10 +828,6 @@ export class PackageableRuntimeEditorState extends ElementEditorState {
       PackageableRuntime,
       'Element inside runtime editor state must be a packageable runtime',
     );
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

@@ -77,7 +77,8 @@ import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/gr
 import { V1_Collection } from '../../../model/valueSpecification/raw/V1_Collection';
 
 export class V1_ValueSpecificationTransformer
-  implements ValueSpecificationVisitor<V1_ValueSpecification> {
+  implements ValueSpecificationVisitor<V1_ValueSpecification>
+{
   inScope: string[] = [];
   open: Map<string, unknown[]>;
   isParameter: boolean;

@@ -1,5 +1,33 @@
 # @finos/legend-studio-components
 
+## 0.0.17
+
+### Patch Changes
+
+- Updated dependencies [[`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8)]:
+  - @finos/legend-studio-shared@0.0.14
+
+## 0.0.16
+
+### Patch Changes
+
+- Updated dependencies [[`8159c1f`](https://github.com/finos/legend-studio/commit/8159c1f02eafcd52fbbb3add7358afc718cf03d2)]:
+  - @finos/legend-studio-shared@0.0.13
+
+## 0.0.15
+
+### Patch Changes
+
+- Updated dependencies [[`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221)]:
+  - @finos/legend-studio-shared@0.0.12
+
+## 0.0.14
+
+### Patch Changes
+
+- Updated dependencies [[`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1)]:
+  - @finos/legend-studio-shared@0.0.11
+
 ## 0.0.13
 
 ### Patch Changes

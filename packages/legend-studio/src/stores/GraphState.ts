@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, makeAutoObservable } from 'mobx';
+import { action, computed, flow, makeAutoObservable } from 'mobx';
 import { CORE_LOG_EVENT } from '../utils/Logger';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
@@ -29,10 +29,10 @@ import type {
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
+  assertType,
   uniq,
   getClass,
   UnsupportedOperationError,
-  IllegalStateError,
   assertErrorThrown,
   assertTrue,
   isNonNullable,
@@ -115,7 +115,6 @@ export class GraphState {
   isUpdatingApplication = false; // including graph update and async operations such as change detection
   graph: PureModel;
   graphManager: AbstractPureGraphManager;
-  compilationError?: EngineError;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
@@ -123,11 +122,11 @@ export class GraphState {
       graphGenerationState: false,
       coreModel: false,
       systemModel: false,
-      setCompilationError: action,
-      clearCompilationError: action,
       getPackageableElementType: false,
       getSetImplementationType: false,
       isInstanceSetImplementation: false,
+      hasCompilationError: computed,
+      clearCompilationError: action,
     });
 
     this.editorStore = editorStore;
@@ -149,17 +148,33 @@ export class GraphState {
   }
 
   private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {
-    const pureGraphManagerPlugins = this.editorStore.applicationStore.pluginManager.getPureGraphManagerPlugins();
+    const pureGraphManagerPlugins =
+      this.editorStore.applicationStore.pluginManager.getPureGraphManagerPlugins();
     return pureGraphManagerPlugins.flatMap(
       (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
     );
   }
 
-  setCompilationError(error: EngineError): void {
-    this.compilationError = error;
+  get hasCompilationError(): boolean {
+    return (
+      Boolean(this.editorStore.grammarTextEditorState.error) ||
+      this.editorStore.openedEditorStates
+        .filter(
+          (editorState): editorState is ElementEditorState =>
+            editorState instanceof ElementEditorState,
+        )
+        .some((editorState) => editorState.hasCompilationError)
+    );
   }
+
   clearCompilationError(): void {
-    this.compilationError = undefined;
+    this.editorStore.grammarTextEditorState.setError(undefined);
+    this.editorStore.openedEditorStates
+      .filter(
+        (editorState): editorState is ElementEditorState =>
+          editorState instanceof ElementEditorState,
+      )
+      .forEach((editorState) => editorState.clearCompilationError());
   }
 
   get isApplicationUpdateOperationIsRunning(): boolean {
@@ -214,9 +229,9 @@ export class GraphState {
   initializeSystem = flow(function* (this: GraphState) {
     try {
       yield this.graphManager.buildSystem(this.coreModel, this.systemModel, {
-        DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-          .applicationStore.config.options
-          .DEV__enableGraphImmutabilityRuntimeCheck,
+        DEV__enableGraphImmutabilityRuntimeCheck:
+          this.editorStore.applicationStore.config.options
+            .DEV__enableGraphImmutabilityRuntimeCheck,
       });
       this.systemModel.initializeAutoImports();
     } catch (error: unknown) {
@@ -270,23 +285,23 @@ export class GraphState {
         this.coreModel,
         this.systemModel,
         dependencyManager,
-        ((yield this.getProjectDependencyEntities()) as unknown) as Map<
+        (yield this.getProjectDependencyEntities()) as unknown as Map<
           string,
           ProjectDependencyMetadata
         >,
         {
-          DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-            .applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
+          DEV__enableGraphImmutabilityRuntimeCheck:
+            this.editorStore.applicationStore.config.options
+              .DEV__enableGraphImmutabilityRuntimeCheck,
         },
       );
       this.graph.setDependencyManager(dependencyManager);
       this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // build graph
       yield this.graphManager.buildGraph(this.graph, entities, {
-        DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-          .applicationStore.config.options
-          .DEV__enableGraphImmutabilityRuntimeCheck,
+        DEV__enableGraphImmutabilityRuntimeCheck:
+          this.editorStore.applicationStore.config.options
+            .DEV__enableGraphImmutabilityRuntimeCheck,
       });
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.GRAPH_INITIALIZED,
@@ -328,36 +343,38 @@ export class GraphState {
         this.coreModel,
         this.systemModel,
         dependencyManager,
-        ((yield this.getProjectDependencyEntities()) as unknown) as Map<
+        (yield this.getProjectDependencyEntities()) as unknown as Map<
           string,
           ProjectDependencyMetadata
         >,
         {
-          DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-            .applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
+          DEV__enableGraphImmutabilityRuntimeCheck:
+            this.editorStore.applicationStore.config.options
+              .DEV__enableGraphImmutabilityRuntimeCheck,
         },
       );
       this.graph.setDependencyManager(dependencyManager);
       this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // build graph
       yield this.graphManager.buildGraph(this.graph, entities, {
-        DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-          .applicationStore.config.options
-          .DEV__enableGraphImmutabilityRuntimeCheck,
-        TEMPORARY__keepSectionIndex: this.editorStore.applicationStore.config
-          .options.EXPERIMENTAL__enableFullGrammarImportSupport,
-        TEMPORARY__disableRawLambdaResolver: this.editorStore.applicationStore
-          .config.options.TEMPORARY__disableRawLambdaResolver,
+        DEV__enableGraphImmutabilityRuntimeCheck:
+          this.editorStore.applicationStore.config.options
+            .DEV__enableGraphImmutabilityRuntimeCheck,
+        TEMPORARY__keepSectionIndex:
+          this.editorStore.applicationStore.config.options
+            .EXPERIMENTAL__enableFullGrammarImportSupport,
+        TEMPORARY__disableRawLambdaResolver:
+          this.editorStore.applicationStore.config.options
+            .TEMPORARY__disableRawLambdaResolver,
       });
       // build generations
       yield this.graphManager.buildGenerations(
         this.graph,
         this.graphGenerationState.generatedEntities,
         {
-          DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-            .applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
+          DEV__enableGraphImmutabilityRuntimeCheck:
+            this.editorStore.applicationStore.config.options
+              .DEV__enableGraphImmutabilityRuntimeCheck,
         },
       );
 
@@ -489,6 +506,7 @@ export class GraphState {
   *globalCompileInFormMode(options?: {
     message?: string;
     disableNotificationOnSuccess?: boolean;
+    openConsole?: boolean;
   }): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInFormMode,
@@ -500,19 +518,18 @@ export class GraphState {
     this.isRunningGlobalCompile = true;
     try {
       this.clearCompilationError();
-      this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      if (options?.openConsole) {
+        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      }
       yield this.graphManager.compileGraph(this.graph);
       if (!options?.disableNotificationOnSuccess) {
         this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      if (error instanceof EngineError) {
-        this.setCompilationError(error);
-      } else {
-        // TODO: we should make this the handling for all other exceptions in the codebase
-        throw new IllegalStateError(`Unhandled exception:\n${error}`);
-      }
+      // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
+      // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
+      assertType(error, EngineError, `Unhandled exception:\n${error}`);
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.COMPILATION_PROBLEM,
         error,
@@ -520,9 +537,9 @@ export class GraphState {
       let fallbackToTextModeForDebugging = true;
       // if compilation failed, we try to reveal the error in form mode,
       // if even this fail, we will fall back to show it in text mode
-      if (this.compilationError instanceof CompilationError) {
+      if (error instanceof CompilationError) {
         const errorElementCoordinates = getElementCoordinates(
-          this.compilationError.sourceInformation,
+          error.sourceInformation,
         );
         if (errorElementCoordinates) {
           const element = this.graph.getNullableElement(
@@ -532,18 +549,18 @@ export class GraphState {
           if (element) {
             this.editorStore.openElement(element);
             if (
-              this.editorStore.currentEditorState instanceof
-                ElementEditorState &&
-              this.compilationError instanceof CompilationError
+              this.editorStore.currentEditorState instanceof ElementEditorState
             ) {
               // check if we can reveal the error in the element editor state
-              fallbackToTextModeForDebugging = !this.editorStore.currentEditorState.revealCompilationError(
-                this.compilationError,
-              );
+              fallbackToTextModeForDebugging =
+                !this.editorStore.currentEditorState.revealCompilationError(
+                  error,
+                );
             }
           }
         }
       }
+
       // decide if we need to fall back to text mode for debugging
       if (fallbackToTextModeForDebugging) {
         // FIXME: when we support showing multiple notifications, we can split this into 2
@@ -585,6 +602,7 @@ export class GraphState {
     options?: {
       ignoreBlocking?: boolean;
       suppressCompilationFailureMessage?: boolean;
+      openConsole?: boolean;
     },
   ): GeneratorFn<void> {
     assertTrue(
@@ -600,18 +618,19 @@ export class GraphState {
     try {
       this.isRunningGlobalCompile = true;
       this.clearCompilationError();
-      this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      if (options?.openConsole) {
+        this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
+      }
       const entities = (yield this.graphManager.compileText(
         this.editorStore.grammarTextEditorState.graphGrammarText,
         this.graph,
       )) as Entity[];
-      this.clearCompilationError();
       this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       yield this.updateGraphAndApplication(entities);
     } catch (error: unknown) {
       assertErrorThrown(error);
       if (error instanceof EngineError) {
-        this.setCompilationError(error);
+        this.editorStore.grammarTextEditorState.setError(error);
       }
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.COMPILATION_PROBLEM,
@@ -669,7 +688,7 @@ export class GraphState {
       } catch (error: unknown) {
         assertErrorThrown(error);
         if (error instanceof EngineError) {
-          this.setCompilationError(error);
+          this.editorStore.grammarTextEditorState.setError(error);
         }
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.COMPILATION_PROBLEM,
@@ -815,14 +834,14 @@ export class GraphState {
           this.coreModel,
           this.systemModel,
           dependencyManager,
-          ((yield this.getProjectDependencyEntities()) as unknown) as Map<
+          (yield this.getProjectDependencyEntities()) as unknown as Map<
             string,
             ProjectDependencyMetadata
           >,
           {
-            DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-              .applicationStore.config.options
-              .DEV__enableGraphImmutabilityRuntimeCheck,
+            DEV__enableGraphImmutabilityRuntimeCheck:
+              this.editorStore.applicationStore.config.options
+                .DEV__enableGraphImmutabilityRuntimeCheck,
           },
         );
         newGraph.setDependencyManager(dependencyManager);
@@ -850,13 +869,15 @@ export class GraphState {
 
       yield this.graphManager.buildGraph(newGraph, entities, {
         quiet: true,
-        DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-          .applicationStore.config.options
-          .DEV__enableGraphImmutabilityRuntimeCheck,
-        TEMPORARY__keepSectionIndex: this.editorStore.applicationStore.config
-          .options.EXPERIMENTAL__enableFullGrammarImportSupport,
-        TEMPORARY__disableRawLambdaResolver: this.editorStore.applicationStore
-          .config.options.TEMPORARY__disableRawLambdaResolver,
+        DEV__enableGraphImmutabilityRuntimeCheck:
+          this.editorStore.applicationStore.config.options
+            .DEV__enableGraphImmutabilityRuntimeCheck,
+        TEMPORARY__keepSectionIndex:
+          this.editorStore.applicationStore.config.options
+            .EXPERIMENTAL__enableFullGrammarImportSupport,
+        TEMPORARY__disableRawLambdaResolver:
+          this.editorStore.applicationStore.config.options
+            .TEMPORARY__disableRawLambdaResolver,
       });
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
@@ -864,9 +885,9 @@ export class GraphState {
         newGraph,
         this.graphGenerationState.generatedEntities,
         {
-          DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-            .applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
+          DEV__enableGraphImmutabilityRuntimeCheck:
+            this.editorStore.applicationStore.config.options
+              .DEV__enableGraphImmutabilityRuntimeCheck,
         },
       );
       this.graph = newGraph;
@@ -961,9 +982,9 @@ export class GraphState {
         this.graph,
         this.graphGenerationState.generatedEntities,
         {
-          DEV__enableGraphImmutabilityRuntimeCheck: this.editorStore
-            .applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
+          DEV__enableGraphImmutabilityRuntimeCheck:
+            this.editorStore.applicationStore.config.options
+              .DEV__enableGraphImmutabilityRuntimeCheck,
         },
       );
 
@@ -1002,8 +1023,9 @@ export class GraphState {
       string,
       ProjectDependencyMetadata
     >();
-    const currentConfiguration = this.editorStore
-      .projectConfigurationEditorState.currentProjectConfiguration;
+    const currentConfiguration =
+      this.editorStore.projectConfigurationEditorState
+        .currentProjectConfiguration;
     const directDependencies = currentConfiguration.projectDependencies.map(
       (dependency) => ({
         projectId: dependency.projectId,
@@ -1012,15 +1034,16 @@ export class GraphState {
     );
     try {
       if (directDependencies.length) {
-        const metadataClient = this.editorStore.applicationStore
-          .networkClientManager.metadataClient;
+        const metadataClient =
+          this.editorStore.applicationStore.networkClientManager.metadataClient;
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
-        const dependencyEntitiesJson = (yield metadataClient.getDependencyEntities(
-          (directDependencies as unknown) as PlainObject<ProjectVersion>[],
-          true,
-          true,
-        )) as PlainObject<ProjectVersionEntities>[];
+        const dependencyEntitiesJson =
+          (yield metadataClient.getDependencyEntities(
+            directDependencies as unknown as PlainObject<ProjectVersion>[],
+            true,
+            true,
+          )) as PlainObject<ProjectVersionEntities>[];
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
           ProjectVersionEntities.serialization.fromJson(e),
         );
@@ -1126,13 +1149,15 @@ export class GraphState {
     } else if (element instanceof SectionIndex) {
       return PACKAGEABLE_ELEMENT_TYPE.SECTION_INDEX;
     }
-    const extraElementTypeLabelGetters = this.editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          (plugin as DSL_EditorPlugin_Extension).getExtraElementTypeGetters?.() ??
-          [],
-      );
+    const extraElementTypeLabelGetters =
+      this.editorStore.applicationStore.pluginManager
+        .getEditorPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_EditorPlugin_Extension
+            ).getExtraElementTypeGetters?.() ?? [],
+        );
     for (const labelGetter of extraElementTypeLabelGetters) {
       const label = labelGetter(element);
       if (label) {

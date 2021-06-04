@@ -16,10 +16,7 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import { hashArray } from '@finos/legend-studio-shared';
-import {
-  CORE_HASH_STRUCTURE,
-  SOURCR_ID_LABEL,
-} from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import type { EnumerationMapping } from '../../../../../model/packageableElements/mapping/EnumerationMapping';
 import type { RawLambda } from '../../../../../model/rawValueSpecification/RawLambda';
@@ -31,7 +28,8 @@ import type { PropertyMappingVisitor } from '../../../../../model/packageableEle
 
 export class FlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
-  implements Hashable {
+  implements Hashable
+{
   transformer?: EnumerationMapping;
   transform: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
@@ -48,7 +46,6 @@ export class FlatDataPropertyMapping
       transformer: observable,
       transform: observable,
       setTransformer: action,
-      lambdaId: computed,
       isStub: computed,
       hashCode: computed,
     });
@@ -58,14 +55,6 @@ export class FlatDataPropertyMapping
 
   setTransformer(value: EnumerationMapping | undefined): void {
     this.transformer = value;
-  }
-
-  get lambdaId(): string {
-    return `${this.owner.parent.path}-${
-      SOURCR_ID_LABEL.FLAT_DATA_CLASS_MAPPING
-    }-${this.owner.id.value}-${
-      this.property.value.name
-    }-${this.owner.propertyMappings.indexOf(this)}`;
   }
 
   get isStub(): boolean {

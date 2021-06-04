@@ -23,7 +23,8 @@ import { V1_AbstractGenerationSpecification } from '../generationSpecification/V
 
 export class V1_FileGenerationSpecification
   extends V1_AbstractGenerationSpecification
-  implements Hashable {
+  implements Hashable
+{
   type!: string;
   generationOutputPath?: string;
   scopeElements: string[] = [];

@@ -35,7 +35,7 @@ import type { InputData } from '../../../../../../metamodels/pure/model/packagea
 import type { MappingTestAssert } from '../../../../../../metamodels/pure/model/packageableElements/mapping/MappingTestAssert';
 import {
   ObjectInputData,
-  OBJECT_INPUT_TYPE,
+  ObjectInputType,
 } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import { FlatDataInputData } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
 import { ExpectedOutputMappingTestAssert } from '../../../../../../metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
@@ -132,6 +132,9 @@ import type { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure
 import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
 import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer';
+import type { V1_RawRelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
+import { RelationalInputData } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
+import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -207,9 +210,9 @@ const transformEnumerationMapping = (
 
 export const V1_getObjectInputType = (type: string): V1_ObjectInputType => {
   switch (type) {
-    case OBJECT_INPUT_TYPE.JSON:
+    case ObjectInputType.JSON:
       return V1_ObjectInputType.JSON;
-    case OBJECT_INPUT_TYPE.XML:
+    case ObjectInputType.XML:
       return V1_ObjectInputType.XML;
     default:
       throw new UnsupportedOperationError(
@@ -240,6 +243,16 @@ const transformFlatDataInputData = (
   return inputData;
 };
 
+const transformRelationalInputData = (
+  element: RelationalInputData,
+): V1_RelationalInputData => {
+  const inputData = new V1_RelationalInputData();
+  inputData.data = element.data;
+  inputData.inputType = element.inputType;
+  inputData.database = V1_transformElementReference(element.database);
+  return inputData;
+};
+
 const transformExpectedOutputMappingTestAssert = (
   element: ExpectedOutputMappingTestAssert,
 ): V1_ExpectedOutputMappingTestAssert => {
@@ -253,6 +266,8 @@ const transformMappingTestInputData = (inputData: InputData): V1_InputData => {
     return transformObjectInputData(inputData);
   } else if (inputData instanceof FlatDataInputData) {
     return transformFlatDataInputData(inputData);
+  } else if (inputData instanceof RelationalInputData) {
+    return transformRelationalInputData(inputData);
   }
   throw new UnsupportedOperationError(
     `Can't serialize mapping test input data of type '${
@@ -328,9 +343,8 @@ const transformSimpleFlatDataPropertyMapping = (
   element: FlatDataPropertyMapping,
 ): V1_FlatDataPropertyMapping => {
   const flatDataPropertyMapping = new V1_FlatDataPropertyMapping();
-  flatDataPropertyMapping.enumMappingId = transformOptionalPropertyMappingTransformer(
-    element.transformer,
-  );
+  flatDataPropertyMapping.enumMappingId =
+    transformOptionalPropertyMappingTransformer(element.transformer);
   flatDataPropertyMapping.property = V1_transformPropertyReference(
     element.property,
     false,
@@ -342,9 +356,10 @@ const transformSimpleFlatDataPropertyMapping = (
     element.targetSetImplementation,
   );
   if (!element.transform.isStub) {
-    flatDataPropertyMapping.transform = element.transform.accept_ValueSpecificationVisitor(
-      new V1_RawValueSpecificationTransformer(),
-    ) as V1_RawLambda;
+    flatDataPropertyMapping.transform =
+      element.transform.accept_ValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(),
+      ) as V1_RawLambda;
   }
   return flatDataPropertyMapping;
 };
@@ -380,9 +395,8 @@ const transformPurePropertyMapping = (
   element: PurePropertyMapping,
 ): V1_PurePropertyMapping => {
   const purePropertyMapping = new V1_PurePropertyMapping();
-  purePropertyMapping.enumMappingId = transformOptionalPropertyMappingTransformer(
-    element.transformer,
-  );
+  purePropertyMapping.enumMappingId =
+    transformOptionalPropertyMappingTransformer(element.transformer);
   purePropertyMapping.property = V1_transformPropertyReference(
     element.property,
     false,
@@ -392,9 +406,10 @@ const transformPurePropertyMapping = (
     element.targetSetImplementation,
   );
   if (!element.transform.isStub) {
-    purePropertyMapping.transform = element.transform.accept_ValueSpecificationVisitor(
-      new V1_RawValueSpecificationTransformer(),
-    ) as V1_RawLambda;
+    purePropertyMapping.transform =
+      element.transform.accept_ValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(),
+      ) as V1_RawLambda;
   }
   if (element.localMappingProperty) {
     purePropertyMapping.localMappingProperty = transformLocalPropertyInfo(
@@ -417,7 +432,8 @@ const transformRelationalPropertyMapping = (
     element.property,
     isTransformingEmbeddedPropertyMapping,
   );
-  propertyMapping.relationalOperation = element.relationalOperation;
+  propertyMapping.relationalOperation =
+    element.relationalOperation as V1_RawRelationalOperationElement;
   propertyMapping.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
@@ -542,9 +558,10 @@ const transformXStorePropertyMapping = (
     element.targetSetImplementation,
   );
   if (!element.crossExpression.isStub) {
-    xstore.crossExpression = element.crossExpression.accept_ValueSpecificationVisitor(
-      new V1_RawValueSpecificationTransformer(),
-    ) as V1_RawLambda;
+    xstore.crossExpression =
+      element.crossExpression.accept_ValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(),
+      ) as V1_RawLambda;
   }
   if (element.localMappingProperty) {
     xstore.localMappingProperty = transformLocalPropertyInfo(
@@ -577,11 +594,13 @@ const transformAggregationAwarePropertyMapping = (
 };
 
 class PropertyMappingTransformer
-  implements PropertyMappingVisitor<V1_PropertyMapping> {
+  implements PropertyMappingVisitor<V1_PropertyMapping>
+{
   isTransformingEmbeddedPropertyMapping = false;
 
   constructor(isTransformingEmbeddedPropertyMapping: boolean) {
-    this.isTransformingEmbeddedPropertyMapping = isTransformingEmbeddedPropertyMapping;
+    this.isTransformingEmbeddedPropertyMapping =
+      isTransformingEmbeddedPropertyMapping;
   }
 
   visit_PurePropertyMapping(
@@ -865,9 +884,8 @@ const transformAggregationAwareSetImplementation = (
     element.propertyMappings,
     false,
   );
-  classMapping.aggregateSetImplementations = element.aggregateSetImplementations.map(
-    transformAggSetImplContainer,
-  );
+  classMapping.aggregateSetImplementations =
+    element.aggregateSetImplementations.map(transformAggSetImplContainer);
   return classMapping;
 };
 
@@ -882,7 +900,8 @@ function serializeProperyMapping(
 }
 
 export class V1_SetImplementationTransformer
-  implements SetImplementationVisitor<V1_ClassMapping | undefined> {
+  implements SetImplementationVisitor<V1_ClassMapping | undefined>
+{
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): V1_ClassMapping | undefined {

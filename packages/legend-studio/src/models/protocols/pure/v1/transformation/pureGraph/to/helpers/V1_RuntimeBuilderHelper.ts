@@ -38,8 +38,8 @@ export const V1_processEngineRuntime = (
   runtime.connections.forEach((protocolStoreConnections) => {
     const store = context.resolveStore(protocolStoreConnections.store.path);
     const storeConnections = new StoreConnections(store);
-    storeConnections.storeConnections = protocolStoreConnections.storeConnections.map(
-      (identifiedConnection) => {
+    storeConnections.storeConnections =
+      protocolStoreConnections.storeConnections.map((identifiedConnection) => {
         assertNonEmptyString(
           identifiedConnection.id,
           'Runtime connection ID is missing',
@@ -50,17 +50,17 @@ export const V1_processEngineRuntime = (
           'Runtime connection ID must be unique',
         );
         connectionIds.add(identifiedConnection.id);
-        const connection = identifiedConnection.connection.accept_ConnectionVisitor(
-          new V1_ProtocolToMetaModelConnectionVisitor(context, store),
-        );
+        const connection =
+          identifiedConnection.connection.accept_ConnectionVisitor(
+            new V1_ProtocolToMetaModelConnectionVisitor(context, store),
+          );
         // make sure connection are indexed by store properly
         assertTrue(
           connection.store.value === store.value,
           'Runtime connections must be correctly indexed by store',
         );
         return new IdentifiedConnection(identifiedConnection.id, connection);
-      },
-    );
+      });
     runtimeValue.connections.push(storeConnections);
   });
   return runtimeValue;

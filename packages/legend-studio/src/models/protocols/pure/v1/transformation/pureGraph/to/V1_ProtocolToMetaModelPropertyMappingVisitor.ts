@@ -76,6 +76,11 @@ import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/mode
 import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
 import { V1_rawLambdaBuilderWithResolver } from './helpers/V1_RawLambdaResolver';
+import {
+  V1_deserializeRelationalOperationElement,
+  V1_serializeRelationalOperationElement,
+} from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
+import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -89,9 +94,8 @@ const resolveRelationalPropertyMappingSource = (
     const property = immediateParent.association.value.getProperty(
       value.property.property,
     );
-    const _class = immediateParent.association.value.getPropertyAssociatedClass(
-      property,
-    );
+    const _class =
+      immediateParent.association.value.getPropertyAssociatedClass(property);
     const setImpls = immediateParent.parent.classMappingsByClass(_class);
     return setImpls.find((r) => r.root.value) ?? setImpls[0];
   }
@@ -99,7 +103,8 @@ const resolveRelationalPropertyMappingSource = (
 };
 
 export class V1_ProtocolToMetaModelPropertyMappingVisitor
-  implements V1_PropertyMappingVisitor<PropertyMapping> {
+  implements V1_PropertyMappingVisitor<PropertyMapping>
+{
   private context: V1_GraphBuilderContext;
   private immediateParent: PropertyMappingsImplementation; // either root instance set implementation or the immediate embedded parent property mapping (needed for processing embedded property mapping)
   private topParent: InstanceSetImplementation | undefined;
@@ -114,7 +119,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     immediateParent: PropertyMappingsImplementation,
     topParent: InstanceSetImplementation | undefined,
     allEnumerationMappings: EnumerationMapping[],
-    tabliaAliasMap?: Map<string, TableAlias>,
+    tableAliasMap?: Map<string, TableAlias>,
     allClassMappings?: SetImplementation[],
     xStoreParent?: XStoreAssociationImplementation,
     aggregationAwareParent?: AggregationAwareSetImplementation,
@@ -123,7 +128,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     this.immediateParent = immediateParent;
     this.topParent = topParent;
     this.allEnumerationMappings = allEnumerationMappings;
-    this.tableAliasMap = tabliaAliasMap ?? new Map<string, TableAlias>();
+    this.tableAliasMap = tableAliasMap ?? new Map<string, TableAlias>();
     this.allClassMappings = allClassMappings ?? [];
     this.xStoreParent = xStoreParent;
     this.aggregationAwareParent = aggregationAwareParent;
@@ -249,8 +254,9 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     // as such, here we have to resolve the class being mapped depending on where the property mapping is in the class mapping
     let propertyOwnerClass: Class;
     if (protocol.property.class) {
-      propertyOwnerClass = this.context.resolveClass(protocol.property.class)
-        .value;
+      propertyOwnerClass = this.context.resolveClass(
+        protocol.property.class,
+      ).value;
     } else if (
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
     ) {
@@ -318,8 +324,9 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     // as such, here we have to resolve the class being mapped depending on where the property mapping is in the class mapping
     let propertyOwnerClass: Class;
     if (protocol.property.class) {
-      propertyOwnerClass = this.context.resolveClass(protocol.property.class)
-        .value;
+      propertyOwnerClass = this.context.resolveClass(
+        protocol.property.class,
+      ).value;
     } else if (
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
     ) {
@@ -456,9 +463,29 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       sourceSetImplementation,
       targetSetImplementation,
     );
-    // NOTE: for now, we don't build the operation element, we will use its raw form for the editor
-    relationalPropertyMapping.relationalOperation =
-      protocol.relationalOperation;
+    // NOTE: we only need to use the raw form of the operation for the editor
+    // but we need to process it anyway so we can do analytics on table alias map
+    // and to resolve paths (similar to lambda). In order to resolve the path, we
+    // will need to do a full round-trip processing for the operation
+    // See https://github.com/finos/legend-studio/pull/173
+    try {
+      relationalPropertyMapping.relationalOperation =
+        V1_serializeRelationalOperationElement(
+          V1_transformRelationalOperationElement(
+            V1_processRelationalOperationElement(
+              V1_deserializeRelationalOperationElement(
+                protocol.relationalOperation,
+              ),
+              this.context,
+              this.tableAliasMap,
+              [],
+            ),
+          ),
+        );
+    } catch {
+      relationalPropertyMapping.relationalOperation =
+        protocol.relationalOperation;
+    }
     if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
         (em) => em.id.value === protocol.enumMappingId,
@@ -488,8 +515,9 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     );
     let propertyOwnerClass: Class;
     if (protocol.property.class) {
-      propertyOwnerClass = this.context.resolveClass(protocol.property.class)
-        .value;
+      propertyOwnerClass = this.context.resolveClass(
+        protocol.property.class,
+      ).value;
     } else if (
       this.immediateParent instanceof RootRelationalInstanceSetImplementation ||
       this.immediateParent instanceof
@@ -610,22 +638,26 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       guaranteeNonNullable(this.topParent),
       this.context,
     );
-    const otherwiseEmbedded = new OtherwiseEmbeddedRelationalInstanceSetImplementation(
-      this.immediateParent,
-      PropertyImplicitReference.create(
-        PackageableElementImplicitReference.create(
-          property.propertyOwnerClass,
-          protocol.property.class ?? '',
-          this.context.section,
-          true,
+    const otherwiseEmbedded =
+      new OtherwiseEmbeddedRelationalInstanceSetImplementation(
+        this.immediateParent,
+        PropertyImplicitReference.create(
+          PackageableElementImplicitReference.create(
+            property.propertyOwnerClass,
+            protocol.property.class ?? '',
+            this.context.section,
+            true,
+          ),
+          property.property,
         ),
-        property.property,
-      ),
-      guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-      property.sourceSetImplementation,
-      property._class,
-      InferableMappingElementIdExplicitValue.create(`${property.id.value}`, ''),
-    );
+        guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
+        property.sourceSetImplementation,
+        property._class,
+        InferableMappingElementIdExplicitValue.create(
+          `${property.id.value}`,
+          '',
+        ),
+      );
     otherwiseEmbedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
       V1_processRelationalOperationElement(
         key,
@@ -634,8 +666,8 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         [],
       ),
     );
-    otherwiseEmbedded.propertyMappings = protocol.classMapping.propertyMappings.map(
-      (propertyMapping) =>
+    otherwiseEmbedded.propertyMappings =
+      protocol.classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
           new V1_ProtocolToMetaModelPropertyMappingVisitor(
             this.context,
@@ -645,7 +677,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
             this.tableAliasMap,
           ),
         ),
-    ) as RelationalPropertyMapping[];
+      ) as RelationalPropertyMapping[];
     otherwiseEmbedded.otherwisePropertyMapping = guaranteeType(
       protocol.otherwisePropertyMapping.accept_PropertyMappingVisitor(
         new V1_ProtocolToMetaModelPropertyMappingVisitor(
@@ -727,9 +759,10 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       'Aggregation-aware property mapping parent is missing',
     );
 
-    const propertyMapping = aggregationAwareParent.mainSetImplementation.propertyMappings.find(
-      (p) => p.property.value.name === protocol.property.property,
-    );
+    const propertyMapping =
+      aggregationAwareParent.mainSetImplementation.propertyMappings.find(
+        (p) => p.property.value.name === protocol.property.property,
+      );
 
     const property: PropertyReference =
       propertyMapping?.property ??
@@ -753,9 +786,8 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       protocol.localMappingProperty &&
       propertyMapping?.localMappingProperty
     ) {
-      aggregationAwarePropertyMapping.localMappingProperty = guaranteeNonNullable(
-        propertyMapping.localMappingProperty,
-      );
+      aggregationAwarePropertyMapping.localMappingProperty =
+        guaranteeNonNullable(propertyMapping.localMappingProperty);
     }
     return aggregationAwarePropertyMapping;
   }

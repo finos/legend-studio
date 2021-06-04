@@ -93,7 +93,8 @@ export interface QueryBuilderFilterConditionDragSource {
 export type QueryBuilderFilterDropTarget =
   | QueryBuilderExplorerTreeDragSource
   | QueryBuilderFilterConditionDragSource;
-export type QueryBuilderFilterConditionRearrangeDropTarget = QueryBuilderFilterConditionDragSource;
+export type QueryBuilderFilterConditionRearrangeDropTarget =
+  QueryBuilderFilterConditionDragSource;
 
 export class FilterConditionState {
   editorStore: EditorStore;
@@ -193,7 +194,7 @@ export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
   readonly id = uuid();
   readonly label = '';
   // NOTE: we don't use the `isSelected` attribute is not used since we keep track of it from the tree data level
-  isOpen?: boolean | undefined;
+  isOpen?: boolean;
   parentId?: string;
 
   constructor(parentId: string | undefined) {
@@ -297,7 +298,8 @@ export class QueryBuilderFilterTreeBlankConditionNodeData extends QueryBuilderFi
 }
 
 export class QueryBuilderFilterState
-  implements TreeData<QueryBuilderFilterTreeNodeData> {
+  implements TreeData<QueryBuilderFilterTreeNodeData>
+{
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   lambdaVariableName = DEFAULT_LAMBDA_VARIABLE_NAME;
@@ -462,12 +464,10 @@ export class QueryBuilderFilterState
       undefined,
       QUERY_BUILDER_FILTER_GROUP_OPERATION.AND,
     );
-    const newBlankConditionNode1 = new QueryBuilderFilterTreeBlankConditionNodeData(
-      undefined,
-    );
-    const newBlankConditionNode2 = new QueryBuilderFilterTreeBlankConditionNodeData(
-      undefined,
-    );
+    const newBlankConditionNode1 =
+      new QueryBuilderFilterTreeBlankConditionNodeData(undefined);
+    const newBlankConditionNode2 =
+      new QueryBuilderFilterTreeBlankConditionNodeData(undefined);
     this.nodes.set(newBlankConditionNode1.id, newBlankConditionNode1);
     this.nodes.set(newBlankConditionNode2.id, newBlankConditionNode2);
     newGroupNode.addChildNode(newBlankConditionNode1);
@@ -580,9 +580,8 @@ export class QueryBuilderFilterState
     // squash parent node after the current node is deleted
     if (parentNode) {
       parentNode.removeChildNode(node);
-      let currentParentNode:
-        | QueryBuilderFilterTreeGroupNodeData
-        | undefined = parentNode;
+      let currentParentNode: QueryBuilderFilterTreeGroupNodeData | undefined =
+        parentNode;
       while (currentParentNode) {
         if (currentParentNode.childrenIds.length >= 2) {
           break;
@@ -732,9 +731,10 @@ export class QueryBuilderFilterState
     if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
       return node.condition.getFunctionExpression();
     } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
-      const multiplicityOne = this.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
+      const multiplicityOne =
+        this.editorStore.graphState.graph.getTypicalMultiplicity(
+          TYPICAL_MULTIPLICITY_TYPE.ONE,
+        );
       const func = new SimpleFunctionExpression(
         node.groupOperation,
         multiplicityOne,

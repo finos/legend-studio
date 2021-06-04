@@ -90,3 +90,38 @@
     }
   }
 }
+
+.mapping-test-editor-panel {
+  &__query-panel {
+    height: 100%;
+  }
+
+  &__query-panel__query {
+    position: relative;
+    height: calc(100% - 3.6rem);
+  }
+
+  &__query-panel__query-editor {
+    @include flexCenter;
+
+    height: 3.6rem;
+    border-top: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  .Resizer.vertical {
+    background: padding-box var(--color-dark-grey-100);
+    width: 1.1rem;
+    min-width: 1.1rem;
+    border-left: 0.5rem solid transparent;
+    border-right: 0.5rem solid transparent;
+  }
+
+  &__input-data-panel__content {
+    padding: 0 !important;
+    position: relative;
+  }
+
+  &__generate-plan-btn svg {
+    font-size: 1.5rem;
+  }
+}

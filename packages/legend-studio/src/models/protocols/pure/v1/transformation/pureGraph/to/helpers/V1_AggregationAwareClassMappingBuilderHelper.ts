@@ -81,13 +81,20 @@ export const V1_processAggregateContainer = (
   context: V1_GraphBuilderContext,
   mapping: Mapping,
 ): AggregateSetImplementationContainer => {
-  const aggregateSetImplementationContainer = new AggregateSetImplementationContainer(
-    container.index,
-    V1_processAggregateSpecification(container.aggregateSpecification, context),
-    container.setImplementation.accept_ClassMappingVisitor(
-      new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(context, mapping),
-    ) as InstanceSetImplementation,
-  );
+  const aggregateSetImplementationContainer =
+    new AggregateSetImplementationContainer(
+      container.index,
+      V1_processAggregateSpecification(
+        container.aggregateSpecification,
+        context,
+      ),
+      container.setImplementation.accept_ClassMappingVisitor(
+        new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(
+          context,
+          mapping,
+        ),
+      ) as InstanceSetImplementation,
+    );
 
   return aggregateSetImplementationContainer;
 };

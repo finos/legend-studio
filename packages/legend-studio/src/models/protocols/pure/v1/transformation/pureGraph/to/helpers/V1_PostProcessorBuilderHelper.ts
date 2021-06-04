@@ -62,8 +62,9 @@ export const V1_processPostProcessor = (
   }
   const extraPostProcessorBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionPostProcessorBuilders?.() ??
-      [],
+      (
+        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraConnectionPostProcessorBuilders?.() ?? [],
   );
   for (const builder of extraPostProcessorBuilders) {
     const postprocessor = builder(protocol, context);

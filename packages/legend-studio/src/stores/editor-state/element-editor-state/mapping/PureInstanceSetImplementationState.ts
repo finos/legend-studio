@@ -15,7 +15,10 @@
  */
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import { LAMBDA_START } from '../../../../models/MetaModelConst';
+import {
+  LAMBDA_START,
+  SOURCR_ID_LABEL,
+} from '../../../../models/MetaModelConst';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
   InstanceSetImplementationState,
@@ -38,16 +41,32 @@ export class PurePropertyMappingState extends PropertyMappingState {
     this.editorStore = editorStore;
   }
 
+  get lambdaId(): string {
+    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
+    return `${this.propertyMapping.owner.parent.path}-${
+      SOURCR_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING
+    }-${this.propertyMapping.owner.id.value}-${
+      this.propertyMapping.property.value.name
+    }-${
+      this.propertyMapping.targetSetImplementation
+        ? `-${this.propertyMapping.targetSetImplementation.id.value}`
+        : ''
+    }-${this.propertyMapping.owner.propertyMappings.indexOf(
+      this.propertyMapping,
+    )}`;
+  }
+
   convertLambdaGrammarStringToObject = flow(function* (
     this: PurePropertyMappingState,
   ) {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda = (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
-          this.fullLambdaString,
-          this.propertyMapping.lambdaId,
-        )) as RawLambda | undefined;
+        const lambda =
+          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+            this.fullLambdaString,
+            this.lambdaId,
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.propertyMapping.transform = lambda ?? emptyLambda;
       } catch (error: unknown) {
@@ -72,15 +91,13 @@ export class PurePropertyMappingState extends PropertyMappingState {
     if (!this.propertyMapping.transform.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
-        lambdas.set(
-          this.propertyMapping.lambdaId,
-          this.propertyMapping.transform,
-        );
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-          pretty,
-        )) as Map<string, string>;
-        const grammarText = isolatedLambdas.get(this.propertyMapping.lambdaId);
+        lambdas.set(this.lambdaId, this.propertyMapping.transform);
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
+        const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)
@@ -144,9 +161,10 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       new MappingElementDecorateVisitor(),
     );
     const newPropertyMappingStates: PurePropertyMappingState[] = [];
-    const propertyMappingstatesAfterDecoration = this.mappingElement.propertyMappings.map(
-      (pm) => new PurePropertyMappingState(pm, this.editorStore),
-    );
+    const propertyMappingstatesAfterDecoration =
+      this.mappingElement.propertyMappings.map(
+        (pm) => new PurePropertyMappingState(pm, this.editorStore),
+      );
     propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
       const existingPropertyMappingState = this.propertyMappingStates.find(
         (p) => p.propertyMapping === propertyMappingState.propertyMapping,
@@ -165,16 +183,17 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     const propertyMappingsMap = new Map<string, PurePropertyMappingState>();
     this.propertyMappingStates.forEach((pm) => {
       if (!pm.propertyMapping.transform.isStub) {
-        lambdas.set(pm.propertyMapping.lambdaId, pm.propertyMapping.transform);
-        propertyMappingsMap.set(pm.propertyMapping.lambdaId, pm);
+        lambdas.set(pm.lambdaId, pm.propertyMapping.transform);
+        propertyMappingsMap.set(pm.lambdaId, pm);
       }
     });
     if (lambdas.size) {
       this.isConvertingTransformObjects = true;
       try {
-        const isolatedLambdas = (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-          lambdas,
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+          )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const purePropertyMapping = propertyMappingsMap.get(key);
           purePropertyMapping?.setLambdaString(

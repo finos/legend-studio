@@ -27,7 +27,8 @@ import { ReferenceWithOwner } from '../../../model/Reference';
 
 export abstract class EnumValueReference
   extends ReferenceWithOwner
-  implements Stubable {
+  implements Stubable
+{
   readonly ownerReference: PackageableElementReference<Enumeration>;
   value: Enum;
 

@@ -37,7 +37,8 @@ import { FunctionDefinition } from './Function';
 
 export class ConcreteFunctionDefinition
   extends FunctionDefinition
-  implements Hashable, Stubable {
+  implements Hashable, Stubable
+{
   returnType: PackageableElementReference<Type>;
   returnMultiplicity: Multiplicity;
   parameters: RawVariableExpression[] = []; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
@@ -67,7 +68,6 @@ export class ConcreteFunctionDefinition
       deleteStereotype: action,
       changeStereotype: action,
       addStereotype: action,
-      lambdaId: computed,
       hashCode: computed({ keepAlive: true }),
     });
 
@@ -104,10 +104,6 @@ export class ConcreteFunctionDefinition
   }
   addStereotype(val: StereotypeReference): void {
     addUniqueEntry(this.stereotypes, val);
-  }
-
-  get lambdaId(): string {
-    return `${this.path}`;
   }
 
   get hashCode(): string {

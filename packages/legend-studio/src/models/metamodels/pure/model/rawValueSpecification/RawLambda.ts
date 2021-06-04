@@ -25,7 +25,8 @@ import type { Stubable } from '../../model/Stubable';
 
 export class RawLambda
   extends RawValueSpecification
-  implements Hashable, Stubable {
+  implements Hashable, Stubable
+{
   body?: object;
   parameters?: object;
 

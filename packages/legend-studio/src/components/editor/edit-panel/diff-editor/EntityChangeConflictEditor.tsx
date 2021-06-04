@@ -151,32 +151,26 @@ const MergeConflictEditor = observer(
   (props: { conflictEditorState: EntityChangeConflictEditorState }) => {
     const { conflictEditorState } = props;
     const isReadOnly = conflictEditorState.isReadOnly;
-    const [editor, setEditor] = useState<
-      monacoEditorAPI.IStandaloneCodeEditor | undefined
-    >();
+    const [editor, setEditor] =
+      useState<monacoEditorAPI.IStandaloneCodeEditor | undefined>();
     const [hasInitializedTextValue, setInitializedTextValue] = useState(false);
     const value = conflictEditorState.mergedText;
     const currentValue = editor?.getValue() ?? '';
     const error = conflictEditorState.mergeEditorParserError;
     const decorations = useRef<string[]>([]);
-    const mergeConflictResolutionCodeLensDisposer = useRef<
-      IDisposable | undefined
-    >(undefined);
-    const onDidChangeModelContentEventDisposer = useRef<
-      IDisposable | undefined
-    >(undefined);
+    const mergeConflictResolutionCodeLensDisposer =
+      useRef<IDisposable | undefined>(undefined);
+    const onDidChangeModelContentEventDisposer =
+      useRef<IDisposable | undefined>(undefined);
     const textInputRef = useRef<HTMLDivElement>(null);
 
     // cursor
-    const onDidChangeCursorPositionEventDisposer = useRef<
-      IDisposable | undefined
-    >(undefined);
-    const onDidBlurEditorTextEventDisposer = useRef<IDisposable | undefined>(
-      undefined,
-    );
-    const onDidFocusEditorTextEventDisposer = useRef<IDisposable | undefined>(
-      undefined,
-    );
+    const onDidChangeCursorPositionEventDisposer =
+      useRef<IDisposable | undefined>(undefined);
+    const onDidBlurEditorTextEventDisposer =
+      useRef<IDisposable | undefined>(undefined);
+    const onDidFocusEditorTextEventDisposer =
+      useRef<IDisposable | undefined>(undefined);
 
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
@@ -207,17 +201,16 @@ const MergeConflictEditor = observer(
       // dispose the old editor content setter in case the `updateInput` handler changes
       // for a more extensive note on this, see `LambdaEditor`
       onDidChangeModelContentEventDisposer.current?.dispose();
-      onDidChangeModelContentEventDisposer.current = editor.onDidChangeModelContent(
-        () => {
+      onDidChangeModelContentEventDisposer.current =
+        editor.onDidChangeModelContent(() => {
           conflictEditorState.setMergedText(editor.getValue());
           conflictEditorState.clearMergeEditorError();
-        },
-      );
+        });
 
       // sync cursor position with merge editor state to properly monitor conflict chunk navigation
       onDidChangeCursorPositionEventDisposer.current?.dispose();
-      onDidChangeCursorPositionEventDisposer.current = editor.onDidChangeCursorPosition(
-        (event) => {
+      onDidChangeCursorPositionEventDisposer.current =
+        editor.onDidChangeCursorPosition((event) => {
           // this is done to avoid modifying the parent merge editor component from the child.
           // if this action is triggered on purpose or async or in an effect then we can ignore it
           // but when we first render this editor and update the merge editor line number
@@ -230,8 +223,7 @@ const MergeConflictEditor = observer(
             );
           }
           conflictEditorState.setCurrentMergeEditorConflict(undefined); // reset as we just moved the cursor
-        },
-      );
+        });
       // when the editor lose or gain focus, we will need to sync cursor position properly as well
       onDidBlurEditorTextEventDisposer.current?.dispose();
       onDidBlurEditorTextEventDisposer.current = editor.onDidBlurEditorText(
@@ -280,9 +272,8 @@ const MergeConflictEditor = observer(
 
       // CodeLens registration
       mergeConflictResolutionCodeLensDisposer.current?.dispose();
-      mergeConflictResolutionCodeLensDisposer.current = monacoLanguagesAPI.registerCodeLensProvider(
-        EDITOR_LANGUAGE.PURE,
-        {
+      mergeConflictResolutionCodeLensDisposer.current =
+        monacoLanguagesAPI.registerCodeLensProvider(EDITOR_LANGUAGE.PURE, {
           provideCodeLenses: (model, token) => ({
             lenses: conflictEditorState.mergeConflicts.flatMap((conflict) =>
               [
@@ -367,8 +358,7 @@ const MergeConflictEditor = observer(
             },
           }),
           resolveCodeLens: (model, codeLens, token) => codeLens,
-        },
-      );
+        });
 
       resetLineNumberGutterWidth(editor);
       editor.updateOptions({ readOnly: Boolean(isReadOnly) });
@@ -654,9 +644,8 @@ export const EntityChangeConflictEditor = observer(() => {
   );
   // mode
   const currentMode = conflictEditorState.currentMode;
-  const currentModeComparisonViewInfo = conflictEditorState.getModeComparisonViewInfo(
-    currentMode,
-  );
+  const currentModeComparisonViewInfo =
+    conflictEditorState.getModeComparisonViewInfo(currentMode);
   const onModeChange = (val: {
     value: ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE;
   }): void => conflictEditorState.setCurrentMode(val.value);
@@ -725,13 +714,12 @@ export const EntityChangeConflictEditor = observer(() => {
           </button>
           <CustomSelectorInput
             className="entity-change-conflict-editor__header__action__view-dropdown"
-            options={Object.values(
-              ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE,
-            ).map((mode) =>
-              getMergeEditorViewModeOption(
-                mode,
-                conflictEditorState.getModeComparisonViewInfo(mode),
-              ),
+            options={Object.values(ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE).map(
+              (mode) =>
+                getMergeEditorViewModeOption(
+                  mode,
+                  conflictEditorState.getModeComparisonViewInfo(mode),
+                ),
             )}
             isSearchable={false}
             onChange={onModeChange}

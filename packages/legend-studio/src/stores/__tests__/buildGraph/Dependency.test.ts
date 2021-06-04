@@ -153,8 +153,7 @@ const testDependencyElements = async (
   );
   const keys = projectVersionEntities.map((e) => e.projectId);
   const dependencyElementPaths = projectVersionEntities
-    .map((e) => e.entities)
-    .flat()
+    .flatMap((e) => e.entities)
     .map((e) => e.path);
   if (includeDependencyInFileGenerationScopeElements) {
     entities.push(
@@ -176,7 +175,8 @@ const testDependencyElements = async (
     .mockResolvedValue(dependencyEntities);
   await editorStore.graphState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
-  const dependencyMap = await editorStore.graphState.getProjectDependencyEntities();
+  const dependencyMap =
+    await editorStore.graphState.getProjectDependencyEntities();
   editorStore.graphState.graph.setDependencyManager(dependencyManager);
   await editorStore.graphState.graphManager.buildDependencies(
     editorStore.graphState.coreModel,

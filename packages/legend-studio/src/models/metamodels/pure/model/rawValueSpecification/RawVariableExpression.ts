@@ -28,7 +28,8 @@ import { RawValueSpecification } from '../../model/rawValueSpecification/RawValu
 
 export class RawVariableExpression
   extends RawValueSpecification
-  implements Hashable, Stubable {
+  implements Hashable, Stubable
+{
   uuid = uuid();
   name: string;
   type: PackageableElementReference<Type>;

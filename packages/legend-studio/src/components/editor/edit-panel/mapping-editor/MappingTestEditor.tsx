@@ -138,9 +138,7 @@ export const MappingTestEditor = observer(
               MappingTestExpectedOutputAssertionState && (
               <div className="mapping-test-editor__diff">
                 <JsonDiffView
-                  from={
-                    mappingTestState.assertionState.expectedTestExecutionResult
-                  } // expected
+                  from={mappingTestState.assertionState.expectedResult} // expected
                   to={mappingTestState.testExecutionResultText} // actual
                   lossless={true}
                 />

@@ -138,7 +138,8 @@ const getPrimtiveInstanceValue = (
 };
 
 export class V1_ValueSpecificationBuilder
-  implements V1_ValueSpecificationVisitor<ValueSpecification> {
+  implements V1_ValueSpecificationVisitor<ValueSpecification>
+{
   context: V1_GraphBuilderContext;
   processingContext: V1_ProcessingContext;
   openVariables: string[] = [];
@@ -680,9 +681,8 @@ function buildPropertyGraphFetchTree(
     _multiplicity.lowerBound = 1;
     _multiplicity.upperBound = 1;
     thisVariable.multiplicity = _multiplicity;
-    const parameters: V1_ValueSpecification[] = propertyGraphFetchTree.parameters.concat(
-      [thisVariable],
-    );
+    const parameters: V1_ValueSpecification[] =
+      propertyGraphFetchTree.parameters.concat([thisVariable]);
     property = V1_getAppliedProperty(
       parentClass,
       parameters,
@@ -737,9 +737,8 @@ function buildPropertyGraphFetchTree(
   );
   _propertyGraphFetchTree.parameters = pureParameters;
   _propertyGraphFetchTree.alias = propertyGraphFetchTree.alias;
-  _propertyGraphFetchTree.subType = OptionalPackageableElementExplicitReference.create<Class>(
-    _subType?.value,
-  );
+  _propertyGraphFetchTree.subType =
+    OptionalPackageableElementExplicitReference.create<Class>(_subType?.value);
   _propertyGraphFetchTree.subTrees = children;
   return _propertyGraphFetchTree;
 }
@@ -780,13 +779,14 @@ export function V1_processExecutionContext(
       executionContext.queryTimeOutInSeconds;
     return _executioncontext;
   } else if (executionContext instanceof V1_AnalyticsExecutionContext) {
-    const vs = executionContext.toFlowSetFunction.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        context,
-        new V1_ProcessingContext(''),
-        [],
-      ),
-    );
+    const vs =
+      executionContext.toFlowSetFunction.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          context,
+          new V1_ProcessingContext(''),
+          [],
+        ),
+      );
     const instance = guaranteeType(vs, InstanceValue);
     const lambdaFunc = guaranteeType(instance.values[0], LambdaFunction);
     const _analyticsExecutionContext = new AnalyticsExecutionContext(

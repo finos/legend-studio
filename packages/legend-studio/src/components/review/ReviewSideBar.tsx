@@ -97,8 +97,10 @@ export const ReviewSideBar = observer(() => {
     currentEditorState instanceof EntityDiffViewState &&
     diff.oldPath === currentEditorState.fromEntityPath &&
     diff.newPath === currentEditorState.toEntityPath;
-  const openChange = (diff: EntityDiff): (() => void) => (): void =>
-    editorStore.workspaceReviewState.openReviewChange(diff);
+  const openChange =
+    (diff: EntityDiff): (() => void) =>
+    (): void =>
+      editorStore.workspaceReviewState.openReviewChange(diff);
 
   return (
     <div className="panel review__side-bar">

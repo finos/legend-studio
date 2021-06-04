@@ -49,9 +49,8 @@ export const getDerivedPropertyArgumentStrings = (
   editorStore: EditorStore,
   derivedProperty: DerivedProperty,
 ): string => {
-  const variables = (Array.isArray(derivedProperty.parameters)
-    ? derivedProperty.parameters
-    : []
+  const variables = (
+    Array.isArray(derivedProperty.parameters) ? derivedProperty.parameters : []
   )
     .map((parameter) =>
       editorStore.graphState.graphManager.buildValueSpecificationFromJson(
@@ -86,9 +85,8 @@ const SimplePropertyMappingEditor = observer(
   }) => {
     const { propertyMappingState, transformProps, drop, dragItem } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
     const expectedType =
       propertyMapping.property.value.genericType.value.rawType;
@@ -138,13 +136,11 @@ const EnumerationPropertyMappingEditor = observer(
       isReadOnly,
     } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
-    const enumeration = propertyMapping.property.value.genericType.value.getRawType(
-      Enumeration,
-    );
+    const enumeration =
+      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
     const expectedType = propertyMapping.transformer
       ? propertyMapping.transformer.sourceType.value
       : enumeration;
@@ -242,9 +238,8 @@ const ClassPropertyMappingEditor = observer(
   }) => {
     const { propertyMappingState, drop, dragItem, transformProps } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
     const isDefaultId = propertyMapping.targetSetImplementation?.id.isDefault;
     const target = propertyMapping.targetSetImplementation ? (
@@ -286,7 +281,8 @@ const ClassPropertyMappingEditor = observer(
           <div className="property-mapping-editor__entry__id">
             <div
               className={clsx('property-mapping-editor__entry__id__label', {
-                'property-mapping-editor__entry__id__label--default': isDefaultId,
+                'property-mapping-editor__entry__id__label--default':
+                  isDefaultId,
               })}
             >
               {target}

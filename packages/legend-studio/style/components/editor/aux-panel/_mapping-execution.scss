@@ -74,109 +74,33 @@
     }
   }
 
-  &__target {
-    @include flexCenter;
-
+  &__query-panel {
     height: 100%;
-    flex-direction: column;
-    cursor: pointer;
-    margin-top: 0 !important;
   }
 
-  &__target__text {
-    @include flexHCenter;
-
-    color: var(--color-dark-grey-400);
-    font-weight: bold;
+  &__query-panel__query {
+    position: relative;
+    height: calc(100% - 3.6rem);
   }
 
-  &__target__action {
+  &__query-panel__query-editor {
     @include flexCenter;
 
-    padding: 1rem;
-    border: 0.3rem dashed var(--color-dark-grey-100);
-    border-radius: 0.3rem;
-    margin-top: 2rem;
-    width: 10rem;
-    height: 10rem;
+    height: 3.6rem;
+    border-top: 0.1rem solid var(--color-dark-grey-200);
   }
 
-  &__target__action svg {
-    font-size: 4rem;
-    color: var(--color-dark-grey-100);
+  .Resizer.vertical {
+    background: padding-box var(--color-dark-grey-100);
+    width: 1.1rem;
+    min-width: 1.1rem;
+    border-left: 0.5rem solid transparent;
+    border-right: 0.5rem solid transparent;
   }
 
-  &__target:hover &__target__action {
-    border-color: var(--color-dark-grey-200);
-  }
-
-  &__target:hover &__target__action svg {
-    color: var(--color-dark-grey-200);
-  }
-
-  &__target-panel__query-container {
-    height: 100%;
-    width: 100%;
-    padding: 0.5rem 0;
-    overflow: auto;
-  }
-
-  .panel__content--dnd-over &__target__action svg {
-    animation: dnd-bounceup 0.2s alternate ease infinite;
-  }
-
-  &__source-panel,
-  &__result-panel {
-    border-left: 0.1rem solid var(--color-dark-grey-100);
-  }
-
-  &__source {
-    @include flexCenter;
-
-    height: 100%;
-    flex-direction: column;
-    cursor: pointer;
-    margin-top: 0 !important;
-  }
-
-  &__source__text {
-    @include flexHCenter;
-
-    color: var(--color-dark-grey-400);
-    font-weight: bold;
-  }
-
-  &__source__action {
-    @include flexCenter;
-
-    padding: 1rem;
-    border: 0.3rem dashed var(--color-dark-grey-100);
-    border-radius: 0.3rem;
-    margin-top: 2rem;
-    width: 10rem;
-    height: 10rem;
-  }
-
-  &__source__action svg {
-    font-size: 4rem;
-    color: var(--color-dark-grey-100);
-  }
-
-  &__source:hover &__source__action {
-    border-color: var(--color-dark-grey-200);
-  }
-
-  &__source:hover &__source__action svg {
-    color: var(--color-dark-grey-200);
-  }
-
-  &__json-editor {
+  &__input-data-panel__content {
     padding: 0 !important;
     position: relative;
-
-    &.panel__content {
-      overflow-y: hidden;
-    }
   }
 
   &__generate-plan-btn svg {

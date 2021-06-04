@@ -208,13 +208,8 @@ describe(
   integrationTest('Query builder lambda processing roundtrip test'),
   () => {
     test.each(cases)('%s', async (testName, context, lambda, inputLambda) => {
-      const {
-        entities,
-        targetClassPath,
-        className,
-        mappingName,
-        runtimeName,
-      } = context;
+      const { entities, targetClassPath, className, mappingName, runtimeName } =
+        context;
       const mockedEditorStore = buildQueryBuilderMockedEditorStore();
       const renderResult = await setUpEditorWithDefaultSDLCData(
         mockedEditorStore,
@@ -225,9 +220,8 @@ describe(
       MOBX__enableSpyOrMock();
       mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
       MOBX__disableSpyOrMock();
-      const queryBuilderState = mockedEditorStore.getEditorExtensionState(
-        QueryBuilderState,
-      );
+      const queryBuilderState =
+        mockedEditorStore.getEditorExtensionState(QueryBuilderState);
       await flowResult(queryBuilderState.setOpenQueryBuilder(true));
       queryBuilderState.querySetupState.setClass(
         mockedEditorStore.graphState.graph.getClass(targetClassPath),
@@ -247,9 +241,10 @@ describe(
       queryBuilderState.buildWithRawLambda(
         new RawLambda(rawLambda.parameters, rawLambda.body),
       );
-      const jsonQuery = mockedEditorStore.graphState.graphManager.serializeRawValueSpecification(
-        queryBuilderState.getRawLambdaQuery(),
-      );
+      const jsonQuery =
+        mockedEditorStore.graphState.graphManager.serializeRawValueSpecification(
+          queryBuilderState.getRawLambdaQuery(),
+        );
       expect([lambda]).toIncludeSameMembers([jsonQuery]);
     });
   },

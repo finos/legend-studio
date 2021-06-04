@@ -119,6 +119,8 @@ export const V1_processDatasourceSpecification = (
       protocol.warehouseName,
       protocol.databaseName,
     );
+    snowflakeSpec.quotedIdentifiersIgnoreCase =
+      protocol.quotedIdentifiersIgnoreCase;
     return snowflakeSpec;
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
     const metamodel = new LocalH2DatasourceSpecification();
@@ -126,11 +128,13 @@ export const V1_processDatasourceSpecification = (
     metamodel.testDataSetupSqls = protocol.testDataSetupSqls;
     return metamodel;
   }
-  const extraConnectionDatasourceSpecificationBuilders = context.extensions.plugins.flatMap(
-    (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionDatasourceSpecificationBuilders?.() ??
-      [],
-  );
+  const extraConnectionDatasourceSpecificationBuilders =
+    context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionDatasourceSpecificationBuilders?.() ?? [],
+    );
   for (const builder of extraConnectionDatasourceSpecificationBuilders) {
     const datasourceSpec = builder(protocol, context);
     if (datasourceSpec) {
@@ -186,11 +190,13 @@ export const V1_processAuthenticationStrategy = (
       ),
     );
   }
-  const extraConnectionAuthenticationStrategyBuilders = context.extensions.plugins.flatMap(
-    (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionAuthenticationStrategyBuilders?.() ??
-      [],
-  );
+  const extraConnectionAuthenticationStrategyBuilders =
+    context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionAuthenticationStrategyBuilders?.() ?? [],
+    );
   for (const builder of extraConnectionAuthenticationStrategyBuilders) {
     const authStrategy = builder(protocol, context);
     if (authStrategy) {

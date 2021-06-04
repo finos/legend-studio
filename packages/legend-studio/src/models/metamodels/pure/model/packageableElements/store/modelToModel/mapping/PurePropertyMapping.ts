@@ -16,10 +16,7 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import { hashArray } from '@finos/legend-studio-shared';
-import {
-  CORE_HASH_STRUCTURE,
-  SOURCR_ID_LABEL,
-} from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import type { PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/PropertyMapping';
 import { PropertyMapping } from '../../../../../model/packageableElements/mapping/PropertyMapping';
@@ -32,7 +29,8 @@ import type { Stubable } from '../../../../../model/Stubable';
 
 export class PurePropertyMapping
   extends PropertyMapping
-  implements Hashable, Stubable {
+  implements Hashable, Stubable
+{
   transformer?: EnumerationMapping;
   transform: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   explodeProperty?: boolean;
@@ -52,7 +50,6 @@ export class PurePropertyMapping
       transform: observable,
       explodeProperty: observable,
       setTransformer: action,
-      lambdaId: computed,
       isStub: computed,
       hashCode: computed,
     });
@@ -63,17 +60,6 @@ export class PurePropertyMapping
 
   setTransformer(value: EnumerationMapping | undefined): void {
     this.transformer = value;
-  }
-
-  get lambdaId(): string {
-    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
-    return `${this.owner.parent.path}-${
-      SOURCR_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING
-    }-${this.owner.id.value}-${this.property.value.name}-${
-      this.targetSetImplementation
-        ? `-${this.targetSetImplementation.id.value}`
-        : ''
-    }-${this.owner.propertyMappings.indexOf(this)}`;
   }
 
   get isStub(): boolean {

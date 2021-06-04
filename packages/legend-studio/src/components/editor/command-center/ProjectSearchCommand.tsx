@@ -39,8 +39,10 @@ export const ProjectSearchCommand = observer(() => {
   const closeModal = (): void => editorStore.searchElementCommandState.close();
   const types = editorStore.getSupportedElementTypes();
   const [elementType, setElementType] = useState<string | undefined>();
-  const changeType = (type: string | undefined): (() => void) => (): void =>
-    setElementType(type);
+  const changeType =
+    (type: string | undefined): (() => void) =>
+    (): void =>
+      setElementType(type);
   const options = editorStore.graphState.graph.allElements
     .filter(
       (element) =>

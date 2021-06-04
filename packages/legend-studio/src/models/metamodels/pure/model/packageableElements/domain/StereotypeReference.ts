@@ -29,7 +29,8 @@ import type { Stereotype } from '../../../model/packageableElements/domain/Stere
 
 export abstract class StereotypeReference
   extends ReferenceWithOwner
-  implements Stubable {
+  implements Stubable
+{
   readonly ownerReference: PackageableElementReference<Profile>;
   value: Stereotype;
 

@@ -34,9 +34,8 @@ import { flowResult } from 'mobx';
 export const QueryBuilderDialog = observer(() => {
   const applicationStore = useApplicationStore();
   const editorStore = useEditorStore();
-  const queryBuilderState = editorStore.getEditorExtensionState(
-    QueryBuilderState,
-  );
+  const queryBuilderState =
+    editorStore.getEditorExtensionState(QueryBuilderState);
   const [isMaximized, setIsMaximized] = useState(false);
   const toggleMaximize = (): void => setIsMaximized(!isMaximized);
   const closeQueryBuilder = (): void => {

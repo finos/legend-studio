@@ -134,9 +134,8 @@ test(
     expect(returnTypes).toHaveLength(6);
 
     // test tabs
-    const mappingEditorState = mockedEditorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      mockedEditorStore.getCurrentEditorState(MappingEditorState);
     expect(mappingEditorState.openedTabStates).toHaveLength(3);
     const mappingTabs = await waitFor(() =>
       renderResult.getByTestId(CORE_TEST_ID.EDITOR__TABS__HEADER),

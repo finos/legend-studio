@@ -75,10 +75,11 @@ export abstract class ElementEditorState extends EditorState {
 
   generateElementProtocol(): void {
     try {
-      const elementEntity = this.editorStore.graphState.graphManager.elementToEntity(
-        this.element,
-        true,
-      );
+      const elementEntity =
+        this.editorStore.graphState.graphManager.elementToEntity(
+          this.element,
+          true,
+        );
       this.setTextContent(
         JSON.stringify(elementEntity.content, undefined, TAB_SIZE),
       );
@@ -99,13 +100,15 @@ export abstract class ElementEditorState extends EditorState {
 
   generateElementGrammar = flow(function* (this: ElementEditorState) {
     try {
-      const elementEntity = this.editorStore.graphState.graphManager.elementToEntity(
-        this.element,
-        false,
-      );
-      const grammar = (yield this.editorStore.graphState.graphManager.entitiesToPureCode(
-        [elementEntity],
-      )) as string;
+      const elementEntity =
+        this.editorStore.graphState.graphManager.elementToEntity(
+          this.element,
+          false,
+        );
+      const grammar =
+        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+          elementEntity,
+        ])) as string;
       this.setTextContent(grammar);
     } catch (error: unknown) {
       assertErrorThrown(error);
@@ -122,7 +125,22 @@ export abstract class ElementEditorState extends EditorState {
     }
   });
 
-  abstract revealCompilationError(compilationError: CompilationError): boolean;
+  /**
+   * Takes the compilation and based on its source information, attempts to reveal the error
+   * in the editor. The return values indicates if the editor has revealed the error successfully or not.
+   */
+  revealCompilationError(compilationError: CompilationError): boolean {
+    return false;
+  }
+
+  get hasCompilationError(): boolean {
+    return false;
+  }
+
+  clearCompilationError(): void {
+    return;
+  }
+
   abstract reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,

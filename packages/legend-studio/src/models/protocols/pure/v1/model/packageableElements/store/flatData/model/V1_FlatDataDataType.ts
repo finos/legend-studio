@@ -26,7 +26,8 @@ export abstract class V1_FlatDataDataType implements Hashable {
 
 export class V1_FlatDataBoolean
   extends V1_FlatDataDataType
-  implements Hashable {
+  implements Hashable
+{
   trueString?: string;
   falseString?: string;
 
@@ -121,7 +122,8 @@ export class V1_FlatDataRecordField implements Hashable {
 
 export class V1_FlatDataRecordType
   extends V1_FlatDataDataType
-  implements Hashable {
+  implements Hashable
+{
   fields: V1_FlatDataRecordField[] = [];
 
   get hashCode(): string {
@@ -134,7 +136,8 @@ export class V1_FlatDataRecordType
 
 export class V1_RootFlatDataRecordType
   extends V1_FlatDataRecordType
-  implements Hashable {
+  implements Hashable
+{
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_ROOT_RECORD_TYPE,

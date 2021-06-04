@@ -43,7 +43,8 @@ const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
 
 export class DSLText_EditorPlugin
   extends EditorPlugin
-  implements DSL_EditorPlugin_Extension {
+  implements DSL_EditorPlugin_Extension
+{
   constructor() {
     super(`${packageJson.pluginPrefix}-editor`, packageJson.version);
   }

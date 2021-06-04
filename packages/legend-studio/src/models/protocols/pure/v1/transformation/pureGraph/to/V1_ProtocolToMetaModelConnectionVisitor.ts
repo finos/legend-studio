@@ -50,7 +50,8 @@ import type { V1_ModelChainConnection } from '../../../model/packageableElements
 import { V1_processPostProcessor } from './helpers/V1_PostProcessorBuilderHelper';
 
 export class V1_ProtocolToMetaModelConnectionVisitor
-  implements V1_ConnectionVisitor<Connection> {
+  implements V1_ConnectionVisitor<Connection>
+{
   context: V1_GraphBuilderContext;
   embeddedConnectionStore?: PackageableElementReference<Store>;
 
@@ -204,7 +205,7 @@ export class V1_ProtocolToMetaModelConnectionVisitor
     );
     const val = new RelationalDatabaseConnection(
       store,
-      (connection.type as unknown) as DatabaseType,
+      connection.type as unknown as DatabaseType,
       V1_processDatasourceSpecification(
         connection.datasourceSpecification,
         this.context,

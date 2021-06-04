@@ -38,6 +38,7 @@ export abstract class LambdaEditorState {
       lambdaString: observable,
       parserError: observable,
       compilationError: observable,
+      lambdaId: computed,
       fullLambdaString: computed,
       setLambdaString: action,
       clearErrors: action,
@@ -48,6 +49,8 @@ export abstract class LambdaEditorState {
     this.lambdaString = lambdaString;
     this.lambdaPrefix = lambdaPrefix;
   }
+
+  abstract get lambdaId(): string;
 
   // value shown in lambda editor with the prefix, used to send to the server to transformation from text to JSON
   get fullLambdaString(): string {
@@ -86,13 +89,8 @@ export abstract class LambdaEditorState {
   processSourceInformation(
     sourceInformation: SourceInformation,
   ): SourceInformation {
-    const {
-      sourceId,
-      startLine,
-      startColumn,
-      endLine,
-      endColumn,
-    } = sourceInformation;
+    const { sourceId, startLine, startColumn, endLine, endColumn } =
+      sourceInformation;
     const lineOffset = 0;
     const columnOffset = this.lambdaPrefix.length;
     return new SourceInformation(

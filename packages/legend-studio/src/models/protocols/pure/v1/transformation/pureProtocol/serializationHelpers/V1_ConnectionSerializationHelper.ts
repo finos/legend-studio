@@ -159,6 +159,7 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.SNOWFLAKE),
     accountName: primitive(),
     databaseName: primitive(),
+    quotedIdentifiersIgnoreCase: primitive(),
     region: primitive(),
     warehouseName: primitive(),
   },
@@ -177,11 +178,14 @@ export const V1_serializeDatasourceSpecification = (
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
     return serialize(localH2DatasourceSpecificationModelSchema, protocol);
   }
-  const extraConnectionDatasourceSpecificationProtocolSerializers = plugins.flatMap(
-    (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionDatasourceSpecificationProtocolSerializers?.() ??
-      [],
-  );
+  const extraConnectionDatasourceSpecificationProtocolSerializers =
+    plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionDatasourceSpecificationProtocolSerializers?.() ??
+        [],
+    );
   for (const serializer of extraConnectionDatasourceSpecificationProtocolSerializers) {
     const json = serializer(protocol);
     if (json) {
@@ -209,11 +213,14 @@ export const V1_deserializeDatasourceSpecification = (
     case V1_DatasourceSpecificationType.H2_LOCAL:
       return deserialize(localH2DatasourceSpecificationModelSchema, json);
     default: {
-      const extraConnectionDatasourceSpecificationProtocolDeserializers = plugins.flatMap(
-        (plugin) =>
-          (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionDatasourceSpecificationProtocolDeserializers?.() ??
-          [],
-      );
+      const extraConnectionDatasourceSpecificationProtocolDeserializers =
+        plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+            ).V1_getExtraConnectionDatasourceSpecificationProtocolDeserializers?.() ??
+            [],
+        );
       for (const deserializer of extraConnectionDatasourceSpecificationProtocolDeserializers) {
         const protocol = deserializer(json);
         if (protocol) {
@@ -302,11 +309,14 @@ export const V1_serializeAuthenticationStrategy = (
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
     return serialize(V1_oAuthAuthenticationStrategyModelSchema, protocol);
   }
-  const extraConnectionAuthenticationStrategyProtocolSerializers = plugins.flatMap(
-    (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionAuthenticationStrategyProtocolSerializers?.() ??
-      [],
-  );
+  const extraConnectionAuthenticationStrategyProtocolSerializers =
+    plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionAuthenticationStrategyProtocolSerializers?.() ??
+        [],
+    );
   for (const serializer of extraConnectionAuthenticationStrategyProtocolSerializers) {
     const json = serializer(protocol);
     if (json) {
@@ -345,11 +355,14 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.OAUTH:
       return deserialize(V1_oAuthAuthenticationStrategyModelSchema, json);
     default: {
-      const extraConnectionAuthenticationStrategyProtocolDeserializers = plugins.flatMap(
-        (plugin) =>
-          (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionAuthenticationStrategyProtocolDeserializers?.() ??
-          [],
-      );
+      const extraConnectionAuthenticationStrategyProtocolDeserializers =
+        plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+            ).V1_getExtraConnectionAuthenticationStrategyProtocolDeserializers?.() ??
+            [],
+        );
       for (const deserializer of extraConnectionAuthenticationStrategyProtocolDeserializers) {
         const protocol = deserializer(json);
         if (protocol) {

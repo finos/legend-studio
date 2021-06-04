@@ -21,7 +21,8 @@ import type { V1_PropertyMapping } from './V1_PropertyMapping';
 
 export class V1_RelationalAssociationMapping
   extends V1_AssociationMapping
-  implements Hashable {
+  implements Hashable
+{
   propertyMappings: V1_PropertyMapping[] = [];
 
   get hashCode(): string {

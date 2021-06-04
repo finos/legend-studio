@@ -23,11 +23,15 @@ import {
 import { waitFor } from '@testing-library/dom';
 import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
 import {
+  getApplicationNavigationHistory,
   getMockedApplicationStore,
-  renderWithAppContext,
 } from '../ComponentTestUtils';
 import type { ApplicationStore } from '../../stores/ApplicationStore';
+import { ApplicationStoreProvider } from '../../stores/ApplicationStore';
 import { SDLCServerClient } from '../../models/sdlc/SDLCServerClient';
+import { render } from '@testing-library/react';
+import { PluginManager } from '../../application/PluginManager';
+import { Router } from 'react-router-dom';
 
 let applicationStore: ApplicationStore;
 
@@ -51,7 +55,19 @@ test(integrationTest('App header is displayed properly'), async () => {
     .mockResolvedValue([]);
   MOBX__disableSpyOrMock();
 
-  const { queryByText } = renderWithAppContext(<AppRoot />);
+  const history = getApplicationNavigationHistory();
+  const { queryByText } = render(
+    <ApplicationStoreProvider
+      config={getTestApplicationConfig()}
+      history={history}
+      pluginManager={PluginManager.create()}
+    >
+      <Router history={history}>
+        <AppRoot />
+      </Router>
+    </ApplicationStoreProvider>,
+  );
+
   expect(
     queryByText(getTestApplicationConfig().env.toUpperCase()),
   ).not.toBeNull();
@@ -71,7 +87,19 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
     .mockResolvedValueOnce(false);
   MOBX__disableSpyOrMock();
 
-  renderWithAppContext(<AppRoot />);
+  const history = getApplicationNavigationHistory();
+  render(
+    <ApplicationStoreProvider
+      config={getTestApplicationConfig()}
+      history={history}
+      pluginManager={PluginManager.create()}
+    >
+      <Router history={history}>
+        <AppRoot />
+      </Router>
+    </ApplicationStoreProvider>,
+  );
+
   await waitFor(() =>
     expect(window.location.href).toEqual(
       SDLCServerClient.authorizeCallbackUrl(
@@ -101,7 +129,19 @@ test(
       .mockResolvedValue([]);
     MOBX__disableSpyOrMock();
 
-    const { queryByText } = renderWithAppContext(<AppRoot />);
+    const history = getApplicationNavigationHistory();
+    const { queryByText } = render(
+      <ApplicationStoreProvider
+        config={getTestApplicationConfig()}
+        history={history}
+        pluginManager={PluginManager.create()}
+      >
+        <Router history={history}>
+          <AppRoot />
+        </Router>
+      </ApplicationStoreProvider>,
+    );
+
     await waitFor(() =>
       expect(queryByText('See terms of services')).not.toBeNull(),
     );

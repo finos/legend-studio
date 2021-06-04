@@ -15,11 +15,7 @@
  */
 
 import { computed, action, makeObservable } from 'mobx';
-import type {
-  EditorStore,
-  CompilationError,
-  PackageableElement,
-} from '@finos/legend-studio';
+import type { EditorStore, PackageableElement } from '@finos/legend-studio';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import { ElementEditorState } from '@finos/legend-studio';
 import { Text } from '../models/metamodels/pure/model/packageableElements/Text';
@@ -40,10 +36,6 @@ export class TextEditorState extends ElementEditorState {
       Text,
       'Element inside text element editor state must be a text element',
     );
-  }
-
-  revealCompilationError(compilationError: CompilationError): boolean {
-    return false;
   }
 
   reprocess(

@@ -406,8 +406,9 @@ export class DiagramRenderer {
           classView.position.y + classView.rectangle.height,
         );
       }
-      const relationshipViews = (this.diagram
-        .associationViews as RelationshipView[])
+      const relationshipViews = (
+        this.diagram.associationViews as RelationshipView[]
+      )
         .concat(this.diagram.generalizationViews)
         .concat(this.diagram.propertyViews);
       for (const relationshipView of relationshipViews) {
@@ -973,8 +974,9 @@ export class DiagramRenderer {
         this.ctx.stroke();
       }
     }
-    txtMeasure += this.ctx.measureText(property.genericType.value.rawType.name)
-      .width;
+    txtMeasure += this.ctx.measureText(
+      property.genericType.value.rawType.name,
+    ).width;
     this.ctx.font = `${(this.fontSize - 1) * (measureOnly ? 1 : this.zoom)}px ${
       this.fontFamily
     }`;
@@ -2211,8 +2213,9 @@ export class DiagramRenderer {
                 this.fontFamily
               }`;
               const propertyName = this.propertyName(property);
-              const txtMeasure = this.ctx.measureText(`${propertyName} : `)
-                .width;
+              const txtMeasure = this.ctx.measureText(
+                `${propertyName} : `,
+              ).width;
               const typeMeasure = this.ctx.measureText(
                 property.genericType.value.rawType.name,
               ).width;

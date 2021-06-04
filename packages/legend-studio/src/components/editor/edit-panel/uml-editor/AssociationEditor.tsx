@@ -280,11 +280,12 @@ export const AssociationEditor = observer(
     const editorState = editorStore.getCurrentEditorState(UMLEditorState);
     const isReadOnly = editorState.isReadOnly;
     // Selected property
-    const [selectedProperty, setSelectedProperty] = useState<
-      Property | undefined
-    >();
-    const selectProperty = (e: Property): (() => void) => (): void =>
-      setSelectedProperty(e);
+    const [selectedProperty, setSelectedProperty] =
+      useState<Property | undefined>();
+    const selectProperty =
+      (e: Property): (() => void) =>
+      (): void =>
+        setSelectedProperty(e);
     // Tab
     const selectedTab = editorState.selectedTab;
     const tabs = [
@@ -292,10 +293,12 @@ export const AssociationEditor = observer(
       UML_EDITOR_TAB.TAGGED_VALUES,
       UML_EDITOR_TAB.STEREOTYPES,
     ];
-    const changeTab = (tab: UML_EDITOR_TAB): (() => void) => (): void => {
-      editorState.setSelectedTab(tab);
-      setSelectedProperty(undefined);
-    };
+    const changeTab =
+      (tab: UML_EDITOR_TAB): (() => void) =>
+      (): void => {
+        editorState.setSelectedTab(tab);
+        setSelectedProperty(undefined);
+      };
     let addButtonTitle = '';
     switch (selectedTab) {
       case UML_EDITOR_TAB.TAGGED_VALUES:
@@ -323,11 +326,14 @@ export const AssociationEditor = observer(
       }
     };
     // Tagged value and Stereotype
-    const deleteStereotype = (
-      val: StereotypeReference,
-    ): (() => void) => (): void => association.deleteStereotype(val);
-    const deleteTaggedValue = (val: TaggedValue): (() => void) => (): void =>
-      association.deleteTaggedValue(val);
+    const deleteStereotype =
+      (val: StereotypeReference): (() => void) =>
+      (): void =>
+        association.deleteStereotype(val);
+    const deleteTaggedValue =
+      (val: TaggedValue): (() => void) =>
+      (): void =>
+        association.deleteTaggedValue(val);
     // Property
     const deselectProperty = (): void => setSelectedProperty(undefined);
     // Drag and Drop

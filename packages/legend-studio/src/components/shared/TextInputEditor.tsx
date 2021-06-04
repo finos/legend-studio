@@ -35,17 +35,26 @@ export const TextInputEditor: React.FC<{
   isReadOnly?: boolean;
   language: EDITOR_LANGUAGE;
   showMiniMap?: boolean;
+  hideGutter?: boolean;
+  extraEditorOptions?: monacoEditorAPI.IEditorOptions &
+    monacoEditorAPI.IGlobalEditorOptions;
   updateInput?: (val: string) => void;
 }> = (props) => {
-  const { inputValue, updateInput, language, isReadOnly, showMiniMap } = props;
+  const {
+    inputValue,
+    updateInput,
+    language,
+    isReadOnly,
+    showMiniMap,
+    hideGutter,
+    extraEditorOptions,
+  } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const [editor, setEditor] = useState<
-    monacoEditorAPI.IStandaloneCodeEditor | undefined
-  >();
-  const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
-    undefined,
-  );
+  const [editor, setEditor] =
+    useState<monacoEditorAPI.IStandaloneCodeEditor | undefined>();
+  const onDidChangeModelContentEventDisposer =
+    useRef<IDisposable | undefined>(undefined);
   const textInputRef = useRef<HTMLDivElement>(null);
 
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
@@ -95,14 +104,13 @@ export const TextInputEditor: React.FC<{
     // dispose the old editor content setter in case the `updateInput` handler changes
     // for a more extensive note on this, see `LambdaEditor`
     onDidChangeModelContentEventDisposer.current?.dispose();
-    onDidChangeModelContentEventDisposer.current = editor.onDidChangeModelContent(
-      () => {
+    onDidChangeModelContentEventDisposer.current =
+      editor.onDidChangeModelContent(() => {
         const currentVal = editor.getValue();
         if (currentVal !== inputValue) {
           updateInput?.(currentVal);
         }
-      },
-    );
+      });
 
     // Set the text value and editor options
     const currentValue = editor.getValue();
@@ -112,6 +120,18 @@ export const TextInputEditor: React.FC<{
     editor.updateOptions({
       readOnly: Boolean(isReadOnly),
       minimap: { enabled: Boolean(showMiniMap) },
+      // Hide the line number gutter
+      // See https://github.com/microsoft/vscode/issues/30795
+      ...(hideGutter
+        ? {
+            glyphMargin: false,
+            folding: false,
+            lineNumbers: 'off',
+            lineDecorationsWidth: 10,
+            lineNumbersMinChars: 0,
+          }
+        : {}),
+      ...(extraEditorOptions ?? {}),
     });
     const model = editor.getModel();
     model?.updateOptions({ tabSize: TAB_SIZE });

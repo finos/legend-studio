@@ -136,17 +136,19 @@ export class TestContainerState {
 
   updateTestAssert(): void {
     if (this.assertionData) {
-      this.testContainer.assert = this.editorStore.graphState.graphManager.HACKY_createAssertLambda(
-        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-        toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
-      );
+      this.testContainer.assert =
+        this.editorStore.graphState.graphManager.HACKY_createAssertLambda(
+          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+          toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
+        );
     }
   }
 
   private initializeAssertionData(testContainter: TestContainer): void {
-    const expectedResultAssertionString = this.editorStore.graphState.graphManager.HACKY_extractAssertionString(
-      testContainter.assert,
-    );
+    const expectedResultAssertionString =
+      this.editorStore.graphState.graphManager.HACKY_extractAssertionString(
+        testContainter.assert,
+      );
     this.assertionData = expectedResultAssertionString
       ? fromGrammarString(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
@@ -173,7 +175,8 @@ export class TestContainerState {
             ? identifiedConnection.connection.packageableConnection.value
                 .connectionValue
             : identifiedConnection.connection;
-        const engineConfig = this.editorStore.graphState.graphManager.getEngineConfig();
+        const engineConfig =
+          this.editorStore.graphState.graphManager.getEngineConfig();
 
         if (connection instanceof JsonModelConnection) {
           newRuntime.addIdentifiedConnection(
@@ -260,18 +263,20 @@ export class TestContainerState {
         execution instanceof PureSingleExecution &&
         test instanceof SingleExecutionTest
       ) {
-        const decoratedRuntime = this.decorateRuntimeIdentifiedConnectionsWithTestData(
-          execution.runtime,
-          test.data,
-        );
-        const result = ((yield this.editorStore.graphState.graphManager.executeMapping(
-          this.serviceEditorState.editorStore.graphState.graph,
-          execution.mapping.value,
-          execution.func,
-          decoratedRuntime,
-          CLIENT_VERSION.VX_X_X,
-          true,
-        )) as unknown) as ExecutionResult;
+        const decoratedRuntime =
+          this.decorateRuntimeIdentifiedConnectionsWithTestData(
+            execution.runtime,
+            test.data,
+          );
+        const result =
+          (yield this.editorStore.graphState.graphManager.executeMapping(
+            this.serviceEditorState.editorStore.graphState.graph,
+            execution.mapping.value,
+            execution.func,
+            decoratedRuntime,
+            CLIENT_VERSION.VX_X_X,
+            true,
+          )) as unknown as ExecutionResult;
         this.setAssertionData(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           tryToFormatLosslessJSONString(
@@ -303,18 +308,20 @@ export class TestContainerState {
         execution instanceof PureSingleExecution &&
         test instanceof SingleExecutionTest
       ) {
-        const decoratedRuntime = this.decorateRuntimeIdentifiedConnectionsWithTestData(
-          execution.runtime,
-          test.data,
-        );
-        const result = ((yield this.editorStore.graphState.graphManager.executeMapping(
-          this.serviceEditorState.editorStore.graphState.graph,
-          execution.mapping.value,
-          execution.func,
-          decoratedRuntime,
-          CLIENT_VERSION.VX_X_X,
-          true,
-        )) as unknown) as ExecutionResult;
+        const decoratedRuntime =
+          this.decorateRuntimeIdentifiedConnectionsWithTestData(
+            execution.runtime,
+            test.data,
+          );
+        const result =
+          (yield this.editorStore.graphState.graphManager.executeMapping(
+            this.serviceEditorState.editorStore.graphState.graph,
+            execution.mapping.value,
+            execution.func,
+            decoratedRuntime,
+            CLIENT_VERSION.VX_X_X,
+            true,
+          )) as unknown as ExecutionResult;
         this.setTestExecutionResultText({
           expected: this.assertionData ?? '',
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
@@ -437,8 +444,8 @@ export class SingleExecutionTestState {
   generateSeedTestData = flow(function* (
     this: SingleExecutionTestState,
   ): GeneratorFn<undefined | string> {
-    const executionInput = this.serviceEditorState.executionState
-      .serviceExecutionParameters;
+    const executionInput =
+      this.serviceEditorState.executionState.serviceExecutionParameters;
     if (executionInput) {
       try {
         return (yield this.editorStore.graphState.graphManager.generateTestData(
@@ -463,13 +470,14 @@ export class SingleExecutionTestState {
   // Once all types of generate data are supported we will move to just using the exec endpoint
   generateTestData = flow(function* (this: SingleExecutionTestState) {
     this.isGeneratingTestData = true;
-    const generatedTestData = ((yield this.generateSeedTestData()) as unknown) as
+    const generatedTestData = (yield this.generateSeedTestData()) as unknown as
       | string
       | undefined;
     if (generatedTestData) {
       this.test.setData(generatedTestData);
     } else {
-      const testDataGenerationInput = this.serviceEditorState.executionState.getTestDataGenerationInput();
+      const testDataGenerationInput =
+        this.serviceEditorState.executionState.getTestDataGenerationInput();
       if (testDataGenerationInput) {
         const [target, mapping] = testDataGenerationInput;
         const sources = target
@@ -497,7 +505,10 @@ export class SingleExecutionTestState {
             if (sourceToGenerate instanceof Class) {
               // TODO: create mock data based on the content type
               this.test.setData(
-                createMockDataForMappingElementSource(sourceToGenerate),
+                createMockDataForMappingElementSource(
+                  sourceToGenerate,
+                  this.editorStore,
+                ),
               );
             } else {
               // TODO: add flat-data when we're ready
@@ -525,10 +536,11 @@ export class SingleExecutionTestState {
       this.allTestRunTime = 0;
       this.isRunningAllTests = true;
       this.setTestResults([]);
-      const results = (yield this.editorStore.graphState.graphManager.runServiceTests(
-        this.serviceEditorState.service,
-        this.serviceEditorState.editorStore.graphState.graph,
-      )) as ServiceTestResult[];
+      const results =
+        (yield this.editorStore.graphState.graphManager.runServiceTests(
+          this.serviceEditorState.service,
+          this.serviceEditorState.editorStore.graphState.graph,
+        )) as ServiceTestResult[];
       this.setTestResults(results);
     } catch (error: unknown) {
       this.testSuiteRunError = error as Error;

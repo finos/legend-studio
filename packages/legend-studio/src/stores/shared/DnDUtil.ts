@@ -94,12 +94,12 @@ export class MappingElementDragSource {
 }
 
 // TODO: disperse all of these to the editor, we should probably remove all of these
-export type FlatDataPropertyMappingTransformDropTarget = FlatDataColumnDragSource;
+export type FlatDataPropertyMappingTransformDropTarget =
+  FlatDataColumnDragSource;
 export type TransformDropTarget = TypeDragSource;
 export type OperationSetImplementationDropTarget = MappingElementDragSource;
 export type DiagramEditorDropTarget = ElementDragSource;
 export type MappingElementSourceDropTarget = ElementDragSource;
 export type MappingExplorerDropTarget = ElementDragSource;
-export type MappingExecutionTargetDropTarget = MappingElementDragSource;
 export type UMLEditorElementDropTarget = ElementDragSource;
 export type FileGenerationSourceDropTarget = ElementDragSource;

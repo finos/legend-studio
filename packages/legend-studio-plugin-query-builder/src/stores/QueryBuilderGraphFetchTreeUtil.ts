@@ -46,8 +46,8 @@ import {
 } from '@finos/legend-studio';
 
 export class GraphFetchTreeNodeData implements TreeNodeData {
-  isSelected?: boolean | undefined;
-  isOpen?: boolean | undefined;
+  isSelected?: boolean;
+  isOpen?: boolean;
   id: string;
   label: string;
   childrenIds: string[] = [];
@@ -95,7 +95,7 @@ const resolveSetImplementationForPropertyMapping = (
   propertyMapping: PropertyMapping,
 ): SetImplementation | undefined => {
   if (propertyMapping.isEmbedded) {
-    return (propertyMapping as unknown) as SetImplementation;
+    return propertyMapping as unknown as SetImplementation;
   } else if (propertyMapping.targetSetImplementation) {
     return propertyMapping.targetSetImplementation;
   }
@@ -115,9 +115,10 @@ const getPropertyMappedData = (
   } else if (property instanceof Property) {
     const parentSetImplementation = parentNode.setImpl;
     if (parentSetImplementation) {
-      const propertyMappings = editorStore.graphState.getMappingElementPropertyMappings(
-        parentSetImplementation,
-      );
+      const propertyMappings =
+        editorStore.graphState.getMappingElementPropertyMappings(
+          parentSetImplementation,
+        );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
         .map((p) => p.property.value.name);
@@ -133,9 +134,8 @@ const getPropertyMappedData = (
           if (propertyMapping) {
             return {
               mapped: true,
-              setImpl: resolveSetImplementationForPropertyMapping(
-                propertyMapping,
-              ),
+              setImpl:
+                resolveSetImplementationForPropertyMapping(propertyMapping),
             };
           }
         }
@@ -158,12 +158,13 @@ export const getPropertyGraphFetchTreeNodeData = (
     `Type of parent node for class property node must be 'class'`,
   );
   const mappingData = getPropertyMappedData(editorStore, property, parent);
-  const existingPropertyGraphFetchNode = parent.graphFetchTreeNode.subTrees.find(
-    (subTree) =>
-      subTree instanceof PropertyGraphFetchTree &&
-      subTree.property.value === property &&
-      subTree.subType.value === subType,
-  );
+  const existingPropertyGraphFetchNode =
+    parent.graphFetchTreeNode.subTrees.find(
+      (subTree) =>
+        subTree instanceof PropertyGraphFetchTree &&
+        subTree.property.value === property &&
+        subTree.subType.value === subType,
+    );
   const newPropertyGraphFetchNode = new PropertyGraphFetchTree(
     PropertyExplicitReference.create(property),
   ).withSubType(
@@ -276,12 +277,13 @@ const walkPropertySubTreeAndBuild = (
   parent: GraphFetchTreeNodeData,
   nodes: Map<string, GraphFetchTreeNodeData>,
 ): GraphFetchTreeNodeData => {
-  const existingPropertyGraphFetchNode = parent.graphFetchTreeNode.subTrees.find(
-    (subTree) =>
-      subTree instanceof PropertyGraphFetchTree &&
-      subTree.property.value === property &&
-      subTree.subType.value === subType,
-  );
+  const existingPropertyGraphFetchNode =
+    parent.graphFetchTreeNode.subTrees.find(
+      (subTree) =>
+        subTree instanceof PropertyGraphFetchTree &&
+        subTree.property.value === property &&
+        subTree.subType.value === subType,
+    );
   const newPropertyGraphFetchNode = new PropertyGraphFetchTree(
     PropertyExplicitReference.create(property),
   ).withSubType(

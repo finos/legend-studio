@@ -194,13 +194,15 @@ export const getElementTypeIcon = (
       return <GenerationSpecificationIcon />;
     default: {
       if (type) {
-        const extraElementIconGetters = editorStore.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (plugin as DSL_EditorPlugin_Extension).getExtraElementIconGetters?.() ??
-              [],
-          );
+        const extraElementIconGetters =
+          editorStore.applicationStore.pluginManager
+            .getEditorPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_EditorPlugin_Extension
+                ).getExtraElementIconGetters?.() ?? [],
+            );
         for (const iconGetter of extraElementIconGetters) {
           const elementIcon = iconGetter(type);
           if (elementIcon) {

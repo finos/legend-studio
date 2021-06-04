@@ -223,21 +223,13 @@ export class FlatDataRecordType extends FlatDataDataType implements Hashable {
 
 export class RootFlatDataRecordType
   extends FlatDataRecordType
-  implements Hashable {
+  implements Hashable
+{
   owner: FlatDataSection;
 
   constructor(owner: FlatDataSection) {
     super();
-
-    makeObservable(this, {
-      selectOption: computed,
-    });
-
     this.owner = owner;
-  }
-
-  get selectOption(): { label: string; value: RootFlatDataRecordType } {
-    return { label: this.owner.name, value: this };
   }
 
   get hashCode(): string {

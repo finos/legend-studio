@@ -40,7 +40,6 @@ export class FlatDataInputData extends InputData implements Hashable {
 
     makeObservable(this, {
       data: observable,
-      setSourceFlatData: action,
       setData: action,
       validationResult: computed,
       hashCode: computed,
@@ -50,9 +49,6 @@ export class FlatDataInputData extends InputData implements Hashable {
     this.data = data;
   }
 
-  setSourceFlatData(value: FlatData): void {
-    this.sourceFlatData.setValue(value);
-  }
   setData(value: string): void {
     this.data = value;
   }

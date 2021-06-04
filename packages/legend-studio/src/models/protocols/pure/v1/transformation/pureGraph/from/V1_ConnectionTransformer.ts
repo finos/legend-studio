@@ -105,6 +105,7 @@ const transformSnowflakeDatasourceSpecification = (
   source.warehouseName = metamodel.warehouseName;
   source.databaseName = metamodel.databaseName;
   source.accountName = metamodel.accountName;
+  source.quotedIdentifiersIgnoreCase = metamodel.quotedIdentifiersIgnoreCase;
   return source;
 };
 
@@ -126,8 +127,9 @@ const transformDatasourceSpecification = (
   }
   const extraConnectionDatasourceSpecificationTransformers = plugins.flatMap(
     (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionDatasourceSpecificationTransformers?.() ??
-      [],
+      (
+        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraConnectionDatasourceSpecificationTransformers?.() ?? [],
   );
   for (const transformer of extraConnectionDatasourceSpecificationTransformers) {
     const protocol = transformer(metamodel);
@@ -174,8 +176,9 @@ const transformAuthenticationStrategy = (
   }
   const extraConnectionAuthenticationStrategyTransformers = plugins.flatMap(
     (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionAuthenticationStrategyTransformers?.() ??
-      [],
+      (
+        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraConnectionAuthenticationStrategyTransformers?.() ?? [],
   );
   for (const transformer of extraConnectionAuthenticationStrategyTransformers) {
     const protocol = transformer(metamodel);
@@ -204,7 +207,7 @@ const transformRelationalDatabaseConnection = (
     metamodel.datasourceSpecification,
     plugins,
   );
-  connection.type = (metamodel.type as unknown) as V1_DatabaseType;
+  connection.type = metamodel.type as unknown as V1_DatabaseType;
   connection.timeZone = metamodel.timeZone;
   connection.quoteIdentifiers = metamodel.quoteIdentifiers;
   if (metamodel.postProcessors.length) {

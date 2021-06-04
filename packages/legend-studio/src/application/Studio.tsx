@@ -70,15 +70,17 @@ const setupReactApp = (pluginManager: PluginManager): void => {
         .getEditorPlugins()
         .flatMap(
           (plugin) =>
-            (plugin as DSL_EditorPlugin_Extension).getExtraPureGrammarKeywords?.() ??
-            [],
+            (
+              plugin as DSL_EditorPlugin_Extension
+            ).getExtraPureGrammarKeywords?.() ?? [],
         ),
       pluginManager
         .getEditorPlugins()
         .flatMap(
           (plugin) =>
-            (plugin as DSL_EditorPlugin_Extension).getExtraPureGrammarParserNames?.() ??
-            [],
+            (
+              plugin as DSL_EditorPlugin_Extension
+            ).getExtraPureGrammarParserNames?.() ?? [],
         ),
     ),
   );

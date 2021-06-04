@@ -78,17 +78,15 @@ const EnumerationPropertyMappingEditor = observer(
   }) => {
     const { propertyMappingState, drop, transformProps, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = guaranteeType(
       propertyMappingState.propertyMapping,
       RelationalPropertyMapping,
       'Relational property mapping for enumeration type property must be a simple property mapping',
     );
-    const enumeration = propertyMapping.property.value.genericType.value.getRawType(
-      Enumeration,
-    );
+    const enumeration =
+      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
     // Enumeration Mapping Selector
     const options = mappingEditorState.mapping
       .enumerationMappingsByEnumeration(enumeration)
@@ -144,6 +142,76 @@ const EnumerationPropertyMappingEditor = observer(
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
             )}
+            disabled={transformProps.disableTransform}
+            lambdaEditorState={propertyMappingState}
+            forceBackdrop={transformProps.forceBackdrop}
+          />
+        </div>
+      </div>
+    );
+  },
+);
+
+const ClassPropertyMappingEditor = observer(
+  (props: {
+    propertyMappingState: RelationalPropertyMappingState;
+    drop?: ConnectDropTarget;
+    transformProps: {
+      disableTransform: boolean;
+      forceBackdrop: boolean;
+    };
+    isReadOnly: boolean;
+  }) => {
+    const { propertyMappingState, drop, transformProps } = props;
+    const editorStore = useEditorStore();
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
+    const propertyMapping = propertyMappingState.propertyMapping;
+    const isDefaultId = propertyMapping.targetSetImplementation?.id.isDefault;
+    const target = propertyMapping.targetSetImplementation ? (
+      isDefaultId ? (
+        <div className="property-mapping-editor__entry__id__label__default-badge">
+          default
+        </div>
+      ) : (
+        propertyMapping.targetSetImplementation.id.value
+      )
+    ) : (
+      ''
+    );
+
+    // Walker
+    const visit = (): void => {
+      if (propertyMapping.targetSetImplementation) {
+        mappingEditorState.openMappingElement(
+          propertyMapping.targetSetImplementation,
+          true,
+        );
+      }
+    };
+
+    return (
+      <div className="property-mapping-editor__entry__container">
+        <div ref={drop} className="property-mapping-editor__entry">
+          <div className="property-mapping-editor__entry__id">
+            <div
+              className={clsx('property-mapping-editor__entry__id__label', {
+                'property-mapping-editor__entry__id__label--default':
+                  isDefaultId,
+              })}
+            >
+              {target}
+            </div>
+            <button
+              className="property-mapping-editor__entry__visit-btn"
+              onClick={visit}
+              tabIndex={-1}
+              title={'Visit class mapping'}
+            >
+              <FaArrowAltCircleRight />
+            </button>
+          </div>
+          <LambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}
@@ -240,7 +308,7 @@ export const RelationalPropertyMappingEditor = observer(
           );
         }
         return (
-          <SimplePropertyMappingEditor
+          <ClassPropertyMappingEditor
             propertyMappingState={relationalPropertyMappingState}
             drop={drop}
             transformProps={transformProps}

@@ -50,8 +50,10 @@ export const PropertyEditor = observer(
       UML_EDITOR_TAB.TAGGED_VALUES,
     );
     const tabs = [UML_EDITOR_TAB.TAGGED_VALUES, UML_EDITOR_TAB.STEREOTYPES];
-    const changeTab = (tab: UML_EDITOR_TAB): (() => void) => (): void =>
-      setSelectedTab(tab);
+    const changeTab =
+      (tab: UML_EDITOR_TAB): (() => void) =>
+      (): void =>
+        setSelectedTab(tab);
     // Tagged value and Stereotype
     let addButtonTitle = '';
     switch (selectedTab) {
@@ -79,11 +81,14 @@ export const PropertyEditor = observer(
         }
       }
     };
-    const deleteStereotype = (
-      val: StereotypeReference,
-    ): (() => void) => (): void => property.deleteStereotype(val);
-    const deleteTaggedValue = (val: TaggedValue): (() => void) => (): void =>
-      property.deleteTaggedValue(val);
+    const deleteStereotype =
+      (val: StereotypeReference): (() => void) =>
+      (): void =>
+        property.deleteStereotype(val);
+    const deleteTaggedValue =
+      (val: TaggedValue): (() => void) =>
+      (): void =>
+        property.deleteTaggedValue(val);
     // Drag and Drop
     const handleDropTaggedValue = useCallback(
       (item: UMLEditorElementDropTarget): void => {

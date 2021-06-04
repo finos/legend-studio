@@ -41,15 +41,15 @@ export class WorkspaceBuildsState {
     try {
       this.isFetchingBuilds = true;
       // NOTE: this network call can take a while, so we might consider limiting the number of builds to 10 or so
-      this.builds = ((yield this.sdlcState.sdlcClient.getBuilds(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
-        undefined,
-        undefined,
-        undefined,
-      )) as PlainObject<Build>[]).map((build) =>
-        Build.serialization.fromJson(build),
-      );
+      this.builds = (
+        (yield this.sdlcState.sdlcClient.getBuilds(
+          this.sdlcState.currentProjectId,
+          this.sdlcState.currentWorkspaceId,
+          undefined,
+          undefined,
+          undefined,
+        )) as PlainObject<Build>[]
+      ).map((build) => Build.serialization.fromJson(build));
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,

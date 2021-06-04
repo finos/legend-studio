@@ -83,8 +83,9 @@ export const V1_transformPostProcessor = (
   }
   const extraConnectionPostProcessorTransformers = plugins.flatMap(
     (plugin) =>
-      (plugin as StoreRelational_PureProtocolProcessorPlugin_Extension).V1_getExtraConnectionPostProcessorTransformers?.() ??
-      [],
+      (
+        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraConnectionPostProcessorTransformers?.() ?? [],
   );
   for (const transformer of extraConnectionPostProcessorTransformers) {
     const postprocessorProtocol = transformer(postProcessor);

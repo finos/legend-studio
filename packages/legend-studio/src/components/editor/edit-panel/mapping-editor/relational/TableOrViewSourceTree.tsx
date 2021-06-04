@@ -206,8 +206,8 @@ const getJoinTreeNodeData = (
   relation.schema.owner.joins
     .slice()
     .filter(
-      (join) =>
-        join.aliases.filter(
+      (_join) =>
+        _join.aliases.filter(
           (alias) =>
             alias.first.relation.value === relation ||
             alias.second.relation.value === relation,

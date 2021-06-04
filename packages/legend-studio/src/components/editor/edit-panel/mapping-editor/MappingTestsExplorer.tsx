@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { useDrop } from 'react-dnd';
@@ -32,33 +32,14 @@ import {
   FaPlus,
 } from 'react-icons/fa';
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
-import {
-  compareLabelFn,
-  getRandomItemInCollection,
-  uniq,
-} from '@finos/legend-studio-shared';
-import {
-  clsx,
-  ContextMenu,
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-studio-components';
-import type { SelectComponent } from '@finos/legend-studio-components';
+import { getRandomItemInCollection } from '@finos/legend-studio-shared';
+import { clsx, ContextMenu } from '@finos/legend-studio-components';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import Dialog from '@material-ui/core/Dialog';
-import type {
-  MappingExecutionTargetDropTarget,
-  MappingElementDragSource,
-} from '../../../../stores/shared/DnDUtil';
+import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import type {
-  PackageableElement,
-  PackageableElementSelectOption,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { getMappingElementTarget } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import { ClassMappingSelectorModal } from '../../aux-panel/MappingExecution';
 
 const addTestPromps = [
   "Let's add some test!",
@@ -132,18 +113,16 @@ export const MappingTestExplorer = observer(
     const { isReadOnly, testState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const openTest = applicationStore.guaranteeSafeAction(() =>
       mappingEditorState.openTest(testState.test),
     );
     const runTest = applicationStore.guaranteeSafeAction(() =>
       testState.runTest(),
     );
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] = useState(
-      false,
-    );
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const isActive = mappingEditorState.currentTabState === testState;
@@ -279,9 +258,8 @@ export const MappingTestsExplorer = observer(
     const { isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState = editorStore.getCurrentEditorState(
-      MappingEditorState,
-    );
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
     const runAllTests = applicationStore.guaranteeSafeAction(() =>
       mappingEditorState.runTests(),
     );
@@ -326,10 +304,10 @@ export const MappingTestsExplorer = observer(
     }
     // Drag and Drop
     const handleDrop = useCallback(
-      (item: MappingExecutionTargetDropTarget): void => {
+      (item: MappingElementDragSource): void => {
         if (item.data instanceof SetImplementation) {
           mappingEditorState
-            .createNewTest(item.data.class.value)
+            .createNewTest(item.data)
             .catch(applicationStore.alertIllegalUnhandledError);
         }
       },
@@ -345,38 +323,25 @@ export const MappingTestsExplorer = observer(
       }),
       [handleDrop],
     );
-    // new mapping test modal
-    const filterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: (
-        option: PackageableElementSelectOption<PackageableElement>,
-      ): string => option.value.path,
-    });
-    const targetOptions = uniq(
-      mappingEditorState.mapping
-        .getClassMappings()
-        .map((mappingElement) => getMappingElementTarget(mappingElement)),
-    )
-      .map((target) => target.selectOption)
-      .sort(compareLabelFn);
-    const targetSelectorRef = useRef<SelectComponent>(null);
-    const [openCreateNewTestModal, setOpenCreateNewTestModal] = useState(false);
-    const showCreateNewTestModal = (): void => setOpenCreateNewTestModal(true);
-    const hideCreateNewTestModal = (): void => setOpenCreateNewTestModal(false);
-    const handleEnterCreateNewTestModal = (): void =>
-      targetSelectorRef.current?.focus();
-    const changeTarget = (target: PackageableElement | undefined): void => {
-      if (target instanceof Class) {
-        mappingEditorState
-          .createNewTest(target)
-          .catch(applicationStore.alertIllegalUnhandledError);
-      }
-      hideCreateNewTestModal();
-    };
-    const changeTargetOption = (
-      val: PackageableElementSelectOption<PackageableElement>,
-    ): void => changeTarget(val.value);
+
+    // Class mapping selector
+    const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
+      useState(false);
+    const showClassMappingSelectorModal = (): void =>
+      setOpenClassMappingSelectorModal(true);
+    const hideClassMappingSelectorModal = (): void =>
+      setOpenClassMappingSelectorModal(false);
+    const changeClassMapping = useCallback(
+      (setImplementation: SetImplementation | undefined): void => {
+        if (setImplementation) {
+          mappingEditorState
+            .createNewTest(setImplementation)
+            .catch(applicationStore.alertIllegalUnhandledError);
+          hideClassMappingSelectorModal();
+        }
+      },
+      [applicationStore, mappingEditorState],
+    );
 
     return (
       <div className="panel mapping-test-explorer">
@@ -410,7 +375,7 @@ export const MappingTestsExplorer = observer(
             <div className="panel__header__actions">
               <button
                 className="panel__header__action"
-                onClick={showCreateNewTestModal}
+                onClick={showClassMappingSelectorModal}
                 disabled={isReadOnly}
                 tabIndex={-1}
                 title="Add Test"
@@ -448,7 +413,7 @@ export const MappingTestsExplorer = observer(
           content={
             <MappingTestExplorerContextMenu
               isReadOnly={isReadOnly}
-              showCreateNewTestModal={showCreateNewTestModal}
+              showCreateNewTestModal={showClassMappingSelectorModal}
             />
           }
           menuProps={{ elevation: 7 }}
@@ -475,7 +440,7 @@ export const MappingTestsExplorer = observer(
             {!isReadOnly && !mappingEditorState.mappingTestStates.length && (
               <div
                 className="mapping-test-explorer__content mapping-test-explorer__content__adder"
-                onClick={showCreateNewTestModal}
+                onClick={showClassMappingSelectorModal}
               >
                 <div className="mapping-test-explorer__content__adder__text">
                   {getRandomItemInCollection(addTestPromps)}
@@ -488,25 +453,13 @@ export const MappingTestsExplorer = observer(
             )}
           </div>
         </ContextMenu>
-        <Dialog
-          open={openCreateNewTestModal}
-          onClose={hideCreateNewTestModal}
-          onEnter={handleEnterCreateNewTestModal}
-          classes={{ container: 'search-modal__container' }}
-          PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-        >
-          <div className="modal search-modal">
-            <div className="modal__title">Choose a class to test</div>
-            <CustomSelectorInput
-              ref={targetSelectorRef}
-              options={targetOptions}
-              onChange={changeTargetOption}
-              placeholder={'Choose a class which has been mapped to test'}
-              filterOption={filterOption}
-              isClearable={true}
-            />
-          </div>
-        </Dialog>
+        {openClassMappingSelectorModal && (
+          <ClassMappingSelectorModal
+            mappingEditorState={mappingEditorState}
+            hideClassMappingSelectorModal={hideClassMappingSelectorModal}
+            changeClassMapping={changeClassMapping}
+          />
+        )}
       </div>
     );
   },

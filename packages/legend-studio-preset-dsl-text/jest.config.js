@@ -24,6 +24,11 @@ export default {
   displayName: packageJson.name,
   name: packageJson.name,
   rootDir: '../..',
+  testEnvironment: 'jsdom',
+  setupFiles: [
+    ...base.setupFiles,
+    '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
+  ],
   moduleNameMapper: {
     ...base.moduleNameMapper,
     '^monaco-editor$':

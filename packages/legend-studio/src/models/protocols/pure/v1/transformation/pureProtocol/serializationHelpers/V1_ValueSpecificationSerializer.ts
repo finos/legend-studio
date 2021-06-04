@@ -482,7 +482,8 @@ const tdsOlapAggregationModelSchema = createModelSchema(V1_TdsOlapAggregation, {
 });
 
 class V1_ValueSpecificationSerializer
-  implements V1_ValueSpecificationVisitor<PlainObject<V1_ValueSpecification>> {
+  implements V1_ValueSpecificationVisitor<PlainObject<V1_ValueSpecification>>
+{
   visit_Class(
     valueSpecification: V1_Class,
   ): PlainObject<V1_ValueSpecification> {
