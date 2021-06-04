@@ -38,7 +38,7 @@ import {
   getClass,
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
-import { MappingExecutionState } from './MappingExecutionState';
+import { DEPRECATED_MappingExecutionState } from './DEPRECATED_MappingExecutionState';
 import {
   FlatDataInstanceSetImplementationState,
   RootFlatDataInstanceSetImplementationState,
@@ -231,14 +231,16 @@ export type MappingEditorTabState = MappingElementState | MappingTestState;
 export class MappingEditorState extends ElementEditorState {
   currentTabState?: MappingEditorTabState;
   openedTabStates: MappingEditorTabState[] = [];
-  mappingTestStates: MappingTestState[] = [];
-  executionResult?: Record<PropertyKey, unknown>;
+
+  mappingElementsTreeData: TreeData<MappingElementTreeNodeData>;
   newMappingElementSpec?: MappingElementSpec;
   selectedTypeLabel?: Type;
-  executionState: MappingExecutionState;
+
+  executionState: DEPRECATED_MappingExecutionState;
+
+  mappingTestStates: MappingTestState[] = [];
   isRunningAllTests = false;
   allTestRunTime = 0;
-  mappingElementsTreeData: TreeData<MappingElementTreeNodeData>;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -247,7 +249,6 @@ export class MappingEditorState extends ElementEditorState {
       currentTabState: observable,
       openedTabStates: observable,
       mappingTestStates: observable,
-      executionResult: observable.ref,
       newMappingElementSpec: observable,
       selectedTypeLabel: observable,
       executionState: observable,
@@ -270,7 +271,10 @@ export class MappingEditorState extends ElementEditorState {
     });
 
     this.editorStore = editorStore;
-    this.executionState = new MappingExecutionState(editorStore, this);
+    this.executionState = new DEPRECATED_MappingExecutionState(
+      editorStore,
+      this,
+    );
     this.mappingTestStates = this.mapping.tests.map(
       (test) => new MappingTestState(editorStore, test, this),
     );

@@ -46,7 +46,7 @@ import {
   MappingExecutionObjectInputDataState,
   MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
-} from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+} from '../../../stores/editor-state/element-editor-state/mapping/DEPRECATED_MappingExecutionState';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import {
   ActionAlertActionType,
@@ -61,6 +61,7 @@ import {
 import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import { SetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
+import type { DEPRECATED_MappingExecutionState } from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -134,12 +135,12 @@ export const ClassMappingSelectorModal = observer(
 );
 
 const MappingExecutionQueryEditor = observer(
-  (props: { mappingEditorState: MappingEditorState }) => {
-    const { mappingEditorState } = props;
-    const queryState = mappingEditorState.executionState.queryState;
+  (props: { executionState: DEPRECATED_MappingExecutionState }) => {
+    const { executionState } = props;
+    const queryState = executionState.queryState;
+    const mappingEditorState = executionState.mappingEditorState;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const executionState = mappingEditorState.executionState;
 
     const extraQueryEditors = applicationStore.pluginManager
       .getEditorPlugins()
@@ -330,10 +331,7 @@ const MappingExecutionQueryEditor = observer(
 );
 
 export const MappingExecutionObjectInputDataBuilder = observer(
-  (props: {
-    mappingEditorState: MappingEditorState;
-    inputDataState: MappingExecutionObjectInputDataState;
-  }) => {
+  (props: { inputDataState: MappingExecutionObjectInputDataState }) => {
     const { inputDataState } = props;
 
     // TODO?: handle XML/type
@@ -355,10 +353,7 @@ export const MappingExecutionObjectInputDataBuilder = observer(
 );
 
 export const MappingExecutionFlatDataInputDataBuilder = observer(
-  (props: {
-    mappingEditorState: MappingEditorState;
-    inputDataState: MappingExecutionFlatDataInputDataState;
-  }) => {
+  (props: { inputDataState: MappingExecutionFlatDataInputDataState }) => {
     const { inputDataState } = props;
 
     // Input data
@@ -381,10 +376,7 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
  * Right now, we always default this to use Local H2 connection.
  */
 export const MappingExecutionRelationalInputDataBuilder = observer(
-  (props: {
-    mappingEditorState: MappingEditorState;
-    inputDataState: MappingExecutionRelationalInputDataState;
-  }) => {
+  (props: { inputDataState: MappingExecutionRelationalInputDataState }) => {
     const { inputDataState } = props;
 
     // Input data
@@ -407,7 +399,6 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
 
 export const MappingExecutionEmptyInputDataBuilder = observer(
   (props: {
-    mappingEditorState: MappingEditorState;
     inputDataState: MappingExecutionEmptyInputDataState;
     changeClassMapping: (
       setImplementation: SetImplementation | undefined,
@@ -453,9 +444,10 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
 );
 
 export const MappingExecutionInputDataBuilder = observer(
-  (props: { mappingEditorState: MappingEditorState }) => {
-    const { mappingEditorState } = props;
-    const inputDataState = mappingEditorState.executionState.inputDataState;
+  (props: { executionState: DEPRECATED_MappingExecutionState }) => {
+    const { executionState } = props;
+    const mappingEditorState = executionState.mappingEditorState;
+    const inputDataState = executionState.inputDataState;
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -466,16 +458,16 @@ export const MappingExecutionInputDataBuilder = observer(
       setOpenClassMappingSelectorModal(false);
     const changeClassMapping = useCallback(
       (setImplementation: SetImplementation | undefined): void => {
-        mappingEditorState.executionState.setInputDataStateBasedOnSource(
+        executionState.setInputDataStateBasedOnSource(
           setImplementation
             ? getMappingElementSource(setImplementation)
             : undefined,
           true,
         );
-        mappingEditorState.executionState.setExecutionResultText(undefined);
+        executionState.setExecutionResultText(undefined);
         hideClassMappingSelectorModal();
       },
-      [mappingEditorState.executionState],
+      [executionState],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);
@@ -485,7 +477,6 @@ export const MappingExecutionInputDataBuilder = observer(
     if (inputDataState instanceof MappingExecutionEmptyInputDataState) {
       inputDataBuilder = (
         <MappingExecutionEmptyInputDataBuilder
-          mappingEditorState={mappingEditorState}
           inputDataState={inputDataState}
           showClassMappingSelectorModal={showClassMappingSelectorModal}
           changeClassMapping={changeClassMapping}
@@ -494,7 +485,6 @@ export const MappingExecutionInputDataBuilder = observer(
     } else if (inputDataState instanceof MappingExecutionObjectInputDataState) {
       inputDataBuilder = (
         <MappingExecutionObjectInputDataBuilder
-          mappingEditorState={mappingEditorState}
           inputDataState={inputDataState}
         />
       );
@@ -503,7 +493,6 @@ export const MappingExecutionInputDataBuilder = observer(
     ) {
       inputDataBuilder = (
         <MappingExecutionFlatDataInputDataBuilder
-          mappingEditorState={mappingEditorState}
           inputDataState={inputDataState}
         />
       );
@@ -512,7 +501,6 @@ export const MappingExecutionInputDataBuilder = observer(
     ) {
       inputDataBuilder = (
         <MappingExecutionRelationalInputDataBuilder
-          mappingEditorState={mappingEditorState}
           inputDataState={inputDataState}
         />
       );
@@ -521,7 +509,7 @@ export const MappingExecutionInputDataBuilder = observer(
     }
 
     const clearInputData = (): void =>
-      mappingEditorState.executionState.setInputDataState(
+      executionState.setInputDataState(
         new MappingExecutionEmptyInputDataState(
           mappingEditorState.editorStore,
           mappingEditorState.mapping,
@@ -569,10 +557,10 @@ export const MappingExecutionInputDataBuilder = observer(
 );
 
 export const MappingExecutionBuilder = observer(
-  (props: { mappingEditorState: MappingEditorState }) => {
-    const { mappingEditorState } = props;
+  (props: { executionState: DEPRECATED_MappingExecutionState }) => {
+    const { executionState } = props;
+    const mappingEditorState = executionState.mappingEditorState;
     const applicationStore = useApplicationStore();
-    const executionState = mappingEditorState.executionState;
     const { queryState, inputDataState, executionPlan } = executionState;
     // plan
     const closePlanViewer = (): void =>
@@ -617,11 +605,11 @@ export const MappingExecutionBuilder = observer(
             {/* use UUID key to make sure these components refresh when we change the state */}
             <MappingExecutionQueryEditor
               key={executionState.queryState.uuid}
-              mappingEditorState={mappingEditorState}
+              executionState={executionState}
             />
             <MappingExecutionInputDataBuilder
               key={executionState.inputDataState.uuid}
-              mappingEditorState={mappingEditorState}
+              executionState={executionState}
             />
           </SplitPane>
           <div className="panel mapping-execution-panel__result-panel">
@@ -762,5 +750,9 @@ export const MappingExecution = observer(() => {
       </div>
     );
   }
-  return <MappingExecutionBuilder mappingEditorState={currentElementState} />;
+  return (
+    <MappingExecutionBuilder
+      executionState={currentElementState.executionState}
+    />
+  );
 });
