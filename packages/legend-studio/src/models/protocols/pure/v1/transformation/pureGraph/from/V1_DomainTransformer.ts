@@ -54,6 +54,7 @@ import { V1_Constraint } from '../../../model/packageableElements/domain/V1_Cons
 import { V1_Property } from '../../../model/packageableElements/domain/V1_Property';
 import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty';
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();
@@ -102,32 +103,43 @@ export const V1_transformEnumeration = (
   return enumeration;
 };
 
-const transformUnit = (element: Unit): V1_Unit => {
+const transformUnit = (
+  element: Unit,
+  context: V1_GraphTransformerContext,
+): V1_Unit => {
   const unit = new V1_Unit();
   V1_initPackageableElement(unit, element);
   unit.conversionFunction =
     element.conversionFunction?.accept_ValueSpecificationVisitor(
-      new V1_RawValueSpecificationTransformer(),
+      new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda | undefined;
   unit.measure = element.measure.path;
   return unit;
 };
 
-export const V1_transformMeasure = (element: Measure): V1_Measure => {
+export const V1_transformMeasure = (
+  element: Measure,
+  context: V1_GraphTransformerContext,
+): V1_Measure => {
   const measure = new V1_Measure();
   V1_initPackageableElement(measure, element);
   measure.canonicalUnit = element.canonicalUnit
-    ? transformUnit(element.canonicalUnit)
+    ? transformUnit(element.canonicalUnit, context)
     : undefined;
-  measure.nonCanonicalUnits = element.nonCanonicalUnits.map(transformUnit);
+  measure.nonCanonicalUnits = element.nonCanonicalUnits.map((unit) =>
+    transformUnit(unit, context),
+  );
   return measure;
 };
 
-const transformConstraint = (element: Constraint): V1_Constraint => {
+const transformConstraint = (
+  element: Constraint,
+  context: V1_GraphTransformerContext,
+): V1_Constraint => {
   const constraint = new V1_Constraint();
   constraint.functionDefinition =
     element.functionDefinition.accept_ValueSpecificationVisitor(
-      new V1_RawValueSpecificationTransformer(),
+      new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
   constraint.name = element.name;
   constraint.externalId = element.externalId;
@@ -135,7 +147,7 @@ const transformConstraint = (element: Constraint): V1_Constraint => {
   if (element.messageFunction && !element.messageFunction.isStub) {
     constraint.messageFunction =
       element.messageFunction.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(),
+        new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawLambda;
   }
   return constraint;
@@ -153,6 +165,7 @@ const transformProperty = (element: Property): V1_Property => {
 
 const transformDerviedProperty = (
   element: DerivedProperty,
+  context: V1_GraphTransformerContext,
 ): V1_DerivedProperty => {
   const derivedProperty = new V1_DerivedProperty();
   derivedProperty.name = element.name;
@@ -168,30 +181,36 @@ const transformDerviedProperty = (
   return derivedProperty;
 };
 
-export const V1_transformClass = (element: Class): V1_Class => {
+export const V1_transformClass = (
+  element: Class,
+  context: V1_GraphTransformerContext,
+): V1_Class => {
   const _class = new V1_Class();
   V1_initPackageableElement(_class, element);
-  _class.constraints = element.constraints.map(transformConstraint);
+  _class.constraints = element.constraints.map((constraint) =>
+    transformConstraint(constraint, context),
+  );
   _class.properties = element.properties.map(transformProperty);
   _class.stereotypes = element.stereotypes.map(transformStereotype);
   _class.taggedValues = element.taggedValues.map(transformTaggedValue);
   _class.superTypes = element.generalizations.map(
     (e) => e.ownerReference.valueForSerialization,
   );
-  _class.derivedProperties = element.derivedProperties.map(
-    transformDerviedProperty,
+  _class.derivedProperties = element.derivedProperties.map((dp) =>
+    transformDerviedProperty(dp, context),
   );
   return _class;
 };
 
 export const V1_transformAssociation = (
   element: Association,
+  context: V1_GraphTransformerContext,
 ): V1_Association => {
   const association = new V1_Association();
   V1_initPackageableElement(association, element);
   association.properties = element.properties.map(transformProperty);
-  association.derivedProperties = element.derivedProperties.map(
-    transformDerviedProperty,
+  association.derivedProperties = element.derivedProperties.map((dp) =>
+    transformDerviedProperty(dp, context),
   );
   association.stereotypes = element.stereotypes.map(transformStereotype);
   association.taggedValues = element.taggedValues.map(transformTaggedValue);
@@ -200,6 +219,7 @@ export const V1_transformAssociation = (
 
 export const V1_transformFunction = (
   element: ConcreteFunctionDefinition,
+  context: V1_GraphTransformerContext,
 ): V1_ConcreteFunctionDefinition => {
   const _function = new V1_ConcreteFunctionDefinition();
   V1_initPackageableElement(_function, element);
@@ -207,7 +227,7 @@ export const V1_transformFunction = (
   _function.parameters = element.parameters.map((v) =>
     toJS(
       v.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(),
+        new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
     ),
   );

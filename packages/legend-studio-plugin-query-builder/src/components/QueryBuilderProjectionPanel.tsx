@@ -30,8 +30,6 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import type {
   QueryBuilderProjectionColumnState,
   QueryBuilderProjectionColumnDragSource,
-  QueryBuilderProjectionDropTarget,
-  QueryBuilderProjectionColumnRearrangeDropTarget,
 } from '../stores/QueryBuilderFetchStructureState';
 import { QUERY_BUILDER_PROJECTION_DND_TYPE } from '../stores/QueryBuilderFetchStructureState';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
@@ -106,7 +104,7 @@ const QueryBuilderProjectionColumn = observer(
     // Drag and Drop
     const handleHover = useCallback(
       (
-        item: QueryBuilderProjectionColumnRearrangeDropTarget,
+        item: QueryBuilderProjectionColumnDragSource,
         monitor: DropTargetMonitor,
       ): void => {
         const dragIndex = projectionState.projectionColumns.findIndex(
@@ -140,7 +138,7 @@ const QueryBuilderProjectionColumn = observer(
       () => ({
         accept: [QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN],
         hover: (
-          item: QueryBuilderProjectionColumnRearrangeDropTarget,
+          item: QueryBuilderProjectionColumnDragSource,
           monitor: DropTargetMonitor,
         ): void => handleHover(item, monitor),
       }),
@@ -245,7 +243,7 @@ export const QueryBuilderProjectionPanel = observer(
       (columnState) => columnState.isBeingDragged,
     );
     const handleDrop = useCallback(
-      (item: QueryBuilderProjectionDropTarget): void =>
+      (item: QueryBuilderExplorerTreeDragSource): void =>
         projectionState.addProjectionColumn(item.node),
       [projectionState],
     );
@@ -269,6 +267,7 @@ export const QueryBuilderProjectionPanel = observer(
       }),
       [handleDrop],
     );
+
     return (
       <div
         className="panel__content dnd__overlay__container"
@@ -278,7 +277,7 @@ export const QueryBuilderProjectionPanel = observer(
         {!projectionColumns.length && (
           <BlankPanelPlaceholder
             placeholderText="Add a projection column"
-            tooltipText="Drag and drop properties or calculated attributes here"
+            tooltipText="Drag and drop properties here"
           />
         )}
         {Boolean(projectionColumns.length) && (

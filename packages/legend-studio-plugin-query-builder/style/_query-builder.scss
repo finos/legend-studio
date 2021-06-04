@@ -521,7 +521,7 @@
 
 .query-builder__projection {
   &__columns {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0;
   }
 
   &__column {
@@ -569,7 +569,7 @@
   &__column__value {
     @include flexVCenter;
 
-    margin-left: 0.3rem;
+    margin-left: 0.8rem;
     height: 100%;
     width: calc(100% - 8.9rem);
 

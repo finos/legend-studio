@@ -58,14 +58,16 @@ import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationT
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 import { V1_transformRuntime } from './V1_RuntimeTransformer';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformSingleExecution = (
   element: PureSingleExecution,
   plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_PureSingleExecution => {
   const execution = new V1_PureSingleExecution();
   execution.func = element.func.accept_ValueSpecificationVisitor(
-    new V1_RawValueSpecificationTransformer(),
+    new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   execution.mapping = V1_transformElementReference(element.mapping);
   execution.runtime = V1_transformRuntime(element.runtime, plugins);
@@ -75,6 +77,7 @@ const transformSingleExecution = (
 const transformKeyedParameter = (
   element: KeyedExecutionParameter,
   plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_KeyedExecutionParameter => {
   const parameter = new V1_KeyedExecutionParameter();
   parameter.key = element.key;
@@ -86,14 +89,15 @@ const transformKeyedParameter = (
 const transformMultiExecution = (
   element: PureMultiExecution,
   plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_PureMultiExecution => {
   const execution = new V1_PureMultiExecution();
   execution.executionKey = element.executionKey;
   execution.func = element.func.accept_ValueSpecificationVisitor(
-    new V1_RawValueSpecificationTransformer(),
+    new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   execution.executionParameters = element.executionParameters.map((param) =>
-    transformKeyedParameter(param, plugins),
+    transformKeyedParameter(param, plugins, context),
   );
   return execution;
 };
@@ -101,21 +105,25 @@ const transformMultiExecution = (
 const transformServiceExecution = (
   value: ServiceExecution,
   plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_ServiceExecution => {
   if (value instanceof PureSingleExecution) {
-    return transformSingleExecution(value, plugins);
+    return transformSingleExecution(value, plugins, context);
   } else if (value instanceof PureMultiExecution) {
-    return transformMultiExecution(value, plugins);
+    return transformMultiExecution(value, plugins, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform service execution of type '${getClass(value).name}'`,
   );
 };
 
-const transformTestContainer = (element: TestContainer): V1_TestContainer => {
+const transformTestContainer = (
+  element: TestContainer,
+  context: V1_GraphTransformerContext,
+): V1_TestContainer => {
   const container = new V1_TestContainer();
   container.assert = element.assert.accept_ValueSpecificationVisitor(
-    new V1_RawValueSpecificationTransformer(),
+    new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   container.parameterValues = element.parameterValues;
   return container;
@@ -123,22 +131,24 @@ const transformTestContainer = (element: TestContainer): V1_TestContainer => {
 
 const transformSingleExecutionTest = (
   element: SingleExecutionTest,
+  context: V1_GraphTransformerContext,
 ): V1_SingleExecutionTest => {
   const single = new V1_SingleExecutionTest();
   single.asserts = element.asserts
     .filter((testContainer) => testContainer.assert.body !== undefined)
-    .map(transformTestContainer);
+    .map((testContainer) => transformTestContainer(testContainer, context));
   single.data = element.data;
   return single;
 };
 
 const transformKeyedSingleExecutionTest = (
   element: KeyedSingleExecutionTest,
+  context: V1_GraphTransformerContext,
 ): V1_KeyedSingleExecutionTest => {
   const keyedTest = new V1_KeyedSingleExecutionTest();
   keyedTest.asserts = element.asserts
     .filter((testContainer) => testContainer.assert.body !== undefined)
-    .map(transformTestContainer);
+    .map((testContainer) => transformTestContainer(testContainer, context));
   keyedTest.data = element.data;
   keyedTest.key = element.key;
   return keyedTest;
@@ -146,17 +156,23 @@ const transformKeyedSingleExecutionTest = (
 
 const transformMultiExecutiontest = (
   element: MultiExecutionTest,
+  context: V1_GraphTransformerContext,
 ): V1_MultiExecutionTest => {
   const multi = new V1_MultiExecutionTest();
-  multi.tests = element.tests.map(transformKeyedSingleExecutionTest);
+  multi.tests = element.tests.map((test) =>
+    transformKeyedSingleExecutionTest(test, context),
+  );
   return multi;
 };
 
-const transformServiceTest = (value: ServiceTest): V1_ServiceTest => {
+const transformServiceTest = (
+  value: ServiceTest,
+  context: V1_GraphTransformerContext,
+): V1_ServiceTest => {
   if (value instanceof SingleExecutionTest) {
-    return transformSingleExecutionTest(value);
+    return transformSingleExecutionTest(value, context);
   } else if (value instanceof MultiExecutionTest) {
-    return transformMultiExecutiontest(value);
+    return transformMultiExecutiontest(value, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform service test of type '${getClass(value).name}'`,
@@ -166,14 +182,19 @@ const transformServiceTest = (value: ServiceTest): V1_ServiceTest => {
 export const V1_transformService = (
   element: Service,
   plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_Service => {
   const service = new V1_Service();
   V1_initPackageableElement(service, element);
   service.autoActivateUpdates = element.autoActivateUpdates;
   service.documentation = element.documentation;
-  service.execution = transformServiceExecution(element.execution, plugins);
+  service.execution = transformServiceExecution(
+    element.execution,
+    plugins,
+    context,
+  );
   service.owners = element.owners;
   service.pattern = element.pattern;
-  service.test = transformServiceTest(element.test);
+  service.test = transformServiceTest(element.test, context);
   return service;
 };

@@ -128,6 +128,10 @@
     border-left: 0.1rem solid var(--color-dark-grey-100);
   }
 
+  &__expected-result-panel__content {
+    position: relative;
+  }
+
   &__text-editor {
     padding: 0 !important;
     position: relative;

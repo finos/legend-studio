@@ -16,7 +16,6 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import { uuid, deleteEntry } from '@finos/legend-studio-shared';
-import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
 import {
   QueryBuilderExplorerTreePropertyNodeData,
   getPropertyExpression,
@@ -46,11 +45,6 @@ export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
 export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
 }
-
-export type QueryBuilderProjectionDropTarget =
-  QueryBuilderExplorerTreeDragSource;
-export type QueryBuilderProjectionColumnRearrangeDropTarget =
-  QueryBuilderProjectionColumnDragSource;
 
 export class QueryBuilderProjectionColumnState {
   uuid = uuid();
@@ -135,6 +129,7 @@ export enum FETCH_STRUCTURE_MODE {
   PROJECTION = 'PROJECTION',
   GRAPH_FETCH = 'GRAPH_FETCH',
 }
+
 export class QueryBuilderFetchStructureState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
@@ -149,7 +144,6 @@ export class QueryBuilderFetchStructureState {
       removeProjectionColumn: action,
       addProjectionColumn: action,
       moveProjectionColumn: action,
-      handleFetchStructureModeChange: action,
       setFetchStructureMode: action,
     });
 
@@ -202,15 +196,6 @@ export class QueryBuilderFetchStructureState {
 
   setFetchStructureMode(val: FETCH_STRUCTURE_MODE): void {
     this.fetchStructureMode = val;
-  }
-
-  handleFetchStructureModeChange(
-    fetchStructureMode: FETCH_STRUCTURE_MODE,
-  ): void {
-    if (this.fetchStructureMode !== fetchStructureMode) {
-      this.setFetchStructureMode(fetchStructureMode);
-      this.queryBuilderState.resetData();
-    }
   }
 
   isGraphFetchMode(): boolean {

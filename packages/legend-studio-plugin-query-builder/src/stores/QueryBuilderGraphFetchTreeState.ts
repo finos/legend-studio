@@ -16,17 +16,22 @@
 
 import type { QueryBuilderState } from './QueryBuilderState';
 import { makeAutoObservable, action } from 'mobx';
-import type { GraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
+import type { EditorStore } from '@finos/legend-studio';
 import {
+  PackageableElementExplicitReference,
+  RootGraphFetchTree,
+} from '@finos/legend-studio';
+import type { QueryBuilderGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
+import {
+  addQueryBuilderPropertyNode,
   buildGraphFetchTreeData,
-  getGraphFetchTreeData,
 } from './QueryBuilderGraphFetchTreeUtil';
-import type { EditorStore, RootGraphFetchTree } from '@finos/legend-studio';
+import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 
 export class QueryBuilderGraphFetchTreeState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
-  graphFetchTree?: GraphFetchTreeData;
+  treeData?: QueryBuilderGraphFetchTreeData;
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -39,34 +44,39 @@ export class QueryBuilderGraphFetchTreeState {
     this.queryBuilderState = queryBuilderState;
   }
 
-  setGraphFetchTree(graphFetchTree: GraphFetchTreeData | undefined): void {
-    this.graphFetchTree = graphFetchTree;
+  setGraphFetchTree(val: QueryBuilderGraphFetchTreeData | undefined): void {
+    this.treeData = val;
   }
 
-  init(rootGraphFetchTree?: RootGraphFetchTree): void {
+  init(tree?: RootGraphFetchTree): void {
     if (this.queryBuilderState.fetchStructureState.isGraphFetchMode()) {
-      if (rootGraphFetchTree) {
-        this.setGraphFetchTree(
-          buildGraphFetchTreeData(
-            this.editorStore,
-            rootGraphFetchTree,
-            this.queryBuilderState.querySetupState.mapping,
-          ),
-        );
+      if (tree) {
+        this.setGraphFetchTree(buildGraphFetchTreeData(tree));
       } else {
         const _class = this.queryBuilderState.querySetupState._class;
         if (_class) {
           this.setGraphFetchTree(
-            getGraphFetchTreeData(
-              this.editorStore,
-              _class,
-              this.queryBuilderState.querySetupState.mapping,
+            buildGraphFetchTreeData(
+              new RootGraphFetchTree(
+                PackageableElementExplicitReference.create(_class),
+              ),
             ),
           );
         } else {
           this.setGraphFetchTree(undefined);
         }
       }
+    }
+  }
+
+  addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
+    if (this.treeData) {
+      addQueryBuilderPropertyNode(
+        this.treeData,
+        this.queryBuilderState.explorerState.nonNullableTreeData,
+        node,
+      );
+      this.setGraphFetchTree({ ...this.treeData });
     }
   }
 }

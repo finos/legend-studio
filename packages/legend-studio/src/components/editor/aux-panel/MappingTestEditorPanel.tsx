@@ -339,7 +339,7 @@ export const MappingTestInputDataBuilder = observer(
       [testState],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
-      setImp instanceof OperationSetImplementation;
+      !(setImp instanceof OperationSetImplementation);
 
     // Input data builder
     let inputDataBuilder: React.ReactNode;
@@ -465,7 +465,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
         </div>
         <div
           className={clsx(
-            'panel__content mapping-test-editor-panel__text-editor',
+            'panel__content mapping-test-editor-panel__text-editor mapping-test-editor-panel__expected-result-panel__content',
             { 'panel__content--has-validation-error': !isValid },
           )}
         >
