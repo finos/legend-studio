@@ -670,7 +670,7 @@ export const simpleCoreModelData = [
                         function: 'getAll',
                         parameters: [
                           {
-                            _type: 'class',
+                            _type: 'packageableElementPtr',
                             fullPath: 'demo::other::NFirm',
                             sourceInformation: {
                               endColumn: 32,

@@ -4082,7 +4082,7 @@
                       "_type": "property",
                       "parameters": [
                         {
-                          "_type": "enum",
+                          "_type": "packageableElementPtr",
                           "fullPath": "model::pure::tests::model::simple::ProductSynonymType"
                         }
                       ],
@@ -4119,7 +4119,7 @@
                       "_type": "property",
                       "parameters": [
                         {
-                          "_type": "enum",
+                          "_type": "packageableElementPtr",
                           "fullPath": "model::pure::tests::model::simple::ProductSynonymType"
                         }
                       ],
@@ -4153,7 +4153,7 @@
                   "_type": "property",
                   "parameters": [
                     {
-                      "_type": "enum",
+                      "_type": "packageableElementPtr",
                       "fullPath": "model::pure::tests::model::simple::ProductSynonymType"
                     }
                   ],
@@ -4184,7 +4184,7 @@
                   "_type": "property",
                   "parameters": [
                     {
-                      "_type": "enum",
+                      "_type": "packageableElementPtr",
                       "fullPath": "model::pure::tests::model::simple::ProductSynonymType"
                     }
                   ],
@@ -4996,7 +4996,7 @@
                   "_type": "property",
                   "parameters": [
                     {
-                      "_type": "enum",
+                      "_type": "packageableElementPtr",
                       "fullPath": "DurationUnit"
                     }
                   ],
@@ -10776,7 +10776,7 @@
                       "function": "getAll",
                       "parameters": [
                         {
-                          "_type": "class",
+                          "_type": "packageableElementPtr",
                           "fullPath": "model::pure::tests::model::simple::Person"
                         }
                       ]

@@ -257,7 +257,7 @@ export const testMappingRoundtrip = [
                                 name: 'src',
                               },
                               {
-                                _type: 'hackedClass',
+                                _type: 'packageableElementPtr',
                                 fullPath: 'tClass',
                               },
                             ],
@@ -398,7 +398,7 @@ export const testMappingRoundtrip = [
                         function: 'getAll',
                         parameters: [
                           {
-                            _type: 'class',
+                            _type: 'packageableElementPtr',
                             fullPath: 'tClass',
                           },
                         ],

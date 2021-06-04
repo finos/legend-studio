@@ -410,6 +410,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     if (selectedExecution) {
       const mapping = selectedExecution.mapping.value;
       const graphFetchTreeContent =
+        // TODO: Remove this when we rework the test data generation flow
         this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
           this.execution.func,
           this.editorStore.graphState.graph,

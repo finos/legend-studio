@@ -54,8 +54,6 @@ import type {
 import {
   PackageableElementExplicitReference,
   PackageableElementImplicitReference,
-} from '@finos/legend-studio';
-import {
   SUPPORTED_FUNCTIONS,
   Class,
   CollectionInstanceValue,

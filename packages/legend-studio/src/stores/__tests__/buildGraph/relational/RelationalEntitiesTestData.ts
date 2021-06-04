@@ -5451,15 +5451,8 @@ export const relationalCompleteGraphEntities = [
                       _type: 'property',
                       parameters: [
                         {
-                          _type: 'enum',
+                          _type: 'packageableElementPtr',
                           fullPath: 'ProductSynonymType',
-                          sourceInformation: {
-                            endColumn: 49,
-                            endLine: 511,
-                            sourceId: '',
-                            startColumn: 32,
-                            startLine: 511,
-                          },
                         },
                       ],
                       property: 'CUSIP',
@@ -5523,7 +5516,7 @@ export const relationalCompleteGraphEntities = [
                       _type: 'property',
                       parameters: [
                         {
-                          _type: 'enum',
+                          _type: 'packageableElementPtr',
                           fullPath: 'ProductSynonymType',
                           sourceInformation: {
                             endColumn: 48,
@@ -5592,7 +5585,7 @@ export const relationalCompleteGraphEntities = [
                   _type: 'property',
                   parameters: [
                     {
-                      _type: 'enum',
+                      _type: 'packageableElementPtr',
                       fullPath: 'ProductSynonymType',
                       sourceInformation: {
                         endColumn: 56,
@@ -5651,7 +5644,7 @@ export const relationalCompleteGraphEntities = [
                   _type: 'property',
                   parameters: [
                     {
-                      _type: 'enum',
+                      _type: 'packageableElementPtr',
                       fullPath: 'ProductSynonymType',
                       sourceInformation: {
                         endColumn: 55,
@@ -7158,7 +7151,7 @@ export const relationalCompleteGraphEntities = [
                   _type: 'property',
                   parameters: [
                     {
-                      _type: 'enum',
+                      _type: 'packageableElementPtr',
                       fullPath: 'DurationUnit',
                       sourceInformation: {
                         endColumn: 71,
@@ -16000,7 +15993,7 @@ export const targetSetImplementationThroughAssociation = [
                   function: 'getAll',
                   parameters: [
                     {
-                      _type: 'class',
+                      _type: 'packageableElementPtr',
                       fullPath: 'apps::pure::studio::model::simple::Person',
                     },
                   ],

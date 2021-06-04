@@ -91,7 +91,11 @@ export class V1_ValueSpecificationResolver
     if (V1_shouldResolvePath(path)) {
       spec.fullPath =
         returnUndefOnError(() =>
-          V1_resolveElementPath(path, this.context.resolveMapping, this),
+          V1_resolveElementPath(
+            path,
+            (_path) => this.context.resolveElement(_path, false),
+            this,
+          ),
         ) ?? path;
     }
     return spec;
