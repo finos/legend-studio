@@ -77,7 +77,6 @@ export {
 } from './models/metamodels/pure/model/valueSpecification/LambdaFunction';
 export { AlloySerializationConfigInstanceValue } from './models/metamodels/pure/model/valueSpecification/AlloySerializationConfig';
 export {
-  EnumerationInstanceValue,
   EnumValueInstanceValue,
   MappingInstanceValue,
   PairInstanceValue,
@@ -86,7 +85,6 @@ export {
   InstanceValue,
   CollectionInstanceValue,
   PrimitiveInstanceValue,
-  ClassInstanceValue,
 } from './models/metamodels/pure/model/valueSpecification/InstanceValue';
 export { ValueSpecification } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';
 export type { ValueSpecificationVisitor } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';

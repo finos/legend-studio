@@ -18,7 +18,7 @@ import { unitTest } from '@finos/legend-studio-shared';
 import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import { checkBuildingResolvedElements } from '../../StoreTestUtils';
 
-const classEntity = (enumPath: string): Entity => ({
+const getClassEntity = (enumPath: string): Entity => ({
   classifierPath: 'meta::pure::metamodel::type::Class',
   content: {
     _type: 'class',
@@ -45,7 +45,7 @@ const classEntity = (enumPath: string): Entity => ({
                 _type: 'property',
                 parameters: [
                   {
-                    _type: 'enum',
+                    _type: 'packageableElementPtr',
                     fullPath: enumPath,
                   },
                 ],
@@ -104,11 +104,11 @@ const sectionEntity: Entity = {
 };
 
 test(
-  unitTest(`Raw Lambda inside a class's derived property has been resolved`),
+  unitTest(`Raw lambda in a class's derived property has been resolved`),
   async () => {
     await checkBuildingResolvedElements(
-      [classEntity('MyEnum'), enumEntity, sectionEntity],
-      [classEntity('model::MyEnum'), enumEntity],
+      [getClassEntity('MyEnum'), enumEntity, sectionEntity],
+      [getClassEntity('model::MyEnum'), enumEntity],
     );
   },
 );

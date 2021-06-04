@@ -34,8 +34,6 @@ import {
 import { V1_Variable } from '../../../model/valueSpecification/V1_Variable';
 import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
 import { V1_Lambda } from '../../../model/valueSpecification/raw/V1_Lambda';
-import { V1_Class } from '../../../model/valueSpecification/raw/V1_Class';
-import { V1_Enum } from '../../../model/valueSpecification/raw/V1_Enum';
 import { V1_EnumValue } from '../../../model/valueSpecification/raw/V1_EnumValue';
 import { V1_Path } from '../../../model/valueSpecification/raw/path/V1_Path';
 import { V1_AppliedFunction } from '../../../model/valueSpecification/application/V1_AppliedFunction';
@@ -51,7 +49,6 @@ import { V1_CLatestDate } from '../../../model/valueSpecification/raw/V1_CLatest
 import { V1_CBoolean } from '../../../model/valueSpecification/raw/V1_CBoolean';
 import { V1_AggregateValue } from '../../../model/valueSpecification/raw/V1_AggregateValue';
 import { V1_Pair } from '../../../model/valueSpecification/raw/V1_Pair';
-import { V1_MappingInstance } from '../../../model/valueSpecification/raw/V1_MappingInstance';
 import { V1_RuntimeInstance } from '../../../model/valueSpecification/raw/V1_RuntimeInstance';
 import { V1_ExecutionContextInstance } from '../../../model/valueSpecification/raw/V1_ExecutionContextInstance';
 import { V1_PropertyGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree';
@@ -82,6 +79,7 @@ import type { V1_ExecutionContext } from '../../../model/valueSpecification/raw/
 import { V1_AnalyticsExecutionContext } from '../../../model/valueSpecification/raw/executionContext/V1_AnalyticsExecutionContext';
 import { V1_BaseExecutionContext } from '../../../model/valueSpecification/raw/executionContext/V1_BaseExecutionContext';
 import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_GraphFetchTree';
+import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr';
 
 enum V1_PathElementType {
   PROPERTY_PATH_ELEMENT = 'propertyPath',
@@ -93,8 +91,7 @@ enum V1_ExecutionContextType {
 }
 
 enum V1_ValueSpecificationType {
-  CLASS = 'class',
-  ENUM = 'enum',
+  PACKAGEABLE_ELEMENT_PTR = 'packageableElementPtr',
   ENUM_VALUE = 'enumValue',
   VARIABLE = 'var',
   LAMBDA = 'lambda',
@@ -113,7 +110,6 @@ enum V1_ValueSpecificationType {
   CLATESTDATE = 'latestDate',
   AGGREGATE_VALUE = 'aggregateValue',
   PAIR = 'pair',
-  MAPPING_INSTANCE = 'mappingInstance',
   RUNTIME_INSTANCE = 'runtimeInstance',
   EXECUTIONCONTEXT_INSTANCE = 'executionContextInstance',
   PURE_LIST = 'listInstance',
@@ -130,24 +126,29 @@ enum V1_ValueSpecificationType {
   TDS_SORT_INFORMATION = 'tdsSortInformation',
   TDS_OLAP_RANK = 'tdsOlapRank',
   TDS_OLAP_AGGREGATION = 'tdsOlapAggregation',
-  // NOTE: deprecated types not included
+
+  // ------------------------------ DEPRECATED ----------------------------------
+  CLASS = 'class',
+  ENUM = 'enum',
+  MAPPING_INSTANCE = 'mappingInstance',
+  // ----------------------------------------------------------------------------
 }
 
-const V1_variableModelSchema = createModelSchema(V1_Variable, {
+const packageableElementPtrSchema = createModelSchema(
+  V1_PackageableElementPtr,
+  {
+    _type: usingConstantValueSchema(
+      V1_ValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
+    ),
+    fullPath: primitive(),
+  },
+);
+
+const variableModelSchema = createModelSchema(V1_Variable, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.VARIABLE),
   class: optional(primitive()),
   name: primitive(),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
-});
-
-const classModelSchema = createModelSchema(V1_Class, {
-  _type: usingConstantValueSchema(V1_ValueSpecificationType.CLASS),
-  fullPath: primitive(),
-});
-
-const enumModelSchema = createModelSchema(V1_Enum, {
-  _type: usingConstantValueSchema(V1_ValueSpecificationType.ENUM),
-  fullPath: primitive(),
 });
 
 const enumValueModelSchema = createModelSchema(V1_EnumValue, {
@@ -156,7 +157,7 @@ const enumValueModelSchema = createModelSchema(V1_EnumValue, {
   value: primitive(),
 });
 
-const V1_lambdaModelSchema = createModelSchema(V1_Lambda, {
+const lambdaModelSchema = createModelSchema(V1_Lambda, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.LAMBDA),
   body: list(
     custom(
@@ -164,7 +165,7 @@ const V1_lambdaModelSchema = createModelSchema(V1_Lambda, {
       (val) => V1_deserializeValueSpecification(val),
     ),
   ),
-  parameters: list(usingModelSchema(V1_variableModelSchema)),
+  parameters: list(usingModelSchema(variableModelSchema)),
 });
 
 const propertyPathElementModelSchema = createModelSchema(
@@ -193,7 +194,7 @@ const pathModelSchema = createModelSchema(V1_Path, {
   ),
 });
 
-const V1_appliedFunctionModelSchema = createModelSchema(V1_AppliedFunction, {
+const appliedFunctionModelSchema = createModelSchema(V1_AppliedFunction, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.APPLIED_FUNCTION),
   function: primitive(),
   parameters: list(
@@ -282,8 +283,8 @@ const cBooleanModelSchema = createModelSchema(V1_CBoolean, {
 
 const aggregationValueModelSchema = createModelSchema(V1_AggregateValue, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.AGGREGATE_VALUE),
-  mapFn: usingModelSchema(V1_lambdaModelSchema),
-  aggregateFn: usingModelSchema(V1_lambdaModelSchema),
+  mapFn: usingModelSchema(lambdaModelSchema),
+  aggregateFn: usingModelSchema(lambdaModelSchema),
 });
 
 const pairModelSchema = createModelSchema(V1_Pair, {
@@ -296,11 +297,6 @@ const pairModelSchema = createModelSchema(V1_Pair, {
     (val) => V1_serializeValueSpecification(val),
     (val) => V1_deserializeValueSpecification(val),
   ),
-});
-
-const mappingInstanceModelSchema = createModelSchema(V1_MappingInstance, {
-  _type: usingConstantValueSchema(V1_ValueSpecificationType.MAPPING_INSTANCE),
-  fullPath: primitive(),
 });
 
 const runtimeInstanceModelSchema = createModelSchema(V1_RuntimeInstance, {
@@ -319,7 +315,7 @@ const analyticsExecutionContextModelSchema = createModelSchema(
     ),
     enableConstraints: optional(primitive()),
     queryTimeOutInSeconds: optional(primitive()),
-    toFlowSetFunction: usingModelSchema(V1_lambdaModelSchema),
+    toFlowSetFunction: usingModelSchema(lambdaModelSchema),
     useAnalytics: primitive(),
   },
 );
@@ -445,8 +441,8 @@ const tdsAggregrateValueModelSchema = createModelSchema(V1_TDSAggregateValue, {
     V1_ValueSpecificationType.TDS_AGGREGATE_VALUE,
   ),
   name: primitive(),
-  pmapFn: usingModelSchema(V1_lambdaModelSchema),
-  aggregateFn: usingModelSchema(V1_lambdaModelSchema),
+  pmapFn: usingModelSchema(lambdaModelSchema),
+  aggregateFn: usingModelSchema(lambdaModelSchema),
 });
 
 const tdsColumnInformationModelSchema = createModelSchema(
@@ -456,7 +452,7 @@ const tdsColumnInformationModelSchema = createModelSchema(
       V1_ValueSpecificationType.TDS_COLUMN_INFORMATION,
     ),
     name: primitive(),
-    columnFn: usingModelSchema(V1_lambdaModelSchema),
+    columnFn: usingModelSchema(lambdaModelSchema),
   },
 );
 
@@ -470,27 +466,24 @@ const tdsSortInformationModelSchema = createModelSchema(V1_TDSSortInformation, {
 
 const tdsOlapRankModelSchema = createModelSchema(V1_TdsOlapRank, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.TDS_OLAP_RANK),
-  function: usingModelSchema(V1_lambdaModelSchema),
+  function: usingModelSchema(lambdaModelSchema),
 });
 
 const tdsOlapAggregationModelSchema = createModelSchema(V1_TdsOlapAggregation, {
   _type: usingConstantValueSchema(
     V1_ValueSpecificationType.TDS_OLAP_AGGREGATION,
   ),
-  function: usingModelSchema(V1_lambdaModelSchema),
+  function: usingModelSchema(lambdaModelSchema),
   columnName: primitive(),
 });
 
 class V1_ValueSpecificationSerializer
   implements V1_ValueSpecificationVisitor<PlainObject<V1_ValueSpecification>>
 {
-  visit_Class(
-    valueSpecification: V1_Class,
+  visit_PackageableElementPtr(
+    valueSpecification: V1_PackageableElementPtr,
   ): PlainObject<V1_ValueSpecification> {
-    return serialize(classModelSchema, valueSpecification);
-  }
-  visit_Enum(valueSpecification: V1_Enum): PlainObject<V1_ValueSpecification> {
-    return serialize(enumModelSchema, valueSpecification);
+    return serialize(packageableElementPtrSchema, valueSpecification);
   }
   visit_EnumValue(
     valueSpecification: V1_EnumValue,
@@ -500,12 +493,12 @@ class V1_ValueSpecificationSerializer
   visit_Variable(
     valueSpecification: V1_Variable,
   ): PlainObject<V1_ValueSpecification> {
-    return serialize(V1_variableModelSchema, valueSpecification);
+    return serialize(variableModelSchema, valueSpecification);
   }
   visit_Lambda(
     valueSpecification: V1_Lambda,
   ): PlainObject<V1_ValueSpecification> {
-    return serialize(V1_lambdaModelSchema, valueSpecification);
+    return serialize(lambdaModelSchema, valueSpecification);
   }
   visit_Path(valueSpecification: V1_Path): PlainObject<V1_ValueSpecification> {
     return serialize(pathModelSchema, valueSpecification);
@@ -513,7 +506,7 @@ class V1_ValueSpecificationSerializer
   visit_AppliedFunction(
     valueSpecification: V1_AppliedFunction,
   ): PlainObject<V1_ValueSpecification> {
-    return serialize(V1_appliedFunctionModelSchema, valueSpecification);
+    return serialize(appliedFunctionModelSchema, valueSpecification);
   }
   visit_AppliedProperty(
     valueSpecification: V1_AppliedProperty,
@@ -577,11 +570,6 @@ class V1_ValueSpecificationSerializer
   }
   visit_Pair(valueSpecification: V1_Pair): PlainObject<V1_ValueSpecification> {
     return serialize(pairModelSchema, valueSpecification);
-  }
-  visit_MappingInstance(
-    valueSpecification: V1_MappingInstance,
-  ): PlainObject<V1_ValueSpecification> {
-    return serialize(mappingInstanceModelSchema, valueSpecification);
   }
   visit_RuntimeInstance(
     valueSpecification: V1_RuntimeInstance,
@@ -749,7 +737,7 @@ export function V1_deserializeValueSpecification(
     case V1_ValueSpecificationType.AGGREGATE_VALUE:
       return deserialize(aggregationValueModelSchema, json);
     case V1_ValueSpecificationType.APPLIED_FUNCTION:
-      return deserialize(V1_appliedFunctionModelSchema, json);
+      return deserialize(appliedFunctionModelSchema, json);
     case V1_ValueSpecificationType.APPLIED_PROPERTY:
       return deserialize(appliedPropertyModelSchema, json);
     case V1_ValueSpecificationType.CBOOLEAN:
@@ -764,8 +752,6 @@ export function V1_deserializeValueSpecification(
       return deserialize(cfloatModelSchema, json);
     case V1_ValueSpecificationType.CINTEGER:
       return deserialize(cIntegerModelSchema, json);
-    case V1_ValueSpecificationType.CLASS:
-      return deserialize(classModelSchema, json);
     case V1_ValueSpecificationType.CLATESTDATE:
       return deserialize(cLatestDateModelSchema, json);
     case V1_ValueSpecificationType.COLLECTION:
@@ -774,8 +760,6 @@ export function V1_deserializeValueSpecification(
       return deserialize(cStrictDateModelSchema, json);
     case V1_ValueSpecificationType.CSTRING:
       return deserialize(cStringModelSchema, json);
-    case V1_ValueSpecificationType.ENUM:
-      return deserialize(enumModelSchema, json);
     case V1_ValueSpecificationType.ENUM_VALUE:
       return deserialize(enumValueModelSchema, json);
     case V1_ValueSpecificationType.EXECUTIONCONTEXT_INSTANCE:
@@ -783,9 +767,7 @@ export function V1_deserializeValueSpecification(
     case V1_ValueSpecificationType.KEY_EXPRESSION:
       return deserialize(keyExpressionModelSchema, json);
     case V1_ValueSpecificationType.LAMBDA:
-      return deserialize(V1_lambdaModelSchema, json);
-    case V1_ValueSpecificationType.MAPPING_INSTANCE:
-      return deserialize(mappingInstanceModelSchema, json);
+      return deserialize(lambdaModelSchema, json);
     case V1_ValueSpecificationType.PAIR:
       return deserialize(pairModelSchema, json);
     case V1_ValueSpecificationType.PATH:
@@ -817,7 +799,12 @@ export function V1_deserializeValueSpecification(
     case V1_ValueSpecificationType.UNIT_TYPE:
       return deserialize(unitTypeModelSchema, json);
     case V1_ValueSpecificationType.VARIABLE:
-      return deserialize(V1_variableModelSchema, json);
+      return deserialize(variableModelSchema, json);
+    case V1_ValueSpecificationType.ENUM: // deprecated
+    case V1_ValueSpecificationType.CLASS: // deprecated
+    case V1_ValueSpecificationType.MAPPING_INSTANCE: // deprecated
+    case V1_ValueSpecificationType.PACKAGEABLE_ELEMENT_PTR:
+      return deserialize(packageableElementPtrSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize value specification of type '${json._type}'`,

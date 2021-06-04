@@ -17,8 +17,6 @@
 import type { V1_Variable } from '../../model/valueSpecification/V1_Variable';
 import type { V1_RootGraphFetchTree } from '../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
 import type { V1_Lambda } from '../../model/valueSpecification/raw/V1_Lambda';
-import type { V1_Class } from '../../model/valueSpecification/raw/V1_Class';
-import type { V1_Enum } from '../../model/valueSpecification/raw/V1_Enum';
 import type { V1_EnumValue } from '../../model/valueSpecification/raw/V1_EnumValue';
 import type { V1_Path } from '../../model/valueSpecification/raw/path/V1_Path';
 import type { V1_AppliedFunction } from './application/V1_AppliedFunction';
@@ -34,7 +32,6 @@ import type { V1_CLatestDate } from '../../model/valueSpecification/raw/V1_CLate
 import type { V1_CBoolean } from '../../model/valueSpecification/raw/V1_CBoolean';
 import type { V1_AggregateValue } from '../../model/valueSpecification/raw/V1_AggregateValue';
 import type { V1_Pair } from '../../model/valueSpecification/raw/V1_Pair';
-import type { V1_MappingInstance } from '../../model/valueSpecification/raw/V1_MappingInstance';
 import type { V1_RuntimeInstance } from '../../model/valueSpecification/raw/V1_RuntimeInstance';
 import type { V1_ExecutionContextInstance } from '../../model/valueSpecification/raw/V1_ExecutionContextInstance';
 import type { V1_PropertyGraphFetchTree } from '../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree';
@@ -50,10 +47,10 @@ import type { V1_TDSSortInformation } from '../../model/valueSpecification/raw/V
 import type { V1_TdsOlapRank } from '../../model/valueSpecification/raw/V1_TdsOlapRank';
 import type { V1_TdsOlapAggregation } from '../../model/valueSpecification/raw/V1_TdsOlapAggregation';
 import type { V1_AppliedProperty } from './application/V1_AppliedProperty';
+import type { V1_PackageableElementPtr } from './raw/V1_PackageableElementPtr';
 
 export interface V1_ValueSpecificationVisitor<T> {
-  visit_Class(valueSpecification: V1_Class): T;
-  visit_Enum(valueSpecification: V1_Enum): T;
+  visit_PackageableElementPtr(valueSpecification: V1_PackageableElementPtr): T;
   visit_EnumValue(valueSpecification: V1_EnumValue): T;
   visit_Variable(valueSpecification: V1_Variable): T;
   visit_Lambda(valueSpecification: V1_Lambda): T;
@@ -73,7 +70,6 @@ export interface V1_ValueSpecificationVisitor<T> {
 
   visit_AggregateValue(valueSpecification: V1_AggregateValue): T;
   visit_Pair(valueSpecification: V1_Pair): T;
-  visit_MappingInstance(valueSpecification: V1_MappingInstance): T;
   visit_RuntimeInstance(valueSpecification: V1_RuntimeInstance): T;
   visit_ExecutionContextInstance(
     valueSpecification: V1_ExecutionContextInstance,

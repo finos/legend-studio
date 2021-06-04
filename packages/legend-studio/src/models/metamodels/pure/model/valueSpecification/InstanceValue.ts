@@ -22,14 +22,12 @@ import {
   isString,
 } from '@finos/legend-studio-shared';
 import type { Pair } from '@finos/legend-studio-shared';
-import type { Type } from '../../model/packageableElements/domain/Type';
 import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 import type { Multiplicity } from '../../model/packageableElements/domain/Multiplicity';
 import type { GenericTypeReference } from '../../model/packageableElements/domain/GenericTypeReference';
 import type { EnumValueReference } from '../../model/packageableElements/domain/EnumValueReference';
 import type { PackageableElementReference } from '../../model/packageableElements/PackageableElementReference';
-import type { Enumeration } from '../../model/packageableElements/domain/Enumeration';
 import type { EngineRuntime } from '../../model/packageableElements/runtime/Runtime';
 import type { Mapping } from '../../model/packageableElements/mapping/Mapping';
 import {
@@ -109,36 +107,6 @@ export class PrimitiveInstanceValue extends InstanceValue {
       this.multiplicity,
       hashArray(values as string[]),
     ]);
-  }
-}
-
-export class ClassInstanceValue extends InstanceValue {
-  genericType: GenericTypeReference;
-  values: PackageableElementReference<Type>[] = [];
-
-  constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
-    this.genericType = genericType;
-  }
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_ClassInstanceValue(this);
-  }
-}
-
-export class EnumerationInstanceValue extends InstanceValue {
-  values: PackageableElementReference<Enumeration>[] = [];
-  constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
-    this.genericType = genericType;
-  }
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_EnumerationInstanceValue(this);
   }
 }
 

@@ -26,7 +26,7 @@ export const lambda_input_filterWithExists = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::target::_Firm',
             },
           ],
@@ -117,7 +117,7 @@ export const lambda_output_filterWithExists = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::target::_Firm',
             },
           ],

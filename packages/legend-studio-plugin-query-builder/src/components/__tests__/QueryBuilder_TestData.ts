@@ -26,7 +26,7 @@ export const simpleProjection = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::pure::tests::model::simple::Person',
             },
           ],
@@ -125,7 +125,7 @@ export const projectionWithChainedProperty = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::pure::tests::model::simple::Person',
             },
           ],
@@ -201,7 +201,7 @@ export const projectWithDerivedProperty = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::pure::tests::model::simple::Person',
             },
           ],
@@ -291,7 +291,7 @@ export const projectionWithResultSetModifiers = {
                       function: 'getAll',
                       parameters: [
                         {
-                          _type: 'class',
+                          _type: 'packageableElementPtr',
                           fullPath: 'model::pure::tests::model::simple::Person',
                         },
                       ],
@@ -476,7 +476,7 @@ export const getAllWithOneConditionFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::pure::tests::model::simple::Person',
             },
           ],
@@ -534,7 +534,7 @@ export const getAllWithGroupedFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::pure::tests::model::simple::Person',
             },
           ],
@@ -634,7 +634,7 @@ export const fullComplexProjectionQuery = {
                       function: 'getAll',
                       parameters: [
                         {
-                          _type: 'class',
+                          _type: 'packageableElementPtr',
                           fullPath: 'model::pure::tests::model::simple::Person',
                         },
                       ],
@@ -901,7 +901,7 @@ export const unSupportedGetAllWithOneConditionFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::pure::tests::model::simple::Person',
             },
           ],
@@ -955,7 +955,7 @@ export const errorInGraphLambda = {
       function: 'getAll',
       parameters: [
         {
-          _type: 'class',
+          _type: 'packageableElementPtr',
           fullPath: 'model::pure::tests::model::simple::NotFound',
         },
       ],
@@ -997,7 +997,7 @@ export const simpleGraphFetch = {
               function: 'getAll',
               parameters: [
                 {
-                  _type: 'class',
+                  _type: 'packageableElementPtr',
                   fullPath: 'model::target::NPerson',
                 },
               ],
@@ -1050,7 +1050,7 @@ export const firmPersonGraphFetch = {
               function: 'getAll',
               parameters: [
                 {
-                  _type: 'class',
+                  _type: 'packageableElementPtr',
                   fullPath: 'model::target::NFirm',
                 },
               ],

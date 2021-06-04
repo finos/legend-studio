@@ -26,7 +26,7 @@ export const lambda_simpleSingleConditionFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'domain::COVIDData',
             },
           ],
@@ -90,7 +90,7 @@ export const lambda_notOperatorFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'domain::COVIDData',
             },
           ],
@@ -160,7 +160,7 @@ export const lambda_setOperatorFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'domain::COVIDData',
             },
           ],
@@ -247,7 +247,7 @@ export const lambda_groupConditionFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'domain::COVIDData',
             },
           ],
@@ -454,7 +454,7 @@ export const lambda_groupConditionFilter_withMultipleClauseGroup = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'domain::COVIDData',
             },
           ],
@@ -601,7 +601,7 @@ export const lambda_enumerationOperatorFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::target::_Firm',
             },
           ],
@@ -676,7 +676,7 @@ export const lambda_existsChainFilter = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::target::_Firm',
             },
           ],
@@ -761,7 +761,7 @@ export const lambda_existsChainFilterWithCustomVariableName = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'model::target::_Firm',
             },
           ],

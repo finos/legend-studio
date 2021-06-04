@@ -57,9 +57,7 @@ import { GenericType } from '../../../../../../../metamodels/pure/model/packagea
 import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/GenericTypeReference';
 import {
   InstanceValue,
-  ClassInstanceValue,
   PrimitiveInstanceValue,
-  EnumerationInstanceValue,
   EnumValueInstanceValue,
   PairInstanceValue,
   PureListInstanceValue,
@@ -96,16 +94,13 @@ import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1
 import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CDecimal';
 import type { V1_CFloat } from '../../../../model/valueSpecification/raw/V1_CFloat';
 import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CInteger';
-import type { V1_Class } from '../../../../model/valueSpecification/raw/V1_Class';
 import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate';
 import { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection';
 import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate';
 import { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString';
-import type { V1_Enum } from '../../../../model/valueSpecification/raw/V1_Enum';
 import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue';
 import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance';
 import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression';
-import type { V1_MappingInstance } from '../../../../model/valueSpecification/raw/V1_MappingInstance';
 import type { V1_Pair } from '../../../../model/valueSpecification/raw/V1_Pair';
 import type { V1_Path } from '../../../../model/valueSpecification/raw/path/V1_Path';
 import type { V1_PrimitiveType } from '../../../../model/valueSpecification/raw/V1_PrimitiveType';
@@ -122,6 +117,7 @@ import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_Un
 import { V1_getAppliedProperty } from './V1_DomainBuilderHelper';
 import { Enumeration } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Enumeration';
 import { EnumValueExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/EnumValueReference';
+import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -300,25 +296,16 @@ export class V1_ValueSpecificationBuilder
   }
 
   // Instance Types
-  visit_Class(valueSpecification: V1_Class): ValueSpecification {
-    const genricTypeRef = this.context.resolveGenericType(
-      valueSpecification.fullPath,
-    );
-    const instance = new ClassInstanceValue(
-      genricTypeRef,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-    );
-    instance.values = [this.context.resolveType(valueSpecification.fullPath)];
-    return instance;
-  }
 
-  visit_Enum(valueSpecification: V1_Enum): ValueSpecification {
-    const instance = new EnumerationInstanceValue(
-      this.context.resolveGenericType(valueSpecification.fullPath),
+  visit_PackageableElementPtr(
+    valueSpecification: V1_PackageableElementPtr,
+  ): ValueSpecification {
+    const instance = new InstanceValue(
       this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      this.context.resolveGenericType(valueSpecification.fullPath),
     );
     instance.values = [
-      this.context.resolveEnumeration(valueSpecification.fullPath),
+      this.context.resolveElement(valueSpecification.fullPath, false),
     ];
     return instance;
   }
@@ -482,11 +469,6 @@ export class V1_ValueSpecificationBuilder
   }
 
   // TODO
-  visit_MappingInstance(
-    valueSpecification: V1_MappingInstance,
-  ): ValueSpecification {
-    throw new Error('Method not implemented.');
-  }
 
   visit_RuntimeInstance(
     valueSpecification: V1_RuntimeInstance,

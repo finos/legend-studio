@@ -15,6 +15,7 @@
  */
 
 import {
+  assertTrue,
   getClass,
   guaranteeNonNullable,
   guaranteeType,
@@ -36,10 +37,8 @@ import {
 import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState';
 import type {
   AlloySerializationConfigInstanceValue,
-  EnumerationInstanceValue,
   EnumValueInstanceValue,
   FunctionExpression,
-  InstanceValue,
   MappingInstanceValue,
   PairInstanceValue,
   PropertyGraphFetchTreeInstanceValue,
@@ -49,11 +48,14 @@ import type {
   ValueSpecification,
   ValueSpecificationVisitor,
   AbstractPropertyExpression,
+  PackageableElementReference,
+  PackageableElement,
 } from '@finos/legend-studio';
 import {
+  PackageableElementExplicitReference,
+  PackageableElementImplicitReference,
   SUPPORTED_FUNCTIONS,
   Class,
-  ClassInstanceValue,
   CollectionInstanceValue,
   GraphFetchTreeInstanceValue,
   LambdaFunctionInstanceValue,
@@ -61,6 +63,7 @@ import {
   RootGraphFetchTree,
   SimpleFunctionExpression,
   VariableExpression,
+  InstanceValue,
 } from '@finos/legend-studio';
 
 const getNullableStringValueFromValueSpec = (
@@ -206,14 +209,6 @@ export class QueryBuilderLambdaProcessor
   ): void {
     throw new Error('Method not implemented.');
   }
-  visit_ClassInstanceValue(valueSpecification: ClassInstanceValue): void {
-    throw new Error('Method not implemented.');
-  }
-  visit_EnumerationInstanceValue(
-    valueSpecification: EnumerationInstanceValue,
-  ): void {
-    throw new Error('Method not implemented.');
-  }
   visit_EnumValueInstanceValue(
     valueSpecification: EnumValueInstanceValue,
   ): void {
@@ -290,8 +285,18 @@ export class QueryBuilderLambdaProcessor
       );
     } else if (functionName === SUPPORTED_FUNCTIONS.GET_ALL) {
       const paramOne = valueSpecification.parametersValues[0];
-      if (paramOne instanceof ClassInstanceValue) {
-        const _class = guaranteeNonNullable(paramOne.values[0]).value;
+      if (paramOne instanceof InstanceValue) {
+        assertTrue(
+          paramOne.values.length !== 0 &&
+            (paramOne.values[0] instanceof
+              PackageableElementExplicitReference ||
+              paramOne.values[0] instanceof
+                PackageableElementImplicitReference),
+          'getAll() class is missing',
+        );
+        const _class = (
+          paramOne.values[0] as PackageableElementReference<PackageableElement>
+        ).value;
         if (_class instanceof Class) {
           this.queryBuilderState.querySetupState.setClass(_class, true);
           this.queryBuilderState.explorerState.refreshTreeData();

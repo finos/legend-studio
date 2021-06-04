@@ -2437,7 +2437,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                   function: 'getAll',
                   parameters: [
                     {
-                      _type: 'class',
+                      _type:
+                        V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
                       fullPath: _class.path,
                     },
                   ],
@@ -2461,7 +2462,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
               fullPath: _class.path,
             },
           ],
@@ -2494,7 +2495,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                   parameters: [{ _type: 'var', name: 'res' }],
                   property: 'values',
                 },
-                { _type: 'hackedClass', fullPath: 'String' },
+                {
+                  _type: V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
+                  fullPath: 'String',
+                },
               ],
             },
             {
@@ -2512,7 +2516,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     query: RawLambda,
   ): string | undefined {
     try {
-      // TODO: for JSON surgery work like this, we might want to move this to ProtocolUtil
       const json = (
         ((query.body as unknown[])[0] as V1_RawFunctionValueSpecification)
           .parameters[1] as { values: (string | undefined)[] }
@@ -2596,7 +2599,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               (parameters[0] as V1_RawFunctionValueSpecification)
                 .parameters[0] as V1_RawFunctionValueSpecification
             ).parameters as PlainObject<V1_RawValueSpecification>[]
-          )[0]._type === V1_RawValueSpecificationType.CLASS,
+          )[0]._type === V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
         );
         assertTrue(
           (
@@ -2635,7 +2638,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
         assertTrue(
           (parameters[0] as PlainObject<V1_RawValueSpecification>)._type ===
-            V1_RawValueSpecificationType.CLASS,
+            V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
         );
         const data = parameters[0] as V1_RawClassValueSpecification;
         return graph.getClass(data.fullPath);
@@ -2646,32 +2649,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       error.message = `Can't extract graph fetch tree content from query:\n${error.message}`;
       this.logger.warn(CORE_LOG_EVENT.NONE, error);
       return undefined;
-    }
-  }
-
-  HACKY_isGetAllLambda(query: RawLambda): boolean {
-    try {
-      assertTrue(Boolean(query.body));
-      assertTrue(!(query.parameters as object[]).length);
-      const body = query.body as object[];
-      assertTrue(body.length === 1);
-      assertTrue(
-        (body[0] as PlainObject<V1_RawValueSpecification>)._type ===
-          V1_RawValueSpecificationType.FUNCTION,
-      );
-      assertTrue(
-        (body[0] as V1_RawFunctionValueSpecification).function === 'getAll',
-      );
-      const parameters = (body[0] as V1_RawFunctionValueSpecification)
-        .parameters;
-      assertTrue(parameters.length === 1);
-      assertTrue(
-        (parameters[0] as PlainObject<V1_RawValueSpecification>)._type ===
-          V1_RawValueSpecificationType.CLASS,
-      );
-      return true;
-    } catch {
-      return false;
     }
   }
 }

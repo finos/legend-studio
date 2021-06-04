@@ -320,10 +320,13 @@ export abstract class AbstractPureGraphManager {
     query: RawLambda,
   ): string | undefined;
   abstract HACKY_extractAssertionString(query: RawLambda): string | undefined;
+
+  /**
+   * @deprecated
+   */
   abstract HACKY_deriveGraphFetchTreeContentFromQuery(
     query: RawLambda,
     graph: PureModel,
     parentElement: PackageableElement,
   ): Class | RawRootGraphFetchTree | undefined;
-  abstract HACKY_isGetAllLambda(query: RawLambda): boolean;
 }

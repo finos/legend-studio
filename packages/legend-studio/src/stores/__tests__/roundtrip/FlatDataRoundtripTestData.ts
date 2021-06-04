@@ -15693,7 +15693,7 @@ export const testFlatDataInputDataRoundtrip = [
                 function: 'getAll',
                 parameters: [
                   {
-                    _type: 'class',
+                    _type: 'packageableElementPtr',
                     fullPath: 'tClass',
                   },
                 ],
