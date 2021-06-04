@@ -144,7 +144,7 @@ export class EditorStore {
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
   // Aux Panel
   isMaxAuxPanelSizeSet = false;
-  activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.MAPPING_EXECUTE;
+  activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
   maxAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
   auxPanelSize = 0;
   previousAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
@@ -166,7 +166,7 @@ export class EditorStore {
   backdrop = false;
   ignoreNavigationBlocking = false;
   blockGlobalHotkeys = false;
-  isDevToolEnabled = false;
+  isDevToolEnabled = true;
 
   constructor(applicationStore: ApplicationStore) {
     makeAutoObservable(this, {

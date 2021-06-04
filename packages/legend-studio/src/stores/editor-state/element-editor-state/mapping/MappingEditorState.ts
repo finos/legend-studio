@@ -365,7 +365,7 @@ export class MappingEditorState extends ElementEditorState {
       addUniqueEntry(this.openedTabStates, testState);
     }
     this.openTabFor(test);
-    yield testState.openTest(true);
+    yield testState.openTest();
   });
 
   openMappingElement(

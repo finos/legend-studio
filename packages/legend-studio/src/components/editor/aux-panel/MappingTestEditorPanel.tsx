@@ -518,9 +518,7 @@ export const MappingTestBuilder = observer(
     const applicationStore = useApplicationStore();
     // In case we switch out to another tab to do editing on some class, we want to refresh the test state data so that we can detect problem in deep fetch tree
     useEffect(() => {
-      testState
-        .openTest(false)
-        .catch(applicationStore.alertIllegalUnhandledError);
+      testState.openTest().catch(applicationStore.alertIllegalUnhandledError);
     }, [applicationStore, testState]);
 
     return (

@@ -17,15 +17,10 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { clsx } from '@finos/legend-studio-components';
-import { MappingExecution } from './MappingExecution';
-import { MappingTestEditorPanel } from './MappingTestEditorPanel';
 import { Console } from './Console';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig';
 import { useEditorStore } from '../../../stores/EditorStore';
 import { GoChevronUp, GoChevronDown, GoX } from 'react-icons/go';
-import { MappingIcon } from '../../shared/Icon';
-import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingTestState } from '../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { isNonNullable } from '@finos/legend-studio-shared';
 import { DevTool } from './DevTool';
 
@@ -44,26 +39,6 @@ export const AuxiliaryPanel = observer(() => {
       name: 'CONSOLE',
       icon: undefined,
       isVisible: true,
-    },
-    [AUX_PANEL_MODE.MAPPING_EXECUTE]: {
-      mode: AUX_PANEL_MODE.MAPPING_EXECUTE,
-      name: 'EXECUTE',
-      icon: <MappingIcon />,
-      isVisible:
-        editorStore.currentEditorState &&
-        editorStore.isInFormMode &&
-        editorStore.currentEditorState instanceof MappingEditorState,
-    },
-    [AUX_PANEL_MODE.MAPPING_TEST]: {
-      mode: AUX_PANEL_MODE.MAPPING_TEST,
-      name: 'TEST',
-      icon: <MappingIcon />,
-      isVisible:
-        editorStore.currentEditorState &&
-        editorStore.isInFormMode &&
-        editorStore.currentEditorState instanceof MappingEditorState &&
-        editorStore.currentEditorState.currentTabState instanceof
-          MappingTestState,
     },
     [AUX_PANEL_MODE.DEV_TOOL]: {
       mode: AUX_PANEL_MODE.DEV_TOOL,
@@ -140,16 +115,6 @@ export const AuxiliaryPanel = observer(() => {
         {isTabVisible(AUX_PANEL_MODE.CONSOLE) && (
           <div className="auxiliary-panel__content__tab">
             <Console />
-          </div>
-        )}
-        {isTabVisible(AUX_PANEL_MODE.MAPPING_EXECUTE) && (
-          <div className="auxiliary-panel__content__tab">
-            <MappingExecution />
-          </div>
-        )}
-        {isTabVisible(AUX_PANEL_MODE.MAPPING_TEST) && (
-          <div className="auxiliary-panel__content__tab">
-            <MappingTestEditorPanel />
           </div>
         )}
         {isTabVisible(AUX_PANEL_MODE.DEV_TOOL) && (

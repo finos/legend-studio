@@ -651,20 +651,12 @@ export class MappingTestState {
     }
   });
 
-  openTest = flow(function* (
-    this: MappingTestState,
-    resetHeightIfTooSmall: boolean,
-  ) {
+  openTest = flow(function* (this: MappingTestState) {
     try {
       // extract test basic info out into state
       this.queryState = this.buildQueryState();
       this.inputDataState = this.buildInputDataState();
       this.assertionState = this.buildAssertionState();
-      // open the aux panel and switch to test tab to show test detail
-      this.editorStore.openAuxPanel(
-        AUX_PANEL_MODE.MAPPING_TEST,
-        resetHeightIfTooSmall,
-      );
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
