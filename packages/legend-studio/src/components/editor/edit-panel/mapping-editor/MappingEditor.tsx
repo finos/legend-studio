@@ -155,7 +155,7 @@ export const MappingEditor = observer(() => {
       return (
         <MappingTestEditor
           key={currentTabState.uuid}
-          mappingTestState={currentTabState}
+          testState={currentTabState}
           isReadOnly={isReadOnly}
         />
       );

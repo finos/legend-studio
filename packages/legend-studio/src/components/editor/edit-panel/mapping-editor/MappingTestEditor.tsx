@@ -17,6 +17,7 @@
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
+import Dialog from '@material-ui/core/Dialog';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MAPPING_TEST_EDITOR_TAB_TYPE } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
@@ -27,7 +28,7 @@ import {
   MappingTestRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { IllegalStateError } from '@finos/legend-studio-shared';
-import { FaWrench, FaPlay } from 'react-icons/fa';
+import { FaScroll, FaWrench } from 'react-icons/fa';
 import { JsonDiffView } from '../../../shared/DiffView';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import {
@@ -36,13 +37,14 @@ import {
   BlankPanelPlaceholder,
   TimesIcon,
   PencilIcon,
+  PlayIcon,
 } from '@finos/legend-studio-components';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../../stores/EditorConfig';
 import {
   isNonNullable,
   guaranteeType,
@@ -64,6 +66,7 @@ import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpec
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
+import { flowResult } from 'mobx';
 
 const MappingTestQueryEditor = observer(
   (props: {
@@ -200,7 +203,7 @@ const MappingTestQueryEditor = observer(
           <div className="panel__content">
             <ReflexContainer orientation="vertical">
               <ReflexElement minSize={250}>
-                <div className="mapping-execution-builder__query-panel__query">
+                <div className="mapping-test-editor__query-panel__query">
                   <TextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
@@ -211,7 +214,7 @@ const MappingTestQueryEditor = observer(
               </ReflexElement>
               <ReflexSplitter />
               <ReflexElement size={250} minSize={250}>
-                <div className="mapping-execution-builder__query-panel__query-editor">
+                <div className="mapping-test-editor__query-panel__query-editor">
                   {extraQueryEditors}
                 </div>
               </ReflexElement>
@@ -431,9 +434,6 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
     const regenerateExpectedResult = applicationStore.guaranteeSafeAction(() =>
       testState.regenerateExpectedResult(),
     );
-    const runTest = applicationStore.guaranteeSafeAction(() =>
-      testState.runTest(),
-    );
 
     return (
       <div className="panel mapping-test-editor__result-panel">
@@ -442,15 +442,6 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
             <div className="panel__header__title__label">expected</div>
           </div>
           <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              disabled={testState.isExecutingTest || isReadOnly}
-              onClick={runTest}
-              tabIndex={-1}
-              title={'Run Test'}
-            >
-              <FaPlay />
-            </button>
             <button
               className="panel__header__action mapping-test-editor__generate-result-btn"
               disabled={testState.isExecutingTest || isReadOnly}
@@ -504,6 +495,7 @@ export const MappingTestAssertionBuilder = observer(
   }) => {
     const { mappingEditorState, testState } = props;
     const assertionState = testState.assertionState;
+
     if (assertionState instanceof MappingTestExpectedOutputAssertionState) {
       return (
         <MappingTestExpectedOutputAssertionBuilder
@@ -563,55 +555,60 @@ export const MappingTestBuilder = observer(
 );
 
 export const MappingTestEditor = observer(
-  (props: { mappingTestState: MappingTestState; isReadOnly: boolean }) => {
-    const { mappingTestState, isReadOnly } = props;
+  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+    const { testState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
-    const selectedTab = mappingTestState.selectedTab;
+    const selectedTab = testState.selectedTab;
     const changeTab =
       (tab: MAPPING_TEST_EDITOR_TAB_TYPE): (() => void) =>
       (): void =>
-        mappingTestState.setSelectedTab(tab);
+        testState.setSelectedTab(tab);
 
     const runTest = applicationStore.guaranteeSafeAction(() =>
-      mappingTestState.runTest(),
+      testState.runTest(),
     );
+
+    // Plan
+    const closePlanViewer = (): void => testState.setExecutionPlan(undefined);
+    const generatePlan = applicationStore.guaranteeSafeAction(() =>
+      flowResult(testState.generatePlan()),
+    );
+    const planText = testState.executionPlan
+      ? JSON.stringify(testState.executionPlan, undefined, TAB_SIZE)
+      : '';
 
     // Test Result
     let testResult = '';
-    switch (mappingTestState.result) {
+    switch (testState.result) {
       case TEST_RESULT.NONE:
         testResult = 'Test did not run';
         break;
       case TEST_RESULT.FAILED:
-        testResult = `Test failed in ${mappingTestState.runTime}ms, see comparison (expected <-> actual) below:`;
+        testResult = `Test failed in ${testState.runTime}ms, see comparison (expected <-> actual) below:`;
         break;
       case TEST_RESULT.PASSED:
-        testResult = `Test passed in ${mappingTestState.runTime}ms`;
+        testResult = `Test passed in ${testState.runTime}ms`;
         break;
       case TEST_RESULT.ERROR:
-        testResult = `Test failed in ${
-          mappingTestState.runTime
-        }ms due to error:\n${
-          mappingTestState.errorRunningTest?.message ?? '(unknown)'
+        testResult = `Test failed in ${testState.runTime}ms due to error:\n${
+          testState.errorRunningTest?.message ?? '(unknown)'
         }`;
         break;
       default:
         throw new IllegalStateError('Unknown test result state');
     }
-    testResult = mappingTestState.isRunningTest
-      ? 'Running test...'
-      : testResult;
+    testResult = testState.isRunningTest ? 'Running test...' : testResult;
 
     return (
       <div className="mapping-test-editor">
         <div className="mapping-test-editor__header">
-          <div className="mapping-execution-builder__header__tabs">
+          <div className="mapping-test-editor__header__tabs">
             {Object.values(MAPPING_TEST_EDITOR_TAB_TYPE).map((tab) => (
               <div
                 key={tab}
                 onClick={changeTab(tab)}
-                className={clsx('mapping-execution-builder__header__tab', {
-                  'mapping-execution-builder__header__tab--active':
+                className={clsx('mapping-test-editor__header__tab', {
+                  'mapping-test-editor__header__tab--active':
                     tab === selectedTab,
                 })}
               >
@@ -619,9 +616,26 @@ export const MappingTestEditor = observer(
               </div>
             ))}
           </div>
-          <div className="mapping-execution-builder__header__actions">
+          <div className="mapping-test-editor__header__actions">
+            <button
+              className="mapping-test-editor__header__action"
+              disabled={testState.isExecutingTest || isReadOnly}
+              onClick={runTest}
+              tabIndex={-1}
+              title={'Run Test'}
+            >
+              <PlayIcon />
+            </button>
+            <button
+              className="mapping-test-editor__header__action mapping-test-editor__generate-plan-btn"
+              onClick={generatePlan}
+              tabIndex={-1}
+              title="View Execution Plan"
+            >
+              <FaScroll />
+            </button>
             {/* <button
-              className="mapping-execution-builder__header__action"
+              className="mapping-test-editor__header__action"
               disabled={
                 queryState.query.isStub ||
                 !inputDataState.isValid ||
@@ -634,7 +648,7 @@ export const MappingTestEditor = observer(
               <FaPlay />
             </button>
             <button
-              className="mapping-execution-builder__header__action mapping-execution-builder__generate-plan-btn"
+              className="mapping-test-editor__header__action mapping-test-editor__generate-plan-btn"
               disabled={
                 queryState.query.isStub ||
                 !inputDataState.isValid ||
@@ -651,15 +665,15 @@ export const MappingTestEditor = observer(
         </div>
         <div className="mapping-test-editor__content">
           {selectedTab === MAPPING_TEST_EDITOR_TAB_TYPE.SETUP && (
-            <MappingTestBuilder testState={mappingTestState} />
+            <MappingTestBuilder testState={testState} />
           )}
           {selectedTab === MAPPING_TEST_EDITOR_TAB_TYPE.RESULT && (
             <div className="mapping-test-editor__result">
               <div
                 className={`mapping-test-editor__result__status mapping-test-editor__result__status--${
-                  mappingTestState.isRunningTest
+                  testState.isRunningTest
                     ? 'running'
-                    : mappingTestState.result.toLowerCase()
+                    : testState.result.toLowerCase()
                 }`}
               >
                 {testResult}
@@ -669,14 +683,14 @@ export const MappingTestEditor = observer(
                 to do comparison this conveniently, then, we would need to create a button to compute
                 the comparison. This UI might change
               */}
-              {mappingTestState.result === TEST_RESULT.FAILED && (
+              {testState.result === TEST_RESULT.FAILED && (
                 <>
-                  {mappingTestState.assertionState instanceof
+                  {testState.assertionState instanceof
                     MappingTestExpectedOutputAssertionState && (
                     <div className="mapping-test-editor__result__diff">
                       <JsonDiffView
-                        from={mappingTestState.assertionState.expectedResult} // expected
-                        to={mappingTestState.testExecutionResultText} // actual
+                        from={testState.assertionState.expectedResult} // expected
+                        to={testState.testExecutionResultText} // actual
                         lossless={true}
                       />
                     </div>
@@ -686,6 +700,37 @@ export const MappingTestEditor = observer(
             </div>
           )}
         </div>
+        <Dialog
+          open={Boolean(testState.executionPlan)}
+          onClose={closePlanViewer}
+          classes={{
+            root: 'editor-modal__root-container',
+            container: 'editor-modal__container',
+            paper: 'editor-modal__content',
+          }}
+        >
+          <div className="modal modal--dark editor-modal execution-plan-viewer">
+            <div className="modal__header">
+              <div className="modal__title">Execution Plan</div>
+            </div>
+            <div className="modal__body">
+              <TextInputEditor
+                inputValue={planText}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.JSON}
+                showMiniMap={true}
+              />
+            </div>
+            <div className="modal__footer">
+              <button
+                className="btn execution-plan-viewer__close-btn"
+                onClick={closePlanViewer}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Dialog>
       </div>
     );
   },

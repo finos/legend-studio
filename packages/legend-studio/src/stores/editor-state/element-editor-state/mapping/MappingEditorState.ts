@@ -112,7 +112,7 @@ export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
 }
 
-const generateMappingTestName = (mapping: Mapping): string => {
+export const generateMappingTestName = (mapping: Mapping): string => {
   const generatedName = generateEnumerableNameFromToken(
     mapping.tests.map((test) => test.name),
     'test',

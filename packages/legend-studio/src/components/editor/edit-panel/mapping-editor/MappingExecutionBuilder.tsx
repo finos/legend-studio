@@ -17,6 +17,7 @@
 import { Fragment, useState, useRef, useCallback } from 'react';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { useEditorStore } from '../../../../stores/EditorStore';
+import { flowResult } from 'mobx';
 import {
   createFilter,
   CustomSelectorInput,
@@ -24,8 +25,10 @@ import {
   PanelLoadingIndicator,
   PencilIcon,
   TimesIcon,
+  PlayIcon,
+  FlaskIcon,
 } from '@finos/legend-studio-components';
-import { FaPlay, FaScroll, FaSave, FaRobot } from 'react-icons/fa';
+import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-studio-components';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
@@ -572,7 +575,7 @@ export const MappingExecutionBuilder = observer(
     const closePlanViewer = (): void =>
       executionState.setExecutionPlan(undefined);
     const generatePlan = applicationStore.guaranteeSafeAction(() =>
-      executionState.generatePlan(),
+      flowResult(executionState.generatePlan()),
     );
     const planText = executionState.executionPlan
       ? JSON.stringify(executionState.executionPlan, undefined, TAB_SIZE)
@@ -610,7 +613,7 @@ export const MappingExecutionBuilder = observer(
               tabIndex={-1}
               title="Execute"
             >
-              <FaPlay />
+              <PlayIcon />
             </button>
             <button
               className="mapping-execution-builder__header__action mapping-execution-builder__generate-plan-btn"
@@ -634,11 +637,11 @@ export const MappingExecutionBuilder = observer(
                   executionState.isExecuting ||
                   !executionState.executionResultText
                 }
-                onClick={promote}
+                onClick={promoteToService}
                 tabIndex={-1}
-                title="Promote to Test"
+                title="Promote to Service..."
               >
-                <FaSave />
+                <FaRobot />
               </button>
             )}
             {!mappingEditorState.isReadOnly && (
@@ -650,11 +653,11 @@ export const MappingExecutionBuilder = observer(
                   executionState.isExecuting ||
                   !executionState.executionResultText
                 }
-                onClick={promoteToService}
+                onClick={promote}
                 tabIndex={-1}
-                title="Promote to Service..."
+                title="Promote to Test"
               >
-                <FaRobot />
+                <FlaskIcon />
               </button>
             )}
           </div>

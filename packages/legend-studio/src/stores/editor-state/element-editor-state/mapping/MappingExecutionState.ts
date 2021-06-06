@@ -15,6 +15,7 @@
  */
 
 import type { MappingEditorState } from './MappingEditorState';
+import { generateMappingTestName } from './MappingEditorState';
 import type { EditorStore } from '../../../EditorStore';
 import {
   observable,
@@ -443,6 +444,7 @@ export class MappingExecutionState {
       setInputDataStateBasedOnSource: action,
       reset: action,
       buildQueryWithClassMapping: flow,
+      generatePlan: flow,
     });
 
     this.editorStore = editorStore;
@@ -672,7 +674,7 @@ export class MappingExecutionState {
     }
   });
 
-  generatePlan = flow(function* (this: MappingExecutionState) {
+  *generatePlan(): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
@@ -701,7 +703,7 @@ export class MappingExecutionState {
     } finally {
       this.isGeneratingPlan = false;
     }
-  });
+  }
 
   *buildQueryWithClassMapping(
     setImplementation: SetImplementation | undefined,
@@ -761,7 +763,4 @@ export class MappingExecutionState {
       }
     }
   }
-}
-function generateMappingTestName(mapping: Mapping): string {
-  throw new Error('Function not implemented.');
 }

@@ -15,6 +15,7 @@
  */
 
 import type { MappingEditorState } from './MappingEditorState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   hashObject,
   UnsupportedOperationError,
@@ -368,6 +369,8 @@ export class MappingTestState {
   queryState: MappingTestQueryState;
   inputDataState: MappingTestInputDataState;
   assertionState: MappingTestAssertionState;
+  executionPlan?: object;
+  isGeneratingPlan = false;
 
   constructor(
     editorStore: EditorStore,
@@ -680,5 +683,36 @@ export class MappingTestState {
 
   updateAssertion(): void {
     this.test.setAssert(this.assertionState.assert);
+  }
+
+  setExecutionPlan = (val: object | undefined): void => {
+    this.executionPlan = val;
+  };
+
+  *generatePlan(): GeneratorFn<void> {
+    try {
+      const query = this.queryState.query;
+      const runtime = this.inputDataState.runtime;
+      if (!this.isGeneratingPlan) {
+        this.isGeneratingPlan = true;
+        const plan =
+          (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+            this.editorStore.graphState.graph,
+            this.mappingEditorState.mapping,
+            query,
+            runtime,
+            CLIENT_VERSION.VX_X_X,
+          )) as unknown as object;
+        this.setExecutionPlan(plan);
+      }
+    } catch (error: unknown) {
+      this.editorStore.applicationStore.logger.error(
+        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+    } finally {
+      this.isGeneratingPlan = false;
+    }
   }
 }
