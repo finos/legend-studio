@@ -55,6 +55,7 @@ import { SetImplementation } from '../../../../models/metamodels/pure/model/pack
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { flowResult } from 'mobx';
 
 export const MappingExplorerContextMenu = observer(
   (
@@ -90,8 +91,24 @@ export const MappingExplorerContextMenu = observer(
       }
       mappingEditorState.reprocessMappingExplorerTree();
     };
+    const executeMappingElement = (): void => {
+      if (mappingElement instanceof SetImplementation) {
+        flowResult(mappingEditorState.buildExecution(mappingElement)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
+
     return (
       <div ref={ref} className="mapping-explorer__context-menu">
+        {mappingElement instanceof SetImplementation && (
+          <div
+            className="mapping-explorer__context-menu__item"
+            onClick={executeMappingElement}
+          >
+            Execute
+          </div>
+        )}
         {mappingElement && (
           <div
             className="mapping-explorer__context-menu__item"

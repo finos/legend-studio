@@ -42,7 +42,7 @@ import {
   makeObservable,
   makeAutoObservable,
 } from 'mobx';
-import { AUX_PANEL_MODE, TAB_SIZE } from '../../../EditorConfig';
+import { TAB_SIZE } from '../../../EditorConfig';
 import {
   CLIENT_VERSION,
   LAMBDA_START,
@@ -347,8 +347,14 @@ export class MappingTestExpectedOutputAssertionState extends MappingTestAssertio
   }
 }
 
+export enum MAPPING_TEST_EDITOR_TAB_TYPE {
+  SETUP = 'Test Setup',
+  RESULT = 'Test Result',
+}
+
 export class MappingTestState {
   uuid = uuid();
+  selectedTab = MAPPING_TEST_EDITOR_TAB_TYPE.SETUP;
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;
   result: TEST_RESULT = TEST_RESULT.NONE;
@@ -372,6 +378,7 @@ export class MappingTestState {
       uuid: false,
       editorStore: false,
       mappingEditorState: false,
+      setSelectedTab: action,
       resetTestRunStatus: action,
       setResult: action,
       toggleSkipTest: action,
@@ -388,6 +395,10 @@ export class MappingTestState {
     this.queryState = this.buildQueryState();
     this.inputDataState = this.buildInputDataState();
     this.assertionState = this.buildAssertionState();
+  }
+
+  setSelectedTab(val: MAPPING_TEST_EDITOR_TAB_TYPE): void {
+    this.selectedTab = val;
   }
 
   buildQueryState(): MappingTestQueryState {

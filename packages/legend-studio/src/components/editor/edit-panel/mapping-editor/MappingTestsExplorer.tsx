@@ -39,7 +39,7 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { ClassMappingSelectorModal } from '../../aux-panel/MappingExecution';
+import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 
 const addTestPromps = [
   "Let's add some test!",

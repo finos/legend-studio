@@ -15,8 +15,8 @@
  */
 
 import { Fragment, useState, useRef, useCallback } from 'react';
-import SplitPane from 'react-split-pane';
-import { useEditorStore } from '../../../stores/EditorStore';
+import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
+import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   createFilter,
   CustomSelectorInput,
@@ -28,40 +28,40 @@ import {
 import { FaPlay, FaScroll, FaSave, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-studio-components';
-import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useDrop } from 'react-dnd';
-import type { MappingElementDragSource } from '../../../stores/shared/DnDUtil';
-import { NewServiceModal } from '../../editor/edit-panel/service-editor/NewServiceModal';
-import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
+import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
+import { NewServiceModal } from '../service-editor/NewServiceModal';
+import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import { TAB_SIZE, EDITOR_LANGUAGE } from '../../../stores/EditorConfig';
+import { TAB_SIZE, EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import {
   guaranteeType,
   uniq,
   compareLabelFn,
   isNonNullable,
 } from '@finos/legend-studio-shared';
-import type { MappingExecutionState } from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,
   MappingExecutionObjectInputDataState,
   MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
-} from '../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
-import { TextInputEditor } from '../../shared/TextInputEditor';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
-} from '../../../stores/ApplicationStore';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
+} from '../../../../stores/ApplicationStore';
+import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import {
   getMappingElementTarget,
   getMappingElementSource,
-} from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { SetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { OperationSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
+} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -264,7 +264,7 @@ const MappingExecutionQueryEditor = observer(
         .catch(applicationStore.alertIllegalUnhandledError);
 
     return (
-      <div className="panel mapping-execution-panel__query-panel">
+      <div className="panel mapping-execution-builder__query-panel">
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">query</div>
@@ -290,18 +290,24 @@ const MappingExecutionQueryEditor = observer(
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <div className="mapping-execution-panel__query-panel__query">
-              <TextInputEditor
-                inputValue={queryState.lambdaString}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.PURE}
-                showMiniMap={false}
-                hideGutter={true}
-              />
-            </div>
-            <div className="mapping-execution-panel__query-panel__query-editor">
-              {extraQueryEditors}
-            </div>
+            <ReflexContainer orientation="vertical">
+              <ReflexElement minSize={250}>
+                <div className="mapping-execution-builder__query-panel__query">
+                  <TextInputEditor
+                    inputValue={queryState.lambdaString}
+                    isReadOnly={true}
+                    language={EDITOR_LANGUAGE.PURE}
+                    showMiniMap={false}
+                  />
+                </div>
+              </ReflexElement>
+              <ReflexSplitter />
+              <ReflexElement size={250} minSize={250}>
+                <div className="mapping-execution-builder__query-panel__query-editor">
+                  {extraQueryEditors}
+                </div>
+              </ReflexElement>
+            </ReflexContainer>
           </div>
         )}
         {queryState.query.isStub && (
@@ -341,7 +347,7 @@ export const MappingExecutionObjectInputDataBuilder = observer(
       inputDataState.inputData.setData(val);
 
     return (
-      <div className="panel__content mapping-execution-panel__input-data-panel__content">
+      <div className="panel__content mapping-execution-builder__input-data-panel__content">
         <TextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.inputData.data}
@@ -361,7 +367,7 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
       inputDataState.inputData.setData(val);
 
     return (
-      <div className="panel__content mapping-execution-panel__input-data-panel__content">
+      <div className="panel__content mapping-execution-builder__input-data-panel__content">
         <TextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
@@ -386,7 +392,7 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
     // TODO: handle CSV input type
 
     return (
-      <div className="panel__content mapping-execution-panel__input-data-panel__content">
+      <div className="panel__content mapping-execution-builder__input-data-panel__content">
         <TextInputEditor
           language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
@@ -518,7 +524,7 @@ export const MappingExecutionInputDataBuilder = observer(
       );
 
     return (
-      <div className="panel mapping-execution-panel__input-data-panel">
+      <div className="panel mapping-execution-builder__input-data-panel">
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">input data</div>
@@ -584,109 +590,110 @@ export const MappingExecutionBuilder = observer(
       executionState.setShowServicePathModal(true);
 
     return (
-      <div className="mapping-execution-panel">
+      <div className="mapping-execution-builder">
         <PanelLoadingIndicator
           isLoading={
             executionState.isExecuting || executionState.isGeneratingPlan
           }
         />
-        <SplitPane
-          split="vertical"
-          defaultSize={500}
-          minSize={500}
-          maxSize={-250}
-        >
-          <SplitPane
-            split="vertical"
-            defaultSize={250}
-            minSize={250}
-            maxSize={-250}
-          >
-            {/* use UUID key to make sure these components refresh when we change the state */}
-            <MappingExecutionQueryEditor
-              key={executionState.queryState.uuid}
-              executionState={executionState}
-            />
-            <MappingExecutionInputDataBuilder
-              key={executionState.inputDataState.uuid}
-              executionState={executionState}
-            />
-          </SplitPane>
-          <div className="panel mapping-execution-panel__result-panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__label">result</div>
-              </div>
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action"
-                  disabled={
-                    queryState.query.isStub ||
-                    !inputDataState.isValid ||
-                    executionState.isExecuting
-                  }
-                  onClick={execute}
-                  tabIndex={-1}
-                  title="Execute"
-                >
-                  <FaPlay />
-                </button>
-                <button
-                  className="panel__header__action mapping-execution-panel__generate-plan-btn"
-                  disabled={
-                    queryState.query.isStub ||
-                    !inputDataState.isValid ||
-                    executionState.isGeneratingPlan
-                  }
-                  onClick={generatePlan}
-                  tabIndex={-1}
-                  title="View Execution Plan"
-                >
-                  <FaScroll />
-                </button>
-                {!mappingEditorState.isReadOnly && (
-                  <button
-                    className="panel__header__action"
-                    disabled={
-                      queryState.query.isStub ||
-                      !inputDataState.isValid ||
-                      executionState.isExecuting ||
-                      !executionState.executionResultText
-                    }
-                    onClick={promote}
-                    tabIndex={-1}
-                    title="Promote to Test"
-                  >
-                    <FaSave />
-                  </button>
-                )}
-                {!mappingEditorState.isReadOnly && (
-                  <button
-                    className="panel__header__action"
-                    disabled={
-                      queryState.query.isStub ||
-                      !inputDataState.isValid ||
-                      executionState.isExecuting ||
-                      !executionState.executionResultText
-                    }
-                    onClick={promoteToService}
-                    tabIndex={-1}
-                    title="Promote to Service..."
-                  >
-                    <FaRobot />
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="panel__content mapping-execution-panel__result-panel__content">
-              <TextInputEditor
-                inputValue={executionResultText ?? ''}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.JSON}
-              />
-            </div>
+        <div className="mapping-execution-builder__header">
+          <div />
+          <div className="mapping-execution-builder__header__actions">
+            <button
+              className="mapping-execution-builder__header__action"
+              disabled={
+                queryState.query.isStub ||
+                !inputDataState.isValid ||
+                executionState.isExecuting
+              }
+              onClick={execute}
+              tabIndex={-1}
+              title="Execute"
+            >
+              <FaPlay />
+            </button>
+            <button
+              className="mapping-execution-builder__header__action mapping-execution-builder__generate-plan-btn"
+              disabled={
+                queryState.query.isStub ||
+                !inputDataState.isValid ||
+                executionState.isGeneratingPlan
+              }
+              onClick={generatePlan}
+              tabIndex={-1}
+              title="View Execution Plan"
+            >
+              <FaScroll />
+            </button>
+            {!mappingEditorState.isReadOnly && (
+              <button
+                className="mapping-execution-builder__header__action"
+                disabled={
+                  queryState.query.isStub ||
+                  !inputDataState.isValid ||
+                  executionState.isExecuting ||
+                  !executionState.executionResultText
+                }
+                onClick={promote}
+                tabIndex={-1}
+                title="Promote to Test"
+              >
+                <FaSave />
+              </button>
+            )}
+            {!mappingEditorState.isReadOnly && (
+              <button
+                className="mapping-execution-builder__header__action"
+                disabled={
+                  queryState.query.isStub ||
+                  !inputDataState.isValid ||
+                  executionState.isExecuting ||
+                  !executionState.executionResultText
+                }
+                onClick={promoteToService}
+                tabIndex={-1}
+                title="Promote to Service..."
+              >
+                <FaRobot />
+              </button>
+            )}
           </div>
-        </SplitPane>
+        </div>
+        <div className="mapping-execution-builder__content">
+          <ReflexContainer orientation="horizontal">
+            <ReflexElement size={250} minSize={28}>
+              {/* use UUID key to make sure these components refresh when we change the state */}
+              <MappingExecutionQueryEditor
+                key={executionState.queryState.uuid}
+                executionState={executionState}
+              />
+            </ReflexElement>
+            <ReflexSplitter />
+            <ReflexElement size={250} minSize={28}>
+              <MappingExecutionInputDataBuilder
+                key={executionState.inputDataState.uuid}
+                executionState={executionState}
+              />
+            </ReflexElement>
+            <ReflexSplitter />
+            <ReflexElement minSize={28}>
+              <div className="panel mapping-execution-builder__result-panel">
+                <div className="panel__header">
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__label">result</div>
+                  </div>
+                </div>
+                <div className="panel__content mapping-execution-builder__result-panel__content">
+                  <TextInputEditor
+                    inputValue={executionResultText ?? ''}
+                    isReadOnly={true}
+                    language={EDITOR_LANGUAGE.JSON}
+                  />
+                </div>
+              </div>
+            </ReflexElement>
+          </ReflexContainer>
+        </div>
         <Dialog
           open={Boolean(executionPlan)}
           onClose={closePlanViewer}
@@ -734,25 +741,3 @@ export const MappingExecutionBuilder = observer(
     );
   },
 );
-
-export const MappingExecution = observer(() => {
-  const editorStore = useEditorStore();
-  const currentElementState = editorStore.currentEditorState;
-  if (
-    !currentElementState ||
-    !(currentElementState instanceof MappingEditorState)
-  ) {
-    return (
-      // TODO: we should hide this from the UI when we're not in Mapping state since execution only makes sense in the context of mapping
-      <div className="mapping-execution-panel mapping-execution-panel--no-content">
-        Execution supported only mappings as of now. Open a mapping to enable
-        panel.
-      </div>
-    );
-  }
-  return (
-    <MappingExecutionBuilder
-      executionState={currentElementState.executionState}
-    />
-  );
-});

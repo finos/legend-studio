@@ -60,13 +60,14 @@ export const ServiceQueryBuilder = observer(
       );
       executionState.setOpeningQueryEditor(false);
     };
+
     return (
-      <div className="explorer__content--empty">
+      <div className="service-query-builder">
         <button
-          className="btn--dark explorer__content--empty__btn"
+          className="btn--dark service-query-builder__btn"
           onClick={editWithQueryBuilder}
         >
-          Open Query Builder
+          Edit Query
         </button>
       </div>
     );
