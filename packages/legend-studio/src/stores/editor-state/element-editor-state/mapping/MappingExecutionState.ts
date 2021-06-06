@@ -567,7 +567,7 @@ export class MappingExecutionState {
           assert,
         );
         yield this.mappingEditorState.addTest(mappingTest);
-        this.reset();
+        this.mappingEditorState.closeTab(this); // after promoting to test, remove the execution state
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
