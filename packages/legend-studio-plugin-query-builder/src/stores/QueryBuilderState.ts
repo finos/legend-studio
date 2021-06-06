@@ -183,11 +183,16 @@ export class QueryBuilderState extends EditorExtensionState {
     }
     if (val) {
       if (!options?.disableCompile) {
+        this.editorStore.setBlockingAlert({
+          message: 'Compiling graph before building query...',
+          showLoading: true,
+        });
         yield flowResult(
           this.editorStore.graphState.globalCompileInFormMode({
             disableNotificationOnSuccess: true,
           }),
         );
+        this.editorStore.setBlockingAlert(undefined);
       }
       if (!this.editorStore.graphState.hasCompilationError) {
         this.openQueryBuilder = val;
