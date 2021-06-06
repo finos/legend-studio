@@ -23,7 +23,10 @@ import { observer } from 'mobx-react-lite';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 
 export const ServiceQueryBuilder = observer(
-  (props: { executionState: ServicePureExecutionState }) => {
+  (props: {
+    executionState: ServicePureExecutionState;
+    isReadOnly: boolean;
+  }) => {
     const { executionState } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();

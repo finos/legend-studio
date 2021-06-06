@@ -39,7 +39,6 @@ import {
   PencilIcon,
   PlayIcon,
 } from '@finos/legend-studio-components';
-import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
@@ -69,11 +68,8 @@ import { OperationSetImplementation } from '../../../../models/metamodels/pure/m
 import { flowResult } from 'mobx';
 
 const MappingTestQueryEditor = observer(
-  (props: {
-    mappingEditorState: MappingEditorState;
-    testState: MappingTestState;
-  }) => {
-    const { mappingEditorState, testState } = props;
+  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+    const { testState, isReadOnly } = props;
     const queryState = testState.queryState;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -86,7 +82,9 @@ const MappingTestQueryEditor = observer(
       )
       .filter(isNonNullable)
       .map((config) => (
-        <Fragment key={config.key}>{config.renderer(testState)}</Fragment>
+        <Fragment key={config.key}>
+          {config.renderer(testState, isReadOnly)}
+        </Fragment>
       ));
     if (extraQueryEditors.length === 0) {
       extraQueryEditors.push(
@@ -184,6 +182,7 @@ const MappingTestQueryEditor = observer(
             <button
               className="panel__header__action"
               tabIndex={-1}
+              disabled={isReadOnly}
               onClick={clearQuery}
               title={'Clear query'}
             >
@@ -192,6 +191,7 @@ const MappingTestQueryEditor = observer(
             <button
               className="panel__header__action"
               tabIndex={-1}
+              disabled={isReadOnly}
               onClick={showClassMappingSelectorModal}
               title={'Choose target...'}
             >
@@ -237,7 +237,7 @@ const MappingTestQueryEditor = observer(
         )}
         {openClassMappingSelectorModal && (
           <ClassMappingSelectorModal
-            mappingEditorState={mappingEditorState}
+            mappingEditorState={testState.mappingEditorState}
             hideClassMappingSelectorModal={hideClassMappingSelectorModal}
             changeClassMapping={changeClassMapping}
           />
@@ -249,10 +249,10 @@ const MappingTestQueryEditor = observer(
 
 export const MappingTestObjectInputDataBuilder = observer(
   (props: {
-    mappingEditorState: MappingEditorState;
     inputDataState: MappingTestObjectInputDataState;
+    isReadOnly: boolean;
   }) => {
-    const { inputDataState } = props;
+    const { inputDataState, isReadOnly } = props;
 
     // TODO?: handle XML/type
 
@@ -264,6 +264,7 @@ export const MappingTestObjectInputDataBuilder = observer(
         <TextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.data}
+          isReadOnly={isReadOnly}
           updateInput={updateInput}
         />
       </div>
@@ -273,10 +274,10 @@ export const MappingTestObjectInputDataBuilder = observer(
 
 export const MappingTestFlatDataInputDataBuilder = observer(
   (props: {
-    mappingEditorState: MappingEditorState;
     inputDataState: MappingTestFlatDataInputDataState;
+    isReadOnly: boolean;
   }) => {
-    const { inputDataState } = props;
+    const { inputDataState, isReadOnly } = props;
 
     // Input data
     const updateInput = (val: string): void =>
@@ -287,6 +288,7 @@ export const MappingTestFlatDataInputDataBuilder = observer(
         <TextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
+          isReadOnly={isReadOnly}
           updateInput={updateInput}
         />
       </div>
@@ -299,10 +301,10 @@ export const MappingTestFlatDataInputDataBuilder = observer(
  */
 export const MappingTestRelationalInputDataBuilder = observer(
   (props: {
-    mappingEditorState: MappingEditorState;
     inputDataState: MappingTestRelationalInputDataState;
+    isReadOnly: boolean;
   }) => {
-    const { inputDataState } = props;
+    const { inputDataState, isReadOnly } = props;
 
     // Input data
     const updateInput = (val: string): void =>
@@ -315,6 +317,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
         <TextInputEditor
           language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
+          isReadOnly={isReadOnly}
           updateInput={updateInput}
         />
       </div>
@@ -323,11 +326,8 @@ export const MappingTestRelationalInputDataBuilder = observer(
 );
 
 export const MappingTestInputDataBuilder = observer(
-  (props: {
-    mappingEditorState: MappingEditorState;
-    testState: MappingTestState;
-  }) => {
-    const { mappingEditorState, testState } = props;
+  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+    const { testState, isReadOnly } = props;
     const inputDataState = testState.inputDataState;
 
     // Class mapping selector
@@ -357,22 +357,22 @@ export const MappingTestInputDataBuilder = observer(
     if (inputDataState instanceof MappingTestObjectInputDataState) {
       inputDataBuilder = (
         <MappingTestObjectInputDataBuilder
-          mappingEditorState={mappingEditorState}
           inputDataState={inputDataState}
+          isReadOnly={isReadOnly}
         />
       );
     } else if (inputDataState instanceof MappingTestFlatDataInputDataState) {
       inputDataBuilder = (
         <MappingTestFlatDataInputDataBuilder
-          mappingEditorState={mappingEditorState}
           inputDataState={inputDataState}
+          isReadOnly={isReadOnly}
         />
       );
     } else if (inputDataState instanceof MappingTestRelationalInputDataState) {
       inputDataBuilder = (
         <MappingTestRelationalInputDataBuilder
-          mappingEditorState={mappingEditorState}
           inputDataState={inputDataState}
+          isReadOnly={isReadOnly}
         />
       );
     } else {
@@ -389,6 +389,7 @@ export const MappingTestInputDataBuilder = observer(
             <button
               className="panel__header__action"
               tabIndex={-1}
+              disabled={isReadOnly}
               onClick={showClassMappingSelectorModal}
               title={'Choose a class mapping...'}
             >
@@ -399,7 +400,7 @@ export const MappingTestInputDataBuilder = observer(
         {inputDataBuilder}
         {openClassMappingSelectorModal && (
           <ClassMappingSelectorModal
-            mappingEditorState={mappingEditorState}
+            mappingEditorState={testState.mappingEditorState}
             hideClassMappingSelectorModal={hideClassMappingSelectorModal}
             changeClassMapping={changeClassMapping}
             classMappingFilterFn={classMappingFilterFn}
@@ -413,12 +414,11 @@ export const MappingTestInputDataBuilder = observer(
 export const MappingTestExpectedOutputAssertionBuilder = observer(
   (props: {
     testState: MappingTestState;
-    mappingEditorState: MappingEditorState;
     assertionState: MappingTestExpectedOutputAssertionState;
+    isReadOnly: boolean;
   }) => {
-    const { testState, mappingEditorState, assertionState } = props;
+    const { testState, assertionState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
-    const isReadOnly = mappingEditorState.isReadOnly;
     const validationResult = testState.test.assert.validationResult;
     const isValid = !validationResult;
     // Expected Result
@@ -443,13 +443,13 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
           </div>
           <div className="panel__header__actions">
             <button
-              className="panel__header__action mapping-test-editor__generate-result-btn"
+              className="panel__header__action"
               disabled={testState.isExecutingTest || isReadOnly}
               onClick={regenerateExpectedResult}
               tabIndex={-1}
               title={'Regenerate Result'}
             >
-              <MdRefresh />
+              <MdRefresh className="mapping-test-editor__icon__regenerate-result" />
             </button>
             <button
               className="panel__header__action"
@@ -489,19 +489,16 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
 );
 
 export const MappingTestAssertionBuilder = observer(
-  (props: {
-    testState: MappingTestState;
-    mappingEditorState: MappingEditorState;
-  }) => {
-    const { mappingEditorState, testState } = props;
+  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+    const { testState, isReadOnly } = props;
     const assertionState = testState.assertionState;
 
     if (assertionState instanceof MappingTestExpectedOutputAssertionState) {
       return (
         <MappingTestExpectedOutputAssertionBuilder
-          mappingEditorState={mappingEditorState}
           testState={testState}
           assertionState={assertionState}
+          isReadOnly={isReadOnly}
         />
       );
     }
@@ -510,9 +507,8 @@ export const MappingTestAssertionBuilder = observer(
 );
 
 export const MappingTestBuilder = observer(
-  (props: { testState: MappingTestState }) => {
-    const { testState } = props;
-    const mappingEditorState = testState.mappingEditorState;
+  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+    const { testState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
     // In case we switch out to another tab to do editing on some class, we want to refresh the test state data so that we can detect problem in deep fetch tree
     useEffect(() => {
@@ -527,8 +523,8 @@ export const MappingTestBuilder = observer(
             {/* use UUID key to make sure these components refresh when we change the state */}
             <MappingTestQueryEditor
               key={testState.queryState.uuid}
-              mappingEditorState={mappingEditorState}
               testState={testState}
+              isReadOnly={isReadOnly}
             />
           </ReflexElement>
           <ReflexSplitter />
@@ -536,16 +532,16 @@ export const MappingTestBuilder = observer(
             {/* use UUID key to make sure these components refresh when we change the state */}
             <MappingTestInputDataBuilder
               key={testState.inputDataState.uuid}
-              mappingEditorState={mappingEditorState}
               testState={testState}
+              isReadOnly={isReadOnly}
             />
           </ReflexElement>
           <ReflexSplitter />
           <ReflexElement minSize={28}>
             <MappingTestAssertionBuilder
               key={testState.assertionState.uuid}
-              mappingEditorState={mappingEditorState}
               testState={testState}
+              isReadOnly={isReadOnly}
             />
           </ReflexElement>
         </ReflexContainer>
@@ -619,53 +615,26 @@ export const MappingTestEditor = observer(
           <div className="mapping-test-editor__header__actions">
             <button
               className="mapping-test-editor__header__action"
-              disabled={testState.isExecutingTest || isReadOnly}
+              disabled={testState.isExecutingTest}
               onClick={runTest}
               tabIndex={-1}
               title={'Run Test'}
             >
-              <PlayIcon />
+              <PlayIcon className="mapping-test-editor__icon__run" />
             </button>
             <button
-              className="mapping-test-editor__header__action mapping-test-editor__generate-plan-btn"
-              onClick={generatePlan}
-              tabIndex={-1}
-              title="View Execution Plan"
-            >
-              <FaScroll />
-            </button>
-            {/* <button
               className="mapping-test-editor__header__action"
-              disabled={
-                queryState.query.isStub ||
-                !inputDataState.isValid ||
-                executionState.isExecuting
-              }
-              onClick={execute}
-              tabIndex={-1}
-              title="Execute"
-            >
-              <FaPlay />
-            </button>
-            <button
-              className="mapping-test-editor__header__action mapping-test-editor__generate-plan-btn"
-              disabled={
-                queryState.query.isStub ||
-                !inputDataState.isValid ||
-                executionState.isGeneratingPlan
-              }
               onClick={generatePlan}
               tabIndex={-1}
               title="View Execution Plan"
             >
-              <FaScroll />
+              <FaScroll className="mapping-test-editor__icon__generate-plan" />
             </button>
-            */}
           </div>
         </div>
         <div className="mapping-test-editor__content">
           {selectedTab === MAPPING_TEST_EDITOR_TAB_TYPE.SETUP && (
-            <MappingTestBuilder testState={testState} />
+            <MappingTestBuilder testState={testState} isReadOnly={isReadOnly} />
           )}
           {selectedTab === MAPPING_TEST_EDITOR_TAB_TYPE.RESULT && (
             <div className="mapping-test-editor__result">

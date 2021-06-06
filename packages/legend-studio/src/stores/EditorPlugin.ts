@@ -66,7 +66,10 @@ export type MappingExecutionQueryEditorRendererConfiguration = {
 
 export type MappingTestQueryEditorRendererConfiguration = {
   key: string;
-  renderer: (executionState: MappingTestState) => React.ReactNode | undefined;
+  renderer: (
+    testState: MappingTestState,
+    isReadOnly: boolean,
+  ) => React.ReactNode | undefined;
 };
 
 /**
@@ -77,6 +80,7 @@ export type TEMP__ServiceQueryEditorRendererConfiguration = {
   key: string;
   renderer: (
     executionState: ServicePureExecutionState,
+    isReadOnly: boolean,
   ) => React.ReactNode | undefined;
 };
 

@@ -71,7 +71,7 @@
       @include flexCenter;
 
       height: 3.4rem;
-      width: 3.4rem;
+      width: 2.8rem;
     }
 
     &__action svg {
@@ -149,8 +149,19 @@
     position: relative;
   }
 
-  &__generate-plan-btn svg {
-    font-size: 1.5rem;
+  &__icon {
+    &__run,
+    &__execute {
+      font-size: 1.3rem;
+    }
+
+    &__generate-plan {
+      font-size: 1.6rem;
+    }
+
+    &__regenerate-result {
+      font-size: 1.8rem;
+    }
   }
 }
 

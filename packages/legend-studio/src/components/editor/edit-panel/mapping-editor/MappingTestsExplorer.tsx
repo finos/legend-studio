@@ -237,7 +237,6 @@ export const MappingTestExplorer = observer(
               className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
               onClick={runTest}
               disabled={
-                isReadOnly ||
                 testState.isRunningTest ||
                 testState.mappingEditorState.isRunningAllTests
               }
@@ -305,13 +304,20 @@ export const MappingTestsExplorer = observer(
     // Drag and Drop
     const handleDrop = useCallback(
       (item: MappingElementDragSource): void => {
+        if (isReadOnly) {
+          return;
+        }
         if (item.data instanceof SetImplementation) {
           mappingEditorState
             .createNewTest(item.data)
             .catch(applicationStore.alertIllegalUnhandledError);
         }
       },
-      [applicationStore.alertIllegalUnhandledError, mappingEditorState],
+      [
+        applicationStore.alertIllegalUnhandledError,
+        isReadOnly,
+        mappingEditorState,
+      ],
     );
     const [{ isDragOver }, dropRef] = useDrop(
       () => ({

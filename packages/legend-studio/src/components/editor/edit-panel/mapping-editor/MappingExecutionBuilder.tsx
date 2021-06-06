@@ -613,10 +613,10 @@ export const MappingExecutionBuilder = observer(
               tabIndex={-1}
               title="Execute"
             >
-              <PlayIcon />
+              <PlayIcon className="mapping-execution-builder__icon__execute" />
             </button>
             <button
-              className="mapping-execution-builder__header__action mapping-execution-builder__generate-plan-btn"
+              className="mapping-execution-builder__header__action"
               disabled={
                 queryState.query.isStub ||
                 !inputDataState.isValid ||
@@ -626,7 +626,7 @@ export const MappingExecutionBuilder = observer(
               tabIndex={-1}
               title="View Execution Plan"
             >
-              <FaScroll />
+              <FaScroll className="mapping-execution-builder__icon__generate-plan" />
             </button>
             {!mappingEditorState.isReadOnly && (
               <button

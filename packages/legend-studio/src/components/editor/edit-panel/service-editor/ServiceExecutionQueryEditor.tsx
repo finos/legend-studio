@@ -129,7 +129,9 @@ export const ServiceExecutionQueryEditor = observer(
       )
       .filter(isNonNullable)
       .map((config) => (
-        <Fragment key={config.key}>{config.renderer(executionState)}</Fragment>
+        <Fragment key={config.key}>
+          {config.renderer(executionState, isReadOnly)}
+        </Fragment>
       ));
     if (extraServiceQueryEditors.length === 0) {
       extraServiceQueryEditors.push(
