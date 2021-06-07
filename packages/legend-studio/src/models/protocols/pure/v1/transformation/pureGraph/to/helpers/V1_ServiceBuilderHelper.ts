@@ -62,7 +62,7 @@ import {
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
 } from '../../../../model/packageableElements/V1_PackageableElement';
-import { V1_rawLambdaBuilderWithResolver } from './V1_RawLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
 
 export const V1_processServiceTest = (
   serviceTest: V1_ServiceTest,
@@ -78,7 +78,7 @@ export const V1_processServiceTest = (
     const singleTest = new SingleExecutionTest(parentService, serviceTest.data);
     singleTest.asserts = serviceTest.asserts.map((assert) => {
       const testContainer = new TestContainer(
-        V1_rawLambdaBuilderWithResolver(
+        V1_resolvePathsInRawLambda(
           context,
           assert.assert.parameters,
           assert.assert.body,
@@ -124,7 +124,7 @@ export const V1_processServiceTest = (
       );
       keyedTest.asserts = test.asserts.map((assert) => {
         const testContaier = new TestContainer(
-          V1_rawLambdaBuilderWithResolver(
+          V1_resolvePathsInRawLambda(
             context,
             assert.assert.parameters,
             assert.assert.body,
@@ -240,7 +240,7 @@ export const V1_processServiceExecution = (
       'Service Pure execution function is missing',
     );
     return new PureSingleExecution(
-      V1_rawLambdaBuilderWithResolver(
+      V1_resolvePathsInRawLambda(
         context,
         serviceExecution.func.parameters,
         serviceExecution.func.body,
@@ -267,7 +267,7 @@ export const V1_processServiceExecution = (
     );
     const execution = new PureMultiExecution(
       serviceExecution.executionKey,
-      V1_rawLambdaBuilderWithResolver(
+      V1_resolvePathsInRawLambda(
         context,
         serviceExecution.func.parameters,
         serviceExecution.func.body,

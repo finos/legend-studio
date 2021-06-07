@@ -72,10 +72,7 @@ import {
 } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
 
-const V1_shouldResolvePath = (fullPath: string): boolean =>
-  !isValidFullPath(fullPath);
-
-export class V1_ValueSpecificationResolver
+class V1_ValueSpecificationPathResolver
   implements V1_ValueSpecificationVisitor<V1_ValueSpecification>
 {
   context: V1_GraphBuilderContext;
@@ -88,7 +85,7 @@ export class V1_ValueSpecificationResolver
     spec: V1_PackageableElementPtr,
   ): V1_ValueSpecification {
     const path = spec.fullPath;
-    if (V1_shouldResolvePath(path)) {
+    if (!isValidFullPath(path)) {
       spec.fullPath =
         returnUndefOnError(() =>
           V1_resolveElementPath(
@@ -103,7 +100,7 @@ export class V1_ValueSpecificationResolver
 
   visit_EnumValue(spec: V1_EnumValue): V1_ValueSpecification {
     const enumPath = spec.fullPath;
-    if (V1_shouldResolvePath(enumPath)) {
+    if (!isValidFullPath(enumPath)) {
       spec.fullPath =
         returnUndefOnError(() =>
           V1_resolveElementPath(
@@ -118,7 +115,7 @@ export class V1_ValueSpecificationResolver
 
   visit_Variable(spec: V1_Variable): V1_ValueSpecification {
     const classPath = spec.class;
-    if (classPath && V1_shouldResolvePath(classPath)) {
+    if (classPath && !isValidFullPath(classPath)) {
       spec.class =
         returnUndefOnError(() =>
           V1_resolveElementPath(classPath, this.context.resolveClass, this),
@@ -144,7 +141,7 @@ export class V1_ValueSpecificationResolver
 
   visit_AppliedProperty(spec: V1_AppliedProperty): V1_ValueSpecification {
     const classPath = spec.class;
-    if (classPath && V1_shouldResolvePath(classPath)) {
+    if (classPath && !isValidFullPath(classPath)) {
       spec.class =
         returnUndefOnError(() =>
           V1_resolveElementPath(classPath, this.context.resolveClass, this),
@@ -209,7 +206,7 @@ export class V1_ValueSpecificationResolver
   }
   visit_RootGraphFetchTree(spec: V1_RootGraphFetchTree): V1_ValueSpecification {
     const classPath = spec.class;
-    if (V1_shouldResolvePath(classPath)) {
+    if (!isValidFullPath(classPath)) {
       spec.class =
         returnUndefOnError(() =>
           V1_resolveElementPath(classPath, this.context.resolveClass, this),
@@ -222,7 +219,7 @@ export class V1_ValueSpecificationResolver
     spec: V1_PropertyGraphFetchTree,
   ): V1_ValueSpecification {
     const subType = spec.subType;
-    if (subType && V1_shouldResolvePath(subType)) {
+    if (subType && !isValidFullPath(subType)) {
       spec.subType =
         returnUndefOnError(() =>
           V1_resolveElementPath(subType, this.context.resolveType, this),
@@ -239,7 +236,7 @@ export class V1_ValueSpecificationResolver
   }
   visit_UnitType(spec: V1_UnitType): V1_ValueSpecification {
     const unitPath = spec.unitType;
-    if (V1_shouldResolvePath(unitPath)) {
+    if (!isValidFullPath(unitPath)) {
       spec.unitType =
         returnUndefOnError(() =>
           V1_resolveElementPath(unitPath, this.context.resolveUnit, this),
@@ -249,7 +246,7 @@ export class V1_ValueSpecificationResolver
   }
   visit_UnitInstance(spec: V1_UnitInstance): V1_ValueSpecification {
     const unitPath = spec.unitType;
-    if (V1_shouldResolvePath(unitPath)) {
+    if (!isValidFullPath(unitPath)) {
       spec.unitType =
         returnUndefOnError(() =>
           V1_resolveElementPath(unitPath, this.context.resolveUnit, this),
@@ -294,7 +291,7 @@ function V1_resolveElementPath(
   resolverFunc: (
     path: string,
   ) => PackageableElementImplicitReference<PackageableElement>,
-  resolver: V1_ValueSpecificationResolver,
+  resolver: V1_ValueSpecificationPathResolver,
 ): string {
   const resolvedPath = resolverFunc(path).value.path;
   // Note: this handles any system elements + primitve types already resolved. i.e String, ModelStore
@@ -304,28 +301,11 @@ function V1_resolveElementPath(
   return resolvedPath;
 }
 
-const V1_transformV1RawLambdaToV1Lambda = (
-  v1RawLambda: V1_RawLambda,
-): V1_ValueSpecification => {
-  const v1RawLambdaJson = V1_serializeRawValueSpecification(v1RawLambda);
-  return V1_deserializeValueSpecification(v1RawLambdaJson);
-};
-
-const V1_transformV1LambdaToV1RawLambda = (
-  v1Lambda: V1_ValueSpecification,
-): V1_RawLambda => {
-  const v1LambdaJson = V1_serializeValueSpecification(v1Lambda);
-  const resolvedV1RawLambda = V1_deserializeRawValueSpecification(
-    v1LambdaJson,
-  ) as V1_RawLambda;
-  return resolvedV1RawLambda;
-};
-
 /**
- * Method resolves element paths inside V1_RawLambda
- * To do this we take V1_RawLamba (body: object, parameters: obect) convert it to V1_Lambda and
+ * Method resolves element paths inside RawLambda
+ * To do this we take RawLamba (body: object, parameters: obect) convert it to Lambda and
  * resolve where possible (where an element path is defined as part of the value specification flow.
- * When completed we convert it back to V1_RawLambda.
+ * When completed we convert it back to RawLambda.
  * This method ignores any function matching therefore if any time we encounter an error resolving an element path
  * inside the value specification, we continue on the graph unchanging the value spec.
  * We use this new resolved lamba if we have changed any element path (noted by the hasModifiedLambda flag)
@@ -333,28 +313,33 @@ const V1_transformV1LambdaToV1RawLambda = (
  */
 const V1_resolveLambdaElementPaths = (
   _context: V1_GraphBuilderContext,
-  v1RawLambda: V1_RawLambda,
+  rawLambdaProtocol: V1_RawLambda,
 ): V1_RawLambda => {
   try {
-    // 1. Convert V1_RawLambda to V1_Lambda
-    const v1lambda = V1_transformV1RawLambdaToV1Lambda(v1RawLambda);
-    // 2. resolve V1_Lambda
-    const resolver = new V1_ValueSpecificationResolver(_context);
-    v1lambda.accept_ValueSpecificationVisitor(resolver);
-    // if the resolver has modified lambda then convert V1_Lambda to V1RawLambda and return
+    // Convert raw lambda to lambda
+    const lambdaProtocol = V1_deserializeValueSpecification(
+      V1_serializeRawValueSpecification(rawLambdaProtocol),
+    );
+    // Resolve paths in lambda
+    const resolver = new V1_ValueSpecificationPathResolver(_context);
+    lambdaProtocol.accept_ValueSpecificationVisitor(resolver);
+    // if the resolver has modified lambda then convert lambda back to raw lambda and return
     // else return orginal lambda
     return resolver.hasModifiedLambda
-      ? V1_transformV1LambdaToV1RawLambda(v1lambda)
-      : v1RawLambda;
+      ? (V1_deserializeRawValueSpecification(
+          V1_serializeValueSpecification(lambdaProtocol),
+        ) as V1_RawLambda)
+      : rawLambdaProtocol;
   } catch (error: unknown) {
     // return orginal lambda if anything goes wrong
     assertErrorThrown(error);
     error.message = `Can't resolve element paths for lambda:\n${error.message}`;
     _context.logger.warn(CORE_LOG_EVENT.GRAPH_PROBLEM, error);
-    return v1RawLambda;
+    return rawLambdaProtocol;
   }
 };
-export const V1_rawLambdaBuilderWithResolver = (
+
+export const V1_resolvePathsInRawLambda = (
   _context: V1_GraphBuilderContext,
   parameters?: object,
   body?: object,
