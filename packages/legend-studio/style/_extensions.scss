@@ -18,9 +18,8 @@
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   --color-primitive: var(--color-light-blue-200); // blue-200
   --color-enum-value: var(--color-green-100);
-  --color-enumeration: var(
-    --color-medium-green-100
-  ); // #7fb537 -> darker: #6da025
+  // #7fb537 -> darker: #6da025
+  --color-enumeration: var(--color-medium-green-100);
   --color-measure: var(--color-medium-green-100); // FIXNOW
   --color-unit: var(--color-medium-green-100); // FIXNOW
   --color-class: var(--color-purple-100); // purple-200
