@@ -670,6 +670,7 @@ export class MappingExecutionState {
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
+      this.setExecutionResultText('');
     } finally {
       this.isExecuting = false;
     }
