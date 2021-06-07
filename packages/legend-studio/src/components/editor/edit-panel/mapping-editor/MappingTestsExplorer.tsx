@@ -19,8 +19,10 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { useDrop } from 'react-dnd';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { MAPPING_TEST_EDITOR_TAB_TYPE } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
+import {
+  MAPPING_TEST_EDITOR_TAB_TYPE,
+  TEST_RESULT,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   FaPlay,

@@ -39,8 +39,8 @@ import {
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtility';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { generateEnumerableNameFromToken } from '@finos/legend-studio-shared';
 import {
+  generateEnumerableNameFromToken,
   IllegalStateError,
   isNonNullable,
   assertNonNullable,

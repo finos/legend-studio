@@ -19,15 +19,14 @@ import { observer } from 'mobx-react-lite';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import Dialog from '@material-ui/core/Dialog';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { MAPPING_TEST_EDITOR_TAB_TYPE } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
+  MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
   MappingTestObjectInputDataState,
   MappingTestFlatDataInputDataState,
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { IllegalStateError } from '@finos/legend-studio-shared';
 import { FaScroll, FaWrench } from 'react-icons/fa';
 import { JsonDiffView } from '../../../shared/DiffView';
 import { useEditorStore } from '../../../../stores/EditorStore';
@@ -45,6 +44,7 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../../stores/EditorConfig';
 import {
+  IllegalStateError,
   isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,

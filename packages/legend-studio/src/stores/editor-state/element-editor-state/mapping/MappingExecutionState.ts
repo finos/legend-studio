@@ -24,6 +24,7 @@ import {
   computed,
   makeObservable,
   makeAutoObservable,
+  flowResult,
 } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
@@ -684,14 +685,15 @@ export class MappingExecutionState {
         !this.isGeneratingPlan
       ) {
         this.isGeneratingPlan = true;
-        const plan =
-          (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+        const plan = (yield flowResult(
+          this.editorStore.graphState.graphManager.generateExecutionPlan(
             this.editorStore.graphState.graph,
             this.mappingEditorState.mapping,
             query,
             runtime,
             CLIENT_VERSION.VX_X_X,
-          )) as unknown as object;
+          ),
+        )) as object;
         this.setExecutionPlan(plan);
       }
     } catch (error: unknown) {

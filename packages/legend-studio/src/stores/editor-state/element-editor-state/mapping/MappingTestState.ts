@@ -574,15 +574,16 @@ export class MappingTestState {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
       this.isExecutingTest = true;
-      const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.executeMapping(
           this.editorStore.graphState.graph,
           this.mappingEditorState.mapping,
           query,
           runtime,
           CLIENT_VERSION.VX_X_X,
           true,
-        )) as unknown as ExecutionResult;
+        ),
+      )) as ExecutionResult;
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
@@ -628,15 +629,16 @@ export class MappingTestState {
     try {
       const runtime = this.inputDataState.runtime;
       this.isRunningTest = true;
-      const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.executeMapping(
           this.editorStore.graphState.graph,
           this.mappingEditorState.mapping,
           this.test.query,
           runtime,
           CLIENT_VERSION.VX_X_X,
           true,
-        )) as unknown as ExecutionResult;
+        ),
+      )) as ExecutionResult;
       this.testExecutionResultText = losslessStringify(
         result.values,
         undefined,
@@ -703,14 +705,15 @@ export class MappingTestState {
       const runtime = this.inputDataState.runtime;
       if (!this.isGeneratingPlan) {
         this.isGeneratingPlan = true;
-        const plan =
-          (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+        const plan = (yield flowResult(
+          this.editorStore.graphState.graphManager.generateExecutionPlan(
             this.editorStore.graphState.graph,
             this.mappingEditorState.mapping,
             query,
             runtime,
             CLIENT_VERSION.VX_X_X,
-          )) as unknown as object;
+          ),
+        )) as object;
         this.setExecutionPlan(plan);
       }
     } catch (error: unknown) {

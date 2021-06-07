@@ -33,7 +33,14 @@ export const AuxiliaryPanel = observer(() => {
   const closePanel = (): void => editorStore.toggleAuxPanel();
   const toggleExpandAuxPanel = (): void => editorStore.toggleExpandAuxPanel();
 
-  const auxTabMap = {
+  const auxTabMap: {
+    [key in AUX_PANEL_MODE]: {
+      mode: AUX_PANEL_MODE;
+      name: string;
+      icon?: React.ReactNode;
+      isVisible: boolean;
+    };
+  } = {
     [AUX_PANEL_MODE.CONSOLE]: {
       mode: AUX_PANEL_MODE.CONSOLE,
       name: 'CONSOLE',
