@@ -42,6 +42,8 @@ import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1
 import type { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString';
 import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue';
 import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance';
+import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass';
+import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit';
 import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression';
 import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
 import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr';
@@ -87,6 +89,25 @@ class V1_ValueSpecificationPathResolver
     const path = spec.fullPath;
     if (!isValidFullPath(path)) {
       spec.fullPath =
+        returnUndefOnError(() =>
+          V1_resolveElementPath(
+            path,
+            (_path) => this.context.resolveElement(_path, false),
+            this,
+          ),
+        ) ?? path;
+    }
+    return spec;
+  }
+
+  visit_HackedClass(spec: V1_HackedClass): V1_ValueSpecification {
+    return this.visit_PackageableElementPtr(spec);
+  }
+
+  visit_HackedUnit(spec: V1_HackedUnit): V1_ValueSpecification {
+    const path = spec.unitType;
+    if (!isValidFullPath(path)) {
+      spec.unitType =
         returnUndefOnError(() =>
           V1_resolveElementPath(
             path,

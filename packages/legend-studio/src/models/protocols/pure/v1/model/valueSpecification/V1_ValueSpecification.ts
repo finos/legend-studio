@@ -48,9 +48,14 @@ import type { V1_TdsOlapRank } from '../../model/valueSpecification/raw/V1_TdsOl
 import type { V1_TdsOlapAggregation } from '../../model/valueSpecification/raw/V1_TdsOlapAggregation';
 import type { V1_AppliedProperty } from './application/V1_AppliedProperty';
 import type { V1_PackageableElementPtr } from './raw/V1_PackageableElementPtr';
+import type { V1_HackedClass } from './raw/V1_HackedClass';
+import type { V1_HackedUnit } from './raw/V1_HackedUnit';
 
 export interface V1_ValueSpecificationVisitor<T> {
   visit_PackageableElementPtr(valueSpecification: V1_PackageableElementPtr): T;
+  visit_HackedClass(valueSpecification: V1_HackedClass): T;
+  visit_HackedUnit(valueSpecification: V1_HackedUnit): T;
+
   visit_EnumValue(valueSpecification: V1_EnumValue): T;
   visit_Variable(valueSpecification: V1_Variable): T;
   visit_Lambda(valueSpecification: V1_Lambda): T;

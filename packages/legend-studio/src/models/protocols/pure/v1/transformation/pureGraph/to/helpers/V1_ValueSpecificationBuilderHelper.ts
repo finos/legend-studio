@@ -118,6 +118,8 @@ import { V1_getAppliedProperty } from './V1_DomainBuilderHelper';
 import { Enumeration } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Enumeration';
 import { EnumValueExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/EnumValueReference';
 import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr';
+import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass';
+import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -307,6 +309,22 @@ export class V1_ValueSpecificationBuilder
     instance.values = [
       this.context.resolveElement(valueSpecification.fullPath, false),
     ];
+    return instance;
+  }
+
+  visit_HackedClass(valueSpecification: V1_HackedClass): ValueSpecification {
+    const instance = new InstanceValue(
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      this.context.resolveGenericType(valueSpecification.fullPath),
+    );
+    return instance;
+  }
+
+  visit_HackedUnit(valueSpecification: V1_HackedUnit): ValueSpecification {
+    const instance = new InstanceValue(
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      this.context.resolveGenericType(valueSpecification.unitType),
+    );
     return instance;
   }
 
