@@ -940,11 +940,8 @@ const RelationalConnectionStoreEditor = observer(
               hasError={isStoreEmpty}
             />
           </div>
-          <div className="explorer__content--empty">
-            <button
-              className="btn--dark explorer__content--empty__btn"
-              onClick={openGenerateStore}
-            >
+          <div>
+            <button className="btn--dark" onClick={openGenerateStore}>
               Generate Store
             </button>
           </div>

@@ -477,10 +477,7 @@ export const EnumerationMappingEditor = observer(
                   {sourceType && (
                     <div className="source-panel__explorer">
                       {sourceType instanceof Enumeration && (
-                        <TypeTree
-                          type={sourceType}
-                          selectedType={mappingEditorState.selectedTypeLabel}
-                        />
+                        <TypeTree type={sourceType} />
                       )}
                       {/* TODO?: do we need to show anything when the source type is string or integer */}
                     </div>

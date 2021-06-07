@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { nominateRootSetImplementation } from '../../../../utils/MappingResolutionUtil';
@@ -139,10 +138,6 @@ export const ClassMappingEditor = observer(
       default:
         break;
     }
-
-    useEffect(() => {
-      mappingEditorState.setSelectedTypeLabel(undefined);
-    }, [mappingEditorState, setImplementation]);
 
     const toggleRoot = (): void => {
       if (!isReadOnly) {

@@ -21,8 +21,6 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
   guaranteeType,
-  generateEnumerableNameFromToken,
-  assertTrue,
   getClass,
   deleteEntry,
   addUniqueEntry,
@@ -134,18 +132,6 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     return this.enumerationMappings;
   }
 
-  generateTestName(): string {
-    const generatedName = generateEnumerableNameFromToken(
-      this.tests.map((test) => test.name),
-      'test',
-    );
-    assertTrue(
-      !this.tests.find((test) => test.name === generatedName),
-      `Can't auto-generate test name for value '${generatedName}'`,
-    );
-    return generatedName;
-  }
-
   enumerationMappingsByEnumeration(
     enumeration: Enumeration,
   ): EnumerationMapping[] {
@@ -223,6 +209,7 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
   deleteTest(value: MappingTest): void {
     deleteEntry(this.tests, value);
   }
+
   addTest(value: MappingTest): void {
     addUniqueEntry(this.tests, value);
   }

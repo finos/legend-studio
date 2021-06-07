@@ -17,8 +17,6 @@
 @use '../../mixins' as *;
 
 @forward 'aux-panel/execution-plan-viewer';
-@forward 'aux-panel/mapping-test-editor-panel';
-@forward 'aux-panel/mapping-execution';
 @forward 'aux-panel/console-panel';
 @forward 'aux-panel/dev-tool';
 

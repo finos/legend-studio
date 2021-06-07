@@ -33,6 +33,9 @@ export {
   FaQuestionCircle as UnknownTypeIcon,
   FaInfoCircle as InfoCircleIcon,
   FaCompress as CompressIcon,
+  FaMap as MapIcon,
+  FaFlask as FlaskIcon,
+  FaPlay as PlayIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

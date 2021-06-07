@@ -156,8 +156,14 @@ export class QueryBuilderPlugin extends EditorPlugin {
         key: 'build-query-context-menu-action',
         renderer: function MappingTestQueryBuilderRenderer(
           testState: MappingTestState,
+          isReadOnly: boolean,
         ): React.ReactNode | undefined {
-          return <MappingTestQueryBuilder testState={testState} />;
+          return (
+            <MappingTestQueryBuilder
+              testState={testState}
+              isReadOnly={isReadOnly}
+            />
+          );
         },
       },
     ];
@@ -169,8 +175,14 @@ export class QueryBuilderPlugin extends EditorPlugin {
         key: 'build-query-context-menu-action',
         renderer: function ServiceQueryBuilderRenderer(
           executionState: ServicePureExecutionState,
+          isReadOnly: boolean,
         ): React.ReactNode | undefined {
-          return <ServiceQueryBuilder executionState={executionState} />;
+          return (
+            <ServiceQueryBuilder
+              executionState={executionState}
+              isReadOnly={isReadOnly}
+            />
+          );
         },
       },
     ];

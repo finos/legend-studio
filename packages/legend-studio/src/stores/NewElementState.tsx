@@ -250,14 +250,14 @@ export class NewRelationalDbConnectionDriver extends NewConnectionValueDriver<Re
 
 export enum CONNECTION_TYPE {
   RELATIONAL = 'RELATIONAL',
-  MODEL_CONNECITON = 'MODEL_CONNECITON',
+  MODEL_CONNECTION = 'MODEL_CONNECTION',
 }
 
 const getConnectionType = (
   val: NewConnectionValueDriver<Connection>,
 ): CONNECTION_TYPE => {
   if (val instanceof NewPureModelConnectionDriver) {
-    return CONNECTION_TYPE.MODEL_CONNECITON;
+    return CONNECTION_TYPE.MODEL_CONNECTION;
   }
   return CONNECTION_TYPE.RELATIONAL;
 };
@@ -287,7 +287,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
   changeConnectionState(val: CONNECTION_TYPE): void {
     switch (val) {
-      case CONNECTION_TYPE.MODEL_CONNECITON:
+      case CONNECTION_TYPE.MODEL_CONNECTION:
         this.newConnectionValueDriver = new NewPureModelConnectionDriver(
           this.editorStore,
         );

@@ -84,7 +84,7 @@ test(
   },
 );
 
-// TODO: add conneciton, runtime, text, etc.
+// TODO: add connection, runtime, text, etc.
 test(integrationTest('Create elements with no drivers'), async () => {
   const ROOT_PACKAGE_NAME = 'model';
   addRootPackage(ROOT_PACKAGE_NAME, renderResult);

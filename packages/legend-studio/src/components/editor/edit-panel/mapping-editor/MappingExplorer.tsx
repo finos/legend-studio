@@ -30,7 +30,7 @@ import { clsx, TreeView, ContextMenu } from '@finos/legend-studio-components';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { useDrop, useDrag } from 'react-dnd';
 import { toSentenceCase } from '@finos/legend-studio-shared';
-import type { MappingElementTreeNodeData } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingExplorerTreeNodeData } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
 import {
@@ -55,6 +55,7 @@ import { SetImplementation } from '../../../../models/metamodels/pure/model/pack
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { flowResult } from 'mobx';
 
 export const MappingExplorerContextMenu = observer(
   (
@@ -88,10 +89,41 @@ export const MappingExplorerContextMenu = observer(
           new MappingElementDecorateVisitor(),
         );
       }
-      mappingEditorState.reprocessMappingElementTree();
+      mappingEditorState.reprocessMappingExplorerTree();
     };
+    const executeMappingElement = (): void => {
+      if (mappingElement instanceof SetImplementation) {
+        flowResult(mappingEditorState.buildExecution(mappingElement)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
+    const createTestForMappingElement = (): void => {
+      if (mappingElement instanceof SetImplementation) {
+        flowResult(mappingEditorState.createNewTest(mappingElement)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
+
     return (
       <div ref={ref} className="mapping-explorer__context-menu">
+        {mappingElement instanceof SetImplementation && (
+          <div
+            className="mapping-explorer__context-menu__item"
+            onClick={executeMappingElement}
+          >
+            Execute
+          </div>
+        )}
+        {mappingElement instanceof SetImplementation && (
+          <div
+            className="mapping-explorer__context-menu__item"
+            onClick={createTestForMappingElement}
+          >
+            Test
+          </div>
+        )}
         {mappingElement && (
           <div
             className="mapping-explorer__context-menu__item"
@@ -198,10 +230,10 @@ export const MappingElementExplorer = observer(
 );
 
 type MappingElementTreeNodeContainerProps = TreeNodeContainerProps<
-  MappingElementTreeNodeData,
+  MappingExplorerTreeNodeData,
   {
     isReadOnly: boolean;
-    onNodeExpand: (node: MappingElementTreeNodeData) => void;
+    onNodeExpand: (node: MappingExplorerTreeNodeData) => void;
   }
 >;
 
@@ -358,15 +390,15 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
     }
   };
   // explorer tree data
-  const mappingElementsTreeData = mappingEditorState.mappingElementsTreeData;
-  const onNodeSelect = (node: MappingElementTreeNodeData): void =>
-    mappingEditorState.onNodeSelect(node);
-  const onNodeExpand = (node: MappingElementTreeNodeData): void =>
-    mappingEditorState.onNodeExpand(node);
+  const mappingElementsTreeData = mappingEditorState.mappingExplorerTreeData;
+  const onNodeSelect = (node: MappingExplorerTreeNodeData): void =>
+    mappingEditorState.onMappingExplorerTreeNodeSelect(node);
+  const onNodeExpand = (node: MappingExplorerTreeNodeData): void =>
+    mappingEditorState.onMappingExplorerTreeNodeExpand(node);
   const getMappingElementTreeChildNodes = (
-    node: MappingElementTreeNodeData,
-  ): MappingElementTreeNodeData[] =>
-    mappingEditorState.getMappingElementTreeChildNodes(node);
+    node: MappingExplorerTreeNodeData,
+  ): MappingExplorerTreeNodeData[] =>
+    mappingEditorState.getMappingExplorerTreeChildNodes(node);
 
   return (
     <div
