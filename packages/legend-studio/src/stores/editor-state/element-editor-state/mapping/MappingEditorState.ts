@@ -875,10 +875,8 @@ export class MappingEditorState extends ElementEditorState {
                   this.currentTabState.propertyMappingStates as unknown[]
                 )
                   .filter(
-                    (
-                      propertyMappingState,
-                    ): propertyMappingState is LambdaEditorState =>
-                      propertyMappingState instanceof LambdaEditorState,
+                    (state): state is LambdaEditorState =>
+                      state instanceof LambdaEditorState,
                   )
                   .find((state) => state.lambdaId === sourceId);
                 if (propertyMappingState) {
