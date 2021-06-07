@@ -43,12 +43,14 @@ import type { V1_DatasourceSpecification } from '../../../model/packageableEleme
 import {
   V1_LocalH2DataSourceSpecification,
   V1_SnowflakeDatasourceSpecification,
+  V1_BigQueryDatasourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
   V1_SnowflakePublicAuthenticationStrategy,
+  V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
@@ -123,6 +125,7 @@ enum V1_DatasourceSpecificationType {
   H2_EMBEDDED = 'h2Embedded',
   H2_LOCAL = 'h2Local',
   SNOWFLAKE = 'snowflake',
+  BIGQUERY = 'bigQuery',
 }
 
 const staticDatasourceSpecificationModelSchema = createModelSchema(
@@ -167,6 +170,15 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
   },
 );
 
+const bigqueryDatasourceSpecificationModelSchema = createModelSchema(
+  V1_BigQueryDatasourceSpecification,
+  {
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.BIGQUERY),
+    defaultDataset: primitive(),
+    projectId: primitive(),
+  },
+);
+
 export const V1_serializeDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   plugins: PureProtocolProcessorPlugin[],
@@ -177,6 +189,8 @@ export const V1_serializeDatasourceSpecification = (
     return serialize(embeddedH2DatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     return serialize(snowflakeDatasourceSpecificationModelSchema, protocol);
+  } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
+    return serialize(bigqueryDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
     return serialize(localH2DatasourceSpecificationModelSchema, protocol);
   }
@@ -212,6 +226,8 @@ export const V1_deserializeDatasourceSpecification = (
       return deserialize(embeddedH2DatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.SNOWFLAKE:
       return deserialize(snowflakeDatasourceSpecificationModelSchema, json);
+    case V1_DatasourceSpecificationType.BIGQUERY:
+      return deserialize(bigqueryDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.H2_LOCAL:
       return deserialize(localH2DatasourceSpecificationModelSchema, json);
     default: {
@@ -241,6 +257,7 @@ export const V1_deserializeDatasourceSpecification = (
 enum V1_AuthenticationStrategyType {
   DELEGATED_KERBEROS = 'delegatedKerberos',
   SNOWFLAKE_PUBLIC = 'snowflakePublic',
+  GCP_APPLICATION_DEFAULT_CREDENTIALS = 'gcpApplicationDefaultCredentials',
   H2_DEFAULT = 'h2Default',
   TEST = 'test',
   OAUTH = 'oauth',
@@ -278,6 +295,13 @@ const V1_snowflakePublicAuthenticationStrategyModelSchema = createModelSchema(
   },
 );
 
+const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
+  createModelSchema(V1_GCPApplicationDefaultCredentialsAuthenticationStrategy, {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS,
+    ),
+  });
+
 const V1_oAuthAuthenticationStrategyModelSchema = createModelSchema(
   V1_OAuthAuthenticationStrategy,
   {
@@ -306,6 +330,14 @@ export const V1_serializeAuthenticationStrategy = (
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     return serialize(
       V1_snowflakePublicAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (
+    protocol instanceof
+    V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
+  ) {
+    return serialize(
+      V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
       protocol,
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
@@ -347,6 +379,11 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.SNOWFLAKE_PUBLIC:
       return deserialize(
         V1_snowflakePublicAuthenticationStrategyModelSchema,
+        json,
+      );
+    case V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS:
+      return deserialize(
+        V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.TEST:

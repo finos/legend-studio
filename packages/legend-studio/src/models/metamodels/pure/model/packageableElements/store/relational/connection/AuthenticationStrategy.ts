@@ -176,3 +176,22 @@ export class SnowflakePublicAuthenticationStrategy
     ]);
   }
 }
+
+export class GCPApplicationDefaultCredentialsAuthenticationStrategy
+  extends AuthenticationStrategy
+  implements Hashable
+{
+  constructor() {
+    super();
+
+    makeObservable(this, {
+      hashCode: computed,
+    });
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY,
+    ]);
+  }
+}

@@ -27,10 +27,12 @@ import {
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  BigQueryDatasourceSpecification,
 } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { AuthenticationStrategy } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   SnowflakePublicAuthenticationStrategy,
+  GCPApplicationDefaultCredentialsAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
@@ -43,10 +45,12 @@ import {
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
+  V1_BigQueryDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
   V1_SnowflakePublicAuthenticationStrategy,
+  V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
@@ -123,6 +127,16 @@ export const V1_processDatasourceSpecification = (
     snowflakeSpec.quotedIdentifiersIgnoreCase =
       protocol.quotedIdentifiersIgnoreCase;
     return snowflakeSpec;
+  } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
+    assertNonEmptyString(
+      protocol.projectId,
+      'BigQuery datasource specification property project ID is missing',
+    );
+    const bigQuerySpec = new BigQueryDatasourceSpecification(
+      protocol.projectId,
+      protocol.defaultDataset,
+    );
+    return bigQuerySpec;
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
     const metamodel = new LocalH2DatasourceSpecification();
     metamodel.testDataSetupCsv = protocol.testDataSetupCsv;
@@ -177,6 +191,11 @@ export const V1_processAuthenticationStrategy = (
       protocol.passPhraseVaultReference,
       protocol.publicUserName,
     );
+  } else if (
+    protocol instanceof
+    V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
+  ) {
+    return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
   } else if (protocol instanceof V1_TestDatabaseAuthenticationStrategy) {
     return new TestDatabaseAuthenticationStrategy();
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
