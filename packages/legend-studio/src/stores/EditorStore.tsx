@@ -1186,28 +1186,16 @@ export class EditorStore {
         PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
         PACKAGEABLE_ELEMENT_TYPE.DATABASE,
       ] as string[]
-    )
-      .concat(
-        this.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSL_EditorPlugin_Extension
-              ).getExtraSupportedElementTypes?.() ?? [],
-          ),
-      )
-      .filter(
-        (type) =>
-          !this.applicationStore.config.options
-            .TEMPORARY__disableNonModelStoreSupports ||
-          !(
-            [
-              PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
-              PACKAGEABLE_ELEMENT_TYPE.DATABASE,
-            ] as string[]
-          ).includes(type),
-      );
+    ).concat(
+      this.applicationStore.pluginManager
+        .getEditorPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_EditorPlugin_Extension
+            ).getExtraSupportedElementTypes?.() ?? [],
+        ),
+    );
   }
 }
 
