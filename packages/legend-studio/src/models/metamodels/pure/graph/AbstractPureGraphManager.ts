@@ -39,10 +39,6 @@ import type { Runtime } from '../model/packageableElements/runtime/Runtime';
 import type { DependencyManager } from './DependencyManager';
 import type { Class } from '../model/packageableElements/domain/Class';
 import type { RawLambda } from '../model/rawValueSpecification/RawLambda';
-import type {
-  RawRootGraphFetchTree,
-  RawGraphFetchTree,
-} from '../model/rawValueSpecification/RawGraphFetchTree';
 import type { GenerationConfigurationDescription } from '../action/generation/GenerationConfigurationDescription';
 import type { ValueSpecification } from '../model/valueSpecification/ValueSpecification';
 import type { RawValueSpecification } from '../model/rawValueSpecification/RawValueSpecification';
@@ -309,24 +305,9 @@ export abstract class AbstractPureGraphManager {
   // --------------------------------------------- HACKY ---------------------------------------------
   // As the name suggested, these methods are temporary hacks until we support value-specification completely
 
-  abstract HACKY_createParameterObject(name: string, type: string): object;
-  abstract HACKY_createGraphFetchLambda(
-    graphFetchTree: RawGraphFetchTree,
-    _class: Class,
-  ): RawLambda;
   abstract HACKY_createGetAllLambda(_class: Class): RawLambda;
-  abstract HACKY_createAssertLambda(assertData: string): RawLambda;
-  abstract HACKY_extractCheckedModelToModelAssertionResult(
+  abstract HACKY_createServiceTestAssertLambda(assertData: string): RawLambda;
+  abstract HACKY_extractServiceTestAssertionData(
     query: RawLambda,
   ): string | undefined;
-  abstract HACKY_extractAssertionString(query: RawLambda): string | undefined;
-
-  /**
-   * @deprecated
-   */
-  abstract HACKY_deriveGraphFetchTreeContentFromQuery(
-    query: RawLambda,
-    graph: PureModel,
-    parentElement: PackageableElement,
-  ): Class | RawRootGraphFetchTree | undefined;
 }

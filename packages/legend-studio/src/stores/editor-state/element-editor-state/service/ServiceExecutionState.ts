@@ -44,7 +44,6 @@ import {
   PureMultiExecution,
 } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
 import type { ServiceTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import {
@@ -119,10 +118,6 @@ export abstract class ServiceExecutionState {
     throw new UnsupportedOperationError();
   }
 
-  // TODO: this method will be replaced when we create the endpoint to generate test data
-  abstract getTestDataGenerationInput():
-    | [Class | undefined, Mapping]
-    | undefined;
   abstract get serviceExecutionParameters():
     | { query: RawLambda; mapping: Mapping; runtime: Runtime }
     | undefined;
@@ -403,25 +398,6 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         this.useCustomRuntime();
       }
     }
-  }
-
-  getTestDataGenerationInput(): [Class | undefined, Mapping] | undefined {
-    const selectedExecution = this.selectedExecutionConfiguration;
-    if (selectedExecution) {
-      const mapping = selectedExecution.mapping.value;
-      const graphFetchTreeContent =
-        // TODO: Remove this when we rework the test data generation flow
-        this.editorStore.graphState.graphManager.HACKY_deriveGraphFetchTreeContentFromQuery(
-          this.execution.func,
-          this.editorStore.graphState.graph,
-          this.serviceEditorState.service,
-        );
-      if (graphFetchTreeContent instanceof Class) {
-        return [graphFetchTreeContent, mapping];
-      }
-      return [undefined, selectedExecution.mapping.value];
-    }
-    return undefined;
   }
 
   getInitiallySelectedExecution(

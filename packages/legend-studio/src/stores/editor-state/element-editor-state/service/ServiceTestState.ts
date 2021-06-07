@@ -25,8 +25,6 @@ import {
   uuid,
   guaranteeType,
   UnsupportedOperationError,
-  uniq,
-  isNonNullable,
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToFormatJSONString,
@@ -35,7 +33,6 @@ import {
   createUrlStringFromData,
   getClass,
 } from '@finos/legend-studio-shared';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceTestResult } from '../../../../models/metamodels/pure/action/service/ServiceTestResult';
 import type { KeyedSingleExecutionTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
@@ -44,11 +41,6 @@ import {
   SingleExecutionTest,
 } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
 import { PureSingleExecution } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import {
-  getMappingElementTarget,
-  getMappingElementSource,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import {
   IdentifiedConnection,
@@ -104,6 +96,8 @@ export class TestContainerState {
       setTestPassed: action,
       setTestExecutionResultText: action,
       updateTestAssert: action,
+      generateAssertion: flow,
+      fetchActualResultForComparison: flow,
     });
 
     this.editorStore = editorStore;
@@ -137,7 +131,7 @@ export class TestContainerState {
   updateTestAssert(): void {
     if (this.assertionData) {
       this.testContainer.assert =
-        this.editorStore.graphState.graphManager.HACKY_createAssertLambda(
+        this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
         );
@@ -146,7 +140,7 @@ export class TestContainerState {
 
   private initializeAssertionData(testContainter: TestContainer): void {
     const expectedResultAssertionString =
-      this.editorStore.graphState.graphManager.HACKY_extractAssertionString(
+      this.editorStore.graphState.graphManager.HACKY_extractServiceTestAssertionData(
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
@@ -254,7 +248,7 @@ export class TestContainerState {
     return newRuntime;
   };
 
-  generateAssertion = flow(function* (this: TestContainerState) {
+  *generateAssertion(): GeneratorFn<void> {
     try {
       this.isGeneratingTestAssertion = true;
       const execution = this.serviceEditorState.service.execution;
@@ -297,9 +291,9 @@ export class TestContainerState {
     } finally {
       this.isGeneratingTestAssertion = false;
     }
-  });
+  }
 
-  fetchActualResultForComparison = flow(function* (this: TestContainerState) {
+  *fetchActualResultForComparison(): GeneratorFn<void> {
     try {
       this.isFetchingActualResultForComparison = true;
       const execution = this.serviceEditorState.service.execution;
@@ -342,7 +336,7 @@ export class TestContainerState {
     } finally {
       this.isFetchingActualResultForComparison = false;
     }
-  });
+  }
 }
 
 export class SingleExecutionTestState {
@@ -368,12 +362,14 @@ export class SingleExecutionTestState {
       testSuiteRunError: observable,
       testResults: observable,
       allTestRunTime: observable,
+      testSuiteResult: computed,
       setSelectedTestContainerState: action,
       setTestResults: action,
       addNewTestContainer: action,
       deleteTestContainerState: action,
       openTestContainer: action,
-      testSuiteResult: computed,
+      generateTestData: flow,
+      runTestSuite: flow,
     });
 
     this.editorStore = editorStore;
@@ -401,7 +397,9 @@ export class SingleExecutionTestState {
 
   addNewTestContainer(): void {
     const testContainer = new TestContainer(
-      this.editorStore.graphState.graphManager.HACKY_createAssertLambda('{}'),
+      this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
+        '{}',
+      ),
       this.test,
     );
     this.test.addAssert(testContainer);
@@ -441,95 +439,42 @@ export class SingleExecutionTestState {
       : TEST_RESULT.FAILED;
   }
 
-  generateSeedTestData = flow(function* (
-    this: SingleExecutionTestState,
-  ): GeneratorFn<undefined | string> {
+  *generateTestData(): GeneratorFn<void> {
+    this.isGeneratingTestData = true;
+    // NOTE: here, we attempt to use engine to generate test data.
+    // Once all types of generate data are supported we will move to just using engine
+    let generatedTestData: string | undefined = undefined;
     const executionInput =
       this.serviceEditorState.executionState.serviceExecutionParameters;
     if (executionInput) {
       try {
-        return (yield this.editorStore.graphState.graphManager.generateTestData(
-          this.editorStore.graphState.graph,
-          executionInput.mapping,
-          executionInput.query,
-          executionInput.runtime,
-          CLIENT_VERSION.VX_X_X,
-        )) as string;
+        generatedTestData =
+          (yield this.editorStore.graphState.graphManager.generateTestData(
+            this.editorStore.graphState.graph,
+            executionInput.mapping,
+            executionInput.query,
+            executionInput.runtime,
+            CLIENT_VERSION.VX_X_X,
+          )) as string;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.EXECUTION_PROBLEM,
           error,
         );
-        return undefined;
       }
     }
-    return undefined;
-  });
-
-  // Note: We attempt to use the exec endpoint to generate test data.
-  // Once all types of generate data are supported we will move to just using the exec endpoint
-  generateTestData = flow(function* (this: SingleExecutionTestState) {
-    this.isGeneratingTestData = true;
-    const generatedTestData = (yield this.generateSeedTestData()) as unknown as
-      | string
-      | undefined;
     if (generatedTestData) {
       this.test.setData(generatedTestData);
     } else {
-      const testDataGenerationInput =
-        this.serviceEditorState.executionState.getTestDataGenerationInput();
-      if (testDataGenerationInput) {
-        const [target, mapping] = testDataGenerationInput;
-        const sources = target
-          ? uniq(
-              mapping
-                .getAllMappingElements()
-                .filter(
-                  (mappingElement) =>
-                    getMappingElementTarget(mappingElement) === target,
-                )
-                .map(getMappingElementSource)
-                .filter(isNonNullable),
-            )
-          : [];
-        if (sources.length) {
-          if (sources.length > 1) {
-            // TODO: support multi store generation (might be server's work)
-            this.test.setData('');
-            this.editorStore.applicationStore.notifyError(
-              'generating test data for multiple stores is currently not supported',
-            );
-          } else {
-            const sourceToGenerate = sources[0];
-            /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
-            if (sourceToGenerate instanceof Class) {
-              // TODO: create mock data based on the content type
-              this.test.setData(
-                createMockDataForMappingElementSource(
-                  sourceToGenerate,
-                  this.editorStore,
-                ),
-              );
-            } else {
-              // TODO: add flat-data when we're ready
-              this.test.setData('');
-              this.editorStore.applicationStore.notifyError(
-                'Unable to generate test data',
-              );
-            }
-          }
-        } else {
-          this.test.setData('');
-          this.editorStore.applicationStore.notifyError(
-            'Unable to generate test data',
-          );
-        }
-      }
+      this.test.setData('');
+      this.editorStore.applicationStore.notifyError(
+        `Can't auto-generate test data for service`,
+      );
     }
     this.isGeneratingTestData = false;
-  });
+  }
 
-  runTestSuite = flow(function* (this: SingleExecutionTestState) {
+  *runTestSuite(): GeneratorFn<void> {
     const startTime = Date.now();
     try {
       this.testSuiteRunError = undefined;
@@ -558,7 +503,7 @@ export class SingleExecutionTestState {
       this.allTestRunTime = Date.now() - startTime;
       this.isRunningAllTests = false;
     }
-  });
+  }
 
   get execution(): PureSingleExecution {
     return guaranteeType(

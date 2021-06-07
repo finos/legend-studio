@@ -610,7 +610,7 @@ export class MappingExecutionState {
             tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
           const testContainer = new TestContainer(
-            this.editorStore.graphState.graphManager.HACKY_createAssertLambda(
+            this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
               this.executionResultText,
             ),
             singleExecutionTest,
