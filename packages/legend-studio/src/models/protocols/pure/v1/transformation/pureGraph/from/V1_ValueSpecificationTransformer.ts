@@ -78,6 +78,7 @@ import { Unit } from '../../../../../../metamodels/pure/model/packageableElement
 import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
 import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
+import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 
 export class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -204,7 +205,10 @@ export class V1_ValueSpecificationTransformer
       valueSpecification.values[0] instanceof PackageableElementReference
     ) {
       const protocol = new V1_PackageableElementPtr();
-      protocol.fullPath = valueSpecification.values[0].value.path;
+      protocol.fullPath = (
+        valueSpecification
+          .values[0] as PackageableElementReference<PackageableElement>
+      ).value.path;
       return protocol;
     } else if (
       valueSpecification.values.length === 0 &&

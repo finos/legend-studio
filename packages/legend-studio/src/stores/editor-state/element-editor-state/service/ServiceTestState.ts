@@ -270,7 +270,7 @@ export class TestContainerState {
             decoratedRuntime,
             CLIENT_VERSION.VX_X_X,
             true,
-          )) as unknown as ExecutionResult;
+          )) as ExecutionResult;
         this.setAssertionData(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           tryToFormatLosslessJSONString(
@@ -315,7 +315,7 @@ export class TestContainerState {
             decoratedRuntime,
             CLIENT_VERSION.VX_X_X,
             true,
-          )) as unknown as ExecutionResult;
+          )) as ExecutionResult;
         this.setTestExecutionResultText({
           expected: this.assertionData ?? '',
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
