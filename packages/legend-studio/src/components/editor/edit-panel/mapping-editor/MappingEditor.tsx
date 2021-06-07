@@ -58,6 +58,7 @@ import { Enumeration } from '../../../../models/metamodels/pure/model/packageabl
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
 import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder';
+import { flowResult } from 'mobx';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -95,10 +96,10 @@ const MappingEditorHeaderTabContextMenu = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const close = applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.closeTab(tabState),
+      flowResult(mappingEditorState.closeTab(tabState)),
     );
     const closeOthers = applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.closeAllOtherTabs(tabState),
+      flowResult(mappingEditorState.closeAllOtherTabs(tabState)),
     );
     const closeAll = (): void => mappingEditorState.closeAllTabs();
 
@@ -191,22 +192,22 @@ export const MappingEditor = observer(() => {
     return <MappingEditorSplashScreen />;
   };
   const closeTab = (tabState: MappingEditorTabState) => (): void => {
-    mappingEditorState
-      .closeTab(tabState)
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(mappingEditorState.closeTab(tabState)).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   };
   const closeTabOnMiddleClick =
     (tabState: MappingEditorTabState): React.MouseEventHandler =>
     (event): void => {
       if (event.nativeEvent.button === 1) {
-        mappingEditorState
-          .closeTab(tabState)
-          .catch(applicationStore.alertIllegalUnhandledError);
+        flowResult(mappingEditorState.closeTab(tabState)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
       }
     };
   const openTab = (tabState: MappingEditorTabState): (() => Promise<void>) =>
     applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.openTab(tabState),
+      flowResult(mappingEditorState.openTab(tabState)),
     );
 
   return (

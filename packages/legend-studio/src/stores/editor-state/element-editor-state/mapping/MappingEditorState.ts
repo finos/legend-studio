@@ -31,7 +31,11 @@ import {
 } from './MappingElementState';
 import { PureInstanceSetImplementationState } from './PureInstanceSetImplementationState';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState';
-import { MappingTestState, TEST_RESULT } from './MappingTestState';
+import {
+  MAPPING_TEST_EDITOR_TAB_TYPE,
+  MappingTestState,
+  TEST_RESULT,
+} from './MappingTestState';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtility';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
@@ -285,7 +289,15 @@ export class MappingEditorState extends ElementEditorState {
       reprocessMappingExplorerTree: action,
       mappingElementsWithSimilarTarget: computed,
       reprocess: action,
+      openTab: flow,
+      closeTab: flow,
+      closeAllOtherTabs: flow,
+      openTest: flow,
       buildExecution: flow,
+      addTest: flow,
+      deleteTest: flow,
+      createNewTest: flow,
+      runTests: flow,
     });
 
     this.editorStore = editorStore;
@@ -337,25 +349,19 @@ export class MappingEditorState extends ElementEditorState {
 
   // -------------------------------------- Tabs ---------------------------------------
 
-  openTab = flow(function* (
-    this: MappingEditorState,
-    tabState: MappingEditorTabState,
-  ) {
+  *openTab(tabState: MappingEditorTabState): GeneratorFn<void> {
     if (tabState !== this.currentTabState) {
       if (tabState instanceof MappingTestState) {
-        yield this.openTest(tabState.test);
+        yield flowResult(this.openTest(tabState.test));
       } else if (tabState instanceof MappingElementState) {
         this.openMappingElement(tabState.mappingElement, false);
       } else if (tabState instanceof MappingExecutionState) {
         this.currentTabState = tabState;
       }
     }
-  });
+  }
 
-  closeTab = flow(function* (
-    this: MappingEditorState,
-    tabState: MappingEditorTabState,
-  ) {
+  *closeTab(tabState: MappingEditorTabState): GeneratorFn<void> {
     const tabIndex = this.openedTabStates.findIndex((ts) => ts === tabState);
     assertTrue(
       tabIndex !== -1,
@@ -373,7 +379,7 @@ export class MappingEditorState extends ElementEditorState {
             ? this.openedTabStates[0]
             : undefined;
         if (tabStateToOpen) {
-          yield this.openTab(tabStateToOpen);
+          yield flowResult(this.openTab(tabStateToOpen));
         } else {
           this.currentTabState = undefined;
         }
@@ -381,19 +387,16 @@ export class MappingEditorState extends ElementEditorState {
         this.currentTabState = undefined;
       }
     }
-  });
+  }
 
-  closeAllOtherTabs = flow(function* (
-    this: MappingEditorState,
-    tabState: MappingEditorTabState,
-  ) {
+  *closeAllOtherTabs(tabState: MappingEditorTabState): GeneratorFn<void> {
     assertNonNullable(
       this.openedTabStates.find((ts) => ts === tabState),
       `Mapping editor tab should be currently opened`,
     );
     this.openedTabStates = [tabState];
-    yield this.openTab(tabState);
-  });
+    yield flowResult(this.openTab(tabState));
+  }
 
   closeAllTabs(): void {
     this.currentTabState = undefined;
@@ -960,7 +963,16 @@ export class MappingEditorState extends ElementEditorState {
 
   // -------------------------------------- Test ---------------------------------------
 
-  openTest = flow(function* (this: MappingEditorState, test: MappingTest) {
+  *openTest(
+    test: MappingTest,
+    openTab?: MAPPING_TEST_EDITOR_TAB_TYPE,
+  ): GeneratorFn<void> {
+    const isOpened = Boolean(
+      this.openedTabStates.find(
+        (tabState) =>
+          tabState instanceof MappingTestState && tabState.test === test,
+      ),
+    );
     const testState = this.mappingTestStates.find(
       (mappingTestState) => mappingTestState.test === test,
     );
@@ -980,8 +992,18 @@ export class MappingEditorState extends ElementEditorState {
       (tabState) =>
         tabState instanceof MappingTestState && tabState.test === test,
     );
-    yield testState.openTest();
-  });
+    yield flowResult(
+      testState.onTestStateOpen(
+        openTab ??
+          // This is for user's convenience.
+          // If the test is already opened, respect is currently opened tab
+          // otherwise, if the test has a result, switch to show the result tab
+          (!isOpened && testState.result !== TEST_RESULT.NONE
+            ? MAPPING_TEST_EDITOR_TAB_TYPE.RESULT
+            : undefined),
+      ),
+    );
+  }
 
   get testSuiteResult(): TEST_RESULT {
     const numberOfTestPassed = this.mappingTestStates.filter(
@@ -999,7 +1021,7 @@ export class MappingEditorState extends ElementEditorState {
       : TEST_RESULT.NONE;
   }
 
-  runTests = flow(function* (this: MappingEditorState) {
+  *runTests(): GeneratorFn<void> {
     const startTime = Date.now();
     this.isRunningAllTests = true;
     this.mappingTestStates.forEach((testState) =>
@@ -1017,24 +1039,24 @@ export class MappingEditorState extends ElementEditorState {
     );
     this.isRunningAllTests = false;
     this.allTestRunTime = Date.now() - startTime;
-  });
+  }
 
-  addTest = flow(function* (this: MappingEditorState, test: MappingTest) {
+  *addTest(test: MappingTest): GeneratorFn<void> {
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, test, this),
     );
     this.mapping.addTest(test);
-    yield this.openTest(test);
-  });
+    yield flowResult(this.openTest(test));
+  }
 
-  deleteTest = flow(function* (this: MappingEditorState, test: MappingTest) {
+  *deleteTest(test: MappingTest): GeneratorFn<void> {
     const matchMappingTestState = (
       tabState: MappingEditorTabState | undefined,
     ): boolean =>
       tabState instanceof MappingTestState && tabState.test === test;
     this.mapping.deleteTest(test);
     if (this.currentTabState && matchMappingTestState(this.currentTabState)) {
-      yield this.closeTab(this.currentTabState);
+      yield flowResult(this.closeTab(this.currentTabState));
     }
     this.openedTabStates = this.openedTabStates.filter(
       (tabState) => !matchMappingTestState(tabState),
@@ -1042,12 +1064,9 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates = this.mappingTestStates.filter(
       (tabState) => !matchMappingTestState(tabState),
     );
-  });
+  }
 
-  createNewTest = flow(function* (
-    this: MappingEditorState,
-    setImplementation: SetImplementation,
-  ) {
+  *createNewTest(setImplementation: SetImplementation): GeneratorFn<void> {
     const query =
       this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
         setImplementation.class.value,
@@ -1098,6 +1117,6 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, newTest, this),
     );
-    yield this.openTest(newTest);
-  });
+    yield flowResult(this.openTest(newTest));
+  }
 }

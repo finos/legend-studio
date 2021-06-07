@@ -19,6 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { useDrop } from 'react-dnd';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
+import { MAPPING_TEST_EDITOR_TAB_TYPE } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
@@ -40,6 +41,7 @@ import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
+import { flowResult } from 'mobx';
 
 const addTestPromps = [
   "Let's add some test!",
@@ -58,16 +60,37 @@ export const MappingTestExplorerContextMenu = observer(
     const { mappingTestState, isReadOnly, showCreateNewTestModal } = props;
     const applicationStore = useApplicationStore();
     const runMappingTest = (): void => {
-      mappingTestState
-        ?.runTest()
-        ?.catch(applicationStore.alertIllegalUnhandledError);
+      if (mappingTestState) {
+        flowResult(mappingTestState.runTest()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
     };
     const removeMappingTest = (): void => {
-      mappingTestState?.mappingEditorState
-        .deleteTest(mappingTestState.test)
-        ?.catch(applicationStore.alertIllegalUnhandledError);
+      if (mappingTestState) {
+        flowResult(
+          mappingTestState.mappingEditorState.deleteTest(mappingTestState.test),
+        ).catch(applicationStore.alertIllegalUnhandledError);
+      }
     };
     const toggleSkipTest = (): void => mappingTestState?.toggleSkipTest();
+    const viewTestResult = (): void => {
+      if (mappingTestState) {
+        mappingTestState.mappingEditorState.openTest(
+          mappingTestState.test,
+          MAPPING_TEST_EDITOR_TAB_TYPE.RESULT,
+        );
+      }
+    };
+    const editTest = (): void => {
+      if (mappingTestState) {
+        mappingTestState.mappingEditorState.openTest(
+          mappingTestState.test,
+          MAPPING_TEST_EDITOR_TAB_TYPE.SETUP,
+        );
+      }
+    };
+
     return (
       <div ref={ref} className="mapping-test-explorer__context-menu">
         {mappingTestState && (
@@ -76,6 +99,22 @@ export const MappingTestExplorerContextMenu = observer(
             onClick={runMappingTest}
           >
             Run
+          </div>
+        )}
+        {mappingTestState && mappingTestState.result !== TEST_RESULT.NONE && (
+          <div
+            className="mapping-test-explorer__context-menu__item"
+            onClick={viewTestResult}
+          >
+            View Result
+          </div>
+        )}
+        {mappingTestState && (
+          <div
+            className="mapping-test-explorer__context-menu__item"
+            onClick={editTest}
+          >
+            Edit
           </div>
         )}
         {mappingTestState && (
@@ -116,10 +155,10 @@ export const MappingTestExplorer = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const openTest = applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.openTest(testState.test),
+      flowResult(mappingEditorState.openTest(testState.test)),
     );
     const runTest = applicationStore.guaranteeSafeAction(() =>
-      testState.runTest(),
+      flowResult(testState.runTest()),
     );
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
@@ -260,7 +299,7 @@ export const MappingTestsExplorer = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const runAllTests = applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.runTests(),
+      flowResult(mappingEditorState.runTests()),
     );
     // all test run report summary
     const numberOfTests = mappingEditorState.mappingTestStates.length;
@@ -308,9 +347,9 @@ export const MappingTestsExplorer = observer(
           return;
         }
         if (item.data instanceof SetImplementation) {
-          mappingEditorState
-            .createNewTest(item.data)
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(mappingEditorState.createNewTest(item.data)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         }
       },
       [
@@ -340,9 +379,9 @@ export const MappingTestsExplorer = observer(
     const changeClassMapping = useCallback(
       (setImplementation: SetImplementation | undefined): void => {
         if (setImplementation) {
-          mappingEditorState
-            .createNewTest(setImplementation)
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(mappingEditorState.createNewTest(setImplementation)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
           hideClassMappingSelectorModal();
         }
       },

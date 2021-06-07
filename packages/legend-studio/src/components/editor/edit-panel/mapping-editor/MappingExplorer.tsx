@@ -98,6 +98,13 @@ export const MappingExplorerContextMenu = observer(
         );
       }
     };
+    const createTestForMappingElement = (): void => {
+      if (mappingElement instanceof SetImplementation) {
+        flowResult(mappingEditorState.createNewTest(mappingElement)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
 
     return (
       <div ref={ref} className="mapping-explorer__context-menu">
@@ -107,6 +114,14 @@ export const MappingExplorerContextMenu = observer(
             onClick={executeMappingElement}
           >
             Execute
+          </div>
+        )}
+        {mappingElement instanceof SetImplementation && (
+          <div
+            className="mapping-explorer__context-menu__item"
+            onClick={createTestForMappingElement}
+          >
+            Test
           </div>
         )}
         {mappingElement && (

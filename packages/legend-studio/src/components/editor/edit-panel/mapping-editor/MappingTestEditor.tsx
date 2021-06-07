@@ -432,7 +432,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
       );
     // Actions
     const regenerateExpectedResult = applicationStore.guaranteeSafeAction(() =>
-      testState.regenerateExpectedResult(),
+      flowResult(testState.regenerateExpectedResult()),
     );
 
     return (
@@ -510,9 +510,12 @@ export const MappingTestBuilder = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
+
     // In case we switch out to another tab to do editing on some class, we want to refresh the test state data so that we can detect problem in deep fetch tree
     useEffect(() => {
-      testState.openTest().catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(testState.onTestStateOpen()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }, [applicationStore, testState]);
 
     return (
@@ -561,7 +564,7 @@ export const MappingTestEditor = observer(
         testState.setSelectedTab(tab);
 
     const runTest = applicationStore.guaranteeSafeAction(() =>
-      testState.runTest(),
+      flowResult(testState.runTest()),
     );
 
     // Plan

@@ -42,6 +42,7 @@ import {
   action,
   makeObservable,
   makeAutoObservable,
+  flowResult,
 } from 'mobx';
 import { TAB_SIZE } from '../../../EditorConfig';
 import {
@@ -390,6 +391,9 @@ export class MappingTestState {
       setAssertionState: action,
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
+      regenerateExpectedResult: flow,
+      onTestStateOpen: flow,
+      runTest: flow,
     });
 
     this.editorStore = editorStore;
@@ -554,7 +558,7 @@ export class MappingTestState {
   /**
    * Execute mapping using current info in the test detail panel then set the execution result value as test expected result
    */
-  regenerateExpectedResult = flow(function* (this: MappingTestState) {
+  *regenerateExpectedResult(): GeneratorFn<void> {
     if (this.test.validationResult) {
       this.editorStore.applicationStore.notifyError(
         `Can't execute test '${this.test.name}'. Please make sure that the test query and input data are valid`,
@@ -606,9 +610,9 @@ export class MappingTestState {
     } finally {
       this.isExecutingTest = false;
     }
-  });
+  }
 
-  runTest = flow(function* (this: MappingTestState) {
+  *runTest(): GeneratorFn<void> {
     if (this.test.validationResult) {
       this.editorStore.applicationStore.notifyError(
         `Can't run test '${this.test.name}'. Please make sure that the test is valid`,
@@ -663,23 +667,27 @@ export class MappingTestState {
       this.isRunningTest = false;
       this.runTime = Date.now() - startTime;
     }
-  });
+  }
 
-  openTest = flow(function* (this: MappingTestState) {
+  *onTestStateOpen(openTab?: MAPPING_TEST_EDITOR_TAB_TYPE): GeneratorFn<void> {
     try {
       // extract test basic info out into state
       this.queryState = this.buildQueryState();
       this.inputDataState = this.buildInputDataState();
       this.assertionState = this.buildAssertionState();
+      // if the test has result, open the test result tab
+      if (openTab) {
+        this.setSelectedTab(openTab);
+      }
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.EXECUTION_PROBLEM,
         error.message,
       );
-      yield this.editorStore.graphState.globalCompileInFormMode(); // recompile graph if there is problem with the deep fetch tree of a test
+      yield flowResult(this.editorStore.graphState.globalCompileInFormMode()); // recompile graph if there is problem with the deep fetch tree of a test
     }
-  });
+  }
 
   updateAssertion(): void {
     this.test.setAssert(this.assertionState.assert);
