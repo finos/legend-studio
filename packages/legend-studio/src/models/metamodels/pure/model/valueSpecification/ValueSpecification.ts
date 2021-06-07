@@ -24,8 +24,6 @@ import type {
 import type {
   InstanceValue,
   PrimitiveInstanceValue,
-  ClassInstanceValue,
-  EnumerationInstanceValue,
   EnumValueInstanceValue,
   RuntimeInstanceValue,
   MappingInstanceValue,
@@ -52,10 +50,6 @@ export interface ValueSpecificationVisitor<T> {
     valueSpecification: AlloySerializationConfigInstanceValue,
   ): T;
   visit_PrimitiveInstanceValue(valueSpecification: PrimitiveInstanceValue): T;
-  visit_ClassInstanceValue(valueSpecification: ClassInstanceValue): T;
-  visit_EnumerationInstanceValue(
-    valueSpecification: EnumerationInstanceValue,
-  ): T;
   visit_EnumValueInstanceValue(valueSpecification: EnumValueInstanceValue): T;
   visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): T;
   visit_PairInstanceValue(valueSpecification: PairInstanceValue): T;

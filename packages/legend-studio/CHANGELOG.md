@@ -1,5 +1,18 @@
 # @finos/legend-studio
 
+## 0.1.12
+
+### Patch Changes
+
+- [#237](https://github.com/finos/legend-studio/pull/237) [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where model loader fail to show current graph in Pure model context data format.
+
+* [#239](https://github.com/finos/legend-studio/pull/239) [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66) Thanks [@akphi](https://github.com/akphi)! - Support `PackageableElementPtr` in response to [change in engine](https://github.com/finos/legend-engine/pull/255).
+
+- [#237](https://github.com/finos/legend-studio/pull/237) [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341) Thanks [@akphi](https://github.com/akphi)! - Make sure to prune source information from lambdas and relational operations before syncing workspace.
+
+- Updated dependencies [[`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341), [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66), [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341)]:
+  - @finos/legend-studio-components@0.0.18
+
 ## 0.1.11
 
 ### Patch Changes

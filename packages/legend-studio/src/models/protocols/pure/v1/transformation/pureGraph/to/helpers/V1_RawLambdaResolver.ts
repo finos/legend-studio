@@ -35,18 +35,16 @@ import type { V1_CDateTime } from '../../../../model/valueSpecification/raw/V1_C
 import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CDecimal';
 import type { V1_CFloat } from '../../../../model/valueSpecification/raw/V1_CFloat';
 import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CInteger';
-import type { V1_Class } from '../../../../model/valueSpecification/raw/V1_Class';
 import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate';
 import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection';
 import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate';
 import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1_CStrictTime';
 import type { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString';
-import type { V1_Enum } from '../../../../model/valueSpecification/raw/V1_Enum';
 import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue';
 import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance';
 import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression';
 import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
-import type { V1_MappingInstance } from '../../../../model/valueSpecification/raw/V1_MappingInstance';
+import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr';
 import type { V1_Pair } from '../../../../model/valueSpecification/raw/V1_Pair';
 import type { V1_PrimitiveType } from '../../../../model/valueSpecification/raw/V1_PrimitiveType';
 import type { V1_PureList } from '../../../../model/valueSpecification/raw/V1_PureList';
@@ -85,30 +83,24 @@ export class V1_ValueSpecificationResolver
   constructor(context: V1_GraphBuilderContext) {
     this.context = context;
   }
-  visit_Class(spec: V1_Class): V1_ValueSpecification {
-    const classPath = spec.fullPath;
-    if (V1_shouldResolvePath(classPath)) {
-      spec.fullPath =
-        returnUndefOnError(() =>
-          V1_resolveElementPath(classPath, this.context.resolveClass, this),
-        ) ?? classPath;
-    }
-    return spec;
-  }
-  visit_Enum(spec: V1_Enum): V1_ValueSpecification {
-    const enumPath = spec.fullPath;
-    if (V1_shouldResolvePath(enumPath)) {
+
+  visit_PackageableElementPtr(
+    spec: V1_PackageableElementPtr,
+  ): V1_ValueSpecification {
+    const path = spec.fullPath;
+    if (V1_shouldResolvePath(path)) {
       spec.fullPath =
         returnUndefOnError(() =>
           V1_resolveElementPath(
-            enumPath,
-            this.context.resolveEnumeration,
+            path,
+            (_path) => this.context.resolveElement(_path, false),
             this,
           ),
-        ) ?? enumPath;
+        ) ?? path;
     }
     return spec;
   }
+
   visit_EnumValue(spec: V1_EnumValue): V1_ValueSpecification {
     const enumPath = spec.fullPath;
     if (V1_shouldResolvePath(enumPath)) {
@@ -123,6 +115,7 @@ export class V1_ValueSpecificationResolver
     }
     return spec;
   }
+
   visit_Variable(spec: V1_Variable): V1_ValueSpecification {
     const classPath = spec.class;
     if (classPath && V1_shouldResolvePath(classPath)) {
@@ -133,18 +126,22 @@ export class V1_ValueSpecificationResolver
     }
     return spec;
   }
+
   visit_Lambda(spec: V1_Lambda): V1_ValueSpecification {
     spec.body.forEach((v) => v.accept_ValueSpecificationVisitor(this));
     spec.parameters.forEach((v) => v.accept_ValueSpecificationVisitor(this));
     return spec;
   }
+
   visit_Path(valueSpecification: V1_Path): V1_ValueSpecification {
     return valueSpecification;
   }
+
   visit_AppliedFunction(spec: V1_AppliedFunction): V1_ValueSpecification {
     spec.parameters.forEach((v) => v.accept_ValueSpecificationVisitor(this));
     return spec;
   }
+
   visit_AppliedProperty(spec: V1_AppliedProperty): V1_ValueSpecification {
     const classPath = spec.class;
     if (classPath && V1_shouldResolvePath(classPath)) {
@@ -156,6 +153,7 @@ export class V1_ValueSpecificationResolver
     spec.parameters.forEach((v) => v.accept_ValueSpecificationVisitor(this));
     return spec;
   }
+
   visit_Collection(spec: V1_Collection): V1_ValueSpecification {
     spec.values.forEach((v) => v.accept_ValueSpecificationVisitor(this));
     return spec;
@@ -195,16 +193,6 @@ export class V1_ValueSpecificationResolver
   visit_Pair(spec: V1_Pair): V1_ValueSpecification {
     spec.first.accept_ValueSpecificationVisitor(this);
     spec.second.accept_ValueSpecificationVisitor(this);
-    return spec;
-  }
-  visit_MappingInstance(spec: V1_MappingInstance): V1_ValueSpecification {
-    const mappingPath = spec.fullPath;
-    if (V1_shouldResolvePath(mappingPath)) {
-      spec.fullPath =
-        returnUndefOnError(() =>
-          V1_resolveElementPath(mappingPath, this.context.resolveMapping, this),
-        ) ?? mappingPath;
-    }
     return spec;
   }
   visit_RuntimeInstance(spec: V1_RuntimeInstance): V1_ValueSpecification {

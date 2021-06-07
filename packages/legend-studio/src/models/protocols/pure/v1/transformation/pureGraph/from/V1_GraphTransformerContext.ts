@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
+export class V1_GraphTransformerContext {
+  readonly keepSourceInformation: boolean;
 
-export class V1_MappingInstance extends V1_ValueSpecification {
-  fullPath!: string;
+  constructor(builder: V1_GraphTransformerContextBuilder) {
+    this.keepSourceInformation = builder.keepSourceInformation;
+  }
+}
 
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_MappingInstance(this);
+export class V1_GraphTransformerContextBuilder {
+  keepSourceInformation: boolean;
+
+  constructor(keepSourceInformation: boolean) {
+    this.keepSourceInformation = keepSourceInformation;
+  }
+
+  build(): V1_GraphTransformerContext {
+    return new V1_GraphTransformerContext(this);
   }
 }

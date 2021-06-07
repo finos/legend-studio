@@ -169,6 +169,7 @@ const DefaultTreeNodeView = <T extends TreeNodeData, S extends InnerProps>(
 export interface TreeViewProps<T extends TreeNodeData, S extends InnerProps> {
   treeData: TreeData<T>;
   getChildNodes: (node: T) => T[];
+  getRootNodes?: (treeData: TreeData<T>) => T[];
   onNodeSelect?: (node: T) => void;
   components?: Partial<TreeViewComponents<T, S>>;
   className?: string;
@@ -186,11 +187,14 @@ export const TreeView = <T extends TreeNodeData, S extends InnerProps>(
     components,
     onNodeSelect,
     getChildNodes,
+    getRootNodes,
     innerProps,
   } = props;
-  const rootNodes = treeData.rootIds
-    .map((rootId) => treeData.nodes.get(rootId))
-    .filter(isNonNullable);
+  const rootNodes =
+    getRootNodes?.(treeData) ??
+    treeData.rootIds
+      .map((rootId) => treeData.nodes.get(rootId))
+      .filter(isNonNullable);
   const defaultTreeComponents = {
     TreeNodeView: DefaultTreeNodeView,
     TreeNodeContainer: DefaultTreeNodeContainer,

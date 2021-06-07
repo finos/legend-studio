@@ -86,6 +86,7 @@ import {
   QueryBuilderInOperator,
   QueryBuilderNotInOperator,
 } from './operators/QueryBuilderInOperator';
+import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 
 export class QueryBuilderState extends EditorExtensionState {
   editorStore: EditorStore;
@@ -317,15 +318,17 @@ export class QueryBuilderState extends EditorExtensionState {
       lambdaFunction.expressionSequence[0] = projectFunction;
     } else if (
       this.fetchStructureState.isGraphFetchMode() &&
-      this.fetchStructureState.graphFetchTreeState.graphFetchTree
+      this.fetchStructureState.graphFetchTreeState.treeData &&
+      !isGraphFetchTreeDataEmpty(
+        this.fetchStructureState.graphFetchTreeState.treeData,
+      )
     ) {
-      const graphFetchTreeState =
-        this.fetchStructureState.graphFetchTreeState.graphFetchTree;
-      const root = graphFetchTreeState.root;
       const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
         multiplicityOne,
       );
-      graphFetchInstance.values = [root.graphFetchTreeNode];
+      graphFetchInstance.values = [
+        this.fetchStructureState.graphFetchTreeState.treeData.tree,
+      ];
       const serializeFunction = new SimpleFunctionExpression(
         SUPPORTED_FUNCTIONS.SERIALIZE,
         multiplicityOne,

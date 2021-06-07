@@ -22,7 +22,7 @@ export const simpleAllFunc = {
       function: 'getAll',
       parameters: [
         {
-          _type: 'class',
+          _type: 'packageableElementPtr',
           fullPath: 'apps::pure::studio::tests::model::simple::Person',
         },
       ],
@@ -43,7 +43,7 @@ export const simpleFilterFunc = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'apps::pure::studio::tests::model::simple::Person',
             },
           ],
@@ -101,7 +101,7 @@ export const simpleProjection = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'apps::pure::studio::tests::model::simple::Person',
             },
           ],
@@ -171,7 +171,7 @@ export const projectWithCols = {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: 'packageableElementPtr',
               fullPath: 'apps::pure::studio::tests::model::simple::Person',
             },
           ],
@@ -277,7 +277,7 @@ export const simpleProjectionWithFilter = {
               function: 'getAll',
               parameters: [
                 {
-                  _type: 'class',
+                  _type: 'packageableElementPtr',
                   fullPath: 'apps::pure::studio::tests::model::simple::Person',
                 },
               ],
@@ -572,7 +572,7 @@ export const simpleGraphFetch = {
               function: 'getAll',
               parameters: [
                 {
-                  _type: 'class',
+                  _type: 'packageableElementPtr',
                   fullPath: 'demo::other::NPerson',
                 },
               ],
@@ -625,7 +625,7 @@ export const firmPersonGraphFetch = {
               function: 'getAll',
               parameters: [
                 {
-                  _type: 'class',
+                  _type: 'packageableElementPtr',
                   fullPath: 'demo::other::NFirm',
                 },
               ],

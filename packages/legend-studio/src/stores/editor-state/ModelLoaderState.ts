@@ -18,6 +18,7 @@ import { observable, action, flow, makeObservable } from 'mobx';
 import { TAB_SIZE } from '../EditorConfig';
 import { EditorState } from '../editor-state/EditorState';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   UnsupportedOperationError,
   guaranteeNonNullable,
@@ -54,7 +55,7 @@ export class ModelLoaderState extends EditorState {
       setModelText: action,
       setCurrentInputType: action,
       setCurrentExternalFormatInputType: action,
-      loadCurrentProjectEntities: action,
+      loadCurrentProjectEntities: flow,
     });
   }
 
@@ -101,7 +102,7 @@ export class ModelLoaderState extends EditorState {
    * Current project entities will be taken from the current graph
    * If graph is not parsable, we will fall back to model loader
    */
-  loadCurrentProjectEntities(): void {
+  *loadCurrentProjectEntities(): GeneratorFn<void> {
     switch (this.currentInputType) {
       case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
         const graphEntities = this.editorStore.graphState.graph.isBuilt
@@ -111,9 +112,9 @@ export class ModelLoaderState extends EditorState {
           : this.editorStore.changeDetectionState.workspaceLatestRevisionState
               .entities;
         this.modelText =
-          this.editorStore.graphState.graphManager.entitiesToPureProtocolText(
+          (yield this.editorStore.graphState.graphManager.entitiesToPureProtocolText(
             graphEntities,
-          );
+          )) as string;
         break;
       }
       case MODEL_UPDATER_INPUT_TYPE.ENTITIES: {

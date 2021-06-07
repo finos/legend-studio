@@ -58,6 +58,7 @@ import type { V1_RawRelationalOperationElement } from '../model/packageableEleme
 import type { RawRelationalOperationElement } from '../../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
 import { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
+import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext';
 
 class EngineConfig extends AbstractEngineConfig {
   private engine: V1_Engine;
@@ -175,7 +176,10 @@ export class V1_Engine {
     const lambdas: Record<string, PlainObject<V1_RawLambda>> = {};
     inputLambdas.forEach((inputLambda, key) => {
       lambdas[key] = V1_serializeRawValueSpecification(
-        V1_transformRawLambda(inputLambda),
+        V1_transformRawLambda(
+          inputLambda,
+          new V1_GraphTransformerContextBuilder(false).build(),
+        ),
       );
     });
     const result = V1_GrammarToJsonInput.serialization.fromJson(

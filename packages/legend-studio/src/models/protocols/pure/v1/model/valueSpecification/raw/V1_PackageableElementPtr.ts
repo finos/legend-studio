@@ -17,12 +17,12 @@
 import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
 import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
 
-export class V1_Enum extends V1_ValueSpecification {
+export class V1_PackageableElementPtr extends V1_ValueSpecification {
   fullPath!: string;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_Enum(this);
+    return visitor.visit_PackageableElementPtr(this);
   }
 }

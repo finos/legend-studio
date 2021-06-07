@@ -98,24 +98,10 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "this",
-                        "sourceInformation": {
-                          "endColumn": 13,
-                          "endLine": 80,
-                          "sourceId": "",
-                          "startColumn": 9,
-                          "startLine": 80
-                        }
+                        "name": "this"
                       }
                     ],
-                    "property": "a",
-                    "sourceInformation": {
-                      "endColumn": 15,
-                      "endLine": 80,
-                      "sourceId": "",
-                      "startColumn": 15,
-                      "startLine": 80
-                    }
+                    "property": "a"
                   },
                   {
                     "_type": "string",
@@ -123,23 +109,9 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 23,
-                      "endLine": 80,
-                      "sourceId": "",
-                      "startColumn": 20,
-                      "startLine": 80
-                    },
                     "values": ["aa"]
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 18,
-                  "endLine": 80,
-                  "sourceId": "",
-                  "startColumn": 17,
-                  "startLine": 80
-                }
+                ]
               }
             ],
             "parameters": []
@@ -159,24 +131,10 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "this",
-                        "sourceInformation": {
-                          "endColumn": 7,
-                          "endLine": 81,
-                          "sourceId": "",
-                          "startColumn": 3,
-                          "startLine": 81
-                        }
+                        "name": "this"
                       }
                     ],
-                    "property": "b",
-                    "sourceInformation": {
-                      "endColumn": 9,
-                      "endLine": 81,
-                      "sourceId": "",
-                      "startColumn": 9,
-                      "startLine": 81
-                    }
+                    "property": "b"
                   },
                   {
                     "_type": "integer",
@@ -184,23 +142,9 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 14,
-                      "endLine": 81,
-                      "sourceId": "",
-                      "startColumn": 14,
-                      "startLine": 81
-                    },
                     "values": [1]
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 12,
-                  "endLine": 81,
-                  "sourceId": "",
-                  "startColumn": 11,
-                  "startLine": 81
-                }
+                ]
               }
             ],
             "parameters": []
@@ -279,37 +223,16 @@
                     "lowerBound": 2,
                     "upperBound": 2
                   },
-                  "sourceInformation": {
-                    "endColumn": 49,
-                    "endLine": 88,
-                    "sourceId": "",
-                    "startColumn": 47,
-                    "startLine": 88
-                  },
                   "values": [
                     {
                       "_type": "property",
                       "parameters": [
                         {
                           "_type": "var",
-                          "name": "s",
-                          "sourceInformation": {
-                            "endColumn": 40,
-                            "endLine": 88,
-                            "sourceId": "",
-                            "startColumn": 39,
-                            "startLine": 88
-                          }
+                          "name": "s"
                         }
                       ],
-                      "property": "arms",
-                      "sourceInformation": {
-                        "endColumn": 45,
-                        "endLine": 88,
-                        "sourceId": "",
-                        "startColumn": 42,
-                        "startLine": 88
-                      }
+                      "property": "arms"
                     },
                     {
                       "_type": "integer",
@@ -317,25 +240,11 @@
                         "lowerBound": 1,
                         "upperBound": 1
                       },
-                      "sourceInformation": {
-                        "endColumn": 49,
-                        "endLine": 88,
-                        "sourceId": "",
-                        "startColumn": 49,
-                        "startLine": 88
-                      },
                       "values": [4]
                     }
                   ]
                 }
-              ],
-              "sourceInformation": {
-                "endColumn": 49,
-                "endLine": 88,
-                "sourceId": "",
-                "startColumn": 47,
-                "startLine": 88
-              }
+              ]
             }
           ],
           "name": "calculate",
@@ -347,14 +256,7 @@
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "name": "s",
-              "sourceInformation": {
-                "endColumn": 35,
-                "endLine": 88,
-                "sourceId": "",
-                "startColumn": 13,
-                "startLine": 88
-              }
+              "name": "s"
             }
           ],
           "returnMultiplicity": {
@@ -780,24 +682,10 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "this",
-                        "sourceInformation": {
-                          "endColumn": 7,
-                          "endLine": 174,
-                          "sourceId": "",
-                          "startColumn": 3,
-                          "startLine": 174
-                        }
+                        "name": "this"
                       }
                     ],
-                    "property": "legalName",
-                    "sourceInformation": {
-                      "endColumn": 17,
-                      "endLine": 174,
-                      "sourceId": "",
-                      "startColumn": 9,
-                      "startLine": 174
-                    }
+                    "property": "legalName"
                   },
                   {
                     "_type": "string",
@@ -805,23 +693,9 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 33,
-                      "endLine": 174,
-                      "sourceId": "",
-                      "startColumn": 29,
-                      "startLine": 174
-                    },
                     "values": ["LTD"]
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 27,
-                  "endLine": 174,
-                  "sourceId": "",
-                  "startColumn": 20,
-                  "startLine": 174
-                }
+                ]
               }
             ],
             "parameters": []
@@ -872,34 +746,13 @@
                         "parameters": [
                           {
                             "_type": "var",
-                            "name": "this",
-                            "sourceInformation": {
-                              "endColumn": 25,
-                              "endLine": 183,
-                              "sourceId": "",
-                              "startColumn": 21,
-                              "startLine": 183
-                            }
+                            "name": "this"
                           }
                         ],
-                        "property": "firm",
-                        "sourceInformation": {
-                          "endColumn": 30,
-                          "endLine": 183,
-                          "sourceId": "",
-                          "startColumn": 27,
-                          "startLine": 183
-                        }
+                        "property": "firm"
                       }
                     ],
-                    "property": "legalName",
-                    "sourceInformation": {
-                      "endColumn": 40,
-                      "endLine": 183,
-                      "sourceId": "",
-                      "startColumn": 32,
-                      "startLine": 183
-                    }
+                    "property": "legalName"
                   },
                   {
                     "_type": "string",
@@ -907,23 +760,9 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 62,
-                      "endLine": 183,
-                      "sourceId": "",
-                      "startColumn": 54,
-                      "startLine": 183
-                    },
                     "values": ["Goldman"]
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 52,
-                  "endLine": 183,
-                  "sourceId": "",
-                  "startColumn": 43,
-                  "startLine": 183
-                }
+                ]
               }
             ],
             "parameters": []
@@ -943,24 +782,10 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "this",
-                        "sourceInformation": {
-                          "endColumn": 19,
-                          "endLine": 184,
-                          "sourceId": "",
-                          "startColumn": 15,
-                          "startLine": 184
-                        }
+                        "name": "this"
                       }
                     ],
-                    "property": "degreesHeld",
-                    "sourceInformation": {
-                      "endColumn": 31,
-                      "endLine": 184,
-                      "sourceId": "",
-                      "startColumn": 21,
-                      "startLine": 184
-                    }
+                    "property": "degreesHeld"
                   },
                   {
                     "_type": "func",
@@ -972,13 +797,6 @@
                           "lowerBound": 1,
                           "upperBound": 1
                         },
-                        "sourceInformation": {
-                          "endColumn": 61,
-                          "endLine": 184,
-                          "sourceId": "",
-                          "startColumn": 43,
-                          "startLine": 184
-                        },
                         "values": ["ui::test2::Degree"]
                       },
                       {
@@ -987,32 +805,11 @@
                           "lowerBound": 1,
                           "upperBound": 1
                         },
-                        "sourceInformation": {
-                          "endColumn": 85,
-                          "endLine": 184,
-                          "sourceId": "",
-                          "startColumn": 81,
-                          "startLine": 184
-                        },
                         "values": ["BSc"]
                       }
-                    ],
-                    "sourceInformation": {
-                      "endColumn": 79,
-                      "endLine": 184,
-                      "sourceId": "",
-                      "startColumn": 64,
-                      "startLine": 184
-                    }
+                    ]
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 41,
-                  "endLine": 184,
-                  "sourceId": "",
-                  "startColumn": 34,
-                  "startLine": 184
-                }
+                ]
               }
             ],
             "parameters": []
@@ -1028,24 +825,10 @@
                 "parameters": [
                   {
                     "_type": "var",
-                    "name": "this",
-                    "sourceInformation": {
-                      "endColumn": 22,
-                      "endLine": 185,
-                      "sourceId": "",
-                      "startColumn": 18,
-                      "startLine": 185
-                    }
+                    "name": "this"
                   }
                 ],
-                "property": "isSmart",
-                "sourceInformation": {
-                  "endColumn": 30,
-                  "endLine": 185,
-                  "sourceId": "",
-                  "startColumn": 24,
-                  "startLine": 185
-                }
+                "property": "isSmart"
               }
             ],
             "parameters": []
@@ -1087,33 +870,12 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "this",
-                        "sourceInformation": {
-                          "endColumn": 22,
-                          "endLine": 193,
-                          "sourceId": "",
-                          "startColumn": 18,
-                          "startLine": 193
-                        }
+                        "name": "this"
                       }
                     ],
-                    "property": "title",
-                    "sourceInformation": {
-                      "endColumn": 28,
-                      "endLine": 193,
-                      "sourceId": "",
-                      "startColumn": 24,
-                      "startLine": 193
-                    }
+                    "property": "title"
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 40,
-                  "endLine": 193,
-                  "sourceId": "",
-                  "startColumn": 31,
-                  "startLine": 193
-                }
+                ]
               }
             ],
             "parameters": []
@@ -1159,33 +921,12 @@
                         "parameters": [
                           {
                             "_type": "var",
-                            "name": "this",
-                            "sourceInformation": {
-                              "endColumn": 17,
-                              "endLine": 201,
-                              "sourceId": "",
-                              "startColumn": 13,
-                              "startLine": 201
-                            }
+                            "name": "this"
                           }
                         ],
-                        "property": "lastName",
-                        "sourceInformation": {
-                          "endColumn": 26,
-                          "endLine": 201,
-                          "sourceId": "",
-                          "startColumn": 19,
-                          "startLine": 201
-                        }
+                        "property": "lastName"
                       }
-                    ],
-                    "sourceInformation": {
-                      "endColumn": 34,
-                      "endLine": 201,
-                      "sourceId": "",
-                      "startColumn": 29,
-                      "startLine": 201
-                    }
+                    ]
                   },
                   {
                     "_type": "integer",
@@ -1193,23 +934,9 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 41,
-                      "endLine": 201,
-                      "sourceId": "",
-                      "startColumn": 40,
-                      "startLine": 201
-                    },
                     "values": [10]
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 41,
-                  "endLine": 201,
-                  "sourceId": "",
-                  "startColumn": 38,
-                  "startLine": 201
-                }
+                ]
               }
             ],
             "parameters": []
@@ -1229,24 +956,10 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "this",
-                        "sourceInformation": {
-                          "endColumn": 12,
-                          "endLine": 202,
-                          "sourceId": "",
-                          "startColumn": 8,
-                          "startLine": 202
-                        }
+                        "name": "this"
                       }
                     ],
-                    "property": "age",
-                    "sourceInformation": {
-                      "endColumn": 16,
-                      "endLine": 202,
-                      "sourceId": "",
-                      "startColumn": 14,
-                      "startLine": 202
-                    }
+                    "property": "age"
                   },
                   {
                     "_type": "integer",
@@ -1254,23 +967,9 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 20,
-                      "endLine": 202,
-                      "sourceId": "",
-                      "startColumn": 20,
-                      "startLine": 202
-                    },
                     "values": [0]
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 20,
-                  "endLine": 202,
-                  "sourceId": "",
-                  "startColumn": 18,
-                  "startLine": 202
-                }
+                ]
               }
             ],
             "parameters": []
@@ -1290,24 +989,10 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "this",
-                        "sourceInformation": {
-                          "endColumn": 10,
-                          "endLine": 203,
-                          "sourceId": "",
-                          "startColumn": 6,
-                          "startLine": 203
-                        }
+                        "name": "this"
                       }
                     ],
-                    "property": "isSmart",
-                    "sourceInformation": {
-                      "endColumn": 18,
-                      "endLine": 203,
-                      "sourceId": "",
-                      "startColumn": 12,
-                      "startLine": 203
-                    }
+                    "property": "isSmart"
                   },
                   {
                     "_type": "lambda",
@@ -1325,33 +1010,12 @@
                                 "parameters": [
                                   {
                                     "_type": "var",
-                                    "name": "this",
-                                    "sourceInformation": {
-                                      "endColumn": 26,
-                                      "endLine": 203,
-                                      "sourceId": "",
-                                      "startColumn": 22,
-                                      "startLine": 203
-                                    }
+                                    "name": "this"
                                   }
                                 ],
-                                "property": "degreesHeld",
-                                "sourceInformation": {
-                                  "endColumn": 38,
-                                  "endLine": 203,
-                                  "sourceId": "",
-                                  "startColumn": 28,
-                                  "startLine": 203
-                                }
+                                "property": "degreesHeld"
                               }
-                            ],
-                            "sourceInformation": {
-                              "endColumn": 44,
-                              "endLine": 203,
-                              "sourceId": "",
-                              "startColumn": 41,
-                              "startLine": 203
-                            }
+                            ]
                           },
                           {
                             "_type": "integer",
@@ -1359,33 +1023,12 @@
                               "lowerBound": 1,
                               "upperBound": 1
                             },
-                            "sourceInformation": {
-                              "endColumn": 50,
-                              "endLine": 203,
-                              "sourceId": "",
-                              "startColumn": 50,
-                              "startLine": 203
-                            },
                             "values": [0]
                           }
-                        ],
-                        "sourceInformation": {
-                          "endColumn": 50,
-                          "endLine": 203,
-                          "sourceId": "",
-                          "startColumn": 48,
-                          "startLine": 203
-                        }
+                        ]
                       }
                     ],
-                    "parameters": [],
-                    "sourceInformation": {
-                      "endColumn": 50,
-                      "endLine": 203,
-                      "sourceId": "",
-                      "startColumn": 21,
-                      "startLine": 203
-                    }
+                    "parameters": []
                   },
                   {
                     "_type": "lambda",
@@ -1399,52 +1042,17 @@
                             "parameters": [
                               {
                                 "_type": "var",
-                                "name": "this",
-                                "sourceInformation": {
-                                  "endColumn": 58,
-                                  "endLine": 203,
-                                  "sourceId": "",
-                                  "startColumn": 54,
-                                  "startLine": 203
-                                }
+                                "name": "this"
                               }
                             ],
-                            "property": "degreesHeld",
-                            "sourceInformation": {
-                              "endColumn": 70,
-                              "endLine": 203,
-                              "sourceId": "",
-                              "startColumn": 60,
-                              "startLine": 203
-                            }
+                            "property": "degreesHeld"
                           }
-                        ],
-                        "sourceInformation": {
-                          "endColumn": 79,
-                          "endLine": 203,
-                          "sourceId": "",
-                          "startColumn": 73,
-                          "startLine": 203
-                        }
+                        ]
                       }
                     ],
-                    "parameters": [],
-                    "sourceInformation": {
-                      "endColumn": 81,
-                      "endLine": 203,
-                      "sourceId": "",
-                      "startColumn": 53,
-                      "startLine": 203
-                    }
+                    "parameters": []
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 4,
-                  "endLine": 203,
-                  "sourceId": "",
-                  "startColumn": 3,
-                  "startLine": 203
-                }
+                ]
               }
             ],
             "parameters": []
@@ -1468,33 +1076,12 @@
                         "parameters": [
                           {
                             "_type": "var",
-                            "name": "this",
-                            "sourceInformation": {
-                              "endColumn": 23,
-                              "endLine": 204,
-                              "sourceId": "",
-                              "startColumn": 19,
-                              "startLine": 204
-                            }
+                            "name": "this"
                           }
                         ],
-                        "property": "firstName",
-                        "sourceInformation": {
-                          "endColumn": 33,
-                          "endLine": 204,
-                          "sourceId": "",
-                          "startColumn": 25,
-                          "startLine": 204
-                        }
+                        "property": "firstName"
                       }
-                    ],
-                    "sourceInformation": {
-                      "endColumn": 41,
-                      "endLine": 204,
-                      "sourceId": "",
-                      "startColumn": 36,
-                      "startLine": 204
-                    }
+                    ]
                   },
                   {
                     "_type": "integer",
@@ -1502,23 +1089,9 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 48,
-                      "endLine": 204,
-                      "sourceId": "",
-                      "startColumn": 47,
-                      "startLine": 204
-                    },
                     "values": [10]
                   }
-                ],
-                "sourceInformation": {
-                  "endColumn": 48,
-                  "endLine": 204,
-                  "sourceId": "",
-                  "startColumn": 45,
-                  "startLine": 204
-                }
+                ]
               }
             ],
             "parameters": []
@@ -1614,13 +1187,6 @@
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
-              },
-              "sourceInformation": {
-                "endColumn": 30,
-                "endLine": 218,
-                "sourceId": "",
-                "startColumn": 10,
-                "startLine": 218
               },
               "values": ["make this test pass"]
             }
@@ -1720,24 +1286,10 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "src",
-                        "sourceInformation": {
-                          "endColumn": 18,
-                          "endLine": 234,
-                          "sourceId": "ui::testMapping",
-                          "startColumn": 15,
-                          "startLine": 234
-                        }
+                        "name": "src"
                       }
                     ],
-                    "property": "name",
-                    "sourceInformation": {
-                      "endColumn": 23,
-                      "endLine": 234,
-                      "sourceId": "ui::testMapping",
-                      "startColumn": 20,
-                      "startLine": 234
-                    }
+                    "property": "name"
                   }
                 ],
                 "parameters": []
@@ -1759,13 +1311,6 @@
                     "multiplicity": {
                       "lowerBound": 1,
                       "upperBound": 1
-                    },
-                    "sourceInformation": {
-                      "endColumn": 11,
-                      "endLine": 235,
-                      "sourceId": "ui::testMapping",
-                      "startColumn": 10,
-                      "startLine": 235
                     },
                     "values": [25]
                   }
@@ -1789,24 +1334,10 @@
                     "parameters": [
                       {
                         "_type": "var",
-                        "name": "src",
-                        "sourceInformation": {
-                          "endColumn": 21,
-                          "endLine": 236,
-                          "sourceId": "ui::testMapping",
-                          "startColumn": 18,
-                          "startLine": 236
-                        }
+                        "name": "src"
                       }
                     ],
-                    "property": "lastName",
-                    "sourceInformation": {
-                      "endColumn": 30,
-                      "endLine": 236,
-                      "sourceId": "ui::testMapping",
-                      "startColumn": 23,
-                      "startLine": 236
-                    }
+                    "property": "lastName"
                   }
                 ],
                 "parameters": []
@@ -1838,13 +1369,6 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 19,
-                      "endLine": 240,
-                      "sourceId": "ui::testMapping",
-                      "startColumn": 15,
-                      "startLine": 240
-                    },
                     "values": ["bye"]
                   }
                 ],
@@ -1868,13 +1392,6 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "sourceInformation": {
-                      "endColumn": 11,
-                      "endLine": 241,
-                      "sourceId": "ui::testMapping",
-                      "startColumn": 10,
-                      "startLine": 241
-                    },
                     "values": [11]
                   }
                 ],
@@ -1897,13 +1414,6 @@
                     "multiplicity": {
                       "lowerBound": 1,
                       "upperBound": 1
-                    },
-                    "sourceInformation": {
-                      "endColumn": 24,
-                      "endLine": 242,
-                      "sourceId": "ui::testMapping",
-                      "startColumn": 18,
-                      "startLine": 242
                     },
                     "values": ["hello"]
                   }

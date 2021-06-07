@@ -199,6 +199,7 @@ import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/ser
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { V1_RawRelationalOperationElement } from './model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
+import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
 
 export const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1545,10 +1546,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   compileGraph = flow(function* (
     this: V1_PureGraphManager,
     graph: PureModel,
-    options?: { onError?: () => void },
+    options?: { onError?: () => void; keepSourceInformation?: boolean },
   ) {
-    const fullModel = this.getFullGraphModelData(graph);
-    yield this.engine.compilePureModelContextData(fullModel, options);
+    const fullModel = this.getFullGraphModelData(graph, {
+      keepSourceInformation: options?.keepSourceInformation,
+    });
+    yield this.engine.compilePureModelContextData(fullModel, {
+      onError: options?.onError,
+    });
   });
 
   compileText = flow(function* (
@@ -1573,7 +1578,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): GeneratorFn<string> {
     return (yield this.engine.getLambdaReturnType(
       lambda.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(),
+        new V1_RawValueSpecificationTransformer(
+          new V1_GraphTransformerContextBuilder(false).build(),
+        ),
       ) as V1_RawLambda,
       this.getFullGraphModelData(graph),
     )) as string;
@@ -1707,7 +1714,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Record<PropertyKey, unknown> {
     return V1_serializeRawValueSpecification(
       metamodel.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(),
+        new V1_RawValueSpecificationTransformer(
+          new V1_GraphTransformerContextBuilder(false).build(),
+        ),
       ),
     );
   }
@@ -1757,12 +1766,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  entitiesToPureProtocolText = (entities: Entity[]): string =>
+  entitiesToPureProtocolText = async (entities: Entity[]): Promise<string> =>
     JSON.stringify(
-      this.V1_entitiesToPureModelContextData(entities),
+      V1_serializePureModelContext(
+        await this.V1_entitiesToPureModelContextData(entities),
+      ),
       undefined,
       this.engine.config.tabSize,
     );
+
   pureProtocolToEntities = (protocol: string): Entity[] => {
     const graphData = V1_deserializePureModelContextData(JSON.parse(protocol));
     return this.pureModelContextDataToEntities(graphData);
@@ -1837,7 +1849,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // packageable runtime and connection just to play with execution.
     const executeInput = new V1_ExecuteInput();
     executeInput.clientVersion = clientVersion;
-    executeInput.function = V1_transformRawLambda(lambda);
+    executeInput.function = V1_transformRawLambda(
+      lambda,
+      new V1_GraphTransformerContextBuilder(false).build(),
+    );
     executeInput.mapping = mapping.path;
     executeInput.runtime = V1_transformRuntime(
       runtime,
@@ -2228,8 +2243,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return graphData;
   });
 
-  private getFullGraphModelData(graph: PureModel): V1_PureModelContextData {
-    const contextData1 = this.graphToPureModelContextData(graph);
+  private getFullGraphModelData(
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): V1_PureModelContextData {
+    const contextData1 = this.graphToPureModelContextData(graph, {
+      keepSourceInformation: options?.keepSourceInformation,
+    });
     const contextData2 = this.getGraphCompileContext(graph);
     contextData1.elements = [
       ...contextData1.elements,
@@ -2240,9 +2260,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private elementToProtocol = <T extends V1_PackageableElement>(
     element: PackageableElement,
+    options?: { keepSourceInformation?: boolean },
   ): T =>
     element.accept_PackageableElementVisitor(
-      new V1_PackageableElementTransformer(this.pureProtocolProcessorPlugins),
+      new V1_PackageableElementTransformer(
+        this.pureProtocolProcessorPlugins,
+        new V1_GraphTransformerContextBuilder(
+          Boolean(options?.keepSourceInformation),
+        ).build(),
+      ),
     ) as T;
 
   private pureModelContextDataToEntities = (
@@ -2333,11 +2359,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private graphToPureModelContextData = (
     graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
   ): V1_PureModelContextData => {
     const startTime = Date.now();
     const graphData = new V1_PureModelContextData();
     graphData.elements = graph.allElements.map((e) =>
-      this.elementToProtocol(e),
+      this.elementToProtocol(e, {
+        keepSourceInformation: options?.keepSourceInformation,
+      }),
     );
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED,
@@ -2387,7 +2416,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): RawLambda {
     const fetchTreeJson = V1_serializeRawValueSpecification(
       graphFetchTree.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(),
+        new V1_RawValueSpecificationTransformer(
+          new V1_GraphTransformerContextBuilder(false).build(),
+        ),
       ),
     );
     return new RawLambda(
@@ -2406,7 +2437,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                   function: 'getAll',
                   parameters: [
                     {
-                      _type: 'class',
+                      _type:
+                        V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
                       fullPath: _class.path,
                     },
                   ],
@@ -2430,7 +2462,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           function: 'getAll',
           parameters: [
             {
-              _type: 'class',
+              _type: V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
               fullPath: _class.path,
             },
           ],
@@ -2463,7 +2495,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                   parameters: [{ _type: 'var', name: 'res' }],
                   property: 'values',
                 },
-                { _type: 'hackedClass', fullPath: 'String' },
+                {
+                  _type: V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
+                  fullPath: 'String',
+                },
               ],
             },
             {
@@ -2481,7 +2516,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     query: RawLambda,
   ): string | undefined {
     try {
-      // TODO: for JSON surgery work like this, we might want to move this to ProtocolUtil
       const json = (
         ((query.body as unknown[])[0] as V1_RawFunctionValueSpecification)
           .parameters[1] as { values: (string | undefined)[] }
@@ -2565,7 +2599,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               (parameters[0] as V1_RawFunctionValueSpecification)
                 .parameters[0] as V1_RawFunctionValueSpecification
             ).parameters as PlainObject<V1_RawValueSpecification>[]
-          )[0]._type === V1_RawValueSpecificationType.CLASS,
+          )[0]._type === V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
         );
         assertTrue(
           (
@@ -2604,7 +2638,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
         assertTrue(
           (parameters[0] as PlainObject<V1_RawValueSpecification>)._type ===
-            V1_RawValueSpecificationType.CLASS,
+            V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
         );
         const data = parameters[0] as V1_RawClassValueSpecification;
         return graph.getClass(data.fullPath);
@@ -2615,32 +2649,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       error.message = `Can't extract graph fetch tree content from query:\n${error.message}`;
       this.logger.warn(CORE_LOG_EVENT.NONE, error);
       return undefined;
-    }
-  }
-
-  HACKY_isGetAllLambda(query: RawLambda): boolean {
-    try {
-      assertTrue(Boolean(query.body));
-      assertTrue(!(query.parameters as object[]).length);
-      const body = query.body as object[];
-      assertTrue(body.length === 1);
-      assertTrue(
-        (body[0] as PlainObject<V1_RawValueSpecification>)._type ===
-          V1_RawValueSpecificationType.FUNCTION,
-      );
-      assertTrue(
-        (body[0] as V1_RawFunctionValueSpecification).function === 'getAll',
-      );
-      const parameters = (body[0] as V1_RawFunctionValueSpecification)
-        .parameters;
-      assertTrue(parameters.length === 1);
-      assertTrue(
-        (parameters[0] as PlainObject<V1_RawValueSpecification>)._type ===
-          V1_RawValueSpecificationType.CLASS,
-      );
-      return true;
-    } catch {
-      return false;
     }
   }
 }

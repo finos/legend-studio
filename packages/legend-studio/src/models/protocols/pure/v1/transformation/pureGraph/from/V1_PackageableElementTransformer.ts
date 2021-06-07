@@ -67,6 +67,7 @@ import type {
   V1_ElementTransformer,
   PureProtocolProcessorPlugin,
 } from '../../../../PureProtocolProcessorPlugin';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 /**
  * NOTE: During serialization, we try our best to have the props within each schema ordered the same way
@@ -75,14 +76,19 @@ import type {
 export class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
 {
+  context: V1_GraphTransformerContext;
   plugins: PureProtocolProcessorPlugin[] = [];
   extraElementTransformers: V1_ElementTransformer[] = [];
 
-  constructor(plugins: PureProtocolProcessorPlugin[]) {
+  constructor(
+    plugins: PureProtocolProcessorPlugin[],
+    context: V1_GraphTransformerContext,
+  ) {
     this.plugins = plugins;
     this.extraElementTransformers = plugins.flatMap(
       (plugin) => plugin.V1_getExtraElementTransformers?.() ?? [],
     );
+    this.context = context;
   }
 
   visit_PackageableElement(element: PackageableElement): V1_PackageableElement {
@@ -120,21 +126,21 @@ export class V1_PackageableElementTransformer
   }
 
   visit_Measure(element: Measure): V1_PackageableElement {
-    return V1_transformMeasure(element);
+    return V1_transformMeasure(element, this.context);
   }
 
   visit_Class(element: Class): V1_PackageableElement {
-    return V1_transformClass(element);
+    return V1_transformClass(element, this.context);
   }
 
   visit_Association(element: Association): V1_PackageableElement {
-    return V1_transformAssociation(element);
+    return V1_transformAssociation(element, this.context);
   }
 
   visit_ConcreteFunctionDefinition(
     element: ConcreteFunctionDefinition,
   ): V1_PackageableElement {
-    return V1_transformFunction(element);
+    return V1_transformFunction(element, this.context);
   }
 
   visit_FlatData(element: FlatData): V1_PackageableElement {
@@ -142,7 +148,7 @@ export class V1_PackageableElementTransformer
   }
 
   visit_Database(element: Database): V1_PackageableElement {
-    return V1_transformDatabase(element, this.plugins);
+    return V1_transformDatabase(element, this.plugins, this.context);
   }
 
   visit_ServiceStore(element: ServiceStore): V1_PackageableElement {
@@ -150,11 +156,11 @@ export class V1_PackageableElementTransformer
   }
 
   visit_Mapping(element: Mapping): V1_PackageableElement {
-    return V1_transformMapping(element);
+    return V1_transformMapping(element, this.context);
   }
 
   visit_Service(element: Service): V1_PackageableElement {
-    return V1_transformService(element, this.plugins);
+    return V1_transformService(element, this.plugins, this.context);
   }
 
   visit_Diagram(element: Diagram): V1_PackageableElement {

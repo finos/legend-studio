@@ -7076,14 +7076,6 @@ export const testFlatDataMappingRoundtrip = [
                       {
                         _type: 'var',
                         name: 'src',
-                        sourceInformation: {
-                          endColumn: 14,
-                          endLine: 79,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 11,
-                          startLine: 79,
-                        },
                       },
                       {
                         _type: 'string',
@@ -7091,26 +7083,10 @@ export const testFlatDataMappingRoundtrip = [
                           lowerBound: 1,
                           upperBound: 1,
                         },
-                        sourceInformation: {
-                          endColumn: 22,
-                          endLine: 79,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 15,
-                          startLine: 79,
-                        },
                         values: ['NAME'],
                       },
                     ],
                     property: 'oneString',
-                    sourceInformation: {
-                      endColumn: 22,
-                      endLine: 79,
-                      sourceId:
-                        'test::PersonWithColumnNamesMapping__asFlatData',
-                      startColumn: 15,
-                      startLine: 79,
-                    },
                   },
                 ],
                 parameters: [],
@@ -7140,14 +7116,6 @@ export const testFlatDataMappingRoundtrip = [
                               {
                                 _type: 'var',
                                 name: 'src',
-                                sourceInformation: {
-                                  endColumn: 16,
-                                  endLine: 80,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 13,
-                                  startLine: 80,
-                                },
                               },
                               {
                                 _type: 'string',
@@ -7155,26 +7123,10 @@ export const testFlatDataMappingRoundtrip = [
                                   lowerBound: 1,
                                   upperBound: 1,
                                 },
-                                sourceInformation: {
-                                  endColumn: 23,
-                                  endLine: 80,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 17,
-                                  startLine: 80,
-                                },
                                 values: ['AGE'],
                               },
                             ],
                             property: 'oneInteger',
-                            sourceInformation: {
-                              endColumn: 23,
-                              endLine: 80,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 17,
-                              startLine: 80,
-                            },
                           },
                           {
                             _type: 'integer',
@@ -7182,25 +7134,9 @@ export const testFlatDataMappingRoundtrip = [
                               lowerBound: 1,
                               upperBound: 1,
                             },
-                            sourceInformation: {
-                              endColumn: 28,
-                              endLine: 80,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 27,
-                              startLine: 80,
-                            },
                             values: [60],
                           },
                         ],
-                        sourceInformation: {
-                          endColumn: 28,
-                          endLine: 80,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 25,
-                          startLine: 80,
-                        },
                       },
                       {
                         _type: 'lambda',
@@ -7211,14 +7147,6 @@ export const testFlatDataMappingRoundtrip = [
                               {
                                 _type: 'var',
                                 name: 'src',
-                                sourceInformation: {
-                                  endColumn: 35,
-                                  endLine: 80,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 32,
-                                  startLine: 80,
-                                },
                               },
                               {
                                 _type: 'string',
@@ -7226,37 +7154,13 @@ export const testFlatDataMappingRoundtrip = [
                                   lowerBound: 1,
                                   upperBound: 1,
                                 },
-                                sourceInformation: {
-                                  endColumn: 42,
-                                  endLine: 80,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 36,
-                                  startLine: 80,
-                                },
                                 values: ['AGE'],
                               },
                             ],
                             property: 'oneInteger',
-                            sourceInformation: {
-                              endColumn: 42,
-                              endLine: 80,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 36,
-                              startLine: 80,
-                            },
                           },
                         ],
                         parameters: [],
-                        sourceInformation: {
-                          endColumn: 42,
-                          endLine: 80,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 31,
-                          startLine: 80,
-                        },
                       },
                       {
                         _type: 'lambda',
@@ -7267,36 +7171,12 @@ export const testFlatDataMappingRoundtrip = [
                               lowerBound: 1,
                               upperBound: 1,
                             },
-                            sourceInformation: {
-                              endColumn: 47,
-                              endLine: 80,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 46,
-                              startLine: 80,
-                            },
                             values: [60],
                           },
                         ],
                         parameters: [],
-                        sourceInformation: {
-                          endColumn: 47,
-                          endLine: 80,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 45,
-                          startLine: 80,
-                        },
                       },
                     ],
-                    sourceInformation: {
-                      endColumn: 11,
-                      endLine: 80,
-                      sourceId:
-                        'test::PersonWithColumnNamesMapping__asFlatData',
-                      startColumn: 10,
-                      startLine: 80,
-                    },
                   },
                 ],
                 parameters: [],
@@ -7318,14 +7198,6 @@ export const testFlatDataMappingRoundtrip = [
                       {
                         _type: 'var',
                         name: 'src',
-                        sourceInformation: {
-                          endColumn: 16,
-                          endLine: 81,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 13,
-                          startLine: 81,
-                        },
                       },
                       {
                         _type: 'string',
@@ -7333,26 +7205,10 @@ export const testFlatDataMappingRoundtrip = [
                           lowerBound: 1,
                           upperBound: 1,
                         },
-                        sourceInformation: {
-                          endColumn: 26,
-                          endLine: 81,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 17,
-                          startLine: 81,
-                        },
                         values: ['MASTER'],
                       },
                     ],
                     property: 'optionalBoolean',
-                    sourceInformation: {
-                      endColumn: 26,
-                      endLine: 81,
-                      sourceId:
-                        'test::PersonWithColumnNamesMapping__asFlatData',
-                      startColumn: 17,
-                      startLine: 81,
-                    },
                   },
                 ],
                 parameters: [],
@@ -7374,14 +7230,6 @@ export const testFlatDataMappingRoundtrip = [
                       {
                         _type: 'var',
                         name: 'src',
-                        sourceInformation: {
-                          endColumn: 16,
-                          endLine: 82,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 13,
-                          startLine: 82,
-                        },
                       },
                       {
                         _type: 'string',
@@ -7389,26 +7237,10 @@ export const testFlatDataMappingRoundtrip = [
                           lowerBound: 1,
                           upperBound: 1,
                         },
-                        sourceInformation: {
-                          endColumn: 26,
-                          endLine: 82,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 17,
-                          startLine: 82,
-                        },
                         values: ['WEIGHT'],
                       },
                     ],
                     property: 'optionalFloat',
-                    sourceInformation: {
-                      endColumn: 26,
-                      endLine: 82,
-                      sourceId:
-                        'test::PersonWithColumnNamesMapping__asFlatData',
-                      startColumn: 17,
-                      startLine: 82,
-                    },
                   },
                 ],
                 parameters: [],
@@ -7438,14 +7270,6 @@ export const testFlatDataMappingRoundtrip = [
                               {
                                 _type: 'var',
                                 name: 'src',
-                                sourceInformation: {
-                                  endColumn: 24,
-                                  endLine: 83,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 21,
-                                  startLine: 83,
-                                },
                               },
                               {
                                 _type: 'string',
@@ -7453,26 +7277,10 @@ export const testFlatDataMappingRoundtrip = [
                                   lowerBound: 1,
                                   upperBound: 1,
                                 },
-                                sourceInformation: {
-                                  endColumn: 32,
-                                  endLine: 83,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 25,
-                                  startLine: 83,
-                                },
                                 values: ['FIRM'],
                               },
                             ],
                             property: 'oneString',
-                            sourceInformation: {
-                              endColumn: 32,
-                              endLine: 83,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 25,
-                              startLine: 83,
-                            },
                           },
                           {
                             _type: 'string',
@@ -7480,35 +7288,11 @@ export const testFlatDataMappingRoundtrip = [
                               lowerBound: 1,
                               upperBound: 1,
                             },
-                            sourceInformation: {
-                              endColumn: 38,
-                              endLine: 83,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 37,
-                              startLine: 83,
-                            },
                             values: [''],
                           },
                         ],
-                        sourceInformation: {
-                          endColumn: 35,
-                          endLine: 83,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 34,
-                          startLine: 83,
-                        },
                       },
                     ],
-                    sourceInformation: {
-                      endColumn: 19,
-                      endLine: 83,
-                      sourceId:
-                        'test::PersonWithColumnNamesMapping__asFlatData',
-                      startColumn: 17,
-                      startLine: 83,
-                    },
                   },
                 ],
                 parameters: [],
@@ -7534,14 +7318,6 @@ export const testFlatDataMappingRoundtrip = [
                           lowerBound: 5,
                           upperBound: 5,
                         },
-                        sourceInformation: {
-                          endColumn: 97,
-                          endLine: 84,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 57,
-                          startLine: 84,
-                        },
                         values: [
                           {
                             _type: 'func',
@@ -7557,14 +7333,6 @@ export const testFlatDataMappingRoundtrip = [
                                       {
                                         _type: 'var',
                                         name: 'src',
-                                        sourceInformation: {
-                                          endColumn: 21,
-                                          endLine: 84,
-                                          sourceId:
-                                            'test::PersonWithColumnNamesMapping__asFlatData',
-                                          startColumn: 18,
-                                          startLine: 84,
-                                        },
                                       },
                                       {
                                         _type: 'string',
@@ -7572,50 +7340,18 @@ export const testFlatDataMappingRoundtrip = [
                                           lowerBound: 1,
                                           upperBound: 1,
                                         },
-                                        sourceInformation: {
-                                          endColumn: 29,
-                                          endLine: 84,
-                                          sourceId:
-                                            'test::PersonWithColumnNamesMapping__asFlatData',
-                                          startColumn: 22,
-                                          startLine: 84,
-                                        },
                                         values: ['NAME'],
                                       },
                                     ],
                                     property: 'oneString',
-                                    sourceInformation: {
-                                      endColumn: 29,
-                                      endLine: 84,
-                                      sourceId:
-                                        'test::PersonWithColumnNamesMapping__asFlatData',
-                                      startColumn: 22,
-                                      startLine: 84,
-                                    },
                                   },
                                 ],
-                                sourceInformation: {
-                                  endColumn: 36,
-                                  endLine: 84,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 32,
-                                  startLine: 84,
-                                },
                               },
                               {
                                 _type: 'integer',
                                 multiplicity: {
                                   lowerBound: 1,
                                   upperBound: 1,
-                                },
-                                sourceInformation: {
-                                  endColumn: 51,
-                                  endLine: 84,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 51,
-                                  startLine: 84,
                                 },
                                 values: [0],
                               },
@@ -7625,39 +7361,15 @@ export const testFlatDataMappingRoundtrip = [
                                   lowerBound: 1,
                                   upperBound: 1,
                                 },
-                                sourceInformation: {
-                                  endColumn: 54,
-                                  endLine: 84,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 54,
-                                  startLine: 84,
-                                },
                                 values: [4],
                               },
                             ],
-                            sourceInformation: {
-                              endColumn: 49,
-                              endLine: 84,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 41,
-                              startLine: 84,
-                            },
                           },
                           {
                             _type: 'string',
                             multiplicity: {
                               lowerBound: 1,
                               upperBound: 1,
-                            },
-                            sourceInformation: {
-                              endColumn: 61,
-                              endLine: 84,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 59,
-                              startLine: 84,
                             },
                             values: ['@'],
                           },
@@ -7666,14 +7378,6 @@ export const testFlatDataMappingRoundtrip = [
                             multiplicity: {
                               lowerBound: 1,
                               upperBound: 1,
-                            },
-                            sourceInformation: {
-                              endColumn: 67,
-                              endLine: 84,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 65,
-                              startLine: 84,
                             },
                             values: ['('],
                           },
@@ -7687,14 +7391,6 @@ export const testFlatDataMappingRoundtrip = [
                                   {
                                     _type: 'var',
                                     name: 'src',
-                                    sourceInformation: {
-                                      endColumn: 74,
-                                      endLine: 84,
-                                      sourceId:
-                                        'test::PersonWithColumnNamesMapping__asFlatData',
-                                      startColumn: 71,
-                                      startLine: 84,
-                                    },
                                   },
                                   {
                                     _type: 'string',
@@ -7702,36 +7398,12 @@ export const testFlatDataMappingRoundtrip = [
                                       lowerBound: 1,
                                       upperBound: 1,
                                     },
-                                    sourceInformation: {
-                                      endColumn: 82,
-                                      endLine: 84,
-                                      sourceId:
-                                        'test::PersonWithColumnNamesMapping__asFlatData',
-                                      startColumn: 75,
-                                      startLine: 84,
-                                    },
                                     values: ['FIRM'],
                                   },
                                 ],
                                 property: 'oneString',
-                                sourceInformation: {
-                                  endColumn: 82,
-                                  endLine: 84,
-                                  sourceId:
-                                    'test::PersonWithColumnNamesMapping__asFlatData',
-                                  startColumn: 75,
-                                  startLine: 84,
-                                },
                               },
                             ],
-                            sourceInformation: {
-                              endColumn: 89,
-                              endLine: 84,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 85,
-                              startLine: 84,
-                            },
                           },
                           {
                             _type: 'string',
@@ -7739,27 +7411,11 @@ export const testFlatDataMappingRoundtrip = [
                               lowerBound: 1,
                               upperBound: 1,
                             },
-                            sourceInformation: {
-                              endColumn: 97,
-                              endLine: 84,
-                              sourceId:
-                                'test::PersonWithColumnNamesMapping__asFlatData',
-                              startColumn: 95,
-                              startLine: 84,
-                            },
                             values: [')'],
                           },
                         ],
                       },
                     ],
-                    sourceInformation: {
-                      endColumn: 97,
-                      endLine: 84,
-                      sourceId:
-                        'test::PersonWithColumnNamesMapping__asFlatData',
-                      startColumn: 57,
-                      startLine: 84,
-                    },
                   },
                 ],
                 parameters: [],
@@ -7781,14 +7437,6 @@ export const testFlatDataMappingRoundtrip = [
                       {
                         _type: 'var',
                         name: 'src',
-                        sourceInformation: {
-                          endColumn: 22,
-                          endLine: 85,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 19,
-                          startLine: 85,
-                        },
                       },
                       {
                         _type: 'string',
@@ -7796,26 +7444,10 @@ export const testFlatDataMappingRoundtrip = [
                           lowerBound: 1,
                           upperBound: 1,
                         },
-                        sourceInformation: {
-                          endColumn: 38,
-                          endLine: 85,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 23,
-                          startLine: 85,
-                        },
                         values: ['ANOTHER_DATE'],
                       },
                     ],
                     property: 'oneStrictDate',
-                    sourceInformation: {
-                      endColumn: 38,
-                      endLine: 85,
-                      sourceId:
-                        'test::PersonWithColumnNamesMapping__asFlatData',
-                      startColumn: 23,
-                      startLine: 85,
-                    },
                   },
                 ],
                 parameters: [],
@@ -7838,14 +7470,6 @@ export const testFlatDataMappingRoundtrip = [
                       {
                         _type: 'var',
                         name: 'src',
-                        sourceInformation: {
-                          endColumn: 44,
-                          endLine: 86,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 41,
-                          startLine: 86,
-                        },
                       },
                       {
                         _type: 'string',
@@ -7853,26 +7477,10 @@ export const testFlatDataMappingRoundtrip = [
                           lowerBound: 1,
                           upperBound: 1,
                         },
-                        sourceInformation: {
-                          endColumn: 53,
-                          endLine: 86,
-                          sourceId:
-                            'test::PersonWithColumnNamesMapping__asFlatData',
-                          startColumn: 45,
-                          startLine: 86,
-                        },
                         values: ['TITLE'],
                       },
                     ],
                     property: 'oneString',
-                    sourceInformation: {
-                      endColumn: 53,
-                      endLine: 86,
-                      sourceId:
-                        'test::PersonWithColumnNamesMapping__asFlatData',
-                      startColumn: 45,
-                      startLine: 86,
-                    },
                   },
                 ],
                 parameters: [],
@@ -16085,24 +15693,10 @@ export const testFlatDataInputDataRoundtrip = [
                 function: 'getAll',
                 parameters: [
                   {
-                    _type: 'class',
+                    _type: 'packageableElementPtr',
                     fullPath: 'tClass',
-                    sourceInformation: {
-                      endColumn: 23,
-                      endLine: 16,
-                      sourceId: 'test::tMapping',
-                      startColumn: 18,
-                      startLine: 16,
-                    },
                   },
                 ],
-                sourceInformation: {
-                  endColumn: 29,
-                  endLine: 16,
-                  sourceId: 'test::tMapping',
-                  startColumn: 24,
-                  startLine: 16,
-                },
               },
             ],
             parameters: [],

@@ -166,7 +166,7 @@ export abstract class AbstractPureGraphManager {
 
   abstract compileGraph(
     graph: PureModel,
-    options?: { onError?: () => void },
+    options?: { onError?: () => void; keepSourceInformation?: boolean },
   ): Promise<void>;
   abstract compileText(
     graphGrammar: string,
@@ -226,7 +226,7 @@ export abstract class AbstractPureGraphManager {
   ): Promise<Entity[]>;
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
-  abstract entitiesToPureProtocolText(entities: Entity[]): string;
+  abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;
   abstract pureProtocolToEntities(protocol: string): Entity[];
 
   // ------------------------------------------- Execute -------------------------------------------
@@ -320,10 +320,13 @@ export abstract class AbstractPureGraphManager {
     query: RawLambda,
   ): string | undefined;
   abstract HACKY_extractAssertionString(query: RawLambda): string | undefined;
+
+  /**
+   * @deprecated
+   */
   abstract HACKY_deriveGraphFetchTreeContentFromQuery(
     query: RawLambda,
     graph: PureModel,
     parentElement: PackageableElement,
   ): Class | RawRootGraphFetchTree | undefined;
-  abstract HACKY_isGetAllLambda(query: RawLambda): boolean;
 }

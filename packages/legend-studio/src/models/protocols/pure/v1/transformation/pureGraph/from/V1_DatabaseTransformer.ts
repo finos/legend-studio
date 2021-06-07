@@ -105,6 +105,7 @@ import { V1_Schema } from '../../../model/packageableElements/store/relational/m
 import { V1_Table } from '../../../model/packageableElements/store/relational/model/V1_Table';
 import { V1_transformMilestoning } from './V1_MilestoningTransformer';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformRelationalDataType = (type: DataType): V1_RelationalDataType => {
   if (type instanceof VarChar) {
@@ -189,12 +190,13 @@ export const V1_transformTableToTablePointer = (table: Table): V1_TablePtr => {
 
 export const V1_transformRelationalOperationElement = (
   operation: RelationalOperationElement,
+  context: V1_GraphTransformerContext,
 ): V1_RelationalOperationElement => {
   if (operation instanceof DynaFunction) {
     const _dynaFunc = new V1_DynaFunc();
     _dynaFunc.funcName = operation.name;
-    _dynaFunc.parameters = operation.parameters.map(
-      V1_transformRelationalOperationElement,
+    _dynaFunc.parameters = operation.parameters.map((param) =>
+      V1_transformRelationalOperationElement(param, context),
     );
     return _dynaFunc;
   } else if (operation instanceof TableAliasColumn) {
@@ -211,13 +213,14 @@ export const V1_transformRelationalOperationElement = (
     const _literal = new V1_Literal();
     _literal.value =
       operation.value instanceof RelationalOperationElement
-        ? V1_transformRelationalOperationElement(operation.value)
+        ? V1_transformRelationalOperationElement(operation.value, context)
         : operation.value;
     return _literal;
   } else if (operation instanceof LiteralList) {
     const _literalList = new V1_LiteralList();
     _literalList.values = operation.values.map(
-      (val) => V1_transformRelationalOperationElement(val) as V1_Literal,
+      (val) =>
+        V1_transformRelationalOperationElement(val, context) as V1_Literal,
     );
     return _literalList;
   } else if (operation instanceof RelationalOperationElementWithJoin) {
@@ -234,6 +237,7 @@ export const V1_transformRelationalOperationElement = (
     elementWithJoin.relationalElement = operation.relationalOperationElement
       ? V1_transformRelationalOperationElement(
           operation.relationalOperationElement,
+          context,
         )
       : undefined;
     return elementWithJoin;
@@ -247,13 +251,21 @@ export const V1_transformRelationalOperationElement = (
 
 export const V1_transformGroupByMapping = (
   groupByMapping: GroupByMapping | undefined,
+  context: V1_GraphTransformerContext,
 ): V1_RelationalOperationElement[] =>
-  groupByMapping?.columns.map(V1_transformRelationalOperationElement) ?? [];
-const transformColumnMapping = (element: ColumnMapping): V1_ColumnMapping => {
+  groupByMapping?.columns.map((column) =>
+    V1_transformRelationalOperationElement(column, context),
+  ) ?? [];
+
+const transformColumnMapping = (
+  element: ColumnMapping,
+  context: V1_GraphTransformerContext,
+): V1_ColumnMapping => {
   const colMapping = new V1_ColumnMapping();
   colMapping.name = element.columnName;
   colMapping.operation = V1_transformRelationalOperationElement(
     element.relationalOperationElement,
+    context,
   );
   return colMapping;
 };
@@ -284,51 +296,72 @@ const transformTable = (
   return table;
 };
 
-const transformJoin = (element: Join): V1_Join => {
+const transformJoin = (
+  element: Join,
+  context: V1_GraphTransformerContext,
+): V1_Join => {
   const join = new V1_Join();
   join.name = element.name;
-  join.operation = V1_transformRelationalOperationElement(element.operation);
+  join.operation = V1_transformRelationalOperationElement(
+    element.operation,
+    context,
+  );
   return join;
 };
 
-const transformFilter = (element: Filter): V1_Filter => {
+const transformFilter = (
+  element: Filter,
+  context: V1_GraphTransformerContext,
+): V1_Filter => {
   const filter = new V1_Filter();
   filter.name = element.name;
-  filter.operation = V1_transformRelationalOperationElement(element.operation);
+  filter.operation = V1_transformRelationalOperationElement(
+    element.operation,
+    context,
+  );
   return filter;
 };
 
-const transformView = (element: View): V1_View => {
+const transformView = (
+  element: View,
+  context: V1_GraphTransformerContext,
+): V1_View => {
   const view = new V1_View();
   view.name = element.name;
   view.distinct = element.distinct;
   view.primaryKey = element.primaryKey.map((v) => v.name);
-  view.columnMappings = element.columnMappings.map(transformColumnMapping);
-  view.groupBy = V1_transformGroupByMapping(element.groupBy);
+  view.columnMappings = element.columnMappings.map((columnMapping) =>
+    transformColumnMapping(columnMapping, context),
+  );
+  view.groupBy = V1_transformGroupByMapping(element.groupBy, context);
   return view;
 };
 
 const transformSchema = (
   element: Schema,
   plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_Schema => {
   const schema = new V1_Schema();
   schema.name = element.name;
   schema.tables = element.tables.map((table) => transformTable(table, plugins));
-  schema.views = element.views.map(transformView);
+  schema.views = element.views.map((view) => transformView(view, context));
   return schema;
 };
 
 export const V1_transformDatabase = (
   element: Database,
   plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_Database => {
   const database = new V1_Database();
   V1_initPackageableElement(database, element);
-  database.filters = element.filters.map(transformFilter);
-  database.joins = element.joins.map(transformJoin);
+  database.filters = element.filters.map((filter) =>
+    transformFilter(filter, context),
+  );
+  database.joins = element.joins.map((join) => transformJoin(join, context));
   database.schemas = element.schemas.map((schema) =>
-    transformSchema(schema, plugins),
+    transformSchema(schema, plugins, context),
   );
   database.includedStores = element.includes.map(V1_transformElementReference);
   return database;

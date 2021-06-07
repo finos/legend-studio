@@ -24,7 +24,6 @@ import type {
   DerivedPropertyExpressionEditorState,
   QueryBuilderPropertyEditorState,
 } from '../stores/QueryBuilderPropertyEditorState';
-import type { QueryBuilderProjectionDropTarget } from '../stores/QueryBuilderFetchStructureState';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import type {
@@ -139,7 +138,7 @@ export const QueryBuilderPropertyExpressionBadge = observer(
       }
     };
     const handleDrop = useCallback(
-      (item: QueryBuilderProjectionDropTarget): void =>
+      (item: QueryBuilderExplorerTreeDragSource): void =>
         onPropertyExpressionChange(item.node),
       [onPropertyExpressionChange],
     );

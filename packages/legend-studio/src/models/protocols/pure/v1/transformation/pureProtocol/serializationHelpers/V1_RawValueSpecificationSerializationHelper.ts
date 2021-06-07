@@ -51,7 +51,7 @@ export enum V1_RawValueSpecificationType {
   VARIABLE = 'var',
   ROOT_GRAPH_FETCH_TREE = 'rootGraphFetchTree',
   PROPERTY_GRAPH_FETCH_TREE = 'propertyGraphFetchTree',
-  CLASS = 'class',
+  PACKAGEABLE_ELEMENT_PTR = 'packageableElementPtr',
   FUNCTION = 'func',
 }
 

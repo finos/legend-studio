@@ -35,14 +35,48 @@ import {
   V1_RawPropertyGraphFetchTree,
   V1_RawRootGraphFetchTree,
 } from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
+import { SOURCE_INFORMATION_KEY } from '../../../../../../MetaModelConst';
+import { recursiveOmit } from '@finos/legend-studio-shared';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 export class V1_RawValueSpecificationTransformer
   implements RawValueSpecificationVisitor<V1_RawValueSpecification>
 {
+  context: V1_GraphTransformerContext;
+
+  constructor(context: V1_GraphTransformerContext) {
+    this.context = context;
+  }
+
   visit_RawLambda(rawValueSpecification: RawLambda): V1_RawValueSpecification {
     const rawLambda = new V1_RawLambda();
-    rawLambda.body = toJS(rawValueSpecification.body);
-    rawLambda.parameters = toJS(rawValueSpecification.parameters);
+    // Prune source information from the lambda
+    // NOTE: if in the future, source information is stored under different key,
+    // e.g. { "classPointerSourceInformation": ... }
+    // we will need to use the prune source information method from `V1_PureGraphManager`
+    rawLambda.body = rawValueSpecification.body
+      ? toJS(
+          this.context.keepSourceInformation
+            ? rawValueSpecification.body
+            : recursiveOmit(
+                rawValueSpecification.body as Record<PropertyKey, unknown>,
+                [SOURCE_INFORMATION_KEY],
+              ),
+        )
+      : undefined;
+    rawLambda.parameters = rawValueSpecification.parameters
+      ? toJS(
+          this.context.keepSourceInformation
+            ? rawValueSpecification.parameters
+            : recursiveOmit(
+                rawValueSpecification.parameters as Record<
+                  PropertyKey,
+                  unknown
+                >,
+                [SOURCE_INFORMATION_KEY],
+              ),
+        )
+      : undefined;
     return rawLambda;
   }
 
@@ -94,7 +128,10 @@ export class V1_RawValueSpecificationTransformer
   }
 }
 
-export const V1_transformRawLambda = (rawLambda: RawLambda): V1_RawLambda =>
+export const V1_transformRawLambda = (
+  rawLambda: RawLambda,
+  context: V1_GraphTransformerContext,
+): V1_RawLambda =>
   rawLambda.accept_ValueSpecificationVisitor(
-    new V1_RawValueSpecificationTransformer(),
+    new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
