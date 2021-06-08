@@ -68,7 +68,7 @@ export abstract class ConnectionValueState {
   abstract label(): string;
 }
 
-export enum RELATIONAL_DATABASE_TABE {
+export enum RELATIONAL_DATABASE_TAB_TYPE {
   GENERAL = 'GENERAL',
   STORE = 'STORE',
 }
@@ -208,7 +208,7 @@ export class GenerateStoreState {
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
   override connection: RelationalDatabaseConnection;
-  selectedTab = RELATIONAL_DATABASE_TABE.GENERAL;
+  selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   generateStoreState: GenerateStoreState;
 
   constructor(
@@ -231,7 +231,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       : undefined;
   }
 
-  setSelectedTab(val: RELATIONAL_DATABASE_TABE): void {
+  setSelectedTab(val: RELATIONAL_DATABASE_TAB_TYPE): void {
     this.selectedTab = val;
   }
 

@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
-  RELATIONAL_DATABASE_TABE,
+  RELATIONAL_DATABASE_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/ConnectionEditorState';
 import type {
   GenerateStoreState,
@@ -1246,14 +1246,14 @@ export const RelationalDatabaseConnectionEditor = observer(
     const { connectionValueState, isReadOnly } = props;
     const selectedTab = connectionValueState.selectedTab;
     const changeTab =
-      (tab: RELATIONAL_DATABASE_TABE): (() => void) =>
+      (tab: RELATIONAL_DATABASE_TAB_TYPE): (() => void) =>
       (): void =>
         connectionValueState.setSelectedTab(tab);
     return (
       <>
         <div className="panel__header">
           <div className="uml-element-editor__tabs">
-            {Object.values(RELATIONAL_DATABASE_TABE).map((tab) => (
+            {Object.values(RELATIONAL_DATABASE_TAB_TYPE).map((tab) => (
               <div
                 key={tab}
                 onClick={changeTab(tab)}
@@ -1268,13 +1268,13 @@ export const RelationalDatabaseConnectionEditor = observer(
           </div>
         </div>
         <div className="panel__content">
-          {selectedTab === RELATIONAL_DATABASE_TABE.GENERAL && (
+          {selectedTab === RELATIONAL_DATABASE_TAB_TYPE.GENERAL && (
             <RelationalConnectionGeneralEditor
               connectionValueState={connectionValueState}
               isReadOnly={isReadOnly}
             />
           )}
-          {selectedTab === RELATIONAL_DATABASE_TABE.STORE && (
+          {selectedTab === RELATIONAL_DATABASE_TAB_TYPE.STORE && (
             <RelationalConnectionStoreEditor
               connectionValueState={connectionValueState}
               isReadOnly={isReadOnly}
