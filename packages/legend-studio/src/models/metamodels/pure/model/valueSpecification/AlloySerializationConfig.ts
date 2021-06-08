@@ -31,5 +31,5 @@ export class AlloySerializationConfig {
 }
 
 export class AlloySerializationConfigInstanceValue extends InstanceValue {
-  values: AlloySerializationConfig[] = [];
+  override values: AlloySerializationConfig[] = [];
 }

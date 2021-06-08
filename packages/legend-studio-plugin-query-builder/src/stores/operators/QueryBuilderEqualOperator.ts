@@ -177,11 +177,11 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
 }
 
 export class QueryBuilderNotEqualOperator extends QueryBuilderEqualOperator {
-  getLabel(filterConditionState: FilterConditionState): string {
+  override getLabel(filterConditionState: FilterConditionState): string {
     return `is not`;
   }
 
-  buildFilterConditionExpression(
+  override buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
@@ -190,7 +190,7 @@ export class QueryBuilderNotEqualOperator extends QueryBuilderEqualOperator {
     );
   }
 
-  buildFilterConditionState(
+  override buildFilterConditionState(
     filterState: QueryBuilderFilterState,
     expression: SimpleFunctionExpression,
   ): FilterConditionState | undefined {

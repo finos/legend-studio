@@ -53,19 +53,19 @@ export class V1_FlatDataNumber extends V1_FlatDataDataType implements Hashable {
 }
 
 export class V1_FlatDataInteger extends V1_FlatDataNumber implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_INTEGER]);
   }
 }
 
 export class V1_FlatDataFloat extends V1_FlatDataNumber implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_FLOAT]);
   }
 }
 
 export class V1_FlatDataDecimal extends V1_FlatDataNumber implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_DECIMAL]);
   }
 }
@@ -84,7 +84,7 @@ export class V1_FlatDataDate extends V1_FlatDataDataType implements Hashable {
 }
 
 export class V1_FlatDataDateTime extends V1_FlatDataDate implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_DATE_TIME,
       this.dateFormat ?? '',
@@ -94,7 +94,7 @@ export class V1_FlatDataDateTime extends V1_FlatDataDate implements Hashable {
 }
 
 export class V1_FlatDataStrictDate extends V1_FlatDataDate implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_STRICT_DATE,
       this.dateFormat ?? '',
@@ -138,7 +138,7 @@ export class V1_RootFlatDataRecordType
   extends V1_FlatDataRecordType
   implements Hashable
 {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_ROOT_RECORD_TYPE,
       hashArray(this.fields),

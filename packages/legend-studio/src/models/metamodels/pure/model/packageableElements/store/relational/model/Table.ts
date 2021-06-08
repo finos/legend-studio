@@ -50,7 +50,7 @@ export class Table extends NamedRelation implements Hashable {
       `Can't find column '${name}' in table '${this.name}'`,
     );
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABASE_SCHEMA_TABLE,
       this.name,

@@ -119,7 +119,7 @@ export class Package extends PackageableElement implements Hashable {
     return node;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGE,
       super.hashCode,

@@ -28,7 +28,7 @@ import type { Table } from '../../../../../model/packageableElements/store/relat
 import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
 
 export abstract class NamedRelationalReference extends ReferenceWithOwner {
-  readonly ownerReference: PackageableElementReference<Database>;
+  override readonly ownerReference: PackageableElementReference<Database>;
 
   protected constructor(ownerReference: PackageableElementReference<Database>) {
     super(ownerReference);
@@ -84,7 +84,7 @@ export abstract class TableReference extends NamedRelationalReference {
 }
 
 export class TableExplicitReference extends TableReference {
-  readonly ownerReference: PackageableElementExplicitReference<Database>;
+  override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: Table) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -100,7 +100,7 @@ export class TableExplicitReference extends TableReference {
 }
 
 export class TableImplicitReference extends TableReference {
-  readonly ownerReference: PackageableElementImplicitReference<Database>;
+  override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Database>,

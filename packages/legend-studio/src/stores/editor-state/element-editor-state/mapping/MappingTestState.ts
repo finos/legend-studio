@@ -97,7 +97,6 @@ export enum TEST_RESULT {
 }
 
 export class MappingTestQueryState extends LambdaEditorState {
-  uuid = uuid();
   editorStore: EditorStore;
   test: MappingTest;
   isConvertingLambdaToString = false;

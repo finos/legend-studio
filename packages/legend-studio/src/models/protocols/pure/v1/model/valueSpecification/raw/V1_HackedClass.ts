@@ -18,7 +18,7 @@ import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification';
 import { V1_PackageableElementPtr } from './V1_PackageableElementPtr';
 
 export class V1_HackedClass extends V1_PackageableElementPtr {
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_HackedClass(this);

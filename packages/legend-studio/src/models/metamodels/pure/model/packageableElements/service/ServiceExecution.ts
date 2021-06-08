@@ -108,7 +108,7 @@ export class PureSingleExecution extends PureExecution implements Hashable {
       : undefined;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_PURE_SINGLE_EXECUTION,
       super.hashCode,
@@ -195,7 +195,7 @@ export class PureMultiExecution extends PureExecution implements Hashable {
     addUniqueEntry(this.executionParameters, value);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_PURE_MULTI_EXECUTION,
       super.hashCode,

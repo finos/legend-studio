@@ -83,7 +83,7 @@ export class RelationalInstanceSetImplementation
     return visitor.visit_RelationalInstanceSetImplementation(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,

@@ -22,7 +22,7 @@ import type { V1_PropertyMapping } from '../V1_PropertyMapping';
 export class V1_XStoreAssociationMapping extends V1_AssociationMapping {
   propertyMappings: V1_PropertyMapping[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.XSTORE_ASSOCIATION_IMPLEMENTATION,
       super.hashCode,

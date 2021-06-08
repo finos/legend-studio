@@ -35,7 +35,7 @@ export class PropertyHolderView extends RelationshipView implements Hashable {
     this.property = property;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROPERTY_HOLDER_VIEW,
       super.hashCode,

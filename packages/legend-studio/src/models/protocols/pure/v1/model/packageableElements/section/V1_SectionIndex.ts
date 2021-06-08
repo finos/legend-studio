@@ -24,7 +24,7 @@ import type { V1_Section } from './V1_Section';
 export class V1_SectionIndex extends V1_PackageableElement implements Hashable {
   sections: V1_Section[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SECTION_INDEX,
       super.hashCode,

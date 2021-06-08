@@ -92,13 +92,13 @@ export class Profile extends PackageableElement implements Hashable, Stubable {
     );
 
   static createStub = (): Profile => new Profile('');
-  get isStub(): boolean {
+  override get isStub(): boolean {
     return (
       super.isStub && isStubArray(this.stereotypes) && isStubArray(this.tags)
     );
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

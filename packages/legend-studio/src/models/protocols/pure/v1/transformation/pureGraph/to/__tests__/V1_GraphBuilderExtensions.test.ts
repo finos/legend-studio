@@ -65,7 +65,7 @@ class StubGraphManagerPlugin extends PureProtocolProcessorPlugin {
     throw new UnsupportedOperationError();
   }
 
-  V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
+  override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
     return this.builders;
   }
 }

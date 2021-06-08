@@ -26,7 +26,7 @@ import type { Column } from '../../../../../model/packageableElements/store/rela
 import { getSchemaFromRelation } from '../../../../../model/packageableElements/store/relational/model/RelationReference';
 
 export abstract class ColumnReference extends ReferenceWithOwner {
-  readonly ownerReference: PackageableElementReference<Database>;
+  override readonly ownerReference: PackageableElementReference<Database>;
   value: Column;
 
   protected constructor(
@@ -51,7 +51,7 @@ export abstract class ColumnReference extends ReferenceWithOwner {
 }
 
 export class ColumnExplicitReference extends ColumnReference {
-  readonly ownerReference: PackageableElementExplicitReference<Database>;
+  override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: Column) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -67,7 +67,7 @@ export class ColumnExplicitReference extends ColumnReference {
 }
 
 export class ColumnImplicitReference extends ColumnReference {
-  readonly ownerReference: PackageableElementImplicitReference<Database>;
+  override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Database>,

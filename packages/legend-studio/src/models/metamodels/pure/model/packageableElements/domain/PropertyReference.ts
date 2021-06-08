@@ -32,7 +32,7 @@ export abstract class PropertyReference
   extends ReferenceWithOwner
   implements Stubable
 {
-  readonly ownerReference: PackageableElementReference<Class>;
+  override readonly ownerReference: PackageableElementReference<Class>;
   value: AbstractProperty;
 
   protected constructor(
@@ -77,7 +77,7 @@ export abstract class PropertyReference
 }
 
 export class PropertyExplicitReference extends PropertyReference {
-  readonly ownerReference: PackageableElementExplicitReference<Class>;
+  override readonly ownerReference: PackageableElementExplicitReference<Class>;
 
   private constructor(value: AbstractProperty) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -95,7 +95,7 @@ export class PropertyExplicitReference extends PropertyReference {
 }
 
 export class PropertyImplicitReference extends PropertyReference {
-  readonly ownerReference: PackageableElementImplicitReference<Class>;
+  override readonly ownerReference: PackageableElementImplicitReference<Class>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Class>,

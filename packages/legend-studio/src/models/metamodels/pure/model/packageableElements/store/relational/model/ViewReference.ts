@@ -62,7 +62,7 @@ export abstract class ViewReference extends NamedRelationalReference {
 }
 
 export class ViewExplicitReference extends ViewReference {
-  readonly ownerReference: PackageableElementExplicitReference<Database>;
+  override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: View) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -78,7 +78,7 @@ export class ViewExplicitReference extends ViewReference {
 }
 
 export class ViewImplicitReference extends ViewReference {
-  readonly ownerReference: PackageableElementImplicitReference<Database>;
+  override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Database>,

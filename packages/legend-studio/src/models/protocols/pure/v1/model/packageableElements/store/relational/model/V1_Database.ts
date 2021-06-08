@@ -28,7 +28,7 @@ export class V1_Database extends V1_Store implements Hashable {
   joins: V1_Join[] = [];
   filters: V1_Filter[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABASE,
       super.hashCode,

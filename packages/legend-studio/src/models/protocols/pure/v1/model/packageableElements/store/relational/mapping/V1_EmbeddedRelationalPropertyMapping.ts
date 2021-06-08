@@ -32,7 +32,7 @@ export class V1_EmbeddedRelationalPropertyMapping
     return visitor.visit_EmbeddedRelationalPropertyMapping(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
       super.hashCode,

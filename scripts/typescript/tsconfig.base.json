@@ -27,6 +27,7 @@
     // See https://github.com/mobxjs/mobx/issues/2486
     "useDefineForClassFields": true,
     // Other settings
+    "noImplicitOverride": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true
   }

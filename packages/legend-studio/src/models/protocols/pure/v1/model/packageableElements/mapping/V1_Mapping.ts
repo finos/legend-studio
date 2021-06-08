@@ -32,7 +32,7 @@ export class V1_Mapping extends V1_PackageableElement implements Hashable {
   associationMappings: V1_AssociationMapping[] = [];
   tests: V1_MappingTest[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING,
       super.hashCode,

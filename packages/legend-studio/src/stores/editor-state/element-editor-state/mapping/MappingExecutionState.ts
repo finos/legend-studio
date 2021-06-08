@@ -104,7 +104,6 @@ import type { SetImplementation } from '../../../../models/metamodels/pure/model
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
-  uuid = uuid();
   editorStore: EditorStore;
   isConvertingLambdaToString = false;
   isInitializingLambda = false;

@@ -24,7 +24,7 @@ export class V1_Text extends V1_PackageableElement implements Hashable {
   type!: string;
   content!: string;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       TEXT_HASH_STRUCTURE.ELEMENT,
       super.hashCode,

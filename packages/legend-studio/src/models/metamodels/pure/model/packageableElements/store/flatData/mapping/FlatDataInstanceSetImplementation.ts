@@ -96,7 +96,7 @@ export class FlatDataInstanceSetImplementation
       .concat(embeddedPropertyMappings);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,

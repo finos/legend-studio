@@ -34,7 +34,7 @@ export class V1_AggregationAwareClassMapping
     return visitor.visit_AggregationAwareClassMapping(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.AGGREGATION_AWARE_MAPPING,
       super.hashCode,

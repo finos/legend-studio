@@ -32,11 +32,13 @@ export class V1_RootRelationalClassMapping
   groupBy: V1_RelationalOperationElement[] = [];
   filter?: V1_FilterMapping;
 
-  accept_ClassMappingVisitor<T>(visitor: V1_ClassMappingVisitor<T>): T {
+  override accept_ClassMappingVisitor<T>(
+    visitor: V1_ClassMappingVisitor<T>,
+  ): T {
     return visitor.visit_RootRelationalClassMapping(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ROOT_RELATIONAL_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,

@@ -33,7 +33,7 @@ export class V1_Class extends V1_PackageableElement implements Hashable {
   taggedValues: V1_TaggedValue[] = [];
   constraints: V1_Constraint[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.CLASS,
       super.hashCode,

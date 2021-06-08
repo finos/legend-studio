@@ -66,15 +66,19 @@ export class OtherwiseEmbeddedRelationalInstanceSetImplementation
     });
   }
 
-  accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
+  override accept_PropertyMappingVisitor<T>(
+    visitor: PropertyMappingVisitor<T>,
+  ): T {
     return visitor.visit_OtherwiseEmbeddedRelationalPropertyMapping(this);
   }
 
-  accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
+  override accept_SetImplementationVisitor<T>(
+    visitor: SetImplementationVisitor<T>,
+  ): T {
     throw new Error('Method not implemented.');
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OTHERWISE_EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
       super.hashCode,

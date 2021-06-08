@@ -32,7 +32,7 @@ export abstract class Store extends PackageableElement implements Hashable {
     });
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.STORE,
       super.hashCode,

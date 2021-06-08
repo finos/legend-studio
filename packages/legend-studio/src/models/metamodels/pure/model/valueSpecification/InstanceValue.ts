@@ -77,7 +77,7 @@ const getHashStructure = (val: string): string => {
 };
 
 export class PrimitiveInstanceValue extends InstanceValue {
-  genericType: GenericTypeReference;
+  override genericType: GenericTypeReference;
 
   // NOTE: when we support editing more types, we should move observability to fields like `values` to parent class
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
@@ -93,7 +93,7 @@ export class PrimitiveInstanceValue extends InstanceValue {
     });
   }
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_PrimitiveInstanceValue(this);
@@ -111,7 +111,7 @@ export class PrimitiveInstanceValue extends InstanceValue {
 }
 
 export class EnumValueInstanceValue extends InstanceValue {
-  values: EnumValueReference[] = [];
+  override values: EnumValueReference[] = [];
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
     super(multiplicity, undefined);
@@ -126,7 +126,7 @@ export class EnumValueInstanceValue extends InstanceValue {
     });
   }
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_EnumValueInstanceValue(this);
@@ -134,9 +134,9 @@ export class EnumValueInstanceValue extends InstanceValue {
 }
 
 export class RuntimeInstanceValue extends InstanceValue {
-  values: EngineRuntime[] = [];
+  override values: EngineRuntime[] = [];
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_RuntimeInstanceValue(this);
@@ -144,9 +144,9 @@ export class RuntimeInstanceValue extends InstanceValue {
 }
 
 export class PairInstanceValue extends InstanceValue {
-  values: Pair<unknown, unknown>[] = [];
+  override values: Pair<unknown, unknown>[] = [];
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_PairInstanceValue(this);
@@ -154,9 +154,9 @@ export class PairInstanceValue extends InstanceValue {
 }
 
 export class MappingInstanceValue extends InstanceValue {
-  values: PackageableElementReference<Mapping>[] = [];
+  override values: PackageableElementReference<Mapping>[] = [];
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_MappingInstanceValue(this);
@@ -164,9 +164,9 @@ export class MappingInstanceValue extends InstanceValue {
 }
 
 export class PureListInstanceValue extends InstanceValue {
-  values: ValueSpecification[] = [];
+  override values: ValueSpecification[] = [];
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_PureListInsanceValue(this);
@@ -174,7 +174,7 @@ export class PureListInstanceValue extends InstanceValue {
 }
 
 export class CollectionInstanceValue extends InstanceValue {
-  values: ValueSpecification[] = [];
+  override values: ValueSpecification[] = [];
 
   constructor(
     multiplicity: Multiplicity,
@@ -189,7 +189,7 @@ export class CollectionInstanceValue extends InstanceValue {
     });
   }
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_CollectionInstanceValue(this);

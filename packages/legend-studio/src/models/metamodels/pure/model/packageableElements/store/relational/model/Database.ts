@@ -65,7 +65,7 @@ export class Database extends Store implements Hashable {
       `Can't find filter '${name}' in database '${this.path}'`,
     );
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

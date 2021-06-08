@@ -26,7 +26,7 @@ export class V1_CLatestDate extends V1_CDate {
     return visitor.visit_CLatestDate(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.CLATEST_DATE, super.hashCode]);
   }
 }

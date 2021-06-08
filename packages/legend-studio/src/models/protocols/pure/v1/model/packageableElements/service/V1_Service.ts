@@ -30,7 +30,7 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
   execution!: V1_ServiceExecution;
   test!: V1_ServiceTest;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE,
       super.hashCode,

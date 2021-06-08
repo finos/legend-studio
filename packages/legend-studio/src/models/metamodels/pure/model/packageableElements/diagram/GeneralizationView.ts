@@ -31,7 +31,7 @@ export class GeneralizationView extends RelationshipView implements Hashable {
     });
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.GENERALIZATION_VIEW, super.hashCode]);
   }
 }

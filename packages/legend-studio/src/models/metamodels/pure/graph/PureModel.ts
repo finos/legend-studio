@@ -253,7 +253,7 @@ export class PureModel extends BasicModel {
       this.coreModel.primitiveTypesIndex.get(type),
       `Can't find primitive type '${type}'`,
     );
-  getNullablePackage = (path: string): Package | undefined =>
+  override getNullablePackage = (path: string): Package | undefined =>
     !path
       ? this.root
       : returnUndefOnError(() =>
@@ -430,7 +430,7 @@ export class PureModel extends BasicModel {
     );
   }
 
-  getNullableElement(
+  override getNullableElement(
     path: string,
     includePackage?: boolean,
   ): PackageableElement | undefined {

@@ -23,7 +23,7 @@ import type { V1_PackageableElementVisitor } from '../../../../model/packageable
 export class V1_ServiceStore extends V1_Store implements Hashable {
   docLink!: string;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_STORE,
       super.hashCode,

@@ -41,7 +41,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
     super(packageJson.name, packageJson.version);
   }
 
-  configure(_configData: object): TracerServicePlugin<ZipkinSpan> {
+  override configure(_configData: object): TracerServicePlugin<ZipkinSpan> {
     const configData = _configData as ZipkinTracerPluginConfigData;
     assertNonEmptyString(
       configData.url,

@@ -29,7 +29,7 @@ export abstract class GenericTypeReference
   extends ReferenceWithOwner
   implements Stubable
 {
-  readonly ownerReference: PackageableElementReference<Type>;
+  override readonly ownerReference: PackageableElementReference<Type>;
   value: GenericType;
 
   protected constructor(
@@ -59,7 +59,7 @@ export abstract class GenericTypeReference
 }
 
 export class GenericTypeExplicitReference extends GenericTypeReference {
-  readonly ownerReference: PackageableElementExplicitReference<Type>;
+  override readonly ownerReference: PackageableElementExplicitReference<Type>;
 
   private constructor(value: GenericType) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -75,7 +75,7 @@ export class GenericTypeExplicitReference extends GenericTypeReference {
 }
 
 export class GenericTypeImplicitReference extends GenericTypeReference {
-  readonly ownerReference: PackageableElementImplicitReference<Type>;
+  override readonly ownerReference: PackageableElementImplicitReference<Type>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Type>,

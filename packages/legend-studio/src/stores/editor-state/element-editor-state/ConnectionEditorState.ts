@@ -207,7 +207,7 @@ export class GenerateStoreState {
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
-  connection: RelationalDatabaseConnection;
+  override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TABE.GENERAL;
   generateStoreState: GenerateStoreState;
 
@@ -413,8 +413,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
 }
 
 export class JsonModelConnectionValueState extends ConnectionValueState {
-  connection: JsonModelConnection;
-  disableChangingClass?: boolean;
+  override connection: JsonModelConnection;
 
   constructor(editorStore: EditorStore, connection: JsonModelConnection) {
     super(editorStore, connection);
@@ -427,8 +426,7 @@ export class JsonModelConnectionValueState extends ConnectionValueState {
 }
 
 export class FlatDataConnectionValueState extends ConnectionValueState {
-  connection: FlatDataConnection;
-  disableChangingClass?: boolean;
+  override connection: FlatDataConnection;
 
   constructor(editorStore: EditorStore, connection: FlatDataConnection) {
     super(editorStore, connection);

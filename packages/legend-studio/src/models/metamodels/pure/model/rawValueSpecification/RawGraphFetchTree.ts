@@ -49,10 +49,6 @@ export abstract class RawGraphFetchTree extends RawValueSpecification {
   get isEmpty(): boolean {
     return !this.subTrees.length;
   }
-
-  abstract accept_ValueSpecificationVisitor<T>(
-    visitor: RawValueSpecificationVisitor<T>,
-  ): T;
 }
 
 export class RawPropertyGraphFetchTree extends RawGraphFetchTree {

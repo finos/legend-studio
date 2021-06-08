@@ -55,7 +55,7 @@ export abstract class Reference {
 export abstract class OptionalReference extends Reference {}
 
 export abstract class RequiredReference extends Reference {
-  abstract value: unknown;
+  abstract override value: unknown;
 }
 
 /**

@@ -62,11 +62,11 @@ export class PurePropertyMapping
     this.transformer = value;
   }
 
-  get isStub(): boolean {
+  override get isStub(): boolean {
     return this.transform.isStub;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PURE_PROPERTY_MAPPING,
       super.hashCode,

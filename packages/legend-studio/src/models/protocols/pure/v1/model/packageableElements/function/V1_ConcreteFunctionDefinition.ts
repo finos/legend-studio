@@ -32,7 +32,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
   taggedValues: V1_TaggedValue[] = [];
   stereotypes: V1_StereotypePtr[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FUNCTION,
       super.hashCode,

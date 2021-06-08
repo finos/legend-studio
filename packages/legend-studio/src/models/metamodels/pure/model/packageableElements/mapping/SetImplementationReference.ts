@@ -25,7 +25,7 @@ import type { SetImplementation } from '../../../model/packageableElements/mappi
 import { ReferenceWithOwner } from '../../../model/Reference';
 
 export abstract class SetImplementationReference extends ReferenceWithOwner {
-  readonly ownerReference: PackageableElementReference<Mapping>;
+  override readonly ownerReference: PackageableElementReference<Mapping>;
   value: SetImplementation;
 
   protected constructor(
@@ -50,7 +50,7 @@ export abstract class SetImplementationReference extends ReferenceWithOwner {
 }
 
 export class SetImplementationExplicitReference extends SetImplementationReference {
-  readonly ownerReference: PackageableElementExplicitReference<Mapping>;
+  override readonly ownerReference: PackageableElementExplicitReference<Mapping>;
 
   private constructor(value: SetImplementation) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -66,7 +66,7 @@ export class SetImplementationExplicitReference extends SetImplementationReferen
 }
 
 export class SetImplementationImplicitReference extends SetImplementationReference {
-  readonly ownerReference: PackageableElementImplicitReference<Mapping>;
+  override readonly ownerReference: PackageableElementImplicitReference<Mapping>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Mapping>,

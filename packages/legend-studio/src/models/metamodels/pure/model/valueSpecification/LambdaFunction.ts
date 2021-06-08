@@ -50,9 +50,9 @@ export class LambdaFunction {
 }
 
 export class LambdaFunctionInstanceValue extends InstanceValue {
-  values: LambdaFunction[] = [];
+  override values: LambdaFunction[] = [];
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_LambdaFunctionInstanceValue(this);

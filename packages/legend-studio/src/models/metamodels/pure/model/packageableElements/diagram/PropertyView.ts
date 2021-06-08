@@ -37,7 +37,7 @@ export class PropertyView extends PropertyHolderView implements Hashable {
     });
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.PROPERTY_VIEW, super.hashCode]);
   }
 }

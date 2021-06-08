@@ -22,7 +22,7 @@ import type { V1_PropertyMapping } from '../../../../../model/packageableElement
 export class V1_RelationalAssociationMapping extends V1_AssociationMapping {
   propertyMappings: V1_PropertyMapping[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_ASSOCIATION_IMPLEMENTATION,
       super.hashCode,

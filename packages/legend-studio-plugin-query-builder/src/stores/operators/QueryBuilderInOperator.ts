@@ -148,11 +148,11 @@ export class QueryBuilderInOperator extends QueryBuilderOperator {
 }
 
 export class QueryBuilderNotInOperator extends QueryBuilderInOperator {
-  getLabel(filterConditionState: FilterConditionState): string {
+  override getLabel(filterConditionState: FilterConditionState): string {
     return `is not in`;
   }
 
-  buildFilterConditionExpression(
+  override buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
@@ -161,7 +161,7 @@ export class QueryBuilderNotInOperator extends QueryBuilderInOperator {
     );
   }
 
-  buildFilterConditionState(
+  override buildFilterConditionState(
     filterState: QueryBuilderFilterState,
     expression: SimpleFunctionExpression,
   ): FilterConditionState | undefined {

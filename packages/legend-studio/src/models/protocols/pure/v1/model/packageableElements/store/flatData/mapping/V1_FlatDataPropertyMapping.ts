@@ -28,7 +28,7 @@ export class V1_FlatDataPropertyMapping
   enumMappingId?: string;
   transform!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_PROPERTY_MAPPING,
       super.hashCode,

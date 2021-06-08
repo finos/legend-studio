@@ -29,7 +29,7 @@ export class V1_PurePropertyMapping
   transform!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   explodeProperty?: boolean;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PURE_PROPERTY_MAPPING,
       super.hashCode,
