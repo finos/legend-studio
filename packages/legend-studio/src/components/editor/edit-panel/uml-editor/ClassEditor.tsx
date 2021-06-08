@@ -792,8 +792,9 @@ export const ClassFormEditor = observer(
       PRIMITIVE_TYPE.STRING,
     );
     // Selected property
-    const [selectedProperty, setSelectedProperty] =
-      useState<Property | DerivedProperty | undefined>();
+    const [selectedProperty, setSelectedProperty] = useState<
+      Property | DerivedProperty | undefined
+    >();
     const selectProperty =
       (e: Property | DerivedProperty): (() => void) =>
       (): void =>

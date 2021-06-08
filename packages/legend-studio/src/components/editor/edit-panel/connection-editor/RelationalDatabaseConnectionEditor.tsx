@@ -586,8 +586,9 @@ const StorePatternsEditor = observer(
   (props: { generateStoreState: GenerateStoreState; isReadOnly: boolean }) => {
     const { generateStoreState, isReadOnly } = props;
     const patterns = generateStoreState.patterns;
-    const [showEditInput, setShowEditInput] =
-      useState<boolean | StorePattern>(false);
+    const [showEditInput, setShowEditInput] = useState<boolean | StorePattern>(
+      false,
+    );
     const [stateSchemaPattern, setStateSchemaPattern] = useState<string>('');
     const [tableStatePattern, setStateTablePattern] = useState<string>('');
     const showAddItemInput = (): void => setShowEditInput(true);

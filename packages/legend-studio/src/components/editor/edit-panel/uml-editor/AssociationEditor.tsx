@@ -280,8 +280,9 @@ export const AssociationEditor = observer(
     const editorState = editorStore.getCurrentEditorState(UMLEditorState);
     const isReadOnly = editorState.isReadOnly;
     // Selected property
-    const [selectedProperty, setSelectedProperty] =
-      useState<Property | undefined>();
+    const [selectedProperty, setSelectedProperty] = useState<
+      Property | undefined
+    >();
     const selectProperty =
       (e: Property): (() => void) =>
       (): void =>

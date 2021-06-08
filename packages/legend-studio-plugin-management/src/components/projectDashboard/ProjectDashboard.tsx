@@ -117,8 +117,9 @@ class ProjectDashboardStore {
   }
 }
 
-const ProjectDashboardStoreContext =
-  createContext<ProjectDashboardStore | undefined>(undefined);
+const ProjectDashboardStoreContext = createContext<
+  ProjectDashboardStore | undefined
+>(undefined);
 
 const ProjectDashboardStoreProvider = ({
   children,

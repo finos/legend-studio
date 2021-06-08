@@ -151,26 +151,32 @@ const MergeConflictEditor = observer(
   (props: { conflictEditorState: EntityChangeConflictEditorState }) => {
     const { conflictEditorState } = props;
     const isReadOnly = conflictEditorState.isReadOnly;
-    const [editor, setEditor] =
-      useState<monacoEditorAPI.IStandaloneCodeEditor | undefined>();
+    const [editor, setEditor] = useState<
+      monacoEditorAPI.IStandaloneCodeEditor | undefined
+    >();
     const [hasInitializedTextValue, setInitializedTextValue] = useState(false);
     const value = conflictEditorState.mergedText;
     const currentValue = editor?.getValue() ?? '';
     const error = conflictEditorState.mergeEditorParserError;
     const decorations = useRef<string[]>([]);
-    const mergeConflictResolutionCodeLensDisposer =
-      useRef<IDisposable | undefined>(undefined);
-    const onDidChangeModelContentEventDisposer =
-      useRef<IDisposable | undefined>(undefined);
+    const mergeConflictResolutionCodeLensDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
+    const onDidChangeModelContentEventDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
     const textInputRef = useRef<HTMLDivElement>(null);
 
     // cursor
-    const onDidChangeCursorPositionEventDisposer =
-      useRef<IDisposable | undefined>(undefined);
-    const onDidBlurEditorTextEventDisposer =
-      useRef<IDisposable | undefined>(undefined);
-    const onDidFocusEditorTextEventDisposer =
-      useRef<IDisposable | undefined>(undefined);
+    const onDidChangeCursorPositionEventDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
+    const onDidBlurEditorTextEventDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
+    const onDidFocusEditorTextEventDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
 
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
