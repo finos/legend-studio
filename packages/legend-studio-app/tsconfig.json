@@ -14,6 +14,8 @@
   ],
   "references": [
     { "path": "../legend-studio" },
+    { "path": "../legend-studio-shared" },
+    { "path": "../legend-studio-preset-dummy" },
     { "path": "../legend-studio-preset-dsl-text" },
     { "path": "../legend-studio-preset-external-format-json-schema" },
     { "path": "../legend-studio-plugin-query-builder" }

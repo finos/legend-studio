@@ -15,6 +15,7 @@
     { "path": "packages/legend-studio-preset-dsl-text" },
     { "path": "packages/legend-studio-plugin-query-builder" },
     { "path": "packages/legend-studio-preset-external-format-json-schema" },
+    { "path": "packages/legend-studio-preset-dummy" },
     { "path": "packages/legend-studio-manual-tests" }
   ]
 }

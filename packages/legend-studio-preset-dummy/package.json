@@ -1,0 +1,37 @@
+{
+  "name": "@finos/legend-studio-preset-dummy",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Legend Studio dummy preset for testing",
+  "keywords": [
+    "legend",
+    "legend-studio",
+    "studio",
+    "preset"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-studio-preset-dummy"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:tsc",
+    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "clean": "rimraf \"lib\" \"build\"",
+    "lint:js": "echo '(Skipped)'"
+  },
+  "dependencies": {
+    "@finos/legend-studio": "workspace:*",
+    "@finos/legend-studio-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "rimraf": "3.0.2",
+    "typescript": "4.3.2"
+  }
+}
