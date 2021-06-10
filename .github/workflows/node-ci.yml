@@ -107,7 +107,7 @@ jobs:
         with:
           directory: ./build/coverage
 
-  # This job is to make sure Webpack builds the application fine. This is helpful
+  # This job is to make sure Webpack build the application successfully. This is helpful
   # to know as we don't want to find out this failure as late as when we prepare the
   # artifacts to publish to Docker.
   application-test-build:

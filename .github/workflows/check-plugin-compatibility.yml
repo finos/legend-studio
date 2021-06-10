@@ -1,0 +1,99 @@
+name: Plugin Compatibility
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  check-plugin-compatibility:
+    name: Run Plugin Compatibility Checks
+    # TODO: test this step
+    if: github.context.payload.pull_request.title != 'New Release' # do not run this in release PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2.1.6
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: yarn
+        # TODO: test this step
+        # TODO: add docs
+      - name: Setup plugin compatibility check
+        run: >
+          yarn build:setup
+          cp -r ./packages/legend-studio-preset-dummy ./temp/legend-studio-preset-dummy
+          touch ./temp/legend-studio-preset-dummy/yarn.lock
+          node ./scripts/workflow/setupPluginCompatibilityChecks.js
+          cd ./temp/legend-studio-preset-dummy
+          yarn
+          yarn build
+          cd ../../
+          yarn
+      - name: Check plugin compatibility
+        run: >
+          yarn workspace @finos/legend-studio-app tsc
+          yarn workspace @finos/legend-studio-app test
+        # TODO: test this step
+        # TODO: check if we need `continue-on-error` or not in the previous step?
+      - name: Alert compatibility check failure
+        # Detect previous step exit code
+        # See https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-status-check-functions
+        if: ${{ failure() }}
+        uses: actions/github-script@v4
+        with:
+          script: |
+            // Get the existing comments.
+            const {data: comments} = await github.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.number,
+            })
+            // Find any comment already made by the bot.
+            const botComment = comments.find(comment => comment.user.id === 41898282)
+            const commentBody = "Hello from actions/github-script! (${{ github.sha }})"
+            if (botComment) {
+              await github.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              })
+            } else {
+              await github.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.number,
+                body: commentBody
+              })
+            }
+
+# - Github actions:
+#   - only run on PR push (except the release PR)
+#   - will post comment to PR using - https://github.com/actions/github-script/actions/runs/187348077/workflow
+# - Sequence of actions:
+#   - Install and build the app (yarn build:setup)
+#   - Copy workspace `packages/legend-studio-preset-dummy` to `temp/legend-studio-preset-dummy`
+#   - `touch temp/legend-studio-preset-dummy/yarn.lock`
+#   - `node ./scripts/workflow/setup-plugin-compatibility-check` - a script that do the following:
+#     - Extract the latest version of `@finos/legend-studio` and `@finos/legend-studio-shared`
+#     - Update the version of `@finos/legend-studio-preset-dummy` in `@finos/legend-studio-app` to `file:../../temp/legend-studio-preset-dummy`
+#     - Update the version of `@finos/legend-studio` and `@finos/legend-studio-shared` in `@finos/legend-studio-preset-dummy`
+#   - `cd temp/legend-studio-preset-dummy && yarn && yarn build`
+#   - `cd ../../ && yarn && yarn workspace @finos/legend-studio-app tsc && yarn workspace @finos/legend-studio-app test`
+#   - Check for failure - https://github.community/t/using-exit-code-of-previous-step/16798
+#     Then if there is failure, post the comment using the github comment to PR feature above
