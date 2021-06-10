@@ -100,3 +100,27 @@ writeFileSync(
     process.exit(1);
   },
 );
+
+/**
+ * Update the tsconfig.json file to not reference dummy-plugin project.
+ */
+const webappTsConfigPath = resolve(
+  ROOT_DIR,
+  'packages/legend-studio-app/tsconfig.json',
+);
+const webappTsConfig = loadJSON(webappTsConfigPath);
+
+webappTsConfig.references = webappTsConfig.references.filter(
+  (reference) => !reference.path.includes('legend-studio-preset-dummy'),
+);
+
+writeFileSync(
+  webappTsConfigPath,
+  JSON.stringify(webappTsConfig, null, 2),
+  (err) => {
+    console.log(
+      `Can't update application Typescript config file to stop referencing the dummy plugin. Error: ${err.message}`,
+    );
+    process.exit(1);
+  },
+);

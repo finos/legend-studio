@@ -1,0 +1,48 @@
+name: Plugin Compatibility Check Report
+
+# read-write repo token
+# access to secrets
+on:
+  workflow_run:
+    workflows: ["Plugin Compatibility Check"]
+    types:
+      - completed
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    if: >
+      ${{ github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Alert compatibility check failure
+        # Detect previous step exit code
+        # See https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-status-check-functions
+        uses: actions/github-script@v4
+        with:
+          script: |
+            console.log('${{ github.context.payload.pull_request.title }}');
+            // const checkResult = '${{ steps.check-plugin-compatibility.outcome }}';
+            checkResult = 'failure';
+            const {data: comments} = await github.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.number,
+            })
+            const commentTextContent = 'Plugin compatibility issues found! Please make sure to add a notice in the changelog.';
+            const commentBody = `:warning: ${commentTextContent}`;
+            const botComment = comments.find(comment => comment.user.id === 41898282 && comment.body.includes(commentTextContent));
+            if (botComment && checkResult === 'success') {
+              await github.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id
+              });
+            } else if (!botComment && checkResult === 'failure') {
+              await github.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.number,
+                body: commentBody
+              });
+            }
