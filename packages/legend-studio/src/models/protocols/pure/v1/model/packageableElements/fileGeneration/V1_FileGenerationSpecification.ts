@@ -30,7 +30,7 @@ export class V1_FileGenerationSpecification
   scopeElements: string[] = [];
   configurationProperties: V1_ConfigurationProperty[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FILE_GENERATION,
       super.hashCode,

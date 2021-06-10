@@ -19,7 +19,7 @@ export enum BuilderType {
   CLASS_BUILDER = 'classBuilder',
   TDS_BUILDER = 'tdsBuilder',
   JSON_BUILDER = 'json',
-  NO_BUILDER = 'noBuilder',
+  NO_BUILDER = 'noBuilder', // this is something we create only for Studio
 }
 
 export type ExecutionPlan = object;
@@ -101,22 +101,22 @@ export class TabluarDataSet {
   rows: TdsRow[] = [];
 }
 export class TdsExecutionResult extends ExecutionResult {
-  builder = new TdsBuilder();
-  activities: RelationalExecutionActivity[] = [];
+  override builder = new TdsBuilder();
+  override activities: RelationalExecutionActivity[] = [];
   result = new TabluarDataSet();
 }
 
 // Class
 export class ClassBuilder extends ResultBuilder {
-  _type = BuilderType.CLASS_BUILDER;
+  override _type = BuilderType.CLASS_BUILDER;
 }
 
 export class ClassExecutionResult extends ExecutionResult {
-  builder = new ClassBuilder(BuilderType.CLASS_BUILDER);
-  activities: RelationalExecutionActivity[] = [];
+  override builder = new ClassBuilder(BuilderType.CLASS_BUILDER);
+  override activities: RelationalExecutionActivity[] = [];
 }
 
-// No Builder
+// No Builder - this is something we create only for Studio
 export class OtherExecutionResult extends ExecutionResult {
-  builder = new ResultBuilder(BuilderType.NO_BUILDER);
+  override builder = new ResultBuilder(BuilderType.NO_BUILDER);
 }

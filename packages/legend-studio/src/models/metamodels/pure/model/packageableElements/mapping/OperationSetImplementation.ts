@@ -115,11 +115,11 @@ export class OperationSetImplementation
     }
   }
 
-  get isStub(): boolean {
+  override get isStub(): boolean {
     return super.isStub && isStubArray(this.parameters);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OPERATION_SET_IMPLEMENTATION,
       this.operation,

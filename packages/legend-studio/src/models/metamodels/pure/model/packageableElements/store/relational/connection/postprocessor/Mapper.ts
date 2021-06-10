@@ -39,7 +39,7 @@ export abstract class Mapper
 }
 
 export class SchemaNameMapper extends Mapper {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([super.hashCode, CORE_HASH_STRUCTURE.SCHEMA_MAPPER]);
   }
 }
@@ -51,7 +51,7 @@ export class TableNameMapper extends Mapper {
     this.schema = schema;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       super.hashCode,
       CORE_HASH_STRUCTURE.TABLE_MAPPER,

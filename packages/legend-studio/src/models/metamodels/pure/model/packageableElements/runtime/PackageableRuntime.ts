@@ -39,7 +39,7 @@ export class PackageableRuntime extends PackageableElement implements Hashable {
     this.runtimeValue = value;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

@@ -49,7 +49,7 @@ export class V1_PureSingleExecution
   mapping!: string;
   runtime!: V1_Runtime;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_PURE_SINGLE_EXECUTION,
       super.hashCode,
@@ -81,7 +81,7 @@ export class V1_PureMultiExecution
   executionKey!: string;
   executionParameters: V1_KeyedExecutionParameter[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_PURE_MULTI_EXECUTION,
       super.hashCode,

@@ -33,7 +33,7 @@ export abstract class V1_Section {
 export class V1_ImportAwareCodeSection extends V1_Section {
   imports: string[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.IMPORT_AWARE_CODE_SECTION,
       super.hashCode,
@@ -43,7 +43,7 @@ export class V1_ImportAwareCodeSection extends V1_Section {
 }
 
 export class V1_DefaultCodeSection extends V1_Section {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DEFAULT_CODE_SECTION,
       super.hashCode,

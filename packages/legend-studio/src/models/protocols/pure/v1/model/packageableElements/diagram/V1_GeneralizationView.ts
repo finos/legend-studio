@@ -26,7 +26,7 @@ export class V1_GeneralizationView
 {
   declare line: V1_Line;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.GENERALIZATION_VIEW, super.hashCode]);
   }
 }

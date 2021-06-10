@@ -178,6 +178,13 @@
 }
 
 .mapping-test-editor {
+  &__header__tab__test-status-indicator__container {
+    @include flexCenter;
+
+    width: 1.6rem;
+    margin-right: 0.8rem;
+  }
+
   &__result {
     height: 100%;
     display: flex;

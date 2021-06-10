@@ -51,10 +51,12 @@ export const TextInputEditor: React.FC<{
   } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const [editor, setEditor] =
-    useState<monacoEditorAPI.IStandaloneCodeEditor | undefined>();
-  const onDidChangeModelContentEventDisposer =
-    useRef<IDisposable | undefined>(undefined);
+  const [editor, setEditor] = useState<
+    monacoEditorAPI.IStandaloneCodeEditor | undefined
+  >();
+  const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
+    undefined,
+  );
   const textInputRef = useRef<HTMLDivElement>(null);
 
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();

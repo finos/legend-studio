@@ -25,7 +25,7 @@ export class V1_RelationalAssociationMapping
 {
   propertyMappings: V1_PropertyMapping[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([super.hashCode, hashArray(this.propertyMappings)]);
   }
 }

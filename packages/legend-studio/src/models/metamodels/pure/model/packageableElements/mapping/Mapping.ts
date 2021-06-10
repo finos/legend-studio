@@ -380,7 +380,7 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
 
   static createStub = (): Mapping => new Mapping('');
 
-  get isStub(): boolean {
+  override get isStub(): boolean {
     return (
       super.isStub &&
       // && isStubArray(this.includes)
@@ -390,7 +390,7 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     );
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

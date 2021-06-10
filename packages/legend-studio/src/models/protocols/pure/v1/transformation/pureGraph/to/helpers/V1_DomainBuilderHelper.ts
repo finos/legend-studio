@@ -43,7 +43,7 @@ import type { V1_Property } from '../../../../model/packageableElements/domain/V
 import type { V1_DerivedProperty } from '../../../../model/packageableElements/domain/V1_DerivedProperty';
 import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure';
 import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
-import { V1_rawLambdaBuilderWithResolver } from './V1_RawLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
 
 export const V1_processTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -69,7 +69,7 @@ export const V1_processClassConstraint = (
   const pureConstraint = new Constraint(
     constraint.name,
     _class,
-    V1_rawLambdaBuilderWithResolver(
+    V1_resolvePathsInRawLambda(
       context,
       constraint.functionDefinition.parameters,
       constraint.functionDefinition.body,
@@ -78,7 +78,7 @@ export const V1_processClassConstraint = (
   pureConstraint.enforcementLevel = constraint.enforcementLevel;
   pureConstraint.externalId = constraint.externalId;
   pureConstraint.messageFunction = constraint.messageFunction
-    ? V1_rawLambdaBuilderWithResolver(
+    ? V1_resolvePathsInRawLambda(
         context,
         constraint.messageFunction.parameters,
         constraint.messageFunction.body,
@@ -115,7 +115,7 @@ export const V1_processUnit = (
     unit.name,
     parentMeasure,
     unit.conversionFunction
-      ? V1_rawLambdaBuilderWithResolver(
+      ? V1_resolvePathsInRawLambda(
           context,
           unit.conversionFunction.parameters,
           unit.conversionFunction.body,
@@ -190,7 +190,7 @@ export const V1_processDerivedProperty = (
   derivedProperty.taggedValues = property.taggedValues
     .map((taggedValue) => V1_processTaggedValue(taggedValue, context))
     .filter(isNonNullable);
-  const rawLambda = V1_rawLambdaBuilderWithResolver(
+  const rawLambda = V1_resolvePathsInRawLambda(
     context,
     property.parameters,
     property.body,

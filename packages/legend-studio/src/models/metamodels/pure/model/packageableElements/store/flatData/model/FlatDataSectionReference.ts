@@ -27,7 +27,7 @@ import type { FlatData } from '../../../../../model/packageableElements/store/fl
 import type { FlatDataSection } from '../../../../../model/packageableElements/store/flatData/model/FlatDataSection';
 
 export abstract class FlatDataSectionReference extends ReferenceWithOwner {
-  readonly ownerReference: PackageableElementReference<FlatData>;
+  override readonly ownerReference: PackageableElementReference<FlatData>;
   value: FlatDataSection;
 
   protected constructor(
@@ -63,7 +63,7 @@ export abstract class FlatDataSectionReference extends ReferenceWithOwner {
 }
 
 export class FlatDataSectionExplicitReference extends FlatDataSectionReference {
-  readonly ownerReference: PackageableElementExplicitReference<FlatData>;
+  override readonly ownerReference: PackageableElementExplicitReference<FlatData>;
 
   private constructor(value: FlatDataSection) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -79,7 +79,7 @@ export class FlatDataSectionExplicitReference extends FlatDataSectionReference {
 }
 
 export class FlatDataSectionImplicitReference extends FlatDataSectionReference {
-  readonly ownerReference: PackageableElementImplicitReference<FlatData>;
+  override readonly ownerReference: PackageableElementImplicitReference<FlatData>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<FlatData>,

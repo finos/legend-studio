@@ -36,11 +36,11 @@ export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
     pluginManager.registerPureGraphManagerPlugin(this);
   }
 
-  getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
+  override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
     return [Text];
   }
 
-  getExtraElementFreezers(): ElementFreezer[] {
+  override getExtraElementFreezers(): ElementFreezer[] {
     return [
       (element: PackageableElement): void => {
         if (element instanceof Text) {

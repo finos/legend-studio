@@ -65,8 +65,9 @@ const ServiceGeneralEditor = observer(() => {
     };
   // Owners
   const owners = service.owners;
-  const [showOwnerEditInput, setShowOwnerEditInput] =
-    useState<boolean | number>(false);
+  const [showOwnerEditInput, setShowOwnerEditInput] = useState<
+    boolean | number
+  >(false);
   const [ownerInputValue, setOwnerInputValue] = useState<string>('');
   const showAddOwnerInput = (): void => setShowOwnerEditInput(true);
   const showEditOwnerInput =

@@ -25,7 +25,7 @@ import type { ClassView } from '../../../model/packageableElements/diagram/Class
 import { ReferenceWithOwner } from '../../../model/Reference';
 
 export abstract class ClassViewReference extends ReferenceWithOwner {
-  readonly ownerReference: PackageableElementReference<Diagram>;
+  override readonly ownerReference: PackageableElementReference<Diagram>;
   value: ClassView;
 
   protected constructor(
@@ -50,7 +50,7 @@ export abstract class ClassViewReference extends ReferenceWithOwner {
 }
 
 export class ClassViewExplicitReference extends ClassViewReference {
-  readonly ownerReference: PackageableElementExplicitReference<Diagram>;
+  override readonly ownerReference: PackageableElementExplicitReference<Diagram>;
 
   private constructor(value: ClassView) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -66,7 +66,7 @@ export class ClassViewExplicitReference extends ClassViewReference {
 }
 
 export class ClassViewImplicitReference extends ClassViewReference {
-  readonly ownerReference: PackageableElementImplicitReference<Diagram>;
+  override readonly ownerReference: PackageableElementImplicitReference<Diagram>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Diagram>,

@@ -31,7 +31,7 @@ export abstract class StereotypeReference
   extends ReferenceWithOwner
   implements Stubable
 {
-  readonly ownerReference: PackageableElementReference<Profile>;
+  override readonly ownerReference: PackageableElementReference<Profile>;
   value: Stereotype;
 
   protected constructor(
@@ -72,7 +72,7 @@ export abstract class StereotypeReference
 }
 
 export class StereotypeExplicitReference extends StereotypeReference {
-  readonly ownerReference: PackageableElementExplicitReference<Profile>;
+  override readonly ownerReference: PackageableElementExplicitReference<Profile>;
 
   private constructor(value: Stereotype) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -88,7 +88,7 @@ export class StereotypeExplicitReference extends StereotypeReference {
 }
 
 export class StereotypeImplicitReference extends StereotypeReference {
-  readonly ownerReference: PackageableElementImplicitReference<Profile>;
+  override readonly ownerReference: PackageableElementImplicitReference<Profile>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Profile>,

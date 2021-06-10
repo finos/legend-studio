@@ -27,7 +27,7 @@ export class V1_PackageableRuntime
 {
   runtimeValue!: V1_EngineRuntime;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGEABLE_RUNTIME,
       super.hashCode,

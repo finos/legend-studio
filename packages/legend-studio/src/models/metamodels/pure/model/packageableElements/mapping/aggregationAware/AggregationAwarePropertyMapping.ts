@@ -22,7 +22,7 @@ export class AggregationAwarePropertyMapping extends PropertyMapping {
     return visitor.visit_AggregationAwarePropertyMapping(this);
   }
 
-  get isStub(): boolean {
+  override get isStub(): boolean {
     // TODO figure out isStub conditions
     return false;
   }

@@ -31,7 +31,7 @@ export abstract class TagReference
   extends ReferenceWithOwner
   implements Stubable
 {
-  readonly ownerReference: PackageableElementReference<Profile>;
+  override readonly ownerReference: PackageableElementReference<Profile>;
   value: Tag;
 
   protected constructor(
@@ -72,7 +72,7 @@ export abstract class TagReference
 }
 
 export class TagExplicitReference extends TagReference {
-  readonly ownerReference: PackageableElementExplicitReference<Profile>;
+  override readonly ownerReference: PackageableElementExplicitReference<Profile>;
 
   private constructor(value: Tag) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -88,7 +88,7 @@ export class TagExplicitReference extends TagReference {
 }
 
 export class TagImplicitReference extends TagReference {
-  readonly ownerReference: PackageableElementImplicitReference<Profile>;
+  override readonly ownerReference: PackageableElementImplicitReference<Profile>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Profile>,

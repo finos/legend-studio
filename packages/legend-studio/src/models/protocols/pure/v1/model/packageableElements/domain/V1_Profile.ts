@@ -24,7 +24,7 @@ export class V1_Profile extends V1_PackageableElement implements Hashable {
   stereotypes: string[] = [];
   tags: string[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROFILE,
       super.hashCode,

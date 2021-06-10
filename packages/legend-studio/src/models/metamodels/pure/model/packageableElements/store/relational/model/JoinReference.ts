@@ -25,7 +25,7 @@ import type { Database } from '../../../../../model/packageableElements/store/re
 import type { Join } from '../../../../../model/packageableElements/store/relational/model/Join';
 
 export abstract class JoinReference extends ReferenceWithOwner {
-  readonly ownerReference: PackageableElementReference<Database>;
+  override readonly ownerReference: PackageableElementReference<Database>;
   value: Join;
 
   protected constructor(
@@ -50,7 +50,7 @@ export abstract class JoinReference extends ReferenceWithOwner {
 }
 
 export class JoinExplicitReference extends JoinReference {
-  readonly ownerReference: PackageableElementExplicitReference<Database>;
+  override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: Join) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -66,7 +66,7 @@ export class JoinExplicitReference extends JoinReference {
 }
 
 export class JoinImplicitReference extends JoinReference {
-  readonly ownerReference: PackageableElementImplicitReference<Database>;
+  override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Database>,

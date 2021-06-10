@@ -269,10 +269,12 @@ export const DiagramEditor = observer(() => {
   const diagram = diagramEditorState.diagram;
   const isReadOnly = diagramEditorState.isReadOnly;
   const [diagramRenderer, setDiagramRenderer] = useState<DiagramRenderer>();
-  const [selectedClassEditor, setSelectedClassEditor] =
-    useState<ClassEditorState | undefined>();
-  const [createNewClassEvent, setCreateNewClassEvent] =
-    useState<MouseEvent | undefined>();
+  const [selectedClassEditor, setSelectedClassEditor] = useState<
+    ClassEditorState | undefined
+  >();
+  const [createNewClassEvent, setCreateNewClassEvent] = useState<
+    MouseEvent | undefined
+  >();
   const [mode, setMode] = useState<DIAGRAM_EDITOR_CLASS_PANEL_MODE>(
     DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE,
   );

@@ -36,7 +36,6 @@ import {
   UnsupportedOperationError,
   recursiveOmit,
   assertTrue,
-  guaranteeType,
   assertErrorThrown,
   promisify,
 } from '@finos/legend-studio-shared';
@@ -47,7 +46,6 @@ import {
   SystemGraphProcessingError,
   DependencyGraphProcessingError,
 } from '../../../MetaModelUtility';
-import { deserialize } from 'serializr';
 import type { AbstractEngineConfig } from '../../../metamodels/pure/action/AbstractEngineConfiguration';
 import type {
   EngineSetupConfig,
@@ -76,8 +74,6 @@ import type { DependencyManager } from '../../../metamodels/pure/graph/Dependenc
 import type { Class } from '../../../metamodels/pure/model/packageableElements/domain/Class';
 import { RawLambda } from '../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { RawValueSpecification } from '../../../metamodels/pure/model/rawValueSpecification/RawValueSpecification';
-import type { RawGraphFetchTree } from '../../../metamodels/pure/model/rawValueSpecification/RawGraphFetchTree';
-import { RawRootGraphFetchTree } from '../../../metamodels/pure/model/rawValueSpecification/RawGraphFetchTree';
 import type { Service } from '../../../metamodels/pure/model/packageableElements/service/Service';
 import type {
   FileGenerationSpecification,
@@ -130,12 +126,7 @@ import { V1_ProtocolToMetaModelGraphFifthPassVisitor } from './transformation/pu
 import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext';
 import type { V1_GraphBuilderContext } from './transformation/pureGraph/to/V1_GraphBuilderContext';
 import { V1_GraphBuilderContextBuilder } from './transformation/pureGraph/to/V1_GraphBuilderContext';
-import type {
-  V1_RawValueSpecification,
-  V1_RawFunctionValueSpecification,
-  V1_RawClassValueSpecification,
-} from './model/rawValueSpecification/V1_RawValueSpecification';
-import { V1_RawRootGraphFetchTree } from './model/rawValueSpecification/V1_RawGraphFetchTree';
+import type { V1_RawFunctionValueSpecification } from './model/rawValueSpecification/V1_RawValueSpecification';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer';
 import { V1_Engine } from './engine/V1_Engine';
 import { V1_PackageableElementTransformer } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
@@ -2398,61 +2389,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- HACKY ---------------------------------------------
 
-  HACKY_createParameterObject(name: string, type: string): object {
-    return {
-      _type: 'var',
-      class: type,
-      multiplicity: {
-        lowerBound: 1,
-        upperBound: 1,
-      },
-      name: name,
-    };
-  }
-
-  HACKY_createGraphFetchLambda(
-    graphFetchTree: RawGraphFetchTree,
-    _class: Class,
-  ): RawLambda {
-    const fetchTreeJson = V1_serializeRawValueSpecification(
-      graphFetchTree.accept_ValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(
-          new V1_GraphTransformerContextBuilder(false).build(),
-        ),
-      ),
-    );
-    return new RawLambda(
-      [],
-      [
-        {
-          _type: 'func',
-          function: 'serialize',
-          parameters: [
-            {
-              _type: 'func',
-              function: 'graphFetchChecked',
-              parameters: [
-                {
-                  _type: 'func',
-                  function: 'getAll',
-                  parameters: [
-                    {
-                      _type:
-                        V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
-                      fullPath: _class.path,
-                    },
-                  ],
-                },
-                fetchTreeJson,
-              ],
-            },
-            fetchTreeJson,
-          ],
-        },
-      ],
-    );
-  }
-
   HACKY_createGetAllLambda(_class: Class): RawLambda {
     return new RawLambda(
       [],
@@ -2471,7 +2407,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  HACKY_createAssertLambda(assertData: string): RawLambda {
+  HACKY_createServiceTestAssertLambda(assertData: string): RawLambda {
     return new RawLambda(
       [
         {
@@ -2512,143 +2448,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  HACKY_extractCheckedModelToModelAssertionResult(
-    query: RawLambda,
-  ): string | undefined {
+  HACKY_extractServiceTestAssertionData(query: RawLambda): string | undefined {
+    let json: string | undefined;
     try {
-      const json = (
+      json = (
         ((query.body as unknown[])[0] as V1_RawFunctionValueSpecification)
           .parameters[1] as { values: (string | undefined)[] }
       ).values[0];
       assertTrue(typeof json === 'string', `Expected value of type 'string'`);
-      return json;
     } catch (error: unknown) {
       this.logger.warn(
         CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
         `Can't extract assertion result`,
       );
-      return undefined;
+      json = undefined;
     }
-  }
-
-  HACKY_extractAssertionString(query: RawLambda): string | undefined {
-    const json = this.HACKY_extractCheckedModelToModelAssertionResult(query);
     if (!json) {
       /* Add other assertion cases if we read others */
     }
     return json;
-  }
-
-  HACKY_deriveGraphFetchTreeContentFromQuery(
-    query: RawLambda,
-    graph: PureModel,
-    parentElement?: PackageableElement,
-  ): Class | RawRootGraphFetchTree | undefined {
-    try {
-      assertTrue(Boolean(query.body));
-      assertTrue(!(query.parameters as object[]).length);
-      const body = query.body as object[];
-      assertTrue(body.length === 1);
-      assertTrue(
-        (body[0] as PlainObject<V1_RawValueSpecification>)._type ===
-          V1_RawValueSpecificationType.FUNCTION,
-      );
-      const parameters = (body[0] as V1_RawFunctionValueSpecification)
-        .parameters;
-      assertTrue(parameters.length !== 0);
-      if (parameters.length === 2) {
-        assertTrue(
-          (body[0] as V1_RawFunctionValueSpecification).function ===
-            'serialize',
-        );
-        assertTrue(
-          (parameters[0] as PlainObject<V1_RawValueSpecification>)._type ===
-            V1_RawValueSpecificationType.FUNCTION,
-        );
-        assertTrue(
-          (parameters[0] as V1_RawFunctionValueSpecification).function ===
-            'graphFetchChecked',
-        );
-        assertTrue(
-          (parameters[0] as V1_RawFunctionValueSpecification).parameters
-            .length === 2,
-        );
-        assertTrue(
-          (
-            (parameters[0] as V1_RawFunctionValueSpecification)
-              .parameters[0] as PlainObject<V1_RawValueSpecification>
-          )._type === V1_RawValueSpecificationType.FUNCTION,
-        );
-        assertTrue(
-          (
-            (parameters[0] as V1_RawFunctionValueSpecification)
-              .parameters[0] as V1_RawFunctionValueSpecification
-          ).function === 'getAll',
-        );
-        assertTrue(
-          (
-            (
-              (parameters[0] as V1_RawFunctionValueSpecification)
-                .parameters[0] as V1_RawFunctionValueSpecification
-            ).parameters as V1_RawValueSpecification[]
-          ).length === 1,
-        );
-        assertTrue(
-          (
-            (
-              (parameters[0] as V1_RawFunctionValueSpecification)
-                .parameters[0] as V1_RawFunctionValueSpecification
-            ).parameters as PlainObject<V1_RawValueSpecification>[]
-          )[0]._type === V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
-        );
-        assertTrue(
-          (
-            (parameters[0] as V1_RawFunctionValueSpecification)
-              .parameters[1] as PlainObject<V1_RawValueSpecification>
-          )._type === V1_RawValueSpecificationType.ROOT_GRAPH_FETCH_TREE,
-        );
-        assertTrue(
-          (parameters[1] as PlainObject<V1_RawValueSpecification>)._type ===
-            V1_RawValueSpecificationType.ROOT_GRAPH_FETCH_TREE,
-        );
-        const data = parameters[1] as PlainObject<V1_RawValueSpecification>;
-        assertTrue(
-          data._type === V1_RawValueSpecificationType.ROOT_GRAPH_FETCH_TREE,
-        );
-        const treeProtocol = deserialize(V1_RawRootGraphFetchTree, data);
-        const context = new V1_GraphBuilderContextBuilder(
-          graph,
-          graph,
-          this.extensions,
-          this.logger,
-        )
-          .withSection(
-            parentElement ? graph.getSection(parentElement.path) : undefined,
-          )
-          .build();
-        return guaranteeType(
-          treeProtocol.accept_RawValueSpecificationVisitor(
-            new V1_ProtocolToMetaModelRawValueSpecificationVisitor(context),
-          ),
-          RawRootGraphFetchTree,
-        );
-      } else if (parameters.length === 1) {
-        assertTrue(
-          (body[0] as V1_RawFunctionValueSpecification).function === 'getAll',
-        );
-        assertTrue(
-          (parameters[0] as PlainObject<V1_RawValueSpecification>)._type ===
-            V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
-        );
-        const data = parameters[0] as V1_RawClassValueSpecification;
-        return graph.getClass(data.fullPath);
-      }
-      return undefined;
-    } catch (error: unknown) {
-      assertErrorThrown(error);
-      error.message = `Can't extract graph fetch tree content from query:\n${error.message}`;
-      this.logger.warn(CORE_LOG_EVENT.NONE, error);
-      return undefined;
-    }
   }
 }

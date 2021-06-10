@@ -17,6 +17,7 @@
 export const SOURCE_INFORMATION_KEY = 'sourceInformation';
 export const MULTIPLICITY_INFINITE = '*';
 export const ELEMENT_PATH_DELIMITER = '::';
+export const UNIT_PATH_DELIMITER = '~';
 export const LAMBDA_START = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
 

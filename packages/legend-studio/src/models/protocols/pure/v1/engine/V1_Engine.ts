@@ -63,22 +63,22 @@ import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/f
 class EngineConfig extends AbstractEngineConfig {
   private engine: V1_Engine;
 
-  setEnv(val: string | undefined): void {
+  override setEnv(val: string | undefined): void {
     super.setEnv(val);
     this.engine.engineServerClient.setEnv(val);
   }
 
-  setCurrentUserId(val: string | undefined): void {
+  override setCurrentUserId(val: string | undefined): void {
     super.setCurrentUserId(val);
     this.engine.engineServerClient.setCurrentUserId(val);
   }
 
-  setBaseUrl(val: string | undefined): void {
+  override setBaseUrl(val: string | undefined): void {
     super.setBaseUrl(val);
     this.engine.engineServerClient.setBaseUrl(val);
   }
 
-  setUseClientRequestPayloadCompression(val: boolean): void {
+  override setUseClientRequestPayloadCompression(val: boolean): void {
     super.setUseClientRequestPayloadCompression(val);
     this.engine.engineServerClient.setCompression(val);
   }

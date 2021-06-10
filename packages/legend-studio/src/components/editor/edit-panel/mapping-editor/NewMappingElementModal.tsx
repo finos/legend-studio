@@ -47,7 +47,6 @@ interface ClassMappingSubTypeOption {
 
 export const NewMappingElementModal = observer(() => {
   const editorStore = useEditorStore();
-  const config = editorStore.applicationStore.config;
   const mappingEditorState =
     editorStore.getCurrentEditorState(MappingEditorState);
   const spec = mappingEditorState.newMappingElementSpec;
@@ -244,7 +243,6 @@ export const NewMappingElementModal = observer(() => {
               options={classMappingTypeOptions}
               onChange={changeClassMappingType}
               value={classMappingType}
-              disabled={config.options.TEMPORARY__disableNonModelStoreSupports}
               placeholder={`Choose a class mapping type`}
             />
           )}

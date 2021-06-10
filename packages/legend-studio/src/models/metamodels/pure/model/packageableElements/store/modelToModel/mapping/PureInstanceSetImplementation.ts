@@ -86,11 +86,11 @@ export class PureInstanceSetImplementation
     );
   }
 
-  get isStub(): boolean {
+  override get isStub(): boolean {
     return super.isStub && isStubArray(this.propertyMappings);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PURE_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,

@@ -20,7 +20,7 @@ import type { SuperGenericFunction } from './CommonUtils';
 // as Typescript current catch phrase is not typed
 // See https://github.com/microsoft/TypeScript/issues/13219
 export abstract class ApplicationError extends Error {
-  message = '';
+  override message = '';
 }
 
 // Since Javascript does not fully support rethrowing error, we need to customize and manipulate the stack trace

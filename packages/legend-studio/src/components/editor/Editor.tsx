@@ -231,8 +231,9 @@ export const EditorInner = observer(() => {
 
   // Route Navigation Blocking
   // See https://medium.com/@michaelchan_13570/using-react-router-v4-prompt-with-custom-modal-component-ca839f5faf39
-  const [blockedLocation, setBlockedLocation] =
-    useState<Location | undefined>();
+  const [blockedLocation, setBlockedLocation] = useState<
+    Location | undefined
+  >();
   const retryBlockedLocation = useCallback(
     (allowedNavigation: boolean): void => {
       if (allowedNavigation && blockedLocation) {

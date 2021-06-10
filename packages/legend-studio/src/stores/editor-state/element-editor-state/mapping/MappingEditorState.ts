@@ -830,7 +830,7 @@ export class MappingEditorState extends ElementEditorState {
   }
 
   /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-  revealCompilationError(compilationError: CompilationError): boolean {
+  override revealCompilationError(compilationError: CompilationError): boolean {
     let revealed = false;
     try {
       if (compilationError.sourceInformation) {
@@ -875,10 +875,8 @@ export class MappingEditorState extends ElementEditorState {
                   this.currentTabState.propertyMappingStates as unknown[]
                 )
                   .filter(
-                    (
-                      propertyMappingState,
-                    ): propertyMappingState is LambdaEditorState =>
-                      propertyMappingState instanceof LambdaEditorState,
+                    (state): state is LambdaEditorState =>
+                      state instanceof LambdaEditorState,
                   )
                   .find((state) => state.lambdaId === sourceId);
                 if (propertyMappingState) {
@@ -904,7 +902,7 @@ export class MappingEditorState extends ElementEditorState {
     return revealed;
   }
 
-  get hasCompilationError(): boolean {
+  override get hasCompilationError(): boolean {
     return this.openedTabStates
       .filter(
         (tabState): tabState is InstanceSetImplementationState =>
@@ -917,7 +915,7 @@ export class MappingEditorState extends ElementEditorState {
       );
   }
 
-  clearCompilationError(): void {
+  override clearCompilationError(): void {
     this.openedTabStates
       .filter(
         (tabState): tabState is InstanceSetImplementationState =>

@@ -44,7 +44,7 @@ export class V1_GenerationSpecification
   generationNodes: V1_GenerationTreeNode[] = [];
   fileGenerations: V1_PackageableElementPointer[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GENERATION_TREE,
       super.hashCode,

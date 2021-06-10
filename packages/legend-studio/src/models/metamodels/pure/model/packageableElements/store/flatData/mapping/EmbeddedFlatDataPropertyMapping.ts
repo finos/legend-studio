@@ -58,7 +58,7 @@ export class EmbeddedFlatDataPropertyMapping
   implements InstanceSetImplementation, Hashable
 {
   root = InferableMappingElementRootExplicitValue.create(false);
-  isEmbedded = true;
+  override isEmbedded = true;
   class: PackageableElementReference<Class>;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
@@ -115,11 +115,11 @@ export class EmbeddedFlatDataPropertyMapping
   }
 
   // As of now, there is no stub cases of Embedded Flat Property Mapping since they are created with an existing property mapping
-  get isStub(): boolean {
+  override get isStub(): boolean {
     return false;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.EMBEDDED_FLAT_DATA_PROPERTY_MAPPING,
       super.hashCode,

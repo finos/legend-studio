@@ -29,7 +29,7 @@ export class V1_EmbeddedFlatDataPropertyMapping
   class!: string; // the class for the property being mapped by this embedded mapping
   propertyMappings: V1_AbstractFlatDataPropertyMapping[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.EMBEDDED_FLAT_DATA_PROPERTY_MAPPING,
       super.hashCode,

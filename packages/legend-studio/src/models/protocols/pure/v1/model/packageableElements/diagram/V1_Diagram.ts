@@ -28,7 +28,7 @@ export class V1_Diagram extends V1_PackageableElement implements Hashable {
   propertyViews: V1_PropertyView[] = [];
   generalizationViews: V1_GeneralizationView[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DIAGRAM,
       super.hashCode,

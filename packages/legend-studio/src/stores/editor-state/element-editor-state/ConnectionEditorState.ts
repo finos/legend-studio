@@ -68,7 +68,7 @@ export abstract class ConnectionValueState {
   abstract label(): string;
 }
 
-export enum RELATIONAL_DATABASE_TABE {
+export enum RELATIONAL_DATABASE_TAB_TYPE {
   GENERAL = 'GENERAL',
   STORE = 'STORE',
 }
@@ -207,8 +207,8 @@ export class GenerateStoreState {
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
-  connection: RelationalDatabaseConnection;
-  selectedTab = RELATIONAL_DATABASE_TABE.GENERAL;
+  override connection: RelationalDatabaseConnection;
+  selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   generateStoreState: GenerateStoreState;
 
   constructor(
@@ -231,7 +231,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       : undefined;
   }
 
-  setSelectedTab(val: RELATIONAL_DATABASE_TABE): void {
+  setSelectedTab(val: RELATIONAL_DATABASE_TAB_TYPE): void {
     this.selectedTab = val;
   }
 
@@ -413,8 +413,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
 }
 
 export class JsonModelConnectionValueState extends ConnectionValueState {
-  connection: JsonModelConnection;
-  disableChangingClass?: boolean;
+  override connection: JsonModelConnection;
 
   constructor(editorStore: EditorStore, connection: JsonModelConnection) {
     super(editorStore, connection);
@@ -427,8 +426,7 @@ export class JsonModelConnectionValueState extends ConnectionValueState {
 }
 
 export class FlatDataConnectionValueState extends ConnectionValueState {
-  connection: FlatDataConnection;
-  disableChangingClass?: boolean;
+  override connection: FlatDataConnection;
 
   constructor(editorStore: EditorStore, connection: FlatDataConnection) {
     super(editorStore, connection);

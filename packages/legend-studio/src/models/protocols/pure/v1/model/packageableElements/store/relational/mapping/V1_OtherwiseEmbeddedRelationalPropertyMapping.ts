@@ -27,11 +27,13 @@ export class V1_OtherwiseEmbeddedRelationalPropertyMapping
 {
   otherwisePropertyMapping!: V1_RelationalPropertyMapping;
 
-  accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {
+  override accept_PropertyMappingVisitor<T>(
+    visitor: V1_PropertyMappingVisitor<T>,
+  ): T {
     return visitor.visit_OtherwiseEmbeddedRelationalPropertyMapping(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OTHERWISE_EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
       super.hashCode,

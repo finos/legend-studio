@@ -66,6 +66,7 @@ import { SetImplementation } from '../../../../models/metamodels/pure/model/pack
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { flowResult } from 'mobx';
+import { MappingTestStatusIndicator } from './MappingTestsExplorer';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -611,6 +612,11 @@ export const MappingTestEditor = observer(
                     tab === selectedTab,
                 })}
               >
+                {tab === MAPPING_TEST_EDITOR_TAB_TYPE.RESULT && (
+                  <div className="mapping-test-editor__header__tab__test-status-indicator__container">
+                    <MappingTestStatusIndicator testState={testState} />
+                  </div>
+                )}
                 {tab}
               </div>
             ))}

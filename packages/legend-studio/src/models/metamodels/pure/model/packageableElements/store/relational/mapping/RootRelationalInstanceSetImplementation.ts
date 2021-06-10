@@ -67,11 +67,13 @@ export class RootRelationalInstanceSetImplementation
     this.propertyMappings = value;
   }
 
-  accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
+  override accept_SetImplementationVisitor<T>(
+    visitor: SetImplementationVisitor<T>,
+  ): T {
     return visitor.visit_RootRelationalInstanceSetImplementation(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ROOT_RELATIONAL_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,

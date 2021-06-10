@@ -51,7 +51,7 @@ export class EmbeddedRelationalInstanceSetImplementation
     Hashable
 {
   root = InferableMappingElementRootExplicitValue.create(false);
-  isEmbedded = true;
+  override isEmbedded = true;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
   class: PackageableElementReference<Class>;
@@ -117,7 +117,7 @@ export class EmbeddedRelationalInstanceSetImplementation
     throw new Error('Method not implemented.');
   }
 
-  get isStub(): boolean {
+  override get isStub(): boolean {
     return false;
   }
 
@@ -129,7 +129,7 @@ export class EmbeddedRelationalInstanceSetImplementation
     throw new Error('Method not implemented.');
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
       super.hashCode,

@@ -27,7 +27,7 @@ export class V1_XStorePropertyMapping
 {
   crossExpression!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.XSTORE_PROPERTY_MAPPING,
       super.hashCode,

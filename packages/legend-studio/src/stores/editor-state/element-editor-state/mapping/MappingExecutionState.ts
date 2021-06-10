@@ -104,7 +104,6 @@ import type { SetImplementation } from '../../../../models/metamodels/pure/model
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
-  uuid = uuid();
   editorStore: EditorStore;
   isConvertingLambdaToString = false;
   isInitializingLambda = false;
@@ -610,7 +609,7 @@ export class MappingExecutionState {
             tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
           const testContainer = new TestContainer(
-            this.editorStore.graphState.graphManager.HACKY_createAssertLambda(
+            this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
               this.executionResultText,
             ),
             singleExecutionTest,
@@ -670,6 +669,7 @@ export class MappingExecutionState {
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
+      this.setExecutionResultText('');
     } finally {
       this.isExecuting = false;
     }

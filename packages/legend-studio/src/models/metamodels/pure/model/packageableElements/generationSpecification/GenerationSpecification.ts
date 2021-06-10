@@ -142,7 +142,7 @@ export class GenerationSpecification
       ?.generationElement.value;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

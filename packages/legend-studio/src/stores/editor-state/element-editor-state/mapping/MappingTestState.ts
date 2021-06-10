@@ -97,7 +97,6 @@ export enum TEST_RESULT {
 }
 
 export class MappingTestQueryState extends LambdaEditorState {
-  uuid = uuid();
   editorStore: EditorStore;
   test: MappingTest;
   isConvertingLambdaToString = false;
@@ -668,6 +667,13 @@ export class MappingTestState {
     } finally {
       this.isRunningTest = false;
       this.runTime = Date.now() - startTime;
+      // if the test is currently opened and ran but did not pass, switch to the result tab
+      if (
+        [TEST_RESULT.FAILED, TEST_RESULT.ERROR].includes(this.result) &&
+        this.mappingEditorState.currentTabState === this
+      ) {
+        this.setSelectedTab(MAPPING_TEST_EDITOR_TAB_TYPE.RESULT);
+      }
     }
   }
 

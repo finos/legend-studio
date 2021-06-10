@@ -94,13 +94,13 @@ export class PropertyGraphFetchTree extends GraphFetchTree {
 }
 
 export abstract class GraphFetchTreeInstanceValue extends InstanceValue {
-  values: GraphFetchTree[] = [];
+  override values: GraphFetchTree[] = [];
 }
 
 export class PropertyGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceValue {
-  values: PropertyGraphFetchTree[] = [];
+  override values: PropertyGraphFetchTree[] = [];
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_PropertyGraphFetchTreeInstanceValue(this);
@@ -108,9 +108,9 @@ export class PropertyGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceV
 }
 
 export class RootGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceValue {
-  values: RootGraphFetchTree[] = [];
+  override values: RootGraphFetchTree[] = [];
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_RootGraphFetchTreeInstanceValue(this);

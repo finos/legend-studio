@@ -66,12 +66,6 @@ class ApplicationCoreOptions {
    */
   DEV__enableGraphImmutabilityRuntimeCheck = false;
   /**
-   * Allows disabling support for relational and flat-data.
-   *
-   * NOTE: when we properly modularize these DSL stores, we can eliminate this flag.
-   */
-  TEMPORARY__disableNonModelStoreSupports = false;
-  /**
    * Allows disabling support for project structure feature such as pipeline and dependencies.
    *
    * NOTE: when we have proper support for pipeline, we can remove this flag.
@@ -127,7 +121,6 @@ class ApplicationCoreOptions {
     createModelSchema(ApplicationCoreOptions, {
       DEV__enableStrictRuntimeChecks: optional(primitive()),
       DEV__enableGraphImmutabilityRuntimeCheck: optional(primitive()),
-      TEMPORARY__disableNonModelStoreSupports: optional(primitive()),
       TEMPORARY__disableSDLCProjectStructureSupport: optional(primitive()),
       TEMPORARY__disableSDLCProjectCreation: optional(primitive()),
       TEMPORARY__useSDLCProductionProjectsOnly: optional(primitive()),

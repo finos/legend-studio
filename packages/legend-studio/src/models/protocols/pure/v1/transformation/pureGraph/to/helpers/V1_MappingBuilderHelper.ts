@@ -61,7 +61,7 @@ import { V1_ObjectInputData } from '../../../../model/packageableElements/store/
 import { V1_FlatDataInputData } from '../../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData';
 import type { V1_ClassMapping } from '../../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude';
-import { V1_rawLambdaBuilderWithResolver } from './V1_RawLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
 import { V1_RelationalInputData } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import {
   getRelationalInputType,
@@ -265,7 +265,7 @@ export const V1_processMappingTest = (
 ): MappingTest => {
   assertNonEmptyString(mappingTest.name, 'Mapping test name is missing');
   assertNonNullable(mappingTest.query);
-  const query = V1_rawLambdaBuilderWithResolver(
+  const query = V1_resolvePathsInRawLambda(
     context,
     mappingTest.query.parameters,
     mappingTest.query.body,

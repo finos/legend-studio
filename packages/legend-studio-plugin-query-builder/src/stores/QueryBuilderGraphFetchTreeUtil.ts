@@ -207,8 +207,7 @@ export const addQueryBuilderPropertyNode = (
   let currentNodeId: string | undefined = undefined;
   let parentNode: QueryBuilderGraphFetchTreeNodeData | undefined = undefined;
   let newSubTree: PropertyGraphFetchTree | undefined;
-  for (let i = 0; i < propertyGraphFetchTrees.length; ++i) {
-    const propertyGraphFetchTree = propertyGraphFetchTrees[i];
+  for (const propertyGraphFetchTree of propertyGraphFetchTrees) {
     currentNodeId = generateNodeId(
       propertyGraphFetchTree.property.value,
       propertyGraphFetchTree.subType.value,

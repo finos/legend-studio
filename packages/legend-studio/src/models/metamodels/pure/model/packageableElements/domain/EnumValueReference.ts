@@ -29,7 +29,7 @@ export abstract class EnumValueReference
   extends ReferenceWithOwner
   implements Stubable
 {
-  readonly ownerReference: PackageableElementReference<Enumeration>;
+  override readonly ownerReference: PackageableElementReference<Enumeration>;
   value: Enum;
 
   protected constructor(
@@ -59,7 +59,7 @@ export abstract class EnumValueReference
 }
 
 export class EnumValueExplicitReference extends EnumValueReference {
-  readonly ownerReference: PackageableElementExplicitReference<Enumeration>;
+  override readonly ownerReference: PackageableElementExplicitReference<Enumeration>;
 
   private constructor(value: Enum) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -75,7 +75,7 @@ export class EnumValueExplicitReference extends EnumValueReference {
 }
 
 export class EnumValueImplicitReference extends EnumValueReference {
-  readonly ownerReference: PackageableElementImplicitReference<Enumeration>;
+  override readonly ownerReference: PackageableElementImplicitReference<Enumeration>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Enumeration>,

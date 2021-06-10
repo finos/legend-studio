@@ -19,7 +19,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { AssociationImplementation } from './AssociationImplementation';
 
 export class RelationalAssociationImplementation extends AssociationImplementation {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_ASSOCIATION_IMPLEMENTATION,
       super.hashCode,
