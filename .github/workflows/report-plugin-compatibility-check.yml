@@ -1,0 +1,67 @@
+name: Plugin Compatibility Report
+
+on:
+  workflow_run:
+    workflows: ['Plugin Compatibility Check']
+    types:
+      - completed
+
+# The purpose of this action is to modify a dummy plugin/preset to use the latest
+# published version of Legend Studio core. Then make the web application use that
+# plugin to check if there's any type-checking (compile time) or runtime error(s).
+jobs:
+  report-plugin-compatibility:
+    name: Plugin Compatibility Report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download plugin compatibility check result
+        uses: actions/github-script@v4
+        with:
+          script: |
+            var artifacts = await github.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{github.event.workflow_run.id }},
+            });
+            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "plugin-compatibility-check"
+            })[0];
+            var download = await github.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/plugin-compatibility-check.zip', Buffer.from(download.data));
+      - name: Load result
+        run: unzip plugin-compatibility-check.zip
+      - name: Alert compatibility check failure
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const fs = require('fs');
+            const checkResult = fs.readFileSync('./plugin-compatibility-check-result', { encoding: 'utf-8' });
+            console.log(checkResult);
+            const {data: comments} = await github.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.number,
+            })
+            const commentTextContent = 'Plugin compatibility issues found! Please make sure to add a notice in the changelog.';
+            const commentBody = `:warning: ${commentTextContent}`;
+            const botComment = comments.find(comment => comment.user.id === 41898282 && comment.body.includes(commentTextContent));
+            if (botComment && checkResult === 'success') {
+              await github.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id
+              });
+            } else if (!botComment && checkResult === 'failure') {
+              await github.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.number,
+                body: commentBody
+              });
+            }

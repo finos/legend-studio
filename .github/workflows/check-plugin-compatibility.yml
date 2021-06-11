@@ -1,7 +1,7 @@
 name: Plugin Compatibility Check
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - '**'
 
@@ -58,7 +58,8 @@ jobs:
           yarn &&
           yarn build &&
           cd ../../ &&
-          yarn
+          yarn &&
+          cat ./temp/legend-studio-preset-dummy/package.json
         # The following step will check for type-checking (compile time) or runtime error(s).
       - name: Check plugin compatibility
         id: check-plugin-compatibility
@@ -66,30 +67,12 @@ jobs:
         run: >
           yarn workspace @finos/legend-studio-app tsc &&
           yarn workspace @finos/legend-studio-app jest
-      - name: Alert compatibility check failure
-        uses: actions/github-script@v4
+      - name: Save result
+        run: |
+          mkdir -p ./plugin-compatibility-check
+          echo ${{ steps.check-plugin-compatibility.outcome }} > ./plugin-compatibility-check/plugin-compatibility-check-result
+      - name: Upload result
+        uses: actions/upload-artifact@v2
         with:
-          script: |
-            onst checkResult = '${{ steps.check-plugin-compatibility.outcome }}';
-            const {data: comments} = await github.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.number,
-            })
-            const commentTextContent = 'Plugin compatibility issues found! Please make sure to add a notice in the changelog.';
-            const commentBody = `:warning: ${commentTextContent}`;
-            const botComment = comments.find(comment => comment.user.id === 41898282 && comment.body.includes(commentTextContent));
-            if (botComment && checkResult === 'success') {
-              await github.issues.deleteComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id
-              });
-            } else if (!botComment && checkResult === 'failure') {
-              await github.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.number,
-                body: commentBody
-              });
-            }
+          name: plugin-compatibility-check
+          path: plugin-compatibility-check/
