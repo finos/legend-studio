@@ -11,6 +11,8 @@ on:
 jobs:
   check-plugin-compatibility:
     name: Run Plugin Compatibility Checks
+    # NOTE: there is currently an issue that makes the following job condition not working as expected
+    # See https://github.com/actions/runner/issues/1145
     if: ${{ github.context.payload.pull_request.title != 'New Release' }} # avoid running this in `New Release` PR
     runs-on: ubuntu-latest
     steps:
@@ -63,16 +65,13 @@ jobs:
         # The following step will check for type-checking (compile time) or runtime error(s).
       - name: Check plugin compatibility
         id: check-plugin-compatibility
-        continue-on-error: true
         run: >
           yarn workspace @finos/legend-studio-app tsc &&
           yarn workspace @finos/legend-studio-app jest
-      - name: Save result
-        run: |
-          mkdir -p ./plugin-compatibility-check
-          echo ${{ steps.check-plugin-compatibility.outcome }} > ./plugin-compatibility-check/plugin-compatibility-check-result
-      - name: Upload result
-        uses: actions/upload-artifact@v2
-        with:
-          name: plugin-compatibility-check
-          path: plugin-compatibility-check/
+        # NOTE: here we could have done more fancy things, such as reporting the failure as a PR comment
+        # but that in turns require access to the github token, which is not readily available
+        # in normal pull_request event.
+        # There are workarounds, such as using `workflow_run` event, but it proves to be unnecessarily complicated
+        # so we will skip this for now and simply failing the check. This would indicate there is a breaking change
+        # See https://github.com/finos/legend-studio/pull/245
+        # See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
