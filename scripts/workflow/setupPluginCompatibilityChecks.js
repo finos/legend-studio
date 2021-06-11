@@ -63,7 +63,8 @@ const pluginPackageJson = loadJSON(pluginPackageJsonPath);
             `Yarn workspace protocol 'workspace:*' should only be used for workspace in the same monorepo project`,
           );
         }
-        pluginPackageJson[depType][key] = workspaceVersionMap.get(key);
+        // pluginPackageJson[depType][key] = workspaceVersionMap.get(key);
+        pluginPackageJson[depType][key] = '0.0.0';
       }
     });
   }
