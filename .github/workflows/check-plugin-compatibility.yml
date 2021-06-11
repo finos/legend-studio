@@ -6,8 +6,10 @@ on:
       - '**'
 
 # The purpose of this action is to modify a dummy plugin/preset to use the latest
-# published version of Legend Studio core. Then make the web application use that
-# plugin to check if there's any type-checking (compile time) or runtime error(s).
+# (NPM) published version of Legend Studio core. Then make the web application (which
+# depends on core built from content of the PR) use that plugin to check if there's any
+# type-checking (compile time) or runtime error(s). If there are, it means in this PR
+# we have made some breaking-changes with respect to the plugin interfaces.
 jobs:
   check-plugin-compatibility:
     name: Run Plugin Compatibility Checks
