@@ -338,16 +338,15 @@ export class QueryBuilderState extends EditorExtensionState {
         SUPPORTED_FUNCTIONS.SERIALIZE,
         multiplicityOne,
       );
-      const graphFetchCheckedFunc = new SimpleFunctionExpression(
-        SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+      const graphFetchFunc = new SimpleFunctionExpression(
+        this.fetchStructureState.graphFetchTreeState.isChecked
+          ? SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED
+          : SUPPORTED_FUNCTIONS.GRAPH_FETCH,
         multiplicityOne,
       );
       const expression = lambdaFunction.expressionSequence[0];
-      graphFetchCheckedFunc.parametersValues = [expression, graphFetchInstance];
-      serializeFunction.parametersValues = [
-        graphFetchCheckedFunc,
-        graphFetchInstance,
-      ];
+      graphFetchFunc.parametersValues = [expression, graphFetchInstance];
+      serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
       lambdaFunction.expressionSequence[0] = serializeFunction;
     }
     // apply result set modifier options

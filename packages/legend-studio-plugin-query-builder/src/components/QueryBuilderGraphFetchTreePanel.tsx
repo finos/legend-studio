@@ -25,6 +25,8 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   TimesIcon,
+  CheckSquareIcon,
+  SquareIcon,
 } from '@finos/legend-studio-components';
 import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
@@ -41,6 +43,7 @@ import {
 } from '../stores/QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderExplorerTreeDragSource } from '../stores/QueryBuilderExplorerState';
 import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
+import type { QueryBuilderGraphFetchTreeState } from '../stores/QueryBuilderGraphFetchTreeState';
 
 const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -131,11 +134,12 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
 
 export const QueryBuilderGraphFetchTreeExplorer = observer(
   (props: {
+    graphFetchState: QueryBuilderGraphFetchTreeState;
     treeData: QueryBuilderGraphFetchTreeData;
     updateTreeData: (data: QueryBuilderGraphFetchTreeData) => void;
     isReadOnly: boolean;
   }) => {
-    const { treeData, updateTreeData, isReadOnly } = props;
+    const { graphFetchState, treeData, updateTreeData, isReadOnly } = props;
 
     const onNodeSelect = (node: QueryBuilderGraphFetchTreeNodeData): void => {
       if (node.childrenIds.length) {
@@ -156,20 +160,43 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
       updateTreeData({ ...treeData });
     };
 
+    const toggleChecked = (): void =>
+      graphFetchState.setChecked(!graphFetchState.isChecked);
+
     return (
-      <div className="query-builder-graph-fetch-tree__container">
-        <TreeView
-          components={{
-            TreeNodeContainer: QueryBuilderGraphFetchTreeNodeContainer,
-          }}
-          treeData={treeData}
-          onNodeSelect={onNodeSelect}
-          getChildNodes={getChildNodes}
-          innerProps={{
-            isReadOnly,
-            removeNode,
-          }}
-        />
+      <div className="query-builder-graph-fetch-tree">
+        <div className="query-builder-graph-fetch-tree__settings">
+          <div
+            className={clsx('panel__content__form__section__toggler')}
+            onClick={toggleChecked}
+          >
+            <button
+              className={clsx('panel__content__form__section__toggler__btn', {
+                'panel__content__form__section__toggler__btn--toggled':
+                  graphFetchState.isChecked,
+              })}
+            >
+              {graphFetchState.isChecked ? <CheckSquareIcon /> : <SquareIcon />}
+            </button>
+            <div className="panel__content__form__section__toggler__prompt">
+              Check graph fetch
+            </div>
+          </div>
+        </div>
+        <div className="query-builder-graph-fetch-tree__container">
+          <TreeView
+            components={{
+              TreeNodeContainer: QueryBuilderGraphFetchTreeNodeContainer,
+            }}
+            treeData={treeData}
+            onNodeSelect={onNodeSelect}
+            getChildNodes={getChildNodes}
+            innerProps={{
+              isReadOnly,
+              removeNode,
+            }}
+          />
+        </div>
       </div>
     );
   },
@@ -230,6 +257,7 @@ export const QueryBuilderGraphFetchTreePanel = observer(
         )}
         {treeData && !isGraphFetchTreeDataEmpty(treeData) && (
           <QueryBuilderGraphFetchTreeExplorer
+            graphFetchState={graphFetchState}
             treeData={treeData}
             isReadOnly={false}
             updateTreeData={updateTreeData}

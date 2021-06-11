@@ -37,6 +37,7 @@ export enum SUPPORTED_FUNCTIONS {
   DISTINCT = 'distinct',
   SORT_FUNC = 'sort',
   SERIALIZE = 'serialize',
+  GRAPH_FETCH = 'graphFetch',
   GRAPH_FETCH_CHECKED = 'graphFetchChecked',
   EXISTS = 'exists',
   NOT = 'not',
