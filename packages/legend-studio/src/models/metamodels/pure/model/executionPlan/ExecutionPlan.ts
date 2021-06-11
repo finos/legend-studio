@@ -16,6 +16,7 @@
 
 import type { ExecutionNode } from './nodes/ExecutionNode';
 
+export type RawExecutionPlan = object;
 export class ExecutionPlan {
   // TODO: Populate fields when required
   //   func : FunctionDefinition<Any>[1];

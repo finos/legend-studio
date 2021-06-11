@@ -16,10 +16,7 @@
 
 import type { Entity } from '../../../sdlc/models/entity/Entity';
 import type { ProjectDependencyMetadata } from '../../../sdlc/models/configuration/ProjectDependency';
-import type {
-  ExecutionPlan as ExecutionPlan,
-  ExecutionResult,
-} from '../action/execution/ExecutionResult';
+import type { ExecutionResult } from '../action/execution/ExecutionResult';
 import type { ServiceRegistrationResult } from '../action/service/ServiceRegistrationResult';
 import type { Service } from '../model/packageableElements/service/Service';
 import type {
@@ -51,6 +48,7 @@ import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PurePr
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import type { ServerClientConfig } from '@finos/legend-studio-network';
 import type { RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import type { RawExecutionPlan } from '../model/executionPlan/ExecutionPlan';
 
 export interface EngineSetupConfig {
   env: string;
@@ -239,13 +237,15 @@ export abstract class AbstractPureGraphManager {
      */
     lossless: boolean,
   ): Promise<ExecutionResult>;
+
   abstract generateExecutionPlan(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-  ): Promise<ExecutionPlan>;
+  ): Promise<RawExecutionPlan>;
+
   abstract generateTestData(
     graph: PureModel,
     mapping: Mapping,

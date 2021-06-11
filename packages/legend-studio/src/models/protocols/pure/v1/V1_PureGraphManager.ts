@@ -82,10 +82,7 @@ import type {
 import type { GenerationConfigurationDescription } from '../../../metamodels/pure/action/generation/GenerationConfigurationDescription';
 import type { ServiceTestResult } from '../../../metamodels/pure/action/service/ServiceTestResult';
 import type { ServiceRegistrationResult } from '../../../metamodels/pure/action/service/ServiceRegistrationResult';
-import type {
-  ExecutionPlan,
-  ExecutionResult,
-} from '../../../metamodels/pure/action/execution/ExecutionResult';
+import type { ExecutionResult } from '../../../metamodels/pure/action/execution/ExecutionResult';
 import type { GenerationOutput } from '../../../metamodels/pure/action/generation/GenerationOutput';
 import type { ValueSpecification } from '../../../metamodels/pure/model/valueSpecification/ValueSpecification';
 import { ServiceExecutionMode } from '../../../metamodels/pure/action/service/ServiceExecutionMode';
@@ -191,6 +188,7 @@ import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension }
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { V1_RawRelationalOperationElement } from './model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
+import type { RawExecutionPlan } from '../../../metamodels/pure/model/executionPlan/ExecutionPlan';
 
 export const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1887,7 +1885,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-  ): GeneratorFn<ExecutionPlan> {
+  ): GeneratorFn<RawExecutionPlan> {
     const executeInput = this.createExecutionInput(
       graph,
       mapping,
@@ -1897,7 +1895,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     return (yield this.engine.engineServerClient.generatePlan(
       V1_ExecuteInput.serialization.toJson(executeInput),
-    )) as ExecutionPlan;
+    )) as RawExecutionPlan;
   });
 
   generateTestData = flow(function* (

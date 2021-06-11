@@ -88,7 +88,7 @@ export {
 } from './models/metamodels/pure/model/valueSpecification/InstanceValue';
 export { ValueSpecification } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';
 export type { ValueSpecificationVisitor } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';
-export type { ExecutionPlan } from './models/metamodels/pure/action/execution/ExecutionResult';
+export type { RawExecutionPlan } from './models/metamodels/pure/model/executionPlan/ExecutionPlan';
 export {
   ExecutionResult,
   TdsExecutionResult,
