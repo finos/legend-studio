@@ -11,9 +11,7 @@ on:
 jobs:
   check-plugin-compatibility:
     name: Run Plugin Compatibility Checks
-    # NOTE: there is currently an issue that makes the following job condition not working as expected
-    # See https://github.com/actions/runner/issues/1145
-    if: ${{ github.context.payload.pull_request.title != 'New Release' }} # avoid running this in `New Release` PR
+    if: ${{ github.event.pull_request.title != 'New Release' }} # avoid running this in `New Release` PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

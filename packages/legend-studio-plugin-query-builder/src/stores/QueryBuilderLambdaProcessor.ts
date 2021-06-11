@@ -423,9 +423,13 @@ export class QueryBuilderLambdaProcessor
         }
       }
     } else if (
-      functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED &&
+      (functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED ||
+        functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH) &&
       this.getParentSimpleFunctionName() === SUPPORTED_FUNCTIONS.SERIALIZE
     ) {
+      this.queryBuilderState.fetchStructureState.graphFetchTreeState.setChecked(
+        functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+      );
       if (valueSpecification.parametersValues.length === 2) {
         valueSpecification.parametersValues[0].accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(

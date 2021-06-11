@@ -45,7 +45,7 @@ export class RelationalPropertyMapping
 
     makeObservable(this, {
       transformer: observable,
-      relationalOperation: observable,
+      relationalOperation: observable.ref,
       setTransformer: action,
       hashCode: computed,
     });

@@ -119,6 +119,7 @@ export const V1_processDatasourceSpecification = (
       protocol.warehouseName,
       protocol.databaseName,
     );
+    snowflakeSpec.cloudType = protocol.cloudType;
     snowflakeSpec.quotedIdentifiersIgnoreCase =
       protocol.quotedIdentifiersIgnoreCase;
     return snowflakeSpec;

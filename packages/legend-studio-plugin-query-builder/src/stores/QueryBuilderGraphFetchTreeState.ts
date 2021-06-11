@@ -32,12 +32,19 @@ export class QueryBuilderGraphFetchTreeState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   treeData?: QueryBuilderGraphFetchTreeData;
+  /**
+   * If set to `true` we will use `graphFetchChecked` function instead of `graphFetch`.
+   * `graphFetchChecked` will do extra checks on constraints and only work on M2M use case for now.
+   * Hence we default this to `false` for graph fetch to work universally.
+   */
+  isChecked = false;
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       editorStore: false,
       queryBuilderState: false,
       setGraphFetchTree: action,
+      setChecked: action,
     });
 
     this.editorStore = editorStore;
@@ -46,6 +53,10 @@ export class QueryBuilderGraphFetchTreeState {
 
   setGraphFetchTree(val: QueryBuilderGraphFetchTreeData | undefined): void {
     this.treeData = val;
+  }
+
+  setChecked(val: boolean): void {
+    this.isChecked = val;
   }
 
   init(tree?: RootGraphFetchTree): void {
