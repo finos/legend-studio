@@ -105,6 +105,7 @@ const transformSnowflakeDatasourceSpecification = (
   source.warehouseName = metamodel.warehouseName;
   source.databaseName = metamodel.databaseName;
   source.accountName = metamodel.accountName;
+  source.cloudType = metamodel.cloudType;
   source.quotedIdentifiersIgnoreCase = metamodel.quotedIdentifiersIgnoreCase;
   return source;
 };

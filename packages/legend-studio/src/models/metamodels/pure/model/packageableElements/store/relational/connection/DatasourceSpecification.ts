@@ -166,6 +166,7 @@ export class SnowflakeDatasourceSpecification
   region: string;
   warehouseName: string;
   databaseName: string;
+  cloudType?: string;
   quotedIdentifiersIgnoreCase?: boolean;
 
   constructor(
@@ -181,13 +182,17 @@ export class SnowflakeDatasourceSpecification
       region: observable,
       warehouseName: observable,
       databaseName: observable,
+      cloudType: observable,
       quotedIdentifiersIgnoreCase: observable,
       hashCode: computed,
       setAccountName: action,
       setRegion: action,
       setWarehouseName: action,
       setDatabaseName: action,
+      setCloudType: action,
+      setQuotedIdentifiersIgnoreCase: action,
     });
+
     this.region = region;
     this.warehouseName = warehouseName;
     this.databaseName = databaseName;
@@ -197,14 +202,25 @@ export class SnowflakeDatasourceSpecification
   setAccountName(val: string): void {
     this.accountName = val;
   }
+
   setRegion(val: string): void {
     this.region = val;
   }
+
   setWarehouseName(val: string): void {
     this.warehouseName = val;
   }
+
   setDatabaseName(val: string): void {
     this.databaseName = val;
+  }
+
+  setCloudType(val: string | undefined): void {
+    this.cloudType = val;
+  }
+
+  setQuotedIdentifiersIgnoreCase(val: boolean | undefined): void {
+    this.quotedIdentifiersIgnoreCase = val;
   }
 
   get hashCode(): string {
@@ -214,6 +230,7 @@ export class SnowflakeDatasourceSpecification
       this.region,
       this.warehouseName,
       this.databaseName,
+      this.cloudType ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }
