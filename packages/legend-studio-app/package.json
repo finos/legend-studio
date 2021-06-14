@@ -41,7 +41,7 @@
     "@finos/legend-studio-plugin-query-builder": "workspace:*",
     "@finos/legend-studio-preset-dsl-text": "workspace:*",
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*",
-    "@types/react": "17.0.9",
+    "@types/react": "17.0.11",
     "react": "17.0.2"
   },
   "devDependencies": {
