@@ -188,9 +188,15 @@ import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension }
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { V1_RawRelationalOperationElement } from './model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
-import type { RawExecutionPlan } from '../../../metamodels/pure/model/executionPlan/ExecutionPlan';
+import type {
+  ExecutionPlan,
+  RawExecutionPlan,
+} from '../../../metamodels/pure/model/executionPlan/ExecutionPlan';
+import type { V1_ExecutionNode } from './model/executionPlan/nodes/V1_ExecutionNode';
+import type { ExecutionNode } from '../../../metamodels/pure/model/executionPlan/nodes/ExecutionNode';
+import type { V1_ExecutionPlan } from './model/executionPlan/V1_ExecutionPlan';
 
-export const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
+const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
 const getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
   if (multiplicity.lowerBound === multiplicity.upperBound) {
@@ -1878,6 +1884,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     ).build();
   });
 
+  generateTestData = flow(function* (
+    this: V1_PureGraphManager,
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): GeneratorFn<string> {
+    const executeInput = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      clientVersion,
+    );
+    return (yield this.engine.engineServerClient.generateTestDataWithDefaultSeed(
+      V1_ExecuteInput.serialization.toJson(executeInput),
+    )) as string;
+  });
+
   generateExecutionPlan = flow(function* (
     this: V1_PureGraphManager,
     graph: PureModel,
@@ -1898,25 +1924,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     )) as RawExecutionPlan;
   });
 
-  generateTestData = flow(function* (
-    this: V1_PureGraphManager,
-    graph: PureModel,
-    mapping: Mapping,
-    lambda: RawLambda,
-    runtime: Runtime,
-    clientVersion: string,
-  ): GeneratorFn<string> {
-    const executeInput = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      clientVersion,
-    );
-    return (yield this.engine.engineServerClient.generateTestDataWithDefaultSeed(
-      V1_ExecuteInput.serialization.toJson(executeInput),
-    )) as string;
-  });
+  buildExecutionPlan(
+    executionPlanJson: PlainObject<V1_ExecutionPlan>,
+  ): ExecutionPlan {
+    throw new Error('Not implemented');
+  }
+
+  getExecutionNodeProtocolJson(
+    executionNode: ExecutionNode,
+  ): PlainObject<V1_ExecutionNode> {
+    throw new Error('Not implemented');
+  }
 
   // --------------------------------------------- V1_Store ---------------------------------------------
 

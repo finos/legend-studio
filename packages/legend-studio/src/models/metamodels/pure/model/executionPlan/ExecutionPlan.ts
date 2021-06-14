@@ -17,15 +17,15 @@
 import type { ExecutionNode } from './nodes/ExecutionNode';
 
 export type RawExecutionPlan = object;
-export class ExecutionPlan {
-  // TODO: Populate fields when required
-  //   func : FunctionDefinition<Any>[1];
-  //   mapping : Mapping[1];
-  //   runtime : Runtime[1];
 
+export class ExecutionPlan {
   rootExecutionNode!: ExecutionNode;
   processingTemplateFunctions: string[] = [];
   authDependent!: boolean;
   kerberos?: string;
+  // TODO: Populate fields when required
+  //   func : FunctionDefinition<Any>[1];
+  //   mapping : Mapping[1];
+  //   runtime : Runtime[1];
   // globalImplementationSupport: PlatformImplementation[0..1];
 }

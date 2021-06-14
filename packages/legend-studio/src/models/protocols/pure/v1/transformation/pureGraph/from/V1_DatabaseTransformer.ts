@@ -85,7 +85,7 @@ import { V1_Database } from '../../../model/packageableElements/store/relational
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelpers';
 import type { V1_RelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
 import {
   V1_ElementWithJoins,

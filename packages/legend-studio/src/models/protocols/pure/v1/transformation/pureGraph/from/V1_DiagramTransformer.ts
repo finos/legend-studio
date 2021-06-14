@@ -28,7 +28,7 @@ import { V1_Rectangle } from '../../../model/packageableElements/diagram/geometr
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelpers';
 import { V1_PropertyView } from '../../../model/packageableElements/diagram/V1_PropertyView';
 import { V1_transformPropertyReference } from './V1_MappingTransformer';
 

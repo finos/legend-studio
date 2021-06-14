@@ -31,7 +31,7 @@ import { V1_SectionIndex } from '../../../model/packageableElements/section/V1_S
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelpers';
 
 const transformDefaultCodeSectionSchema = (
   element: DefaultCodeSection,

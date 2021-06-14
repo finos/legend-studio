@@ -415,7 +415,7 @@ test(
       queryBuilderState.buildWithRawLambda(
         getRawLambda(unSupportedGetAllWithOneConditionFilter),
       ),
-    ).toThrowError(`Can't process filter expression function`);
+    ).toThrowError(`Can't build filter expression function`);
     expect(() =>
       queryBuilderState.buildWithRawLambda(getRawLambda(errorInGraphLambda)),
     ).toThrowError(
@@ -425,6 +425,6 @@ test(
       queryBuilderState.buildWithRawLambda(
         getRawLambda(unSupportedFunctionName),
       ),
-    ).toThrowError(`Can't process function 'testUnSupported'`);
+    ).toThrowError(`Can't build function 'testUnSupported'`);
   },
 );

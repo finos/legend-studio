@@ -113,7 +113,7 @@ const processFilterExpression = (
         guaranteeType(
           filterExpression,
           SimpleFunctionExpression,
-          `Can't process filter expression of type '${
+          `Can't build filter expression of type '${
             getClass(filterExpression).name
           }'`,
         ),
@@ -139,7 +139,7 @@ const processFilterExpression = (
         return;
       }
     }
-    throw new Error(`Can't process filter expression function`);
+    throw new Error(`Can't build filter expression function`);
   }
 };
 
@@ -167,7 +167,7 @@ const processFilterFunction = (
     );
     processFilterExpression(rootExpression, filterQueryState, undefined);
   } else {
-    throw new Error(`Can't process filter function`);
+    throw new Error(`Can't build filter function`);
   }
 };
 
@@ -440,7 +440,7 @@ export class QueryBuilderLambdaProcessor
         return;
       }
     }
-    throw new Error(`Can't process function '${functionName}'`);
+    throw new Error(`Can't build function '${functionName}'`);
   }
 
   visit_VariableExpression(valueSpecification: VariableExpression): void {

@@ -16,8 +16,8 @@
 
 export class V1_TDSColumn {
   name!: string;
-  type!: string;
-  doc!: string;
-  relationaltype!: string;
-  enumMapping: Map<string, string[]> = new Map<string, string[]>();
+  type?: string;
+  doc?: string;
+  relationalType?: string;
+  enumMapping?: Map<string, string[]>;
 }

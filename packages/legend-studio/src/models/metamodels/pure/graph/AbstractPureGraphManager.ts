@@ -48,7 +48,11 @@ import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PurePr
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import type { ServerClientConfig } from '@finos/legend-studio-network';
 import type { RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import type { RawExecutionPlan } from '../model/executionPlan/ExecutionPlan';
+import type {
+  ExecutionPlan,
+  RawExecutionPlan,
+} from '../model/executionPlan/ExecutionPlan';
+import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
 
 export interface EngineSetupConfig {
   env: string;
@@ -238,6 +242,14 @@ export abstract class AbstractPureGraphManager {
     lossless: boolean,
   ): Promise<ExecutionResult>;
 
+  abstract generateTestData(
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): Promise<string>;
+
   abstract generateExecutionPlan(
     graph: PureModel,
     mapping: Mapping,
@@ -246,13 +258,14 @@ export abstract class AbstractPureGraphManager {
     clientVersion: string,
   ): Promise<RawExecutionPlan>;
 
-  abstract generateTestData(
-    graph: PureModel,
-    mapping: Mapping,
-    lambda: RawLambda,
-    runtime: Runtime,
-    clientVersion: string,
-  ): Promise<string>;
+  /**
+   * TOOD?: potentially consider merging this method and `generateExecutionPlan`.
+   */
+  abstract buildExecutionPlan(
+    executionPlanJson: RawExecutionPlan,
+  ): ExecutionPlan;
+
+  abstract getExecutionNodeProtocolJson(executionNode: ExecutionNode): object;
 
   // ------------------------------------------- Store -------------------------------------------
 

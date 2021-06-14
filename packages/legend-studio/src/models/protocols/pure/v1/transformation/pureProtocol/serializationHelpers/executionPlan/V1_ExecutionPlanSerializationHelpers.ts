@@ -32,13 +32,12 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { V1_ExecutionPlan } from '../../../../model/executionPlan/V1_ExecutionPlan';
-import { V1_SingleExecutionPlan } from '../../../../model/executionPlan/V1_SingleExecutionPlan';
+import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan';
 import { V1_Protocol } from '../../../../model/V1_Protocol';
 import { V1_DataTypeResultType } from '../../../../model/executionPlan/results/V1_DataTypeResultType';
 import { V1_TDSResultType } from '../../../../model/executionPlan/results/V1_TDSResultType';
 import { V1_TDSColumn } from '../../../../model/executionPlan/results/V1_TDSColumn';
 import type { V1_ResultType } from '../../../../model/executionPlan/results/V1_ResultType';
-import { V1_RelationalInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalInstantiationExecutionNode';
 import { V1_multiplicitySchema } from '../V1_CoreSerializationHelper';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
 import { V1_SQLExecutionNode } from '../../../../model/executionPlan/nodes/V1_SQLExecutionNode';
@@ -67,7 +66,7 @@ const TDSColumnModelSchema = createModelSchema(V1_TDSColumn, {
     (val) => deseralizeMap(val),
   ),
   name: primitive(),
-  relationaltype: primitive(),
+  relationalType: primitive(),
   type: primitive(),
 });
 
@@ -109,33 +108,12 @@ export const V1_deserializeExecutionResultType = (
 // ---------------------------------------- Node ----------------------------------------
 
 export enum V1_ExecutionNodeType {
-  RELATIONAL_INSTANTIATION = 'relationalInstantiation',
   RELATIONAL_TDS_INSTANTIATION = 'relationalTdsInstantiation',
   SQL = 'sql',
 }
 
-const relationalInstantationExecutionNodeModelSchema = createModelSchema(
-  V1_RelationalInstantiationExecutionNode,
-  {
-    _type: usingConstantValueSchema(
-      V1_ExecutionNodeType.RELATIONAL_INSTANTIATION,
-    ),
-    executionNodes: list(
-      custom(
-        (val) => V1_serializeExecutionNode(val),
-        (val) => V1_deserializeExecutionNode(val),
-      ),
-    ),
-    resultSizeRange: usingModelSchema(V1_multiplicitySchema),
-    resultType: custom(
-      (val) => V1_serializeExecutionResultType(val),
-      (val) => V1_deserializeExecutionResultType(val),
-    ),
-  },
-);
-
 const relationalTDSInstantationExecutionNodeModelSchema = createModelSchema(
-  V1_RelationalInstantiationExecutionNode,
+  V1_RelationalTDSInstantiationExecutionNode,
   {
     _type: usingConstantValueSchema(
       V1_ExecutionNodeType.RELATIONAL_TDS_INSTANTIATION,
@@ -186,13 +164,10 @@ export function V1_serializeExecutionNode(
   protocol: V1_ResultType,
 ): PlainObject<V1_ResultType> {
   if (protocol instanceof V1_RelationalTDSInstantiationExecutionNode) {
-    // this has to go before V1_RelationalInstantionExecutionNode because it's a subtype
     return serialize(
       relationalTDSInstantationExecutionNodeModelSchema,
       protocol,
     );
-  } else if (protocol instanceof V1_RelationalInstantiationExecutionNode) {
-    return serialize(relationalInstantationExecutionNodeModelSchema, protocol);
   } else if (protocol instanceof V1_SQLExecutionNode) {
     return serialize(SQLExecutionNodeModelSchema, protocol);
   }
@@ -210,8 +185,6 @@ export function V1_deserializeExecutionNode(
         relationalTDSInstantationExecutionNodeModelSchema,
         json,
       );
-    case V1_ExecutionNodeType.RELATIONAL_INSTANTIATION:
-      return deserialize(relationalInstantationExecutionNodeModelSchema, json);
     case V1_ExecutionNodeType.SQL:
       return deserialize(SQLExecutionNodeModelSchema, json);
     default:
@@ -224,12 +197,12 @@ export function V1_deserializeExecutionNode(
 // ---------------------------------------- Plan ----------------------------------------
 
 export enum V1_ExecutionPlanType {
-  SINGLE = 'single',
+  SINGLE = 'simple',
   COMPOSITE = 'composite',
 }
 
-const singleExecutionPlanModelSchema = createModelSchema(
-  V1_SingleExecutionPlan,
+const SimpleExecutionPlanModelSchema = createModelSchema(
+  V1_SimpleExecutionPlan,
   {
     _type: usingConstantValueSchema(V1_ExecutionPlanType.SINGLE),
     authDependent: primitive(),
@@ -246,8 +219,8 @@ const singleExecutionPlanModelSchema = createModelSchema(
 export const V1_serializeExecutionPlan = (
   protocol: V1_ExecutionPlan,
 ): PlainObject<V1_ExecutionPlan> => {
-  if (protocol instanceof V1_SingleExecutionPlan) {
-    return serialize(singleExecutionPlanModelSchema, protocol);
+  if (protocol instanceof V1_SimpleExecutionPlan) {
+    return serialize(SimpleExecutionPlanModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize execution plan of type '${getClass(protocol).name}'`,
@@ -259,7 +232,7 @@ export const V1_deserializeExecutionPlan = (
 ): V1_ExecutionPlan => {
   switch (json._type) {
     case V1_ExecutionPlanType.SINGLE:
-      return deserialize(singleExecutionPlanModelSchema, json);
+      return deserialize(SimpleExecutionPlanModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize execution plan of type '${json._type}'`,
