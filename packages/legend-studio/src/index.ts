@@ -88,7 +88,7 @@ export {
 } from './models/metamodels/pure/model/valueSpecification/InstanceValue';
 export { ValueSpecification } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';
 export type { ValueSpecificationVisitor } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';
-export type { ExecutionPlan } from './models/metamodels/pure/action/execution/ExecutionResult';
+export type { RawExecutionPlan } from './models/metamodels/pure/model/executionPlan/ExecutionPlan';
 export {
   ExecutionResult,
   TdsExecutionResult,
@@ -110,10 +110,11 @@ export * from './models/protocols/pure/v1/model/packageableElements/V1_Packageab
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';
 export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda';
+export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext';
 export {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper';
+} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelpers';
 export { V1_RawValueSpecificationTransformer } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 export { V1_rawLambdaModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';

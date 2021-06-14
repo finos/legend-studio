@@ -473,7 +473,9 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
               this.tableAliasMap,
               [],
             ),
-            new V1_GraphTransformerContextBuilder(false).build(),
+            new V1_GraphTransformerContextBuilder(
+              this.context.extensions.plugins,
+            ).build(),
           ),
         );
     } catch {

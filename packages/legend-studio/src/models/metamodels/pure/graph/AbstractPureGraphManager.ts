@@ -16,10 +16,7 @@
 
 import type { Entity } from '../../../sdlc/models/entity/Entity';
 import type { ProjectDependencyMetadata } from '../../../sdlc/models/configuration/ProjectDependency';
-import type {
-  ExecutionPlan as ExecutionPlan,
-  ExecutionResult,
-} from '../action/execution/ExecutionResult';
+import type { ExecutionResult } from '../action/execution/ExecutionResult';
 import type { ServiceRegistrationResult } from '../action/service/ServiceRegistrationResult';
 import type { Service } from '../model/packageableElements/service/Service';
 import type {
@@ -51,6 +48,11 @@ import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PurePr
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import type { ServerClientConfig } from '@finos/legend-studio-network';
 import type { RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import type {
+  ExecutionPlan,
+  RawExecutionPlan,
+} from '../model/executionPlan/ExecutionPlan';
+import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
 
 export interface EngineSetupConfig {
   env: string;
@@ -188,9 +190,6 @@ export abstract class AbstractPureGraphManager {
     valueSpecificationJson: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification;
-
-  // ------------------------------------------- Raw ValueSpecification -------------------------------------
-
   abstract serializeRawValueSpecification(
     rawValueSpecification: RawValueSpecification,
   ): Record<PropertyKey, unknown>;
@@ -239,13 +238,7 @@ export abstract class AbstractPureGraphManager {
      */
     lossless: boolean,
   ): Promise<ExecutionResult>;
-  abstract generateExecutionPlan(
-    graph: PureModel,
-    mapping: Mapping,
-    lambda: RawLambda,
-    runtime: Runtime,
-    clientVersion: string,
-  ): Promise<ExecutionPlan>;
+
   abstract generateTestData(
     graph: PureModel,
     mapping: Mapping,
@@ -253,6 +246,28 @@ export abstract class AbstractPureGraphManager {
     runtime: Runtime,
     clientVersion: string,
   ): Promise<string>;
+
+  abstract generateExecutionPlan(
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): Promise<RawExecutionPlan>;
+
+  /**
+   * TOOD?: potentially consider merging this method and `generateExecutionPlan`.
+   */
+  abstract buildExecutionPlan(
+    executionPlanJson: RawExecutionPlan,
+    graph: PureModel,
+  ): ExecutionPlan;
+
+  abstract transformExecutionPlan(
+    executionPlan: ExecutionPlan,
+  ): RawExecutionPlan;
+
+  abstract getExecutionNodeProtocolJson(executionNode: ExecutionNode): object;
 
   // ------------------------------------------- Store -------------------------------------------
 

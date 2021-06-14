@@ -30,10 +30,7 @@ import type { V1_JsonToGrammarInput } from './grammar/V1_JsonToGrammarInput';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
 import type { V1_PureModelContextGenerationInput } from './import/V1_PureModelContextGenerationInput';
 import type { V1_GenerateFileInput } from './generation/V1_FileGenerationInput';
-import type {
-  V1_ExecutionPlan,
-  V1_ExecutionResult,
-} from './execution/V1_ExecutionResult';
+import type { V1_ExecutionResult } from './execution/V1_ExecutionResult';
 import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription';
 import type { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription';
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
@@ -47,6 +44,7 @@ import type {
 import { AbstractServerClient } from '@finos/legend-studio-network';
 import type { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
 import type { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
+import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -266,6 +264,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
       { skipProcessing: Boolean(returnResultAsText) },
     );
+
   generatePlan = (
     input: PlainObject<V1_ExecuteInput>,
   ): Promise<PlainObject<V1_ExecutionPlan>> =>

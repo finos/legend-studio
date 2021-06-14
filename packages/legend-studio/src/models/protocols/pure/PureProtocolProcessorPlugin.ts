@@ -23,10 +23,16 @@ import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelCon
 import type { PureModel } from '../../metamodels/pure/graph/PureModel';
 import type { Mapping } from '../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../metamodels/pure/model/packageableElements/runtime/Runtime';
+import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
 ) => string | undefined;
+
+export type V1_ElementTransformer = (
+  metamodel: PackageableElement,
+  context: V1_GraphTransformerContext,
+) => V1_PackageableElement | undefined;
 
 export type V1_ElementProtocolSerializer = (
   protocol: V1_PackageableElement,
@@ -34,10 +40,6 @@ export type V1_ElementProtocolSerializer = (
 
 export type V1_ElementProtocolDeserializer = (
   protocol: PlainObject<V1_PackageableElement>,
-) => V1_PackageableElement | undefined;
-
-export type V1_ElementTransformer = (
-  metamodel: PackageableElement,
 ) => V1_PackageableElement | undefined;
 
 export type V1_ExecutionInputGetter = (

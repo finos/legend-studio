@@ -15,12 +15,13 @@
  */
 
 import type { DataType } from '../../packageableElements/domain/DataType';
+import type { PackageableElementReference } from '../../packageableElements/PackageableElementReference';
 
 export class TDSColumn {
-  offset?: number;
   name!: string;
-  type?: DataType;
+  offset?: number;
+  type?: PackageableElementReference<DataType>;
   enumMappingId?: string;
   documentation?: string;
-  // sourceDataType: Any;
+  sourceDataType?: unknown;
 }

@@ -27,13 +27,6 @@ import type {
 import { useState } from 'react';
 import { MdModeEdit } from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
-import {
-  FaTimes,
-  FaCheckSquare,
-  FaSquare,
-  FaSave,
-  FaFire,
-} from 'react-icons/fa';
 import { VscError } from 'react-icons/vsc';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
@@ -41,6 +34,11 @@ import {
   clsx,
   PanelLoadingIndicator,
   CustomSelectorInput,
+  CheckSquareIcon,
+  SquareIcon,
+  TimesIcon,
+  SaveIcon,
+  FireIcon,
 } from '@finos/legend-studio-components';
 import { capitalize, prettyCONSTName } from '@finos/legend-studio-shared';
 import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
@@ -107,7 +105,7 @@ export const ConnectionEditor_BooleanEditor = observer(
             disabled={isReadOnly}
             tabIndex={-1}
           >
-            {value ? <FaCheckSquare /> : <FaSquare />}
+            {value ? <CheckSquareIcon /> : <SquareIcon />}
           </button>
           <div className="panel__content__form__section__toggler__prompt">
             {description}
@@ -315,7 +313,7 @@ export const ConnectionEditor_ArrayEditor = observer(
                         onClick={deleteValue(idx)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -775,7 +773,7 @@ const StorePatternsEditor = observer(
                         onClick={deleteValue(pattern)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -909,7 +907,7 @@ const GenerateStoreEditor = observer(
                         onClick={generateStore}
                         title={'Generate store...'}
                       >
-                        <FaFire />
+                        <FireIcon />
                       </button>
                       <button
                         className="panel__header__action"
@@ -918,7 +916,7 @@ const GenerateStoreEditor = observer(
                         onClick={saveStore}
                         title={'Save store...'}
                       >
-                        <FaSave />
+                        <SaveIcon />
                       </button>
                     </div>
                   </div>
@@ -1120,7 +1118,7 @@ const RelationalConnectionGeneralEditor = observer(
     const connection = connectionValueState.connection;
     const applicationStore = useApplicationStore();
     const plugins = applicationStore.pluginManager.getEditorPlugins();
-    // db type.
+    // database type
     const typeOptions = Object.values(DatabaseType).map((e) => ({
       value: e,
       label: e,
@@ -1198,10 +1196,10 @@ const RelationalConnectionGeneralEditor = observer(
             <div className="panel">
               <div className="panel__header">
                 <div className="panel__header__title">
-                  <div className="panel__header__title__label">type</div>
+                  <div className="panel__header__title__label">general</div>
                 </div>
               </div>
-              <div className="panel__content relational-connection-editor__type">
+              <div className="panel__content relational-connection-editor__general">
                 <div className="panel__content__form__section">
                   <div className="panel__content__form__section__header__label">
                     Database type
@@ -1213,6 +1211,16 @@ const RelationalConnectionGeneralEditor = observer(
                     darkMode={true}
                   />
                 </div>
+                <ConnectionEditor_BooleanEditor
+                  isReadOnly={isReadOnly}
+                  value={connection.quoteIdentifiers}
+                  propertyName="Quote identifiers"
+                  // TODO: change the description
+                  description="Use quote identifiers"
+                  update={(value?: boolean): void =>
+                    connection.setQuoteIdentifiers(Boolean(value))
+                  }
+                />
               </div>
             </div>
           </ReflexElement>

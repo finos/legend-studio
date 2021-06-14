@@ -14,19 +14,31 @@
  * limitations under the License.
  */
 
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+
 export class V1_GraphTransformerContext {
   readonly keepSourceInformation: boolean;
+  readonly plugins: PureProtocolProcessorPlugin[];
 
   constructor(builder: V1_GraphTransformerContextBuilder) {
     this.keepSourceInformation = builder.keepSourceInformation;
+    this.plugins = builder.plugins;
   }
 }
 
 export class V1_GraphTransformerContextBuilder {
-  keepSourceInformation: boolean;
+  keepSourceInformation = false;
+  plugins: PureProtocolProcessorPlugin[] = [];
 
-  constructor(keepSourceInformation: boolean) {
-    this.keepSourceInformation = keepSourceInformation;
+  constructor(plugins: PureProtocolProcessorPlugin[]) {
+    this.plugins = plugins;
+  }
+
+  withKeepSourceInformationFlag(
+    val: boolean,
+  ): V1_GraphTransformerContextBuilder {
+    this.keepSourceInformation = val;
+    return this;
   }
 
   build(): V1_GraphTransformerContext {

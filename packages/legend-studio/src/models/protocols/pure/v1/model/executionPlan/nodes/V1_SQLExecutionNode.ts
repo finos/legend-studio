@@ -20,8 +20,8 @@ import type { V1_SQLResultColumn } from './V1_SQLResultColumn';
 
 export class V1_SQLExecutionNode extends V1_ExecutionNode {
   sqlQuery!: string;
-  onConnectionCloseCommitQuery!: string;
-  onConnectionCloseRollbackQuery!: string;
+  onConnectionCloseCommitQuery?: string;
+  onConnectionCloseRollbackQuery?: string;
   connection!: V1_DatabaseConnection;
   resultColumns: V1_SQLResultColumn[] = [];
 }

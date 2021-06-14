@@ -179,7 +179,10 @@ export class QueryResultSetModifierState {
       val.parametersValues[1] = collection;
       currentExpression = val;
     }
-    if (this.limit || options?.overridingLimit) {
+    if (
+      this.canModifyLambdaInProjectionMode(lambda) &&
+      (this.limit || options?.overridingLimit)
+    ) {
       const integerGenericTypeRef = GenericTypeExplicitReference.create(
         new GenericType(
           this.editorStore.graphState.graph.getPrimitiveType(
@@ -210,7 +213,7 @@ export class QueryResultSetModifierState {
   }
 
   /**
-   * This is subjected to change as we get more modularized in terms of projection mode
+   * This is subjected to change as we get more modularized in terms of fetch structure
    */
   canModifyLambdaInProjectionMode(lambda: LambdaFunction): boolean {
     if (lambda.expressionSequence.length === 1) {

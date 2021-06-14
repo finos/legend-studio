@@ -219,5 +219,3 @@ export const V1_serializeExecutionResult = (
       return new V1_OtherExecutionResult(value as object);
   }
 };
-
-export type V1_ExecutionPlan = object;

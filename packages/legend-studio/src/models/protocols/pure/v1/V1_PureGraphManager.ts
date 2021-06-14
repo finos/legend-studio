@@ -82,10 +82,7 @@ import type {
 import type { GenerationConfigurationDescription } from '../../../metamodels/pure/action/generation/GenerationConfigurationDescription';
 import type { ServiceTestResult } from '../../../metamodels/pure/action/service/ServiceTestResult';
 import type { ServiceRegistrationResult } from '../../../metamodels/pure/action/service/ServiceRegistrationResult';
-import type {
-  ExecutionPlan,
-  ExecutionResult,
-} from '../../../metamodels/pure/action/execution/ExecutionResult';
+import type { ExecutionResult } from '../../../metamodels/pure/action/execution/ExecutionResult';
 import type { GenerationOutput } from '../../../metamodels/pure/action/generation/GenerationOutput';
 import type { ValueSpecification } from '../../../metamodels/pure/model/valueSpecification/ValueSpecification';
 import { ServiceExecutionMode } from '../../../metamodels/pure/action/service/ServiceExecutionMode';
@@ -191,8 +188,25 @@ import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension }
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { V1_RawRelationalOperationElement } from './model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
+import type {
+  ExecutionPlan,
+  RawExecutionPlan,
+} from '../../../metamodels/pure/model/executionPlan/ExecutionPlan';
+import type { V1_ExecutionNode } from './model/executionPlan/nodes/V1_ExecutionNode';
+import type { ExecutionNode } from '../../../metamodels/pure/model/executionPlan/nodes/ExecutionNode';
+import type { V1_ExecutionPlan } from './model/executionPlan/V1_ExecutionPlan';
+import {
+  V1_transformExecutionNode,
+  V1_transformExecutionPlan,
+} from './transformation/pureGraph/from/executionPlan/V1_ExecutionPlanTransformer';
+import {
+  V1_deserializeExecutionPlan,
+  V1_serializeExecutionNode,
+  V1_serializeExecutionPlan,
+} from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelpers';
+import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
 
-export const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
+const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
 const getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
   if (multiplicity.lowerBound === multiplicity.upperBound) {
@@ -1510,7 +1524,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambdas: Map<string, RawLambda>,
     pretty?: boolean,
   ): Promise<Map<string, string>> {
-    return this.engine.transformLambdasToCode(lambdas, pretty);
+    return this.engine.transformLambdasToCode(
+      lambdas,
+      this.pureProtocolProcessorPlugins,
+      pretty,
+    );
   }
 
   pureCodeToRelationalOperationElement = flow(function* (
@@ -1570,7 +1588,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return (yield this.engine.getLambdaReturnType(
       lambda.accept_ValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
-          new V1_GraphTransformerContextBuilder(false).build(),
+          new V1_GraphTransformerContextBuilder(
+            this.pureProtocolProcessorPlugins,
+          ).build(),
         ),
       ) as V1_RawLambda,
       this.getFullGraphModelData(graph),
@@ -1706,7 +1726,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_serializeRawValueSpecification(
       metamodel.accept_ValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
-          new V1_GraphTransformerContextBuilder(false).build(),
+          new V1_GraphTransformerContextBuilder(
+            this.pureProtocolProcessorPlugins,
+          ).build(),
         ),
       ),
     );
@@ -1842,12 +1864,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     executeInput.clientVersion = clientVersion;
     executeInput.function = V1_transformRawLambda(
       lambda,
-      new V1_GraphTransformerContextBuilder(false).build(),
+      new V1_GraphTransformerContextBuilder(
+        this.pureProtocolProcessorPlugins,
+      ).build(),
     );
     executeInput.mapping = mapping.path;
     executeInput.runtime = V1_transformRuntime(
       runtime,
-      this.pureProtocolProcessorPlugins,
+      new V1_GraphTransformerContextBuilder(
+        this.pureProtocolProcessorPlugins,
+      ).build(),
     );
     executeInput.model = prunedGraphData;
     executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
@@ -1880,26 +1906,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     ).build();
   });
 
-  generateExecutionPlan = flow(function* (
-    this: V1_PureGraphManager,
-    graph: PureModel,
-    mapping: Mapping,
-    lambda: RawLambda,
-    runtime: Runtime,
-    clientVersion: string,
-  ): GeneratorFn<ExecutionPlan> {
-    const executeInput = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      clientVersion,
-    );
-    return (yield this.engine.engineServerClient.generatePlan(
-      V1_ExecuteInput.serialization.toJson(executeInput),
-    )) as ExecutionPlan;
-  });
-
   generateTestData = flow(function* (
     this: V1_PureGraphManager,
     graph: PureModel,
@@ -1920,6 +1926,67 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     )) as string;
   });
 
+  generateExecutionPlan = flow(function* (
+    this: V1_PureGraphManager,
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): GeneratorFn<RawExecutionPlan> {
+    const executeInput = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      clientVersion,
+    );
+    return (yield this.engine.engineServerClient.generatePlan(
+      V1_ExecuteInput.serialization.toJson(executeInput),
+    )) as RawExecutionPlan;
+  });
+
+  buildExecutionPlan(
+    executionPlanJson: PlainObject<V1_ExecutionPlan>,
+    graph: PureModel,
+  ): ExecutionPlan {
+    return V1_buildExecutionPlan(
+      V1_deserializeExecutionPlan(executionPlanJson),
+      new V1_GraphBuilderContextBuilder(
+        graph,
+        graph,
+        this.extensions,
+        this.logger,
+      ).build(),
+    );
+  }
+
+  transformExecutionPlan(
+    executionPlan: ExecutionPlan,
+  ): PlainObject<V1_ExecutionPlan> {
+    return V1_serializeExecutionPlan(
+      V1_transformExecutionPlan(
+        executionPlan,
+        new V1_GraphTransformerContextBuilder(
+          this.pureProtocolProcessorPlugins,
+        ).build(),
+      ),
+    );
+  }
+
+  getExecutionNodeProtocolJson(
+    executionNode: ExecutionNode,
+  ): PlainObject<V1_ExecutionNode> {
+    return V1_serializeExecutionNode(
+      V1_transformExecutionNode(
+        executionNode,
+        new V1_GraphTransformerContextBuilder(
+          this.pureProtocolProcessorPlugins,
+        ).build(),
+      ),
+    );
+  }
+
   // --------------------------------------------- V1_Store ---------------------------------------------
 
   generateStore = flow(function* (
@@ -1930,7 +1997,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     generateStoreInput.connection = V1_transformConnection(
       input.connection,
       false,
-      this.pureProtocolProcessorPlugins,
+      new V1_GraphTransformerContextBuilder(
+        this.pureProtocolProcessorPlugins,
+      ).build(),
     );
     generateStoreInput.targetPackage = input.targetPackage;
     generateStoreInput.targetName = input.targetName;
@@ -2256,9 +2325,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     element.accept_PackageableElementVisitor(
       new V1_PackageableElementTransformer(
         this.pureProtocolProcessorPlugins,
-        new V1_GraphTransformerContextBuilder(
-          Boolean(options?.keepSourceInformation),
-        ).build(),
+        new V1_GraphTransformerContextBuilder(this.pureProtocolProcessorPlugins)
+          .withKeepSourceInformationFlag(
+            Boolean(options?.keepSourceInformation),
+          )
+          .build(),
       ),
     ) as T;
 

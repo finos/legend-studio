@@ -39,7 +39,7 @@ import {
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelpers';
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service';
 import type { V1_ServiceExecution } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import {
@@ -57,12 +57,10 @@ import {
 import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 import { V1_transformRuntime } from './V1_RuntimeTransformer';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformSingleExecution = (
   element: PureSingleExecution,
-  plugins: PureProtocolProcessorPlugin[],
   context: V1_GraphTransformerContext,
 ): V1_PureSingleExecution => {
   const execution = new V1_PureSingleExecution();
@@ -70,25 +68,23 @@ const transformSingleExecution = (
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   execution.mapping = V1_transformElementReference(element.mapping);
-  execution.runtime = V1_transformRuntime(element.runtime, plugins);
+  execution.runtime = V1_transformRuntime(element.runtime, context);
   return execution;
 };
 
 const transformKeyedParameter = (
   element: KeyedExecutionParameter,
-  plugins: PureProtocolProcessorPlugin[],
   context: V1_GraphTransformerContext,
 ): V1_KeyedExecutionParameter => {
   const parameter = new V1_KeyedExecutionParameter();
   parameter.key = element.key;
   parameter.mapping = V1_transformElementReference(element.mapping);
-  parameter.runtime = V1_transformRuntime(element.runtime, plugins);
+  parameter.runtime = V1_transformRuntime(element.runtime, context);
   return parameter;
 };
 
 const transformMultiExecution = (
   element: PureMultiExecution,
-  plugins: PureProtocolProcessorPlugin[],
   context: V1_GraphTransformerContext,
 ): V1_PureMultiExecution => {
   const execution = new V1_PureMultiExecution();
@@ -97,20 +93,19 @@ const transformMultiExecution = (
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   execution.executionParameters = element.executionParameters.map((param) =>
-    transformKeyedParameter(param, plugins, context),
+    transformKeyedParameter(param, context),
   );
   return execution;
 };
 
 const transformServiceExecution = (
   value: ServiceExecution,
-  plugins: PureProtocolProcessorPlugin[],
   context: V1_GraphTransformerContext,
 ): V1_ServiceExecution => {
   if (value instanceof PureSingleExecution) {
-    return transformSingleExecution(value, plugins, context);
+    return transformSingleExecution(value, context);
   } else if (value instanceof PureMultiExecution) {
-    return transformMultiExecution(value, plugins, context);
+    return transformMultiExecution(value, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform service execution of type '${getClass(value).name}'`,
@@ -181,18 +176,13 @@ const transformServiceTest = (
 
 export const V1_transformService = (
   element: Service,
-  plugins: PureProtocolProcessorPlugin[],
   context: V1_GraphTransformerContext,
 ): V1_Service => {
   const service = new V1_Service();
   V1_initPackageableElement(service, element);
   service.autoActivateUpdates = element.autoActivateUpdates;
   service.documentation = element.documentation;
-  service.execution = transformServiceExecution(
-    element.execution,
-    plugins,
-    context,
-  );
+  service.execution = transformServiceExecution(element.execution, context);
   service.owners = element.owners;
   service.pattern = element.pattern;
   service.test = transformServiceTest(element.test, context);

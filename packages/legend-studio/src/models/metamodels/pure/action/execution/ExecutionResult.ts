@@ -22,8 +22,6 @@ export enum BuilderType {
   NO_BUILDER = 'noBuilder', // this is something we create only for Studio
 }
 
-export type ExecutionPlan = object;
-
 enum ExecutionActivityType {
   REALTIONAL = 'relational',
 }
@@ -96,14 +94,15 @@ export class TdsRow {
   values: (string | number)[] = [];
 }
 
-export class TabluarDataSet {
+export class TabularDataSet {
   columns: string[] = [];
   rows: TdsRow[] = [];
 }
+
 export class TdsExecutionResult extends ExecutionResult {
   override builder = new TdsBuilder();
   override activities: RelationalExecutionActivity[] = [];
-  result = new TabluarDataSet();
+  result = new TabularDataSet();
 }
 
 // Class

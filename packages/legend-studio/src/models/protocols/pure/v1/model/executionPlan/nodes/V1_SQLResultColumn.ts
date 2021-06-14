@@ -16,5 +16,5 @@
 
 export class V1_SQLResultColumn {
   label!: string;
-  dataType!: string;
+  dataType?: string;
 }

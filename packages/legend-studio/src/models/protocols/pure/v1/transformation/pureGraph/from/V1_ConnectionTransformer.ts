@@ -48,7 +48,7 @@ import type { ModelChainConnection } from '../../../../../../metamodels/pure/mod
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelpers';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
 import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
@@ -74,8 +74,8 @@ import { V1_XmlModelConnection } from '../../../model/packageableElements/store/
 import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_transformPostProcessor } from './V1_PostProcessorTransformer';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformStaticDatasourceSpecification = (
   metamodel: StaticDatasourceSpecification,
@@ -112,7 +112,7 @@ const transformSnowflakeDatasourceSpecification = (
 
 const transformDatasourceSpecification = (
   metamodel: DatasourceSpecification,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_DatasourceSpecification => {
   if (metamodel instanceof StaticDatasourceSpecification) {
     return transformStaticDatasourceSpecification(metamodel);
@@ -126,14 +126,15 @@ const transformDatasourceSpecification = (
     protocol.testDataSetupSqls = metamodel.testDataSetupSqls;
     return protocol;
   }
-  const extraConnectionDatasourceSpecificationTransformers = plugins.flatMap(
-    (plugin) =>
-      (
-        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraConnectionDatasourceSpecificationTransformers?.() ?? [],
-  );
+  const extraConnectionDatasourceSpecificationTransformers =
+    context.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionDatasourceSpecificationTransformers?.() ?? [],
+    );
   for (const transformer of extraConnectionDatasourceSpecificationTransformers) {
-    const protocol = transformer(metamodel);
+    const protocol = transformer(metamodel, context);
     if (protocol) {
       return protocol;
     }
@@ -156,7 +157,7 @@ const transformOAuthtAuthenticationStrategy = (
 
 const transformAuthenticationStrategy = (
   metamodel: AuthenticationStrategy,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_AuthenticationStrategy => {
   if (metamodel instanceof DefaultH2AuthenticationStrategy) {
     return new V1_DefaultH2AuthenticationStrategy();
@@ -175,14 +176,15 @@ const transformAuthenticationStrategy = (
     auth.publicUserName = metamodel.publicUserName;
     return auth;
   }
-  const extraConnectionAuthenticationStrategyTransformers = plugins.flatMap(
-    (plugin) =>
-      (
-        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraConnectionAuthenticationStrategyTransformers?.() ?? [],
-  );
+  const extraConnectionAuthenticationStrategyTransformers =
+    context.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionAuthenticationStrategyTransformers?.() ?? [],
+    );
   for (const transformer of extraConnectionAuthenticationStrategyTransformers) {
-    const protocol = transformer(metamodel);
+    const protocol = transformer(metamodel, context);
     if (protocol) {
       return protocol;
     }
@@ -196,24 +198,24 @@ const transformAuthenticationStrategy = (
 
 const transformRelationalDatabaseConnection = (
   metamodel: RelationalDatabaseConnection,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_RelationalDatabaseConnection => {
   const connection = new V1_RelationalDatabaseConnection();
   connection.store = V1_transformElementReference(metamodel.store);
   connection.authenticationStrategy = transformAuthenticationStrategy(
     metamodel.authenticationStrategy,
-    plugins,
+    context,
   );
   connection.datasourceSpecification = transformDatasourceSpecification(
     metamodel.datasourceSpecification,
-    plugins,
+    context,
   );
   connection.type = metamodel.type as unknown as V1_DatabaseType;
   connection.timeZone = metamodel.timeZone;
   connection.quoteIdentifiers = metamodel.quoteIdentifiers;
   if (metamodel.postProcessors.length) {
     connection.postProcessors = metamodel.postProcessors.map((postprocessor) =>
-      V1_transformPostProcessor(postprocessor, plugins),
+      V1_transformPostProcessor(postprocessor, context),
     );
   }
   return connection;
@@ -268,10 +270,10 @@ const transformFlatDataConnection = (
 };
 
 class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
-  plugins: PureProtocolProcessorPlugin[] = [];
+  context: V1_GraphTransformerContext;
 
-  constructor(plugins: PureProtocolProcessorPlugin[]) {
-    this.plugins = plugins;
+  constructor(context: V1_GraphTransformerContext) {
+    this.context = context;
   }
 
   visit_ConnectionPointer(connection: ConnectionPointer): V1_Connection {
@@ -297,31 +299,31 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): V1_Connection {
-    return transformRelationalDatabaseConnection(connection, this.plugins);
+    return transformRelationalDatabaseConnection(connection, this.context);
   }
 }
 
 export const V1_transformConnection = (
   value: Connection,
   allowPointer: boolean,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_Connection => {
   if (value instanceof ConnectionPointer && !allowPointer) {
     throw new IllegalStateError(
       'Packageable connection value cannot be a connection pointer',
     );
   }
-  return value.accept_ConnectionVisitor(new ConnectionTransformer(plugins));
+  return value.accept_ConnectionVisitor(new ConnectionTransformer(context));
 };
 
 export const V1_transformPackageableConnection = (
   element: PackageableConnection,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_PackageableConnection => {
   const connection = new V1_PackageableConnection();
   V1_initPackageableElement(connection, element);
   connection.connectionValue = element.connectionValue.accept_ConnectionVisitor(
-    new ConnectionTransformer(plugins),
+    new ConnectionTransformer(context),
   );
   return connection;
 };

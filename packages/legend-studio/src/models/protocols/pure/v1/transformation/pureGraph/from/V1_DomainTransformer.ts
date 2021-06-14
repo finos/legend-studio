@@ -36,7 +36,7 @@ import {
   V1_initPackageableElement,
   V1_transformMultiplicity,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelpers';
 import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
 import { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr';
 import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration';

@@ -32,11 +32,11 @@ import {
   V1_SchemaNameMapper,
   V1_TableNameMapper,
 } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 import type { ViewReference } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/ViewReference';
 import type { TableReference } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/TableReference';
 import { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const V1_transformSchemaNameMapper = (
   val: SchemaNameMapper,
@@ -74,21 +74,21 @@ export const V1_transformRelation = (
 
 export const V1_transformPostProcessor = (
   postProcessor: PostProcessor,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_PostProcessor => {
   if (postProcessor instanceof MapperPostProcessor) {
     const mapperPostProcessor = new V1_MapperPostProcessor();
     mapperPostProcessor.mappers = postProcessor.mappers.map(V1_transformMapper);
     return mapperPostProcessor;
   }
-  const extraConnectionPostProcessorTransformers = plugins.flatMap(
+  const extraConnectionPostProcessorTransformers = context.plugins.flatMap(
     (plugin) =>
       (
         plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraConnectionPostProcessorTransformers?.() ?? [],
   );
   for (const transformer of extraConnectionPostProcessorTransformers) {
-    const postprocessorProtocol = transformer(postProcessor);
+    const postprocessorProtocol = transformer(postProcessor, context);
     if (postprocessorProtocol) {
       return postprocessorProtocol;
     }

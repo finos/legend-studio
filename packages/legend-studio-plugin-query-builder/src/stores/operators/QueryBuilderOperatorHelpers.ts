@@ -318,7 +318,7 @@ const buildFilterConditionStateWithExists = (
           );
         }
       } else {
-        throw new Error(`Can't process exists() lambda function`);
+        throw new Error(`Can't build exists() lambda function`);
       }
     }
     // NOTE: make sure that the inner most function expression is the one we support
