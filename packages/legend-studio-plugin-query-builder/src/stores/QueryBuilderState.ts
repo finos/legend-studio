@@ -35,7 +35,11 @@ import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
 import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type { EditorStore } from '@finos/legend-studio';
+import type { Class, EditorStore, Multiplicity } from '@finos/legend-studio';
+import {
+  InstanceValue,
+  PackageableElementExplicitReference,
+} from '@finos/legend-studio';
 import {
   EditorExtensionState,
   CollectionInstanceValue,
@@ -45,7 +49,6 @@ import {
   FunctionType,
   GenericType,
   GenericTypeExplicitReference,
-  getAllFunction,
   getElementCoordinates,
   LambdaFunction,
   LambdaFunctionInstanceValue,
@@ -87,6 +90,23 @@ import {
   QueryBuilderNotInOperator,
 } from './operators/QueryBuilderInOperator';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
+
+const buildGetAllFunction = (
+  _class: Class,
+  multiplicity: Multiplicity,
+): SimpleFunctionExpression => {
+  const _func = new SimpleFunctionExpression(
+    SUPPORTED_FUNCTIONS.GET_ALL,
+    multiplicity,
+  );
+  const classInstance = new InstanceValue(
+    multiplicity,
+    GenericTypeExplicitReference.create(new GenericType(_class)),
+  );
+  classInstance.values[0] = PackageableElementExplicitReference.create(_class);
+  _func.parametersValues.push(classInstance);
+  return _func;
+};
 
 export class QueryBuilderState extends EditorExtensionState {
   editorStore: EditorStore;
@@ -273,7 +293,7 @@ export class QueryBuilderState extends EditorExtensionState {
       new FunctionType(typeAny, multiplicityOne),
     );
     // build base `getAll` function
-    const _getAllFunc = getAllFunction(_class, multiplicityOne);
+    const _getAllFunc = buildGetAllFunction(_class, multiplicityOne);
     lambdaFunction.expressionSequence[0] = _getAllFunc;
     const filterFunction = this.buildFilterExpression(_getAllFunc);
     if (filterFunction) {

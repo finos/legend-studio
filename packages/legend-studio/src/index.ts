@@ -66,7 +66,6 @@ export { VariableExpression } from './models/metamodels/pure/model/valueSpecific
 export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
-  getAllFunction,
   SUPPORTED_FUNCTIONS,
   FunctionExpression,
 } from './models/metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
