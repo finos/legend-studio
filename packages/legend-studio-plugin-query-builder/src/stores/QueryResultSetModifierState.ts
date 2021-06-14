@@ -16,7 +16,11 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import type { QueryBuilderProjectionColumnState } from './QueryBuilderFetchStructureState';
-import { addUniqueEntry, deleteEntry } from '@finos/legend-studio-shared';
+import {
+  addUniqueEntry,
+  deleteEntry,
+  guaranteeType,
+} from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
 import {
@@ -137,8 +141,7 @@ export class QueryResultSetModifierState {
   }
 
   /**
-   * modifies the results by processing results through the modifier functions
-   * @param lambda current lambda function we wish to modify
+   * Build result set modifiers into the lambda.
    */
   processModifiersOnLambda(
     lambda: LambdaFunction,
@@ -146,85 +149,129 @@ export class QueryResultSetModifierState {
       overridingLimit?: number;
     },
   ): LambdaFunction {
-    let currentExpression = lambda.expressionSequence[0];
     const multiplicityOne =
       this.editorStore.graphState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
-    if (this.canModifyLambdaInProjectionMode(lambda) && this.distinct) {
-      const val = new SimpleFunctionExpression(
-        SUPPORTED_FUNCTIONS.DISTINCT,
-        multiplicityOne,
-      );
-      val.parametersValues[0] = currentExpression;
-      currentExpression = val;
-    }
-    if (
-      this.canModifyLambdaInProjectionMode(lambda) &&
-      this.sortColumns.length
-    ) {
-      const val = new SimpleFunctionExpression(
-        SUPPORTED_FUNCTIONS.SORT_FUNC,
-        multiplicityOne,
-      );
-      const multiplicity = new Multiplicity(
-        this.sortColumns.length,
-        this.sortColumns.length,
-      );
-      const collection = new CollectionInstanceValue(multiplicity, undefined);
-      collection.values = this.sortColumns.map((e) =>
-        e.buildFunctionExpression(),
-      );
-      val.parametersValues[0] = currentExpression;
-      val.parametersValues[1] = collection;
-      currentExpression = val;
-    }
-    if (
-      this.canModifyLambdaInProjectionMode(lambda) &&
-      (this.limit || options?.overridingLimit)
-    ) {
-      const integerGenericTypeRef = GenericTypeExplicitReference.create(
-        new GenericType(
-          this.editorStore.graphState.graph.getPrimitiveType(
-            PRIMITIVE_TYPE.INTEGER,
-          ),
-        ),
-      );
-      const limitColumnValue = new PrimitiveInstanceValue(
-        integerGenericTypeRef,
-        multiplicityOne,
-      );
-      limitColumnValue.values = [
-        Math.min(
-          this.limit ?? Number.MAX_SAFE_INTEGER,
-          options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
-        ),
-      ];
-      const limitColFuncs = new SimpleFunctionExpression(
-        SUPPORTED_FUNCTIONS.TAKE,
-        multiplicityOne,
-      );
-      limitColFuncs.parametersValues[0] = currentExpression;
-      limitColFuncs.parametersValues[1] = limitColumnValue;
-      currentExpression = limitColFuncs;
-    }
-    lambda.expressionSequence[0] = currentExpression;
-    return lambda;
-  }
-
-  /**
-   * This is subjected to change as we get more modularized in terms of fetch structure
-   */
-  canModifyLambdaInProjectionMode(lambda: LambdaFunction): boolean {
     if (lambda.expressionSequence.length === 1) {
       const func = lambda.expressionSequence[0];
-      if (
-        func instanceof SimpleFunctionExpression &&
-        func.functionName === SUPPORTED_FUNCTIONS.PROJECT
-      ) {
-        return true;
+      if (func instanceof SimpleFunctionExpression) {
+        switch (func.functionName) {
+          case SUPPORTED_FUNCTIONS.PROJECT: {
+            let currentExpression = func;
+
+            // distinct
+            if (this.distinct) {
+              const val = new SimpleFunctionExpression(
+                SUPPORTED_FUNCTIONS.DISTINCT,
+                multiplicityOne,
+              );
+              val.parametersValues[0] = currentExpression;
+              currentExpression = val;
+            }
+
+            // sort
+            if (this.sortColumns.length) {
+              const val = new SimpleFunctionExpression(
+                SUPPORTED_FUNCTIONS.SORT_FUNC,
+                multiplicityOne,
+              );
+              const multiplicity = new Multiplicity(
+                this.sortColumns.length,
+                this.sortColumns.length,
+              );
+              const collection = new CollectionInstanceValue(
+                multiplicity,
+                undefined,
+              );
+              collection.values = this.sortColumns.map((e) =>
+                e.buildFunctionExpression(),
+              );
+              val.parametersValues[0] = currentExpression;
+              val.parametersValues[1] = collection;
+              currentExpression = val;
+            }
+
+            // take
+            if (this.limit || options?.overridingLimit) {
+              const integerGenericTypeRef = GenericTypeExplicitReference.create(
+                new GenericType(
+                  this.editorStore.graphState.graph.getPrimitiveType(
+                    PRIMITIVE_TYPE.INTEGER,
+                  ),
+                ),
+              );
+              const limitColumnValue = new PrimitiveInstanceValue(
+                integerGenericTypeRef,
+                multiplicityOne,
+              );
+              limitColumnValue.values = [
+                Math.min(
+                  this.limit ?? Number.MAX_SAFE_INTEGER,
+                  options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
+                ),
+              ];
+              const limitColFuncs = new SimpleFunctionExpression(
+                SUPPORTED_FUNCTIONS.TAKE,
+                multiplicityOne,
+              );
+
+              limitColFuncs.parametersValues[0] = currentExpression;
+              limitColFuncs.parametersValues[1] = limitColumnValue;
+              currentExpression = limitColFuncs;
+            }
+
+            lambda.expressionSequence[0] = currentExpression;
+            return lambda;
+          }
+          // TODO: right now this is considered indicator of a graph-fetch query
+          case SUPPORTED_FUNCTIONS.SERIALIZE: {
+            if (this.limit || options?.overridingLimit) {
+              const integerGenericTypeRef = GenericTypeExplicitReference.create(
+                new GenericType(
+                  this.editorStore.graphState.graph.getPrimitiveType(
+                    PRIMITIVE_TYPE.INTEGER,
+                  ),
+                ),
+              );
+              const limitColumnValue = new PrimitiveInstanceValue(
+                integerGenericTypeRef,
+                multiplicityOne,
+              );
+              limitColumnValue.values = [
+                Math.min(
+                  this.limit ?? Number.MAX_SAFE_INTEGER,
+                  options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
+                ),
+              ];
+              const limitColFuncs = new SimpleFunctionExpression(
+                SUPPORTED_FUNCTIONS.TAKE,
+                multiplicityOne,
+              );
+
+              // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we will put it
+              // right next to `all()`
+              const serializeFunction = func;
+              const graphFetchFunc = guaranteeType(
+                serializeFunction.parametersValues[0],
+                SimpleFunctionExpression,
+              );
+              const getAllFunc = graphFetchFunc.parametersValues[0];
+              limitColFuncs.parametersValues[0] = getAllFunc;
+              limitColFuncs.parametersValues[1] = limitColumnValue;
+              graphFetchFunc.parametersValues = [
+                limitColFuncs,
+                graphFetchFunc.parametersValues[1],
+              ];
+              return lambda;
+            }
+            return lambda;
+          }
+          default:
+            return lambda;
+        }
       }
     }
-    return false;
+    return lambda;
   }
 }
