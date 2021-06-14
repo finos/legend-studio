@@ -195,6 +195,16 @@ import type {
 import type { V1_ExecutionNode } from './model/executionPlan/nodes/V1_ExecutionNode';
 import type { ExecutionNode } from '../../../metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import type { V1_ExecutionPlan } from './model/executionPlan/V1_ExecutionPlan';
+import {
+  V1_transformExecutionNode,
+  V1_transformExecutionPlan,
+} from './transformation/pureGraph/from/executionPlan/V1_ExecutionPlanTransformer';
+import {
+  V1_deserializeExecutionPlan,
+  V1_serializeExecutionNode,
+  V1_serializeExecutionPlan,
+} from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelpers';
+import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1938,14 +1948,43 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   buildExecutionPlan(
     executionPlanJson: PlainObject<V1_ExecutionPlan>,
+    graph: PureModel,
   ): ExecutionPlan {
-    throw new Error('Not implemented');
+    return V1_buildExecutionPlan(
+      V1_deserializeExecutionPlan(executionPlanJson),
+      new V1_GraphBuilderContextBuilder(
+        graph,
+        graph,
+        this.extensions,
+        this.logger,
+      ).build(),
+    );
+  }
+
+  transformExecutionPlan(
+    executionPlan: ExecutionPlan,
+  ): PlainObject<V1_ExecutionPlan> {
+    return V1_serializeExecutionPlan(
+      V1_transformExecutionPlan(
+        executionPlan,
+        new V1_GraphTransformerContextBuilder(
+          this.pureProtocolProcessorPlugins,
+        ).build(),
+      ),
+    );
   }
 
   getExecutionNodeProtocolJson(
     executionNode: ExecutionNode,
   ): PlainObject<V1_ExecutionNode> {
-    throw new Error('Not implemented');
+    return V1_serializeExecutionNode(
+      V1_transformExecutionNode(
+        executionNode,
+        new V1_GraphTransformerContextBuilder(
+          this.pureProtocolProcessorPlugins,
+        ).build(),
+      ),
+    );
   }
 
   // --------------------------------------------- V1_Store ---------------------------------------------

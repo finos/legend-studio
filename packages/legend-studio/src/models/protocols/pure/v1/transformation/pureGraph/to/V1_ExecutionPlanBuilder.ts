@@ -72,7 +72,7 @@ const parseDataType = (val: string): DataType => {
       .map((v) => Number(v))
       .filter((v) => !isNaN(v));
   switch (val) {
-    case 'INT':
+    case 'INTEGER':
       return new Integer();
     case 'FLOAT':
       return new Float();

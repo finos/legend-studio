@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-studio-shared';
 import type { ExecutionPlan } from '../../../../../../../metamodels/pure/model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../../../../../../../metamodels/pure/model/executionPlan/nodes/ExecutionNode';
-import type { RelationalTDSInstantiationExecutionNode } from '../../../../../../../metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
+import { RelationalTDSInstantiationExecutionNode } from '../../../../../../../metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
 import { SQLExecutionNode } from '../../../../../../../metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
 import type { SQLResultColumn } from '../../../../../../../metamodels/pure/model/executionPlan/nodes/SQLResultColumn';
 import {
@@ -67,7 +67,7 @@ import { V1_DatabaseConnection } from '../../../../model/packageableElements/sto
 
 const stringifyDataType = (dataType: DataType): string => {
   if (dataType instanceof Integer) {
-    return 'INT';
+    return 'INTEGER';
   } else if (dataType instanceof Float) {
     return 'FLOAT';
   } else if (dataType instanceof Double) {
@@ -168,7 +168,7 @@ const transformSQLResultColumn = (
   protocol.label = metamodel.label;
   protocol.dataType = metamodel.dataType
     ? stringifyDataType(metamodel.dataType)
-    : undefined;
+    : ''; // this is to make sure to be consistent with the way Pure generates plan protocol
   return protocol;
 };
 
@@ -182,7 +182,7 @@ const transformBaseExecutionNode = (
     : undefined;
   protocol.resultType = transformResultType(metamodel.resultType, context);
   protocol.executionNodes = metamodel.executionNodes.map((node) =>
-    transformExecutionNode(node, context),
+    V1_transformExecutionNode(node, context),
   );
 };
 
@@ -214,16 +214,16 @@ const transformRelationalTDSInstantiationExecutionNode = (
 ): V1_RelationalTDSInstantiationExecutionNode => {
   const protocol = new V1_RelationalTDSInstantiationExecutionNode();
   transformBaseExecutionNode(metamodel, protocol, context);
-  return metamodel;
+  return protocol;
 };
 
-function transformExecutionNode(
+export function V1_transformExecutionNode(
   metamodel: ExecutionNode,
   context: V1_GraphTransformerContext,
 ): V1_ExecutionNode {
   if (metamodel instanceof SQLExecutionNode) {
     return transformSQLExecutionNode(metamodel, context);
-  } else if (metamodel instanceof V1_RelationalTDSInstantiationExecutionNode) {
+  } else if (metamodel instanceof RelationalTDSInstantiationExecutionNode) {
     return transformRelationalTDSInstantiationExecutionNode(metamodel, context);
   }
   throw new UnsupportedOperationError(
@@ -242,7 +242,7 @@ export const V1_transformExecutionPlan = (
   protocol.authDependent = metamodel.authDependent;
   protocol.kerberos = metamodel.kerberos;
   protocol.templateFunctions = metamodel.processingTemplateFunctions;
-  protocol.rootExecutionNode = transformExecutionNode(
+  protocol.rootExecutionNode = V1_transformExecutionNode(
     metamodel.rootExecutionNode,
     context,
   );

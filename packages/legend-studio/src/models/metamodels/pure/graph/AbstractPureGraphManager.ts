@@ -190,9 +190,6 @@ export abstract class AbstractPureGraphManager {
     valueSpecificationJson: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification;
-
-  // ------------------------------------------- Raw ValueSpecification -------------------------------------
-
   abstract serializeRawValueSpecification(
     rawValueSpecification: RawValueSpecification,
   ): Record<PropertyKey, unknown>;
@@ -263,7 +260,12 @@ export abstract class AbstractPureGraphManager {
    */
   abstract buildExecutionPlan(
     executionPlanJson: RawExecutionPlan,
+    graph: PureModel,
   ): ExecutionPlan;
+
+  abstract transformExecutionPlan(
+    executionPlan: ExecutionPlan,
+  ): RawExecutionPlan;
 
   abstract getExecutionNodeProtocolJson(executionNode: ExecutionNode): object;
 

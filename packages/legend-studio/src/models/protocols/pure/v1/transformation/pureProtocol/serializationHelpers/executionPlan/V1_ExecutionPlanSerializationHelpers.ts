@@ -21,8 +21,11 @@ import {
   serialize,
   primitive,
   list,
+  optional,
+  SKIP,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
+import { deserializeArray, serializeArray } from '@finos/legend-studio-shared';
 import {
   deseralizeMap,
   serializeMap,
@@ -60,14 +63,14 @@ const dataTypeResultTypeModelSchema = createModelSchema(V1_DataTypeResultType, {
 });
 
 const TDSColumnModelSchema = createModelSchema(V1_TDSColumn, {
-  doc: primitive(),
+  doc: optional(primitive()),
   enumMapping: custom(
-    (val) => serializeMap(val),
-    (val) => deseralizeMap(val),
+    (val) => (val ? serializeMap(val) : SKIP),
+    (val) => (val ? deseralizeMap(val) : undefined),
   ),
   name: primitive(),
-  relationalType: primitive(),
-  type: primitive(),
+  relationalType: optional(primitive()),
+  type: optional(primitive()),
 });
 
 const TDSResultTypeModelSchema = createModelSchema(V1_TDSResultType, {
@@ -75,7 +78,7 @@ const TDSResultTypeModelSchema = createModelSchema(V1_TDSResultType, {
   tdsColumns: list(usingModelSchema(TDSColumnModelSchema)),
 });
 
-export const V1_serializeExecutionResultType = (
+const V1_serializeExecutionResultType = (
   protocol: V1_ResultType,
 ): PlainObject<V1_ResultType> => {
   if (protocol instanceof V1_DataTypeResultType) {
@@ -90,7 +93,7 @@ export const V1_serializeExecutionResultType = (
   );
 };
 
-export const V1_deserializeExecutionResultType = (
+const V1_deserializeExecutionResultType = (
   json: PlainObject<V1_ResultType>,
 ): V1_ResultType => {
   switch (json._type) {
@@ -143,14 +146,18 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
     (val) => V1_serializeDatabaseConnectionValue(val),
     (val) => V1_deserializeDatabaseConnectionValue(val),
   ),
-  executionNodes: list(
-    custom(
-      (val) => V1_serializeExecutionNode(val),
-      (val) => V1_deserializeExecutionNode(val),
-    ),
+  executionNodes: custom(
+    (values) =>
+      serializeArray(values, (value) => V1_serializeExecutionNode(value), true),
+    (values) =>
+      deserializeArray(
+        values,
+        (value) => V1_deserializeExecutionNode(value),
+        false,
+      ),
   ),
-  onConnectionCloseCommitQuery: primitive(),
-  onConnectionCloseRollbackQuery: primitive(),
+  onConnectionCloseCommitQuery: optional(primitive()),
+  onConnectionCloseRollbackQuery: optional(primitive()),
   resultColumns: list(usingModelSchema(SQLResultColumnModelSchema)),
   resultSizeRange: usingModelSchema(V1_multiplicitySchema),
   resultType: custom(
@@ -204,9 +211,10 @@ export enum V1_ExecutionPlanType {
 const SimpleExecutionPlanModelSchema = createModelSchema(
   V1_SimpleExecutionPlan,
   {
-    _type: usingConstantValueSchema(V1_ExecutionPlanType.SINGLE),
+    // TODO: check why Pure returns plan without _type flag
+    // _type: usingConstantValueSchema(V1_ExecutionPlanType.SINGLE),
     authDependent: primitive(),
-    kerberos: primitive(),
+    kerberos: optional(primitive()),
     rootExecutionNode: custom(
       (val) => V1_serializeExecutionNode(val),
       (val) => V1_deserializeExecutionNode(val),
@@ -232,10 +240,8 @@ export const V1_deserializeExecutionPlan = (
 ): V1_ExecutionPlan => {
   switch (json._type) {
     case V1_ExecutionPlanType.SINGLE:
-      return deserialize(SimpleExecutionPlanModelSchema, json);
     default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize execution plan of type '${json._type}'`,
-      );
+      // TODO: check why Pure returns plan without _type flag
+      return deserialize(SimpleExecutionPlanModelSchema, json);
   }
 };
