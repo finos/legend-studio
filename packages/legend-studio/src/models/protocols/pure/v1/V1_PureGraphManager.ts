@@ -1514,7 +1514,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambdas: Map<string, RawLambda>,
     pretty?: boolean,
   ): Promise<Map<string, string>> {
-    return this.engine.transformLambdasToCode(lambdas, pretty);
+    return this.engine.transformLambdasToCode(
+      lambdas,
+      this.pureProtocolProcessorPlugins,
+      pretty,
+    );
   }
 
   pureCodeToRelationalOperationElement = flow(function* (
@@ -1574,7 +1578,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return (yield this.engine.getLambdaReturnType(
       lambda.accept_ValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
-          new V1_GraphTransformerContextBuilder(false).build(),
+          new V1_GraphTransformerContextBuilder(
+            this.pureProtocolProcessorPlugins,
+          ).build(),
         ),
       ) as V1_RawLambda,
       this.getFullGraphModelData(graph),
@@ -1710,7 +1716,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_serializeRawValueSpecification(
       metamodel.accept_ValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
-          new V1_GraphTransformerContextBuilder(false).build(),
+          new V1_GraphTransformerContextBuilder(
+            this.pureProtocolProcessorPlugins,
+          ).build(),
         ),
       ),
     );
@@ -1846,7 +1854,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     executeInput.clientVersion = clientVersion;
     executeInput.function = V1_transformRawLambda(
       lambda,
-      new V1_GraphTransformerContextBuilder(false).build(),
+      new V1_GraphTransformerContextBuilder(
+        this.pureProtocolProcessorPlugins,
+      ).build(),
     );
     executeInput.mapping = mapping.path;
     executeInput.runtime = V1_transformRuntime(
@@ -2272,9 +2282,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     element.accept_PackageableElementVisitor(
       new V1_PackageableElementTransformer(
         this.pureProtocolProcessorPlugins,
-        new V1_GraphTransformerContextBuilder(
-          Boolean(options?.keepSourceInformation),
-        ).build(),
+        new V1_GraphTransformerContextBuilder(this.pureProtocolProcessorPlugins)
+          .withKeepSourceInformationFlag(
+            Boolean(options?.keepSourceInformation),
+          )
+          .build(),
       ),
     ) as T;
 
