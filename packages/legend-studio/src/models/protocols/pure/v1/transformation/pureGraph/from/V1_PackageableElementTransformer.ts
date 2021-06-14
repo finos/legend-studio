@@ -77,14 +77,12 @@ export class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
 {
   context: V1_GraphTransformerContext;
-  plugins: PureProtocolProcessorPlugin[] = [];
   extraElementTransformers: V1_ElementTransformer[] = [];
 
   constructor(
     plugins: PureProtocolProcessorPlugin[],
     context: V1_GraphTransformerContext,
   ) {
-    this.plugins = plugins;
     this.extraElementTransformers = plugins.flatMap(
       (plugin) => plugin.V1_getExtraElementTransformers?.() ?? [],
     );
@@ -93,7 +91,7 @@ export class V1_PackageableElementTransformer
 
   visit_PackageableElement(element: PackageableElement): V1_PackageableElement {
     for (const transformer of this.extraElementTransformers) {
-      const elementProtocol = transformer(element);
+      const elementProtocol = transformer(element, this.context);
       if (elementProtocol) {
         return elementProtocol;
       }
@@ -148,7 +146,7 @@ export class V1_PackageableElementTransformer
   }
 
   visit_Database(element: Database): V1_PackageableElement {
-    return V1_transformDatabase(element, this.plugins, this.context);
+    return V1_transformDatabase(element, this.context);
   }
 
   visit_ServiceStore(element: ServiceStore): V1_PackageableElement {
@@ -160,7 +158,7 @@ export class V1_PackageableElementTransformer
   }
 
   visit_Service(element: Service): V1_PackageableElement {
-    return V1_transformService(element, this.plugins, this.context);
+    return V1_transformService(element, this.context);
   }
 
   visit_Diagram(element: Diagram): V1_PackageableElement {
@@ -168,13 +166,13 @@ export class V1_PackageableElementTransformer
   }
 
   visit_PackageableRuntime(element: PackageableRuntime): V1_PackageableElement {
-    return V1_transformPackageableRuntime(element, this.plugins);
+    return V1_transformPackageableRuntime(element, this.context);
   }
 
   visit_PackageableConnection(
     element: PackageableConnection,
   ): V1_PackageableElement {
-    return V1_transformPackageableConnection(element, this.plugins);
+    return V1_transformPackageableConnection(element, this.context);
   }
 
   visit_FileGenerationSpecification(

@@ -16,6 +16,7 @@
 
 import {
   getClass,
+  guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { ExecutionPlan } from '../../../../../../../metamodels/pure/model/executionPlan/ExecutionPlan';
@@ -196,12 +197,11 @@ const transformSQLExecutionNode = (
     metamodel.onConnectionCloseCommitQuery;
   protocol.onConnectionCloseRollbackQuery =
     metamodel.onConnectionCloseRollbackQuery;
-  // TODO: revamp transformer to take context at root
-  // protocol.connection = guaranteeType(
-  //   V1_transformConnection(metamodel.connection, true, context.),
-  //   V1_DatabaseConnection,
-  //   'SQL execution node connection must be of type database connection',
-  // );
+  protocol.connection = guaranteeType(
+    V1_transformConnection(metamodel.connection, true, context),
+    V1_DatabaseConnection,
+    'SQL execution node connection must be of type database connection',
+  );
   protocol.resultColumns = metamodel.resultColumns.map(
     transformSQLResultColumn,
   );

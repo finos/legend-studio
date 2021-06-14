@@ -1861,7 +1861,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     executeInput.mapping = mapping.path;
     executeInput.runtime = V1_transformRuntime(
       runtime,
-      this.pureProtocolProcessorPlugins,
+      new V1_GraphTransformerContextBuilder(
+        this.pureProtocolProcessorPlugins,
+      ).build(),
     );
     executeInput.model = prunedGraphData;
     executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
@@ -1956,7 +1958,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     generateStoreInput.connection = V1_transformConnection(
       input.connection,
       false,
-      this.pureProtocolProcessorPlugins,
+      new V1_GraphTransformerContextBuilder(
+        this.pureProtocolProcessorPlugins,
+      ).build(),
     );
     generateStoreInput.targetPackage = input.targetPackage;
     generateStoreInput.targetName = input.targetName;
