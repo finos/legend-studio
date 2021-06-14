@@ -25,8 +25,9 @@ import {
   SKIP,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
-import { deserializeArray, serializeArray } from '@finos/legend-studio-shared';
 import {
+  deserializeArray,
+  serializeArray,
   deseralizeMap,
   serializeMap,
   usingModelSchema,

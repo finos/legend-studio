@@ -42,8 +42,8 @@ import {
   TinyInt,
   SmallInt,
   BigInt,
+  DataType,
 } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
-import { DataType } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import type { V1_ExecutionNode } from '../../../../model/executionPlan/nodes/V1_ExecutionNode';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
 import { V1_SQLExecutionNode } from '../../../../model/executionPlan/nodes/V1_SQLExecutionNode';
