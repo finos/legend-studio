@@ -59,11 +59,15 @@ export class InlineEmbeddedRelationalInstanceSetImplementation
     });
   }
 
-  accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
+  override accept_PropertyMappingVisitor<T>(
+    visitor: PropertyMappingVisitor<T>,
+  ): T {
     return visitor.visit_InlineEmbeddedRelationalPropertyMapping(this);
   }
 
-  accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
+  override accept_SetImplementationVisitor<T>(
+    visitor: SetImplementationVisitor<T>,
+  ): T {
     throw new Error('Method not implemented.');
   }
 }

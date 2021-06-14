@@ -63,6 +63,7 @@ import type { Runtime } from '../../../../models/metamodels/pure/model/packageab
 import { RuntimePointer } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import { PackageableRuntime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import { flowResult } from 'mobx';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {
@@ -100,9 +101,9 @@ const PureSingleExecutionConfigurationEditor = observer(
       if (val.value !== mapping) {
         selectedExecution.setMapping(val.value);
         executionState.autoSelectRuntimeOnMappingChange(val.value);
-        selectedTestState
-          .generateTestData()
-          .catch(applicationStore.alertIllegalUnhandledError);
+        flowResult(selectedTestState.generateTestData()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
       }
     };
     const visitMapping = (): void => editorStore.openElement(mapping);
@@ -195,9 +196,9 @@ const PureSingleExecutionConfigurationEditor = observer(
         if (!isReadOnly) {
           if (element instanceof Mapping) {
             selectedExecution.setMapping(element);
-            selectedTestState
-              .generateTestData()
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(selectedTestState.generateTestData()).catch(
+              applicationStore.alertIllegalUnhandledError,
+            );
             executionState.autoSelectRuntimeOnMappingChange(element);
           } else if (
             element instanceof PackageableRuntime &&

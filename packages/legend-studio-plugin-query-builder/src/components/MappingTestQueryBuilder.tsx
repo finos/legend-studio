@@ -25,8 +25,8 @@ import { observer } from 'mobx-react-lite';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 
 export const MappingTestQueryBuilder = observer(
-  (props: { testState: MappingTestState }) => {
-    const { testState } = props;
+  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
+    const { testState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
     const queryBuilderState =
@@ -56,6 +56,7 @@ export const MappingTestQueryBuilder = observer(
     return (
       <button
         className="btn--dark mapping-test-query-builder__btn"
+        disabled={isReadOnly}
         onClick={editWithQueryBuilder}
       >
         Edit Query

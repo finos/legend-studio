@@ -18,8 +18,14 @@ import { useEffect, useState } from 'react';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { toSentenceCase } from '@finos/legend-studio-shared';
-import { clsx, ContextMenu } from '@finos/legend-studio-components';
-import { FaTimes, FaMap, FaFlask } from 'react-icons/fa';
+import {
+  clsx,
+  ContextMenu,
+  FlaskIcon,
+  MapIcon,
+  PlayIcon,
+  TimesIcon,
+} from '@finos/legend-studio-components';
 import { ClassMappingEditor } from './ClassMappingEditor';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor';
 import {
@@ -50,6 +56,9 @@ import {
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
+import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+import { MappingExecutionBuilder } from './MappingExecutionBuilder';
+import { flowResult } from 'mobx';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -68,7 +77,7 @@ export const MappingEditorSplashScreen: React.FC = () => {
           'mapping-editor__splash-screen__logo--hidden': !showLogo,
         })}
       >
-        <FaMap />
+        <MapIcon />
       </div>
     </div>
   );
@@ -87,10 +96,10 @@ const MappingEditorHeaderTabContextMenu = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const close = applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.closeTab(tabState),
+      flowResult(mappingEditorState.closeTab(tabState)),
     );
     const closeOthers = applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.closeAllOtherTabs(tabState),
+      flowResult(mappingEditorState.closeAllOtherTabs(tabState)),
     );
     const closeAll = (): void => mappingEditorState.closeAllTabs();
 
@@ -141,21 +150,18 @@ export const MappingEditor = observer(() => {
   const mappingEditorState =
     editorStore.getCurrentEditorState(MappingEditorState);
   const isReadOnly = mappingEditorState.isReadOnly;
-  const currentMappingElement =
-    mappingEditorState.currentTabState instanceof MappingElementState
-      ? mappingEditorState.currentTabState.mappingElement
-      : undefined;
+  const currentTabState = mappingEditorState.currentTabState;
   const renderActiveMappingElementTab = (): React.ReactNode => {
-    if (mappingEditorState.currentTabState instanceof MappingTestState) {
+    if (currentTabState instanceof MappingTestState) {
       return (
         <MappingTestEditor
-          key={mappingEditorState.currentTabState.uuid}
-          mappingTestState={mappingEditorState.currentTabState}
+          key={currentTabState.uuid}
+          testState={currentTabState}
           isReadOnly={isReadOnly}
         />
       );
-    }
-    if (currentMappingElement) {
+    } else if (currentTabState instanceof MappingElementState) {
+      const currentMappingElement = currentTabState.mappingElement;
       switch (getMappingElementType(currentMappingElement)) {
         case MAPPING_ELEMENT_TYPE.CLASS:
           return (
@@ -175,26 +181,33 @@ export const MappingEditor = observer(() => {
         default:
           return <div>Unsupported mapping type</div>;
       }
+    } else if (currentTabState instanceof MappingExecutionState) {
+      return (
+        <MappingExecutionBuilder
+          key={currentTabState.uuid}
+          executionState={currentTabState}
+        />
+      );
     }
     return <MappingEditorSplashScreen />;
   };
   const closeTab = (tabState: MappingEditorTabState) => (): void => {
-    mappingEditorState
-      .closeTab(tabState)
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(mappingEditorState.closeTab(tabState)).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   };
   const closeTabOnMiddleClick =
     (tabState: MappingEditorTabState): React.MouseEventHandler =>
     (event): void => {
       if (event.nativeEvent.button === 1) {
-        mappingEditorState
-          .closeTab(tabState)
-          .catch(applicationStore.alertIllegalUnhandledError);
+        flowResult(mappingEditorState.closeTab(tabState)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
       }
     };
   const openTab = (tabState: MappingEditorTabState): (() => Promise<void>) =>
     applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.openTab(tabState),
+      flowResult(mappingEditorState.openTab(tabState)),
     );
 
   return (
@@ -242,9 +255,7 @@ export const MappingEditor = observer(() => {
                   >
                     {tabState instanceof MappingTestState && (
                       <>
-                        <div className={`mapping-editor__header__tab__test`}>
-                          <FaFlask />
-                        </div>
+                        <FlaskIcon className="mapping-editor__header__tab__icon--test" />
                         <button
                           className="mapping-editor__header__tab__element__name"
                           tabIndex={-1}
@@ -280,13 +291,25 @@ export const MappingEditor = observer(() => {
                         </button>
                       </>
                     )}
+                    {tabState instanceof MappingExecutionState && (
+                      <>
+                        <PlayIcon className="mapping-editor__header__tab__icon--execution" />
+                        <button
+                          className="mapping-editor__header__tab__element__name"
+                          tabIndex={-1}
+                          onClick={openTab(tabState)}
+                        >
+                          {tabState.name}
+                        </button>
+                      </>
+                    )}
                     <button
                       className="mapping-editor__header__tab__close-btn"
                       onClick={closeTab(tabState)}
                       tabIndex={-1}
                       title={'Close'}
                     >
-                      <FaTimes />
+                      <TimesIcon />
                     </button>
                   </ContextMenu>
                 </div>

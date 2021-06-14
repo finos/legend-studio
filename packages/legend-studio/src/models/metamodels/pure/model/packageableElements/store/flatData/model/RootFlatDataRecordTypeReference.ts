@@ -25,7 +25,7 @@ import type { RootFlatDataRecordType } from '../../../../../model/packageableEle
 import type { FlatData } from '../../../../../model/packageableElements/store/flatData/model/FlatData';
 
 export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner {
-  readonly ownerReference: PackageableElementReference<FlatData>;
+  override readonly ownerReference: PackageableElementReference<FlatData>;
   value: RootFlatDataRecordType;
 
   protected constructor(
@@ -50,7 +50,7 @@ export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner
 }
 
 export class RootFlatDataRecordTypeExplicitReference extends RootFlatDataRecordTypeReference {
-  readonly ownerReference: PackageableElementExplicitReference<FlatData>;
+  override readonly ownerReference: PackageableElementExplicitReference<FlatData>;
 
   private constructor(value: RootFlatDataRecordType) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -68,7 +68,7 @@ export class RootFlatDataRecordTypeExplicitReference extends RootFlatDataRecordT
 }
 
 export class RootFlatDataRecordTypeImplicitReference extends RootFlatDataRecordTypeReference {
-  readonly ownerReference: PackageableElementImplicitReference<FlatData>;
+  override readonly ownerReference: PackageableElementImplicitReference<FlatData>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<FlatData>,

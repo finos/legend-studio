@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import { uuid } from '@finos/legend-studio-shared';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../../EditorStore';
@@ -22,6 +22,7 @@ import type { PropertyMapping } from '../../../../models/metamodels/pure/model/p
 import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
 import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 
 export class MappingElementState {
   uuid = uuid();
@@ -59,6 +60,7 @@ export abstract class SetImplementationState extends MappingElementState {
 export abstract class InstanceSetImplementationState extends SetImplementationState {
   declare mappingElement: InstanceSetImplementation;
   propertyMappingStates: PropertyMappingState[] = [];
+  selectedType?: Type;
 
   constructor(
     editorStore: EditorStore,
@@ -68,9 +70,15 @@ export abstract class InstanceSetImplementationState extends SetImplementationSt
 
     makeObservable(this, {
       propertyMappingStates: observable,
+      selectedType: observable,
+      setSelectedType: action,
     });
 
     this.mappingElement = setImplementation;
+  }
+
+  setSelectedType(type: Type | undefined): void {
+    this.selectedType = type === this.selectedType ? undefined : type;
   }
 
   abstract decorate(): void;
@@ -78,12 +86,14 @@ export abstract class InstanceSetImplementationState extends SetImplementationSt
 }
 
 export abstract class PropertyMappingState extends LambdaEditorState {
+  instanceSetImplementationState: InstanceSetImplementationState;
   propertyMapping: PropertyMapping;
 
   constructor(
+    instanceSetImplementationState: InstanceSetImplementationState,
+    propertyMapping: PropertyMapping,
     lambdaString: string,
     lambdaPrefix: string,
-    propertyMapping: PropertyMapping,
   ) {
     super(lambdaString, lambdaPrefix);
 
@@ -91,6 +101,7 @@ export abstract class PropertyMappingState extends LambdaEditorState {
       propertyMapping: observable,
     });
 
+    this.instanceSetImplementationState = instanceSetImplementationState;
     this.propertyMapping = propertyMapping;
   }
 }

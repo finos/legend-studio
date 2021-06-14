@@ -17,6 +17,7 @@
 import {
   guaranteeNonNullable,
   guaranteeType,
+  UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../MetaModelConst';
 import type { AlloySerializationConfigInstanceValue } from '../../../../../../metamodels/pure/model/valueSpecification/AlloySerializationConfig';
@@ -72,7 +73,11 @@ import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/gra
 import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_GraphFetchTree';
 import { V1_Collection } from '../../../model/valueSpecification/raw/V1_Collection';
 import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr';
-import type { PackageableElementReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import { PackageableElementReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import { Unit } from '../../../../../../metamodels/pure/model/packageableElements/domain/Measure';
+import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';
+import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
+import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 
 export class V1_ValueSpecificationTransformer
@@ -186,20 +191,46 @@ export class V1_ValueSpecificationTransformer
         return cPrimitiveType;
       }
       default:
-        throw new Error(`value ${type.name} is supported`);
+        throw new UnsupportedOperationError(
+          `Can't transform primtive instance value of unsupported type '${type.name}'`,
+        );
     }
   }
 
   visit_InstanceValue(
     valueSpecification: InstanceValue,
   ): V1_ValueSpecification {
-    const protocol = new V1_PackageableElementPtr();
-    // TODO: not too sure if this is safe to do
-    protocol.fullPath = (
-      valueSpecification
-        .values[0] as PackageableElementReference<PackageableElement>
-    ).value.path;
-    return protocol;
+    if (
+      valueSpecification.values.length === 1 &&
+      valueSpecification.values[0] instanceof PackageableElementReference
+    ) {
+      const protocol = new V1_PackageableElementPtr();
+      protocol.fullPath = (
+        valueSpecification
+          .values[0] as PackageableElementReference<PackageableElement>
+      ).value.path;
+      return protocol;
+    } else if (
+      valueSpecification.values.length === 0 &&
+      valueSpecification.genericType
+    ) {
+      if (valueSpecification.genericType.value.rawType instanceof Unit) {
+        const protocol = new V1_HackedUnit();
+        protocol.unitType =
+          valueSpecification.genericType.ownerReference.valueForSerialization;
+        return protocol;
+      } else if (
+        valueSpecification.genericType.value.rawType instanceof Class
+      ) {
+        const protocol = new V1_HackedClass();
+        protocol.fullPath =
+          valueSpecification.genericType.ownerReference.valueForSerialization;
+        return protocol;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't transform unsupported form of instance value.`,
+    );
   }
 
   visit_EnumValueInstanceValue(

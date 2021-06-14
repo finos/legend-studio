@@ -16,38 +16,183 @@
 
 @use '../../../mixins' as *;
 
-.mapping-test-editor {
+.mapping-test-editor,
+.mapping-execution-builder {
   height: 100%;
   width: 100%;
-  background: var(--color-dark-grey-50);
 
   &__header {
-    @include flexVCenter;
+    @include flexHSpaceBetween;
 
-    padding: 0 0.5rem;
-    height: 4rem;
-    background: var(--color-dark-grey-50);
-    border-bottom: 0.1rem solid var(--color-dark-grey-280);
+    height: 3.4rem;
+    background: var(--color-dark-grey-100);
+    border-bottom: 0.1rem solid var(--color-dark-grey-50);
+
+    &__tabs {
+      height: 3.4rem;
+      z-index: 1;
+      display: flex;
+      overflow-x: overlay;
+      overflow-y: hidden;
+    }
+
+    &__tab {
+      @include flexCenter;
+
+      display: inline-flex;
+      height: 100%;
+      color: var(--color-light-grey-400);
+      padding: 0 1rem;
+      border-right: 0.1rem solid var(--color-dark-grey-80);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    &__tab--active {
+      position: relative;
+    }
+
+    &__tab--active::after {
+      content: '';
+      height: 0.3rem;
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      background: var(--color-yellow-200);
+    }
+
+    &__actions {
+      @include flexVCenter;
+
+      margin-right: 0.5rem;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 3.4rem;
+      width: 2.8rem;
+    }
+
+    &__action svg {
+      color: var(--color-light-grey-400);
+    }
+
+    &__action[disabled] svg {
+      color: var(--color-dark-grey-300) !important;
+    }
   }
 
-  &__header__name {
-    display: flex;
+  &__content {
+    position: relative;
+    height: calc(100% - 3.4rem);
     width: 100%;
   }
 
-  &__header__name__input {
-    height: 2.8rem;
-    width: 100%;
+  .panel {
+    height: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      color: var(--color-light-grey-400);
+      font-weight: bold;
+      background: var(--color-dark-grey-100);
+      border-bottom: 0.1rem solid var(--color-dark-grey-50);
+    }
+
+    &__header__title__label {
+      color: var(--color-dark-grey-50);
+      background: var(--color-light-grey-400);
+    }
+
+    &__header__actions {
+      margin-right: 0.5rem;
+    }
+
+    &__header__action svg {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-300) !important;
+    }
+
+    &__content {
+      background: var(--color-dark-grey-50);
+    }
   }
 
-  &__header__name__action-btn {
-    height: 2.8rem;
-    width: 2.8rem;
-    flex: 0 0 2.8rem;
-    margin-left: 0.5rem;
+  &__query-panel {
+    height: 100%;
+  }
+
+  &__query-panel__query {
+    position: relative;
+    height: 100%;
+  }
+
+  &__query-panel__query-editor {
+    @include flexHCenter;
+
+    height: 100%;
+    border-left: 0.1rem solid var(--color-dark-grey-200);
+    padding: 1rem;
+  }
+
+  &__input-data-panel__content {
+    padding: 0 !important;
+    position: relative;
+  }
+
+  &__result-panel__content {
+    position: relative;
+  }
+
+  &__icon {
+    &__run,
+    &__execute {
+      font-size: 1.3rem;
+    }
+
+    &__generate-plan {
+      font-size: 1.6rem;
+    }
+
+    &__regenerate-result {
+      font-size: 1.8rem;
+    }
+  }
+}
+
+.mapping-execution-builder {
+  &__service__modal {
+    &__service-path {
+      width: 100%;
+      background: var(--color-dark-grey-280);
+      color: var(--color-light-grey-200);
+      border: 0.1rem solid var(--color-dark-grey-300);
+      margin-bottom: 1rem;
+    }
+  }
+}
+
+.mapping-test-editor {
+  &__header__tab__test-status-indicator__container {
+    @include flexCenter;
+
+    width: 1.6rem;
+    margin-right: 0.8rem;
   }
 
   &__result {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-dark-grey-50);
+  }
+
+  &__result__status {
     cursor: default;
     height: 15rem;
     line-height: 2rem;
@@ -57,22 +202,22 @@
     font-family: 'Roboto Mono', monospace;
   }
 
-  &__result--failed,
-  &__result--error {
+  &__result__status--failed,
+  &__result__status--error {
     color: var(--color-red-100);
   }
 
-  &__result--running {
+  &__result__status--running {
     color: var(--color-light-grey-150);
   }
 
-  &__result--passed {
+  &__result__status--passed {
     color: var(--color-green-neon-100);
   }
 
-  &__diff {
+  &__result__diff {
     border-top: 0.1rem solid var(--color-dark-grey-280);
-    height: calc(100% - 19rem);
+    height: calc(100% - 15rem);
     width: 100%;
 
     .text-editor__container {
@@ -88,40 +233,5 @@
       top: 0;
       left: 0;
     }
-  }
-}
-
-.mapping-test-editor-panel {
-  &__query-panel {
-    height: 100%;
-  }
-
-  &__query-panel__query {
-    position: relative;
-    height: calc(100% - 3.6rem);
-  }
-
-  &__query-panel__query-editor {
-    @include flexCenter;
-
-    height: 3.6rem;
-    border-top: 0.1rem solid var(--color-dark-grey-200);
-  }
-
-  .Resizer.vertical {
-    background: padding-box var(--color-dark-grey-100);
-    width: 1.1rem;
-    min-width: 1.1rem;
-    border-left: 0.5rem solid transparent;
-    border-right: 0.5rem solid transparent;
-  }
-
-  &__input-data-panel__content {
-    padding: 0 !important;
-    position: relative;
-  }
-
-  &__generate-plan-btn svg {
-    font-size: 1.5rem;
   }
 }

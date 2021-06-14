@@ -32,7 +32,7 @@ export class ManagementPlugin extends EditorPlugin {
     pluginManager.registerEditorPlugin(this);
   }
 
-  getExtraApplicationPageRenderEntries(): ApplicationPageRenderEntry[] {
+  override getExtraApplicationPageRenderEntries(): ApplicationPageRenderEntry[] {
     return [
       // project dashboard
       {

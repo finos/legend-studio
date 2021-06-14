@@ -23,7 +23,7 @@ import { V1_PropertyHolderView } from './V1_PropertyHolderView';
 export class V1_PropertyView extends V1_PropertyHolderView implements Hashable {
   declare property: V1_PropertyPointer;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.PROPERTY_VIEW, super.hashCode]);
   }
 }

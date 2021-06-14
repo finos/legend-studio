@@ -60,8 +60,9 @@ export const GrammarTextEditorHeaderTabContextMenu = observer(
 );
 
 export const GrammarTextEditor = observer(() => {
-  const [editor, setEditor] =
-    useState<monacoEditorAPI.IStandaloneCodeEditor | undefined>();
+  const [editor, setEditor] = useState<
+    monacoEditorAPI.IStandaloneCodeEditor | undefined
+  >();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const grammarTextEditorState = editorStore.grammarTextEditorState;

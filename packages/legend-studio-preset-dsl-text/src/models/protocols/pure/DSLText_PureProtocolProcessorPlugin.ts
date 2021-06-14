@@ -58,7 +58,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
-  V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
+  override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
     return [
       new V1_ElementBuilder<V1_Text>({
         _class: V1_Text,
@@ -95,7 +95,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     ];
   }
 
-  V1_getExtraElementClassifierPathGetters(): V1_ElementProtocolClassifierPathGetter[] {
+  override V1_getExtraElementClassifierPathGetters(): V1_ElementProtocolClassifierPathGetter[] {
     return [
       (elementProtocol: V1_PackageableElement): string | undefined => {
         if (elementProtocol instanceof V1_Text) {
@@ -106,7 +106,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     ];
   }
 
-  V1_getExtraElementProtocolSerializers(): V1_ElementProtocolSerializer[] {
+  override V1_getExtraElementProtocolSerializers(): V1_ElementProtocolSerializer[] {
     return [
       (
         elementProtocol: V1_PackageableElement,
@@ -119,7 +119,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     ];
   }
 
-  V1_getExtraElementProtocolDeserializers(): V1_ElementProtocolDeserializer[] {
+  override V1_getExtraElementProtocolDeserializers(): V1_ElementProtocolDeserializer[] {
     return [
       (
         json: PlainObject<V1_PackageableElement>,
@@ -132,7 +132,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     ];
   }
 
-  V1_getExtraElementTransformers(): V1_ElementTransformer[] {
+  override V1_getExtraElementTransformers(): V1_ElementTransformer[] {
     return [
       (metamodel: PackageableElement): V1_PackageableElement | undefined => {
         if (metamodel instanceof Text) {

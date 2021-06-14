@@ -213,51 +213,18 @@
     color: var(--color-light-grey-400);
   }
 
-  &__test-result-indicator {
-    @include flexVCenter;
+  &__test-result-indicator__container {
+    @include flexCenter;
 
-    &__container {
-      @include flexCenter;
-
-      width: 1.6rem;
-      height: 100%;
-    }
-
-    svg {
-      font-size: 1.5rem;
-    }
-
-    &--skipped svg {
-      color: var(--color-test--skipped);
-    }
-
-    &--none svg {
-      color: var(--color-dark-grey-400);
-    }
-
-    &--passed svg {
-      color: var(--color-test--passed);
-    }
-
-    &--error svg {
-      color: var(--color-test--error);
-    }
-
-    &--failed svg {
-      color: var(--color-test--failed);
-    }
-
-    &--in-progress svg {
-      animation: spin 1s infinite ease;
-      color: var(--color-blue-200);
-    }
+    width: 1.6rem;
+    height: 100%;
   }
 
   &__item--active,
   &__item--active svg,
   &__item--active:hover {
     background: var(--color-light-blue-200);
-    color: var(--color-light-grey-0);
+    color: var(--color-light-grey-0) !important;
   }
 
   &__item--active &__item__run-time {
@@ -359,5 +326,38 @@
 
   &__content__adder:hover &__content__adder__action {
     border-color: var(--color-light-grey-400);
+  }
+}
+
+.mapping-test-status-indicator {
+  @include flexVCenter;
+
+  svg {
+    font-size: 1.5rem;
+  }
+
+  &--skipped svg {
+    color: var(--color-test--skipped);
+  }
+
+  &--none svg {
+    color: var(--color-dark-grey-400);
+  }
+
+  &--passed svg {
+    color: var(--color-test--passed);
+  }
+
+  &--error svg {
+    color: var(--color-test--error);
+  }
+
+  &--failed svg {
+    color: var(--color-test--failed);
+  }
+
+  &--in-progress svg {
+    animation: spin 1s infinite ease;
+    color: var(--color-blue-200);
   }
 }

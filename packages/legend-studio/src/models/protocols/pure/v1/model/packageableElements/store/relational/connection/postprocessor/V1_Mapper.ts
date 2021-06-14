@@ -28,7 +28,7 @@ export class V1_Mapper implements Hashable {
 }
 
 export class V1_SchemaNameMapper extends V1_Mapper {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([super.hashCode, CORE_HASH_STRUCTURE.SCHEMA_MAPPER]);
   }
 }
@@ -36,7 +36,7 @@ export class V1_SchemaNameMapper extends V1_Mapper {
 export class V1_TableNameMapper extends V1_Mapper {
   schema!: V1_SchemaNameMapper;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       super.hashCode,
       CORE_HASH_STRUCTURE.TABLE_MAPPER,

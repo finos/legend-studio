@@ -33,10 +33,15 @@ import type { PureInstanceSetImplementation } from '../../../../models/metamodel
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
+  declare instanceSetImplementationState: PureInstanceSetImplementationState;
   declare propertyMapping: PurePropertyMapping;
 
-  constructor(propertyMapping: PurePropertyMapping, editorStore: EditorStore) {
-    super('', LAMBDA_START, propertyMapping);
+  constructor(
+    editorStore: EditorStore,
+    instanceSetImplementationState: PureInstanceSetImplementationState,
+    propertyMapping: PurePropertyMapping,
+  ) {
+    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_START);
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -137,7 +142,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
 
     this.mappingElement = setImplementation;
     this.propertyMappingStates = setImplementation.propertyMappings.map(
-      (pm) => new PurePropertyMappingState(pm, this.editorStore),
+      (pm) => new PurePropertyMappingState(this.editorStore, this, pm),
     );
   }
 
@@ -163,7 +168,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     const newPropertyMappingStates: PurePropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration =
       this.mappingElement.propertyMappings.map(
-        (pm) => new PurePropertyMappingState(pm, this.editorStore),
+        (pm) => new PurePropertyMappingState(this.editorStore, this, pm),
       );
     propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
       const existingPropertyMappingState = this.propertyMappingStates.find(

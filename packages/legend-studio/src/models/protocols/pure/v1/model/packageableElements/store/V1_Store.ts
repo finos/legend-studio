@@ -25,7 +25,7 @@ export abstract class V1_Store
 {
   includedStores: string[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.STORE,
       super.hashCode,

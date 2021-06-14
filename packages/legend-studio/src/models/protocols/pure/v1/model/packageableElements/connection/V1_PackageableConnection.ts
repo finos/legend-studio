@@ -27,7 +27,7 @@ export class V1_PackageableConnection
 {
   connectionValue!: V1_Connection;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGEABLE_CONNECTION,
       super.hashCode,

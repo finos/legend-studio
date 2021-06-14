@@ -15,6 +15,7 @@
  */
 
 import type { MappingEditorState } from './MappingEditorState';
+import { generateMappingTestName } from './MappingEditorState';
 import type { EditorStore } from '../../../EditorStore';
 import {
   observable,
@@ -23,7 +24,9 @@ import {
   computed,
   makeObservable,
   makeAutoObservable,
+  flowResult,
 } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   guaranteeNonNullable,
   assertTrue,
@@ -36,6 +39,7 @@ import {
   createUrlStringFromData,
   losslessStringify,
   getClass,
+  guaranteeType,
 } from '@finos/legend-studio-shared';
 import {
   CLIENT_VERSION,
@@ -64,6 +68,10 @@ import type {
   MappingElementSource,
   Mapping,
 } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import {
+  getMappingElementTarget,
+  getMappingElementSource,
+} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Service } from '../../../../models/metamodels/pure/model/packageableElements/service/Service';
 import {
   SingleExecutionTest,
@@ -88,9 +96,14 @@ import {
   RelationalInputData,
   RelationalInputType,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '../../../ApplicationStore';
+import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
-  uuid = uuid();
   editorStore: EditorStore;
   isConvertingLambdaToString = false;
   isInitializingLambda = false;
@@ -402,6 +415,8 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
 }
 
 export class MappingExecutionState {
+  uuid = uuid();
+  name: string;
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;
   isExecuting = false;
@@ -409,12 +424,13 @@ export class MappingExecutionState {
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
   executionPlan?: object;
-  executionResultText?: string; // NOTE: stored as lessless JSON text
+  executionResultText?: string; // NOTE: stored as lossless JSON text
   showServicePathModal = false;
 
   constructor(
     editorStore: EditorStore,
     mappingEditorState: MappingEditorState,
+    name: string,
   ) {
     makeAutoObservable(this, {
       editorStore: false,
@@ -427,10 +443,13 @@ export class MappingExecutionState {
       setShowServicePathModal: action,
       setInputDataStateBasedOnSource: action,
       reset: action,
+      buildQueryWithClassMapping: flow,
+      generatePlan: flow,
     });
 
     this.editorStore = editorStore;
     this.mappingEditorState = mappingEditorState;
+    this.name = name;
     this.queryState = new MappingExecutionQueryState(
       editorStore,
       RawLambda.createStub(),
@@ -542,13 +561,13 @@ export class MappingExecutionState {
           toGrammarString(this.executionResultText),
         );
         const mappingTest = new MappingTest(
-          this.mappingEditorState.mapping.generateTestName(),
+          generateMappingTestName(this.mappingEditorState.mapping),
           query,
           [inputData],
           assert,
         );
         yield this.mappingEditorState.addTest(mappingTest);
-        this.reset();
+        this.mappingEditorState.closeTab(this); // after promoting to test, remove the execution state
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -590,7 +609,7 @@ export class MappingExecutionState {
             tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
           const testContainer = new TestContainer(
-            this.editorStore.graphState.graphManager.HACKY_createAssertLambda(
+            this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
               this.executionResultText,
             ),
             singleExecutionTest,
@@ -650,12 +669,13 @@ export class MappingExecutionState {
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
+      this.setExecutionResultText('');
     } finally {
       this.isExecuting = false;
     }
   });
 
-  generatePlan = flow(function* (this: MappingExecutionState) {
+  *generatePlan(): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
@@ -665,14 +685,15 @@ export class MappingExecutionState {
         !this.isGeneratingPlan
       ) {
         this.isGeneratingPlan = true;
-        const plan =
-          (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+        const plan = (yield flowResult(
+          this.editorStore.graphState.graphManager.generateExecutionPlan(
             this.editorStore.graphState.graph,
             this.mappingEditorState.mapping,
             query,
             runtime,
             CLIENT_VERSION.VX_X_X,
-          )) as unknown as object;
+          ),
+        )) as object;
         this.setExecutionPlan(plan);
       }
     } catch (error: unknown) {
@@ -684,5 +705,64 @@ export class MappingExecutionState {
     } finally {
       this.isGeneratingPlan = false;
     }
-  });
+  }
+
+  *buildQueryWithClassMapping(
+    setImplementation: SetImplementation | undefined,
+  ): GeneratorFn<void> {
+    // do all the necessary updates
+    this.setExecutionResultText(undefined);
+    yield this.queryState.updateLamba(
+      setImplementation
+        ? this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+            guaranteeType(getMappingElementTarget(setImplementation), Class),
+          )
+        : RawLambda.createStub(),
+    );
+
+    // Attempt to generate data for input data panel as we pick the class mapping:
+    // - If the source panel is empty right now, automatically try to generate input data:
+    //   - We generate based on the class mapping, if it's concrete
+    //   - If the class mapping is operation, output a warning message
+    // - If the source panel is non-empty (show modal), show an option to keep current input data
+
+    if (setImplementation) {
+      if (this.inputDataState instanceof MappingExecutionEmptyInputDataState) {
+        if (setImplementation instanceof OperationSetImplementation) {
+          this.editorStore.applicationStore.notifyWarning(
+            `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+          );
+        } else {
+          this.setInputDataStateBasedOnSource(
+            getMappingElementSource(setImplementation),
+            true,
+          );
+        }
+      } else {
+        this.editorStore.setActionAltertInfo({
+          message: 'Mapping execution input data is already set',
+          prompt: 'Do you want to regenerate the input data?',
+          type: ActionAlertType.CAUTION,
+          onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
+          onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
+          actions: [
+            {
+              label: 'Regenerate',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void =>
+                this.setInputDataStateBasedOnSource(
+                  getMappingElementSource(setImplementation),
+                  true,
+                ),
+            },
+            {
+              label: 'Keep my input data',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      }
+    }
+  }
 }

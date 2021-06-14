@@ -19,7 +19,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { AssociationImplementation } from '../AssociationImplementation';
 
 export class XStoreAssociationImplementation extends AssociationImplementation {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.XSTORE_ASSOCIATION_IMPLEMENTATION,
       super.hashCode,

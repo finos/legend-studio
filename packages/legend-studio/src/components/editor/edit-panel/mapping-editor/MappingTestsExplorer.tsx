@@ -19,7 +19,10 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { useDrop } from 'react-dnd';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
+import {
+  MAPPING_TEST_EDITOR_TAB_TYPE,
+  TEST_RESULT,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   FaPlay,
@@ -39,7 +42,8 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { ClassMappingSelectorModal } from '../../aux-panel/MappingExecution';
+import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
+import { flowResult } from 'mobx';
 
 const addTestPromps = [
   "Let's add some test!",
@@ -58,16 +62,37 @@ export const MappingTestExplorerContextMenu = observer(
     const { mappingTestState, isReadOnly, showCreateNewTestModal } = props;
     const applicationStore = useApplicationStore();
     const runMappingTest = (): void => {
-      mappingTestState
-        ?.runTest()
-        ?.catch(applicationStore.alertIllegalUnhandledError);
+      if (mappingTestState) {
+        flowResult(mappingTestState.runTest()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
     };
     const removeMappingTest = (): void => {
-      mappingTestState?.mappingEditorState
-        .deleteMappingTest(mappingTestState.test)
-        ?.catch(applicationStore.alertIllegalUnhandledError);
+      if (mappingTestState) {
+        flowResult(
+          mappingTestState.mappingEditorState.deleteTest(mappingTestState.test),
+        ).catch(applicationStore.alertIllegalUnhandledError);
+      }
     };
     const toggleSkipTest = (): void => mappingTestState?.toggleSkipTest();
+    const viewTestResult = (): void => {
+      if (mappingTestState) {
+        mappingTestState.mappingEditorState.openTest(
+          mappingTestState.test,
+          MAPPING_TEST_EDITOR_TAB_TYPE.RESULT,
+        );
+      }
+    };
+    const editTest = (): void => {
+      if (mappingTestState) {
+        mappingTestState.mappingEditorState.openTest(
+          mappingTestState.test,
+          MAPPING_TEST_EDITOR_TAB_TYPE.SETUP,
+        );
+      }
+    };
+
     return (
       <div ref={ref} className="mapping-test-explorer__context-menu">
         {mappingTestState && (
@@ -76,6 +101,22 @@ export const MappingTestExplorerContextMenu = observer(
             onClick={runMappingTest}
           >
             Run
+          </div>
+        )}
+        {mappingTestState && mappingTestState.result !== TEST_RESULT.NONE && (
+          <div
+            className="mapping-test-explorer__context-menu__item"
+            onClick={viewTestResult}
+          >
+            View Result
+          </div>
+        )}
+        {mappingTestState && (
+          <div
+            className="mapping-test-explorer__context-menu__item"
+            onClick={editTest}
+          >
+            Edit
           </div>
         )}
         {mappingTestState && (
@@ -108,6 +149,68 @@ export const MappingTestExplorerContextMenu = observer(
   { forwardRef: true },
 );
 
+export const MappingTestStatusIndicator: React.FC<{
+  testState: MappingTestState;
+}> = (props) => {
+  const { testState } = props;
+  if (testState.isSkipped) {
+    return (
+      <div
+        title="Test is skipped"
+        className="mapping-test-status-indicator mapping-test-status-indicator--skipped"
+      >
+        <FaRegStopCircle />
+      </div>
+    );
+  }
+  if (testState.isRunningTest) {
+    return (
+      <div
+        title="Test is running"
+        className="mapping-test-status-indicator mapping-test-status-indicator--in-progress"
+      >
+        <FaCircleNotch />
+      </div>
+    );
+  }
+  return (
+    <>
+      {testState.result === TEST_RESULT.NONE && (
+        <div
+          title="Test did not run"
+          className="mapping-test-status-indicator mapping-test-status-indicator--none"
+        >
+          <FaRegCircle />
+        </div>
+      )}
+      {testState.result === TEST_RESULT.ERROR && (
+        <div
+          title="Test failed due to error"
+          className="mapping-test-status-indicator mapping-test-status-indicator--error"
+        >
+          <FaTimesCircle />
+        </div>
+      )}
+      {testState.result === TEST_RESULT.FAILED && (
+        <div
+          title="Test failed assertion"
+          className="mapping-test-status-indicator mapping-test-status-indicator--failed"
+        >
+          <FaExclamationCircle />
+        </div>
+      )}
+      {testState.result === TEST_RESULT.PASSED && (
+        <div
+          title="Test passed"
+          className="mapping-test-status-indicator mapping-test-status-indicator--passed"
+        >
+          <FaCheckCircle />
+        </div>
+      )}
+    </>
+  );
+};
+
 export const MappingTestExplorer = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
     const { isReadOnly, testState } = props;
@@ -116,82 +219,16 @@ export const MappingTestExplorer = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const openTest = applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.openTest(testState.test),
+      flowResult(mappingEditorState.openTest(testState.test)),
     );
     const runTest = applicationStore.guaranteeSafeAction(() =>
-      testState.runTest(),
+      flowResult(testState.runTest()),
     );
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const isActive = mappingEditorState.currentTabState === testState;
-    // first set the icon by the test result, but if the test is running or skipped, we will prioritize that for display
-    let testStatusIcon: React.ReactNode = null;
-    switch (testState.result) {
-      case TEST_RESULT.NONE:
-        testStatusIcon = (
-          <div
-            title="Test did not run"
-            className="mapping-test-explorer__test-result-indicator mapping-test-explorer__test-result-indicator--none"
-          >
-            <FaRegCircle />
-          </div>
-        );
-        break;
-      case TEST_RESULT.ERROR:
-        testStatusIcon = (
-          <div
-            title="Test failed due to error"
-            className="mapping-test-explorer__test-result-indicator mapping-test-explorer__test-result-indicator--error"
-          >
-            <FaTimesCircle />
-          </div>
-        );
-        break;
-      case TEST_RESULT.FAILED:
-        testStatusIcon = (
-          <div
-            title="Test failed assertion"
-            className="mapping-test-explorer__test-result-indicator mapping-test-explorer__test-result-indicator--failed"
-          >
-            <FaExclamationCircle />
-          </div>
-        );
-        break;
-      case TEST_RESULT.PASSED:
-        testStatusIcon = (
-          <div
-            title="Test passed"
-            className="mapping-test-explorer__test-result-indicator mapping-test-explorer__test-result-indicator--passed"
-          >
-            <FaCheckCircle />
-          </div>
-        );
-        break;
-      default:
-        break;
-    }
-    testStatusIcon = testState.isSkipped ? (
-      <div
-        title="Test is skipped"
-        className="mapping-test-explorer__test-result-indicator mapping-test-explorer__test-result-indicator--skipped"
-      >
-        <FaRegStopCircle />
-      </div>
-    ) : (
-      testStatusIcon
-    );
-    testStatusIcon = testState.isRunningTest ? (
-      <div
-        title="Test is running"
-        className="mapping-test-explorer__test-result-indicator mapping-test-explorer__test-result-indicator--in-progress"
-      >
-        <FaCircleNotch />
-      </div>
-    ) : (
-      testStatusIcon
-    );
 
     return (
       <ContextMenu
@@ -221,7 +258,7 @@ export const MappingTestExplorer = observer(
             tabIndex={-1}
           >
             <div className="mapping-test-explorer__item__label__icon mapping-test-explorer__test-result-indicator__container">
-              {testStatusIcon}
+              <MappingTestStatusIndicator testState={testState} />
             </div>
             <div className="mapping-test-explorer__item__label__text">
               {testState.test.name}
@@ -237,7 +274,6 @@ export const MappingTestExplorer = observer(
               className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
               onClick={runTest}
               disabled={
-                isReadOnly ||
                 testState.isRunningTest ||
                 testState.mappingEditorState.isRunningAllTests
               }
@@ -261,7 +297,7 @@ export const MappingTestsExplorer = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const runAllTests = applicationStore.guaranteeSafeAction(() =>
-      mappingEditorState.runTests(),
+      flowResult(mappingEditorState.runTests()),
     );
     // all test run report summary
     const numberOfTests = mappingEditorState.mappingTestStates.length;
@@ -305,13 +341,20 @@ export const MappingTestsExplorer = observer(
     // Drag and Drop
     const handleDrop = useCallback(
       (item: MappingElementDragSource): void => {
+        if (isReadOnly) {
+          return;
+        }
         if (item.data instanceof SetImplementation) {
-          mappingEditorState
-            .createNewTest(item.data)
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(mappingEditorState.createNewTest(item.data)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         }
       },
-      [applicationStore.alertIllegalUnhandledError, mappingEditorState],
+      [
+        applicationStore.alertIllegalUnhandledError,
+        isReadOnly,
+        mappingEditorState,
+      ],
     );
     const [{ isDragOver }, dropRef] = useDrop(
       () => ({
@@ -334,9 +377,9 @@ export const MappingTestsExplorer = observer(
     const changeClassMapping = useCallback(
       (setImplementation: SetImplementation | undefined): void => {
         if (setImplementation) {
-          mappingEditorState
-            .createNewTest(setImplementation)
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(mappingEditorState.createNewTest(setImplementation)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
           hideClassMappingSelectorModal();
         }
       },

@@ -1,0 +1,75 @@
+name: Plugin Compatibility Check
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+# The purpose of this action is to modify a dummy plugin/preset to use the latest
+# published version of Legend Studio core. Then make the web application use that
+# plugin to check if there's any type-checking (compile time) or runtime error(s).
+jobs:
+  check-plugin-compatibility:
+    name: Run Plugin Compatibility Checks
+    if: ${{ github.event.pull_request.title != 'New Release' }} # avoid running this in `New Release` PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2.1.6
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: yarn
+      # The sequence for setting up is as following:
+      #   - Install and build the app
+      #   - Move the dummy plugin to a temporary location (delete in original location to avoid confusion)
+      #   - Create the `yarn.lock` file in that location so we can install and build that plugin later
+      #   - Run the setup script that modifies the version of `@finos/...` dependencies in the dummy plugin to use the latest from NPM,
+      #     and modifies the web application to use the modified dummy plugin
+      #   - Install and build the dummy modified plugin
+      #   - Install dependencies for the web application
+      - name: Setup plugin compatibility check
+        env:
+          # As of Yarn 3.0, `enableImmutableInstalls` will now default to true on CI, so we need to turn
+          # it off to run the install step for dummy plugin
+          # See https://github.com/yarnpkg/berry/blob/master/CHANGELOG.md#300-rc1
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
+        run: >
+          yarn build:setup &&
+          mkdir temp &&
+          cp -r ./packages/legend-studio-preset-dummy ./temp/legend-studio-preset-dummy &&
+          rm -rf ./packages/legend-studio-preset-dummy &&
+          touch ./temp/legend-studio-preset-dummy/yarn.lock &&
+          node ./scripts/workflow/setupPluginCompatibilityChecks.js &&
+          cd ./temp/legend-studio-preset-dummy &&
+          yarn &&
+          yarn build &&
+          cd ../../ &&
+          yarn &&
+          cat ./temp/legend-studio-preset-dummy/package.json
+        # The following step will check for type-checking (compile time) or runtime error(s).
+      - name: Check plugin compatibility
+        id: check-plugin-compatibility
+        run: >
+          yarn workspace @finos/legend-studio-app tsc &&
+          yarn workspace @finos/legend-studio-app jest
+        # NOTE: here we could have done more fancy things, such as reporting the failure as a PR comment
+        # but that in turns require access to the github token, which is not readily available
+        # in normal pull_request event.
+        # There are workarounds, such as using `workflow_run` event, but it proves to be unnecessarily complicated
+        # so we will skip this for now and simply failing the check. This would indicate there is a breaking change
+        # See https://github.com/finos/legend-studio/pull/245
+        # See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/

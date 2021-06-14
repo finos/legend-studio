@@ -84,18 +84,18 @@ const SimplePropertyMappingEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { propertyMappingState, transformProps, drop, dragItem } = props;
-    const editorStore = useEditorStore();
-    const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
     const expectedType =
       propertyMapping.property.value.genericType.value.rawType;
     const canDrop = dragItem && dragItem.data.type === expectedType;
     const onExpectedTypeLabelSelect = (): void =>
-      mappingEditorState.setSelectedTypeLabel(expectedType);
+      propertyMappingState.instanceSetImplementationState.setSelectedType(
+        expectedType,
+      );
     const matchedExpectedTypeLabel = (): boolean =>
       Boolean(expectedType) &&
-      mappingEditorState.selectedTypeLabel === expectedType;
+      propertyMappingState.instanceSetImplementationState.selectedType ===
+        expectedType;
 
     return (
       <div className="property-mapping-editor__entry__container">
@@ -145,10 +145,13 @@ const EnumerationPropertyMappingEditor = observer(
       ? propertyMapping.transformer.sourceType.value
       : enumeration;
     const onExpectedTypeLabelSelect = (): void =>
-      mappingEditorState.setSelectedTypeLabel(expectedType);
+      propertyMappingState.instanceSetImplementationState.setSelectedType(
+        expectedType,
+      );
     const matchedExpectedTypeLabel = (): boolean =>
       Boolean(expectedType) &&
-      mappingEditorState.selectedTypeLabel === expectedType;
+      propertyMappingState.instanceSetImplementationState.selectedType ===
+        expectedType;
     // Enumeration Mapping Selector
     const options = mappingEditorState.mapping
       .enumerationMappingsByEnumeration(enumeration)
@@ -259,10 +262,13 @@ const ClassPropertyMappingEditor = observer(
         ? propertyMapping.targetSetImplementation.srcClass.value
         : undefined;
     const onExpectedTypeLabelSelect = (): void =>
-      mappingEditorState.setSelectedTypeLabel(expectedType);
+      propertyMappingState.instanceSetImplementationState.setSelectedType(
+        expectedType,
+      );
     const matchedExpectedTypeLabel = (): boolean =>
       Boolean(expectedType) &&
-      mappingEditorState.selectedTypeLabel === expectedType;
+      propertyMappingState.instanceSetImplementationState.selectedType ===
+        expectedType;
     // Walker
     const visit = (): void => {
       if (propertyMapping.targetSetImplementation) {
@@ -411,8 +417,8 @@ export const PurePropertyMappingEditor = observer(
       case CLASS_PROPERTY_TYPE.CLASS:
         return (
           <ClassPropertyMappingEditor
-            drop={drop}
             propertyMappingState={purePropertyMappingState}
+            drop={drop}
             dragItem={dragItem}
             transformProps={transformProps}
             isReadOnly={isReadOnly}

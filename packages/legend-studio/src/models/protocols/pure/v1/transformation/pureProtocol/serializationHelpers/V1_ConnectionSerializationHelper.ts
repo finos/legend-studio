@@ -37,6 +37,7 @@ import type { V1_Connection } from '../../../model/packageableElements/connectio
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
 import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
+import type { V1_DatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
@@ -158,6 +159,7 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.SNOWFLAKE),
     accountName: primitive(),
+    cloudType: primitive(),
     databaseName: primitive(),
     quotedIdentifiersIgnoreCase: primitive(),
     region: primitive(),
@@ -430,6 +432,30 @@ export const V1_deserializeConnectionValue = (
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize connection of type '${json._type}'`,
+      );
+  }
+};
+
+export const V1_serializeDatabaseConnectionValue = (
+  protocol: V1_DatabaseConnection,
+): PlainObject<V1_DatabaseConnection> => {
+  if (protocol instanceof V1_RelationalDatabaseConnection) {
+    return serialize(V1_RelationalDatabaseConnection, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize database connection of type '${getClass(protocol).name}'`,
+  );
+};
+
+export const V1_deserializeDatabaseConnectionValue = (
+  json: PlainObject<V1_DatabaseConnection>,
+): V1_DatabaseConnection => {
+  switch (json._type) {
+    case V1_ConnectionType.RELATIONAL_DATABASE_CONNECTION:
+      return deserialize(V1_RelationalDatabaseConnection, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize database connection of type '${json._type}'`,
       );
   }
 };

@@ -181,7 +181,7 @@ export class FunctionEditorState extends ElementEditorState {
     this.selectedTab = tab;
   }
 
-  revealCompilationError(compilationError: CompilationError): boolean {
+  override revealCompilationError(compilationError: CompilationError): boolean {
     let revealed = false;
     try {
       if (compilationError.sourceInformation) {
@@ -199,11 +199,11 @@ export class FunctionEditorState extends ElementEditorState {
     return revealed;
   }
 
-  get hasCompilationError(): boolean {
+  override get hasCompilationError(): boolean {
     return Boolean(this.functionBodyEditorState.compilationError);
   }
 
-  clearCompilationError(): void {
+  override clearCompilationError(): void {
     this.functionBodyEditorState.setCompilationError(undefined);
   }
 

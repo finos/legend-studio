@@ -8,7 +8,7 @@
     "declarationMap": true,
     "sourceMap": true,
     // Module settings
-    "target": "esnext",
+    "target": "es2021", // FIXME: switch back to `esnext` when we upgrade to v4.3.3 - See https://github.com/microsoft/TypeScript/issues/44273
     "module": "esnext",
     "skipLibCheck": true, // skip type checking of all declaration files (*.d.ts)
     "moduleResolution": "node", // See https://www.typescriptlang.org/docs/handbook/module-resolution.html
@@ -27,6 +27,7 @@
     // See https://github.com/mobxjs/mobx/issues/2486
     "useDefineForClassFields": true,
     // Other settings
+    "noImplicitOverride": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true
   }

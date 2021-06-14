@@ -65,7 +65,7 @@ export class ImportAwareCodeSection extends Section {
     });
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.IMPORT_AWARE_CODE_SECTION,
       super.hashCode,
@@ -83,7 +83,7 @@ export class DefaultCodeSection extends Section {
     });
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DEFAULT_CODE_SECTION,
       super.hashCode,

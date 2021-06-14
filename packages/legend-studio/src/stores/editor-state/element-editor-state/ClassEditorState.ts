@@ -50,7 +50,7 @@ export class ClassEditorState extends UMLEditorState {
     );
   }
 
-  revealCompilationError(compilationError: CompilationError): boolean {
+  override revealCompilationError(compilationError: CompilationError): boolean {
     try {
       if (compilationError.sourceInformation) {
         const errorElementCoordinates = getElementCoordinates(
@@ -91,7 +91,7 @@ export class ClassEditorState extends UMLEditorState {
     return false;
   }
 
-  get hasCompilationError(): boolean {
+  override get hasCompilationError(): boolean {
     return (
       this.classState.constraintStates.some((state) =>
         Boolean(state.compilationError),
@@ -102,7 +102,7 @@ export class ClassEditorState extends UMLEditorState {
     );
   }
 
-  clearCompilationError(): void {
+  override clearCompilationError(): void {
     this.classState.constraintStates.forEach((constraintState) =>
       constraintState.setCompilationError(undefined),
     );
@@ -111,7 +111,10 @@ export class ClassEditorState extends UMLEditorState {
     );
   }
 
-  reprocess(newElement: Class, editorStore: EditorStore): ClassEditorState {
+  override reprocess(
+    newElement: Class,
+    editorStore: EditorStore,
+  ): ClassEditorState {
     const classEditorState = new ClassEditorState(editorStore, newElement);
     classEditorState.selectedTab = this.selectedTab;
     return classEditorState;

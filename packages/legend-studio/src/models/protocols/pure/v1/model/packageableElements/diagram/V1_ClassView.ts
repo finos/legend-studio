@@ -26,7 +26,7 @@ export class V1_ClassView extends V1_PositionedRectangle implements Hashable {
   hideTaggedValues?: boolean;
   hideStereotypes?: boolean;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.CLASS_VIEW,
       super.hashCode,

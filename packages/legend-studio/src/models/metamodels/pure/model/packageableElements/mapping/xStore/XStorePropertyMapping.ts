@@ -28,7 +28,7 @@ export class XStorePropertyMapping
 {
   crossExpression!: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.XSTORE_PROPERTY_MAPPING,
       super.hashCode,
@@ -36,7 +36,7 @@ export class XStorePropertyMapping
     ]);
   }
 
-  get isStub(): boolean {
+  override get isStub(): boolean {
     // TODO figure out isStub conditions
     return false;
   }

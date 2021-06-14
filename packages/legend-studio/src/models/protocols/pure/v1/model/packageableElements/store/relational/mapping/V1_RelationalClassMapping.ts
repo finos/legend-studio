@@ -33,7 +33,7 @@ export class V1_RelationalClassMapping
     return visitor.visit_RelationalClassMapping(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,

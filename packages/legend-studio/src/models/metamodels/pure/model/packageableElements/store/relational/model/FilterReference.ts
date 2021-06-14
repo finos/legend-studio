@@ -25,7 +25,7 @@ import type { Database } from '../../../../../model/packageableElements/store/re
 import type { Filter } from '../../../../../model/packageableElements/store/relational/model/Filter';
 
 export abstract class FilterReference extends ReferenceWithOwner {
-  readonly ownerReference: PackageableElementReference<Database>;
+  override readonly ownerReference: PackageableElementReference<Database>;
   value: Filter;
 
   protected constructor(
@@ -50,7 +50,7 @@ export abstract class FilterReference extends ReferenceWithOwner {
 }
 
 export class FilterExplicitReference extends FilterReference {
-  readonly ownerReference: PackageableElementExplicitReference<Database>;
+  override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: Filter) {
     const ownerReference = PackageableElementExplicitReference.create(
@@ -66,7 +66,7 @@ export class FilterExplicitReference extends FilterReference {
 }
 
 export class FilterImplicitReference extends FilterReference {
-  readonly ownerReference: PackageableElementImplicitReference<Database>;
+  override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Database>,

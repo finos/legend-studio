@@ -80,6 +80,8 @@ import { V1_AnalyticsExecutionContext } from '../../../model/valueSpecification/
 import { V1_BaseExecutionContext } from '../../../model/valueSpecification/raw/executionContext/V1_BaseExecutionContext';
 import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_GraphFetchTree';
 import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr';
+import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
+import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
 
 enum V1_PathElementType {
   PROPERTY_PATH_ELEMENT = 'propertyPath',
@@ -92,6 +94,9 @@ enum V1_ExecutionContextType {
 
 enum V1_ValueSpecificationType {
   PACKAGEABLE_ELEMENT_PTR = 'packageableElementPtr',
+  HACKED_CLASS = 'hackedClass',
+  HACKED_UNIT = 'hackedUnit',
+
   ENUM_VALUE = 'enumValue',
   VARIABLE = 'var',
   LAMBDA = 'lambda',
@@ -108,6 +113,7 @@ enum V1_ValueSpecificationType {
   CSTRICTDATE = 'strictDate',
   CSTRICTTIME = 'strictTime',
   CLATESTDATE = 'latestDate',
+
   AGGREGATE_VALUE = 'aggregateValue',
   PAIR = 'pair',
   RUNTIME_INSTANCE = 'runtimeInstance',
@@ -120,6 +126,7 @@ enum V1_ValueSpecificationType {
   UNIT_INSTANCE = 'unitInstance',
   KEY_EXPRESSION = 'keyExpression',
   PRIMITIVE_TYPE = 'primitiveType',
+
   // TDS
   TDS_AGGREGATE_VALUE = 'tdsAggregateValue',
   TDS_COLUMN_INFORMATION = 'tdsColumnInformation',
@@ -143,6 +150,16 @@ const packageableElementPtrSchema = createModelSchema(
     fullPath: primitive(),
   },
 );
+
+const hackedClassSchema = createModelSchema(V1_HackedClass, {
+  _type: usingConstantValueSchema(V1_ValueSpecificationType.HACKED_CLASS),
+  fullPath: primitive(),
+});
+
+const hackedUnitSchema = createModelSchema(V1_HackedUnit, {
+  _type: usingConstantValueSchema(V1_ValueSpecificationType.HACKED_UNIT),
+  unitType: primitive(),
+});
 
 const variableModelSchema = createModelSchema(V1_Variable, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.VARIABLE),
@@ -485,6 +502,16 @@ class V1_ValueSpecificationSerializer
   ): PlainObject<V1_ValueSpecification> {
     return serialize(packageableElementPtrSchema, valueSpecification);
   }
+  visit_HackedClass(
+    valueSpecification: V1_HackedClass,
+  ): PlainObject<V1_ValueSpecification> {
+    return serialize(hackedClassSchema, valueSpecification);
+  }
+  visit_HackedUnit(
+    valueSpecification: V1_HackedUnit,
+  ): PlainObject<V1_ValueSpecification> {
+    return serialize(hackedUnitSchema, valueSpecification);
+  }
   visit_EnumValue(
     valueSpecification: V1_EnumValue,
   ): PlainObject<V1_ValueSpecification> {
@@ -805,6 +832,10 @@ export function V1_deserializeValueSpecification(
     case V1_ValueSpecificationType.MAPPING_INSTANCE: // deprecated
     case V1_ValueSpecificationType.PACKAGEABLE_ELEMENT_PTR:
       return deserialize(packageableElementPtrSchema, json);
+    case V1_ValueSpecificationType.HACKED_CLASS:
+      return deserialize(hackedClassSchema, json);
+    case V1_ValueSpecificationType.HACKED_UNIT:
+      return deserialize(hackedUnitSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize value specification of type '${json._type}'`,

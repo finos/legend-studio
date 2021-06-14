@@ -24,7 +24,7 @@ import type { V1_PackageableElementVisitor } from '../../../../../model/packagea
 export class V1_FlatData extends V1_Store implements Hashable {
   sections: V1_FlatDataSection[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA,
       super.hashCode,

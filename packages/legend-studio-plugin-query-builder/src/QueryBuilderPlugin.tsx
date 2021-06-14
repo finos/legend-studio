@@ -52,11 +52,11 @@ export class QueryBuilderPlugin extends EditorPlugin {
     pluginManager.registerEditorPlugin(this);
   }
 
-  configure(_configData: object): QueryBuilderPlugin {
+  override configure(_configData: object): QueryBuilderPlugin {
     return this;
   }
 
-  getExtraEditorExtensionComponentRendererConfigurations(): EditorExtensionComponentRendererConfiguration[] {
+  override getExtraEditorExtensionComponentRendererConfigurations(): EditorExtensionComponentRendererConfiguration[] {
     return [
       {
         key: 'query-builder-dialog',
@@ -69,14 +69,14 @@ export class QueryBuilderPlugin extends EditorPlugin {
     ];
   }
 
-  getExtraEditorExtensionStateCreators(): EditorExtensionStateCreator[] {
+  override getExtraEditorExtensionStateCreators(): EditorExtensionStateCreator[] {
     return [
       (editorStore: EditorStore): EditorExtensionState | undefined =>
         new QueryBuilderState(editorStore),
     ];
   }
 
-  getExtraExplorerContextMenuItemRendererConfigurations(): ExplorerContextMenuItemRendererConfiguration[] {
+  override getExtraExplorerContextMenuItemRendererConfigurations(): ExplorerContextMenuItemRendererConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
@@ -104,7 +104,7 @@ export class QueryBuilderPlugin extends EditorPlugin {
     ];
   }
 
-  getExtraLambdaEditorHotkeyConfigurations(): LambdaEditorHotkeyConfiguration[] {
+  override getExtraLambdaEditorHotkeyConfigurations(): LambdaEditorHotkeyConfiguration[] {
     return [
       {
         eventMatcher: (
@@ -135,7 +135,7 @@ export class QueryBuilderPlugin extends EditorPlugin {
     ];
   }
 
-  getExtraMappingExecutionQueryEditorRendererConfigurations(): MappingExecutionQueryEditorRendererConfiguration[] {
+  override getExtraMappingExecutionQueryEditorRendererConfigurations(): MappingExecutionQueryEditorRendererConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
@@ -150,27 +150,39 @@ export class QueryBuilderPlugin extends EditorPlugin {
     ];
   }
 
-  getExtraMappingTestQueryEditorRendererConfigurations(): MappingTestQueryEditorRendererConfiguration[] {
+  override getExtraMappingTestQueryEditorRendererConfigurations(): MappingTestQueryEditorRendererConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
         renderer: function MappingTestQueryBuilderRenderer(
           testState: MappingTestState,
+          isReadOnly: boolean,
         ): React.ReactNode | undefined {
-          return <MappingTestQueryBuilder testState={testState} />;
+          return (
+            <MappingTestQueryBuilder
+              testState={testState}
+              isReadOnly={isReadOnly}
+            />
+          );
         },
       },
     ];
   }
 
-  TEMP__getExtraServiceQueryEditorRendererConfigurations(): TEMP__ServiceQueryEditorRendererConfiguration[] {
+  override TEMP__getExtraServiceQueryEditorRendererConfigurations(): TEMP__ServiceQueryEditorRendererConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
         renderer: function ServiceQueryBuilderRenderer(
           executionState: ServicePureExecutionState,
+          isReadOnly: boolean,
         ): React.ReactNode | undefined {
-          return <ServiceQueryBuilder executionState={executionState} />;
+          return (
+            <ServiceQueryBuilder
+              executionState={executionState}
+              isReadOnly={isReadOnly}
+            />
+          );
         },
       },
     ];

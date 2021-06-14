@@ -96,7 +96,7 @@ export class Diagram extends PackageableElement implements Hashable {
   getClassView = (sourceViewId: string): ClassView | undefined =>
     this.classViews.find((c) => c.id === sourceViewId);
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

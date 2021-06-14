@@ -69,7 +69,7 @@ export class FlatData extends Store implements Hashable {
 
   static createStub = (): FlatData => new FlatData('');
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

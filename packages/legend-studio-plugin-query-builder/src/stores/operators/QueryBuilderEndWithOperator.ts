@@ -109,11 +109,11 @@ export class QueryBuilderEndWithOperator extends QueryBuilderOperator {
 }
 
 export class QueryBuilderNotEndWithOperator extends QueryBuilderEndWithOperator {
-  getLabel(filterConditionState: FilterConditionState): string {
+  override getLabel(filterConditionState: FilterConditionState): string {
     return `doesn't end with`;
   }
 
-  buildFilterConditionExpression(
+  override buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
@@ -122,7 +122,7 @@ export class QueryBuilderNotEndWithOperator extends QueryBuilderEndWithOperator 
     );
   }
 
-  buildFilterConditionState(
+  override buildFilterConditionState(
     filterState: QueryBuilderFilterState,
     expression: SimpleFunctionExpression,
   ): FilterConditionState | undefined {

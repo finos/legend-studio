@@ -30,7 +30,7 @@ export class V1_PureInstanceClassMapping
   propertyMappings: V1_PropertyMapping[] = [];
   filter?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PURE_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,

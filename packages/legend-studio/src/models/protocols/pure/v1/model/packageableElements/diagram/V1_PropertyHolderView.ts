@@ -26,7 +26,7 @@ export class V1_PropertyHolderView
 {
   property!: V1_PropertyPointer;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROPERTY_HOLDER_VIEW,
       super.hashCode,

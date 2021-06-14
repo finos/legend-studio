@@ -29,7 +29,7 @@ export class V1_Unit extends V1_PackageableElement implements Hashable {
   conversionFunction?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   //  superType!: string; // no clear purpose to this so we won't add it for now
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.UNIT,
       this.measure,
@@ -48,7 +48,7 @@ export class V1_Measure extends V1_PackageableElement implements Hashable {
   canonicalUnit?: V1_Unit;
   nonCanonicalUnits: V1_Unit[] = [];
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MEASURE,
       super.hashCode,

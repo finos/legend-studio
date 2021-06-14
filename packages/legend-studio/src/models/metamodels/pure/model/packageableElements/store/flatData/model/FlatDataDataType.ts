@@ -83,19 +83,19 @@ export class FlatDataNumber extends FlatDataDataType implements Hashable {
 }
 
 export class FlatDataInteger extends FlatDataNumber implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_INTEGER]);
   }
 }
 
 export class FlatDataFloat extends FlatDataNumber implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_FLOAT]);
   }
 }
 
 export class FlatDataDecimal extends FlatDataNumber implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_DECIMAL]);
   }
 }
@@ -133,7 +133,7 @@ export class FlatDataDate extends FlatDataDataType implements Hashable {
 }
 
 export class FlatDataDateTime extends FlatDataDate implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_DATE_TIME,
       this.dateFormat ?? '',
@@ -143,7 +143,7 @@ export class FlatDataDateTime extends FlatDataDate implements Hashable {
 }
 
 export class FlatDataStrictDate extends FlatDataDate implements Hashable {
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_STRICT_DATE,
       this.dateFormat ?? '',
@@ -232,7 +232,7 @@ export class RootFlatDataRecordType
     this.owner = owner;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_ROOT_RECORD_TYPE,
       hashArray(this.fields),

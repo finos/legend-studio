@@ -80,7 +80,7 @@ export class TestDatabaseAuthenticationStrategy
     });
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.TEST_DATABASE_AUTHENTICATION_STRATEGY,
     ]);

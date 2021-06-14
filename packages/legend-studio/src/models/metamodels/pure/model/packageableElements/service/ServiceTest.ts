@@ -122,7 +122,7 @@ export class KeyedSingleExecutionTest
     this.key = value;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_KEYED_SINGLE_EXECUTION_TEST,
       this.key,

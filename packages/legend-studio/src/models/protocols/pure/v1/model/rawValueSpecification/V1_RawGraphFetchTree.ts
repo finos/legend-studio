@@ -20,7 +20,7 @@ import { V1_RawValueSpecification } from '../../model/rawValueSpecification/V1_R
 export abstract class V1_RawGraphFetchTree extends V1_RawValueSpecification {
   subTrees: V1_RawGraphFetchTree[] = [];
 
-  abstract accept_RawValueSpecificationVisitor<T>(
+  abstract override accept_RawValueSpecificationVisitor<T>(
     visitor: V1_RawValueSpecificationVisitor<T>,
   ): T;
 }
@@ -29,7 +29,6 @@ export class V1_RawPropertyGraphFetchTree extends V1_RawGraphFetchTree {
   alias?: string;
   parameters: object[] = [];
   property!: string;
-  subTrees: V1_RawGraphFetchTree[] = [];
   subType?: string;
 
   accept_RawValueSpecificationVisitor<T>(
@@ -41,7 +40,6 @@ export class V1_RawPropertyGraphFetchTree extends V1_RawGraphFetchTree {
 
 export class V1_RawRootGraphFetchTree extends V1_RawGraphFetchTree {
   class!: string;
-  subTrees: V1_RawGraphFetchTree[] = [];
 
   accept_RawValueSpecificationVisitor<T>(
     visitor: V1_RawValueSpecificationVisitor<T>,

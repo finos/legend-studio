@@ -105,16 +105,18 @@ const LambdaEditorInner = observer(
     } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const onDidChangeModelContentEventDisposer =
-      useRef<IDisposable | undefined>(undefined);
+    const onDidChangeModelContentEventDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
     const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
     const value = lambdaEditorState.lambdaString;
     const parserError = lambdaEditorState.parserError;
     const compilationError = lambdaEditorState.compilationError;
     const selectTypeLabel = (): void => onExpectedTypeLabelSelect?.();
     const [isExpanded, setExpanded] = useState(Boolean(forceExpansion));
-    const [editor, setEditor] =
-      useState<monacoEditorAPI.IStandaloneCodeEditor | undefined>();
+    const [editor, setEditor] = useState<
+      monacoEditorAPI.IStandaloneCodeEditor | undefined
+    >();
     const textInput = useRef<HTMLDivElement>(null);
 
     const transformLambdaToString = (pretty: boolean): Promise<void> => {

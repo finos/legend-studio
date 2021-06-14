@@ -23,7 +23,10 @@ import { observer } from 'mobx-react-lite';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 
 export const ServiceQueryBuilder = observer(
-  (props: { executionState: ServicePureExecutionState }) => {
+  (props: {
+    executionState: ServicePureExecutionState;
+    isReadOnly: boolean;
+  }) => {
     const { executionState } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
@@ -60,13 +63,14 @@ export const ServiceQueryBuilder = observer(
       );
       executionState.setOpeningQueryEditor(false);
     };
+
     return (
-      <div className="explorer__content--empty">
+      <div className="service-query-builder">
         <button
-          className="btn--dark explorer__content--empty__btn"
+          className="btn--dark service-query-builder__btn"
           onClick={editWithQueryBuilder}
         >
-          Open Query Builder
+          Edit Query
         </button>
       </div>
     );

@@ -60,7 +60,7 @@ export class Unit extends DataType implements Hashable {
     this.conversionFunction = lambda;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.UNIT,
       this.measure.path,
@@ -101,7 +101,7 @@ export class Measure extends Type implements Hashable {
     return type instanceof Unit && type.measure === this;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

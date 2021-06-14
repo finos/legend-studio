@@ -159,6 +159,7 @@ export const PackageableConnectionEditor = observer(() => {
     PackageableConnectionEditorState,
   );
   const isReadOnly = editorState.isReadOnly;
+
   return (
     <ConnectionEditor
       connectionEditorState={editorState.connectionState}

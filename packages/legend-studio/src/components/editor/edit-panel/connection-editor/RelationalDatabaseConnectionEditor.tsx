@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
-  RELATIONAL_DATABASE_TABE,
+  RELATIONAL_DATABASE_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/ConnectionEditorState';
 import type {
   GenerateStoreState,
@@ -150,6 +150,40 @@ export const ConnectionEditor_StringEditor = observer(
           value={displayValue}
           onChange={changeValue}
         />
+      </div>
+    );
+  },
+);
+
+// TODO: consider to move this to shared
+export const ConnectionEditor_TextEditor = observer(
+  (props: {
+    propertyName: string;
+    description?: string;
+    value: string | undefined;
+    isReadOnly: boolean;
+    language: EDITOR_LANGUAGE;
+    update: (value: string | undefined) => void;
+  }) => {
+    const { value, propertyName, description, isReadOnly, language, update } =
+      props;
+
+    return (
+      <div className="panel__content__form__section">
+        <div className="panel__content__form__section__header__label">
+          {capitalize(propertyName)}
+        </div>
+        <div className="panel__content__form__section__header__prompt">
+          {description}
+        </div>
+        <div className="panel__content__form__section__text-editor">
+          <TextInputEditor
+            inputValue={value ?? ''}
+            updateInput={update}
+            isReadOnly={isReadOnly}
+            language={language}
+          />
+        </div>
       </div>
     );
   },
@@ -343,14 +377,17 @@ const LocalH2DatasourceSpecificationEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { sourceSpec, isReadOnly } = props;
+    const SQLValue = sourceSpec.testDataSetupSqls.join('\n');
+    // TODO: support CSV and toggler to go to CSV mode
     return (
       <>
-        <ConnectionEditor_StringEditor
+        <ConnectionEditor_TextEditor
           isReadOnly={isReadOnly}
-          value={sourceSpec.testDataSetupCsv}
-          propertyName={'test data setup csv'}
+          value={SQLValue}
+          propertyName={'test data setup SQL'}
+          language={EDITOR_LANGUAGE.SQL}
           update={(value: string | undefined): void =>
-            sourceSpec.setTestDataSetupCsv(value)
+            sourceSpec.setTestDataSetupSqls(value ? [value] : [])
           }
         />
       </>
@@ -483,6 +520,23 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             sourceSpec.setDatabaseName(value ?? '')
           }
         />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.cloudType}
+          propertyName={'cloud type'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setCloudType(value)
+          }
+        />
+        {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}
+        {/* <ConnectionEditor_BooleanEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.quotedIdentifiersIgnoreCase}
+          propertyName={'cloud type'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setCloudType(value)
+          }
+        /> */}
       </>
     );
   },
@@ -542,7 +596,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={authSpec.publicUserName}
-          propertyName={'pass phrase vault reference'}
+          propertyName={'public user name'}
           update={(value: string | undefined): void =>
             authSpec.setPublicUserName(value ?? '')
           }
@@ -586,8 +640,9 @@ const StorePatternsEditor = observer(
   (props: { generateStoreState: GenerateStoreState; isReadOnly: boolean }) => {
     const { generateStoreState, isReadOnly } = props;
     const patterns = generateStoreState.patterns;
-    const [showEditInput, setShowEditInput] =
-      useState<boolean | StorePattern>(false);
+    const [showEditInput, setShowEditInput] = useState<boolean | StorePattern>(
+      false,
+    );
     const [stateSchemaPattern, setStateSchemaPattern] = useState<string>('');
     const [tableStatePattern, setStateTablePattern] = useState<string>('');
     const showAddItemInput = (): void => setShowEditInput(true);
@@ -940,11 +995,8 @@ const RelationalConnectionStoreEditor = observer(
               hasError={isStoreEmpty}
             />
           </div>
-          <div className="explorer__content--empty">
-            <button
-              className="btn--dark explorer__content--empty__btn"
-              onClick={openGenerateStore}
-            >
+          <div>
+            <button className="btn--dark" onClick={openGenerateStore}>
               Generate Store
             </button>
           </div>
@@ -1248,14 +1300,14 @@ export const RelationalDatabaseConnectionEditor = observer(
     const { connectionValueState, isReadOnly } = props;
     const selectedTab = connectionValueState.selectedTab;
     const changeTab =
-      (tab: RELATIONAL_DATABASE_TABE): (() => void) =>
+      (tab: RELATIONAL_DATABASE_TAB_TYPE): (() => void) =>
       (): void =>
         connectionValueState.setSelectedTab(tab);
     return (
       <>
         <div className="panel__header">
           <div className="uml-element-editor__tabs">
-            {Object.values(RELATIONAL_DATABASE_TABE).map((tab) => (
+            {Object.values(RELATIONAL_DATABASE_TAB_TYPE).map((tab) => (
               <div
                 key={tab}
                 onClick={changeTab(tab)}
@@ -1270,13 +1322,13 @@ export const RelationalDatabaseConnectionEditor = observer(
           </div>
         </div>
         <div className="panel__content">
-          {selectedTab === RELATIONAL_DATABASE_TABE.GENERAL && (
+          {selectedTab === RELATIONAL_DATABASE_TAB_TYPE.GENERAL && (
             <RelationalConnectionGeneralEditor
               connectionValueState={connectionValueState}
               isReadOnly={isReadOnly}
             />
           )}
-          {selectedTab === RELATIONAL_DATABASE_TABE.STORE && (
+          {selectedTab === RELATIONAL_DATABASE_TAB_TYPE.STORE && (
             <RelationalConnectionStoreEditor
               connectionValueState={connectionValueState}
               isReadOnly={isReadOnly}

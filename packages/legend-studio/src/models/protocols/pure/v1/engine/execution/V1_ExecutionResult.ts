@@ -171,7 +171,7 @@ export class V1_TdsExecutionResult extends V1_ExecutionResult {
 
 // Class
 export class V1_ClassExecutionResult extends V1_ExecutionResult {
-  activities: V1_RelationalExecutionActivity[] = [];
+  override activities: V1_RelationalExecutionActivity[] = [];
   objects!: object;
 
   static readonly serialization = new SerializationFactory(

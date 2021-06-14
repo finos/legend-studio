@@ -65,7 +65,7 @@ export class AggregationAwareSetImplementation extends InstanceSetImplementation
     return visitor.visit_AggregationAwareSetImplementation(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.AGGREGATION_AWARE_MAPPING,
       super.hashCode,

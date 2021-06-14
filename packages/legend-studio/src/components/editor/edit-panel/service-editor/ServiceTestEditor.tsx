@@ -55,6 +55,7 @@ import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedEl
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import type { TestContainer } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
+import { flowResult } from 'mobx';
 
 const TestContainerContextMenu = observer(
   (
@@ -257,7 +258,7 @@ export const ServiceTestEditorEditPanel = observer(
     const testExecutionResult =
       selectedTestContainerState.textExecutionTextResult;
     const generateAssertion = applicationStore.guaranteeSafeAction(() =>
-      selectedTestContainerState.generateAssertion(),
+      flowResult(selectedTestContainerState.generateAssertion()),
     );
     // tab
     const [selectedTab, setSelectedTab] = useState(SERVICE_TEST_TAB.RESULT);
@@ -310,7 +311,7 @@ export const ServiceTestEditorEditPanel = observer(
     const showDiff =
       !testState.testSuiteRunError && testResult && !testResult.result;
     const fetchActualResult = applicationStore.guaranteeSafeAction(() =>
-      selectedTestContainerState.fetchActualResultForComparison(),
+      flowResult(selectedTestContainerState.fetchActualResultForComparison()),
     );
 
     useEffect(
@@ -525,7 +526,7 @@ export const ServiceTestAssertEditor = observer(
     const selectedTestContainerState = testState.selectedTestContainerState;
     const addTestContainer = (): void => testState.addNewTestContainer();
     const runAsserts = applicationStore.guaranteeSafeAction(() =>
-      testState.runTestSuite(),
+      flowResult(testState.runTestSuite()),
     );
     // all test run report summary
     const numberOfTests = testState.test.asserts.length;
@@ -655,9 +656,9 @@ export const ServiceTestEditor = observer(
     const updateTestData = (val: string): void => selectedTest.setData(val);
     const generateTestData = (): void => {
       if (!isReadOnly) {
-        selectedTestState
-          .generateTestData()
-          .catch(applicationStore.alertIllegalUnhandledError);
+        flowResult(selectedTestState.generateTestData()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
       }
     };
     return (

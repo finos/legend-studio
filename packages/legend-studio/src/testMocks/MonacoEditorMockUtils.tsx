@@ -75,8 +75,12 @@ export const MockedMonacoEditorAPI = {
       MockedMonacoEditorInstance,
   }),
   setModelMarkers: jest.fn(),
+  defineTheme: jest.fn(),
 };
 
 export const MockedMonacoEditorLanguagesAPI = {
   registerCodeLensProvider: jest.fn(),
+  register: jest.fn(),
+  setLanguageConfiguration: jest.fn(),
+  setMonarchTokensProvider: jest.fn(),
 };

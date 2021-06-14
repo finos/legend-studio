@@ -25,7 +25,7 @@ import { V1_buildSourceInformation } from '../../transformation/pureGraph/to/hel
 import { V1_sourceInformationSerialization } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 
 export class V1_CompilationError extends V1_EngineError {
-  static readonly serialization = new SerializationFactory(
+  static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_CompilationError, {
       errorType: optional(primitive()),
       message: primitive(),
@@ -35,7 +35,7 @@ export class V1_CompilationError extends V1_EngineError {
     }),
   );
 
-  build(): CompilationError {
+  override build(): CompilationError {
     const error = new CompilationError();
     error.message = this.message;
     error.sourceInformation = this.sourceInformation

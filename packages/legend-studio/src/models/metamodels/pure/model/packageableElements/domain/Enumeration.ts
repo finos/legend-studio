@@ -92,7 +92,7 @@ export class Enumeration extends DataType implements Hashable, Stubable {
   }
 
   static createStub = (): Enumeration => new Enumeration('');
-  get isStub(): boolean {
+  override get isStub(): boolean {
     return super.isStub && isStubArray(this.values);
   }
 
@@ -103,7 +103,7 @@ export class Enumeration extends DataType implements Hashable, Stubable {
     return false;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }

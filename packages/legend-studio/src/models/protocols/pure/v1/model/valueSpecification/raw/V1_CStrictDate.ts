@@ -28,7 +28,7 @@ export class V1_CStrictDate extends V1_CDate {
     return visitor.visit_CStrictDate(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.CSTRICT_DATE,
       super.hashCode,

@@ -89,9 +89,14 @@
     background: var(--color-light-blue-450);
   }
 
-  &__header__tab__test svg {
+  &__header__tab__icon--test {
     font-size: 1.3rem;
     color: var(--color-test);
+  }
+
+  &__header__tab__icon--execution {
+    font-size: 1.3rem;
+    color: var(--color-orange-50);
   }
 
   &__header__tab__element__type {

@@ -44,7 +44,7 @@ export class AssociationView extends PropertyHolderView implements Hashable {
     this.association = association;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ASSOCIATION_VIEW,
       super.hashCode,

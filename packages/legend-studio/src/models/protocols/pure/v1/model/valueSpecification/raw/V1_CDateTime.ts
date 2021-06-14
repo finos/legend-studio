@@ -28,7 +28,7 @@ export class V1_CDateTime extends V1_CDate {
     return visitor.visit_CDateTime(this);
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.CDATE_TIME,
       super.hashCode,

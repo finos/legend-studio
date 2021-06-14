@@ -33,13 +33,15 @@ import { SOURCR_ID_LABEL } from '../../../../../models/MetaModelConst';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
+  declare instanceSetImplementationState: RootRelationalInstanceSetImplementationState;
   declare propertyMapping: RelationalPropertyMapping;
 
   constructor(
-    propertyMapping: RelationalPropertyMapping,
     editorStore: EditorStore,
+    instanceSetImplementationState: RootRelationalInstanceSetImplementationState,
+    propertyMapping: RelationalPropertyMapping,
   ) {
-    super('', '', propertyMapping);
+    super(instanceSetImplementationState, propertyMapping, '', '');
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -160,7 +162,7 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
     return propertyMappings
       .map((pm) => {
         if (pm instanceof RelationalPropertyMapping) {
-          return new RelationalPropertyMappingState(pm, this.editorStore);
+          return new RelationalPropertyMappingState(this.editorStore, this, pm);
         }
         return undefined;
       })

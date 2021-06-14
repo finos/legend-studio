@@ -66,7 +66,7 @@ export class ClassView extends PositionedRectangle implements Hashable {
     this.hideTaggedValues = val;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.CLASS_VIEW,
       super.hashCode,

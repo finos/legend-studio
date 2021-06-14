@@ -481,8 +481,9 @@ export class ApplicationStore {
   }
 }
 
-const ApplicationStoreContext =
-  createContext<ApplicationStore | undefined>(undefined);
+const ApplicationStoreContext = createContext<ApplicationStore | undefined>(
+  undefined,
+);
 
 export const ApplicationStoreProvider = ({
   children,

@@ -35,7 +35,7 @@ export class EFJSONSchema_PureProtocolProcessorPlugin extends PureProtocolProces
     pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
-  V1_getExtraSystemModels(): PlainObject<V1_PureModelContextData>[] {
+  override V1_getExtraSystemModels(): PlainObject<V1_PureModelContextData>[] {
     return [V1_SYSTEM_MODELS];
   }
 }

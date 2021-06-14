@@ -34,7 +34,7 @@ export class V1_OperationClassMapping
   parameters: string[] = [];
   operation!: V1_MappingOperationType;
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OPERATION_SET_IMPLEMENTATION,
       this.operation,

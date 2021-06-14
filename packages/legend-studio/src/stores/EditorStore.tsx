@@ -144,7 +144,7 @@ export class EditorStore {
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
   // Aux Panel
   isMaxAuxPanelSizeSet = false;
-  activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.MAPPING_EXECUTE;
+  activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
   maxAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
   auxPanelSize = 0;
   previousAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
@@ -166,7 +166,7 @@ export class EditorStore {
   backdrop = false;
   ignoreNavigationBlocking = false;
   blockGlobalHotkeys = false;
-  isDevToolEnabled = false;
+  isDevToolEnabled = true;
 
   constructor(applicationStore: ApplicationStore) {
     makeAutoObservable(this, {
@@ -1186,28 +1186,16 @@ export class EditorStore {
         PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
         PACKAGEABLE_ELEMENT_TYPE.DATABASE,
       ] as string[]
-    )
-      .concat(
-        this.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSL_EditorPlugin_Extension
-              ).getExtraSupportedElementTypes?.() ?? [],
-          ),
-      )
-      .filter(
-        (type) =>
-          !this.applicationStore.config.options
-            .TEMPORARY__disableNonModelStoreSupports ||
-          !(
-            [
-              PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
-              PACKAGEABLE_ELEMENT_TYPE.DATABASE,
-            ] as string[]
-          ).includes(type),
-      );
+    ).concat(
+      this.applicationStore.pluginManager
+        .getEditorPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_EditorPlugin_Extension
+            ).getExtraSupportedElementTypes?.() ?? [],
+        ),
+    );
   }
 }
 

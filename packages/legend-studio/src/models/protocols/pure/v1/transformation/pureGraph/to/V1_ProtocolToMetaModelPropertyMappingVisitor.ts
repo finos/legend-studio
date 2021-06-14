@@ -75,7 +75,7 @@ import { MappingClass } from '../../../../../../metamodels/pure/model/packageabl
 import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/model/packageableElements/mapping/LocalMappingPropertyInfo';
 import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
-import { V1_rawLambdaBuilderWithResolver } from './helpers/V1_RawLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './helpers/V1_RawPathLambdaResolver';
 import {
   V1_deserializeRelationalOperationElement,
   V1_serializeRelationalOperationElement,
@@ -205,15 +205,10 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
         ? topParent.parent.getClassMapping(protocol.source)
         : undefined,
     );
-
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
-      V1_rawLambdaBuilderWithResolver(
-        this.context,
-        [],
-        protocol.transform.body,
-      ),
+      V1_resolvePathsInRawLambda(this.context, [], protocol.transform.body),
       sourceSetImplementation ?? topParent,
       targetSetImplementation,
       protocol.explodeProperty,
@@ -285,11 +280,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
       this.immediateParent,
       PropertyExplicitReference.create(property),
-      V1_rawLambdaBuilderWithResolver(
-        this.context,
-        [],
-        protocol.transform.body,
-      ),
+      V1_resolvePathsInRawLambda(this.context, [], protocol.transform.body),
       sourceSetImplementation,
       targetSetImplementation,
     );
@@ -465,9 +456,10 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       targetSetImplementation,
     );
     // NOTE: we only need to use the raw form of the operation for the editor
-    // but we need to process it anyway so we can do analytics on table alias map
-    // and to resolve paths (similar to lambda). In order to resolve the path, we
-    // will need to do a full round-trip processing for the operation
+    // but we need to process it anyway so we can:
+    // 1. do analytics on table alias map
+    // 2. and to resolve paths (similar to lambda).
+    // As such, we will need to do a full round-trip processing for the operation
     // See https://github.com/finos/legend-studio/pull/173
     try {
       relationalPropertyMapping.relationalOperation =
@@ -733,7 +725,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       guaranteeNonNullable(sourceSetImplementation),
       targetSetImplementation,
     );
-    xStorePropertyMapping.crossExpression = V1_rawLambdaBuilderWithResolver(
+    xStorePropertyMapping.crossExpression = V1_resolvePathsInRawLambda(
       this.context,
       protocol.crossExpression.parameters,
       protocol.crossExpression.body,

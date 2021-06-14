@@ -37,6 +37,7 @@ export enum SUPPORTED_FUNCTIONS {
   DISTINCT = 'distinct',
   SORT_FUNC = 'sort',
   SERIALIZE = 'serialize',
+  GRAPH_FETCH = 'graphFetch',
   GRAPH_FETCH_CHECKED = 'graphFetchChecked',
   EXISTS = 'exists',
   NOT = 'not',
@@ -67,7 +68,7 @@ export class FunctionExpression extends Expression {
     });
   }
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_FunctionExpression(this);
@@ -77,7 +78,7 @@ export class FunctionExpression extends Expression {
 export class SimpleFunctionExpression extends FunctionExpression {
   func?: PackageableElementReference<Function>;
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_SimpleFunctionExpression(this);
@@ -87,7 +88,7 @@ export class SimpleFunctionExpression extends FunctionExpression {
 export class AbstractPropertyExpression extends FunctionExpression {
   func!: AbstractProperty;
 
-  accept_ValueSpecificationVisitor<T>(
+  override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_AbstractPropertyExpression(this);

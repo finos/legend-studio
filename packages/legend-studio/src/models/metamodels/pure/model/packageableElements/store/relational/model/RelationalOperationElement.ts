@@ -97,7 +97,7 @@ export class DynaFunction extends Operation {
     this.name = name;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_DYNA_FUNC,
       this.name,

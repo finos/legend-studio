@@ -75,6 +75,7 @@ export class V1_SnowflakeDatasourceSpecification
   region!: string;
   warehouseName!: string;
   databaseName!: string;
+  cloudType?: string;
   quotedIdentifiersIgnoreCase?: boolean;
 
   get hashCode(): string {
@@ -84,6 +85,7 @@ export class V1_SnowflakeDatasourceSpecification
       this.region,
       this.warehouseName,
       this.databaseName,
+      this.cloudType ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }

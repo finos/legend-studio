@@ -117,32 +117,6 @@ const setupReactApp = (pluginManager: PluginManager): void => {
     document.head.prepend(stylesheet);
   }
 };
-
-const fetchConfiguration = async (
-  baseUrl: string,
-): Promise<[ApplicationConfig, Record<PropertyKey, object>]> => {
-  const client = new NetworkClient();
-  const logger = new Logger();
-  let configData: ConfigurationData | undefined;
-  try {
-    configData = await client.get<ConfigurationData>(`${baseUrl}config.json`);
-  } catch (error: unknown) {
-    logger.error(CORE_LOG_EVENT.CONFIG_CONFIGURATION_FETCHING_PROBLEM, error);
-  }
-  assertNonNullable(configData, `Can't fetch application configuration`);
-  let versionData;
-  try {
-    versionData = await client.get<VersionData>(`${baseUrl}version.json`);
-  } catch (error: unknown) {
-    logger.error(CORE_LOG_EVENT.CONFIG_VERSION_INFO_FETCHING_PROBLEM, error);
-  }
-  assertNonNullable(versionData, `Can't fetch application version`);
-  return [
-    new ApplicationConfig(configData, versionData, baseUrl),
-    (configData.options ?? {}) as Record<PropertyKey, object>,
-  ];
-};
-
 export class Studio {
   private pluginManager = PluginManager.create();
   private baseUrl!: string;
@@ -157,6 +131,31 @@ export class Studio {
 
   static create(): Studio {
     return new Studio();
+  }
+
+  async fetchConfiguration(
+    baseUrl: string,
+  ): Promise<[ApplicationConfig, Record<PropertyKey, object>]> {
+    const client = new NetworkClient();
+    const logger = new Logger();
+    let configData: ConfigurationData | undefined;
+    try {
+      configData = await client.get<ConfigurationData>(`${baseUrl}config.json`);
+    } catch (error: unknown) {
+      logger.error(CORE_LOG_EVENT.CONFIG_CONFIGURATION_FETCHING_PROBLEM, error);
+    }
+    assertNonNullable(configData, `Can't fetch application configuration`);
+    let versionData;
+    try {
+      versionData = await client.get<VersionData>(`${baseUrl}version.json`);
+    } catch (error: unknown) {
+      logger.error(CORE_LOG_EVENT.CONFIG_VERSION_INFO_FETCHING_PROBLEM, error);
+    }
+    assertNonNullable(versionData, `Can't fetch application version`);
+    return [
+      new ApplicationConfig(configData, versionData, baseUrl),
+      (configData.options ?? {}) as Record<PropertyKey, object>,
+    ];
   }
 
   setup(options: {
@@ -198,7 +197,7 @@ export class Studio {
     const logger = new Logger();
     try {
       // Fetch application config
-      const [appConfig, pluginConfigData] = await fetchConfiguration(
+      const [appConfig, pluginConfigData] = await this.fetchConfiguration(
         this.baseUrl,
       );
 
