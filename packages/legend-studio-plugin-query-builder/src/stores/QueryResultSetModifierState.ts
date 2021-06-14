@@ -16,11 +16,7 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import type { QueryBuilderProjectionColumnState } from './QueryBuilderFetchStructureState';
-import {
-  addUniqueEntry,
-  deleteEntry,
-  guaranteeType,
-} from '@finos/legend-studio-shared';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
 import {
@@ -224,49 +220,10 @@ export class QueryResultSetModifierState {
             lambda.expressionSequence[0] = currentExpression;
             return lambda;
           }
-          // TODO: right now this is considered indicator of a graph-fetch query
-          case SUPPORTED_FUNCTIONS.SERIALIZE: {
-            if (this.limit || options?.overridingLimit) {
-              const integerGenericTypeRef = GenericTypeExplicitReference.create(
-                new GenericType(
-                  this.editorStore.graphState.graph.getPrimitiveType(
-                    PRIMITIVE_TYPE.INTEGER,
-                  ),
-                ),
-              );
-              const limitColumnValue = new PrimitiveInstanceValue(
-                integerGenericTypeRef,
-                multiplicityOne,
-              );
-              limitColumnValue.values = [
-                Math.min(
-                  this.limit ?? Number.MAX_SAFE_INTEGER,
-                  options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
-                ),
-              ];
-              const limitColFuncs = new SimpleFunctionExpression(
-                SUPPORTED_FUNCTIONS.TAKE,
-                multiplicityOne,
-              );
-
-              // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we will put it
-              // right next to `all()`
-              const serializeFunction = func;
-              const graphFetchFunc = guaranteeType(
-                serializeFunction.parametersValues[0],
-                SimpleFunctionExpression,
-              );
-              const getAllFunc = graphFetchFunc.parametersValues[0];
-              limitColFuncs.parametersValues[0] = getAllFunc;
-              limitColFuncs.parametersValues[1] = limitColumnValue;
-              graphFetchFunc.parametersValues = [
-                limitColFuncs,
-                graphFetchFunc.parametersValues[1],
-              ];
-              return lambda;
-            }
-            return lambda;
-          }
+          // NOTE: we could support `take()` function for graph-fetch use case, however
+          // this `take()` would have to go right after `all()` function (which means the `take()`
+          // merely works on the collection), which would not be so helpful. As such, we will
+          // only support the TDS flavor of `take()` for now.
           default:
             return lambda;
         }
