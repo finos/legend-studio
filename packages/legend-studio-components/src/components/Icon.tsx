@@ -24,6 +24,7 @@ export {
   FaEye as EyeIcon,
   FaCaretDown as CaretDownIcon,
   FaFire as FireIcon,
+  FaSave as SaveIcon,
   FaSquare as SquareIcon,
   FaCheckSquare as CheckSquareIcon,
   FaHashtag as HashtagIcon,
