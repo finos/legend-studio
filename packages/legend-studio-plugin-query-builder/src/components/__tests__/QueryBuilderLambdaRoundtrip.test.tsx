@@ -238,12 +238,12 @@ describe(
       }
       // do the check using input and output lambda
       const rawLambda = inputLambda ?? lambda;
-      queryBuilderState.buildWithRawLambda(
+      queryBuilderState.buildStateFromRawLambda(
         new RawLambda(rawLambda.parameters, rawLambda.body),
       );
       const jsonQuery =
         mockedEditorStore.graphState.graphManager.serializeRawValueSpecification(
-          queryBuilderState.getRawLambdaQuery(),
+          queryBuilderState.getQuery(),
         );
       expect([lambda]).toIncludeSameMembers([jsonQuery]);
     });

@@ -106,7 +106,9 @@ test(
     );
     expect(rootNode.mapped).toBe(true);
     // simpleProjection
-    queryBuilderState.initWithRawLambda(getRawLambda(simpleProjection));
+    queryBuilderState.initializeStateWithRawLambda(
+      getRawLambda(simpleProjection),
+    );
     let projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -144,7 +146,7 @@ test(
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
-    queryBuilderState.initWithRawLambda(
+    queryBuilderState.initializeStateWithRawLambda(
       getRawLambda(projectionWithChainedProperty),
     );
     const projectionWithChainedPropertyCols = await waitFor(() =>
@@ -176,7 +178,7 @@ test(
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
     // result set modifiers
     const RESULT_LIMIT = 500;
-    queryBuilderState.initWithRawLambda(
+    queryBuilderState.initializeStateWithRawLambda(
       getRawLambda(projectionWithResultSetModifiers),
     );
     projectionCols = await waitFor(() =>
@@ -248,7 +250,7 @@ test(
     fireEvent.click(getByText(modal, 'Close'));
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initWithRawLambda(
+    queryBuilderState.initializeStateWithRawLambda(
       getRawLambda(getAllWithOneConditionFilter),
     );
     let filterValue = 'testFirstName';
@@ -270,7 +272,9 @@ test(
     // filter with group condition
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initWithRawLambda(getRawLambda(getAllWithGroupedFilter));
+    queryBuilderState.initializeStateWithRawLambda(
+      getRawLambda(getAllWithGroupedFilter),
+    );
     filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
@@ -299,7 +303,7 @@ test(
     // projection column with derived property
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initWithRawLambda(
+    queryBuilderState.initializeStateWithRawLambda(
       getRawLambda(projectWithDerivedProperty),
     );
     projectionCols = await waitFor(() =>
@@ -359,11 +363,15 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'NPerson'));
     await waitFor(() => getByText(queryBuilderSetup, 'MyMapping'));
     // simple graph fetch
-    queryBuilderState.initWithRawLambda(getRawLambda(simpleGraphFetch));
+    queryBuilderState.initializeStateWithRawLambda(
+      getRawLambda(simpleGraphFetch),
+    );
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
-    queryBuilderState.initWithRawLambda(getRawLambda(firmPersonGraphFetch));
+    queryBuilderState.initializeStateWithRawLambda(
+      getRawLambda(firmPersonGraphFetch),
+    );
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
@@ -412,17 +420,19 @@ test(
     // test various lambdas
     // Unable to update query builder with grammar due to: Function testUnSupported currently not supported
     expect(() =>
-      queryBuilderState.buildWithRawLambda(
+      queryBuilderState.buildStateFromRawLambda(
         getRawLambda(unSupportedGetAllWithOneConditionFilter),
       ),
     ).toThrowError(`Can't build filter expression function`);
     expect(() =>
-      queryBuilderState.buildWithRawLambda(getRawLambda(errorInGraphLambda)),
+      queryBuilderState.buildStateFromRawLambda(
+        getRawLambda(errorInGraphLambda),
+      ),
     ).toThrowError(
       "Can't find type 'model::pure::tests::model::simple::NotFound'",
     );
     expect(() =>
-      queryBuilderState.buildWithRawLambda(
+      queryBuilderState.buildStateFromRawLambda(
         getRawLambda(unSupportedFunctionName),
       ),
     ).toThrowError(`Can't build function 'testUnSupported'`);

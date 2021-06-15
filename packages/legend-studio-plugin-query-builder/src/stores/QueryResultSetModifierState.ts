@@ -59,6 +59,7 @@ export class SortColumnState {
   setColumnState(val: QueryBuilderProjectionColumnState): void {
     this.columnState = val;
   }
+
   setSortType(val: COLUMN_SORT_TYPE): void {
     this.sortType = val;
   }
@@ -116,18 +117,23 @@ export class QueryResultSetModifierState {
   setModal(modal: boolean): void {
     this.modal = modal;
   }
+
   setLimit(val: number | undefined): void {
     this.limit = val === undefined || val <= 0 ? undefined : val;
   }
+
   toggleDistinct(): void {
     this.distinct = !this.distinct;
   }
+
   deleteSortColumn(val: SortColumnState): void {
     deleteEntry(this.sortColumns, val);
   }
+
   addSortColumn(val: SortColumnState): void {
     addUniqueEntry(this.sortColumns, val);
   }
+
   updateSortColumns(): void {
     this.sortColumns = this.sortColumns.filter((e) =>
       this.queryBuilderState.fetchStructureState.projectionColumns.includes(

@@ -164,7 +164,7 @@ export class QueryTextEditorState extends LambdaEditorState {
   });
 
   openModal(mode: QueryTextEditorMode): void {
-    const rawLambda = this.queryBuilderState.getRawLambdaQuery();
+    const rawLambda = this.queryBuilderState.getQuery();
     if (mode === QueryTextEditorMode.TEXT) {
       this.setQueryRawLambdaState(new QueryRawLambdaState(rawLambda));
     }
@@ -192,7 +192,9 @@ export class QueryTextEditorState extends LambdaEditorState {
           `Can't parse query. Please fix error before closing: ${this.parserError.message}`,
         );
       } else {
-        this.queryBuilderState.initWithRawLambda(this.rawLambdaState.lambda);
+        this.queryBuilderState.initializeStateWithRawLambda(
+          this.rawLambdaState.lambda,
+        );
         this.setMode(undefined);
       }
       return;

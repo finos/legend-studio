@@ -165,7 +165,7 @@ export class QueryBuilderSetupState {
   ) {
     this.setMapping(mapping);
     this.setRuntime(runtime);
-    this.queryBuilderState.initWithRawLambda(func);
+    this.queryBuilderState.initializeStateWithRawLambda(func);
     this.setOnSaveQuery(onSave);
     yield this.queryBuilderState.setOpenQueryBuilder(true, {
       disableCompile: disableCompile,

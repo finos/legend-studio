@@ -23,18 +23,18 @@ import {
   isNumber,
   isString,
 } from '@finos/legend-studio-shared';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from '../QueryBuilderState';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
-} from './QueryResultSetModifierState';
-import type { QueryBuilderFilterState } from './QueryBuilderFilterState';
+} from '../QueryResultSetModifierState';
+import type { QueryBuilderFilterState } from '../QueryBuilderFilterState';
 import {
   QueryBuilderFilterTreeGroupNodeData,
   QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QueryBuilderFilterTreeConditionNodeData,
-} from './QueryBuilderFilterState';
-import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState';
+} from '../QueryBuilderFilterState';
+import { FETCH_STRUCTURE_MODE } from '../QueryBuilderFetchStructureState';
 import type {
   AlloySerializationConfigInstanceValue,
   EnumValueInstanceValue,
@@ -244,7 +244,7 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          paramOne.functionName === SUPPORTED_FUNCTIONS.PROJECT,
+          paramOne.functionName === SUPPORTED_FUNCTIONS.GET_ALL,
           'Only support project() immediately following getAll()',
         );
 

@@ -122,7 +122,7 @@ export class QueryBuilderResultState {
         'Mapping is required to execute query',
       );
       const runtime = this.queryBuilderState.querySetupState.runtime;
-      const query = this.queryBuilderState.getRawLambdaQuery();
+      const query = this.queryBuilderState.getQuery();
       const result =
         (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
           this.editorStore.graphState.graph,
@@ -154,7 +154,7 @@ export class QueryBuilderResultState {
         'Mapping is required to execute query',
       );
       const runtime = this.queryBuilderState.querySetupState.runtime;
-      const query = this.queryBuilderState.getRawLambdaQuery();
+      const query = this.queryBuilderState.getQuery();
       const service = new Service(serviceName);
       service.initNewService();
       service.setExecution(

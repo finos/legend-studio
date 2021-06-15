@@ -33,7 +33,7 @@ import {
 import { QueryBuilderSetupState } from './QueryBuilderSetupState';
 import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
-import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
+import { QueryBuilderLambdaProcessor } from './builders/QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type { Class, EditorStore, Multiplicity } from '@finos/legend-studio';
 import {
@@ -154,7 +154,7 @@ export class QueryBuilderState extends EditorExtensionState {
       setOpenQueryBuilder: flow,
       reset: action,
       resetData: action,
-      buildWithRawLambda: action,
+      buildStateFromRawLambda: action,
       saveQuery: action,
     });
 
@@ -182,7 +182,7 @@ export class QueryBuilderState extends EditorExtensionState {
     );
   }
 
-  getRawLambdaQuery(): RawLambda {
+  getQuery(): RawLambda {
     return this.isQuerySupported()
       ? this.buildRawLambdaFromLambdaFunction(this.buildLambdaFunction())
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
@@ -416,19 +416,19 @@ export class QueryBuilderState extends EditorExtensionState {
     return filterExpression;
   }
 
-  initWithRawLambda(
+  initializeStateWithRawLambda(
     rawLambda: RawLambda,
     options?: { notifyError: boolean },
   ): void {
     try {
-      this.buildWithRawLambda(rawLambda);
+      this.buildStateFromRawLambda(rawLambda);
     } catch (error: unknown) {
       this.querySetupState.setClass(undefined, true);
       this.resetData();
       assertErrorThrown(error);
       if (options?.notifyError) {
         this.editorStore.applicationStore.notifyError(
-          `Unable to build query builder: ${error.message}`,
+          `Unable to initialize query builder: ${error.message}`,
         );
       }
       this.queryUnsupportedState.setLambdaError(error);
@@ -437,34 +437,32 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   /**
-   * Using the rawLambda, this query builder is rebuilt
+   * Process the raw lambda, and build the query builder state.
+   *
    * @throws error if there is an issue building the compiled lambda or rebuilding the state.
-   * consumers of function should handle the errors
-   * @param rawLambda
+   * consumers of function should handle the errors.
    */
-  buildWithRawLambda(rawLambda: RawLambda): void {
+  buildStateFromRawLambda(rawLambda: RawLambda): void {
     this.resetData();
     if (!rawLambda.isStub) {
-      const compiledLambda = this.buildLambdaFunctionFromRawLambda(rawLambda);
+      const valueSpec =
+        this.editorStore.graphState.graphManager.buildValueSpecification(
+          rawLambda,
+          this.editorStore.graphState.graph,
+        );
+      const compiledValueSpecification = guaranteeType(
+        valueSpec,
+        LambdaFunctionInstanceValue,
+      );
+      const compiledLambda = guaranteeNonNullable(
+        compiledValueSpecification.values[0],
+      );
       compiledLambda.expressionSequence.map((e) =>
         e.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(this, undefined),
         ),
       );
     }
-  }
-
-  buildLambdaFunctionFromRawLambda(rawLambda: RawLambda): LambdaFunction {
-    const valueSpec =
-      this.editorStore.graphState.graphManager.buildValueSpecification(
-        rawLambda,
-        this.editorStore.graphState.graph,
-      );
-    const compiledValueSpecification = guaranteeType(
-      valueSpec,
-      LambdaFunctionInstanceValue,
-    );
-    return guaranteeNonNullable(compiledValueSpecification.values[0]);
   }
 
   buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
@@ -488,7 +486,7 @@ export class QueryBuilderState extends EditorExtensionState {
     const onQuerySave = this.querySetupState.onSave;
     if (onQuerySave) {
       try {
-        const rawLambda = this.getRawLambdaQuery();
+        const rawLambda = this.getQuery();
         await onQuerySave(rawLambda);
       } catch (error: unknown) {
         assertErrorThrown(error);
