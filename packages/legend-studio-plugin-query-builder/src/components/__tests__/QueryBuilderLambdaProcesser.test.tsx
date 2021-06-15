@@ -106,9 +106,7 @@ test(
     );
     expect(rootNode.mapped).toBe(true);
     // simpleProjection
-    queryBuilderState.initializeStateWithRawLambda(
-      getRawLambda(simpleProjection),
-    );
+    queryBuilderState.init(getRawLambda(simpleProjection));
     let projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -146,9 +144,7 @@ test(
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
-    queryBuilderState.initializeStateWithRawLambda(
-      getRawLambda(projectionWithChainedProperty),
-    );
+    queryBuilderState.init(getRawLambda(projectionWithChainedProperty));
     const projectionWithChainedPropertyCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -178,9 +174,7 @@ test(
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
     // result set modifiers
     const RESULT_LIMIT = 500;
-    queryBuilderState.initializeStateWithRawLambda(
-      getRawLambda(projectionWithResultSetModifiers),
-    );
+    queryBuilderState.init(getRawLambda(projectionWithResultSetModifiers));
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -250,9 +244,7 @@ test(
     fireEvent.click(getByText(modal, 'Close'));
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initializeStateWithRawLambda(
-      getRawLambda(getAllWithOneConditionFilter),
-    );
+    queryBuilderState.init(getRawLambda(getAllWithOneConditionFilter));
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
@@ -272,9 +264,7 @@ test(
     // filter with group condition
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initializeStateWithRawLambda(
-      getRawLambda(getAllWithGroupedFilter),
-    );
+    queryBuilderState.init(getRawLambda(getAllWithGroupedFilter));
     filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
@@ -303,9 +293,7 @@ test(
     // projection column with derived property
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initializeStateWithRawLambda(
-      getRawLambda(projectWithDerivedProperty),
-    );
+    queryBuilderState.init(getRawLambda(projectWithDerivedProperty));
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -363,15 +351,11 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'NPerson'));
     await waitFor(() => getByText(queryBuilderSetup, 'MyMapping'));
     // simple graph fetch
-    queryBuilderState.initializeStateWithRawLambda(
-      getRawLambda(simpleGraphFetch),
-    );
+    queryBuilderState.init(getRawLambda(simpleGraphFetch));
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
-    queryBuilderState.initializeStateWithRawLambda(
-      getRawLambda(firmPersonGraphFetch),
-    );
+    queryBuilderState.init(getRawLambda(firmPersonGraphFetch));
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );

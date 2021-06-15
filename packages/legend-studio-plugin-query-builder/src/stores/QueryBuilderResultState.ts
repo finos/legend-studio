@@ -31,6 +31,7 @@ import {
   PureSingleExecution,
   Service,
 } from '@finos/legend-studio';
+import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -80,7 +81,7 @@ export class QueryBuilderResultState {
       const runtime = this.queryBuilderState.querySetupState.runtime;
       let query: RawLambda;
       if (this.queryBuilderState.isQuerySupported()) {
-        const lambdaFunction = this.queryBuilderState.buildLambdaFunction({
+        const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
           isBuildingExecutionQuery: true,
         });
         query =

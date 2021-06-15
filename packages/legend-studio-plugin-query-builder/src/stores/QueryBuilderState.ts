@@ -33,33 +33,17 @@ import {
 import { QueryBuilderSetupState } from './QueryBuilderSetupState';
 import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
-import { QueryBuilderLambdaProcessor } from './builders/QueryBuilderLambdaProcessor';
+import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type { Class, EditorStore, Multiplicity } from '@finos/legend-studio';
-import {
-  InstanceValue,
-  PackageableElementExplicitReference,
-} from '@finos/legend-studio';
+import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
 import {
   EditorExtensionState,
-  CollectionInstanceValue,
   CompilationError,
-  CORE_ELEMENT_PATH,
   CORE_LOG_EVENT,
-  FunctionType,
-  GenericType,
-  GenericTypeExplicitReference,
   getElementCoordinates,
-  LambdaFunction,
   LambdaFunctionInstanceValue,
-  PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
   RawLambda,
-  RootGraphFetchTreeInstanceValue,
-  SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
   TYPICAL_MULTIPLICITY_TYPE,
-  VariableExpression,
 } from '@finos/legend-studio';
 import {
   QueryBuilderEqualOperator,
@@ -89,24 +73,7 @@ import {
   QueryBuilderInOperator,
   QueryBuilderNotInOperator,
 } from './operators/QueryBuilderInOperator';
-import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
-
-const buildGetAllFunction = (
-  _class: Class,
-  multiplicity: Multiplicity,
-): SimpleFunctionExpression => {
-  const _func = new SimpleFunctionExpression(
-    SUPPORTED_FUNCTIONS.GET_ALL,
-    multiplicity,
-  );
-  const classInstance = new InstanceValue(
-    multiplicity,
-    GenericTypeExplicitReference.create(new GenericType(_class)),
-  );
-  classInstance.values[0] = PackageableElementExplicitReference.create(_class);
-  _func.parametersValues.push(classInstance);
-  return _func;
-};
+import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 
 export class QueryBuilderState extends EditorExtensionState {
   editorStore: EditorStore;
@@ -184,7 +151,7 @@ export class QueryBuilderState extends EditorExtensionState {
 
   getQuery(): RawLambda {
     return this.isQuerySupported()
-      ? this.buildRawLambdaFromLambdaFunction(this.buildLambdaFunction())
+      ? this.buildRawLambdaFromLambdaFunction(buildLambdaFunction(this))
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
@@ -270,158 +237,7 @@ export class QueryBuilderState extends EditorExtensionState {
     this.querySetupState = val;
   }
 
-  buildLambdaFunction(options?: {
-    /**
-     * Set this to `true` when we construct query for execution within the app.
-     * This will make the lambda function building process overrides several query values, such as the row limit.
-     */
-    isBuildingExecutionQuery?: boolean;
-  }): LambdaFunction {
-    const _class = guaranteeNonNullable(
-      this.querySetupState._class,
-      'Class is required to execute query',
-    );
-    const multiplicityOne =
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
-    const stringType = this.editorStore.graphState.graph.getPrimitiveType(
-      PRIMITIVE_TYPE.STRING,
-    );
-    const typeAny = this.editorStore.graphState.graph.getClass(
-      CORE_ELEMENT_PATH.ANY,
-    );
-    const lambdaFunction = new LambdaFunction(
-      new FunctionType(typeAny, multiplicityOne),
-    );
-    // build base `getAll` function
-    const _getAllFunc = buildGetAllFunction(_class, multiplicityOne);
-    lambdaFunction.expressionSequence[0] = _getAllFunc;
-    const filterFunction = this.buildFilterExpression(_getAllFunc);
-    if (filterFunction) {
-      lambdaFunction.expressionSequence[0] = filterFunction;
-    }
-    // add `fetch` function
-    if (
-      this.fetchStructureState.isProjectionMode() &&
-      this.fetchStructureState.projectionState.columns.length
-    ) {
-      const projectFunction = new SimpleFunctionExpression(
-        SUPPORTED_FUNCTIONS.PROJECT,
-        multiplicityOne,
-      );
-      const colLambdas = new CollectionInstanceValue(multiplicityOne);
-      const colNames = new CollectionInstanceValue(multiplicityOne);
-      this.fetchStructureState.projectionState.columns.forEach((projection) => {
-        const lambdaVariable = new VariableExpression(
-          projection.lambdaVariableName,
-          this.editorStore.graphState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
-        );
-        // Add column name
-        const colName = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(stringType)),
-          multiplicityOne,
-        );
-        colName.values.push(projection.columnName);
-        colNames.values.push(colName);
-        // Add column projection
-        const colLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-        const colLambdaFunctionType = new FunctionType(
-          typeAny,
-          multiplicityOne,
-        );
-        colLambdaFunctionType.parameters.push(lambdaVariable);
-        const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-        colLambdaFunction.expressionSequence.push(
-          projection.propertyEditorState.propertyExpression,
-        );
-        colLambda.values.push(colLambdaFunction);
-        colLambdas.values.push(colLambda);
-      });
-      const expression = lambdaFunction.expressionSequence[0];
-      projectFunction.parametersValues = [expression, colLambdas, colNames];
-      lambdaFunction.expressionSequence[0] = projectFunction;
-    } else if (
-      this.fetchStructureState.isGraphFetchMode() &&
-      this.fetchStructureState.graphFetchTreeState.treeData &&
-      !isGraphFetchTreeDataEmpty(
-        this.fetchStructureState.graphFetchTreeState.treeData,
-      )
-    ) {
-      const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
-        multiplicityOne,
-      );
-      graphFetchInstance.values = [
-        this.fetchStructureState.graphFetchTreeState.treeData.tree,
-      ];
-      const serializeFunction = new SimpleFunctionExpression(
-        SUPPORTED_FUNCTIONS.SERIALIZE,
-        multiplicityOne,
-      );
-      const graphFetchFunc = new SimpleFunctionExpression(
-        this.fetchStructureState.graphFetchTreeState.isChecked
-          ? SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED
-          : SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-        multiplicityOne,
-      );
-      const expression = lambdaFunction.expressionSequence[0];
-      graphFetchFunc.parametersValues = [expression, graphFetchInstance];
-      serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
-      lambdaFunction.expressionSequence[0] = serializeFunction;
-    }
-    // apply result set modifier options
-    this.resultSetModifierState.processModifiersOnLambda(lambdaFunction, {
-      overridingLimit: options?.isBuildingExecutionQuery
-        ? this.resultState.previewLimit
-        : undefined,
-    });
-    return lambdaFunction;
-  }
-
-  buildFilterExpression(
-    getAllFunc: SimpleFunctionExpression,
-  ): SimpleFunctionExpression | undefined {
-    const lambdaVariable = new VariableExpression(
-      this.filterState.lambdaVariableName,
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      ),
-    );
-    const parameters = this.filterState.getParameterValues();
-    if (!parameters) {
-      return undefined;
-    }
-    const typeAny = this.editorStore.graphState.graph.getClass(
-      CORE_ELEMENT_PATH.ANY,
-    );
-    const multiplicityOne =
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
-    // main filter expression
-    const filterExpression = new SimpleFunctionExpression(
-      SUPPORTED_FUNCTIONS.FILTER,
-      multiplicityOne,
-    );
-    // param [0]
-    filterExpression.parametersValues.push(getAllFunc);
-    // param [1]
-    const filterLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-    const filterLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-    filterLambdaFunctionType.parameters.push(lambdaVariable);
-    const colLambdaFunction = new LambdaFunction(filterLambdaFunctionType);
-    colLambdaFunction.expressionSequence = parameters;
-    filterLambda.values.push(colLambdaFunction);
-    filterExpression.parametersValues.push(filterLambda);
-    return filterExpression;
-  }
-
-  initializeStateWithRawLambda(
-    rawLambda: RawLambda,
-    options?: { notifyError: boolean },
-  ): void {
+  init(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
     try {
       this.buildStateFromRawLambda(rawLambda);
     } catch (error: unknown) {

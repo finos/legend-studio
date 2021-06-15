@@ -23,18 +23,18 @@ import {
   isNumber,
   isString,
 } from '@finos/legend-studio-shared';
-import type { QueryBuilderState } from '../QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
-} from '../QueryResultSetModifierState';
-import type { QueryBuilderFilterState } from '../QueryBuilderFilterState';
+} from './QueryResultSetModifierState';
+import type { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import {
   QueryBuilderFilterTreeGroupNodeData,
   QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QueryBuilderFilterTreeConditionNodeData,
-} from '../QueryBuilderFilterState';
-import { FETCH_STRUCTURE_MODE } from '../QueryBuilderFetchStructureState';
+} from './QueryBuilderFilterState';
+import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState';
 import type {
   AlloySerializationConfigInstanceValue,
   EnumValueInstanceValue,
@@ -65,7 +65,7 @@ import {
   VariableExpression,
   InstanceValue,
 } from '@finos/legend-studio';
-import { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
+import { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
