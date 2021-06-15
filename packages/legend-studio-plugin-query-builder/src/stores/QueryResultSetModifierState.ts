@@ -15,7 +15,7 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import type { QueryBuilderProjectionColumnState } from './QueryBuilderFetchStructureState';
+import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
@@ -136,7 +136,7 @@ export class QueryResultSetModifierState {
 
   updateSortColumns(): void {
     this.sortColumns = this.sortColumns.filter((e) =>
-      this.queryBuilderState.fetchStructureState.projectionColumns.includes(
+      this.queryBuilderState.fetchStructureState.projectionState.columns.includes(
         e.columnState,
       ),
     );

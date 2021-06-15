@@ -70,6 +70,7 @@ import {
   CheckIcon,
 } from '@finos/legend-studio';
 import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil';
+import { QueryBuilderProjectionColumnState } from '../stores/QueryBuilderProjectionState';
 
 const QueryBuilderExplorerPropertyDragLayer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -138,7 +139,15 @@ const QueryBuilderExplorerContextMenu = observer(
             node,
           );
         } else if (queryBuilderState.fetchStructureState.isProjectionMode()) {
-          queryBuilderState.fetchStructureState.addProjectionColumn(node);
+          const projectionState =
+            queryBuilderState.fetchStructureState.projectionState;
+          projectionState.addColumn(
+            new QueryBuilderProjectionColumnState(
+              projectionState.editorStore,
+              projectionState,
+              node,
+            ),
+          );
         }
       }
     };
@@ -181,11 +190,17 @@ const QueryBuilderExplorerContextMenu = observer(
             );
           }
         } else if (queryBuilderState.fetchStructureState.isProjectionMode()) {
-          nodesToAdd.forEach((nodeToAdd) =>
-            queryBuilderState.fetchStructureState.addProjectionColumn(
-              nodeToAdd,
-            ),
-          );
+          nodesToAdd.forEach((nodeToAdd) => {
+            const projectionState =
+              queryBuilderState.fetchStructureState.projectionState;
+            projectionState.addColumn(
+              new QueryBuilderProjectionColumnState(
+                projectionState.editorStore,
+                projectionState,
+                nodeToAdd,
+              ),
+            );
+          });
         }
       }
     };

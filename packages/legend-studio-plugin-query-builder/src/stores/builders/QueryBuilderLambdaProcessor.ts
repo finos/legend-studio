@@ -65,6 +65,7 @@ import {
   VariableExpression,
   InstanceValue,
 } from '@finos/legend-studio';
+import { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -279,7 +280,7 @@ export class QueryBuilderLambdaProcessor
             `Expecting different specification for function ${SUPPORTED_FUNCTIONS.PROJECT}`,
           );
         }
-        this.queryBuilderState.fetchStructureState.projectionColumns.forEach(
+        this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
           (e, idx) => e.setColumnName(aliases[idx]),
         );
         return;
@@ -420,7 +421,7 @@ export class QueryBuilderLambdaProcessor
           valueSpecification.parametersValues[0],
         );
         const queryBuilderProjectionColumnState =
-          this.queryBuilderState.fetchStructureState.projectionColumns.find(
+          this.queryBuilderState.fetchStructureState.projectionState.columns.find(
             (e) => e.columnName === sortColumnName,
           );
         if (queryBuilderProjectionColumnState) {
@@ -558,11 +559,16 @@ export class QueryBuilderLambdaProcessor
     if (
       this.parentSimpleFunction?.functionName === SUPPORTED_FUNCTIONS.PROJECT
     ) {
-      const columnState =
-        this.queryBuilderState.fetchStructureState.addPropertyExpressionProjectionColumn(
-          valueSpecification,
-          true,
-        );
+      const projectionState =
+        this.queryBuilderState.fetchStructureState.projectionState;
+      const columnState = new QueryBuilderProjectionColumnState(
+        projectionState.editorStore,
+        projectionState,
+        valueSpecification,
+        true,
+      );
+      projectionState.addColumn(columnState);
+
       if (
         valueSpecification.parametersValues[0] instanceof VariableExpression
       ) {

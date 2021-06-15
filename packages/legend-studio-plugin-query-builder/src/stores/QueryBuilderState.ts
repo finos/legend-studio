@@ -304,7 +304,7 @@ export class QueryBuilderState extends EditorExtensionState {
     // add `fetch` function
     if (
       this.fetchStructureState.isProjectionMode() &&
-      this.fetchStructureState.projectionColumns.length
+      this.fetchStructureState.projectionState.columns.length
     ) {
       const projectFunction = new SimpleFunctionExpression(
         SUPPORTED_FUNCTIONS.PROJECT,
@@ -312,7 +312,7 @@ export class QueryBuilderState extends EditorExtensionState {
       );
       const colLambdas = new CollectionInstanceValue(multiplicityOne);
       const colNames = new CollectionInstanceValue(multiplicityOne);
-      this.fetchStructureState.projectionColumns.forEach((projection) => {
+      this.fetchStructureState.projectionState.columns.forEach((projection) => {
         const lambdaVariable = new VariableExpression(
           projection.lambdaVariableName,
           this.editorStore.graphState.graph.getTypicalMultiplicity(

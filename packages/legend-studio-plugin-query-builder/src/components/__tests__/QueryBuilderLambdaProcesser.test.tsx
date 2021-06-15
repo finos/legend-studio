@@ -124,11 +124,11 @@ test(
         projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
       ),
     ).not.toBeNull();
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      2,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(2);
     let fistNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === FIRST_NAME_ALIAS,
       ),
     );
@@ -136,7 +136,7 @@ test(
       fistNameCol.propertyEditorState.propertyExpression.func;
     expect(firstNameProperty).toBe(_personClass.getProperty('firstName'));
     const lastNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === LAST_NAME_ALIAS,
       ),
     );
@@ -159,11 +159,11 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      1,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(1);
     let legalNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -201,20 +201,20 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      3,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(3);
     const resultSetModifierState = queryBuilderState.resultSetModifierState;
     expect(resultSetModifierState.limit).toBe(RESULT_LIMIT);
     expect(resultSetModifierState.distinct).toBe(true);
     expect(resultSetModifierState.sortColumns).toHaveLength(2);
     fistNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === FIRST_NAME_ALIAS,
       ),
     );
     legalNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -266,9 +266,9 @@ test(
     await waitFor(() => getByText(filterPanel, 'is'));
     const filterState = queryBuilderState.filterState;
     expect(filterState.nodes.size).toBe(1);
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      0,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(0);
     // filter with group condition
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
@@ -297,9 +297,9 @@ test(
     ).not.toBeNull();
     await waitFor(() => getByText(filterPanel, 'Last Name'));
     expect(queryBuilderState.filterState.nodes.size).toBe(3);
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      0,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(0);
     // projection column with derived property
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
@@ -315,9 +315,9 @@ test(
       ),
     ).not.toBeNull();
     await waitFor(() => getByText(projectionCols, 'Name With Title'));
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      1,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(1);
     fireEvent.click(
       getByTitle(projectionCols, 'Set Derived Property Argument(s)...'),
     );
