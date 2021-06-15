@@ -1,5 +1,12 @@
 # @finos/legend-studio-components
 
+## 0.0.19
+
+### Patch Changes
+
+- Updated dependencies [[`ab15166`](https://github.com/finos/legend-studio/commit/ab15166f9f60a51d48e2c02b45a937f1dcb8f642)]:
+  - @finos/legend-studio-shared@0.0.15
+
 ## 0.0.18
 
 ## 0.0.17
