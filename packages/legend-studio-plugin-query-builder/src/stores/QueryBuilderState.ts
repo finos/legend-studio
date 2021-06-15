@@ -217,8 +217,10 @@ export class QueryBuilderState extends EditorExtensionState {
       if (!this.editorStore.graphState.hasCompilationError) {
         this.openQueryBuilder = val;
       }
+      this.editorStore.setBlockGlobalHotkeys(true);
     } else {
       this.openQueryBuilder = val;
+      this.editorStore.setBlockGlobalHotkeys(false);
     }
   }
 
