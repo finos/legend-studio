@@ -24,7 +24,7 @@ import {
   getAllWithOneConditionFilter,
   projectWithDerivedProperty,
   fullComplexProjectionQuery,
-  firmPersonGraphFetch,
+  complexGraphFetch,
   simpleGraphFetch,
 } from './QueryBuilder_TestData';
 import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
@@ -131,7 +131,7 @@ const cases: RoundtripTestCase[] = [
   ],
   // graph fetch
   ['Simple graph fetch', graphFetchCtx, simpleGraphFetch, undefined],
-  ['Complex graph fetch', graphFetchCtx, firmPersonGraphFetch, undefined],
+  ['Complex graph fetch', graphFetchCtx, complexGraphFetch, undefined],
   // filter
   [
     'Simple filter',

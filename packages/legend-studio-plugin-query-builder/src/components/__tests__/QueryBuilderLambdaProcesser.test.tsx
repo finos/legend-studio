@@ -22,11 +22,8 @@ import {
   projectionWithResultSetModifiers,
   getAllWithGroupedFilter,
   getAllWithOneConditionFilter,
-  unSupportedGetAllWithOneConditionFilter,
-  errorInGraphLambda,
-  unSupportedFunctionName,
   projectWithDerivedProperty,
-  firmPersonGraphFetch,
+  complexGraphFetch,
   simpleGraphFetch,
 } from './QueryBuilder_TestData';
 import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
@@ -105,6 +102,7 @@ test(
       rootNode.setImpl,
     );
     expect(rootNode.mapped).toBe(true);
+
     // simpleProjection
     queryBuilderState.init(getRawLambda(simpleProjection));
     let projectionCols = await waitFor(() =>
@@ -142,6 +140,7 @@ test(
       lastNameCol.propertyEditorState.propertyExpression.func;
     expect(lastNameProperty).toBe(_personClass.getProperty('lastName'));
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
     queryBuilderState.init(getRawLambda(projectionWithChainedProperty));
@@ -172,6 +171,7 @@ test(
     );
     expect(_firmPropertyExpression.func).toBe(_personClass.getProperty('firm'));
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+
     // result set modifiers
     const RESULT_LIMIT = 500;
     queryBuilderState.init(getRawLambda(projectionWithResultSetModifiers));
@@ -242,6 +242,7 @@ test(
       ),
     ).not.toBeNull();
     fireEvent.click(getByText(modal, 'Close'));
+
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.init(getRawLambda(getAllWithOneConditionFilter));
@@ -261,6 +262,7 @@ test(
     expect(
       queryBuilderState.fetchStructureState.projectionState.columns.length,
     ).toBe(0);
+
     // filter with group condition
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
@@ -290,6 +292,7 @@ test(
     expect(
       queryBuilderState.fetchStructureState.projectionState.columns.length,
     ).toBe(0);
+
     // projection column with derived property
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
@@ -350,12 +353,13 @@ test(
     );
     await waitFor(() => getByText(queryBuilderSetup, 'NPerson'));
     await waitFor(() => getByText(queryBuilderSetup, 'MyMapping'));
+
     // simple graph fetch
     queryBuilderState.init(getRawLambda(simpleGraphFetch));
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
-    queryBuilderState.init(getRawLambda(firmPersonGraphFetch));
+    queryBuilderState.init(getRawLambda(complexGraphFetch));
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
@@ -366,59 +370,4 @@ test(
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);
   },
   // TODO: add more test when we rework the graph fetch tree
-);
-
-test(
-  integrationTest(
-    'Query builder lambda processer should properly handle unsupported functions',
-  ),
-  async () => {
-    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
-    const renderResult = await setUpEditorWithDefaultSDLCData(
-      mockedEditorStore,
-      {
-        entities: ComplexRelationalModel,
-      },
-    );
-    MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-    MOBX__disableSpyOrMock();
-    const queryBuilderState =
-      mockedEditorStore.getEditorExtensionState(QueryBuilderState);
-    await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-    queryBuilderState.querySetupState.setClass(
-      mockedEditorStore.graphState.graph.getClass(
-        'model::pure::tests::model::simple::Person',
-      ),
-    );
-    queryBuilderState.resetData();
-    const queryBuilderSetup = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-    );
-    // ensure form has updated with respect to the new state
-    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
-    await waitFor(() =>
-      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
-    );
-    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
-    // test various lambdas
-    // Unable to update query builder with grammar due to: Function testUnSupported currently not supported
-    expect(() =>
-      queryBuilderState.buildStateFromRawLambda(
-        getRawLambda(unSupportedGetAllWithOneConditionFilter),
-      ),
-    ).toThrowError(`Can't build filter expression function`);
-    expect(() =>
-      queryBuilderState.buildStateFromRawLambda(
-        getRawLambda(errorInGraphLambda),
-      ),
-    ).toThrowError(
-      "Can't find type 'model::pure::tests::model::simple::NotFound'",
-    );
-    expect(() =>
-      queryBuilderState.buildStateFromRawLambda(
-        getRawLambda(unSupportedFunctionName),
-      ),
-    ).toThrowError(`Can't build function 'testUnSupported'`);
-  },
 );

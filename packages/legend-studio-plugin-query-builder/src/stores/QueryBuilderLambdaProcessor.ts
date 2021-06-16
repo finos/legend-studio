@@ -245,8 +245,13 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          paramOne.functionName === SUPPORTED_FUNCTIONS.GET_ALL,
-          'Only support project() immediately following getAll()',
+          (
+            [
+              SUPPORTED_FUNCTIONS.GET_ALL,
+              SUPPORTED_FUNCTIONS.FILTER,
+            ] as string[]
+          ).includes(paramOne.functionName),
+          'Only support project() immediately following either getAll() or filter()',
         );
 
         const lambdaParam = params[1];
@@ -453,8 +458,8 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          paramOne.functionName === SUPPORTED_FUNCTIONS.PROJECT,
-          'Only support project() immediately following getAll()',
+          paramOne.functionName === SUPPORTED_FUNCTIONS.GET_ALL,
+          'Only support filter() immediately following getAll()',
         );
 
         const filterExpression = valueSpecification.parametersValues[1];
@@ -520,12 +525,28 @@ export class QueryBuilderLambdaProcessor
         functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
       );
       if (valueSpecification.parametersValues.length === 2) {
-        valueSpecification.parametersValues[0].accept_ValueSpecificationVisitor(
+        const paramOne = guaranteeType(
+          valueSpecification.parametersValues[0],
+          SimpleFunctionExpression,
+        );
+        paramOne.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(
             this.queryBuilderState,
             valueSpecification,
           ),
         );
+
+        // check caller
+        assertTrue(
+          (
+            [
+              SUPPORTED_FUNCTIONS.FILTER,
+              SUPPORTED_FUNCTIONS.GET_ALL,
+            ] as string[]
+          ).includes(paramOne.functionName),
+          'Only support graphFetch() and graphFetchChecked() immediately following either getAll() or filter()',
+        );
+
         return;
       }
     }

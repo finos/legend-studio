@@ -249,9 +249,7 @@ export class QueryResultSetModifierState {
                 integerGenericTypeRef,
                 multiplicityOne,
               );
-              limitColumnValue.values = [
-                options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
-              ];
+              limitColumnValue.values = [options.overridingLimit];
               const limitColFuncs = new SimpleFunctionExpression(
                 SUPPORTED_FUNCTIONS.TAKE,
                 multiplicityOne,
