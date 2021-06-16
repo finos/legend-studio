@@ -31,12 +31,11 @@ import type {
   Type,
 } from '@finos/legend-studio';
 import {
+  OperationSetImplementation,
   AbstractPropertyExpression,
   Class,
-  CLASS_PROPERTY_TYPE,
   DerivedProperty,
   Enumeration,
-  getClassPropertyType,
   Property,
   VariableExpression,
 } from '@finos/legend-studio';
@@ -60,17 +59,26 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   label: string;
   childrenIds: string[] = [];
   mapped: boolean;
+  /**
+   * This flag is used to skip mappedness checking for the whole branch (i.e. every children of
+   * a node with this property set to `true` will also be skipped in mappedness checking).
+   * This is to facillitate complicated mappedness checkings that Studio would not attempt to handle:
+   * e.g. derived properties, operation class mappings, etc.
+   */
+  skipMappingCheck: boolean;
   setImpl?: SetImplementation;
 
   constructor(
     id: string,
     label: string,
     mapped: boolean,
+    skipMappingCheck: boolean,
     setImpl: SetImplementation | undefined,
   ) {
     this.id = id;
     this.label = label;
     this.mapped = mapped;
+    this.skipMappingCheck = skipMappingCheck;
     this.setImpl = setImpl;
   }
 }
@@ -88,9 +96,10 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     property: AbstractProperty,
     parentId: string,
     mapped: boolean,
+    skipMappingCheck: boolean,
     setImpl: SetImplementation | undefined,
   ) {
-    super(id, label, mapped, setImpl);
+    super(id, label, mapped, skipMappingCheck, setImpl);
     this.property = property;
     this.type = property.genericType.value.rawType;
     this.parentId = parentId;
@@ -136,10 +145,6 @@ const resolveSetImplementationForPropertyMapping = (
   } else if (propertyMapping.targetSetImplementation) {
     return propertyMapping.targetSetImplementation;
   }
-
-  // TODO: handle operation class mapping logic - if we get an operation class mapping
-  // do we resolve all the leaves and then overlap them somehow to help identifying
-  // the mapped properties?
   return undefined;
 };
 
@@ -147,44 +152,57 @@ const getPropertyMappedData = (
   editorStore: EditorStore,
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
-): { mapped: boolean; setImpl?: SetImplementation } => {
+): {
+  mapped: boolean;
+  skipMappingCheck: boolean;
+  setImpl?: SetImplementation;
+} => {
   // For now, derived properties will be considered mapped if its parent class is mapped.
-  // TODO: we probably need to do complex analytics such as to drill down into the body of the derived properties to see if each properties being used are
-  // mapped to determine if the dervied property itself is considered mapped.
+  // NOTE: we don't want to do complex analytics such as to drill down into the body
+  // of the derived properties to see if each properties being used are mapped to determine
+  // if the dervied property itself is considered mapped.
   if (property instanceof DerivedProperty) {
-    return { mapped: parentNode.mapped };
+    return {
+      mapped: parentNode.mapped,
+      skipMappingCheck: true,
+    };
   } else if (property instanceof Property) {
-    const parentSetImplementation = parentNode.setImpl;
-    if (parentSetImplementation) {
+    if (parentNode.skipMappingCheck) {
+      return { mapped: true, skipMappingCheck: true };
+    } else if (parentNode.setImpl) {
       const propertyMappings =
         editorStore.graphState.getMappingElementPropertyMappings(
-          parentSetImplementation,
+          parentNode.setImpl,
         );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
         .map((p) => p.property.value.name);
       // check if property is mapped
       if (mappedProperties.includes(property.name)) {
-        const type = property.genericType.value.rawType;
-        const propertyType = getClassPropertyType(type);
         // if class we need to resolve the Set Implementation
-        if (propertyType === CLASS_PROPERTY_TYPE.CLASS) {
+        if (property.genericType.value.rawType instanceof Class) {
           const propertyMapping = propertyMappings.find(
-            (p) => p.property.value.name === property.name,
+            (p) => p.property.value === property,
           );
           if (propertyMapping) {
+            const setImpl =
+              resolveSetImplementationForPropertyMapping(propertyMapping);
             return {
               mapped: true,
-              setImpl:
-                resolveSetImplementationForPropertyMapping(propertyMapping),
+              // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
+              // help identifying the mapped properties. However, we would not do that here
+              // as opertion mapping can support more complicated branching logic (right now we just assume
+              // it's always simple union), that Studio should not try to analyze.
+              skipMappingCheck: setImpl instanceof OperationSetImplementation,
+              setImpl,
             };
           }
         }
-        return { mapped: true };
+        return { mapped: true, skipMappingCheck: false };
       }
     }
   }
-  return { mapped: false };
+  return { mapped: false, skipMappingCheck: false };
 };
 
 export const getQueryBuilderPropertyNodeData = (
@@ -203,6 +221,7 @@ export const getQueryBuilderPropertyNodeData = (
     property,
     parentNode.id,
     mappingData.mapped,
+    mappingData.skipMappingCheck,
     mappingData.setImpl,
   );
   if (propertyNode.type instanceof Class) {
@@ -221,11 +240,14 @@ const getQueryBuilderTreeData = (
 ): TreeData<QueryBuilderExplorerTreeNodeData> => {
   const rootIds = [];
   const nodes = new Map<string, QueryBuilderExplorerTreeNodeData>();
+  const rootSetImpl = mapping.getRootSetImplementation(rootClass);
   const treeRootNode = new QueryBuilderExplorerTreeRootNodeData(
     '@dummy_rootNode',
     rootClass.name,
     true,
-    mapping.getRootSetImplementation(rootClass),
+    // NOTE: we will not try to analyze property mappedness for operation class mapping
+    rootSetImpl instanceof OperationSetImplementation,
+    rootSetImpl,
   );
   treeRootNode.isOpen = true;
   nodes.set(treeRootNode.id, treeRootNode);
