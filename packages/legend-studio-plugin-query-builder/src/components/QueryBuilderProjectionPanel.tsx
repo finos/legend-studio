@@ -28,8 +28,10 @@ import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import { useDragLayer, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { QueryBuilderProjectionColumnDragSource } from '../stores/QueryBuilderProjectionState';
-import { QueryBuilderProjectionColumnState } from '../stores/QueryBuilderProjectionState';
-import { QUERY_BUILDER_PROJECTION_DND_TYPE } from '../stores/QueryBuilderProjectionState';
+import {
+  QueryBuilderProjectionColumnState,
+  QUERY_BUILDER_PROJECTION_DND_TYPE,
+} from '../stores/QueryBuilderProjectionState';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
 import { getPropertyPath } from '../stores/QueryBuilderPropertyEditorState';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';

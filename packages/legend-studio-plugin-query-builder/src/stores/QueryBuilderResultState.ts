@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, flowResult, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -144,11 +144,10 @@ export class QueryBuilderResultState {
     }
   }
 
-  promoteToService = flow(function* (
-    this: QueryBuilderResultState,
+  *promoteToService(
     packageName: string,
     serviceName: string,
-  ) {
+  ): GeneratorFn<void> {
     try {
       const mapping = guaranteeNonNullable(
         this.queryBuilderState.querySetupState.mapping,
@@ -187,5 +186,5 @@ export class QueryBuilderResultState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 }

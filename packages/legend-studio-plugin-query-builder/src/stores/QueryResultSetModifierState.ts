@@ -16,7 +16,11 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
-import { addUniqueEntry, deleteEntry } from '@finos/legend-studio-shared';
+import {
+  addUniqueEntry,
+  deleteEntry,
+  guaranteeType,
+} from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
 import {
@@ -226,10 +230,51 @@ export class QueryResultSetModifierState {
             lambda.expressionSequence[0] = currentExpression;
             return lambda;
           }
-          // NOTE: we could support `take()` function for graph-fetch use case, however
-          // this `take()` would have to go right after `all()` function (which means the `take()`
-          // merely works on the collection), which would not be so helpful. As such, we will
-          // only support the TDS flavor of `take()` for now.
+          // NOTE: we have to separate the handling of `take()` for projection and
+          // graph-fetch as the latter use `meta::pure::functions::collection::take()`
+          // where the former uses `meta::pure::tds::take()`, therefore the placement
+          // in the query are different. Also, note that because of the above distinction,
+          // we won't support using `take()` as result set modifier operations for graph-fetch.
+          // Result set modifier should only be used for projection for now.
+          case SUPPORTED_FUNCTIONS.SERIALIZE: {
+            if (options?.overridingLimit) {
+              const integerGenericTypeRef = GenericTypeExplicitReference.create(
+                new GenericType(
+                  this.editorStore.graphState.graph.getPrimitiveType(
+                    PRIMITIVE_TYPE.INTEGER,
+                  ),
+                ),
+              );
+              const limitColumnValue = new PrimitiveInstanceValue(
+                integerGenericTypeRef,
+                multiplicityOne,
+              );
+              limitColumnValue.values = [
+                options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
+              ];
+              const limitColFuncs = new SimpleFunctionExpression(
+                SUPPORTED_FUNCTIONS.TAKE,
+                multiplicityOne,
+              );
+
+              // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we will put it
+              // right next to `all()`
+              const serializeFunction = func;
+              const graphFetchFunc = guaranteeType(
+                serializeFunction.parametersValues[0],
+                SimpleFunctionExpression,
+              );
+              const getAllFunc = graphFetchFunc.parametersValues[0];
+              limitColFuncs.parametersValues[0] = getAllFunc;
+              limitColFuncs.parametersValues[1] = limitColumnValue;
+              graphFetchFunc.parametersValues = [
+                limitColFuncs,
+                graphFetchFunc.parametersValues[1],
+              ];
+              return lambda;
+            }
+            return lambda;
+          }
           default:
             return lambda;
         }

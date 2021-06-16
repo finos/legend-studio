@@ -111,9 +111,7 @@ export const QueryBuilderResultPanel = observer(
         val === '' ? 0 : parseInt(val, 10),
       );
     };
-    const allowSettingPreviewLimit =
-      queryBuilderState.isQuerySupported() &&
-      !queryBuilderState.fetchStructureState.graphFetchTreeState.treeData;
+    const allowSettingPreviewLimit = queryBuilderState.isQuerySupported();
 
     return (
       <div className="panel query-builder__result">
@@ -208,7 +206,9 @@ export const QueryBuilderResultPanel = observer(
             promoteToService={(
               name: string,
               packageName: string,
-            ): Promise<void> => resultState.promoteToService(name, packageName)}
+            ): Promise<void> =>
+              flowResult(resultState.promoteToService(name, packageName))
+            }
           />
         )}
       </div>
