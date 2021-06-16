@@ -53,7 +53,7 @@
     "history": "5.0.0",
     "mobx": "6.3.2",
     "mobx-react-lite": "3.2.0",
-    "monaco-editor": "0.25.0",
+    "monaco-editor": "0.25.1",
     "node-diff3": "2.1.2",
     "react": "17.0.2",
     "react-dnd": "14.0.2",
@@ -78,7 +78,7 @@
     "jest-extended": "0.11.5",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.34.1",
+    "sass": "1.35.1",
     "typescript": "4.3.2"
   },
   "peerDependencies": {

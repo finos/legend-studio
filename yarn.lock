@@ -2235,7 +2235,7 @@ __metadata:
     react-select: 4.3.1
     react-window: 1.8.6
     rimraf: 3.0.2
-    sass: 1.34.1
+    sass: 1.35.1
     typescript: 4.3.2
   peerDependencies:
     react: ^17.0.0
@@ -2275,14 +2275,14 @@ __metadata:
     jsonc-parser: 3.0.0
     micromatch: 4.0.4
     mini-css-extract-plugin: 1.6.0
-    monaco-editor: 0.25.0
+    monaco-editor: 0.25.1
     monaco-editor-webpack-plugin: 4.0.0
     postcss: 8.3.4
     postcss-loader: 6.1.0
     react-refresh: 0.10.0
     resolve: 1.20.0
     rimraf: 3.0.2
-    sass: 1.34.1
+    sass: 1.35.1
     sass-loader: 12.1.0
     strip-ansi: 7.0.0
     text-table: 0.2.0
@@ -2345,7 +2345,7 @@ __metadata:
     react-icons: 4.2.0
     react-router-dom: 5.2.0
     rimraf: 3.0.2
-    sass: 1.34.1
+    sass: 1.35.1
     typescript: 4.3.2
   peerDependencies:
     react: ^17.0.0
@@ -2372,14 +2372,14 @@ __metadata:
     jest: 27.0.4
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
-    monaco-editor: 0.25.0
+    monaco-editor: 0.25.1
     npm-run-all: 4.1.5
     papaparse: 5.3.1
     react: 17.0.2
     react-dom: 17.0.2
     react-router-dom: 5.2.0
     rimraf: 3.0.2
-    sass: 1.34.1
+    sass: 1.35.1
     typescript: 4.3.2
   peerDependencies:
     react: ^17.0.0
@@ -2421,11 +2421,11 @@ __metadata:
     jest: 27.0.4
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
-    monaco-editor: 0.25.0
+    monaco-editor: 0.25.1
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.34.1
+    sass: 1.35.1
     serializr: 2.0.5
     typescript: 4.3.2
   peerDependencies:
@@ -2518,7 +2518,7 @@ __metadata:
     jest-extended: 0.11.5
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
-    monaco-editor: 0.25.0
+    monaco-editor: 0.25.1
     node-diff3: 2.1.2
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2533,7 +2533,7 @@ __metadata:
     react-router-dom: 5.2.0
     react-split-pane: 0.1.92
     rimraf: 3.0.2
-    sass: 1.34.1
+    sass: 1.35.1
     serializr: 2.0.5
     typescript: 4.3.2
   peerDependencies:
@@ -10681,10 +10681,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor@npm:0.25.0":
-  version: 0.25.0
-  resolution: "monaco-editor@npm:0.25.0"
-  checksum: b77d92530278f9bba4840a08fca0c803dedd97b67057777bb1816b464a784017e01c593b4be54dd04207f63e8be949b5f324392833b8bd346e020effa16ebe1e
+"monaco-editor@npm:0.25.1":
+  version: 0.25.1
+  resolution: "monaco-editor@npm:0.25.1"
+  checksum: f09a5333db2fcbf8a3f24d5a98087c5e032f8786e7a8f359c59bc2dff6fda99ab36c7fe84c6868be919756a183804d21dce56d89ebdccf3b7f0457149ba8ab36
   languageName: node
   linkType: hard
 
@@ -13235,14 +13235,14 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"sass@npm:1.34.1":
-  version: 1.34.1
-  resolution: "sass@npm:1.34.1"
+"sass@npm:1.35.1":
+  version: 1.35.1
+  resolution: "sass@npm:1.35.1"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
   bin:
     sass: sass.js
-  checksum: 97b3816ab1bf8f59421b61ce84e4c45ad9c59890f960bdd7a23bc5058283070252dcc23f19559c12121c18d6da0b4cd2fddedb6ffe8f2509aad20662fd9ca087
+  checksum: f49e738d637971f5985ab07aeda79629a9b555cca5e414ae2750b90bc9ce94703beada7f8cb5cbf972942e4c6ea941457846846618f2c6a8cd138087ee0502b2
   languageName: node
   linkType: hard
 
