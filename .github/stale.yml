@@ -6,9 +6,12 @@ daysUntilStale: 90
 daysUntilClose: 7
 # Issues with these labels will never be considered stale
 exemptLabels:
+  - 'Studio Core Team'
   - 'Type: Bug'
   - 'Type: Discussion'
   - 'Type: Regression'
+  - 'Status: Needs Investigation'
+  - 'Resolution: Backlog'
 # Label to use when marking an issue as stale
 staleLabel: 'Resolution: Stale'
 issues:
