@@ -44,7 +44,7 @@
     "@finos/legend-studio-network": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
     "@material-ui/core": "4.11.4",
-    "@testing-library/react": "11.2.7",
+    "@testing-library/react": "12.0.0",
     "@types/css-font-loading-module": "0.0.4",
     "@types/react": "17.0.11",
     "@types/react-dom": "17.0.8",
@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
-    "@testing-library/dom": "7.31.2",
+    "@testing-library/dom": "8.0.0",
     "cross-env": "7.0.3",
     "eslint": "7.29.0",
     "jest": "27.0.5",

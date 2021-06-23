@@ -2367,8 +2367,8 @@ __metadata:
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@testing-library/dom": 7.31.2
-    "@testing-library/react": 11.2.7
+    "@testing-library/dom": 8.0.0
+    "@testing-library/react": 12.0.0
     "@types/papaparse": 5.2.5
     "@types/react": 17.0.11
     "@types/react-dom": 17.0.8
@@ -2510,8 +2510,8 @@ __metadata:
     "@finos/legend-studio-network": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@material-ui/core": 4.11.4
-    "@testing-library/dom": 7.31.2
-    "@testing-library/react": 11.2.7
+    "@testing-library/dom": 8.0.0
+    "@testing-library/react": 12.0.0
     "@types/css-font-loading-module": 0.0.4
     "@types/react": 17.0.11
     "@types/react-dom": 17.0.8
@@ -3122,9 +3122,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/dom@npm:7.31.2, @testing-library/dom@npm:^7.28.1":
-  version: 7.31.2
-  resolution: "@testing-library/dom@npm:7.31.2"
+"@testing-library/dom@npm:8.0.0, @testing-library/dom@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "@testing-library/dom@npm:8.0.0"
   dependencies:
     "@babel/code-frame": ^7.10.4
     "@babel/runtime": ^7.12.5
@@ -3133,21 +3133,21 @@ __metadata:
     chalk: ^4.1.0
     dom-accessibility-api: ^0.5.6
     lz-string: ^1.4.4
-    pretty-format: ^26.6.2
-  checksum: 54fbedd1ecdfe1d47be2e592b98d18b2ab9d7e731f57231caf9b152593fe7329fe5ebe219e0e5d1e0df5b1ab803121cb8acd8b73bd1fb292bfdc2c55663eb01d
+    pretty-format: ^27.0.2
+  checksum: 72ee7eed463d94eaa9cce274c5545f3a5dc8e778e125ff7abb08daea16a3e42a7edeab307c6c96bc0079e03c2ccaa210fb591cb2070b8ad40421f8d9070d7593
   languageName: node
   linkType: hard
 
-"@testing-library/react@npm:11.2.7":
-  version: 11.2.7
-  resolution: "@testing-library/react@npm:11.2.7"
+"@testing-library/react@npm:12.0.0":
+  version: 12.0.0
+  resolution: "@testing-library/react@npm:12.0.0"
   dependencies:
     "@babel/runtime": ^7.12.5
-    "@testing-library/dom": ^7.28.1
+    "@testing-library/dom": ^8.0.0
   peerDependencies:
     react: "*"
     react-dom: "*"
-  checksum: 64e07cb96e40dbdbd3c46a09c47bed14446b30efafaa65a5d4fed5a7553878990cda108578f2b114422a775f31c635d51fd50b752f6163ddd6b8474e0e5fc2ce
+  checksum: 07f0ba4092f7cd3232c2c61329353b2f2fa65388fc58666780be80f99f75daaf897a09a9897ac53f213d7b2d57e3cecb8127fd940da8cfd4275fa4a281e5b32c
   languageName: node
   linkType: hard
 
