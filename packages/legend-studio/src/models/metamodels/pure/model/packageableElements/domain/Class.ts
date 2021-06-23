@@ -364,6 +364,6 @@ export const getClassPropertyType = (type: Type): CLASS_PROPERTY_TYPE => {
     return CLASS_PROPERTY_TYPE.MEASURE;
   }
   throw new UnsupportedOperationError(
-    `CAn't get class property type of type '${getClass(type).name}'`,
+    `Can't get class property type of type '${getClass(type).name}'`,
   );
 };
