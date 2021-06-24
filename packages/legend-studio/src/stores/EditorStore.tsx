@@ -53,8 +53,8 @@ import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState
 import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
-import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
+import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
 import {
   isNonNullable,
   getClass,

@@ -83,8 +83,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
       _isDisposed: observable,
       _isImmutable: observable,
       name: observable,
-      package: observable,
-      generationParentElement: observable,
       isReadOnly: computed,
       isDeleted: computed,
       setName: action,

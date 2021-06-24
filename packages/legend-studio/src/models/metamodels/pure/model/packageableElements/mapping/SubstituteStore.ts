@@ -30,7 +30,6 @@ export class SubstituteStore {
     substitue: PackageableElementReference<Store>,
   ) {
     makeObservable(this, {
-      owner: observable,
       original: observable,
       substitute: observable,
     });

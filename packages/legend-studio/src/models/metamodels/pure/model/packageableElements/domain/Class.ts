@@ -57,7 +57,7 @@ export class Class extends Type implements Hashable, Stubable {
    * if this belongs to immutable elements: i.e. in system, project dependency, etc.
    * we have to make sure to remove of disposed classes from this when we reprocess the graph
    */
-  subClasses: Class[] = [];
+  _subClasses: Class[] = [];
   constraints: Constraint[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
@@ -70,7 +70,7 @@ export class Class extends Type implements Hashable, Stubable {
       propertiesFromAssociations: observable,
       derivedProperties: observable,
       generalizations: observable,
-      subClasses: observable,
+      _subClasses: observable,
       constraints: observable,
       stereotypes: observable,
       taggedValues: observable,
@@ -127,10 +127,10 @@ export class Class extends Type implements Hashable, Stubable {
     deleteEntry(this.generalizations, val);
   }
   addSubClass(val: Class): void {
-    addUniqueEntry(this.subClasses, val);
+    addUniqueEntry(this._subClasses, val);
   }
   deleteSubClass(val: Class): void {
-    deleteEntry(this.subClasses, val);
+    deleteEntry(this._subClasses, val);
   }
   deleteTaggedValue(val: TaggedValue): void {
     deleteEntry(this.taggedValues, val);
@@ -251,7 +251,7 @@ export class Class extends Type implements Hashable, Stubable {
       if (_class._isDisposed) {
         return;
       }
-      _class.subClasses.forEach((subClass) => {
+      _class._subClasses.forEach((subClass) => {
         if (!visitedClasses.has(subClass)) {
           visitedClasses.add(subClass);
           resolveSubClasses(subClass);
@@ -271,7 +271,7 @@ export class Class extends Type implements Hashable, Stubable {
    * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
    */
   override dispose(): void {
-    this.subClasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
+    this._subClasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
     this._isDisposed = true;
     // dispose hash computation
     try {
@@ -293,9 +293,9 @@ export class Class extends Type implements Hashable, Stubable {
   }
 
   protected cleanUpDisposedSubClasses(): void {
-    this.subClasses = this._isDisposed
+    this._subClasses = this._isDisposed
       ? []
-      : this.subClasses.filter((subClass) => !subClass._isDisposed);
+      : this._subClasses.filter((subClass) => !subClass._isDisposed);
   }
 
   static createStub = (): Class => new Class('');

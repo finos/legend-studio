@@ -38,10 +38,6 @@ export {
 export * from './models/metamodels/pure/model/Stubable'; // TODO: to be removed
 export { BasicModel } from './models/metamodels/pure/graph/BasicModel';
 export { PureModel } from './models/metamodels/pure/graph/PureModel';
-export {
-  freeze,
-  freezeArray,
-} from './models/metamodels/pure/action/freezer/GraphFreezerHelper';
 export * from './models/metamodels/pure/action/EngineError';
 export * from './models/metamodels/pure/model/packageableElements/PackageableElement';
 export * from './models/metamodels/pure/model/packageableElements/PackageableElementReference';
