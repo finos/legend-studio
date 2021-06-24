@@ -32,7 +32,6 @@ import {
   losslessParse,
   getClass,
   guaranteeNonNullable,
-  uniq,
   UnsupportedOperationError,
   recursiveOmit,
   assertTrue,
@@ -54,10 +53,6 @@ import type {
 import { AbstractPureGraphManager } from '../../../metamodels/pure/graph/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
-  RuntimePointer,
-  EngineRuntime,
-} from '../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import type {
   ImportConfigurationDescription,
   ImportMode,
@@ -205,6 +200,7 @@ import {
   V1_serializeExecutionPlan,
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelpers';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
+import { V1_Runtime } from './model/packageableElements/runtime/V1_Runtime';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1832,32 +1828,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           element instanceof V1_ConcreteFunctionDefinition ||
           element instanceof V1_Measure ||
           element instanceof V1_Store ||
-          element instanceof V1_PackageableConnection,
+          element instanceof V1_PackageableConnection ||
+          element instanceof V1_Runtime ||
+          element instanceof V1_Mapping,
       )
       .concat(extraExecutionElements);
-    // TODO further optimize mappings/runtimes needed for execution to lessen load
-    let runtimeMappings: Mapping[] = [];
-    if (runtime instanceof EngineRuntime) {
-      runtimeMappings = runtime.mappings.map((m) => m.value);
-    } else if (runtime instanceof RuntimePointer) {
-      runtimeMappings =
-        runtime.packageableRuntime.value.runtimeValue.mappings.map(
-          (m) => m.value,
-        );
-      const runtimes = graphData.elements.filter(
-        (r) => r.path === runtime.packageableRuntime.value.path,
-      );
-      prunedGraphData.elements.push(...runtimes);
-    }
-    const requiredMappings = uniq([
-      mapping,
-      ...mapping.allIncludedMappings,
-      ...runtimeMappings,
-    ]).map((m) => m.path);
-    const mappings = graphData.elements.filter((m) =>
-      requiredMappings.includes(m.path),
-    );
-    prunedGraphData.elements.push(...mappings);
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
     const executeInput = new V1_ExecuteInput();
