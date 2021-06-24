@@ -33,7 +33,7 @@ export class V1_Association extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ASSOCIATION,
-      super.hashCode,
+      this.path,
       hashArray(this.properties),
       hashArray(this.derivedProperties),
       hashArray(this.stereotypes),

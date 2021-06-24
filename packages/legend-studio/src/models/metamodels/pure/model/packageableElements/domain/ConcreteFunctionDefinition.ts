@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { action, observable, computed, makeObservable } from 'mobx';
+import { action, observable, makeObservable, override } from 'mobx';
 import {
   hashArray,
-  IllegalStateError,
   addUniqueEntry,
   deleteEntry,
   changeEntry,
@@ -53,7 +52,7 @@ export class ConcreteFunctionDefinition
   ) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<ConcreteFunctionDefinition, '_elementHashCode'>(this, {
       returnMultiplicity: observable,
       parameters: observable.shallow,
       body: observable.ref,
@@ -68,7 +67,7 @@ export class ConcreteFunctionDefinition
       deleteStereotype: action,
       changeStereotype: action,
       addStereotype: action,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
 
     this.returnType = returnType;
@@ -106,18 +105,10 @@ export class ConcreteFunctionDefinition
     addUniqueEntry(this.stereotypes, val);
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FUNCTION,
-      super.hashCode,
+      this.path,
       hashArray(this.parameters),
       this.returnType.valueForSerialization,
       hashArray(this.taggedValues),

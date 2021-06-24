@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
-import { IllegalStateError, hashArray } from '@finos/legend-studio-shared';
+import { observable, makeObservable, override } from 'mobx';
+import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
@@ -28,23 +28,16 @@ export class SectionIndex extends PackageableElement implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<SectionIndex, '_elementHashCode'>(this, {
       sections: observable,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SECTION_INDEX,
+      this.path,
       hashArray(this.sections),
     ]);
   }

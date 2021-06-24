@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
-import { hashArray, IllegalStateError } from '@finos/legend-studio-shared';
+import { observable, action, makeObservable, override } from 'mobx';
+import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import type { PackageableElementVisitor } from '@finos/legend-studio';
 import { PackageableElement } from '@finos/legend-studio';
@@ -33,12 +33,12 @@ export class Text extends PackageableElement implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<Text, '_elementHashCode'>(this, {
       type: observable,
       content: observable,
       setType: action,
       setContent: action,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
 
     this.type = TEXT_TYPE.PLAIN_TEXT;
@@ -52,18 +52,10 @@ export class Text extends PackageableElement implements Hashable {
     this.content = content;
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       TEXT_HASH_STRUCTURE.ELEMENT,
-      super.hashCode,
+      this.path,
       this.type,
       this.content,
     ]);

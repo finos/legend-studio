@@ -1143,9 +1143,7 @@ export class EditorStore {
   get classPropertyGenericTypeOptions(): PackageableElementSelectOption<Type>[] {
     return this.graphState.graph.primitiveTypes
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
-      .map(
-        (e) => e.selectOption as PackageableElementSelectOption<PrimitiveType>,
-      )
+      .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
       .concat(
         this.graphState.graph.types
           .concat(this.graphState.graph.systemModel.types)

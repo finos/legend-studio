@@ -47,7 +47,7 @@ export class V1_GenerationSpecification
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GENERATION_TREE,
-      super.hashCode,
+      this.path,
       hashArray(this.generationNodes),
       hashArray(this.fileGenerations),
     ]);

@@ -65,38 +65,41 @@ export class Class extends Type implements Hashable, Stubable {
   constructor(name: string) {
     super(name);
 
-    makeObservable<Class, 'cleanUpDisposedSubClasses'>(this, {
-      properties: observable,
-      propertiesFromAssociations: observable,
-      derivedProperties: observable,
-      generalizations: observable,
-      _subClasses: observable,
-      constraints: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      deleteProperty: action,
-      addProperty: action,
-      deleteDerivedProperty: action,
-      addDerivedProperty: action,
-      addConstraint: action,
-      deleteConstraint: action,
-      changeConstraint: action,
-      addSuperType: action,
-      deleteSuperType: action,
-      addSubClass: action,
-      deleteSubClass: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
-      allSuperClasses: computed,
-      allSubClasses: computed({ keepAlive: true }),
-      dispose: override,
-      cleanUpDisposedSubClasses: action,
-      isStub: computed,
-      hashCode: computed({ keepAlive: true }),
-    });
+    makeObservable<Class, 'cleanUpDisposedSubClasses' | '_elementHashCode'>(
+      this,
+      {
+        properties: observable,
+        propertiesFromAssociations: observable,
+        derivedProperties: observable,
+        generalizations: observable,
+        _subClasses: observable,
+        constraints: observable,
+        stereotypes: observable,
+        taggedValues: observable,
+        deleteProperty: action,
+        addProperty: action,
+        deleteDerivedProperty: action,
+        addDerivedProperty: action,
+        addConstraint: action,
+        deleteConstraint: action,
+        changeConstraint: action,
+        addSuperType: action,
+        deleteSuperType: action,
+        addSubClass: action,
+        deleteSubClass: action,
+        deleteTaggedValue: action,
+        addTaggedValue: action,
+        deleteStereotype: action,
+        changeStereotype: action,
+        addStereotype: action,
+        allSuperClasses: computed,
+        allSubClasses: computed({ keepAlive: true }),
+        dispose: override,
+        cleanUpDisposedSubClasses: action,
+        isStub: computed,
+        _elementHashCode: override,
+      },
+    );
   }
 
   deleteProperty(val: Property): void {
@@ -311,18 +314,10 @@ export class Class extends Type implements Hashable, Stubable {
     );
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.CLASS,
-      super.hashCode,
+      this.path,
       hashArray(this.properties),
       hashArray(this.derivedProperties),
       hashArray(

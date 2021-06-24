@@ -31,7 +31,8 @@ export class V1_Database extends V1_Store implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABASE,
-      super.hashCode,
+      this.path,
+      hashArray(this.includedStores),
       hashArray(this.schemas),
       hashArray(this.joins),
       hashArray(this.filters),
