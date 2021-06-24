@@ -57,15 +57,6 @@ class ApplicationCoreOptions {
    */
   DEV__enableStrictRuntimeChecks = false;
   /**
-   * Allows enabing a check at runtime that immutable models(system, dependencies, generated) are
-   * not modified at all. If any of these aare modified, that signals a bug in the code.
-   *
-   * This flag is highly recommended for DEVELOPMENT mode.
-   * It is a runtime check which impacts performance of the app, hence should be
-   * disabled in `production` environment.
-   */
-  DEV__enableGraphImmutabilityRuntimeCheck = false;
-  /**
    * Allows disabling support for project structure feature such as pipeline and dependencies.
    *
    * NOTE: when we have proper support for pipeline, we can remove this flag.
@@ -120,7 +111,6 @@ class ApplicationCoreOptions {
   private static readonly serialization = new SerializationFactory(
     createModelSchema(ApplicationCoreOptions, {
       DEV__enableStrictRuntimeChecks: optional(primitive()),
-      DEV__enableGraphImmutabilityRuntimeCheck: optional(primitive()),
       TEMPORARY__disableSDLCProjectStructureSupport: optional(primitive()),
       TEMPORARY__disableSDLCProjectCreation: optional(primitive()),
       TEMPORARY__useSDLCProductionProjectsOnly: optional(primitive()),
@@ -141,7 +131,7 @@ class ApplicationCoreOptions {
   ): ApplicationCoreOptions {
     const config = ApplicationCoreOptions.serialization.fromJson(configData);
     if (config.DEV__enableStrictRuntimeChecks) {
-      config.DEV__enableGraphImmutabilityRuntimeCheck = true;
+      // do nothing
     }
     return config;
   }

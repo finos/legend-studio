@@ -204,53 +204,6 @@ import {
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelpers';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
 
-// /**
-//  * TODO: apparently, if a property is observable, even when the object is frozen
-//  */
-//  const deepFreezeElement = (element: PackageableElement): void => {
-//   assertTrue(element.isReadOnly, `Can't freeze mutable elements`);
-//   const freeze = (obj: unknown): void => {
-//     if (
-//       // skip already frozen objects
-//       Object.isFrozen(obj) ||
-//       // skip function/method
-//       typeof obj === 'function' ||
-//       // skip reference
-//       obj instanceof Reference ||
-//       // skip plain object
-//       isPlainObject(obj) ||
-//       // skip non-observable
-//       !isObservable(obj)
-//     ) {
-//       return;
-//     }
-//     if (Array.isArray(obj)) {
-//       // TODO: handle array -> drill down to child and move on
-//       const array = obj as unknown[];
-//       /**
-//        * Since we cannot freeze observable object, we have to use a try catch here.
-//        * For project that uses metamodels but not `mobx`, maybe they can take advantage of this
-//        * The error message will be something like `Error: [mobx] Observable arrays cannot be frozen`
-//        * Notice that we have to call `Object.freeze(arr)` because only that will prevent modifying the array
-//        */
-//       array.forEach((entry) => freeze(entry));
-//       return;
-//     }
-//     if (typeof obj === 'object') {
-//       Object.freeze(obj);
-//       const prototypedObj = obj as Record<PropertyKey, unknown>;
-//       Object.keys(prototypedObj)
-//         .filter((key) => isObservableProp(obj, key))
-//         .filter((key) => !key.startsWith('_')) // skip private fields
-//         .forEach((key) => {
-//           freeze(prototypedObj[key]);
-//         });
-//       return;
-//     }
-//   };
-//   freeze(element);
-// };
-
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
 const getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
@@ -505,10 +458,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       // NOTE: right now we only have profile and enumeration for system, we might need to generalize this step in the future
       yield this.buildTypes(graph, systemGraphBuilderInput);
       yield this.buildOtherElements(graph, systemGraphBuilderInput);
-      yield this.postProcess(graph, systemGraphBuilderInput, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          options?.DEV__enableGraphImmutabilityRuntimeCheck,
-      });
+      yield this.postProcess(graph, systemGraphBuilderInput);
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_SYSTEM_BUILT,
@@ -601,10 +551,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       yield this.buildOtherElements(graph, graphBuilderInput, options);
 
-      yield this.postProcess(graph, graphBuilderInput, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          options?.DEV__enableGraphImmutabilityRuntimeCheck,
-      });
+      yield this.postProcess(graph, graphBuilderInput);
       const processingFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
@@ -821,8 +768,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
 
       yield this.postProcess(graph, graphBuilderInput, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          options?.DEV__enableGraphImmutabilityRuntimeCheck,
         TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
       });
       graph.setIsBuilt(true);
@@ -907,10 +852,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       yield this.buildOtherElements(graph, generationGraphBuilderInput);
 
-      yield this.postProcess(graph, generationGraphBuilderInput, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          options?.DEV__enableGraphImmutabilityRuntimeCheck,
-      });
+      yield this.postProcess(graph, generationGraphBuilderInput);
       generatedModel.setIsBuilt(true);
       if (!options?.quiet) {
         this.logger.info(
@@ -1013,7 +955,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: {
-      DEV__enableGraphImmutabilityRuntimeCheck?: boolean;
       TEMPORARY__keepSectionIndex?: boolean;
     },
   ) {
@@ -1033,9 +974,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               );
               if (isElementReadOnly) {
                 element.freeze();
-                if (options?.DEV__enableGraphImmutabilityRuntimeCheck) {
-                  // deepFreezeElement(element);
-                }
               }
             }),
           ),

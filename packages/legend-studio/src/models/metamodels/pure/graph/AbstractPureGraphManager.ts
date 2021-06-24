@@ -62,7 +62,6 @@ export interface EngineSetupConfig {
 
 export interface GraphBuilderOptions {
   quiet?: boolean;
-  DEV__enableGraphImmutabilityRuntimeCheck?: boolean;
   TEMPORARY__keepSectionIndex?: boolean;
   TEMPORARY__disableRawLambdaResolver?: boolean;
 }
