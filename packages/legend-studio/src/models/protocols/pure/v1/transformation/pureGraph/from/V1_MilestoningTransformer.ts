@@ -29,8 +29,8 @@ import { V1_ProcessingMilestoning } from '../../../model/packageableElements/sto
 import { ProcessingMilestoning } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/milestoning/ProcessingMilestoning';
 import { V1_ValueSpecificationTransformer } from './V1_ValueSpecificationTransformer';
 import { V1_CDate } from '../../../model/valueSpecification/raw/V1_CDate';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformBusinessMilesoning = (
   metamodel: BusinessMilestoning,
@@ -73,7 +73,7 @@ const transformProcessingMilestoning = (
 
 export const V1_transformMilestoning = (
   metamodel: Milestoning,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_Milestoning => {
   if (metamodel instanceof BusinessMilestoning) {
     return transformBusinessMilesoning(metamodel);
@@ -82,14 +82,14 @@ export const V1_transformMilestoning = (
   } else if (metamodel instanceof ProcessingMilestoning) {
     return transformProcessingMilestoning(metamodel);
   }
-  const extraMilestoningTransformers = plugins.flatMap(
+  const extraMilestoningTransformers = context.plugins.flatMap(
     (plugin) =>
       (
         plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraMilestoningTransformers?.() ?? [],
   );
   for (const transformer of extraMilestoningTransformers) {
-    const protocol = transformer(metamodel);
+    const protocol = transformer(metamodel, context);
     if (protocol) {
       return protocol;
     }

@@ -1,5 +1,28 @@
 # @finos/legend-studio
 
+## 0.1.13
+
+### Patch Changes
+
+- [#252](https://github.com/finos/legend-studio/pull/252) [`cdc4c3c`](https://github.com/finos/legend-studio/commit/cdc4c3c92f9cc66a1304666429a721731c8466b0) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** `V1_GraphTransformerContextBuilder` now requires `PureProtocolProcessorPlugin` in the constructor instead of the `keepSourceInformation` boolean flag.
+
+* [#244](https://github.com/finos/legend-studio/pull/244) [`ab15166`](https://github.com/finos/legend-studio/commit/ab15166f9f60a51d48e2c02b45a937f1dcb8f642) Thanks [@akphi](https://github.com/akphi)! - Remove config flag `TEMPORARY__disableNonModelStoreSupports`.
+
+- [#252](https://github.com/finos/legend-studio/pull/252) [`cdc4c3c`](https://github.com/finos/legend-studio/commit/cdc4c3c92f9cc66a1304666429a721731c8466b0) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** Add context to transformers in `PureProtocolProcessorPlugin`.
+
+* [#241](https://github.com/finos/legend-studio/pull/241) [`76092dd`](https://github.com/finos/legend-studio/commit/76092dd5f6a31a30e18ca6e711c0f0f5a9e195ef) Thanks [@akphi](https://github.com/akphi)! - Rework mapping editor: mapping execution builder and test editor have been moved from the auxiliary panel to the screen of the mapping editor.
+
+- [#244](https://github.com/finos/legend-studio/pull/244) [`ab15166`](https://github.com/finos/legend-studio/commit/ab15166f9f60a51d48e2c02b45a937f1dcb8f642) Thanks [@akphi](https://github.com/akphi)! - Support `HackedClass` and `HackedUnit` which is used to support `@` syntax in PURE grammar.
+
+* [#248](https://github.com/finos/legend-studio/pull/248) [`a35e4d2`](https://github.com/finos/legend-studio/commit/a35e4d229e113c491ef51f9ad126ead98979a32f) Thanks [@akphi](https://github.com/akphi)! - Fix a bug that prevents graph freezer to work properly with relational property mapping (related to the changes in #207).
+
+- [#248](https://github.com/finos/legend-studio/pull/248) [`a35e4d2`](https://github.com/finos/legend-studio/commit/a35e4d229e113c491ef51f9ad126ead98979a32f) Thanks [@akphi](https://github.com/akphi)! - Introduce plan execution processor (#249).
+
+- Updated dependencies [[`a35e4d2`](https://github.com/finos/legend-studio/commit/a35e4d229e113c491ef51f9ad126ead98979a32f), [`ab15166`](https://github.com/finos/legend-studio/commit/ab15166f9f60a51d48e2c02b45a937f1dcb8f642), [`76092dd`](https://github.com/finos/legend-studio/commit/76092dd5f6a31a30e18ca6e711c0f0f5a9e195ef), [`cdc4c3c`](https://github.com/finos/legend-studio/commit/cdc4c3c92f9cc66a1304666429a721731c8466b0)]:
+  - @finos/legend-studio-components@0.0.19
+  - @finos/legend-studio-network@0.0.17
+  - @finos/legend-studio-shared@0.0.15
+
 ## 0.1.12
 
 ### Patch Changes

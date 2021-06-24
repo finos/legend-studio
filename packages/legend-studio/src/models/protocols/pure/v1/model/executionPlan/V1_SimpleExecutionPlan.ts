@@ -18,9 +18,9 @@ import type { V1_Protocol } from '../V1_Protocol';
 import type { V1_ExecutionNode } from './nodes/V1_ExecutionNode';
 import { V1_ExecutionPlan } from './V1_ExecutionPlan';
 
-export class V1_SingleExecutionPlan extends V1_ExecutionPlan {
+export class V1_SimpleExecutionPlan extends V1_ExecutionPlan {
   authDependent!: boolean;
-  kerberos!: string;
+  kerberos?: string;
   serializer!: V1_Protocol;
   templateFunctions: string[] = [];
   rootExecutionNode!: V1_ExecutionNode;

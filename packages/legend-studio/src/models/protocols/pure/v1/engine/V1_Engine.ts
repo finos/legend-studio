@@ -59,6 +59,7 @@ import type { RawRelationalOperationElement } from '../../../../metamodels/pure/
 import { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
 import { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
 import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext';
+import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin';
 
 class EngineConfig extends AbstractEngineConfig {
   private engine: V1_Engine;
@@ -171,6 +172,7 @@ export class V1_Engine {
   transformLambdasToCode = flow(function* (
     this: V1_Engine,
     inputLambdas: Map<string, RawLambda>,
+    pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
     pretty?: boolean,
   ): GeneratorFn<Map<string, string>> {
     const lambdas: Record<string, PlainObject<V1_RawLambda>> = {};
@@ -178,7 +180,9 @@ export class V1_Engine {
       lambdas[key] = V1_serializeRawValueSpecification(
         V1_transformRawLambda(
           inputLambda,
-          new V1_GraphTransformerContextBuilder(false).build(),
+          new V1_GraphTransformerContextBuilder(
+            pureProtocolProcessorPlugins,
+          ).build(),
         ),
       );
     });

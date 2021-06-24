@@ -32,6 +32,7 @@ import type {
   V1_ElementTransformer,
   V1_GraphBuilderContext,
   V1_ElementProtocolClassifierPathGetter,
+  V1_GraphTransformerContext,
 } from '@finos/legend-studio';
 import { deserialize, serialize } from 'serializr';
 import {
@@ -134,7 +135,10 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
 
   override V1_getExtraElementTransformers(): V1_ElementTransformer[] {
     return [
-      (metamodel: PackageableElement): V1_PackageableElement | undefined => {
+      (
+        metamodel: PackageableElement,
+        context: V1_GraphTransformerContext,
+      ): V1_PackageableElement | undefined => {
         if (metamodel instanceof Text) {
           const protocol = new V1_Text();
           V1_initPackageableElement(protocol, metamodel);

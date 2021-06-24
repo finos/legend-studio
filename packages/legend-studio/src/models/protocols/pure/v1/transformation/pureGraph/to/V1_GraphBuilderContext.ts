@@ -18,7 +18,11 @@ import {
   PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../../MetaModelConst';
-import { uniq, assertNonEmptyString } from '@finos/legend-studio-shared';
+import {
+  uniq,
+  assertNonEmptyString,
+  guaranteeType,
+} from '@finos/legend-studio-shared';
 import { GraphError } from '../../../../../../MetaModelUtility';
 import { GenericType } from '../../../../../../metamodels/pure/model/packageableElements/domain/GenericType';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
@@ -72,6 +76,7 @@ import type { Logger } from '../../../../../../../utils/Logger';
 import type { BasicModel } from '../../../../../../metamodels/pure/graph/BasicModel';
 import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graph/AbstractPureGraphManager';
+import { DataType } from '../../../../../../metamodels/pure/model/packageableElements/domain/DataType';
 
 type ResolutionResult<T> = [T, boolean | undefined];
 
@@ -311,6 +316,16 @@ export class V1_GraphBuilderContext {
     );
   resolveType = (path: string): PackageableElementImplicitReference<Type> =>
     this.createImplicitPackageableElementReference(path, this.graph.getType);
+  resolveDataType = (
+    path: string,
+  ): PackageableElementImplicitReference<DataType> =>
+    this.createImplicitPackageableElementReference(path, (path) =>
+      guaranteeType(
+        this.graph.getType(path),
+        DataType,
+        `Can't find data type '${path}'`,
+      ),
+    );
   resolveProfile = (
     path: string,
   ): PackageableElementImplicitReference<Profile> =>

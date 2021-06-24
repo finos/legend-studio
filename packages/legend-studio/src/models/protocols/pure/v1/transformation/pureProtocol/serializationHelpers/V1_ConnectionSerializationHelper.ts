@@ -149,7 +149,7 @@ const localH2DatasourceSpecificationModelSchema = createModelSchema(
   V1_LocalH2DataSourceSpecification,
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.H2_LOCAL),
-    testDataSetupCsv: primitive(),
+    testDataSetupCsv: optional(primitive()),
     testDataSetupSqls: list(primitive()),
   },
 );

@@ -20,7 +20,7 @@ import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   EditorStore,
-  ExecutionPlan,
+  RawExecutionPlan,
   ExecutionResult,
   RawLambda,
 } from '@finos/legend-studio';
@@ -40,7 +40,7 @@ export class QueryBuilderResultState {
   isExecutingQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult;
-  executionPlan?: ExecutionPlan;
+  executionPlan?: RawExecutionPlan;
   showServicePathModal = false;
   previewLimit = DEFAULT_LIMIT;
 
@@ -63,7 +63,7 @@ export class QueryBuilderResultState {
   setExecutionResult = (val: ExecutionResult | undefined): void => {
     this.executionResult = val;
   };
-  setExecutionPlan = (val: ExecutionPlan | undefined): void => {
+  setExecutionPlan = (val: RawExecutionPlan | undefined): void => {
     this.executionPlan = val;
   };
   setPreviewLimit = (val: number): void => {

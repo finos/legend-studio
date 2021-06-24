@@ -85,7 +85,7 @@ import { V1_Database } from '../../../model/packageableElements/store/relational
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelpers';
 import type { V1_RelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
 import {
   V1_ElementWithJoins,
@@ -104,7 +104,6 @@ import { V1_View } from '../../../model/packageableElements/store/relational/mod
 import { V1_Schema } from '../../../model/packageableElements/store/relational/model/V1_Schema';
 import { V1_Table } from '../../../model/packageableElements/store/relational/model/V1_Table';
 import { V1_transformMilestoning } from './V1_MilestoningTransformer';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformRelationalDataType = (type: DataType): V1_RelationalDataType => {
@@ -282,7 +281,7 @@ const transformColumn = (element: Column): V1_Column => {
 
 const transformTable = (
   element: Table,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_Table => {
   const table = new V1_Table();
   table.columns = element.columns.map((val) => transformColumn(val as Column));
@@ -290,7 +289,7 @@ const transformTable = (
   table.primaryKey = element.primaryKey.map((e) => e.name);
   if (element.milestoning.length) {
     table.milestoning = element.milestoning.map((milestoning) =>
-      V1_transformMilestoning(milestoning, plugins),
+      V1_transformMilestoning(milestoning, context),
     );
   }
   return table;
@@ -339,19 +338,17 @@ const transformView = (
 
 const transformSchema = (
   element: Schema,
-  plugins: PureProtocolProcessorPlugin[],
   context: V1_GraphTransformerContext,
 ): V1_Schema => {
   const schema = new V1_Schema();
   schema.name = element.name;
-  schema.tables = element.tables.map((table) => transformTable(table, plugins));
+  schema.tables = element.tables.map((table) => transformTable(table, context));
   schema.views = element.views.map((view) => transformView(view, context));
   return schema;
 };
 
 export const V1_transformDatabase = (
   element: Database,
-  plugins: PureProtocolProcessorPlugin[],
   context: V1_GraphTransformerContext,
 ): V1_Database => {
   const database = new V1_Database();
@@ -361,7 +358,7 @@ export const V1_transformDatabase = (
   );
   database.joins = element.joins.map((join) => transformJoin(join, context));
   database.schemas = element.schemas.map((schema) =>
-    transformSchema(schema, plugins, context),
+    transformSchema(schema, context),
   );
   database.includedStores = element.includes.map(V1_transformElementReference);
   return database;

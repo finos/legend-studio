@@ -16,7 +16,7 @@
 
 import type { ServiceStore } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/ServiceStore';
 import { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
-import { V1_initPackageableElement } from './V1_CoreTransformerHelper';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelpers';
 
 export const V1_transformServiceStore = (
   element: ServiceStore,

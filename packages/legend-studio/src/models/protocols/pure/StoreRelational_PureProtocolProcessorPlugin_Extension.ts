@@ -24,6 +24,7 @@ import type { V1_PostProcessor } from './v1/model/packageableElements/store/rela
 import type { V1_AuthenticationStrategy } from './v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { V1_DatasourceSpecification } from './v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_Milestoning } from './v1/model/packageableElements/store/relational/model/milestoning/V1_Milestoning';
+import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext';
 import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext';
 
 // milestoning
@@ -35,6 +36,7 @@ export type V1_MilestoningBuilder = (
 
 export type V1_MilestoningTransformer = (
   metamodel: Milestoning,
+  context: V1_GraphTransformerContext,
 ) => V1_Milestoning | undefined;
 
 export type V1_MilestoningProtocolSerializer = (
@@ -54,6 +56,7 @@ export type V1_ConnectionPostProcessorBuilder = (
 
 export type V1_ConnectionPostProcessorTransformer = (
   metamodel: PostProcessor,
+  context: V1_GraphTransformerContext,
 ) => V1_PostProcessor | undefined;
 
 export type V1_ConnectionPostProcessorProtocolSerializer = (
@@ -73,6 +76,7 @@ export type V1_ConnectionDatasourceSpecificationBuilder = (
 
 export type V1_ConnectionDatasourceSpecificationTransformer = (
   metamodel: DatasourceSpecification,
+  context: V1_GraphTransformerContext,
 ) => V1_DatasourceSpecification | undefined;
 
 export type V1_ConnectionDatasourceSpecificationProtocolSerializer = (
@@ -92,6 +96,7 @@ export type V1_ConnectionAuthenticationStrategyBuilder = (
 
 export type V1_ConnectionAuthenticationStrategyTransformer = (
   metamodel: AuthenticationStrategy,
+  context: V1_GraphTransformerContext,
 ) => V1_AuthenticationStrategy | undefined;
 
 export type V1_ConnectionAuthenticationStrategyProtocolSerializer = (

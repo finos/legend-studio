@@ -16,11 +16,7 @@
 
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import { unitTest } from '@finos/legend-studio-shared';
-import {
-  getTestEditorStore,
-  ensureObjectFieldsAreSortedAlphabetically,
-  excludeSectionIndex,
-} from '../StoreTestUtils';
+import { getTestEditorStore } from '../StoreTestUtils';
 import {
   M2MModel,
   ComplexRelationalModel,
@@ -60,7 +56,7 @@ const cases: RoundtripTestCase[] = [
 ];
 
 describe(unitTest('Lambda processing roundtrip test'), () => {
-  test.each(cases)('%s', async (testName, context, lambda) => {
+  test.each(cases)('%s', async (testName, context, lambdaJson) => {
     const { entities } = context;
     // setup
     const editorStore = getTestEditorStore();
@@ -70,43 +66,19 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       entities,
       { TEMPORARY__keepSectionIndex: true },
     );
-    const transformedEntities = editorStore.graphState.graph.allElements.map(
-      (element) => editorStore.graphState.graphManager.elementToEntity(element),
-    );
-    transformedEntities.forEach((entity) =>
-      ensureObjectFieldsAreSortedAlphabetically(entity.content),
-    );
-    expect(transformedEntities).toIncludeSameMembers(
-      excludeSectionIndex(entities),
-    );
-    await editorStore.graphState.graph.precomputeHashes(
-      editorStore.applicationStore.logger,
-    );
-    const protocolHashesIndex =
-      await editorStore.graphState.graphManager.buildHashesIndex(entities);
-    editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
-      protocolHashesIndex,
-    );
-    await editorStore.changeDetectionState.computeLocalChanges(true);
-    expect(
-      editorStore.changeDetectionState.workspaceLatestRevisionState.changes
-        .length,
-    ).toBe(0);
     // roundtrip check
-    const _builtValueSpec =
+    const lambda =
       editorStore.graphState.graphManager.buildValueSpecificationFromJson(
-        lambda,
+        lambdaJson,
         editorStore.graphState.graph,
       );
-    const _rawLambda =
-      editorStore.graphState.graphManager.buildRawValueSpecification(
-        _builtValueSpec,
-        editorStore.graphState.graph,
-      );
-    const _jsonLambda =
+    const _lambdaJson =
       editorStore.graphState.graphManager.serializeRawValueSpecification(
-        _rawLambda,
+        editorStore.graphState.graphManager.buildRawValueSpecification(
+          lambda,
+          editorStore.graphState.graph,
+        ),
       );
-    expect([_jsonLambda]).toIncludeAllMembers([lambda]);
+    expect(_lambdaJson).toEqual(lambdaJson);
   });
 });

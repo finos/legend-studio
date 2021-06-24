@@ -56,6 +56,7 @@ export abstract class DatabaseConnection extends Connection {
       timeZone: observable,
       quoteIdentifiers: observable,
       setType: action,
+      setQuoteIdentifiers: action,
     });
 
     this.type = type;
@@ -63,6 +64,10 @@ export abstract class DatabaseConnection extends Connection {
 
   setType(val: DatabaseType): void {
     this.type = val;
+  }
+
+  setQuoteIdentifiers(val: boolean): void {
+    this.quoteIdentifiers = val;
   }
 }
 

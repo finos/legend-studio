@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import type { GenericType } from '../../packageableElements/domain/GenericType';
+import type { GenericTypeReference } from '../../packageableElements/domain/GenericTypeReference';
 import type { Type } from '../../packageableElements/domain/Type';
+import type { PackageableElementReference } from '../../packageableElements/PackageableElementReference';
 
 export class ResultType {
-  type!: Type;
-  genericType?: GenericType;
+  type!: PackageableElementReference<Type>;
+  genericType?: GenericTypeReference;
 }

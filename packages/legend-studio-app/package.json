@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-app",
-  "version": "0.2.38",
+  "version": "0.2.39",
   "private": true,
   "description": "Legend Studio web application",
   "keywords": [
@@ -41,7 +41,7 @@
     "@finos/legend-studio-plugin-query-builder": "workspace:*",
     "@finos/legend-studio-preset-dsl-text": "workspace:*",
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*",
-    "@types/react": "17.0.9",
+    "@types/react": "17.0.11",
     "react": "17.0.2"
   },
   "devDependencies": {

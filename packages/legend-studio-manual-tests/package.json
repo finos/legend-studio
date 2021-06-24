@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-manual-tests",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "private": true,
   "description": "Legend Studio manual tests",
   "keywords": [
@@ -25,7 +25,7 @@
   "dependencies": {
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
-    "@types/react": "17.0.9",
+    "@types/react": "17.0.11",
     "react": "17.0.2"
   },
   "devDependencies": {

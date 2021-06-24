@@ -23,5 +23,5 @@ export class SQLExecutionNode extends ExecutionNode {
   onConnectionCloseCommitQuery?: string;
   onConnectionCloseRollbackQuery?: string;
   resultColumns: SQLResultColumn[] = [];
-  connection!: DatabaseConnection[];
+  connection!: DatabaseConnection;
 }

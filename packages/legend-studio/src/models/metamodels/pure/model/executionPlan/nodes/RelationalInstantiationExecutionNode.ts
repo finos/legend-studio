@@ -16,9 +16,9 @@
 
 import { ExecutionNode } from './ExecutionNode';
 
-export class RelationalInstantiationExecutionNode extends ExecutionNode {}
+export abstract class RelationalInstantiationExecutionNode extends ExecutionNode {}
 
-export class RelationalTdsInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
+export class RelationalTDSInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
 
 export class RelationalClassInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
 

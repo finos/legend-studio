@@ -32,7 +32,7 @@ import {
   V1_initPackageableElement,
   V1_transformElementReference,
   V1_transformElementReferencePointer,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelpers';
 import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
@@ -42,11 +42,11 @@ import {
   V1_RuntimePointer,
 } from '../../../model/packageableElements/runtime/V1_Runtime';
 import { V1_transformConnection } from './V1_ConnectionTransformer';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformStoreConnections = (
   element: StoreConnections,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_StoreConnections => {
   const connections = new V1_StoreConnections();
   connections.store = V1_transformElementReferencePointer(
@@ -55,7 +55,7 @@ const transformStoreConnections = (
   );
   connections.storeConnections = element.storeConnections.map((value) => {
     const conn = new V1_IdentifiedConnection();
-    conn.connection = V1_transformConnection(value.connection, true, plugins);
+    conn.connection = V1_transformConnection(value.connection, true, context);
     conn.id = value.id;
     return conn;
   });
@@ -64,11 +64,11 @@ const transformStoreConnections = (
 
 const transformEngineRuntime = (
   element: EngineRuntime,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_EngineRuntime => {
   const runtime = new V1_EngineRuntime();
   runtime.connections = element.connections.map((connection) =>
-    transformStoreConnections(connection, plugins),
+    transformStoreConnections(connection, context),
   );
   runtime.mappings = element.mappings.map((e) =>
     V1_transformElementReferencePointer(
@@ -89,10 +89,10 @@ const transformRunTimePointer = (
 
 export const V1_transformRuntime = (
   metamodel: Runtime,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_Runtime => {
   if (metamodel instanceof EngineRuntime) {
-    return transformEngineRuntime(metamodel, plugins);
+    return transformEngineRuntime(metamodel, context);
   } else if (metamodel instanceof RuntimePointer) {
     return transformRunTimePointer(metamodel);
   }
@@ -103,10 +103,10 @@ export const V1_transformRuntime = (
 
 export const V1_transformPackageableRuntime = (
   element: PackageableRuntime,
-  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
 ): V1_PackageableRuntime => {
   const runtime = new V1_PackageableRuntime();
   V1_initPackageableElement(runtime, element);
-  runtime.runtimeValue = transformEngineRuntime(element.runtimeValue, plugins);
+  runtime.runtimeValue = transformEngineRuntime(element.runtimeValue, context);
   return runtime;
 };

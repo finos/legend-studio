@@ -16,4 +16,4 @@
 
 import { V1_ExecutionNode } from './V1_ExecutionNode';
 
-export class V1_RelationalInstantiationExecutionNode extends V1_ExecutionNode {}
+export abstract class V1_RelationalInstantiationExecutionNode extends V1_ExecutionNode {}
