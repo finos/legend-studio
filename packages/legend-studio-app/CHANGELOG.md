@@ -1,5 +1,15 @@
 # @finos/legend-studio-app
 
+## 0.2.40
+
+### Patch Changes
+
+- Updated dependencies [[`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`f08d984`](https://github.com/finos/legend-studio/commit/f08d9845ace8dbbd54a8ab228ceb23b3bca1aca3), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693)]:
+  - @finos/legend-studio@0.1.14
+  - @finos/legend-studio-plugin-query-builder@0.0.17
+  - @finos/legend-studio-preset-dsl-text@0.0.32
+  - @finos/legend-studio-preset-external-format-json-schema@0.0.27
+
 ## 0.2.39
 
 ### Patch Changes
