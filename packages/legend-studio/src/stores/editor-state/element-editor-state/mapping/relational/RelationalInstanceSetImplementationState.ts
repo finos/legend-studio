@@ -19,22 +19,31 @@ import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from '../MappingElementState';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import {
+  IllegalStateError,
+  isNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../../EditorStore';
 import type { PropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import type { RelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import type { RawRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { createStubRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
+import type { CompilationError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
 import { MappingElementDecorateVisitor } from '../MappingElementDecorateVisitor';
 import { SOURCR_ID_LABEL } from '../../../../../models/MetaModelConst';
+import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
+import type { SourceInformation } from '../../../../../models/metamodels/pure/action/SourceInformation';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
-  declare instanceSetImplementationState: RootRelationalInstanceSetImplementationState;
-  declare propertyMapping: RelationalPropertyMapping;
+  declare instanceSetImplementationState: RelationalInstanceSetImplementationState;
+  declare propertyMapping:
+    | RelationalPropertyMapping
+    | EmbeddedRelationalInstanceSetImplementation;
 
   constructor(
     editorStore: EditorStore,
@@ -132,7 +141,92 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
   });
 }
 
-export class RootRelationalInstanceSetImplementationState extends InstanceSetImplementationState {
+export abstract class RelationalInstanceSetImplementationState extends InstanceSetImplementationState {}
+
+export class EmbeddedRelationalInstanceSetImplementationState
+  extends RelationalInstanceSetImplementationState
+  implements RelationalPropertyMappingState
+{
+  declare instanceSetImplementationState: RelationalInstanceSetImplementationState;
+  declare mappingElement: EmbeddedRelationalInstanceSetImplementation;
+  declare propertyMapping: EmbeddedRelationalInstanceSetImplementation;
+
+  constructor(
+    editorStore: EditorStore,
+    instanceSetImplementationState: RelationalInstanceSetImplementationState,
+    setImplementation: EmbeddedRelationalInstanceSetImplementation,
+  ) {
+    super(editorStore, setImplementation);
+    this.instanceSetImplementationState = instanceSetImplementationState;
+    this.mappingElement = setImplementation;
+    this.propertyMapping = setImplementation;
+    this.propertyMappingStates = this.getPropertyMappingStates(
+      setImplementation.propertyMappings,
+    );
+  }
+
+  get lambdaId(): string {
+    throw new IllegalStateError(
+      `Can't build lambda ID for embedded relational instance set implementation state`,
+    );
+  }
+
+  getPropertyMappingStates(
+    propertyMappings: PropertyMapping[],
+  ): RelationalPropertyMappingState[] {
+    // TODO
+    return [];
+  }
+
+  // dummy lambda editor states needed because embedded flat-data should be seen as `PropertMappingState`
+  lambdaPrefix = '';
+  lambdaString = '';
+  parserError?: ParserError;
+  compilationError?: CompilationError;
+
+  decorate(): void {
+    throw new UnsupportedOperationError();
+  }
+  convertPropertyMappingTransformObjects(): Promise<void> {
+    throw new UnsupportedOperationError();
+  }
+  setLambdaString(val: string): void {
+    throw new UnsupportedOperationError();
+  }
+  setParserError(error: ParserError | undefined): void {
+    throw new UnsupportedOperationError();
+  }
+  setCompilationError(error: CompilationError | undefined): void {
+    throw new UnsupportedOperationError();
+  }
+  get fullLambdaString(): string {
+    throw new UnsupportedOperationError();
+  }
+  processSourceInformation(
+    sourceInformation: SourceInformation,
+  ): SourceInformation {
+    throw new UnsupportedOperationError();
+  }
+  extractLambdaString(fullLambdaString: string): string {
+    throw new UnsupportedOperationError();
+  }
+  clearErrors(): void {
+    throw new UnsupportedOperationError();
+  }
+  convertLambdaGrammarStringToObject = flow(function* (
+    this: EmbeddedRelationalInstanceSetImplementation,
+  ) {
+    throw new UnsupportedOperationError();
+  });
+  convertLambdaObjectToGrammarString = flow(function* (
+    this: EmbeddedRelationalInstanceSetImplementation,
+    pretty: boolean,
+  ) {
+    throw new UnsupportedOperationError();
+  });
+}
+
+export class RootRelationalInstanceSetImplementationState extends RelationalInstanceSetImplementationState {
   declare mappingElement: RelationalInstanceSetImplementation;
   declare propertyMappingStates: RelationalPropertyMappingState[];
   isConvertingTransformObjects = false;
@@ -163,6 +257,12 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
       .map((pm) => {
         if (pm instanceof RelationalPropertyMapping) {
           return new RelationalPropertyMappingState(this.editorStore, this, pm);
+        } else if (pm instanceof EmbeddedRelationalInstanceSetImplementation) {
+          return new EmbeddedRelationalInstanceSetImplementationState(
+            this.editorStore,
+            this,
+            pm,
+          );
         }
         return undefined;
       })
@@ -211,10 +311,16 @@ export class RootRelationalInstanceSetImplementationState extends InstanceSetImp
       string,
       RelationalPropertyMappingState
     >();
-    this.propertyMappingStates.forEach((pm) => {
-      if (!pm.propertyMapping.isStub) {
-        operations.set(pm.lambdaId, pm.propertyMapping.relationalOperation);
-        propertyMappingStates.set(pm.lambdaId, pm);
+    this.propertyMappingStates.forEach((pmState) => {
+      if (
+        pmState.propertyMapping instanceof RelationalPropertyMapping &&
+        !pmState.propertyMapping.isStub
+      ) {
+        operations.set(
+          pmState.lambdaId,
+          pmState.propertyMapping.relationalOperation,
+        );
+        propertyMappingStates.set(pmState.lambdaId, pmState);
       }
       // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
     });
