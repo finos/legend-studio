@@ -185,19 +185,20 @@ export class EmbeddedRelationalInstanceSetImplementationState
   compilationError?: CompilationError;
 
   decorate(): void {
-    throw new UnsupportedOperationError();
+    return;
   }
   convertPropertyMappingTransformObjects(): Promise<void> {
     throw new UnsupportedOperationError();
   }
   setLambdaString(val: string): void {
-    throw new UnsupportedOperationError();
+    return;
   }
   setParserError(error: ParserError | undefined): void {
-    throw new UnsupportedOperationError();
+    return;
   }
   setCompilationError(error: CompilationError | undefined): void {
-    throw new UnsupportedOperationError();
+    // TODO
+    return;
   }
   get fullLambdaString(): string {
     throw new UnsupportedOperationError();
@@ -211,7 +212,8 @@ export class EmbeddedRelationalInstanceSetImplementationState
     throw new UnsupportedOperationError();
   }
   clearErrors(): void {
-    throw new UnsupportedOperationError();
+    // TODO
+    return;
   }
   convertLambdaGrammarStringToObject = flow(function* (
     this: EmbeddedRelationalInstanceSetImplementation,

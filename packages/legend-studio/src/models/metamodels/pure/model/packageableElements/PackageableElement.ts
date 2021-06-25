@@ -192,6 +192,8 @@ export abstract class PackageableElement implements Hashable, Stubable {
     // As a result, error will be thrown again. This is a good way to notify developer
     // that the object has been modified, this is a better alternative to than using
     // `Object.freeze`, which requires a more complicated setup.
+    // Also, using `Object.freeze` does not really solve the problem
+    // See https://github.com/mobxjs/mobx/issues/3008
     const hashCode = this._elementHashCode;
     if (this._isImmutable) {
       throw new IllegalStateError(
