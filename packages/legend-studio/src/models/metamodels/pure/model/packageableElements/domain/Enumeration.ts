@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
   hashArray,
-  IllegalStateError,
   guaranteeNonNullable,
   addUniqueEntry,
   deleteEntry,
@@ -42,7 +41,7 @@ export class Enumeration extends DataType implements Hashable, Stubable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<Enumeration, '_elementHashCode'>(this, {
       values: observable,
       stereotypes: observable,
       taggedValues: observable,
@@ -54,7 +53,7 @@ export class Enumeration extends DataType implements Hashable, Stubable {
       changeStereotype: action,
       addStereotype: action,
       isStub: computed,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -92,6 +91,7 @@ export class Enumeration extends DataType implements Hashable, Stubable {
   }
 
   static createStub = (): Enumeration => new Enumeration('');
+
   override get isStub(): boolean {
     return super.isStub && isStubArray(this.values);
   }
@@ -99,22 +99,15 @@ export class Enumeration extends DataType implements Hashable, Stubable {
   isSuperType(type: Type): boolean {
     return false;
   }
+
   isSubType(type: Type): boolean {
     return false;
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ENUMERATION,
-      super.hashCode,
+      this.path,
       hashArray(this.values),
       hashArray(
         this.stereotypes.map((stereotype) => stereotype.pointerHashCode),

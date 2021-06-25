@@ -322,14 +322,16 @@ export class EmbeddedFlatDataInstanceSetImplementationState
   lambdaString = '';
   parserError?: ParserError;
   compilationError?: CompilationError;
+
   setLambdaString(val: string): void {
-    throw new UnsupportedOperationError();
+    return;
   }
   setParserError(error: ParserError | undefined): void {
-    throw new UnsupportedOperationError();
+    return;
   }
   setCompilationError(error: CompilationError | undefined): void {
-    throw new UnsupportedOperationError();
+    // TODO
+    return;
   }
   get fullLambdaString(): string {
     throw new UnsupportedOperationError();
@@ -343,7 +345,8 @@ export class EmbeddedFlatDataInstanceSetImplementationState
     throw new UnsupportedOperationError();
   }
   clearErrors(): void {
-    throw new UnsupportedOperationError();
+    // TODO
+    return;
   }
   convertLambdaGrammarStringToObject = flow(function* (
     this: EmbeddedFlatDataInstanceSetImplementationState,

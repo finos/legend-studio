@@ -26,7 +26,8 @@ export class V1_ServiceStore extends V1_Store implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_STORE,
-      super.hashCode,
+      this.path,
+      hashArray(this.includedStores),
       this.docLink,
     ]);
   }

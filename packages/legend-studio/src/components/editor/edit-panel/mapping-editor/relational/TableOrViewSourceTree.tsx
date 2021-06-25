@@ -68,8 +68,11 @@ import type { Join } from '../../../../../models/metamodels/pure/model/packageab
 import type { View } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 
 export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
+
 const JOIN_OPERATOR = '>';
 const JOIN_AT_SYMBOL = '@';
+const JOIN_PIPE_SYMBOL = '|';
+
 const generateDatabasePointerText = (database: string): string =>
   `[${database}]`;
 
@@ -124,12 +127,13 @@ const generateColumnTreeNodeId = (
   relation: Table | View,
   parentNode: TableOrViewTreeNodeData | undefined,
 ): string =>
-  `${
-    parentNode?.id ??
-    `${generateDatabasePointerText(relation.schema.owner.path)}${
-      relation.schema.name
-    }.${relation.name}`
-  }.${column.name}`;
+  parentNode
+    ? parentNode instanceof JoinNodeData
+      ? `${parentNode.id} ${JOIN_PIPE_SYMBOL} ${relation.name}.${column.name}`
+      : `${parentNode.id}.${column.name}`
+    : `${generateDatabasePointerText(relation.schema.owner.path)}${
+        relation.schema.name
+      }.${relation.name}`;
 
 const getColumnTreeNodeData = (
   column: Column,

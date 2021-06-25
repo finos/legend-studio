@@ -81,7 +81,6 @@ export abstract class PropertyMapping implements Hashable, Stubable {
     target?: SetImplementation,
   ) {
     makeObservable(this, {
-      owner: observable,
       sourceSetImplementation: observable,
       targetSetImplementation: observable,
     });

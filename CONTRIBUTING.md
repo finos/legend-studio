@@ -45,25 +45,26 @@ fix: correct minor typos in code
 
 ### Changeset
 
-A `changeset` is an intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, we expect the author to create a `changeset` file which indicates which packages should be re-released due to this change and a brief summary of the changes to be added to release note/changelog.
+A `changeset` is used to express the intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, we expect the author to create `changeset` files to indicate which packages should be re-released due to their changes and a brief summary of the changes to be added to release note/changelog.
 
-> No matter how big is your change, you should **always** at least bump a `patch` release for the packages being modified. We enforce this to avoid missing changes during release and also to lessen the cognitive load for reivewers. If your change is not substantial (for example, you are fixing code styles, bump some minor dependencies or adding some tests), you can leave the summary blank.
+> No matter how big is your change, you should **always** at least bump a `patch` release for the packages being modified. We enforce this to avoid missing changes during release and also to lessen the cognitive load for reivewers. If your change is not substantial (for example, you are fixing code format, bumping some minor dependencies or adding some tests), you can leave the summary blank. Sometimes, you would make changes in core packages, leading to further modifications in other packages, in these cases, what we find to be the most common workflow is to create an empty changeset listing out all changed packages, and then to create a seaprate changeset targetting just the modified core packages with detailed changelogs.
 
-We use [changesets](https://github.com/atlassian/changesets) to manage this process. This is the format of the changeset.
+We use [changesets](https://github.com/atlassian/changesets) to manage this process. See below for the format of the changeset.
 
-```md
+````md
 ---
 'pkg1': minor <!-- this signals us to release a minor version for pkg1 -->
 'pkg2': patch <!-- this signals us to release a patch for pkg2 -->
 ---
 
-An example description of the major changes.
-
 <!--
-Please note any breaking changes and potential migration.
-Also try to adhere to the format in existing changelogs.
+Capitalize the first character of your message and end it with a period.
+To document breaking chnages, prefix the message with `**BREAKING CHANGE:**`
+Please try to adhere to the format in existing changelogs.
 -->
-```
+
+An example description of the major changes.
+``
 
 To create the changeset, you can use the following commands:
 
@@ -76,6 +77,7 @@ yarn changeset "e.g. some message ..."
 # To open an interactive prompt to build more advanced changeset
 yarn changeset:cli
 ```
+````
 
 > If you made a mistake in a changeset and want to create a PR to rectify that, to avoid the changeset being attributed to the wrong PR or author, you can add `pr` and `author` fields to the [front-matter part of the changelog](https://github.com/atlassian/changesets/blob/master/packages/changelog-github/CHANGELOG.md#minor-changes).
 

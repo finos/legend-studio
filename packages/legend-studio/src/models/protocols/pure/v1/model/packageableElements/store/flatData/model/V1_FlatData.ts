@@ -27,7 +27,8 @@ export class V1_FlatData extends V1_Store implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA,
-      super.hashCode,
+      this.path,
+      hashArray(this.includedStores),
       hashArray(this.sections),
     ]);
   }

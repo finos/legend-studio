@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  hashArray,
-  IllegalStateError,
-  guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+import { hashArray, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { computed, observable, makeObservable } from 'mobx';
+import { observable, makeObservable, override } from 'mobx';
 import { Store } from '../../../../../model/packageableElements/store/Store';
 import type { PackageableElementVisitor } from '../../../../../model/packageableElements/PackageableElement';
 import type { Schema } from '../../../../../model/packageableElements/store/relational/model/Schema';
@@ -37,11 +33,11 @@ export class Database extends Store implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<Database, '_elementHashCode'>(this, {
       schemas: observable,
       joins: observable,
       filters: observable,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -65,18 +61,11 @@ export class Database extends Store implements Hashable {
       `Can't find filter '${name}' in database '${this.path}'`,
     );
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABASE,
-      super.hashCode,
+      this.path,
+      hashArray(this.includes.map((include) => include.valueForSerialization)),
       hashArray(this.schemas),
       hashArray(this.joins),
       hashArray(this.filters),

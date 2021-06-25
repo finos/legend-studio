@@ -228,11 +228,7 @@ export class GraphState {
    */
   initializeSystem = flow(function* (this: GraphState) {
     try {
-      yield this.graphManager.buildSystem(this.coreModel, this.systemModel, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          this.editorStore.applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
-      });
+      yield this.graphManager.buildSystem(this.coreModel, this.systemModel);
       this.systemModel.initializeAutoImports();
     } catch (error: unknown) {
       this.graph.setFailedToBuild(true);
@@ -289,20 +285,11 @@ export class GraphState {
           string,
           ProjectDependencyMetadata
         >,
-        {
-          DEV__enableGraphImmutabilityRuntimeCheck:
-            this.editorStore.applicationStore.config.options
-              .DEV__enableGraphImmutabilityRuntimeCheck,
-        },
       );
       this.graph.setDependencyManager(dependencyManager);
       this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // build graph
-      yield this.graphManager.buildGraph(this.graph, entities, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          this.editorStore.applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
-      });
+      yield this.graphManager.buildGraph(this.graph, entities);
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.GRAPH_INITIALIZED,
         '[TOTAL]',
@@ -347,19 +334,11 @@ export class GraphState {
           string,
           ProjectDependencyMetadata
         >,
-        {
-          DEV__enableGraphImmutabilityRuntimeCheck:
-            this.editorStore.applicationStore.config.options
-              .DEV__enableGraphImmutabilityRuntimeCheck,
-        },
       );
       this.graph.setDependencyManager(dependencyManager);
       this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // build graph
       yield this.graphManager.buildGraph(this.graph, entities, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          this.editorStore.applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
         TEMPORARY__keepSectionIndex:
           this.editorStore.applicationStore.config.options
             .EXPERIMENTAL__enableFullGrammarImportSupport,
@@ -371,11 +350,6 @@ export class GraphState {
       yield this.graphManager.buildGenerations(
         this.graph,
         this.graphGenerationState.generatedEntities,
-        {
-          DEV__enableGraphImmutabilityRuntimeCheck:
-            this.editorStore.applicationStore.config.options
-              .DEV__enableGraphImmutabilityRuntimeCheck,
-        },
       );
 
       // NOTE: we will see that: (time for fetching entities + time for building graph) < time for instantiating graph
@@ -845,11 +819,6 @@ export class GraphState {
             string,
             ProjectDependencyMetadata
           >,
-          {
-            DEV__enableGraphImmutabilityRuntimeCheck:
-              this.editorStore.applicationStore.config.options
-                .DEV__enableGraphImmutabilityRuntimeCheck,
-          },
         );
         newGraph.setDependencyManager(dependencyManager);
       }
@@ -876,9 +845,6 @@ export class GraphState {
 
       yield this.graphManager.buildGraph(newGraph, entities, {
         quiet: true,
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          this.editorStore.applicationStore.config.options
-            .DEV__enableGraphImmutabilityRuntimeCheck,
         TEMPORARY__keepSectionIndex:
           this.editorStore.applicationStore.config.options
             .EXPERIMENTAL__enableFullGrammarImportSupport,
@@ -891,11 +857,6 @@ export class GraphState {
       yield this.graphManager.buildGenerations(
         newGraph,
         this.graphGenerationState.generatedEntities,
-        {
-          DEV__enableGraphImmutabilityRuntimeCheck:
-            this.editorStore.applicationStore.config.options
-              .DEV__enableGraphImmutabilityRuntimeCheck,
-        },
       );
       this.graph = newGraph;
       /* @MARKER: MEMORY-SENSITIVE */
@@ -988,11 +949,6 @@ export class GraphState {
       yield this.graphManager.buildGenerations(
         this.graph,
         this.graphGenerationState.generatedEntities,
-        {
-          DEV__enableGraphImmutabilityRuntimeCheck:
-            this.editorStore.applicationStore.config.options
-              .DEV__enableGraphImmutabilityRuntimeCheck,
-        },
       );
 
       /* @MARKER: MEMORY-SENSITIVE */

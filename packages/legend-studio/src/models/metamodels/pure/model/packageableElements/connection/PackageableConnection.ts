@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
-import { hashArray, IllegalStateError } from '@finos/legend-studio-shared';
+import { observable, action, makeObservable, override } from 'mobx';
+import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
@@ -31,10 +31,10 @@ export class PackageableConnection
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<PackageableConnection, '_elementHashCode'>(this, {
       connectionValue: observable,
       setConnectionValue: action,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -42,18 +42,10 @@ export class PackageableConnection
     this.connectionValue = connection;
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGEABLE_CONNECTION,
-      super.hashCode,
+      this.path,
       this.connectionValue,
     ]);
   }

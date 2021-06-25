@@ -35,7 +35,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FUNCTION,
-      super.hashCode,
+      this.path,
       hashArray(this.parameters),
       this.returnType,
       hashArray(this.taggedValues),

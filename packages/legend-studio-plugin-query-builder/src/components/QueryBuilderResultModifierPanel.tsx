@@ -29,7 +29,7 @@ import {
   SortColumnState,
 } from '../stores/QueryResultSetModifierState';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type { ProjectionColumnOption } from '../stores/QueryBuilderFetchStructureState';
+import type { ProjectionColumnOption } from '../stores/QueryBuilderProjectionState';
 import { useEditorStore } from '@finos/legend-studio';
 
 const ColumnSortEditor = observer(
@@ -38,8 +38,9 @@ const ColumnSortEditor = observer(
     columnSort: SortColumnState;
   }) => {
     const { queryBuilderState, columnSort } = props;
-    const projectionState = queryBuilderState.fetchStructureState;
-    const projectionOptions = projectionState.projectionColumnOptions;
+    const projectionState =
+      queryBuilderState.fetchStructureState.projectionState;
+    const projectionOptions = projectionState.columnOptions;
     const value = {
       label: columnSort.columnState.columnName,
       value: columnSort,
@@ -98,9 +99,10 @@ const ColumnsSortEditor = observer(
     const editorStore = useEditorStore();
     const resultModifier = queryBuilderState.resultSetModifierState;
     const sortColumns = resultModifier.sortColumns;
-    const projectionState = queryBuilderState.fetchStructureState;
-    const projectionOptions = projectionState.projectionColumnOptions;
-    const projectionColumns = projectionState.projectionColumns;
+    const projectionState =
+      queryBuilderState.fetchStructureState.projectionState;
+    const projectionOptions = projectionState.columnOptions;
+    const projectionColumns = projectionState.columns;
     const addValue = (): void => {
       if (projectionColumns.length > 0) {
         const sortColumn = new SortColumnState(

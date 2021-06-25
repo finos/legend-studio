@@ -32,7 +32,6 @@ export class MappingInclude {
 
   constructor(owner: Mapping, included: PackageableElementReference<Mapping>) {
     makeObservable(this, {
-      owner: observable,
       included: observable,
       storeSubstitutions: observable,
       addStoreSubstitution: action,

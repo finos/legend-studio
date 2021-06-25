@@ -34,15 +34,15 @@ Visit our [roadmap](https://github.com/finos/legend#roadmap) to know more about 
 
 ## Contributing
 
-The main purpose of this repository is to continue evolving Legend Studio core, making it faster, more powerful, and easier to use. Development of Legend Studio happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Legend Studio.
+Please read our [contributing guide](./CONTRIBUTING.md).
 
 ### Code of conduct
 
 We adopted a Code of Conduct that we expect project participants to adhere to. Please read [the full text](./CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
 
-### Contributing guide
+### Good first issues
 
-Read our [contributing guide](./CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Legend Studio.
+We have a list of [good first issues](https://github.com/finos/legend-studio/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started, gain experience, and get familiar with our contribution process.
 
 ### License
 

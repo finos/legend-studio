@@ -30,7 +30,7 @@ export class V1_PackageableRuntime
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGEABLE_RUNTIME,
-      super.hashCode,
+      this.path,
       this.runtimeValue,
     ]);
   }

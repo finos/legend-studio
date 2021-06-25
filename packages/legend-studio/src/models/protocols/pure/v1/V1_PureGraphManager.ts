@@ -38,7 +38,6 @@ import {
   assertErrorThrown,
   promisify,
 } from '@finos/legend-studio-shared';
-
 import type { ProjectDependencyMetadata } from '../../../sdlc/models/configuration/ProjectDependency';
 import {
   GraphError,
@@ -64,7 +63,6 @@ import type {
 } from '../../../metamodels/pure/graph/PureModel';
 import { PureModel } from '../../../metamodels/pure/graph/PureModel';
 import type { BasicModel } from '../../../metamodels/pure/graph/BasicModel';
-import { GraphFreezer } from '../../../metamodels/pure/action/freezer/GraphFreezer';
 import type { DependencyManager } from '../../../metamodels/pure/graph/DependencyManager';
 import type { Class } from '../../../metamodels/pure/model/packageableElements/domain/Class';
 import { RawLambda } from '../../../metamodels/pure/model/rawValueSpecification/RawLambda';
@@ -456,10 +454,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       // NOTE: right now we only have profile and enumeration for system, we might need to generalize this step in the future
       yield this.buildTypes(graph, systemGraphBuilderInput);
       yield this.buildOtherElements(graph, systemGraphBuilderInput);
-      yield this.postProcess(graph, systemGraphBuilderInput, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          options?.DEV__enableGraphImmutabilityRuntimeCheck,
-      });
+      yield this.postProcess(graph, systemGraphBuilderInput);
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_SYSTEM_BUILT,
@@ -552,10 +547,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       yield this.buildOtherElements(graph, graphBuilderInput, options);
 
-      yield this.postProcess(graph, graphBuilderInput, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          options?.DEV__enableGraphImmutabilityRuntimeCheck,
-      });
+      yield this.postProcess(graph, graphBuilderInput);
       const processingFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
@@ -772,8 +764,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
 
       yield this.postProcess(graph, graphBuilderInput, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          options?.DEV__enableGraphImmutabilityRuntimeCheck,
         TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
       });
       graph.setIsBuilt(true);
@@ -858,10 +848,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       yield this.buildOtherElements(graph, generationGraphBuilderInput);
 
-      yield this.postProcess(graph, generationGraphBuilderInput, {
-        DEV__enableGraphImmutabilityRuntimeCheck:
-          options?.DEV__enableGraphImmutabilityRuntimeCheck,
-      });
+      yield this.postProcess(graph, generationGraphBuilderInput);
       generatedModel.setIsBuilt(true);
       if (!options?.quiet) {
         this.logger.info(
@@ -964,7 +951,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: {
-      DEV__enableGraphImmutabilityRuntimeCheck?: boolean;
       TEMPORARY__keepSectionIndex?: boolean;
     },
   ) {
@@ -984,11 +970,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               );
               if (isElementReadOnly) {
                 element.freeze();
-                if (options?.DEV__enableGraphImmutabilityRuntimeCheck) {
-                  element.accept_PackageableElementVisitor(
-                    new GraphFreezer(this.pureGraphManagerPlugins),
-                  );
-                }
               }
             }),
           ),

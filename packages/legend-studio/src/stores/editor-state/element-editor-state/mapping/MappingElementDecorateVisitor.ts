@@ -50,6 +50,7 @@ import type { AggregationAwareSetImplementation } from '../../../../models/metam
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { createStubRelationalOperationElement } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
+import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -448,6 +449,13 @@ export class MappingElementDecorateVisitor
                 (b.targetSetImplementation as SetImplementation).id.value,
               ),
             )
+            // add the embedded property mapping to the end of the list
+            .concat(
+              existingPropertyMappings.filter(
+                (pm) =>
+                  pm instanceof EmbeddedRelationalInstanceSetImplementation,
+              ),
+            )
         );
       }
       return [];
@@ -534,7 +542,15 @@ export class MapppingElementDecorationCleanUpVisitor
   visit_RootRelationalInstanceSetImplementation(
     setImplementation: RootRelationalInstanceSetImplementation,
   ): void {
-    // TODO: add when relational is supported
+    setImplementation.setPropertyMappings(
+      setImplementation.propertyMappings.filter(
+        (propertyMapping) =>
+          (propertyMapping instanceof RelationalPropertyMapping &&
+            !propertyMapping.isStub) ||
+          propertyMapping instanceof
+            EmbeddedRelationalInstanceSetImplementation,
+      ),
+    );
   }
 
   visit_AggregationAwareSetImplementation(

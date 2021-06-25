@@ -53,8 +53,8 @@ import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState
 import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
-import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
+import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
 import {
   isNonNullable,
   getClass,
@@ -1143,9 +1143,7 @@ export class EditorStore {
   get classPropertyGenericTypeOptions(): PackageableElementSelectOption<Type>[] {
     return this.graphState.graph.primitiveTypes
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
-      .map(
-        (e) => e.selectOption as PackageableElementSelectOption<PrimitiveType>,
-      )
+      .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
       .concat(
         this.graphState.graph.types
           .concat(this.graphState.graph.systemModel.types)

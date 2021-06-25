@@ -73,7 +73,7 @@ export const PropertyMappingsEditor = observer(
     // Parser Error
     const propertyMappingStates =
       instanceSetImplementationState.propertyMappingStates.filter(
-        (pm) => pm.propertyMapping.property.value.name === property.name,
+        (pm) => pm.propertyMapping.property.value === property,
       );
     const propertyHasParserError = Boolean(
       propertyMappingStates.find((pm) => pm.parserError),

@@ -31,7 +31,7 @@ export class V1_Diagram extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DIAGRAM,
-      super.hashCode,
+      this.path,
       hashArray(this.classViews),
       // TODO: association views
       hashArray(this.generalizationViews),

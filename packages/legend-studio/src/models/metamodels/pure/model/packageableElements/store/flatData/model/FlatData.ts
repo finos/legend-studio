@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, action, makeObservable, override } from 'mobx';
 import {
-  IllegalStateError,
   guaranteeNonNullable,
   hashArray,
   addUniqueEntry,
@@ -36,13 +35,13 @@ export class FlatData extends Store implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<FlatData, '_elementHashCode'>(this, {
       sections: observable,
       deleteSection: action,
       changeSection: action,
       addSection: action,
       recordTypes: computed,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -69,18 +68,11 @@ export class FlatData extends Store implements Hashable {
 
   static createStub = (): FlatData => new FlatData('');
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA,
-      super.hashCode,
+      this.path,
+      hashArray(this.includes.map((include) => include.valueForSerialization)),
       hashArray(this.sections),
     ]);
   }
