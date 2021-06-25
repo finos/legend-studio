@@ -176,14 +176,20 @@ export class QueryBuilderLambdaProcessor
   implements ValueSpecificationVisitor<void>
 {
   queryBuilderState: QueryBuilderState;
-  parentSimpleFunction?: SimpleFunctionExpression;
+  /**
+   * In Pure grammar, the next function expression is what on the right of the current expression
+   * i.e. `something->thisExpression()->nextExpression()`
+   * But in the protocol presentation, the node that holds the next expression actually contains
+   * the node holding the current expression, hence the naming.
+   */
+  nextFunctionExpression?: SimpleFunctionExpression;
 
   constructor(
     queryBuilderState: QueryBuilderState,
-    parentSimpleFunction: SimpleFunctionExpression | undefined,
+    nextFunctionExpression: SimpleFunctionExpression | undefined,
   ) {
     this.queryBuilderState = queryBuilderState;
-    this.parentSimpleFunction = parentSimpleFunction;
+    this.nextFunctionExpression = nextFunctionExpression;
   }
 
   visit_RootGraphFetchTreeInstanceValue(
@@ -419,7 +425,8 @@ export class QueryBuilderLambdaProcessor
     } else if (
       (functionName === COLUMN_SORT_TYPE.ASC ||
         functionName === COLUMN_SORT_TYPE.DESC) &&
-      this.parentSimpleFunction?.functionName === SUPPORTED_FUNCTIONS.SORT_FUNC
+      this.nextFunctionExpression?.functionName ===
+        SUPPORTED_FUNCTIONS.SORT_FUNC
     ) {
       if (valueSpecification.parametersValues.length === 1) {
         const sortColumnName = getNullableStringValueFromValueSpec(
@@ -519,7 +526,8 @@ export class QueryBuilderLambdaProcessor
     } else if (
       (functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED ||
         functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH) &&
-      this.parentSimpleFunction?.functionName === SUPPORTED_FUNCTIONS.SERIALIZE
+      this.nextFunctionExpression?.functionName ===
+        SUPPORTED_FUNCTIONS.SERIALIZE
     ) {
       this.queryBuilderState.fetchStructureState.graphFetchTreeState.setChecked(
         functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
@@ -566,7 +574,7 @@ export class QueryBuilderLambdaProcessor
           e.accept_ValueSpecificationVisitor(
             new QueryBuilderLambdaProcessor(
               this.queryBuilderState,
-              this.parentSimpleFunction,
+              this.nextFunctionExpression,
             ),
           ),
         ),
@@ -578,7 +586,7 @@ export class QueryBuilderLambdaProcessor
     valueSpecification: AbstractPropertyExpression,
   ): void {
     if (
-      this.parentSimpleFunction?.functionName === SUPPORTED_FUNCTIONS.PROJECT
+      this.nextFunctionExpression?.functionName === SUPPORTED_FUNCTIONS.PROJECT
     ) {
       const projectionState =
         this.queryBuilderState.fetchStructureState.projectionState;

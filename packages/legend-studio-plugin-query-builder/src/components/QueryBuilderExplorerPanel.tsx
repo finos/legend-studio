@@ -152,10 +152,7 @@ const QueryBuilderExplorerContextMenu = observer(
       }
     };
     const addAllChildrenToFetchStructure = (): void => {
-      if (
-        node instanceof QueryBuilderExplorerTreePropertyNodeData &&
-        node.type instanceof Class
-      ) {
+      if (node.type instanceof Class) {
         // NOTE: here we require the node to already been expanded so the child nodes are generated
         // we don't allow adding unopened node. Maybe if it helps, we can show a warning.
         const nodesToAdd = node.childrenIds
@@ -207,25 +204,22 @@ const QueryBuilderExplorerContextMenu = observer(
 
     return (
       <div ref={ref} className="query-builder-tree__context-menu">
-        {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
-          <>
-            {!(node.type instanceof Class) && (
-              <div
-                className="query-builder-tree__context-menu__item"
-                onClick={addNodeToFetchStructure}
-              >
-                Add Property to Fetch Structure
-              </div>
-            )}
-            {node.type instanceof Class && (
-              <div
-                className="query-builder-tree__context-menu__item"
-                onClick={addAllChildrenToFetchStructure}
-              >
-                Add All Properties to Fetch Structure
-              </div>
-            )}
-          </>
+        {node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+          !(node.type instanceof Class) && (
+            <div
+              className="query-builder-tree__context-menu__item"
+              onClick={addNodeToFetchStructure}
+            >
+              Add Property to Fetch Structure
+            </div>
+          )}
+        {node.type instanceof Class && (
+          <div
+            className="query-builder-tree__context-menu__item"
+            onClick={addAllChildrenToFetchStructure}
+          >
+            Add All Properties to Fetch Structure
+          </div>
         )}
         <div
           className="query-builder-tree__context-menu__item"

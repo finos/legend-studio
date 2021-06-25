@@ -66,6 +66,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
    * e.g. derived properties, operation class mappings, etc.
    */
   skipMappingCheck: boolean;
+  type: Type;
   setImpl?: SetImplementation;
 
   constructor(
@@ -73,12 +74,14 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     label: string,
     mapped: boolean,
     skipMappingCheck: boolean,
+    type: Type,
     setImpl: SetImplementation | undefined,
   ) {
     this.id = id;
     this.label = label;
     this.mapped = mapped;
     this.skipMappingCheck = skipMappingCheck;
+    this.type = type;
     this.setImpl = setImpl;
   }
 }
@@ -87,7 +90,6 @@ export class QueryBuilderExplorerTreeRootNodeData extends QueryBuilderExplorerTr
 
 export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplorerTreeNodeData {
   property: AbstractProperty;
-  type: Type;
   parentId: string;
 
   constructor(
@@ -99,9 +101,15 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     skipMappingCheck: boolean,
     setImpl: SetImplementation | undefined,
   ) {
-    super(id, label, mapped, skipMappingCheck, setImpl);
+    super(
+      id,
+      label,
+      mapped,
+      skipMappingCheck,
+      property.genericType.value.rawType,
+      setImpl,
+    );
     this.property = property;
-    this.type = property.genericType.value.rawType;
     this.parentId = parentId;
     this.mapped = mapped;
   }
@@ -247,6 +255,7 @@ const getQueryBuilderTreeData = (
     true,
     // NOTE: we will not try to analyze property mappedness for operation class mapping
     rootSetImpl instanceof OperationSetImplementation,
+    rootClass,
     rootSetImpl,
   );
   treeRootNode.isOpen = true;
