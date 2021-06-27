@@ -29,7 +29,7 @@ import {
   V1_initPackageableElement,
   V1_transformElementReference,
   V1_transformElementReferencePointer,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {

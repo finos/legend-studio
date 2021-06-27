@@ -41,7 +41,7 @@ import {
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from './QueryBuilderFilterOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
 const EQUAL_FUNCTION_NAME = 'equal';
 

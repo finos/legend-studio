@@ -72,7 +72,7 @@ import {
   V1_transformElementReferencePointer,
   V1_transformMultiplicity,
   V1_transformOptionalElementReference,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
 import {
   V1_EnumValueMapping,

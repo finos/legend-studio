@@ -37,7 +37,7 @@ import {
   buildFilterConditionExpression,
   unwrapNotExpression,
   getCollectionValueSpecificationType,
-} from './QueryBuilderFilterOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
 const IN_FUNCTION_NAME = 'in';
 

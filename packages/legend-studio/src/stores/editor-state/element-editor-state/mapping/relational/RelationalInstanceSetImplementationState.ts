@@ -33,7 +33,7 @@ import { createStubRelationalOperationElement } from '../../../../../models/meta
 import type { CompilationError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
-import { MappingElementDecorateVisitor } from '../MappingElementDecorateVisitor';
+import { MappingElementDecorator } from '../MappingElementDecorator';
 import { SOURCR_ID_LABEL } from '../../../../../models/MetaModelConst';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { SourceInformation } from '../../../../../models/metamodels/pure/action/SourceInformation';
@@ -288,7 +288,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
    */
   decorate(): void {
     this.mappingElement.accept_SetImplementationVisitor(
-      new MappingElementDecorateVisitor(),
+      new MappingElementDecorator(),
     );
     const newPropertyMappingStates: RelationalPropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(

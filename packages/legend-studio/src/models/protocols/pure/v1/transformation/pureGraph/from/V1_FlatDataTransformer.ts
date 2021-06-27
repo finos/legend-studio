@@ -51,7 +51,7 @@ import {
   V1_FlatDataBoolean,
   V1_FlatDataString,
 } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
-import { V1_initPackageableElement } from './V1_CoreTransformerHelpers';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper';
 import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';
 
 function transformFlatDataType(type: FlatDataDataType): V1_FlatDataDataType {

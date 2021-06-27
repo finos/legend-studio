@@ -43,7 +43,7 @@ import type {
   V1_RawPropertyGraphFetchTree,
 } from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
 
-export class V1_ProtocolToMetaModelRawValueSpecificationVisitor
+export class V1_ProtocolToMetaModelRawValueSpecificationBuilder
   implements V1_RawValueSpecificationVisitor<RawValueSpecification>
 {
   context: V1_GraphBuilderContext;
@@ -55,7 +55,7 @@ export class V1_ProtocolToMetaModelRawValueSpecificationVisitor
 
   withProperyGraphFetchTreeClass(
     val: Class,
-  ): V1_ProtocolToMetaModelRawValueSpecificationVisitor {
+  ): V1_ProtocolToMetaModelRawValueSpecificationBuilder {
     this.propertyGraphFetchTreeClass = val;
     return this;
   }

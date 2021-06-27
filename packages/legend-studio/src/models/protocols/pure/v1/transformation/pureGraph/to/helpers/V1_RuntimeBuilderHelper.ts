@@ -22,7 +22,7 @@ import {
 } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_EngineRuntime } from '../../../../model/packageableElements/runtime/V1_Runtime';
-import { V1_ProtocolToMetaModelConnectionVisitor } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionVisitor';
+import { V1_ProtocolToMetaModelConnectionBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
 
 export const V1_processEngineRuntime = (
   runtime: V1_EngineRuntime,
@@ -52,7 +52,7 @@ export const V1_processEngineRuntime = (
         connectionIds.add(identifiedConnection.id);
         const connection =
           identifiedConnection.connection.accept_ConnectionVisitor(
-            new V1_ProtocolToMetaModelConnectionVisitor(context, store),
+            new V1_ProtocolToMetaModelConnectionBuilder(context, store),
           );
         // make sure connection are indexed by store properly
         assertTrue(

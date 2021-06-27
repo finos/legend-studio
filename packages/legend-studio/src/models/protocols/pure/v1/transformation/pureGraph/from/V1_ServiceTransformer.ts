@@ -36,7 +36,7 @@ import {
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service';
 import type { V1_ServiceExecution } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import {

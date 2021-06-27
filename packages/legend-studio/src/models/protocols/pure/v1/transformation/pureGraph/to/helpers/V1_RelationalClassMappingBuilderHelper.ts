@@ -32,7 +32,7 @@ import { FilterMapping } from '../../../../../../../metamodels/pure/model/packag
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_RelationalClassMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
 import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
-import { V1_ProtocolToMetaModelPropertyMappingVisitor } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingVisitor';
+import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingBuilder';
 import {
   V1_buildElementWithJoinsJoinTreeNode,
   V1_processRelationalOperationElement,
@@ -58,7 +58,7 @@ export const V1_processRelationalClassMapping = (
   base.propertyMappings = relationalClassMapping.propertyMappings.map(
     (propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
-        new V1_ProtocolToMetaModelPropertyMappingVisitor(
+        new V1_ProtocolToMetaModelPropertyMappingBuilder(
           context,
           base,
           topParent,

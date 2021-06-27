@@ -25,7 +25,7 @@ import {
   PropertyMappingState,
 } from './MappingElementState';
 import type { EditorStore } from '../../../EditorStore';
-import { MappingElementDecorateVisitor } from './MappingElementDecorateVisitor';
+import { MappingElementDecorator } from './MappingElementDecorator';
 import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
@@ -163,7 +163,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
    */
   decorate(): void {
     this.mappingElement.accept_SetImplementationVisitor(
-      new MappingElementDecorateVisitor(),
+      new MappingElementDecorator(),
     );
     const newPropertyMappingStates: PurePropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration =

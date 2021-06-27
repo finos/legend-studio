@@ -49,7 +49,7 @@ import {
 import type { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_processPostProcessor } from './helpers/V1_PostProcessorBuilderHelper';
 
-export class V1_ProtocolToMetaModelConnectionVisitor
+export class V1_ProtocolToMetaModelConnectionBuilder
   implements V1_ConnectionVisitor<Connection>
 {
   context: V1_GraphBuilderContext;

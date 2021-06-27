@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generateBundleCopyrightText } from '../../scripts/copyright/PackageCopyrightHelpers.js';
+import { generateBundleCopyrightText } from '../../scripts/copyright/PackageCopyrightHelper.js';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 

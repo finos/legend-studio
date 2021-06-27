@@ -31,7 +31,7 @@ import {
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
-} from './QueryBuilderFilterOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
 const GREATER_THAN_EQUAL_FUNCTION_NAME = 'greaterThanEqual';
 

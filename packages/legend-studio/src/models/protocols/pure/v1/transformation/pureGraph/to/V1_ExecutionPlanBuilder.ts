@@ -52,7 +52,7 @@ import type { V1_SQLResultColumn } from '../../../model/executionPlan/nodes/V1_S
 import type { V1_ExecutionPlan } from '../../../model/executionPlan/V1_ExecutionPlan';
 import { V1_SimpleExecutionPlan } from '../../../model/executionPlan/V1_SimpleExecutionPlan';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
-import { V1_ProtocolToMetaModelConnectionVisitor } from './V1_ProtocolToMetaModelConnectionVisitor';
+import { V1_ProtocolToMetaModelConnectionBuilder } from './V1_ProtocolToMetaModelConnectionBuilder';
 import type { V1_ResultType } from '../../../model/executionPlan/results/V1_ResultType';
 import type { ResultType } from '../../../../../../metamodels/pure/model/executionPlan/result/ResultType';
 import { V1_DataTypeResultType } from '../../../model/executionPlan/results/V1_DataTypeResultType';
@@ -223,7 +223,7 @@ const buildSQLExecutionNode = (
     protocol.onConnectionCloseRollbackQuery;
   metamodel.connection = guaranteeType(
     protocol.connection.accept_ConnectionVisitor(
-      new V1_ProtocolToMetaModelConnectionVisitor(context),
+      new V1_ProtocolToMetaModelConnectionBuilder(context),
     ),
     DatabaseConnection,
     'SQL execution node connection must be of type database connection',

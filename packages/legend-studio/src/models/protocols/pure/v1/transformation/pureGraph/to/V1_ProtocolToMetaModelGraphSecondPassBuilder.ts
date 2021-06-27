@@ -68,7 +68,7 @@ import {
 import { V1_processEngineRuntime } from '../../../transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
-import { V1_ProtocolToMetaModelConnectionVisitor } from './V1_ProtocolToMetaModelConnectionVisitor';
+import { V1_ProtocolToMetaModelConnectionBuilder } from './V1_ProtocolToMetaModelConnectionBuilder';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import {
@@ -80,7 +80,7 @@ import type { V1_SectionIndex } from '../../../model/packageableElements/section
 import { V1_processSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper';
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
-export class V1_ProtocolToMetaModelGraphSecondPassVisitor
+export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
 {
   context: V1_GraphBuilderContext;
@@ -341,7 +341,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
     }
     connection.setConnectionValue(
       element.connectionValue.accept_ConnectionVisitor(
-        new V1_ProtocolToMetaModelConnectionVisitor(this.context),
+        new V1_ProtocolToMetaModelConnectionBuilder(this.context),
       ),
     );
   }

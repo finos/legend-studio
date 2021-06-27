@@ -23,7 +23,7 @@ import { InferableMappingElementIdImplicitValue } from '../../../../../../../met
 import type { Association } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Association';
 import { V1_RelationalAssociationMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalAssociationMapping';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_ProtocolToMetaModelPropertyMappingVisitor } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingVisitor';
+import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingBuilder';
 import type { V1_AssociationMapping } from '../../../../model/packageableElements/mapping/V1_AssociationMapping';
 import { V1_XStoreAssociationMapping } from '../../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
 import { XStoreAssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
@@ -59,7 +59,7 @@ const buildRelationalAssociationMapping = (
   relationalAssociationImplementation.propertyMappings =
     element.propertyMappings.map((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
-        new V1_ProtocolToMetaModelPropertyMappingVisitor(
+        new V1_ProtocolToMetaModelPropertyMappingBuilder(
           context,
           relationalAssociationImplementation,
           undefined,
@@ -92,7 +92,7 @@ const buildXStoreAssociationMapping = (
   xStoreAssociationImplementation.propertyMappings =
     element.propertyMappings.map((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
-        new V1_ProtocolToMetaModelPropertyMappingVisitor(
+        new V1_ProtocolToMetaModelPropertyMappingBuilder(
           context,
           xStoreAssociationImplementation,
           undefined,

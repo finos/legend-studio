@@ -16,6 +16,7 @@
 
 import { observable, computed, makeObservable } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-studio-shared';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
@@ -75,7 +76,7 @@ export class OtherwiseEmbeddedRelationalInstanceSetImplementation
   override accept_SetImplementationVisitor<T>(
     visitor: SetImplementationVisitor<T>,
   ): T {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   override get hashCode(): string {

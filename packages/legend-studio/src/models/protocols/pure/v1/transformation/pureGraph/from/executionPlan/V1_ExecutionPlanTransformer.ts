@@ -60,7 +60,7 @@ import { V1_TDSColumn } from '../../../../model/executionPlan/results/V1_TDSColu
 import { CLIENT_VERSION } from '../../../../../../../MetaModelConst';
 import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan';
 import { V1_Protocol } from '../../../../model/V1_Protocol';
-import { V1_transformMultiplicity } from '../V1_CoreTransformerHelpers';
+import { V1_transformMultiplicity } from '../V1_CoreTransformerHelper';
 import { V1_transformConnection } from '../V1_ConnectionTransformer';
 import { V1_DatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 

@@ -42,7 +42,7 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '../../../../stores/ApplicationStore';
-import { MapppingElementDecorationCleanUpVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
+import { MapppingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
@@ -384,7 +384,7 @@ export const InstanceSetImplementationEditor = observer(
         ? noop()
         : (): void =>
             setImplementation.accept_SetImplementationVisitor(
-              new MapppingElementDecorationCleanUpVisitor(),
+              new MapppingElementDecorationCleaner(),
             );
     }, [
       applicationStore,

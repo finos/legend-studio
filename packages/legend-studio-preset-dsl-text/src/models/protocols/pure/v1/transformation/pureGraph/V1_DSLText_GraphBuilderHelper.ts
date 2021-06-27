@@ -18,7 +18,7 @@ import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,
 } from '@finos/legend-studio';
-import { getText } from '../../../../../metamodels/pure/graph/DSLText_GraphManagerHelpers';
+import { getText } from '../../../../../metamodels/pure/graph/DSLText_GraphManagerHelper';
 import type { Text } from '../../../../../metamodels/pure/model/packageableElements/Text';
 
 export const V1_resolveText = (

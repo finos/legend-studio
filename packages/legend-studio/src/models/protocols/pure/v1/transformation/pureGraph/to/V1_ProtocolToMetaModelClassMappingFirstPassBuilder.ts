@@ -45,7 +45,7 @@ import { V1_processAggregateContainer } from './helpers/V1_AggregationAwareClass
 import { V1_resolvePathsInRawLambda } from './helpers/V1_RawPathLambdaResolver';
 import { V1_processRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
 
-export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
+export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   implements V1_ClassMappingVisitor<SetImplementation>
 {
   context: V1_GraphBuilderContext;
@@ -193,7 +193,7 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassVisitor
         targetClass,
         InferableMappingElementRootExplicitValue.create(classMapping.root),
         classMapping.mainSetImplementation.accept_ClassMappingVisitor(
-          new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(
+          new V1_ProtocolToMetaModelClassMappingFirstPassBuilder(
             this.context,
             mapping,
           ),

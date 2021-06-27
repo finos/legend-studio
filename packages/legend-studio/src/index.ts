@@ -109,7 +109,7 @@ export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_Graph
 export {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelpers';
+} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper';
 export { V1_RawValueSpecificationTransformer } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 export { V1_rawLambdaModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';

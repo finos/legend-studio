@@ -29,7 +29,7 @@ import {
   buildNotExpression,
   buildFilterConditionExpression,
   unwrapNotExpression,
-} from './QueryBuilderFilterOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
 const IS_EMPTY_FUNCTION_NAME = 'isEmpty';
 

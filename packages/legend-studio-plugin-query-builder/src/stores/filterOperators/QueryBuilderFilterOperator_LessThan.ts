@@ -31,7 +31,7 @@ import {
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
-} from './QueryBuilderFilterOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
 const LESS_THAN_FUNCTION_NAME = 'lessThan';
 

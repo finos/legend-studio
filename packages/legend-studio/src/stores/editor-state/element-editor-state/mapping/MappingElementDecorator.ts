@@ -61,9 +61,7 @@ import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/
  * Its second purpose is to modify the current mapping element in response to
  * changes in the graph.
  */
-export class MappingElementDecorateVisitor
-  implements SetImplementationVisitor<void>
-{
+export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     const enumValueMappingsToAdd: EnumValueMapping[] = [];
     enumerationMapping.enumeration.value.values.forEach((enumValue) => {
@@ -172,6 +170,9 @@ export class MappingElementDecorateVisitor
         return enumerationPropertyMapping;
       } else if (propertyType instanceof Class) {
         const resolvedLeafSetImps =
+          // TODO: should we try to get leaf implementation here from the root
+          // or should we just simply find all class mappings for the target class
+          // as we should not try to `understand` operation class mapping union?
           setImplementation.parent.getLeafSetImplementations(
             property.genericType.value.getRawType(Class),
           );
@@ -411,6 +412,9 @@ export class MappingElementDecorateVisitor
         });
         return ePropertyMapping;
       } else if (propertyType instanceof Class) {
+        // TODO: should we try to get leaf implementation here from the root
+        // or should we just simply find all class mappings for the target class
+        // as we should not try to `understand` operation class mapping union?
         const resolvedLeafSetImps =
           setImplementation.parent.getLeafSetImplementations(
             property.genericType.value.getRawType(Class),
@@ -475,7 +479,11 @@ export class MappingElementDecorateVisitor
   }
 }
 
-export class MapppingElementDecorationCleanUpVisitor
+/* @MARKER: ACTION ANALYTICS */
+/**
+ * This is the cleanup for mapping elements decorated by {@link MappingElementDecorator}.
+ */
+export class MapppingElementDecorationCleaner
   implements SetImplementationVisitor<void>
 {
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {

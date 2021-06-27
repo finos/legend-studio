@@ -103,7 +103,7 @@ const resolveRelationalPropertyMappingSource = (
   return topParent;
 };
 
-export class V1_ProtocolToMetaModelPropertyMappingVisitor
+export class V1_ProtocolToMetaModelPropertyMappingBuilder
   implements V1_PropertyMappingVisitor<PropertyMapping>
 {
   private context: V1_GraphBuilderContext;
@@ -362,7 +362,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     embeddedPropertyMapping.propertyMappings = protocol.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingVisitor(
+          new V1_ProtocolToMetaModelPropertyMappingBuilder(
             this.context,
             embeddedPropertyMapping,
             this.topParent,
@@ -605,7 +605,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     embedded.propertyMappings = protocol.classMapping.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingVisitor(
+          new V1_ProtocolToMetaModelPropertyMappingBuilder(
             this.context,
             embedded,
             this.topParent,
@@ -665,7 +665,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
     otherwiseEmbedded.propertyMappings =
       protocol.classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingVisitor(
+          new V1_ProtocolToMetaModelPropertyMappingBuilder(
             this.context,
             otherwiseEmbedded,
             this.topParent,
@@ -676,7 +676,7 @@ export class V1_ProtocolToMetaModelPropertyMappingVisitor
       ) as RelationalPropertyMapping[];
     otherwiseEmbedded.otherwisePropertyMapping = guaranteeType(
       protocol.otherwisePropertyMapping.accept_PropertyMappingVisitor(
-        new V1_ProtocolToMetaModelPropertyMappingVisitor(
+        new V1_ProtocolToMetaModelPropertyMappingBuilder(
           this.context,
           otherwiseEmbedded,
           this.topParent,

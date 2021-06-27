@@ -33,7 +33,7 @@ import {
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from './QueryBuilderFilterOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
 const END_WITH_FUNCTION_NAME = 'endsWith';
 

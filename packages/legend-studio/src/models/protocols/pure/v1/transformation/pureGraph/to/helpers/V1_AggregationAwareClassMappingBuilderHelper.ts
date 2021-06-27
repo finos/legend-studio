@@ -25,7 +25,7 @@ import type { V1_GroupByFunction } from '../../../../model/packageableElements/s
 import { GroupByFunctionSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/GroupByFunctionSpecification';
 import { AggregationFunctionSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationFunctionSpecification';
 import type { V1_AggregateFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction';
-import { V1_ProtocolToMetaModelClassMappingFirstPassVisitor } from '../V1_ProtocolToMetaModelClassMappingFirstPassVisitor';
+import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from '../V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
 import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
 
 export const V1_processGroupByFunction = (
@@ -89,7 +89,7 @@ export const V1_processAggregateContainer = (
         context,
       ),
       container.setImplementation.accept_ClassMappingVisitor(
-        new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(
+        new V1_ProtocolToMetaModelClassMappingFirstPassBuilder(
           context,
           mapping,
         ),

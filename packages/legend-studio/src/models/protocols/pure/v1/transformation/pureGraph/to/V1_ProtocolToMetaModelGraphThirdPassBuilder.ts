@@ -38,7 +38,7 @@ import type { V1_Database } from '../../../model/packageableElements/store/relat
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service';
 import type { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
-import { V1_ProtocolToMetaModelClassMappingFirstPassVisitor } from './V1_ProtocolToMetaModelClassMappingFirstPassVisitor';
+import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from './V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
 import {
   V1_processAssociationProperty,
   V1_processDerivedProperty,
@@ -54,7 +54,7 @@ import { V1_processDatabaseSchemaViewsFirstPass } from '../../../transformation/
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
-export class V1_ProtocolToMetaModelGraphThirdPassVisitor
+export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
 {
   context: V1_GraphBuilderContext;
@@ -174,7 +174,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassVisitor
     const mapping = this.context.graph.getMapping(path);
     mapping.classMappings = element.classMappings.map((classMapping) =>
       classMapping.accept_ClassMappingVisitor(
-        new V1_ProtocolToMetaModelClassMappingFirstPassVisitor(
+        new V1_ProtocolToMetaModelClassMappingFirstPassBuilder(
           this.context,
           mapping,
         ),

@@ -33,7 +33,7 @@ import {
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from './QueryBuilderFilterOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
 const CONTAIN_FUNCTION_NAME = 'contains';
 
