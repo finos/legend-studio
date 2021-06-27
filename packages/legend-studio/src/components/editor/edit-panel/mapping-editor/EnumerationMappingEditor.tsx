@@ -46,7 +46,7 @@ import Dialog from '@material-ui/core/Dialog';
 import { noop } from '@finos/legend-studio-shared';
 import {
   MappingElementDecorator,
-  MapppingElementDecorationCleaner,
+  MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import type {
@@ -355,7 +355,7 @@ export const EnumerationMappingEditor = observer(
       return isReadOnly
         ? noop()
         : (): void =>
-            new MapppingElementDecorationCleaner().visitEnumerationMapping(
+            new MappingElementDecorationCleaner().visitEnumerationMapping(
               enumerationMapping,
             );
     }, [enumerationMapping, isReadOnly]);

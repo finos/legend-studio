@@ -702,10 +702,10 @@ export class MappingEditorState extends ElementEditorState {
       if (showNewMappingModal) {
         this.setNewMappingElementSpec(spec);
       } else {
-        let newMapppingElement: MappingElement | undefined = undefined;
+        let newMappingElement: MappingElement | undefined = undefined;
         if (spec.target instanceof Enumeration) {
           // We default to a source type of String when creating a new enumeration mapping
-          newMapppingElement = this.mapping.createEnumerationMapping(
+          newMappingElement = this.mapping.createEnumerationMapping(
             suggestedId,
             spec.target,
             this.editorStore.graphState.graph.getPrimitiveType(
@@ -715,11 +715,11 @@ export class MappingEditorState extends ElementEditorState {
         }
         // NOTE: we don't support association now, nor do we support this for class
         // since class requires a step to choose the class mapping type
-        if (newMapppingElement) {
-          this.openMappingElement(newMapppingElement, true);
+        if (newMappingElement) {
+          this.openMappingElement(newMappingElement, true);
         }
         if (spec.postSubmitAction) {
-          spec.postSubmitAction(newMapppingElement);
+          spec.postSubmitAction(newMappingElement);
         }
       }
     } else {

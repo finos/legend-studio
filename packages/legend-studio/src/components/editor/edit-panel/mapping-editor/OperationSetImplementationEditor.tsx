@@ -33,7 +33,7 @@ import { useDrop } from 'react-dnd';
 import { noop } from '@finos/legend-studio-shared';
 import {
   MappingElementDecorator,
-  MapppingElementDecorationCleaner,
+  MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
@@ -154,7 +154,7 @@ export const OperationSetImplementationEditor = observer(
         ? noop()
         : (): void =>
             setImplementation.accept_SetImplementationVisitor(
-              new MapppingElementDecorationCleaner(),
+              new MappingElementDecorationCleaner(),
             );
     }, [setImplementation, isReadOnly]);
 

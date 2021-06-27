@@ -131,7 +131,7 @@ export class EmbeddedRelationalInstanceSetImplementation
 
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
+      CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
       this.class.valueForSerialization,
       hashArray(this.primaryKey),

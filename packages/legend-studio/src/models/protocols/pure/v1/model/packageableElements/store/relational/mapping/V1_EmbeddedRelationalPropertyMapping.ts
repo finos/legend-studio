@@ -34,7 +34,7 @@ export class V1_EmbeddedRelationalPropertyMapping
 
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
+      CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
       this.classMapping.class ?? '',
       hashArray(this.classMapping.primaryKey),

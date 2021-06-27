@@ -483,7 +483,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
 /**
  * This is the cleanup for mapping elements decorated by {@link MappingElementDecorator}.
  */
-export class MapppingElementDecorationCleaner
+export class MappingElementDecorationCleaner
   implements SetImplementationVisitor<void>
 {
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
