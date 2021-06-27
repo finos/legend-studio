@@ -24,10 +24,7 @@ import type {
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
   buildPrimitiveInstanceValue,
@@ -97,9 +94,9 @@ export class QueryBuilderGreaterThanOperator extends QueryBuilderOperator {
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for operator '${
-            getClass(this).name
-          }' when the LHS property is of type '${propertyType.path}'`,
+          `Can't get default value for filter operator '${this.getLabel(
+            filterConditionState,
+          )}' when the LHS property is of type '${propertyType.path}'`,
         );
     }
   }

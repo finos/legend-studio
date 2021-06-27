@@ -223,15 +223,16 @@ export class ApplicationStore {
       ),
     );
   }
+
   notifyWarning(
-    message: string,
+    content: string | Error,
     actions?: NotificationAction[],
     autoHideDuration?: number | null,
   ): void {
     this.setNotification(
       new Notification(
         NOTIFCATION_SEVERITY.WARNING,
-        message,
+        content instanceof Error ? content.message : content,
         actions ?? [],
         autoHideDuration === null
           ? undefined
@@ -239,6 +240,7 @@ export class ApplicationStore {
       ),
     );
   }
+
   notifyIllegalState(
     message: string,
     actions?: NotificationAction[],

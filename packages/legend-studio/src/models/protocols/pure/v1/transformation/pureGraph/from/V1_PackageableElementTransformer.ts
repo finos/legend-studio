@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type {
   PackageableElement,
   PackageableElementVisitor,
@@ -97,9 +94,8 @@ export class V1_PackageableElementTransformer
       }
     }
     throw new UnsupportedOperationError(
-      `Can't transform element '${element.path}' of type '${
-        getClass(element).name
-      }' to protocol. No compatible transformer available from plugins.`,
+      `Can't transform element '${element.path}'. No compatible transformer available from plugins.`,
+      element,
     );
   }
 

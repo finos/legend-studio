@@ -33,7 +33,7 @@ import {
   getRandomFloat,
   getRandomPositiveInteger,
   getRandomItemInCollection,
-  getClass,
+  UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../EditorStore';
 
@@ -170,9 +170,10 @@ export const createMockDataForMappingElementSource = (
     return JSON.stringify(createMockDataForClass(srcElement), undefined, 2);
   }
   editorStore.applicationStore.notifyWarning(
-    `Can't generate test data for mapping source of unsupported type '${
-      getClass(srcElement).name
-    }'`,
+    new UnsupportedOperationError(
+      `Can't generate test data for mapping source`,
+      srcElement,
+    ),
   );
   return '';
 };

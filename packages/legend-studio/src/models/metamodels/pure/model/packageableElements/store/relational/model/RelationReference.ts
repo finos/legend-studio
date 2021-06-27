@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { PackageableElementImplicitReference } from '../../../../../model/packageableElements/PackageableElementReference';
 import type { Database } from '../../../../../model/packageableElements/store/relational/model/Database';
 import { Table } from '../../../../../model/packageableElements/store/relational/model/Table';
@@ -38,7 +35,8 @@ export const getSchemaFromRelation = (value: Relation): Schema => {
     return value.schema;
   }
   throw new UnsupportedOperationError(
-    `Can't derive schema for relation of type '${getClass(value).name}'`,
+    `Can't derive schema for relation`,
+    value,
   );
 };
 
@@ -51,9 +49,8 @@ export const createExplicitRelationReference = (
     return ViewExplicitReference.create(value);
   }
   throw new UnsupportedOperationError(
-    `Can't create explicit reference for relation of type '${
-      getClass(value).name
-    }'`,
+    `Can't create explicit reference for relation`,
+    value,
   );
 };
 
@@ -67,8 +64,7 @@ export const createImplicitRelationReference = (
     return ViewImplicitReference.create(ownerReference, value);
   }
   throw new UnsupportedOperationError(
-    `Can't create implicit reference for relation of type '${
-      getClass(value).name
-    }'`,
+    `Can't create implicit reference for relation`,
+    value,
   );
 };

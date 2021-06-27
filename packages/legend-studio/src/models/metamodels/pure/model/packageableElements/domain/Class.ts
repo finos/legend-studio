@@ -21,7 +21,6 @@ import {
   IllegalStateError,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  getClass,
   addUniqueEntry,
   deleteEntry,
   changeEntry,
@@ -358,7 +357,5 @@ export const getClassPropertyType = (type: Type): CLASS_PROPERTY_TYPE => {
   } else if (type instanceof Measure) {
     return CLASS_PROPERTY_TYPE.MEASURE;
   }
-  throw new UnsupportedOperationError(
-    `Can't get class property type of type '${getClass(type).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't classify class property`, type);
 };

@@ -20,7 +20,6 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
   guaranteeType,
-  getClass,
   deleteEntry,
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
@@ -422,9 +421,8 @@ export const getMappingElementType = (
     return MAPPING_ELEMENT_TYPE.CLASS;
   }
   throw new UnsupportedOperationError(
-    `Can't derive mapping element type of type '${
-      getClass(mappingElement).name
-    }'`,
+    `Can't classfify mapping element`,
+    mappingElement,
   );
 };
 
@@ -446,9 +444,8 @@ export const getMappingElementTarget = (
     return mappingElement.class.value;
   }
   throw new UnsupportedOperationError(
-    `Can't derive mapping element type target of type '${
-      getClass(mappingElement).name
-    }'`,
+    `Can't derive target of mapping element`,
+    mappingElement,
   );
 };
 
@@ -488,9 +485,8 @@ export const getMappingElementSource = (
     return getMappingElementSource(mappingElement.mainSetImplementation);
   }
   throw new UnsupportedOperationError(
-    `Can't get mapping element source of type '${
-      getClass(mappingElement).name
-    }'`,
+    `Can't derive source of mapping element`,
+    mappingElement,
   );
 };
 

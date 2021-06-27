@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { Database } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
 import type { DataType } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import {
@@ -157,7 +154,8 @@ const transformRelationalDataType = (type: DataType): V1_RelationalDataType => {
     return new V1_Other();
   }
   throw new UnsupportedOperationError(
-    `Can't serialize relational data type of type '${getClass(type).name}'`,
+    `Can't transform relational data type`,
+    type,
   );
 };
 
@@ -242,9 +240,8 @@ export const V1_transformRelationalOperationElement = (
     return elementWithJoin;
   }
   throw new UnsupportedOperationError(
-    `Can't serialize relational operation element of type '${
-      getClass(operation).name
-    }'`,
+    `Can't transform relational operation element`,
+    operation,
   );
 };
 

@@ -1625,10 +1625,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
     }
     if (!generatedModel) {
-      throw new Error(
-        `Can't generate model using element of type '${
-          getClass(generationElement).name
-        }'. No compatible generator available from plugins.`,
+      throw new UnsupportedOperationError(
+        `Can't generate model using the specified generation element. No compatible generator available from plugins.`,
+        generationElement,
       );
     }
     return this.pureModelContextDataToEntities(generatedModel);
@@ -2084,9 +2083,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ];
         } else {
           throw new UnsupportedOperationError(
-            `Can't register service with execution of type '${
-              getClass(execution).name
-            }'`,
+            `Can't register service with the specified execution`,
+            execution,
           );
         }
         // composite input

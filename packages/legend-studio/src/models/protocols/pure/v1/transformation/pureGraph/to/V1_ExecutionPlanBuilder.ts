@@ -15,7 +15,6 @@
  */
 
 import {
-  getClass,
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
@@ -170,9 +169,8 @@ const buildResultType = (
     return buildTDSResultType(protocol, context);
   }
   throw new UnsupportedOperationError(
-    `Can't build execution node result type of type '${
-      getClass(protocol).name
-    }'`,
+    `Can't build execution node result type`,
+    protocol,
   );
 };
 
@@ -252,9 +250,7 @@ function buildExecutionNode(
   } else if (protocol instanceof V1_RelationalTDSInstantiationExecutionNode) {
     return buildRelationalTDSInstantiationExecutionNode(protocol, context);
   }
-  throw new UnsupportedOperationError(
-    `Can't build execution node of type '${getClass(protocol).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't build execution node`, protocol);
 }
 
 // ---------------------------------------- Execution Plan ----------------------------------------
@@ -277,7 +273,5 @@ export const V1_buildExecutionPlan = (
     );
     return metamodel;
   }
-  throw new UnsupportedOperationError(
-    `Can't build execution plan of type '${getClass(protocol).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't build execution plan`, protocol);
 };

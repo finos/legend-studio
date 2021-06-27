@@ -21,7 +21,6 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
-  getClass,
 } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
 import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtility';
@@ -255,7 +254,8 @@ export const V1_processMappingTestInputData = (
     );
   }
   throw new UnsupportedOperationError(
-    `Can't build mapping test input data of type '${getClass(inputData).name}'`,
+    `Can't build mapping test input data`,
+    inputData,
   );
 };
 

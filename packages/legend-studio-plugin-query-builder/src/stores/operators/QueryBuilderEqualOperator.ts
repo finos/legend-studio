@@ -32,10 +32,7 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
 } from '@finos/legend-studio';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
   buildNotExpression,
@@ -141,15 +138,15 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(
-            `Can't get default value for operator '${
-              getClass(this).name
-            }' since enumeration '${propertyType.path}' has no value`,
+            `Can't get default value for filter operator '${this.getLabel(
+              filterConditionState,
+            )}' since enumeration '${propertyType.path}' has no value`,
           );
         }
         throw new UnsupportedOperationError(
-          `Can't get default value for operator '${
-            getClass(this).name
-          }' when the LHS property is of type '${propertyType.path}'`,
+          `Can't get default value for filter operator '${this.getLabel(
+            filterConditionState,
+          )}' when the LHS property is of type '${propertyType.path}'`,
         );
     }
   }

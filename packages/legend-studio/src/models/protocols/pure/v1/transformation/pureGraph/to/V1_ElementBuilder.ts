@@ -55,6 +55,7 @@ export type V1_ElementFifthPassBuilder = V1_ElementBuilderPass;
  * we don't see the need for right now.
  */
 export class V1_ElementBuilder<T extends V1_PackageableElement> {
+  readonly elementClassName: string;
   private _class: GenericClazz<T>;
   private prerequisites: GenericClazz<V1_PackageableElement>[] = [];
   private firstPass: V1_ElementFirstPassBuilder;
@@ -64,6 +65,7 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
   private fifthPass?: V1_ElementFifthPassBuilder;
 
   constructor(props: {
+    elementClassName: string;
     _class: GenericClazz<T>;
     prerequisites?: GenericClazz<V1_PackageableElement>[];
     /**
@@ -77,6 +79,7 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
     fourthPass?: V1_ElementFourthPassBuilder;
     fifthPass?: V1_ElementFifthPassBuilder;
   }) {
+    this.elementClassName = props.elementClassName;
     this._class = props._class;
     this.prerequisites = props.prerequisites ?? [];
     this.firstPass = props.firstPass;

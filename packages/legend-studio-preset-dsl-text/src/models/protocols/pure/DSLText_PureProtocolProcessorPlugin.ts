@@ -62,6 +62,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
     return [
       new V1_ElementBuilder<V1_Text>({
+        elementClassName: 'Text',
         _class: V1_Text,
         firstPass: (
           elementProtocol: V1_PackageableElement,

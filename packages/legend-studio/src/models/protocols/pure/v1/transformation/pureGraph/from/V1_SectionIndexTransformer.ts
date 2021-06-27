@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   DefaultCodeSection,
   ImportAwareCodeSection,
@@ -71,7 +68,8 @@ export const V1_transformSectionIndex = (
       return transformDefaultCodeSectionSchema(section);
     }
     throw new UnsupportedOperationError(
-      `Can't serialize section of type '${getClass(section).name}'`,
+      `Can't transform section index`,
+      section,
     );
   });
   return _sectionIndex;

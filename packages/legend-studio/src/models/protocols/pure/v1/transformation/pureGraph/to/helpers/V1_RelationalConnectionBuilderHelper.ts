@@ -18,7 +18,6 @@ import {
   assertNonEmptyString,
   UnsupportedOperationError,
   assertNonNullable,
-  getClass,
   guaranteeNonEmptyString,
 } from '@finos/legend-studio-shared';
 import type { DatasourceSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
@@ -143,9 +142,8 @@ export const V1_processDatasourceSpecification = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build datasource specification of type '${
-      getClass(protocol).name
-    }'. No compatible builder available from plugins.`,
+    `Can't build datasource specification. No compatible builder available from plugins.`,
+    protocol,
   );
 };
 
@@ -205,6 +203,7 @@ export const V1_processAuthenticationStrategy = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build authentication strategy of type '${getClass(protocol).name}'`,
+    `Can't build authentication strategy`,
+    protocol,
   );
 };

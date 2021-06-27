@@ -17,7 +17,6 @@
 import { observable, computed, action, makeObservable, override } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
 import {
-  getClass,
   guaranteeNonNullable,
   guaranteeType,
   assertTrue,
@@ -121,7 +120,8 @@ export class Association
       );
     }
     throw new UnsupportedOperationError(
-      `Can't get association property of type '${getClass(property).name}'`,
+      `Can't get associated class of property`,
+      property,
     );
   };
 

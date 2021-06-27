@@ -38,7 +38,6 @@ import {
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
-  getClass,
 } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../MetaModelConst';
 import type { V1_InputData } from '../../../model/packageableElements/mapping/V1_InputData';
@@ -835,9 +834,8 @@ const serializeEnumValueMappingSourceValue = (
     return serialize(enumValueMappingEnumSourceValueeModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize enum value mapping source value of type '${
-      getClass(protocol).name
-    }'`,
+    `Can't serialize enum value mapping source value`,
+    protocol,
   );
 };
 

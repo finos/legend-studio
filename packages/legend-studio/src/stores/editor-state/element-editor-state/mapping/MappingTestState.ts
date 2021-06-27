@@ -32,7 +32,6 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToMinifyJSONString,
-  getClass,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
@@ -446,9 +445,8 @@ export class MappingTestState {
       );
     }
     throw new UnsupportedOperationError(
-      `Can't build state for mapping test input data of type '${
-        getClass(inputData).name
-      }'`,
+      `Can't build state for mapping test input data`,
+      inputData,
     );
   }
 
@@ -458,9 +456,8 @@ export class MappingTestState {
       return new MappingTestExpectedOutputAssertionState(testAssertion);
     }
     throw new UnsupportedOperationError(
-      `Can't build state of mapping assertion of type '${
-        getClass(testAssertion).name
-      }'`,
+      `Can't build state of mapping test assertion`,
+      testAssertion,
     );
   }
 
@@ -547,9 +544,10 @@ export class MappingTestState {
       this.setInputDataState(newInputDataState);
     } else {
       this.editorStore.applicationStore.notifyWarning(
-        `Can't build input data for unsupported source of type '${
-          getClass(source).name
-        }'`,
+        new UnsupportedOperationError(
+          `Can't build input data for source`,
+          source,
+        ),
       );
     }
   }

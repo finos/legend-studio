@@ -48,7 +48,6 @@ import {
   guaranteeType,
   UnsupportedOperationError,
   assertTrue,
-  getClass,
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
 import { MappingExecutionState } from './MappingExecutionState';
@@ -612,9 +611,8 @@ export class MappingEditorState extends ElementEditorState {
           newSetImp = newRootRelationalInstanceSetImplementation;
         } else {
           throw new UnsupportedOperationError(
-            `Can't use class mapping source of type '${
-              getClass(newSource).name
-            }'`,
+            `Can't use the specified class mapping source`,
+            newSource,
           );
         }
 
@@ -1099,9 +1097,8 @@ export class MappingEditorState extends ElementEditorState {
       );
     } else {
       throw new UnsupportedOperationError(
-        `Can't create new mapping test input data with source of type '${
-          getClass(source).name
-        }'`,
+        `Can't create new mapping test input data with the specified source`,
+        source,
       );
     }
     const newTest = new MappingTest(

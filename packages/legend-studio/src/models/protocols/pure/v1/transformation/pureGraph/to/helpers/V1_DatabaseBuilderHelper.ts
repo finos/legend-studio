@@ -21,7 +21,6 @@ import {
   guaranteeNonNullable,
   assertNonNullable,
   guaranteeType,
-  getClass,
 } from '@finos/legend-studio-shared';
 import { Database } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
 import { getAllIncludedDbs } from '../../../../../../../metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
@@ -324,32 +323,26 @@ export const V1_transformDatabaseDataType = (
   dataType: V1_RelationalDataType,
 ): DataType => {
   if (dataType instanceof V1_VarChar) {
-    assertNonNullable(dataType.size, 'VARCHAR data type size is missing');
+    assertNonNullable(dataType.size, 'VARCHAR size is missing');
     return new VarChar(dataType.size);
   } else if (dataType instanceof V1_Char) {
-    assertNonNullable(dataType.size, 'CHAR data type size is missing');
+    assertNonNullable(dataType.size, 'CHAR size is missing');
     return new Char(dataType.size);
   } else if (dataType instanceof V1_VarBinary) {
-    assertNonNullable(dataType.size, 'VARBINARY data type size is missing');
+    assertNonNullable(dataType.size, 'VARBINARY size is missing');
     return new VarBinary(dataType.size);
   } else if (dataType instanceof V1_Binary) {
-    assertNonNullable(dataType.size, 'BINARY data type size is missing');
+    assertNonNullable(dataType.size, 'BINARY size is missing');
     return new Binary(dataType.size);
   } else if (dataType instanceof V1_Bit) {
     return new Bit();
   } else if (dataType instanceof V1_Numeric) {
-    assertNonNullable(
-      dataType.precision,
-      'NUMBERIC data type precision is missing',
-    );
-    assertNonNullable(dataType.scale, 'NUMBERIC data type scale is missing');
+    assertNonNullable(dataType.precision, 'NUMBERIC precision is missing');
+    assertNonNullable(dataType.scale, 'NUMBERIC scale is missing');
     return new Numeric(dataType.precision, dataType.scale);
   } else if (dataType instanceof V1_Decimal) {
-    assertNonNullable(
-      dataType.precision,
-      'DECIMAL data type precision is missing',
-    );
-    assertNonNullable(dataType.scale, 'DECIMAL data type scale is missing');
+    assertNonNullable(dataType.precision, 'DECIMAL precision is missing');
+    assertNonNullable(dataType.scale, 'DECIMAL scale is missing');
     return new Decimal(dataType.precision, dataType.scale);
   } else if (dataType instanceof V1_Double) {
     return new Double();
@@ -373,7 +366,8 @@ export const V1_transformDatabaseDataType = (
     return new Other();
   }
   throw new UnsupportedOperationError(
-    `Can't transform relational data type of type '${getClass(dataType).name}'`,
+    `Can't transform relational data type`,
+    dataType,
   );
 };
 
@@ -480,12 +474,12 @@ export const V1_processDatabaseJoin = (
     }
   } else if (aliases.length > 2) {
     throw new Error(
-      "A join can only contain 2 tables. Please use V1_Join chains (using '>') in your mapping in order to compose many of them.",
+      `Can't build join of more than 2 tables. Please use V1_Join chains (using '>') in your mapping in order to compose them.`,
     );
   } else if (aliases.length === 1) {
     if (!selfJoinTargets.length) {
       throw new Error(
-        "The system can only find one table in the join. Please use the '{target}' notation in order to define a directed self join.",
+        `Can't build join of 1 table, unless it is a self-join. Please use the '{target}' notation in order to define a directed self-join.`,
       );
     }
     const existingAlias = aliases[0];
@@ -510,14 +504,12 @@ export const V1_processDatabaseJoin = (
         ) as Column | undefined;
       }
       if (!col) {
-        throw new Error(
-          `The column '" ${columnName} + "' can't be found in the table `,
-        );
+        throw new Error(`Can't find column '" ${columnName} + "' in the table`);
       }
       selfJoinTarget.column = ColumnExplicitReference.create(col);
     });
   } else {
-    throw new Error('A join must refer to at least one table');
+    throw new Error(`Can't build join with no table`);
   }
   join.aliases = [
     new Pair<TableAlias, TableAlias>(aliases[0], aliases[1]),

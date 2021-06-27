@@ -15,10 +15,7 @@
  */
 
 import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtility';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { Mapping } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RelationalAssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/RelationalAssociationImplementation';
 import type { AssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
@@ -121,6 +118,7 @@ export const V1_buildAssociationMapping = (
     return buildXStoreAssociationMapping(element, parentMapping, context);
   }
   throw new UnsupportedOperationError(
-    `Can't build association mapping of type '${getClass(element).name}'`,
+    `Can't build association mapping`,
+    element,
   );
 };

@@ -80,6 +80,7 @@ const stubElementBuilder = (
   prerequisites?: Clazz<V1_PackageableElement>[],
 ): V1_ElementBuilder<V1_PackageableElement> =>
   new V1_ElementBuilder({
+    elementClassName: 'unknown',
     _class: _class,
     prerequisites,
     firstPass: stubFirstPass,

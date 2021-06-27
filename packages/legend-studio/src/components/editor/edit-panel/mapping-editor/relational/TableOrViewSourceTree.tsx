@@ -36,7 +36,6 @@ import {
 import {
   addUniqueEntry,
   assertTrue,
-  getClass,
   guaranteeType,
   isNonNullable,
   UnsupportedOperationError,
@@ -308,7 +307,8 @@ const generateColumnTypeLabel = (type: DataType): string => {
     return `OTHER`;
   }
   throw new UnsupportedOperationError(
-    `Can't generate column label of data type '${getClass(type).name}'`,
+    `Can't generate label for unsupported column data type`,
+    type,
   );
 };
 
@@ -348,9 +348,7 @@ const renderColumnTypeIcon = (type: DataType): React.ReactNode => {
       <UnknownTypeIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
     );
   }
-  throw new UnsupportedOperationError(
-    `Can't render column of data type '${getClass(type).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't render column data type`, type);
 };
 
 const RelationalOperationElementTreeNodeContainer: React.FC<

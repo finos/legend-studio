@@ -19,8 +19,8 @@ import {
   isNonNullable,
   IllegalStateError,
   assertType,
-  getClass,
   addUniqueEntry,
+  printObject,
 } from '@finos/legend-studio-shared';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import type {
@@ -135,9 +135,9 @@ const getTypeTreeData = (type: Type): TreeData<TypeTreeNodeData> => {
     });
   } else {
     throw new IllegalStateError(
-      `Can't use type tree with node type other than class and enumeration. Got type '${
-        getClass(type).name
-      }'`,
+      `Can't use type tree with node type other than class and enumeration. Found:\n${printObject(
+        type,
+      )}`,
     );
   }
   return { rootIds, nodes };

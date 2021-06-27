@@ -31,7 +31,6 @@ import type {
 import {
   assertType,
   uniq,
-  getClass,
   UnsupportedOperationError,
   assertErrorThrown,
   assertTrue,
@@ -1156,9 +1155,8 @@ export class GraphState {
       return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE;
     }
     throw new UnsupportedOperationError(
-      `Can't derive set implementation type of type '${
-        getClass(setImplementation).name
-      }'`,
+      `Can't classify set implementation`,
+      setImplementation,
     );
   }
 

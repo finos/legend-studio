@@ -15,7 +15,6 @@
  */
 
 import {
-  getClass,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -102,7 +101,8 @@ const stringifyDataType = (dataType: DataType): string => {
     return `NUMERIC(${dataType.precision},${dataType.scale})`;
   }
   throw new UnsupportedOperationError(
-    `Can't stringify data type of type '${getClass(dataType).name}'`,
+    `Can't stringify relational data type`,
+    dataType,
   );
 };
 
@@ -153,9 +153,8 @@ const transformResultType = (
     return transformTDSResultType(metamodel, context);
   }
   throw new UnsupportedOperationError(
-    `Can't transform execution node result type of type '${
-      getClass(metamodel).name
-    }'`,
+    `Can't transform execution node result type`,
+    metamodel,
   );
 };
 
@@ -227,7 +226,8 @@ export function V1_transformExecutionNode(
     return transformRelationalTDSInstantiationExecutionNode(metamodel, context);
   }
   throw new UnsupportedOperationError(
-    `Can't transform execution node of type '${getClass(metamodel).name}'`,
+    `Can't transform execution node`,
+    metamodel,
   );
 }
 

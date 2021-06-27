@@ -19,10 +19,7 @@ import { MapperPostProcessor } from '../../../../../../../metamodels/pure/model/
 import type { Mapper } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/postprocessor/Mapper';
 import { V1_MapperPostProcessor } from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor';
 import type { V1_PostProcessor } from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { V1_Mapper } from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper';
 import {
   V1_TableNameMapper,
@@ -46,9 +43,7 @@ export const V1_processMapper = (mapper: V1_Mapper): Mapper => {
     const _schema = V1_processSchemaNameMapper(mapper.schema);
     return new TableNameMapper(mapper.from, mapper.to, _schema);
   }
-  throw new UnsupportedOperationError(
-    `Can't build mapper of type '${getClass(mapper).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't build mapper`, mapper);
 };
 
 export const V1_processPostProcessor = (
@@ -73,8 +68,7 @@ export const V1_processPostProcessor = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build post-processor of type '${
-      getClass(protocol).name
-    }'. No compatible builder available from plugins.`,
+    `Can't build post-processor. No compatible builder available from plugins.`,
+    protocol,
   );
 };

@@ -17,10 +17,7 @@
 import type { EditorStore } from '../EditorStore';
 import { action, makeAutoObservable } from 'mobx';
 import { GRAMMAR_ELEMENT_TYPE_LABEL } from '../PureLanguageSupport';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Profile } from '../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
@@ -154,9 +151,8 @@ export class GrammarTextEditorState {
     }
     if (!typeLabel) {
       throw new UnsupportedOperationError(
-        `Can't label element type '${
-          getClass(element).name
-        }' in Pure grammar. No compatible labeler available from plugins.`,
+        `Can't construct label for element type in Pure grammar. No compatible labeler available from plugins.`,
+        element,
       );
     }
     this.currentElementLabelRegexString = getGrammarElementTypeLabelRegexString(
