@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -27,17 +27,19 @@ import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
+  buildNotExpression,
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
-} from './QueryBuilderOperatorHelpers';
+  unwrapNotExpression,
+} from './QueryBuilderFilterOperatorHelpers';
 
-const GREATER_THAN_FUNCTION_NAME = 'greaterThan';
+const CONTAIN_FUNCTION_NAME = 'contains';
 
-export class QueryBuilderGreaterThanOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return '>';
+    return 'contains';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -46,14 +48,7 @@ export class QueryBuilderGreaterThanOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return (
-      [
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-      ] as unknown as string
-    ).includes(propertyType.path);
+    return PRIMITIVE_TYPE.STRING === propertyType.path;
   }
 
   isCompatibleWithFilterConditionValue(
@@ -62,17 +57,7 @@ export class QueryBuilderGreaterThanOperator extends QueryBuilderOperator {
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
-    return (
-      type !== undefined &&
-      (
-        [
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-        ] as unknown as string
-      ).includes(type.path)
-    );
+    return PRIMITIVE_TYPE.STRING === type?.path;
   }
 
   getDefaultFilterConditionValue(
@@ -82,10 +67,7 @@ export class QueryBuilderGreaterThanOperator extends QueryBuilderOperator {
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
     switch (propertyType.path) {
-      case PRIMITIVE_TYPE.NUMBER:
-      case PRIMITIVE_TYPE.DECIMAL:
-      case PRIMITIVE_TYPE.FLOAT:
-      case PRIMITIVE_TYPE.INTEGER: {
+      case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(
           filterConditionState,
           propertyType.path,
@@ -106,7 +88,7 @@ export class QueryBuilderGreaterThanOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      GREATER_THAN_FUNCTION_NAME,
+      CONTAIN_FUNCTION_NAME,
     );
   }
 
@@ -117,8 +99,33 @@ export class QueryBuilderGreaterThanOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      GREATER_THAN_FUNCTION_NAME,
+      CONTAIN_FUNCTION_NAME,
       this,
     );
+  }
+}
+
+export class QueryBuilderFilterOperator_NotContain extends QueryBuilderFilterOperator_Contain {
+  override getLabel(filterConditionState: FilterConditionState): string {
+    return `doesn't contain`;
+  }
+
+  override buildFilterConditionExpression(
+    filterConditionState: FilterConditionState,
+  ): ValueSpecification {
+    return buildNotExpression(
+      filterConditionState,
+      super.buildFilterConditionExpression(filterConditionState),
+    );
+  }
+
+  override buildFilterConditionState(
+    filterState: QueryBuilderFilterState,
+    expression: SimpleFunctionExpression,
+  ): FilterConditionState | undefined {
+    const innerExpression = unwrapNotExpression(expression);
+    return innerExpression
+      ? super.buildFilterConditionState(filterState, innerExpression)
+      : undefined;
   }
 }

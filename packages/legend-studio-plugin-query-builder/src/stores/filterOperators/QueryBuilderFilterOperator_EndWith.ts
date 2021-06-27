@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -24,18 +24,22 @@ import type {
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
   buildNotExpression,
+  buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
+  getDefaultPrimitiveInstanceValueForType,
+  getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from './QueryBuilderOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelpers';
 
-const IS_EMPTY_FUNCTION_NAME = 'isEmpty';
+const END_WITH_FUNCTION_NAME = 'endsWith';
 
-export class QueryBuilderIsEmptyOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_EndWith extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return 'is empty';
+    return 'ends with';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -44,28 +48,39 @@ export class QueryBuilderIsEmptyOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return (
-      [
-        PRIMITIVE_TYPE.STRING,
-        PRIMITIVE_TYPE.BOOLEAN,
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-      ] as unknown as string
-    ).includes(propertyType.path);
+    return PRIMITIVE_TYPE.STRING === propertyType.path;
   }
 
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    return filterConditionState.value === undefined;
+    const type = filterConditionState.value
+      ? getNonCollectionValueSpecificationType(filterConditionState.value)
+      : undefined;
+    return PRIMITIVE_TYPE.STRING === type?.path;
   }
 
   getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
-    return undefined;
+    const propertyType =
+      filterConditionState.propertyEditorState.propertyExpression.func
+        .genericType.value.rawType;
+    switch (propertyType.path) {
+      case PRIMITIVE_TYPE.STRING: {
+        return buildPrimitiveInstanceValue(
+          filterConditionState,
+          propertyType.path,
+          getDefaultPrimitiveInstanceValueForType(propertyType.path),
+        );
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Can't get default value for filter operator '${this.getLabel(
+            filterConditionState,
+          )}' when the LHS property is of type '${propertyType.path}'`,
+        );
+    }
   }
 
   buildFilterConditionExpression(
@@ -73,7 +88,7 @@ export class QueryBuilderIsEmptyOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      IS_EMPTY_FUNCTION_NAME,
+      END_WITH_FUNCTION_NAME,
     );
   }
 
@@ -84,16 +99,15 @@ export class QueryBuilderIsEmptyOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      IS_EMPTY_FUNCTION_NAME,
+      END_WITH_FUNCTION_NAME,
       this,
-      true,
     );
   }
 }
 
-export class QueryBuilderIsNotEmptyOperator extends QueryBuilderIsEmptyOperator {
+export class QueryBuilderFilterOperator_NotEndWith extends QueryBuilderFilterOperator_EndWith {
   override getLabel(filterConditionState: FilterConditionState): string {
-    return `is not empty`;
+    return `doesn't end with`;
   }
 
   override buildFilterConditionExpression(

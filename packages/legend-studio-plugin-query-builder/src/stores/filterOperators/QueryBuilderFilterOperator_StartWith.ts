@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -33,11 +33,11 @@ import {
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from './QueryBuilderOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelpers';
 
 const START_WITH_FUNCTION_NAME = 'startsWith';
 
-export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_StartWith extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
     return 'starts with';
   }
@@ -105,7 +105,7 @@ export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
   }
 }
 
-export class QueryBuilderNotStartWithOperator extends QueryBuilderStartWithOperator {
+export class QueryBuilderFilterOperator_NotStartWith extends QueryBuilderFilterOperator_StartWith {
   override getLabel(filterConditionState: FilterConditionState): string {
     return `doesn't start with`;
   }

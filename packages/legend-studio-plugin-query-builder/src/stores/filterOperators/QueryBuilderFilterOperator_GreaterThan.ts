@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -23,31 +23,21 @@ import type {
   ValueSpecification,
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
-import {
-  EnumValueInstanceValue,
-  GenericTypeExplicitReference,
-  GenericType,
-  TYPICAL_MULTIPLICITY_TYPE,
-  EnumValueExplicitReference,
-  Enumeration,
-  PRIMITIVE_TYPE,
-} from '@finos/legend-studio';
+import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
-  buildNotExpression,
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
-  unwrapNotExpression,
-} from './QueryBuilderOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelpers';
 
-const EQUAL_FUNCTION_NAME = 'equal';
+const GREATER_THAN_FUNCTION_NAME = 'greaterThan';
 
-export class QueryBuilderEqualOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return 'is';
+    return '>';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -57,45 +47,31 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
     return (
-      (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.BOOLEAN,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.STRICTDATE,
-        ] as unknown as string
-      ).includes(propertyType.path) ||
-      // if the type is enumeration, make sure the enumeration has some value
-      (propertyType instanceof Enumeration && propertyType.values.length > 0)
-    );
+      [
+        PRIMITIVE_TYPE.NUMBER,
+        PRIMITIVE_TYPE.INTEGER,
+        PRIMITIVE_TYPE.DECIMAL,
+        PRIMITIVE_TYPE.FLOAT,
+      ] as unknown as string
+    ).includes(propertyType.path);
   }
 
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
-        .genericType.value.rawType;
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
     return (
       type !== undefined &&
-      ((
+      (
         [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.BOOLEAN,
           PRIMITIVE_TYPE.NUMBER,
           PRIMITIVE_TYPE.INTEGER,
           PRIMITIVE_TYPE.DECIMAL,
           PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.STRICTDATE,
         ] as unknown as string
-      ).includes(type.path) ||
-        type === propertyType)
+      ).includes(type.path)
     );
   }
 
@@ -106,9 +82,6 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
     switch (propertyType.path) {
-      case PRIMITIVE_TYPE.STRING:
-      case PRIMITIVE_TYPE.BOOLEAN:
-      case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL:
       case PRIMITIVE_TYPE.FLOAT:
@@ -120,29 +93,6 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
         );
       }
       default:
-        if (propertyType instanceof Enumeration) {
-          if (propertyType.values.length > 0) {
-            const multiplicityOne =
-              filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
-                TYPICAL_MULTIPLICITY_TYPE.ONE,
-              );
-            const enumValueInstanceValue = new EnumValueInstanceValue(
-              GenericTypeExplicitReference.create(
-                new GenericType(propertyType),
-              ),
-              multiplicityOne,
-            );
-            enumValueInstanceValue.values = [
-              EnumValueExplicitReference.create(propertyType.values[0]),
-            ];
-            return enumValueInstanceValue;
-          }
-          throw new UnsupportedOperationError(
-            `Can't get default value for filter operator '${this.getLabel(
-              filterConditionState,
-            )}' since enumeration '${propertyType.path}' has no value`,
-          );
-        }
         throw new UnsupportedOperationError(
           `Can't get default value for filter operator '${this.getLabel(
             filterConditionState,
@@ -156,7 +106,7 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      EQUAL_FUNCTION_NAME,
+      GREATER_THAN_FUNCTION_NAME,
     );
   }
 
@@ -167,33 +117,8 @@ export class QueryBuilderEqualOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      EQUAL_FUNCTION_NAME,
+      GREATER_THAN_FUNCTION_NAME,
       this,
     );
-  }
-}
-
-export class QueryBuilderNotEqualOperator extends QueryBuilderEqualOperator {
-  override getLabel(filterConditionState: FilterConditionState): string {
-    return `is not`;
-  }
-
-  override buildFilterConditionExpression(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification {
-    return buildNotExpression(
-      filterConditionState,
-      super.buildFilterConditionExpression(filterConditionState),
-    );
-  }
-
-  override buildFilterConditionState(
-    filterState: QueryBuilderFilterState,
-    expression: SimpleFunctionExpression,
-  ): FilterConditionState | undefined {
-    const innerExpression = unwrapNotExpression(expression);
-    return innerExpression
-      ? super.buildFilterConditionState(filterState, innerExpression)
-      : undefined;
   }
 }

@@ -53,7 +53,7 @@ export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
   OR = 'or',
 }
 
-export abstract class QueryBuilderOperator {
+export abstract class QueryBuilderFilterOperator {
   uuid = uuid();
 
   abstract getLabel(filterConditionState: FilterConditionState): string;
@@ -100,7 +100,7 @@ export class FilterConditionState {
   editorStore: EditorStore;
   filterState: QueryBuilderFilterState;
   propertyEditorState: QueryBuilderPropertyEditorState;
-  operator!: QueryBuilderOperator;
+  operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification;
   existsLambdaParamNames: string[] = [];
 
@@ -135,7 +135,7 @@ export class FilterConditionState {
     this.value = this.operator.getDefaultFilterConditionValue(this);
   }
 
-  get operators(): QueryBuilderOperator[] {
+  get operators(): QueryBuilderFilterOperator[] {
     return this.filterState.operators.filter((op) =>
       op.isCompatibleWithFilterConditionProperty(this),
     );
@@ -166,14 +166,14 @@ export class FilterConditionState {
     }
   }
 
-  changeOperator(val: QueryBuilderOperator): void {
+  changeOperator(val: QueryBuilderFilterOperator): void {
     this.setOperator(val);
     if (!this.operator.isCompatibleWithFilterConditionValue(this)) {
       this.setValue(this.operator.getDefaultFilterConditionValue(this));
     }
   }
 
-  setOperator(val: QueryBuilderOperator): void {
+  setOperator(val: QueryBuilderFilterOperator): void {
     this.operator = val;
   }
 
@@ -367,13 +367,13 @@ export class QueryBuilderFilterState
   nodes = new Map<string, QueryBuilderFilterTreeNodeData>();
   selectedNode?: QueryBuilderFilterTreeNodeData;
   isRearrangingConditions = false;
-  operators: QueryBuilderOperator[] = [];
+  operators: QueryBuilderFilterOperator[] = [];
   private _suppressClickawayEventListener = false;
 
   constructor(
     editorStore: EditorStore,
     queryBuilderState: QueryBuilderState,
-    operators: QueryBuilderOperator[],
+    operators: QueryBuilderFilterOperator[],
   ) {
     makeAutoObservable(this, {
       editorStore: false,

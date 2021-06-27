@@ -46,7 +46,7 @@ import type {
   QueryBuilderFilterConditionDragSource,
   QueryBuilderFilterDropTarget,
   QueryBuilderFilterTreeNodeData,
-  QueryBuilderOperator,
+  QueryBuilderFilterOperator,
 } from '../stores/QueryBuilderFilterState';
 import {
   QUERY_BUILDER_FILTER_GROUP_OPERATION,
@@ -169,7 +169,7 @@ const QueryBuilderFilterConditionEditor = observer(
     isPropertyDragOver: boolean;
   }) => {
     const { node, isPropertyDragOver } = props;
-    const changeOperation = (val: QueryBuilderOperator) => (): void =>
+    const changeOperation = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeProperty = (
       propertyNode: QueryBuilderExplorerTreePropertyNodeData,

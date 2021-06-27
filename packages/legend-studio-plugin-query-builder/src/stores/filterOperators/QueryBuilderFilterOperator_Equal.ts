@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -23,7 +23,15 @@ import type {
   ValueSpecification,
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
-import { PRIMITIVE_TYPE } from '@finos/legend-studio';
+import {
+  EnumValueInstanceValue,
+  GenericTypeExplicitReference,
+  GenericType,
+  TYPICAL_MULTIPLICITY_TYPE,
+  EnumValueExplicitReference,
+  Enumeration,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-studio';
 import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
@@ -33,13 +41,13 @@ import {
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from './QueryBuilderOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelpers';
 
-const CONTAIN_FUNCTION_NAME = 'contains';
+const EQUAL_FUNCTION_NAME = 'equal';
 
-export class QueryBuilderContainOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return 'contains';
+    return 'is';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -48,16 +56,47 @@ export class QueryBuilderContainOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return PRIMITIVE_TYPE.STRING === propertyType.path;
+    return (
+      (
+        [
+          PRIMITIVE_TYPE.STRING,
+          PRIMITIVE_TYPE.BOOLEAN,
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.STRICTDATE,
+        ] as unknown as string
+      ).includes(propertyType.path) ||
+      // if the type is enumeration, make sure the enumeration has some value
+      (propertyType instanceof Enumeration && propertyType.values.length > 0)
+    );
   }
 
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
+    const propertyType =
+      filterConditionState.propertyEditorState.propertyExpression.func
+        .genericType.value.rawType;
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
-    return PRIMITIVE_TYPE.STRING === type?.path;
+    return (
+      type !== undefined &&
+      ((
+        [
+          PRIMITIVE_TYPE.STRING,
+          PRIMITIVE_TYPE.BOOLEAN,
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.STRICTDATE,
+        ] as unknown as string
+      ).includes(type.path) ||
+        type === propertyType)
+    );
   }
 
   getDefaultFilterConditionValue(
@@ -67,7 +106,13 @@ export class QueryBuilderContainOperator extends QueryBuilderOperator {
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
     switch (propertyType.path) {
-      case PRIMITIVE_TYPE.STRING: {
+      case PRIMITIVE_TYPE.STRING:
+      case PRIMITIVE_TYPE.BOOLEAN:
+      case PRIMITIVE_TYPE.STRICTDATE:
+      case PRIMITIVE_TYPE.NUMBER:
+      case PRIMITIVE_TYPE.DECIMAL:
+      case PRIMITIVE_TYPE.FLOAT:
+      case PRIMITIVE_TYPE.INTEGER: {
         return buildPrimitiveInstanceValue(
           filterConditionState,
           propertyType.path,
@@ -75,6 +120,29 @@ export class QueryBuilderContainOperator extends QueryBuilderOperator {
         );
       }
       default:
+        if (propertyType instanceof Enumeration) {
+          if (propertyType.values.length > 0) {
+            const multiplicityOne =
+              filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+                TYPICAL_MULTIPLICITY_TYPE.ONE,
+              );
+            const enumValueInstanceValue = new EnumValueInstanceValue(
+              GenericTypeExplicitReference.create(
+                new GenericType(propertyType),
+              ),
+              multiplicityOne,
+            );
+            enumValueInstanceValue.values = [
+              EnumValueExplicitReference.create(propertyType.values[0]),
+            ];
+            return enumValueInstanceValue;
+          }
+          throw new UnsupportedOperationError(
+            `Can't get default value for filter operator '${this.getLabel(
+              filterConditionState,
+            )}' since enumeration '${propertyType.path}' has no value`,
+          );
+        }
         throw new UnsupportedOperationError(
           `Can't get default value for filter operator '${this.getLabel(
             filterConditionState,
@@ -88,7 +156,7 @@ export class QueryBuilderContainOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      CONTAIN_FUNCTION_NAME,
+      EQUAL_FUNCTION_NAME,
     );
   }
 
@@ -99,15 +167,15 @@ export class QueryBuilderContainOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      CONTAIN_FUNCTION_NAME,
+      EQUAL_FUNCTION_NAME,
       this,
     );
   }
 }
 
-export class QueryBuilderNotContainOperator extends QueryBuilderContainOperator {
+export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOperator_Equal {
   override getLabel(filterConditionState: FilterConditionState): string {
-    return `doesn't contain`;
+    return `is not`;
   }
 
   override buildFilterConditionExpression(

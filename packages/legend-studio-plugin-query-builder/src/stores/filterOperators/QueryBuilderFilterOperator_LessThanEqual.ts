@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -31,13 +31,13 @@ import {
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
-} from './QueryBuilderOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelpers';
 
-const GREATER_THAN_EQUAL_FUNCTION_NAME = 'greaterThanEqual';
+const LESS_THAN_EQUAL_FUNCTION_NAME = 'lessThanEqual';
 
-export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return '>=';
+    return '<=';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -106,7 +106,7 @@ export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      GREATER_THAN_EQUAL_FUNCTION_NAME,
+      LESS_THAN_EQUAL_FUNCTION_NAME,
     );
   }
 
@@ -117,7 +117,7 @@ export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      GREATER_THAN_EQUAL_FUNCTION_NAME,
+      LESS_THAN_EQUAL_FUNCTION_NAME,
       this,
     );
   }

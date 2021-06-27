@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -23,23 +23,27 @@ import type {
   ValueSpecification,
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
-import { PRIMITIVE_TYPE } from '@finos/legend-studio';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import {
+  CollectionInstanceValue,
+  GenericTypeExplicitReference,
+  GenericType,
+  TYPICAL_MULTIPLICITY_TYPE,
+  Enumeration,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-studio';
 import {
   buildFilterConditionState,
   buildNotExpression,
-  buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
-  getDefaultPrimitiveInstanceValueForType,
-  getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from './QueryBuilderOperatorHelpers';
+  getCollectionValueSpecificationType,
+} from './QueryBuilderFilterOperatorHelpers';
 
-const END_WITH_FUNCTION_NAME = 'endsWith';
+const IN_FUNCTION_NAME = 'in';
 
-export class QueryBuilderEndWithOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return 'ends with';
+    return 'is in';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -48,39 +52,77 @@ export class QueryBuilderEndWithOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return PRIMITIVE_TYPE.STRING === propertyType.path;
+    return (
+      (
+        [
+          PRIMITIVE_TYPE.STRING,
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+        ] as unknown as string
+      ).includes(propertyType.path) ||
+      // TODO: do we care if the enumeration type has no value (like in the case of `==` operator)?
+      propertyType instanceof Enumeration
+    );
   }
 
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const type = filterConditionState.value
-      ? getNonCollectionValueSpecificationType(filterConditionState.value)
-      : undefined;
-    return PRIMITIVE_TYPE.STRING === type?.path;
+    const propertyType =
+      filterConditionState.propertyEditorState.propertyExpression.func
+        .genericType.value.rawType;
+    const valueSpec = filterConditionState.value;
+    if (valueSpec instanceof CollectionInstanceValue) {
+      if (valueSpec.values.length === 0) {
+        return true;
+      }
+      const collectionType = getCollectionValueSpecificationType(
+        filterConditionState,
+        valueSpec.values,
+      );
+      if (!collectionType) {
+        return false;
+      }
+      if (
+        (
+          [
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+          ] as string[]
+        ).includes(propertyType.path)
+      ) {
+        return (
+          [
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+          ] as string[]
+        ).includes(collectionType.path);
+      }
+      return collectionType === propertyType;
+    }
+    return false;
   }
 
   getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
+    const multiplicityOne =
+      filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    switch (propertyType.path) {
-      case PRIMITIVE_TYPE.STRING: {
-        return buildPrimitiveInstanceValue(
-          filterConditionState,
-          propertyType.path,
-          getDefaultPrimitiveInstanceValueForType(propertyType.path),
-        );
-      }
-      default:
-        throw new UnsupportedOperationError(
-          `Can't get default value for filter operator '${this.getLabel(
-            filterConditionState,
-          )}' when the LHS property is of type '${propertyType.path}'`,
-        );
-    }
+    return new CollectionInstanceValue(
+      multiplicityOne,
+      GenericTypeExplicitReference.create(new GenericType(propertyType)),
+    );
   }
 
   buildFilterConditionExpression(
@@ -88,7 +130,7 @@ export class QueryBuilderEndWithOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      END_WITH_FUNCTION_NAME,
+      IN_FUNCTION_NAME,
     );
   }
 
@@ -99,15 +141,15 @@ export class QueryBuilderEndWithOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      END_WITH_FUNCTION_NAME,
+      IN_FUNCTION_NAME,
       this,
     );
   }
 }
 
-export class QueryBuilderNotEndWithOperator extends QueryBuilderEndWithOperator {
+export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator_In {
   override getLabel(filterConditionState: FilterConditionState): string {
-    return `doesn't end with`;
+    return `is not in`;
   }
 
   override buildFilterConditionExpression(
