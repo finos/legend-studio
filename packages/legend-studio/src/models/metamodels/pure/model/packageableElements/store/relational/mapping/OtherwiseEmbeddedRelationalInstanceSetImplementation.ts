@@ -16,9 +16,11 @@
 
 import { observable, computed, makeObservable } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import {
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { OtherwiseEmebddedSetImplementation } from '../../../../../model/packageableElements/mapping/EmbeddedSetImplementation';
 import type {
