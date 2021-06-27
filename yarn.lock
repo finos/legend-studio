@@ -2183,7 +2183,7 @@ __metadata:
     eslint-plugin-react: 7.24.0
     eslint-plugin-react-hooks: 4.2.0
     micromatch: 4.0.4
-    prettier: 2.3.1
+    prettier: 2.3.2
     rimraf: 3.0.2
   peerDependencies:
     eslint: ^7.17.0
@@ -2203,7 +2203,7 @@ __metadata:
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@types/react": 17.0.11
-    copy-webpack-plugin: 9.0.0
+    copy-webpack-plugin: 9.0.1
     cross-env: 7.0.3
     eslint: 7.29.0
     jest: 27.0.5
@@ -2281,7 +2281,7 @@ __metadata:
     jest-watch-typeahead: 0.6.4
     jsonc-parser: 3.0.0
     micromatch: 4.0.4
-    mini-css-extract-plugin: 1.6.0
+    mini-css-extract-plugin: 1.6.1
     monaco-editor: 0.25.2
     monaco-editor-webpack-plugin: 4.0.0
     postcss: 8.3.5
@@ -2489,6 +2489,7 @@ __metadata:
     mobx: 6.3.2
     object-hash: 2.2.0
     pako: 2.0.3
+    pretty-format: 27.0.2
     query-string: 7.0.1
     rimraf: 3.0.2
     seedrandom: 3.0.5
@@ -2512,7 +2513,7 @@ __metadata:
     "@material-ui/core": 4.11.4
     "@testing-library/dom": 8.0.0
     "@testing-library/react": 12.0.0
-    "@types/css-font-loading-module": 0.0.4
+    "@types/css-font-loading-module": 0.0.5
     "@types/react": 17.0.11
     "@types/react-dom": 17.0.8
     "@types/react-router-dom": 5.1.7
@@ -2526,7 +2527,7 @@ __metadata:
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
     monaco-editor: 0.25.2
-    node-diff3: 2.1.2
+    node-diff3: 3.0.0
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dnd: 14.0.2
@@ -3213,10 +3214,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/css-font-loading-module@npm:0.0.4":
-  version: 0.0.4
-  resolution: "@types/css-font-loading-module@npm:0.0.4"
-  checksum: d3b9469962cbd9e9fe230755513f79ba9767d2ea4d99b56bc89f9bb0b6c5ca3b4793ae21785dbe9cdc95be5389f5da264b815ba1d6b4cd04c137817b07756e85
+"@types/css-font-loading-module@npm:0.0.5":
+  version: 0.0.5
+  resolution: "@types/css-font-loading-module@npm:0.0.5"
+  checksum: ef71254d6f5de33169505981d9bd8b66c249297d0468a58e73dca74939fe41d4e619b7d8b2f2abad6624ad799656b07c1d3ea3d8cccdc2aff7459436f2868087
   languageName: node
   linkType: hard
 
@@ -3408,10 +3409,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:15.12.4":
-  version: 15.12.4
-  resolution: "@types/node@npm:15.12.4"
-  checksum: 1731c610eb87d2051d32d0f64f2b14b4e75443ab40ab4882e50fdaa4e5e1013240a6d249213bec1f83b2c3ba24f6d5233159a4deac0bb51751809f5cb6082735
+"@types/node@npm:15.12.5":
+  version: 15.12.5
+  resolution: "@types/node@npm:15.12.5"
+  checksum: 4550941a5db67f21bf1c54b2f76ef6fb56ced08583b6049fceef5972ef73791225c41b9a30ce36f496fded284dd736973b5e2107f4bd036d41f35550e3af3450
   languageName: node
   linkType: hard
 
@@ -5462,9 +5463,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"copy-webpack-plugin@npm:9.0.0":
-  version: 9.0.0
-  resolution: "copy-webpack-plugin@npm:9.0.0"
+"copy-webpack-plugin@npm:9.0.1":
+  version: 9.0.1
+  resolution: "copy-webpack-plugin@npm:9.0.1"
   dependencies:
     fast-glob: ^3.2.5
     glob-parent: ^6.0.0
@@ -5472,10 +5473,10 @@ __metadata:
     normalize-path: ^3.0.0
     p-limit: ^3.1.0
     schema-utils: ^3.0.0
-    serialize-javascript: ^5.0.1
+    serialize-javascript: ^6.0.0
   peerDependencies:
     webpack: ^5.1.0
-  checksum: f3ca9d206b4fcf7860e63afdaf3c3b24ffc0983f2584df7f0e4c98d57b538dfcee4a75333156a22e9a0afcba2acce6796a15f957ce6595d3997df7992ffce574
+  checksum: f3e69883e173f9a298b63dcf35ba5aafc02e252c67c236029424af19fb2e36fc93de94054bd7a9ada8b4cbcc4e96e9a3a269f972e4a45f4fd1b32a3d199d2cae
   languageName: node
   linkType: hard
 
@@ -9844,7 +9845,7 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 26.0.23
-    "@types/node": 15.12.4
+    "@types/node": 15.12.5
     chalk: 4.1.1
     cross-env: 7.0.3
     eslint: 7.29.0
@@ -9852,7 +9853,7 @@ __metadata:
     husky: 6.0.0
     jest: 27.0.5
     lint-staged: 11.0.0
-    prettier: 2.3.1
+    prettier: 2.3.2
     rimraf: 3.0.2
     semver: 7.3.5
     sort-package-json: 1.50.0
@@ -10516,16 +10517,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:1.6.0":
-  version: 1.6.0
-  resolution: "mini-css-extract-plugin@npm:1.6.0"
+"mini-css-extract-plugin@npm:1.6.1":
+  version: 1.6.1
+  resolution: "mini-css-extract-plugin@npm:1.6.1"
   dependencies:
     loader-utils: ^2.0.0
     schema-utils: ^3.0.0
     webpack-sources: ^1.1.0
   peerDependencies:
     webpack: ^4.4.0 || ^5.0.0
-  checksum: 04f7c47c18aae7aab9a586ed99dc80255106448403c9c4f80c4b6e647cfc3ea09e2c4fe5cc15a3463be6a1281c2266158beab6a9b81c84f126714e1e995bf6d3
+  checksum: 62ae22503b9e5314585b321a011f4c5af63df0e1b5bfdd2bad84111eee9f4ba8125f39dd58abec9b55de1bfdb12f26ff15f6773076b150cc5eebe663bc1ecff5
   languageName: node
   linkType: hard
 
@@ -10833,10 +10834,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-diff3@npm:2.1.2":
-  version: 2.1.2
-  resolution: "node-diff3@npm:2.1.2"
-  checksum: 25877fe4583e6236b81e8bdd8156b70a36591e417d24d00b914988d43a6c22b60c0bc3656a6ba8e3846ba6af534e1297b3e5675422c27307cb2ef6247f73f740
+"node-diff3@npm:3.0.0":
+  version: 3.0.0
+  resolution: "node-diff3@npm:3.0.0"
+  checksum: c506fb79ad285b5193a65f965a0796643e1c9e7d9abdd679cf9522b16b32420571d997d15ea4f573e2904477b6ed06f07dc5c857ac6d3a735b537498d123ce10
   languageName: node
   linkType: hard
 
@@ -12238,12 +12239,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:2.3.1":
-  version: 2.3.1
-  resolution: "prettier@npm:2.3.1"
+"prettier@npm:2.3.2":
+  version: 2.3.2
+  resolution: "prettier@npm:2.3.2"
   bin:
     prettier: bin-prettier.js
-  checksum: 3b37731ff7150feecf19736c77c790e7e276b404ac9af81cbaf87cfecefc48ef9a864f34c2a5caf5955378b8f2525984b8611703a0d9c1f052b4cfa6eb35899f
+  checksum: 17ce5784ac67621c292df58e2da60b2ee150c2d6aebea22a6ad9e52fcd6a5e66c349d0a8436ea3bd8ff9d778920a5f68000d7625b74f43558718a49755aa5259
   languageName: node
   linkType: hard
 
@@ -12263,6 +12264,18 @@ __metadata:
     lodash: ^4.17.20
     renderkid: ^2.0.6
   checksum: c985666a1f471fd8d5a7b6f1f2154f947aff0a2c60c5d5a4513ff152a91d3296e5849d2fa3914be1a22b57db7580a968c25ab720b0afd1cc8d64de670153dc61
+  languageName: node
+  linkType: hard
+
+"pretty-format@npm:27.0.2, pretty-format@npm:^27.0.2":
+  version: 27.0.2
+  resolution: "pretty-format@npm:27.0.2"
+  dependencies:
+    "@jest/types": ^27.0.2
+    ansi-regex: ^5.0.0
+    ansi-styles: ^5.0.0
+    react-is: ^17.0.1
+  checksum: 26a454f1daebcb9b605a56aadc68364728114b2cada38c0647e745accf02e89ba8e098ceef102abb01e9df00cb0d78dd8c1cf4756e21aa560f054069e97646e3
   languageName: node
   linkType: hard
 
@@ -12297,18 +12310,6 @@ __metadata:
     ansi-styles: ^4.0.0
     react-is: ^17.0.1
   checksum: e3b808404d7e1519f0df1aa1f25cee0054ab475775c6b2b8c5568ff23194a92d54bf93274139b6f584ca70fd773be4eaa754b0e03f12bb0a8d1426b07f079976
-  languageName: node
-  linkType: hard
-
-"pretty-format@npm:^27.0.2":
-  version: 27.0.2
-  resolution: "pretty-format@npm:27.0.2"
-  dependencies:
-    "@jest/types": ^27.0.2
-    ansi-regex: ^5.0.0
-    ansi-styles: ^5.0.0
-    react-is: ^17.0.1
-  checksum: 26a454f1daebcb9b605a56aadc68364728114b2cada38c0647e745accf02e89ba8e098ceef102abb01e9df00cb0d78dd8c1cf4756e21aa560f054069e97646e3
   languageName: node
   linkType: hard
 
@@ -13416,6 +13417,15 @@ resolve@^2.0.0-next.3:
   dependencies:
     randombytes: ^2.1.0
   checksum: bb45a427690c3d2711e28499de0fbf25036af1e23c63c6a9237ed0aa572fd0941fcdefe50a2dccf26d9df8c8b86ae38659e19d8ba7afd3fbc1f1c7539a2a48d2
+  languageName: node
+  linkType: hard
+
+"serialize-javascript@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "serialize-javascript@npm:6.0.0"
+  dependencies:
+    randombytes: ^2.1.0
+  checksum: 56f90b562a1bdc92e55afb3e657c6397c01a902c588c0fe3d4c490efdcc97dcd2a3074ba12df9e94630f33a5ce5b76a74784a7041294628a6f4306e0ec84bf93
   languageName: node
   linkType: hard
 

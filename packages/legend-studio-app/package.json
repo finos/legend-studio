@@ -48,7 +48,7 @@
     "@finos/legend-studio-dev-utils": "workspace:*",
     "@finos/legend-studio-preset-dummy": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
-    "copy-webpack-plugin": "9.0.0",
+    "copy-webpack-plugin": "9.0.1",
     "cross-env": "7.0.3",
     "eslint": "7.29.0",
     "jest": "27.0.5",
