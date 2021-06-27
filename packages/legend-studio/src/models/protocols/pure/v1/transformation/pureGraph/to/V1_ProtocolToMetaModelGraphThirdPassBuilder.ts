@@ -40,17 +40,17 @@ import type { V1_Service } from '../../../model/packageableElements/service/V1_S
 import type { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
 import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from './V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
 import {
-  V1_processAssociationProperty,
-  V1_processDerivedProperty,
-  V1_processProperty,
-  V1_processTaggedValue,
+  V1_buildAssociationProperty,
+  V1_buildDerivedProperty,
+  V1_buildProperty,
+  V1_buildTaggedValue,
 } from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
-import { V1_processDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
+import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
@@ -107,9 +107,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
       }
     });
     element.properties.forEach((property) =>
-      _class.properties.push(
-        V1_processProperty(property, this.context, _class),
-      ),
+      _class.properties.push(V1_buildProperty(property, this.context, _class)),
     );
   }
 
@@ -124,18 +122,18 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     const first = element.properties[0];
     const second = element.properties[1];
     association.setProperties([
-      V1_processAssociationProperty(first, second, this.context, association),
-      V1_processAssociationProperty(second, first, this.context, association),
+      V1_buildAssociationProperty(first, second, this.context, association),
+      V1_buildAssociationProperty(second, first, this.context, association),
     ]);
     association.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);
     association.taggedValues = element.taggedValues
-      .map((taggedValue) => V1_processTaggedValue(taggedValue, this.context))
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
     association.derivedProperties = element.derivedProperties.map(
       (derivedProperty) =>
-        V1_processDerivedProperty(derivedProperty, this.context, association),
+        V1_buildDerivedProperty(derivedProperty, this.context, association),
     );
   }
 
@@ -156,7 +154,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
       this.context.graph.buildPackageString(element.package, element.name),
     );
     element.schemas.forEach((schema) =>
-      V1_processDatabaseSchemaViewsFirstPass(schema, database, this.context),
+      V1_buildDatabaseSchemaViewsFirstPass(schema, database, this.context),
     );
   }
 

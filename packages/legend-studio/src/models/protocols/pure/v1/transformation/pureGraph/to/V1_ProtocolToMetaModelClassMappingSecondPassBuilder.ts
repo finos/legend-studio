@@ -36,10 +36,10 @@ import type { AbstractFlatDataPropertyMapping } from '../../../../../../metamode
 import { SetImplementationExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementationReference';
 import type { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
-import { V1_processRelationalOperationElement } from './helpers/V1_DatabaseBuilderHelper';
+import { V1_buildRelationalOperationElement } from './helpers/V1_DatabaseBuilderHelper';
 import {
-  V1_processRelationalClassMapping,
-  V1_processRelationalPrimaryKey,
+  V1_buildRelationalClassMapping,
+  V1_buildRelationalPrimaryKey,
 } from './helpers/V1_RelationalClassMappingBuilderHelper';
 import type { V1_ClassMappingVisitor } from '../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping';
@@ -193,7 +193,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
     if (classMapping.groupBy.length) {
       const groupBy = new GroupByMapping();
       groupBy.columns = classMapping.groupBy.map((op) =>
-        V1_processRelationalOperationElement(
+        V1_buildRelationalOperationElement(
           op,
           this.context,
           new Map<string, TableAlias>(),
@@ -204,7 +204,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
     }
     const embedded: EmbeddedRelationalInstanceSetImplementation[] = [];
     const tableAliasMap = new Map<string, TableAlias>();
-    V1_processRelationalClassMapping(
+    V1_buildRelationalClassMapping(
       classMapping,
       this.context,
       rootRelationalInstanceSetImplementation,
@@ -242,7 +242,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       rootRelationalInstanceSetImplementation.mainTableAlias = mainTableAlias;
     }
     if (!rootRelationalInstanceSetImplementation.primaryKey.length) {
-      V1_processRelationalPrimaryKey(rootRelationalInstanceSetImplementation);
+      V1_buildRelationalPrimaryKey(rootRelationalInstanceSetImplementation);
     }
     return rootRelationalInstanceSetImplementation;
   }

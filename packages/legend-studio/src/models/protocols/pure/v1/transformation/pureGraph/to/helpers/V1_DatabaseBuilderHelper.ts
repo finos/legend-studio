@@ -198,7 +198,7 @@ export const V1_getRelation = (
   return table;
 };
 
-const processElementWithJoinsJoins = (
+const buildJoinTreeNode = (
   joins: { joinReference: JoinReference; joinType?: JoinType }[],
   context: V1_GraphBuilderContext,
 ): JoinTreeNode => {
@@ -210,7 +210,7 @@ const processElementWithJoinsJoins = (
   if (joins.length === 1) {
     return res;
   }
-  res.children = [processElementWithJoinsJoins(joins.slice(1), context)];
+  res.children = [buildJoinTreeNode(joins.slice(1), context)];
   return res;
 };
 
@@ -225,10 +225,10 @@ export const V1_buildElementWithJoinsJoinTreeNode = (
     joinReference: context.resolveJoin(joinPtr),
     joinType: joinPtr.joinType ? getJoinType(joinPtr.joinType) : undefined,
   }));
-  return processElementWithJoinsJoins(newJoins, context);
+  return buildJoinTreeNode(newJoins, context);
 };
 
-export const V1_processRelationalOperationElement = (
+export const V1_buildRelationalOperationElement = (
   operationalElement: V1_RelationalOperationElement,
   context: V1_GraphBuilderContext,
   aliasMap: Map<string, TableAlias>,
@@ -266,7 +266,7 @@ export const V1_processRelationalOperationElement = (
     );
     if (operationalElement.relationalElement) {
       elementWithJoins.relationalOperationElement =
-        V1_processRelationalOperationElement(
+        V1_buildRelationalOperationElement(
           operationalElement.relationalElement,
           context,
           new Map<string, TableAlias>(),
@@ -277,7 +277,7 @@ export const V1_processRelationalOperationElement = (
   } else if (operationalElement instanceof V1_DynaFunc) {
     const dynFunc = new DynaFunction(operationalElement.funcName);
     dynFunc.parameters = operationalElement.parameters.map((parameter) =>
-      V1_processRelationalOperationElement(
+      V1_buildRelationalOperationElement(
         parameter,
         context,
         aliasMap,
@@ -289,7 +289,7 @@ export const V1_processRelationalOperationElement = (
     const value = operationalElement.value;
     if (value instanceof V1_RelationalOperationElement) {
       return new Literal(
-        V1_processRelationalOperationElement(
+        V1_buildRelationalOperationElement(
           value,
           context,
           aliasMap,
@@ -303,7 +303,7 @@ export const V1_processRelationalOperationElement = (
     litList.values = operationalElement.values.map((value) => {
       if (value instanceof V1_RelationalOperationElement) {
         return new Literal(
-          V1_processRelationalOperationElement(
+          V1_buildRelationalOperationElement(
             value,
             context,
             aliasMap,
@@ -371,7 +371,7 @@ export const V1_transformDatabaseDataType = (
   );
 };
 
-export const V1_processColumn = (column: V1_Column, table: Table): Column => {
+const buildColumn = (column: V1_Column, table: Table): Column => {
   assertNonEmptyString(column.name, 'Column name is missing');
   const col = new Column();
   col.name = column.name;
@@ -381,16 +381,14 @@ export const V1_processColumn = (column: V1_Column, table: Table): Column => {
   return col;
 };
 
-export const V1_processDatabaseTable = (
+const buildDatabaseTable = (
   srcTable: V1_Table,
   schema: Schema,
   context: V1_GraphBuilderContext,
 ): Table => {
   assertNonEmptyString(srcTable.name, 'Table name is missing');
   const table = new Table(srcTable.name, schema);
-  const columns = srcTable.columns.map((column) =>
-    V1_processColumn(column, table),
-  );
+  const columns = srcTable.columns.map((column) => buildColumn(column, table));
   table.columns = columns;
   table.primaryKey = srcTable.primaryKey.map((key) =>
     guaranteeNonNullable(
@@ -404,7 +402,7 @@ export const V1_processDatabaseTable = (
   return table;
 };
 
-export const V1_processSchema = (
+export const V1_buildSchema = (
   srcSchema: V1_Schema,
   database: Database,
   context: V1_GraphBuilderContext,
@@ -412,15 +410,12 @@ export const V1_processSchema = (
   assertNonEmptyString(srcSchema.name, 'Schema name is missing');
   const schema = new Schema(srcSchema.name, database);
   schema.tables = srcSchema.tables.map((table) =>
-    V1_processDatabaseTable(table, schema, context),
+    buildDatabaseTable(table, schema, context),
   );
   return schema;
 };
 
-export const V1_processDatabaseViewFirstPass = (
-  srcView: V1_View,
-  schema: Schema,
-): View => {
+const buildViewFirstPass = (srcView: V1_View, schema: Schema): View => {
   assertNonEmptyString(srcView.name, 'View name is missing');
   const view = new View(srcView.name, schema);
   const columns = srcView.columnMappings.map((colMapping) => {
@@ -436,20 +431,67 @@ export const V1_processDatabaseViewFirstPass = (
   );
   return view;
 };
+const buildViewSecondPass = (
+  srcView: V1_View,
+  context: V1_GraphBuilderContext,
+  schema: Schema,
+): View => {
+  const view = schema.getView(srcView.name);
+  const columnMappings = srcView.columnMappings.map(
+    (columnMapping) =>
+      new ColumnMapping(
+        columnMapping.name,
+        V1_buildRelationalOperationElement(
+          columnMapping.operation,
+          context,
+          new Map<string, TableAlias>(),
+          [],
+        ),
+      ),
+  );
+  const groupByColumns = srcView.groupBy.map((groupBy) =>
+    V1_buildRelationalOperationElement(
+      groupBy,
+      context,
+      new Map<string, TableAlias>(),
+      [],
+    ),
+  );
+  if (groupByColumns.length) {
+    const groupBy = new GroupByMapping();
+    groupBy.columns = groupByColumns;
+    view.groupBy = groupBy;
+  }
+  view.distinct = srcView.distinct;
+  view.columnMappings = columnMappings;
+  return view;
+};
 
-export const V1_processDatabaseSchemaViewsFirstPass = (
+export const V1_buildDatabaseSchemaViewsFirstPass = (
   srcSchema: V1_Schema,
   database: Database,
   context: V1_GraphBuilderContext,
 ): Schema => {
   const schema = database.getSchema(srcSchema.name);
   schema.views = srcSchema.views.map((view) =>
-    V1_processDatabaseViewFirstPass(view, schema),
+    buildViewFirstPass(view, schema),
   );
   return schema;
 };
 
-export const V1_processDatabaseJoin = (
+export const V1_buildDatabaseSchemaViewsSecondPass = (
+  srcSchema: V1_Schema,
+  context: V1_GraphBuilderContext,
+  database: Database,
+): Schema => {
+  const schema = database.getSchema(srcSchema.name);
+  schema.views = srcSchema.views.map((view) =>
+    buildViewSecondPass(view, context, schema),
+  );
+  return schema;
+};
+
+export const V1_buildDatabaseJoin = (
   srcJoin: V1_Join,
   context: V1_GraphBuilderContext,
   database: Database,
@@ -459,7 +501,7 @@ export const V1_processDatabaseJoin = (
   const selfJoinTargets: TableAliasColumn[] = [];
   const join = new Join(
     srcJoin.name,
-    V1_processRelationalOperationElement(
+    V1_buildRelationalOperationElement(
       srcJoin.operation,
       context,
       aliasMap,
@@ -519,14 +561,14 @@ export const V1_processDatabaseJoin = (
   return join;
 };
 
-export const V1_processDatabaseFilter = (
+export const V1_buildDatabaseFilter = (
   srcFilter: V1_Filter,
   context: V1_GraphBuilderContext,
   database: Database,
 ): Filter => {
   assertNonEmptyString(srcFilter.name, 'Filter name is missing');
   const aliasMap = new Map<string, TableAlias>();
-  const op = V1_processRelationalOperationElement(
+  const op = V1_buildRelationalOperationElement(
     srcFilter.operation,
     context,
     aliasMap,
@@ -536,52 +578,4 @@ export const V1_processDatabaseFilter = (
   const filter = new Filter(srcFilter.name, op);
   filter.owner = database;
   return filter;
-};
-
-export const V1_processDatabaseViewSecondPass = (
-  srcView: V1_View,
-  context: V1_GraphBuilderContext,
-  schema: Schema,
-): View => {
-  const view = schema.getView(srcView.name);
-  const columnMappings = srcView.columnMappings.map(
-    (columnMapping) =>
-      new ColumnMapping(
-        columnMapping.name,
-        V1_processRelationalOperationElement(
-          columnMapping.operation,
-          context,
-          new Map<string, TableAlias>(),
-          [],
-        ),
-      ),
-  );
-  const groupByColumns = srcView.groupBy.map((groupBy) =>
-    V1_processRelationalOperationElement(
-      groupBy,
-      context,
-      new Map<string, TableAlias>(),
-      [],
-    ),
-  );
-  if (groupByColumns.length) {
-    const groupBy = new GroupByMapping();
-    groupBy.columns = groupByColumns;
-    view.groupBy = groupBy;
-  }
-  view.distinct = srcView.distinct;
-  view.columnMappings = columnMappings;
-  return view;
-};
-
-export const V1_processDatabaseSchemaViewsSecondPass = (
-  srcSchema: V1_Schema,
-  context: V1_GraphBuilderContext,
-  database: Database,
-): Schema => {
-  const schema = database.getSchema(srcSchema.name);
-  schema.views = srcSchema.views.map((view) =>
-    V1_processDatabaseViewSecondPass(view, context, schema),
-  );
-  return schema;
 };

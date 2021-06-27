@@ -34,7 +34,7 @@ import {
   getGenerationTreeData,
   openNode,
   populateDirectoryTreeNodeChildren,
-  processGenerationResultToGenerationDirectory,
+  buildGenerationDirectory,
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';
@@ -384,7 +384,7 @@ export class GraphGenerationState {
       });
     });
     // take generation outputs and put them into the root directory
-    processGenerationResultToGenerationDirectory(
+    buildGenerationDirectory(
       this.rootFileDirectory,
       generationResultMap,
       this.filesIndex,

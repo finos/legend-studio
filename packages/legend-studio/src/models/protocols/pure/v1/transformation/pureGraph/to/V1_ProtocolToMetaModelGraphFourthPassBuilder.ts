@@ -32,7 +32,7 @@ import type { V1_Service } from '../../../model/packageableElements/service/V1_S
 import type { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
 import { V1_ProtocolToMetaModelClassMappingSecondPassBuilder } from './V1_ProtocolToMetaModelClassMappingSecondPassBuilder';
 import {
-  V1_processMappingTest,
+  V1_buildMappingTest,
   V1_resolveClassMappingRoot,
 } from './helpers/V1_MappingBuilderHelper';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
@@ -41,8 +41,8 @@ import type { V1_FileGenerationSpecification } from '../../../model/packageableE
 import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import {
-  V1_processDatabaseJoin,
-  V1_processDatabaseFilter,
+  V1_buildDatabaseJoin,
+  V1_buildDatabaseFilter,
 } from './helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
@@ -102,10 +102,10 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
       this.context.graph.buildPackageString(element.package, element.name),
     );
     database.joins = element.joins.map((join) =>
-      V1_processDatabaseJoin(join, this.context, database),
+      V1_buildDatabaseJoin(join, this.context, database),
     );
     database.filters = element.filters.map((filter) =>
-      V1_processDatabaseFilter(filter, this.context, database),
+      V1_buildDatabaseFilter(filter, this.context, database),
     );
   }
 
@@ -134,7 +134,7 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
       ),
     );
     mapping.tests = element.tests.map((test) =>
-      V1_processMappingTest(test, this.context),
+      V1_buildMappingTest(test, this.context),
     );
     // resolve class mappings root
     V1_resolveClassMappingRoot(mapping);

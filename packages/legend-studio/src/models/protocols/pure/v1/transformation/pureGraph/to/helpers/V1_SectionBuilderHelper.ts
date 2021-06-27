@@ -35,7 +35,7 @@ import {
   V1_DefaultCodeSection,
 } from '../../../../model/packageableElements/section/V1_Section';
 
-export const V1_processSection = (
+export const V1_buildSection = (
   section: V1_Section,
   context: V1_GraphBuilderContext,
   parentSectionIndex: SectionIndex,

@@ -24,7 +24,7 @@ import type { V1_GraphBuilderContext } from '../../../../transformation/pureGrap
 import type { V1_EngineRuntime } from '../../../../model/packageableElements/runtime/V1_Runtime';
 import { V1_ProtocolToMetaModelConnectionBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
 
-export const V1_processEngineRuntime = (
+export const V1_buildEngineRuntime = (
   runtime: V1_EngineRuntime,
   context: V1_GraphBuilderContext,
 ): EngineRuntime => {

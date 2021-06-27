@@ -65,8 +65,8 @@ import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packagea
 import type { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping';
 import type { V1_OtherwiseEmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_OtherwiseEmbeddedRelationalPropertyMapping';
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
-import { V1_processRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
-import { V1_processEmbeddedRelationalMappingProperty } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder';
+import { V1_buildRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
+import { V1_buildEmbeddedRelationalMappingProperty } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder';
 import type { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
 import { XStorePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStorePropertyMapping';
 import type { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/xStore/XStoreAssociationImplementation';
@@ -465,7 +465,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       relationalPropertyMapping.relationalOperation =
         V1_serializeRelationalOperationElement(
           V1_transformRelationalOperationElement(
-            V1_processRelationalOperationElement(
+            V1_buildRelationalOperationElement(
               V1_deserializeRelationalOperationElement(
                 protocol.relationalOperation,
               ),
@@ -572,7 +572,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       protocol.property.property,
       'Embedded relational property mapping property name is missing',
     );
-    const property = V1_processEmbeddedRelationalMappingProperty(
+    const property = V1_buildEmbeddedRelationalMappingProperty(
       protocol,
       this.immediateParent,
       guaranteeNonNullable(this.topParent),
@@ -595,7 +595,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       InferableMappingElementIdExplicitValue.create(`${property.id.value}`, ''),
     );
     embedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
-      V1_processRelationalOperationElement(
+      V1_buildRelationalOperationElement(
         key,
         this.context,
         this.tableAliasMap,
@@ -628,7 +628,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       protocol.property.property,
       'Otherwise embedded relational property mapping property name is missing',
     );
-    const property = V1_processEmbeddedRelationalMappingProperty(
+    const property = V1_buildEmbeddedRelationalMappingProperty(
       protocol,
       this.immediateParent,
       guaranteeNonNullable(this.topParent),
@@ -655,7 +655,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         ),
       );
     otherwiseEmbedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
-      V1_processRelationalOperationElement(
+      V1_buildRelationalOperationElement(
         key,
         this.context,
         this.tableAliasMap,

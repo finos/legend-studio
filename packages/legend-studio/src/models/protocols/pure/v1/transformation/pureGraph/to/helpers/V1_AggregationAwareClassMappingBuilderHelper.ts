@@ -28,7 +28,7 @@ import type { V1_AggregateFunction } from '../../../../model/packageableElements
 import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from '../V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
 import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
 
-export const V1_processGroupByFunction = (
+const buildGroupByFunction = (
   groupByFunction: V1_GroupByFunction,
   context: V1_GraphBuilderContext,
 ): GroupByFunctionSpecification => {
@@ -43,7 +43,7 @@ export const V1_processGroupByFunction = (
   return groupByFunctionSpecification;
 };
 
-export const V1_processAggregateFunction = (
+const buildAggregateFunction = (
   aggregationFunction: V1_AggregateFunction,
   context: V1_GraphBuilderContext,
 ): AggregationFunctionSpecification => {
@@ -60,7 +60,7 @@ export const V1_processAggregateFunction = (
   return new AggregationFunctionSpecification(mapFn, aggregateFn);
 };
 
-export const V1_processAggregateSpecification = (
+const buildAggregateSpecification = (
   specification: V1_AggregateSpecification,
   context: V1_GraphBuilderContext,
 ): AggregateSpecification => {
@@ -68,15 +68,15 @@ export const V1_processAggregateSpecification = (
     specification.canAggregate,
   );
   aggregateSpecification.aggregateValues = specification.aggregateValues.map(
-    (aggregateValue) => V1_processAggregateFunction(aggregateValue, context),
+    (aggregateValue) => buildAggregateFunction(aggregateValue, context),
   );
   aggregateSpecification.groupByFunctions = specification.groupByFunctions.map(
-    (groupByFunction) => V1_processGroupByFunction(groupByFunction, context),
+    (groupByFunction) => buildGroupByFunction(groupByFunction, context),
   );
   return aggregateSpecification;
 };
 
-export const V1_processAggregateContainer = (
+export const V1_buildAggregateContainer = (
   container: V1_AggregateSetImplementationContainer,
   context: V1_GraphBuilderContext,
   mapping: Mapping,
@@ -84,10 +84,7 @@ export const V1_processAggregateContainer = (
   const aggregateSetImplementationContainer =
     new AggregateSetImplementationContainer(
       container.index,
-      V1_processAggregateSpecification(
-        container.aggregateSpecification,
-        context,
-      ),
+      buildAggregateSpecification(container.aggregateSpecification, context),
       container.setImplementation.accept_ClassMappingVisitor(
         new V1_ProtocolToMetaModelClassMappingFirstPassBuilder(
           context,

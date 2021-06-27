@@ -53,7 +53,7 @@ import {
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
-export const V1_processDatasourceSpecification = (
+export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   context: V1_GraphBuilderContext,
 ): DatasourceSpecification => {
@@ -147,7 +147,7 @@ export const V1_processDatasourceSpecification = (
   );
 };
 
-export const V1_processAuthenticationStrategy = (
+export const V1_buildAuthenticationStrategy = (
   protocol: V1_AuthenticationStrategy,
   context: V1_GraphBuilderContext,
 ): AuthenticationStrategy => {
