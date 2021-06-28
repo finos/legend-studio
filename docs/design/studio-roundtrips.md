@@ -8,17 +8,17 @@ In the scope of this doc, we will only mention the flow of data model from Studi
 
 Data models take many forms when flowing through these system
 
-- Protocol: this is the serializable representation of data models, used for sending data between system (in JSON format) and for storage. This does not contain object reference, but only pointers in string form. Since this is the representation used for storage and communication between system, they are versioned following `semver` (e.g. `v1_0_0`), the latest version is `vX_X_X` which is what Studio and engine use in their codebase.
-- Metamodel: this is a non-serializable representation of data model. This contains object reference. Metamodels form a graph of data models, which is used in Pure and Studio as the state.
-- Pure grammar text (text): this is another serializable representation of data models, but in text. Unlike protocol, this is currently not versioned.
-- Entity: this is an exclusive SDLC construct that wraps around the protocol representation to store data models and some metadata in version control system (VCS).
+- `Protocol`: this is the serializable representation of data models, used for sending data between system (in JSON format) and for storage. This does not contain object reference, but only pointers in string form. Since this is the representation used for storage and communication between system, they are versioned following `semver` (e.g. `v1_0_0`), the latest version is `vX_X_X` which is what Studio and engine use in their codebase.
+- `Metamodel`: this is a non-serializable representation of data model. This contains object reference. Metamodels form a graph of data models, which is used in Pure and Studio as the state.
+- `Pure grammar text (text)`: this is another serializable representation of data models, but in text. Unlike protocol, this is currently not versioned.
+- `Entity`: this is an exclusive SDLC construct that wraps around the protocol representation to store data models and some metadata in version control system (VCS).
 
 ## The data flow(s)
 
 We will attempt to cover some of the most prominent data flow within each system. These are not meant to be in-depth, nor exhaustive. But this might help new developers with how to navigate these systems' codebases.
 
 - `Pure`: Pure is a very sophisticated system with many different data flows. Pure uses `text` for storage. One of its main flow is:
-  - Pure IDE flow: `text` -- [parser + compiler] --> `metamodel`
+  - `Compilation - IDE`: `text` -- [parser + compiler] --> `metamodel`
 - `Engine`: Engine does not have any storage, it just processes data models. Some of the main flows are:
   - `Compilation`: `protocol` -- [compiler] --> `metamodel`
   - `Parsing`: `text` -- [parser] --> `protocol`
@@ -43,9 +43,9 @@ Hopefully, by now you could see some potential roundtrip in Studio. These are go
 
 ## How is this relevant to my work?
 
-When you work on adding support for new models in Studio, you need to understand a few things:
+When you work on adding support for new models in Studio, please check the following things:
 
-- Make sure these models are supported in engine `parser`, `composer`, `compiler`. Engine should have some similar rountrip tests for these new models.
+- Make sure these models are supported in engine `parser`, `composer`, `compiler`. Engine should have some similar roundtrip tests for these new models.
 - Make sure Studio processes like `(de)serializer`, `builder`, `composer` support these models. If you forget to add support for these models at any of the processes mentioned, we will throw proper error messages.
 - Make sure to write entity roundtrip tests and grammar tests for the new models.
 
