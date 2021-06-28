@@ -2,7 +2,7 @@
 name: 🐛 Bug report
 about: Report a reproducible bug or regression.
 title: 'Bug: <brief description>'
-labels: 'Type: Bug', 'Status: Unconfirmed'
+labels: 'Type: Bug, Status: Unconfirmed'
 ---
 
 ## 🐛 Bug Report
