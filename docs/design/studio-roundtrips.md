@@ -17,7 +17,7 @@ Data models take many forms when flowing through these system
 
 We will attempt to cover some of the most prominent data flow within each system. These are not meant to be in-depth, nor exhaustive. But this might help new developers with how to navigate these systems' codebases.
 
-- `Pure`: Pure is a very sophisticated system, and it has many different data flows. Pure uses `text` for storage. One of its main flow is:
+- `Pure`: Pure is a very sophisticated system with many different data flows. Pure uses `text` for storage. One of its main flow is:
   - Pure IDE flow: `text` -- [parser + compiler] --> `metamodel`
 - `Engine`: Engine does not have any storage, it just processes data models. Some of the main flows are:
   - `Compilation`: `protocol` -- [compiler] --> `metamodel`
