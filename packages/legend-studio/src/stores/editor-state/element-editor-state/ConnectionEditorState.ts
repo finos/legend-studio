@@ -23,7 +23,6 @@ import {
   guaranteeType,
   uuid,
   UnsupportedOperationError,
-  getClass,
 } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
@@ -266,9 +265,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
     }
     throw new UnsupportedOperationError(
-      `Can't get type label for datasource specification of type '${
-        getClass(spec).name
-      }'. No compatible getter available from plugins.`,
+      `Can't classify datasource specification. No compatible classifer available from plugins.`,
+      spec,
     );
   }
 
@@ -350,9 +348,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
     }
     throw new UnsupportedOperationError(
-      `Can't get type label for authentication strategy of type '${
-        getClass(auth).name
-      }'. No compatible getter available from plugins.`,
+      `Can't classify authentication strategy. No compatible classifier available from plugins.`,
+      auth,
     );
   }
 

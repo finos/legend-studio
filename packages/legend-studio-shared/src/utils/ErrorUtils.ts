@@ -15,6 +15,7 @@
  */
 
 import type { SuperGenericFunction } from './CommonUtils';
+import { printObject } from './CommonUtils';
 
 // a generic error that does not have a stack trace, it is useful for try-catch logic
 // as Typescript current catch phrase is not typed
@@ -63,14 +64,19 @@ export class EnrichedError extends Error {
 }
 
 export class IllegalStateError extends EnrichedError {
-  constructor(error: string | Error | undefined, message?: string) {
-    super('Illegal State Error [PLEASE NOTIFY DEVELOPER]', error, message);
+  constructor(error?: Error | string) {
+    super('Illegal State Error [PLEASE NOTIFY DEVELOPER]', error);
   }
 }
 
 export class UnsupportedOperationError extends EnrichedError {
-  constructor(error?: string | Error, message?: string) {
-    super('Unsupported Operation Error', error, message);
+  constructor(message?: string, unsupportedObject?: unknown) {
+    super(
+      'Unsupported Operation Error',
+      `${message}${
+        unsupportedObject ? `\n${printObject(unsupportedObject)}` : ''
+      }`,
+    );
   }
 }
 

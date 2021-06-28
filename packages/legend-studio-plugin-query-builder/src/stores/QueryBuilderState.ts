@@ -22,7 +22,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-studio-shared';
-import type { QueryBuilderOperator } from './QueryBuilderFilterState';
+import type { QueryBuilderFilterOperator } from './QueryBuilderFilterState';
 import { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState';
 import { QueryResultSetModifierState } from './QueryResultSetModifierState';
@@ -46,33 +46,33 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 import {
-  QueryBuilderEqualOperator,
-  QueryBuilderNotEqualOperator,
-} from './operators/QueryBuilderEqualOperator';
-import { QueryBuilderGreaterThanOperator } from './operators/QueryBuilderGreaterThanOperator';
+  QueryBuilderFilterOperator_Equal,
+  QueryBuilderFilterOperator_NotEqual,
+} from './filterOperators/QueryBuilderFilterOperator_Equal';
+import { QueryBuilderFilterOperator_GreaterThan } from './filterOperators/QueryBuilderFilterOperator_GreaterThan';
 import {
-  QueryBuilderNotStartWithOperator,
-  QueryBuilderStartWithOperator,
-} from './operators/QueryBuilderStartWithOperator';
-import { QueryBuilderGreaterThanEqualOperator } from './operators/QueryBuilderGreaterThanEqualOperator';
-import { QueryBuilderLessThanEqualOperator } from './operators/QueryBuilderLessThanEqualOperator';
-import { QueryBuilderLessThanOperator } from './operators/QueryBuilderLessThanOperator';
+  QueryBuilderFilterOperator_NotStartWith,
+  QueryBuilderFilterOperator_StartWith,
+} from './filterOperators/QueryBuilderFilterOperator_StartWith';
+import { QueryBuilderFilterOperator_GreaterThanEqual } from './filterOperators/QueryBuilderFilterOperator_GreaterThanEqual';
+import { QueryBuilderFilterOperator_LessThanEqual } from './filterOperators/QueryBuilderFilterOperator_LessThanEqual';
+import { QueryBuilderFilterOperator_LessThan } from './filterOperators/QueryBuilderFilterOperator_LessThan';
 import {
-  QueryBuilderEndWithOperator,
-  QueryBuilderNotEndWithOperator,
-} from './operators/QueryBuilderEndWithOperator';
+  QueryBuilderFilterOperator_EndWith,
+  QueryBuilderFilterOperator_NotEndWith,
+} from './filterOperators/QueryBuilderFilterOperator_EndWith';
 import {
-  QueryBuilderContainOperator,
-  QueryBuilderNotContainOperator,
-} from './operators/QueryBuilderContainOperator';
+  QueryBuilderFilterOperator_Contain,
+  QueryBuilderFilterOperator_NotContain,
+} from './filterOperators/QueryBuilderFilterOperator_Contain';
 import {
-  QueryBuilderIsEmptyOperator,
-  QueryBuilderIsNotEmptyOperator,
-} from './operators/QueryBuilderIsEmptyOperator';
+  QueryBuilderFilterOperator_IsEmpty,
+  QueryBuilderFilterOperator_IsNotEmpty,
+} from './filterOperators/QueryBuilderFilterOperator_IsEmpty';
 import {
-  QueryBuilderInOperator,
-  QueryBuilderNotInOperator,
-} from './operators/QueryBuilderInOperator';
+  QueryBuilderFilterOperator_In,
+  QueryBuilderFilterOperator_NotIn,
+} from './filterOperators/QueryBuilderFilterOperator_In';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 
 export class QueryBuilderState extends EditorExtensionState {
@@ -86,23 +86,23 @@ export class QueryBuilderState extends EditorExtensionState {
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   openQueryBuilder = false;
-  operators: QueryBuilderOperator[] = [
-    new QueryBuilderEqualOperator(),
-    new QueryBuilderNotEqualOperator(),
-    new QueryBuilderLessThanOperator(),
-    new QueryBuilderLessThanEqualOperator(),
-    new QueryBuilderGreaterThanOperator(),
-    new QueryBuilderGreaterThanEqualOperator(),
-    new QueryBuilderStartWithOperator(),
-    new QueryBuilderNotStartWithOperator(),
-    new QueryBuilderContainOperator(),
-    new QueryBuilderNotContainOperator(),
-    new QueryBuilderEndWithOperator(),
-    new QueryBuilderNotEndWithOperator(),
-    new QueryBuilderInOperator(),
-    new QueryBuilderNotInOperator(),
-    new QueryBuilderIsEmptyOperator(),
-    new QueryBuilderIsNotEmptyOperator(),
+  filterOperators: QueryBuilderFilterOperator[] = [
+    new QueryBuilderFilterOperator_Equal(),
+    new QueryBuilderFilterOperator_NotEqual(),
+    new QueryBuilderFilterOperator_LessThan(),
+    new QueryBuilderFilterOperator_LessThanEqual(),
+    new QueryBuilderFilterOperator_GreaterThan(),
+    new QueryBuilderFilterOperator_GreaterThanEqual(),
+    new QueryBuilderFilterOperator_StartWith(),
+    new QueryBuilderFilterOperator_NotStartWith(),
+    new QueryBuilderFilterOperator_Contain(),
+    new QueryBuilderFilterOperator_NotContain(),
+    new QueryBuilderFilterOperator_EndWith(),
+    new QueryBuilderFilterOperator_NotEndWith(),
+    new QueryBuilderFilterOperator_In(),
+    new QueryBuilderFilterOperator_NotIn(),
+    new QueryBuilderFilterOperator_IsEmpty(),
+    new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
 
   constructor(editorStore: EditorStore) {
@@ -135,7 +135,7 @@ export class QueryBuilderState extends EditorExtensionState {
     this.filterState = new QueryBuilderFilterState(
       editorStore,
       this,
-      this.operators,
+      this.filterOperators,
     );
     this.resultSetModifierState = new QueryResultSetModifierState(
       editorStore,
@@ -212,7 +212,7 @@ export class QueryBuilderState extends EditorExtensionState {
     this.filterState = new QueryBuilderFilterState(
       this.editorStore,
       this,
-      this.operators,
+      this.filterOperators,
     );
     this.resultSetModifierState = new QueryResultSetModifierState(
       this.editorStore,

@@ -27,7 +27,6 @@ import {
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   usingConstantValueSchema,
-  getClass,
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
@@ -704,9 +703,8 @@ function V1_serializeGraphFetchTree(
     return serialize(rootGraphFetchTreeModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize graph fetch tree node of type '${
-      getClass(protocol).name
-    }'`,
+    `Can't serialize graph fetch tree`,
+    protocol,
   );
 }
 

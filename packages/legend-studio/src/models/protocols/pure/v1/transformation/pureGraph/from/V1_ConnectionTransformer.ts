@@ -15,7 +15,6 @@
  */
 
 import {
-  getClass,
   IllegalStateError,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -48,7 +47,7 @@ import type { ModelChainConnection } from '../../../../../../metamodels/pure/mod
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
 import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
@@ -140,9 +139,8 @@ const transformDatasourceSpecification = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform datasource specification of type '${
-      getClass(metamodel).name
-    }'. No compatible transformer available from plugins.`,
+    `Can't transform datasource specification. No compatible transformer available from plugins.`,
+    metamodel,
   );
 };
 
@@ -190,9 +188,8 @@ const transformAuthenticationStrategy = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform authentication strategy of type '${
-      getClass(metamodel).name
-    }'. No compatible transformer available from plugins.`,
+    `Can't transform authentication strategy. No compatible transformer available from plugins.`,
+    metamodel,
   );
 };
 

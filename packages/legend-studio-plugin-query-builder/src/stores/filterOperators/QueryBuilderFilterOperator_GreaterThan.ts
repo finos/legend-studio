@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -24,25 +24,20 @@ import type {
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
-  buildNotExpression,
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
-  unwrapNotExpression,
-} from './QueryBuilderOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
-const START_WITH_FUNCTION_NAME = 'startsWith';
+const GREATER_THAN_FUNCTION_NAME = 'greaterThan';
 
-export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return 'starts with';
+    return '>';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -51,7 +46,14 @@ export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return PRIMITIVE_TYPE.STRING === propertyType.path;
+    return (
+      [
+        PRIMITIVE_TYPE.NUMBER,
+        PRIMITIVE_TYPE.INTEGER,
+        PRIMITIVE_TYPE.DECIMAL,
+        PRIMITIVE_TYPE.FLOAT,
+      ] as unknown as string
+    ).includes(propertyType.path);
   }
 
   isCompatibleWithFilterConditionValue(
@@ -60,7 +62,17 @@ export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
-    return PRIMITIVE_TYPE.STRING === type?.path;
+    return (
+      type !== undefined &&
+      (
+        [
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+        ] as unknown as string
+      ).includes(type.path)
+    );
   }
 
   getDefaultFilterConditionValue(
@@ -70,7 +82,10 @@ export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
     switch (propertyType.path) {
-      case PRIMITIVE_TYPE.STRING: {
+      case PRIMITIVE_TYPE.NUMBER:
+      case PRIMITIVE_TYPE.DECIMAL:
+      case PRIMITIVE_TYPE.FLOAT:
+      case PRIMITIVE_TYPE.INTEGER: {
         return buildPrimitiveInstanceValue(
           filterConditionState,
           propertyType.path,
@@ -79,9 +94,9 @@ export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for operator '${
-            getClass(this).name
-          }' when the LHS property is of type '${propertyType.path}'`,
+          `Can't get default value for filter operator '${this.getLabel(
+            filterConditionState,
+          )}' when the LHS property is of type '${propertyType.path}'`,
         );
     }
   }
@@ -91,7 +106,7 @@ export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      START_WITH_FUNCTION_NAME,
+      GREATER_THAN_FUNCTION_NAME,
     );
   }
 
@@ -102,33 +117,8 @@ export class QueryBuilderStartWithOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      START_WITH_FUNCTION_NAME,
+      GREATER_THAN_FUNCTION_NAME,
       this,
     );
-  }
-}
-
-export class QueryBuilderNotStartWithOperator extends QueryBuilderStartWithOperator {
-  override getLabel(filterConditionState: FilterConditionState): string {
-    return `doesn't start with`;
-  }
-
-  override buildFilterConditionExpression(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification {
-    return buildNotExpression(
-      filterConditionState,
-      super.buildFilterConditionExpression(filterConditionState),
-    );
-  }
-
-  override buildFilterConditionState(
-    filterState: QueryBuilderFilterState,
-    expression: SimpleFunctionExpression,
-  ): FilterConditionState | undefined {
-    const innerExpression = unwrapNotExpression(expression);
-    return innerExpression
-      ? super.buildFilterConditionState(filterState, innerExpression)
-      : undefined;
   }
 }

@@ -29,7 +29,6 @@ import {
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   usingConstantValueSchema,
-  getClass,
   deserializeArray,
   UnsupportedOperationError,
   serializeArray,
@@ -248,7 +247,8 @@ const V1_serializeColType = (
     return serialize(V1_otherRelationalDataTypeModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize relational column data type '${getClass(protocol).name}'`,
+    `Can't serialize relational data type`,
+    protocol,
   );
 };
 
@@ -400,9 +400,8 @@ export function V1_serializeRelationalOperationElement(
     return serialize(V1_tableAliasColumnModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize relational operation element of type '${
-      getClass(protocol).name
-    }'`,
+    `Can't serialize relational operation element`,
+    protocol,
   );
 }
 

@@ -19,10 +19,7 @@ import { MapperPostProcessor } from '../../../../../../metamodels/pure/model/pac
 import type { Mapper } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/postprocessor/Mapper';
 import { V1_MapperPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor';
 import type { V1_PostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   SchemaNameMapper,
   TableNameMapper,
@@ -58,7 +55,8 @@ export const V1_transformMapper = (val: Mapper): V1_Mapper => {
     return tableNameMapper;
   }
   throw new UnsupportedOperationError(
-    `Can't build post-processor mapper of type '${getClass(val).name}`,
+    `Can't transform post-processor mapper`,
+    val,
   );
 };
 
@@ -94,8 +92,7 @@ export const V1_transformPostProcessor = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform post-processor of type '${
-      getClass(postProcessor).name
-    }'. No compatible transformer available from plugins.`,
+    `Can't transform post-processor. No compatible transformer available from plugins.`,
+    postProcessor,
   );
 };

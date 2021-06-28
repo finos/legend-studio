@@ -24,7 +24,6 @@ import {
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   usingConstantValueSchema,
-  getClass,
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
@@ -109,9 +108,7 @@ export const V1_serializeRuntime = (
   } else if (protocol instanceof V1_RuntimePointer) {
     return serialize(V1_runtimePointerModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(
-    `Can't serialize runtime of type '${getClass(protocol).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't serialize runtime`, protocol);
 };
 
 export const V1_packageableRuntimeModelSchema = createModelSchema(

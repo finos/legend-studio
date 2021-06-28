@@ -16,12 +16,12 @@
 
 import {
   assertTrue,
-  getClass,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
   isNumber,
   isString,
+  printObject,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import {
@@ -114,9 +114,7 @@ const processFilterExpression = (
         guaranteeType(
           filterExpression,
           SimpleFunctionExpression,
-          `Can't build filter expression of type '${
-            getClass(filterExpression).name
-          }'`,
+          `Can't build filter expression\n${printObject(filterExpression)}`,
         ),
         filterState,
         groupNode.id,

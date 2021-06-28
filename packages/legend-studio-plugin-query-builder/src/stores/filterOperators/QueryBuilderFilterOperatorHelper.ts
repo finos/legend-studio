@@ -46,7 +46,7 @@ import {
 } from '@finos/legend-studio-shared';
 import type {
   QueryBuilderFilterState,
-  QueryBuilderOperator,
+  QueryBuilderFilterOperator,
 } from '../QueryBuilderFilterState';
 import { FilterConditionState } from '../QueryBuilderFilterState';
 import format from 'date-fns/format';
@@ -386,7 +386,7 @@ export const buildFilterConditionState = (
   filterState: QueryBuilderFilterState,
   expression: SimpleFunctionExpression,
   operatorFunctionName: string,
-  operator: QueryBuilderOperator,
+  operator: QueryBuilderFilterOperator,
   /**
    * Use this flag for operator that does not require any param (e.g. isEmpty)
    * NOTE: this is not the cleanest way to do this, if we find ourselves adding more and more customization

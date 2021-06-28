@@ -32,13 +32,13 @@ import { FilterMapping } from '../../../../../../../metamodels/pure/model/packag
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_RelationalClassMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
 import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
-import { V1_ProtocolToMetaModelPropertyMappingVisitor } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingVisitor';
+import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingBuilder';
 import {
   V1_buildElementWithJoinsJoinTreeNode,
-  V1_processRelationalOperationElement,
+  V1_buildRelationalOperationElement,
 } from './V1_DatabaseBuilderHelper';
 
-export const V1_processRelationalClassMapping = (
+export const V1_buildRelationalClassMapping = (
   relationalClassMapping: V1_RelationalClassMapping,
   context: V1_GraphBuilderContext,
   base: RelationalInstanceSetImplementation,
@@ -53,12 +53,12 @@ export const V1_processRelationalClassMapping = (
     : base.class;
   // TODO localMappingProperties
   base.primaryKey = relationalClassMapping.primaryKey.map((key) =>
-    V1_processRelationalOperationElement(key, context, tableAliasMap, []),
+    V1_buildRelationalOperationElement(key, context, tableAliasMap, []),
   );
   base.propertyMappings = relationalClassMapping.propertyMappings.map(
     (propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
-        new V1_ProtocolToMetaModelPropertyMappingVisitor(
+        new V1_ProtocolToMetaModelPropertyMappingBuilder(
           context,
           base,
           topParent,
@@ -71,7 +71,7 @@ export const V1_processRelationalClassMapping = (
   return base;
 };
 
-export const V1_processRelationalPrimaryKey = (
+export const V1_buildRelationalPrimaryKey = (
   rootRelational: RootRelationalInstanceSetImplementation,
 ): void => {
   // TODO handle distinct
@@ -93,7 +93,7 @@ export const V1_processRelationalPrimaryKey = (
   }
 };
 
-export const V1_processRelationalMappingFilter = (
+export const V1_buildRelationalMappingFilter = (
   v1_filter: V1_FilterMapping,
   context: V1_GraphBuilderContext,
 ): FilterMapping => {

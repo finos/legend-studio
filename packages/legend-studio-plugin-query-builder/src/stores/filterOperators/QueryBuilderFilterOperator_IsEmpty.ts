@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -23,27 +23,19 @@ import type {
   ValueSpecification,
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
-import {
-  CollectionInstanceValue,
-  GenericTypeExplicitReference,
-  GenericType,
-  TYPICAL_MULTIPLICITY_TYPE,
-  Enumeration,
-  PRIMITIVE_TYPE,
-} from '@finos/legend-studio';
+import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import {
   buildFilterConditionState,
   buildNotExpression,
   buildFilterConditionExpression,
   unwrapNotExpression,
-  getCollectionValueSpecificationType,
-} from './QueryBuilderOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
-const IN_FUNCTION_NAME = 'in';
+const IS_EMPTY_FUNCTION_NAME = 'isEmpty';
 
-export class QueryBuilderInOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return 'is in';
+    return 'is empty';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -53,76 +45,27 @@ export class QueryBuilderInOperator extends QueryBuilderOperator {
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
     return (
-      (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-        ] as unknown as string
-      ).includes(propertyType.path) ||
-      // TODO: do we care if the enumeration type has no value (like in the case of `==` operator)?
-      propertyType instanceof Enumeration
-    );
+      [
+        PRIMITIVE_TYPE.STRING,
+        PRIMITIVE_TYPE.BOOLEAN,
+        PRIMITIVE_TYPE.NUMBER,
+        PRIMITIVE_TYPE.INTEGER,
+        PRIMITIVE_TYPE.DECIMAL,
+        PRIMITIVE_TYPE.FLOAT,
+      ] as unknown as string
+    ).includes(propertyType.path);
   }
 
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
-        .genericType.value.rawType;
-    const valueSpec = filterConditionState.value;
-    if (valueSpec instanceof CollectionInstanceValue) {
-      if (valueSpec.values.length === 0) {
-        return true;
-      }
-      const collectionType = getCollectionValueSpecificationType(
-        filterConditionState,
-        valueSpec.values,
-      );
-      if (!collectionType) {
-        return false;
-      }
-      if (
-        (
-          [
-            PRIMITIVE_TYPE.NUMBER,
-            PRIMITIVE_TYPE.INTEGER,
-            PRIMITIVE_TYPE.DECIMAL,
-            PRIMITIVE_TYPE.FLOAT,
-          ] as string[]
-        ).includes(propertyType.path)
-      ) {
-        return (
-          [
-            PRIMITIVE_TYPE.NUMBER,
-            PRIMITIVE_TYPE.INTEGER,
-            PRIMITIVE_TYPE.DECIMAL,
-            PRIMITIVE_TYPE.FLOAT,
-          ] as string[]
-        ).includes(collectionType.path);
-      }
-      return collectionType === propertyType;
-    }
-    return false;
+    return filterConditionState.value === undefined;
   }
 
   getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
-    const multiplicityOne =
-      filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
-    const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
-        .genericType.value.rawType;
-    return new CollectionInstanceValue(
-      multiplicityOne,
-      GenericTypeExplicitReference.create(new GenericType(propertyType)),
-    );
+    return undefined;
   }
 
   buildFilterConditionExpression(
@@ -130,7 +73,7 @@ export class QueryBuilderInOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      IN_FUNCTION_NAME,
+      IS_EMPTY_FUNCTION_NAME,
     );
   }
 
@@ -141,15 +84,16 @@ export class QueryBuilderInOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      IN_FUNCTION_NAME,
+      IS_EMPTY_FUNCTION_NAME,
       this,
+      true,
     );
   }
 }
 
-export class QueryBuilderNotInOperator extends QueryBuilderInOperator {
+export class QueryBuilderFilterOperator_IsNotEmpty extends QueryBuilderFilterOperator_IsEmpty {
   override getLabel(filterConditionState: FilterConditionState): string {
-    return `is not in`;
+    return `is not empty`;
   }
 
   override buildFilterConditionExpression(

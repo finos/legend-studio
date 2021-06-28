@@ -53,7 +53,7 @@ export { V1_PostProcessor } from './models/protocols/pure/v1/model/packageableEl
 export { V1_DatasourceSpecification } from './models/protocols/pure/v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 export { V1_AuthenticationStrategy } from './models/protocols/pure/v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 export { V1_Milestoning } from './models/protocols/pure/v1/model/packageableElements/store/relational/model/milestoning/V1_Milestoning';
-export { V1_processMapper } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_PostProcessorBuilderHelper';
+export { V1_buildMapper } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_PostProcessorBuilderHelper';
 export {
   V1_serializeMapper,
   V1_deserializeMapper,

@@ -27,7 +27,6 @@ import type {
 } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import {
-  getClass,
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -81,7 +80,8 @@ export const getFunctionParameterType = (
     return FUNCTION_PARAMETER_TYPE.CLASS;
   }
   throw new UnsupportedOperationError(
-    `Can't derive function parameter type of type '${getClass(type).name}'`,
+    `Can't classify function parameter`,
+    type,
   );
 };
 

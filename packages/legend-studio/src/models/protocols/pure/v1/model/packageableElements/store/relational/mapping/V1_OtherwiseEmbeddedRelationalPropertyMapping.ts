@@ -35,7 +35,7 @@ export class V1_OtherwiseEmbeddedRelationalPropertyMapping
 
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.OTHERWISE_EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
+      CORE_HASH_STRUCTURE.OTHERWISE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
       this.otherwisePropertyMapping,
     ]);

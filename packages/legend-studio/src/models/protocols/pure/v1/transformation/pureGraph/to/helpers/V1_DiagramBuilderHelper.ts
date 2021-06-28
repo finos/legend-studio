@@ -32,13 +32,13 @@ import type { V1_Rectangle } from '../../../../model/packageableElements/diagram
 import type { V1_PropertyView } from '../../../../model/packageableElements/diagram/V1_PropertyView';
 import type { V1_GeneralizationView } from '../../../../model/packageableElements/diagram/V1_GeneralizationView';
 
-const processPoint = (point: V1_Point): Point => {
+const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, 'x coordinate of point is missing');
   const y = guaranteeNonNullable(point.y, 'y coordinate of point is missing');
   return new Point(x, y);
 };
 
-const processRectangle = (rectangle: V1_Rectangle): Rectangle => {
+const buildRectangle = (rectangle: V1_Rectangle): Rectangle => {
   const width = guaranteeNonNullable(
     rectangle.width,
     'rectangle width is missing',
@@ -50,7 +50,7 @@ const processRectangle = (rectangle: V1_Rectangle): Rectangle => {
   return new Rectangle(width, height);
 };
 
-export const V1_processClassView = (
+export const V1_buildClassView = (
   classView: V1_ClassView,
   context: V1_GraphBuilderContext,
   diagram: Diagram,
@@ -73,12 +73,12 @@ export const V1_processClassView = (
   view.hideProperties = Boolean(classView.hideProperties);
   view.hideTaggedValues = Boolean(classView.hideTaggedValues);
   view.hideStereotypes = Boolean(classView.hideStereotypes);
-  view.rectangle = processRectangle(classView.rectangle);
-  view.position = processPoint(classView.position);
+  view.rectangle = buildRectangle(classView.rectangle);
+  view.position = buildPoint(classView.position);
   return view;
 };
 
-export const V1_processPropertyView = (
+export const V1_buildPropertyView = (
   propertyView: V1_PropertyView,
   context: V1_GraphBuilderContext,
   diagram: Diagram,
@@ -103,12 +103,12 @@ export const V1_processPropertyView = (
     sourceClassView,
     targetClassView,
   );
-  view.path = propertyView.line.points.map((point) => processPoint(point));
+  view.path = propertyView.line.points.map((point) => buildPoint(point));
   view.possiblyFlattenPath(); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
   return view;
 };
 
-export const V1_processGeneralizationView = (
+export const V1_buildGeneralizationView = (
   generalizationView: V1_GeneralizationView,
   diagram: Diagram,
 ): GeneralizationView => {
@@ -125,9 +125,7 @@ export const V1_processGeneralizationView = (
     sourceClassView,
     targetClassView,
   );
-  view.path = generalizationView.line.points.map((point) =>
-    processPoint(point),
-  );
+  view.path = generalizationView.line.points.map((point) => buildPoint(point));
   view.possiblyFlattenPath(); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
   return view;
 };

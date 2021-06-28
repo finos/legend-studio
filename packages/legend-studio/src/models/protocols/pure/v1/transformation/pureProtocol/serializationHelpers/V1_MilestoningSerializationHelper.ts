@@ -16,7 +16,6 @@
 
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
-  getClass,
   usingConstantValueSchema,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -111,9 +110,8 @@ export const V1_serializeMilestoning = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize milestoning of type '${
-      getClass(protocol).name
-    }'. No compatible serializer available from plugins.`,
+    `Can't serialize milestoning. No compatible serializer available from plugins.`,
+    protocol,
   );
 };
 

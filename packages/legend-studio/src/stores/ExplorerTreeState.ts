@@ -22,7 +22,6 @@ import {
   isNonNullable,
   UnsupportedOperationError,
   guaranteeNonNullable,
-  getClass,
 } from '@finos/legend-studio-shared';
 import {
   getPackableElementTreeData,
@@ -338,9 +337,8 @@ export class ExplorerTreeState {
   openNode(element: PackageableElement): void {
     if (element instanceof PrimitiveType || element instanceof Unit) {
       throw new UnsupportedOperationError(
-        `Can't open package tree node for element type '${
-          getClass(element).name
-        }'`,
+        `Can't open package tree node for element`,
+        element,
       );
     }
     const packageName = element.getRoot().path;

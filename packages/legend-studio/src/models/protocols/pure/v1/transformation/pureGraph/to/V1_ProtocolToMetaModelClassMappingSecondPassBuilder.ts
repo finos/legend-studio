@@ -35,25 +35,25 @@ import { RootRelationalInstanceSetImplementation } from '../../../../../../metam
 import type { AbstractFlatDataPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
 import { SetImplementationExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementationReference';
 import type { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_processRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
+import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+import { V1_buildRelationalOperationElement } from './helpers/V1_DatabaseBuilderHelper';
 import {
-  V1_processRelationalClassMapping,
-  V1_processRelationalPrimaryKey,
-} from '../../../transformation/pureGraph/to/helpers/V1_RelationalClassMappingBuilderHelper';
+  V1_buildRelationalClassMapping,
+  V1_buildRelationalPrimaryKey,
+} from './helpers/V1_RelationalClassMappingBuilderHelper';
 import type { V1_ClassMappingVisitor } from '../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
 import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
-import { V1_ProtocolToMetaModelPropertyMappingVisitor } from './V1_ProtocolToMetaModelPropertyMappingVisitor';
+import { V1_ProtocolToMetaModelPropertyMappingBuilder } from './V1_ProtocolToMetaModelPropertyMappingBuilder';
 import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
 import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping';
 import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping';
-import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
+import { V1_getInferredClassMappingId } from './helpers/V1_MappingBuilderHelper';
 import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { V1_AggregateSetImplementationContainer } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer';
 
-export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
+export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
 {
   context: V1_GraphBuilderContext;
@@ -121,7 +121,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
     pureInstanceSetImplementation.propertyMappings =
       classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingVisitor(
+          new V1_ProtocolToMetaModelPropertyMappingBuilder(
             this.context,
             pureInstanceSetImplementation,
             pureInstanceSetImplementation,
@@ -150,7 +150,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
     flatDataInstanceSetImplementation.propertyMappings =
       classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingVisitor(
+          new V1_ProtocolToMetaModelPropertyMappingBuilder(
             this.context,
             flatDataInstanceSetImplementation,
             flatDataInstanceSetImplementation,
@@ -193,7 +193,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
     if (classMapping.groupBy.length) {
       const groupBy = new GroupByMapping();
       groupBy.columns = classMapping.groupBy.map((op) =>
-        V1_processRelationalOperationElement(
+        V1_buildRelationalOperationElement(
           op,
           this.context,
           new Map<string, TableAlias>(),
@@ -204,7 +204,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
     }
     const embedded: EmbeddedRelationalInstanceSetImplementation[] = [];
     const tableAliasMap = new Map<string, TableAlias>();
-    V1_processRelationalClassMapping(
+    V1_buildRelationalClassMapping(
       classMapping,
       this.context,
       rootRelationalInstanceSetImplementation,
@@ -242,7 +242,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
       rootRelationalInstanceSetImplementation.mainTableAlias = mainTableAlias;
     }
     if (!rootRelationalInstanceSetImplementation.primaryKey.length) {
-      V1_processRelationalPrimaryKey(rootRelationalInstanceSetImplementation);
+      V1_buildRelationalPrimaryKey(rootRelationalInstanceSetImplementation);
     }
     return rootRelationalInstanceSetImplementation;
   }
@@ -265,7 +265,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
     );
     const mapping = this.context.graph.getMapping(this.parent.path);
     classMapping.mainSetImplementation.accept_ClassMappingVisitor(
-      new V1_ProtocolToMetaModelClassMappingSecondPassVisitor(
+      new V1_ProtocolToMetaModelClassMappingSecondPassBuilder(
         this.context,
         mapping,
       ),
@@ -274,7 +274,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
     aggragetionAwareInstanceSetImplementation.propertyMappings =
       classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingVisitor(
+          new V1_ProtocolToMetaModelPropertyMappingBuilder(
             this.context,
             aggragetionAwareInstanceSetImplementation,
             aggragetionAwareInstanceSetImplementation,
@@ -290,7 +290,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassVisitor
     classMapping.aggregateSetImplementations.forEach(
       (aggregateSetImpl: V1_AggregateSetImplementationContainer) =>
         aggregateSetImpl.setImplementation.accept_ClassMappingVisitor(
-          new V1_ProtocolToMetaModelClassMappingSecondPassVisitor(
+          new V1_ProtocolToMetaModelClassMappingSecondPassBuilder(
             this.context,
             mapping,
           ),

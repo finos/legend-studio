@@ -36,7 +36,7 @@ import { PackageableConnection } from '../../../../../../metamodels/pure/model/p
 import { GenerationSpecification } from '../../../../../../metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
 import { SectionIndex } from '../../../../../../metamodels/pure/model/packageableElements/section/SectionIndex';
 import { PackageableElementExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
   V1_PackageableElementVisitor,
@@ -59,7 +59,7 @@ import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Me
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
-export class V1_ProtocolToMetaModelGraphFirstPassVisitor
+export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
 {
   context: V1_GraphBuilderContext;

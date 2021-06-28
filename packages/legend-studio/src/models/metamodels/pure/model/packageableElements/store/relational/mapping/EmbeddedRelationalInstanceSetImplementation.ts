@@ -92,7 +92,7 @@ export class EmbeddedRelationalInstanceSetImplementation
   }
 
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   findPropertyMapping(
@@ -114,7 +114,7 @@ export class EmbeddedRelationalInstanceSetImplementation
   }
 
   get label(): MappingElementLabel {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   override get isStub(): boolean {
@@ -126,12 +126,12 @@ export class EmbeddedRelationalInstanceSetImplementation
   }
 
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
+      CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
       this.class.valueForSerialization,
       hashArray(this.primaryKey),

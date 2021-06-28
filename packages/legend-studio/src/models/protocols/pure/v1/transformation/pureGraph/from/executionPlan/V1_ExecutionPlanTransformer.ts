@@ -15,7 +15,6 @@
  */
 
 import {
-  getClass,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -61,7 +60,7 @@ import { V1_TDSColumn } from '../../../../model/executionPlan/results/V1_TDSColu
 import { CLIENT_VERSION } from '../../../../../../../MetaModelConst';
 import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan';
 import { V1_Protocol } from '../../../../model/V1_Protocol';
-import { V1_transformMultiplicity } from '../V1_CoreTransformerHelpers';
+import { V1_transformMultiplicity } from '../V1_CoreTransformerHelper';
 import { V1_transformConnection } from '../V1_ConnectionTransformer';
 import { V1_DatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 
@@ -102,7 +101,8 @@ const stringifyDataType = (dataType: DataType): string => {
     return `NUMERIC(${dataType.precision},${dataType.scale})`;
   }
   throw new UnsupportedOperationError(
-    `Can't stringify data type of type '${getClass(dataType).name}'`,
+    `Can't stringify relational data type`,
+    dataType,
   );
 };
 
@@ -153,9 +153,8 @@ const transformResultType = (
     return transformTDSResultType(metamodel, context);
   }
   throw new UnsupportedOperationError(
-    `Can't transform execution node result type of type '${
-      getClass(metamodel).name
-    }'`,
+    `Can't transform execution node result type`,
+    metamodel,
   );
 };
 
@@ -227,7 +226,8 @@ export function V1_transformExecutionNode(
     return transformRelationalTDSInstantiationExecutionNode(metamodel, context);
   }
   throw new UnsupportedOperationError(
-    `Can't transform execution node of type '${getClass(metamodel).name}'`,
+    `Can't transform execution node`,
+    metamodel,
   );
 }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -24,23 +24,22 @@ import type {
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
+  buildNotExpression,
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
-} from './QueryBuilderOperatorHelpers';
+  unwrapNotExpression,
+} from './QueryBuilderFilterOperatorHelper';
 
-const GREATER_THAN_EQUAL_FUNCTION_NAME = 'greaterThanEqual';
+const END_WITH_FUNCTION_NAME = 'endsWith';
 
-export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_EndWith extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return '>=';
+    return 'ends with';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -49,14 +48,7 @@ export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
     const propertyType =
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return (
-      [
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-      ] as unknown as string
-    ).includes(propertyType.path);
+    return PRIMITIVE_TYPE.STRING === propertyType.path;
   }
 
   isCompatibleWithFilterConditionValue(
@@ -65,17 +57,7 @@ export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
-    return (
-      type !== undefined &&
-      (
-        [
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-        ] as unknown as string
-      ).includes(type.path)
-    );
+    return PRIMITIVE_TYPE.STRING === type?.path;
   }
 
   getDefaultFilterConditionValue(
@@ -85,10 +67,7 @@ export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
       filterConditionState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
     switch (propertyType.path) {
-      case PRIMITIVE_TYPE.NUMBER:
-      case PRIMITIVE_TYPE.DECIMAL:
-      case PRIMITIVE_TYPE.FLOAT:
-      case PRIMITIVE_TYPE.INTEGER: {
+      case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(
           filterConditionState,
           propertyType.path,
@@ -97,9 +76,9 @@ export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for operator '${
-            getClass(this).name
-          }' when the LHS property is of type '${propertyType.path}'`,
+          `Can't get default value for filter operator '${this.getLabel(
+            filterConditionState,
+          )}' when the LHS property is of type '${propertyType.path}'`,
         );
     }
   }
@@ -109,7 +88,7 @@ export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      GREATER_THAN_EQUAL_FUNCTION_NAME,
+      END_WITH_FUNCTION_NAME,
     );
   }
 
@@ -120,8 +99,33 @@ export class QueryBuilderGreaterThanEqualOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      GREATER_THAN_EQUAL_FUNCTION_NAME,
+      END_WITH_FUNCTION_NAME,
       this,
     );
+  }
+}
+
+export class QueryBuilderFilterOperator_NotEndWith extends QueryBuilderFilterOperator_EndWith {
+  override getLabel(filterConditionState: FilterConditionState): string {
+    return `doesn't end with`;
+  }
+
+  override buildFilterConditionExpression(
+    filterConditionState: FilterConditionState,
+  ): ValueSpecification {
+    return buildNotExpression(
+      filterConditionState,
+      super.buildFilterConditionExpression(filterConditionState),
+    );
+  }
+
+  override buildFilterConditionState(
+    filterState: QueryBuilderFilterState,
+    expression: SimpleFunctionExpression,
+  ): FilterConditionState | undefined {
+    const innerExpression = unwrapNotExpression(expression);
+    return innerExpression
+      ? super.buildFilterConditionState(filterState, innerExpression)
+      : undefined;
   }
 }

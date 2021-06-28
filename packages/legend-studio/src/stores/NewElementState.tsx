@@ -464,7 +464,7 @@ export class NewElementState {
     return guaranteeType(
       this.newElementDriver,
       clazz,
-      `New element driver is not of expected type '${clazz.name}' (this is caused by calling this method at the wrong place)`,
+      `New element driver is not of the specified type (this is likely caused by calling this method at the wrong place)`,
     );
   }
 

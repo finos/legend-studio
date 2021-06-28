@@ -18,7 +18,6 @@ import {
   assertNonEmptyString,
   UnsupportedOperationError,
   assertNonNullable,
-  getClass,
   guaranteeNonEmptyString,
 } from '@finos/legend-studio-shared';
 import type { DatasourceSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
@@ -54,7 +53,7 @@ import {
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
-export const V1_processDatasourceSpecification = (
+export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   context: V1_GraphBuilderContext,
 ): DatasourceSpecification => {
@@ -143,13 +142,12 @@ export const V1_processDatasourceSpecification = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build datasource specification of type '${
-      getClass(protocol).name
-    }'. No compatible builder available from plugins.`,
+    `Can't build datasource specification. No compatible builder available from plugins.`,
+    protocol,
   );
 };
 
-export const V1_processAuthenticationStrategy = (
+export const V1_buildAuthenticationStrategy = (
   protocol: V1_AuthenticationStrategy,
   context: V1_GraphBuilderContext,
 ): AuthenticationStrategy => {
@@ -205,6 +203,7 @@ export const V1_processAuthenticationStrategy = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build authentication strategy of type '${getClass(protocol).name}'`,
+    `Can't build authentication strategy`,
+    protocol,
   );
 };

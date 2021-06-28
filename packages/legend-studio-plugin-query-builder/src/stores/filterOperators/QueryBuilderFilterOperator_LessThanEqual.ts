@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryBuilderOperator } from '../QueryBuilderFilterState';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
 import type {
   QueryBuilderFilterState,
   FilterConditionState,
@@ -24,23 +24,20 @@ import type {
   SimpleFunctionExpression,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import {
   buildFilterConditionState,
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
-} from './QueryBuilderOperatorHelpers';
+} from './QueryBuilderFilterOperatorHelper';
 
-const LESS_THAN_FUNCTION_NAME = 'lessThan';
+const LESS_THAN_EQUAL_FUNCTION_NAME = 'lessThanEqual';
 
-export class QueryBuilderLessThanOperator extends QueryBuilderOperator {
+export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
-    return '<';
+    return '<=';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -97,9 +94,9 @@ export class QueryBuilderLessThanOperator extends QueryBuilderOperator {
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for operator '${
-            getClass(this).name
-          }' when the LHS property is of type '${propertyType.path}'`,
+          `Can't get default value for filter operator '${this.getLabel(
+            filterConditionState,
+          )}' when the LHS property is of type '${propertyType.path}'`,
         );
     }
   }
@@ -109,7 +106,7 @@ export class QueryBuilderLessThanOperator extends QueryBuilderOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      LESS_THAN_FUNCTION_NAME,
+      LESS_THAN_EQUAL_FUNCTION_NAME,
     );
   }
 
@@ -120,7 +117,7 @@ export class QueryBuilderLessThanOperator extends QueryBuilderOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      LESS_THAN_FUNCTION_NAME,
+      LESS_THAN_EQUAL_FUNCTION_NAME,
       this,
     );
   }

@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import {
+  UnsupportedOperationError,
+  assertTrue,
+  isNonNullable,
+  assertErrorThrown,
+} from '@finos/legend-studio-shared';
+import { CORE_ELEMENT_PATH } from '../../../../../../MetaModelConst';
+import { GraphError } from '../../../../../../MetaModelUtility';
+import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
@@ -30,20 +38,23 @@ import type { V1_Database } from '../../../model/packageableElements/store/relat
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service';
 import type { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
+import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from './V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
 import {
-  V1_processClassConstraint,
-  V1_processDerivedProperty,
+  V1_buildAssociationProperty,
+  V1_buildDerivedProperty,
+  V1_buildProperty,
+  V1_buildTaggedValue,
 } from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
-import { V1_processDatabaseSchemaViewsSecondPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
+import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
-export class V1_ProtocolToMetaModelGraphFifthPassVisitor
+export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
 {
   context: V1_GraphBuilderContext;
@@ -55,7 +66,7 @@ export class V1_ProtocolToMetaModelGraphFifthPassVisitor
   visit_PackageableElement(element: V1_PackageableElement): void {
     this.context.extensions
       .getExtraBuilderOrThrow(element)
-      .runFifthPass(element, this.context);
+      .runThirdPass(element, this.context);
   }
 
   visit_Profile(element: V1_Profile): void {
@@ -74,17 +85,56 @@ export class V1_ProtocolToMetaModelGraphFifthPassVisitor
     const _class = this.context.graph.getClass(
       this.context.graph.buildPackageString(element.package, element.name),
     );
-    _class.derivedProperties = element.derivedProperties.map(
-      (derivedProperty) =>
-        V1_processDerivedProperty(derivedProperty, this.context, _class),
-    );
-    _class.constraints = element.constraints.map((constraint) =>
-      V1_processClassConstraint(constraint, _class, this.context),
+    element.superTypes.forEach((type) => {
+      // supertype `Any` will not be processed
+      if (type !== CORE_ELEMENT_PATH.ANY) {
+        try {
+          const genricTypeReference = this.context.resolveGenericType(type);
+          _class.addSuperType(genricTypeReference);
+          if (genricTypeReference.ownerReference.value instanceof Class) {
+            genricTypeReference.ownerReference.value.addSubClass(_class);
+          }
+        } catch (error: unknown) {
+          assertErrorThrown(error);
+          // NOTE: reconsider this as we might need to get elements from `system` and `platform` as well
+          throw new GraphError(
+            `Can't find supertype '${type}' of class '${this.context.graph.buildPackageString(
+              element.package,
+              element.name,
+            )}': ${error.message}`,
+          );
+        }
+      }
+    });
+    element.properties.forEach((property) =>
+      _class.properties.push(V1_buildProperty(property, this.context, _class)),
     );
   }
 
   visit_Association(element: V1_Association): void {
-    throw new UnsupportedOperationError();
+    assertTrue(
+      element.properties.length === 2,
+      'Association must have exactly 2 properties',
+    );
+    const association = this.context.graph.getAssociation(
+      this.context.graph.buildPackageString(element.package, element.name),
+    );
+    const first = element.properties[0];
+    const second = element.properties[1];
+    association.setProperties([
+      V1_buildAssociationProperty(first, second, this.context, association),
+      V1_buildAssociationProperty(second, first, this.context, association),
+    ]);
+    association.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    association.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
+    association.derivedProperties = element.derivedProperties.map(
+      (derivedProperty) =>
+        V1_buildDerivedProperty(derivedProperty, this.context, association),
+    );
   }
 
   visit_ConcreteFunctionDefinition(
@@ -104,7 +154,7 @@ export class V1_ProtocolToMetaModelGraphFifthPassVisitor
       this.context.graph.buildPackageString(element.package, element.name),
     );
     element.schemas.forEach((schema) =>
-      V1_processDatabaseSchemaViewsSecondPass(schema, this.context, database),
+      V1_buildDatabaseSchemaViewsFirstPass(schema, database, this.context),
     );
   }
 
@@ -115,7 +165,19 @@ export class V1_ProtocolToMetaModelGraphFifthPassVisitor
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    throw new UnsupportedOperationError();
+    const path = this.context.graph.buildPackageString(
+      element.package,
+      element.name,
+    );
+    const mapping = this.context.graph.getMapping(path);
+    mapping.classMappings = element.classMappings.map((classMapping) =>
+      classMapping.accept_ClassMappingVisitor(
+        new V1_ProtocolToMetaModelClassMappingFirstPassBuilder(
+          this.context,
+          mapping,
+        ),
+      ),
+    );
   }
 
   visit_Service(element: V1_Service): void {
@@ -126,15 +188,15 @@ export class V1_ProtocolToMetaModelGraphFifthPassVisitor
     throw new UnsupportedOperationError();
   }
 
-  visit_SectionIndex(element: V1_SectionIndex): void {
-    throw new UnsupportedOperationError();
-  }
-
   visit_FileGeneration(element: V1_FileGenerationSpecification): void {
     throw new UnsupportedOperationError();
   }
 
   visit_GenerationSpecification(element: V1_GenerationSpecification): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_SectionIndex(element: V1_SectionIndex): void {
     throw new UnsupportedOperationError();
   }
 

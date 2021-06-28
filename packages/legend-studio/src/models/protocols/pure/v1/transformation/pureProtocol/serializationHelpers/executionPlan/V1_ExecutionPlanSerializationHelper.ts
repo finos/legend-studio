@@ -32,7 +32,6 @@ import {
   serializeMap,
   usingModelSchema,
   usingConstantValueSchema,
-  getClass,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { V1_ExecutionPlan } from '../../../../model/executionPlan/V1_ExecutionPlan';
@@ -88,9 +87,8 @@ const V1_serializeExecutionResultType = (
     return serialize(TDSResultTypeModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize execution result type of type '${
-      getClass(protocol).name
-    }'`,
+    `Can't serialize execution result type`,
+    protocol,
   );
 };
 
@@ -180,7 +178,8 @@ export function V1_serializeExecutionNode(
     return serialize(SQLExecutionNodeModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize execution node of type '${getClass(protocol).name}'`,
+    `Can't serialize execution node`,
+    protocol,
   );
 }
 
@@ -232,7 +231,8 @@ export const V1_serializeExecutionPlan = (
     return serialize(SimpleExecutionPlanModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize execution plan of type '${getClass(protocol).name}'`,
+    `Can't serialize execution plan`,
+    protocol,
   );
 };
 

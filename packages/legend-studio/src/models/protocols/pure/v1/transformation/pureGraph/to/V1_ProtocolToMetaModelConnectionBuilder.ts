@@ -43,13 +43,13 @@ import type { V1_FlatDataConnection } from '../../../model/packageableElements/s
 import type { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 import type { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import {
-  V1_processDatasourceSpecification,
-  V1_processAuthenticationStrategy,
+  V1_buildDatasourceSpecification,
+  V1_buildAuthenticationStrategy,
 } from '../../../transformation/pureGraph/to/helpers/V1_RelationalConnectionBuilderHelper';
 import type { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
-import { V1_processPostProcessor } from './helpers/V1_PostProcessorBuilderHelper';
+import { V1_buildPostProcessor } from './helpers/V1_PostProcessorBuilderHelper';
 
-export class V1_ProtocolToMetaModelConnectionVisitor
+export class V1_ProtocolToMetaModelConnectionBuilder
   implements V1_ConnectionVisitor<Connection>
 {
   context: V1_GraphBuilderContext;
@@ -206,11 +206,11 @@ export class V1_ProtocolToMetaModelConnectionVisitor
     const val = new RelationalDatabaseConnection(
       store,
       connection.type as unknown as DatabaseType,
-      V1_processDatasourceSpecification(
+      V1_buildDatasourceSpecification(
         connection.datasourceSpecification,
         this.context,
       ),
-      V1_processAuthenticationStrategy(
+      V1_buildAuthenticationStrategy(
         connection.authenticationStrategy,
         this.context,
       ),
@@ -218,7 +218,7 @@ export class V1_ProtocolToMetaModelConnectionVisitor
     val.timeZone = connection.timeZone;
     val.quoteIdentifiers = connection.quoteIdentifiers;
     val.postProcessors = connection.postProcessors.map((p) =>
-      V1_processPostProcessor(p, this.context),
+      V1_buildPostProcessor(p, this.context),
     );
     return val;
   }

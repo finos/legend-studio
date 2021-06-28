@@ -49,6 +49,7 @@
     "mobx": "6.3.2",
     "object-hash": "2.2.0",
     "pako": "2.0.3",
+    "pretty-format": "27.0.2",
     "query-string": "7.0.1",
     "seedrandom": "3.0.5",
     "serializr": "2.0.5",

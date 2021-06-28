@@ -45,7 +45,7 @@ import { CORE_TEST_ID } from '../../../../const';
 import { getElementIcon } from '../../../shared/Icon';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import { MappingElementDecorateVisitor } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
+import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
   getMappingElementType,
@@ -81,12 +81,12 @@ export const MappingExplorerContextMenu = observer(
           .catch(applicationStore.alertIllegalUnhandledError);
       }
       if (currentMappingElement instanceof EnumerationMapping) {
-        new MappingElementDecorateVisitor().visitEnumerationMapping(
+        new MappingElementDecorator().visitEnumerationMapping(
           currentMappingElement,
         );
       } else if (currentMappingElement instanceof SetImplementation) {
         currentMappingElement.accept_SetImplementationVisitor(
-          new MappingElementDecorateVisitor(),
+          new MappingElementDecorator(),
         );
       }
       mappingEditorState.reprocessMappingExplorerTree();

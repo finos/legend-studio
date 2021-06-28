@@ -42,45 +42,45 @@ import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_M
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service';
 import type { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
 import {
-  V1_processVariable,
-  V1_processUnit,
-  V1_processTaggedValue,
+  V1_buildVariable,
+  V1_buildUnit,
+  V1_buildTaggedValue,
 } from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
 import {
-  V1_processClassView,
-  V1_processPropertyView,
-  V1_processGeneralizationView,
+  V1_buildClassView,
+  V1_buildPropertyView,
+  V1_buildGeneralizationView,
 } from '../../../transformation/pureGraph/to/helpers/V1_DiagramBuilderHelper';
 import {
-  V1_processServiceTest,
-  V1_processServiceExecution,
+  V1_buildServiceTest,
+  V1_buildServiceExecution,
 } from '../../../transformation/pureGraph/to/helpers/V1_ServiceBuilderHelper';
 import {
-  V1_processEnumerationMapping,
-  V1_processMappingInclude,
+  V1_buildEnumerationMapping,
+  V1_buildMappingInclude,
 } from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
-import { V1_processFlatDataSection } from '../../../transformation/pureGraph/to/helpers/V1_FlatDataStoreBuilderHelper';
-import { V1_processSchema } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
+import { V1_buildFlatDataSection } from '../../../transformation/pureGraph/to/helpers/V1_FlatDataStoreBuilderHelper';
+import { V1_buildSchema } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import {
-  V1_processConfigurationProperty,
-  V1_processScopeElement,
+  V1_buildConfigurationProperty,
+  V1_buildScopeElement,
 } from '../../../transformation/pureGraph/to/helpers/V1_FileGenerationBuilderHelper';
-import { V1_processEngineRuntime } from '../../../transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper';
+import { V1_buildEngineRuntime } from '../../../transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
-import { V1_ProtocolToMetaModelConnectionVisitor } from './V1_ProtocolToMetaModelConnectionVisitor';
+import { V1_ProtocolToMetaModelConnectionBuilder } from './V1_ProtocolToMetaModelConnectionBuilder';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import {
-  V1_processGenerationTreeNode,
-  V1_processFileGenerationPointer,
+  V1_buildGenerationTreeNode,
+  V1_buildFileGenerationPointer,
 } from '../../../transformation/pureGraph/to/helpers/V1_GenerationSpecificationBuilderHelper';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import { V1_processSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper';
+import { V1_buildSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper';
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
-export class V1_ProtocolToMetaModelGraphSecondPassVisitor
+export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
 {
   context: V1_GraphBuilderContext;
@@ -115,7 +115,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);
     enumeration.taggedValues = element.taggedValues
-      .map((taggedValue) => V1_processTaggedValue(taggedValue, this.context))
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
     enumeration.values = element.values.map((enumValue) => {
       assertNonEmptyString(enumValue.value, 'Enum value name is missing');
@@ -124,7 +124,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
         .map((stereotype) => this.context.resolveStereotype(stereotype))
         .filter(isNonNullable);
       _enum.taggedValues = enumValue.taggedValues
-        .map((taggedValue) => V1_processTaggedValue(taggedValue, this.context))
+        .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
         .filter(isNonNullable);
       return _enum;
     });
@@ -139,7 +139,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.graph.buildPackageString(element.package, element.name),
     );
     measure.setCanonicalUnit(
-      V1_processUnit(
+      V1_buildUnit(
         element.canonicalUnit,
         measure,
         this.context.graph,
@@ -147,7 +147,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       ),
     );
     measure.nonCanonicalUnits = element.nonCanonicalUnits.map((unit) =>
-      V1_processUnit(unit, measure, this.context.currentSubGraph, this.context),
+      V1_buildUnit(unit, measure, this.context.currentSubGraph, this.context),
     );
   }
 
@@ -159,7 +159,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);
     _class.taggedValues = element.taggedValues
-      .map((taggedValue) => V1_processTaggedValue(taggedValue, this.context))
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
   }
 
@@ -192,10 +192,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);
     func.taggedValues = protocol.taggedValues
-      .map((taggedValue) => V1_processTaggedValue(taggedValue, this.context))
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
     func.parameters = protocol.parameters.map((param) =>
-      V1_processVariable(param, this.context),
+      V1_buildVariable(param, this.context),
     );
     func.body = protocol.body;
   }
@@ -205,7 +205,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.graph.buildPackageString(element.package, element.name),
     );
     flatData.sections = element.sections.map((section) =>
-      V1_processFlatDataSection(section, flatData, this.context),
+      V1_buildFlatDataSection(section, flatData, this.context),
     );
   }
 
@@ -217,7 +217,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.resolveDatabase(includedStore),
     );
     database.schemas = element.schemas.map((schema) =>
-      V1_processSchema(schema, database, this.context),
+      V1_buildSchema(schema, database, this.context),
     );
   }
 
@@ -246,11 +246,11 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
         );
       }
       mappingIncludesSet.add(i.includedMappingPath);
-      return V1_processMappingInclude(i, this.context, mapping);
+      return V1_buildMappingInclude(i, this.context, mapping);
     });
     mapping.enumerationMappings = element.enumerationMappings.map(
       (enumerationMapping) =>
-        V1_processEnumerationMapping(enumerationMapping, this.context, mapping),
+        V1_buildEnumerationMapping(enumerationMapping, this.context, mapping),
     );
   }
 
@@ -265,9 +265,9 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
     service.autoActivateUpdates = element.autoActivateUpdates;
     // NOTE: process execution before the test, so we can do some check between test and execution (such matching type, keys, etc.)
     service.setExecution(
-      V1_processServiceExecution(element.execution, this.context, service),
+      V1_buildServiceExecution(element.execution, this.context, service),
     );
-    service.test = V1_processServiceTest(element.test, this.context, service);
+    service.test = V1_buildServiceTest(element.test, this.context, service);
   }
 
   visit_Diagram(element: V1_Diagram): void {
@@ -275,14 +275,14 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.graph.buildPackageString(element.package, element.name),
     );
     diagram.classViews = element.classViews.map((classView) =>
-      V1_processClassView(classView, this.context, diagram),
+      V1_buildClassView(classView, this.context, diagram),
     );
     diagram.propertyViews = element.propertyViews.map((propertyView) =>
-      V1_processPropertyView(propertyView, this.context, diagram),
+      V1_buildPropertyView(propertyView, this.context, diagram),
     );
     diagram.generalizationViews = element.generalizationViews.map(
       (generalizationView) =>
-        V1_processGeneralizationView(generalizationView, diagram),
+        V1_buildGeneralizationView(generalizationView, diagram),
     );
   }
 
@@ -291,7 +291,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.graph.getOwnSectionIndex(element.path),
     );
     sectionIndex.sections = element.sections.map((section) =>
-      V1_processSection(section, this.context, sectionIndex),
+      V1_buildSection(section, this.context, sectionIndex),
     );
   }
 
@@ -302,10 +302,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
     );
     fileGeneration.setType(element.type);
     fileGeneration.configurationProperties =
-      element.configurationProperties.map(V1_processConfigurationProperty);
+      element.configurationProperties.map(V1_buildConfigurationProperty);
     fileGeneration.setGenerationOutputPath(element.generationOutputPath);
     fileGeneration.scopeElements = element.scopeElements.map((scopeElement) =>
-      V1_processScopeElement(scopeElement, this.context),
+      V1_buildScopeElement(scopeElement, this.context),
     );
   }
 
@@ -314,10 +314,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.graph.buildPackageString(element.package, element.name),
     );
     generationSpec.generationNodes = element.generationNodes.map((node) =>
-      V1_processGenerationTreeNode(node, this.context),
+      V1_buildGenerationTreeNode(node, this.context),
     );
     generationSpec.fileGenerations = element.fileGenerations.map((node) =>
-      V1_processFileGenerationPointer(node, this.context),
+      V1_buildFileGenerationPointer(node, this.context),
     );
   }
 
@@ -326,7 +326,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
       this.context.graph.buildPackageString(element.package, element.name),
     );
     runtime.setRuntimeValue(
-      V1_processEngineRuntime(element.runtimeValue, this.context),
+      V1_buildEngineRuntime(element.runtimeValue, this.context),
     );
   }
 
@@ -341,7 +341,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassVisitor
     }
     connection.setConnectionValue(
       element.connectionValue.accept_ConnectionVisitor(
-        new V1_ProtocolToMetaModelConnectionVisitor(this.context),
+        new V1_ProtocolToMetaModelConnectionBuilder(this.context),
       ),
     );
   }

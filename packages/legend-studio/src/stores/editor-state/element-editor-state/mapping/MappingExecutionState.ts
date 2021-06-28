@@ -38,7 +38,6 @@ import {
   isValidJSONString,
   createUrlStringFromData,
   losslessStringify,
-  getClass,
   guaranteeType,
 } from '@finos/legend-studio-shared';
 import {
@@ -540,9 +539,10 @@ export class MappingExecutionState {
       );
     } else {
       this.editorStore.applicationStore.notifyWarning(
-        `Can't build input data for unsupported source of type '${
-          getClass(source).name
-        }'`,
+        new UnsupportedOperationError(
+          `Can't build input data for the specified source`,
+          source,
+        ),
       );
     }
   }
@@ -625,9 +625,8 @@ export class MappingExecutionState {
           this.editorStore.openElement(service);
         } else {
           throw new UnsupportedOperationError(
-            `Can't build service from input data of unsupported type '${
-              getClass(this.inputDataState).name
-            }'`,
+            `Can't build service from input data state`,
+            this.inputDataState,
           );
         }
       }
