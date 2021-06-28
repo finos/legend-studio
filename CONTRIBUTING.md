@@ -6,6 +6,7 @@ Thank you so much for being interested in contributing to our project! Before su
 - [Issue Reporting Guidelines](#issue-reporting-guidelines)
 - [Pull Request Guidelines](#pull-request-guidelines)
 - [Development Guidelines](#development-guidelines)
+- [Codebase Documentation](#codebase-documentation)
 - [License](#license)
 
 We welcome any type of contribution, not only code. You can help with
@@ -206,6 +207,10 @@ These are the conventions we hope you can follow to keep our codebase consistent
 - Use semicolons;
 - Trailing commas,
 - Avd abbr wrds.
+
+## Codebase Documentation
+
+To help new developers gain deeper understanding of Studio, we highly recommend checking out our [codebase documentation](https://github.com/finos/legend-studio/tree/master/docs) where we documented various aspects of the codebase such as testing strategy, UX guidelines, and [design decision](https://github.com/finos/legend-studio/tree/master/docs/design), which we believe to be essential for exploring Studio core and Legend stack in general.
 
 ## License
 
