@@ -53,7 +53,7 @@ export const getDerivedPropertyArgumentStrings = (
     Array.isArray(derivedProperty.parameters) ? derivedProperty.parameters : []
   )
     .map((parameter) =>
-      editorStore.graphState.graphManager.buildValueSpecificationFromJson(
+      editorStore.graphState.graphManager.buildValueSpecification(
         parameter as Record<PropertyKey, unknown>,
         editorStore.graphState.graph,
       ),

@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
+import type { Entity } from '@finos/legend-studio';
+import { getTestApplicationConfig, PluginManager } from '@finos/legend-studio';
+import { getTestEditorStore } from '@finos/legend-studio';
 import { unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../StoreTestUtils';
+import { QueryBuilder_Preset } from '../../QueryBuilder_Preset';
 import {
   M2MModel,
   ComplexRelationalModel,
@@ -27,7 +29,10 @@ import {
   simpleProjectionWithFilter,
   simpleGraphFetch,
   firmPersonGraphFetch,
-} from './LambdaRoundtripTestData';
+} from './QueryBuilder_LambdaRoundtripTestData';
+
+const pluginManager = PluginManager.create();
+pluginManager.usePresets([new QueryBuilder_Preset()]).install();
 
 type RoundtripTestCase = [
   string,
@@ -59,7 +64,10 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, lambdaJson) => {
     const { entities } = context;
     // setup
-    const editorStore = getTestEditorStore();
+    const editorStore = getTestEditorStore(
+      getTestApplicationConfig(),
+      pluginManager,
+    );
     await editorStore.graphState.initializeSystem();
     await editorStore.graphState.graphManager.buildGraph(
       editorStore.graphState.graph,
@@ -67,11 +75,10 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       { TEMPORARY__keepSectionIndex: true },
     );
     // roundtrip check
-    const lambda =
-      editorStore.graphState.graphManager.buildValueSpecificationFromJson(
-        lambdaJson,
-        editorStore.graphState.graph,
-      );
+    const lambda = editorStore.graphState.graphManager.buildValueSpecification(
+      lambdaJson,
+      editorStore.graphState.graph,
+    );
     const _lambdaJson =
       editorStore.graphState.graphManager.serializeRawValueSpecification(
         editorStore.graphState.graphManager.buildRawValueSpecification(

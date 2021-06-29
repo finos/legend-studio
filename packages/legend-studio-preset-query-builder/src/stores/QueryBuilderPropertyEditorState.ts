@@ -167,7 +167,7 @@ export class DerivedPropertyExpressionEditorState {
     if (Array.isArray(this.derivedProperty.parameters)) {
       const parameters = this.derivedProperty.parameters.map((parameter) =>
         guaranteeType(
-          this.editorStore.graphState.graphManager.buildValueSpecificationFromJson(
+          this.editorStore.graphState.graphManager.buildValueSpecification(
             parameter,
             this.editorStore.graphState.graph,
           ),

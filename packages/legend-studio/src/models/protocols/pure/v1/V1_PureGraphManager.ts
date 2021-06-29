@@ -1635,7 +1635,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ------------------------------------------- ValueSpecification -------------------------------------------
 
-  buildValueSpecificationFromJson(
+  buildValueSpecification(
     json: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification {
@@ -1678,19 +1678,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.logger,
         ).build(),
       ),
-    );
-  }
-
-  buildValueSpecification(
-    rawValueSpecification: RawValueSpecification,
-    graph: PureModel,
-  ): ValueSpecification {
-    const _rawValueSpecificationJson = this.serializeRawValueSpecification(
-      rawValueSpecification,
-    );
-    return this.buildValueSpecificationFromJson(
-      _rawValueSpecificationJson,
-      graph,
     );
   }
 

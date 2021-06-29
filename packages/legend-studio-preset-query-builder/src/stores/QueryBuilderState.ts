@@ -265,7 +265,9 @@ export class QueryBuilderState extends EditorExtensionState {
     if (!rawLambda.isStub) {
       const valueSpec =
         this.editorStore.graphState.graphManager.buildValueSpecification(
-          rawLambda,
+          this.editorStore.graphState.graphManager.serializeRawValueSpecification(
+            rawLambda,
+          ),
           this.editorStore.graphState.graph,
         );
       const compiledValueSpecification = guaranteeType(
