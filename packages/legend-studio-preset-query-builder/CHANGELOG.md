@@ -1,4 +1,4 @@
-# @finos/legend-studio-plugin-query-builder
+# @finos/legend-studio-preset-query-builder
 
 ## 0.0.17
 
@@ -171,7 +171,7 @@ We also added a config flag to enable experimental graph-fetch mode:
   // config.json
   ...
   "options": {
-    "@finos/legend-studio-plugin-query-builder": {
+    "@finos/legend-studio-preset-query-builder": {
       "TEMPORARY__enableGraphFetch": true
     }
   }

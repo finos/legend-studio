@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../package.json';
+import packageJson from '../../package.json';
 import type {
   EditorExtensionState,
   EditorExtensionStateCreator,
@@ -34,16 +34,16 @@ import type {
 } from '@finos/legend-studio';
 import { Class, EditorPlugin } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-studio-components';
-import { QueryBuilderDialog } from './components/QueryBuilderDialog';
-import { ServiceQueryBuilder } from './components/ServiceQueryBuilder';
-import { MappingExecutionQueryBuilder } from './components/MappingExecutionQueryBuilder';
-import { MappingTestQueryBuilder } from './components/MappingTestQueryBuilder';
-import { QueryBuilderState } from './stores/QueryBuilderState';
+import { QueryBuilderDialog } from './QueryBuilderDialog';
+import { ServiceQueryBuilder } from './ServiceQueryBuilder';
+import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';
+import { MappingTestQueryBuilder } from './MappingTestQueryBuilder';
+import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import type { IKeyboardEvent } from 'monaco-editor';
 import { KeyCode } from 'monaco-editor';
 
-export class QueryBuilderPlugin extends EditorPlugin {
+export class QueryBuilder_EditorPlugin extends EditorPlugin {
   constructor() {
     super(packageJson.name, packageJson.version);
   }
@@ -52,7 +52,7 @@ export class QueryBuilderPlugin extends EditorPlugin {
     pluginManager.registerEditorPlugin(this);
   }
 
-  override configure(_configData: object): QueryBuilderPlugin {
+  override configure(_configData: object): QueryBuilder_EditorPlugin {
     return this;
   }
 

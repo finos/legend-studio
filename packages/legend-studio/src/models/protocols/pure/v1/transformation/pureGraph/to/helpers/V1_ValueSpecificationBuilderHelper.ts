@@ -50,7 +50,6 @@ import { ValueSpecification } from '../../../../../../../metamodels/pure/model/v
 import {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
 } from '../../../../../../../metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
 import { GenericType } from '../../../../../../../metamodels/pure/model/packageableElements/domain/GenericType';
 import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/GenericTypeReference';
@@ -74,7 +73,7 @@ import type {
   V1_ValueSpecification,
 } from '../../../../model/valueSpecification/V1_ValueSpecification';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
+import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
 import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable';
 import { V1_ProcessingContext } from './V1_ProcessingContext';
 import type { V1_ExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_ExecutionContext';
@@ -84,7 +83,7 @@ import { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/
 import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity';
 import { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
 import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_GraphFetchTree';
-import { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction';
+import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction';
 import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty';
 import type { V1_AggregateValue } from '../../../../model/valueSpecification/raw/V1_AggregateValue';
 import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean';
@@ -94,7 +93,7 @@ import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CD
 import type { V1_CFloat } from '../../../../model/valueSpecification/raw/V1_CFloat';
 import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CInteger';
 import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate';
-import { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection';
+import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection';
 import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate';
 import { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString';
 import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue';
@@ -860,24 +859,11 @@ export function V1_processProperty(
     return enumValueInstanceValue;
   }
   throw new Error(
-    `Unable to resolve property '${property}' of type '${inferredType?.name}'`,
+    `Can't resolve property '${property}' of type '${inferredType?.name}'`,
   );
 }
 
-const resolveFunctionReturnType = (
-  functionName: string,
-  _function: SimpleFunctionExpression,
-): void => {
-  if (functionName === SUPPORTED_FUNCTIONS.GET_ALL) {
-    const first = _function.parametersValues[0];
-    if (first instanceof InstanceValue) {
-      _function.genericType = first.genericType;
-      _function.multiplicity = first.multiplicity;
-    }
-  }
-};
-
-const processSimpleFunctionExpression = (
+export const V1_buildSimpleFunctionExpression = (
   processedParameters: ValueSpecification[],
   functionName: string,
   compileContext: V1_GraphBuilderContext,
@@ -898,7 +884,6 @@ const processSimpleFunctionExpression = (
     _function.multiplicity = val.returnMultiplicity;
   }
   _function.parametersValues = processedParameters;
-  resolveFunctionReturnType(functionName, _function);
   return _function;
 };
 
@@ -909,279 +894,37 @@ export function V1_buildFunctionExpression(
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] {
-  switch (functionName) {
-    case SUPPORTED_FUNCTIONS.TDS_PROJECT: {
-      return V1_buildProjectFunctionExpression(
-        functionName,
-        parameters,
-        openVariables,
-        compileContext,
-        processingContext,
-      );
-    }
-    case SUPPORTED_FUNCTIONS.FILTER: {
-      return V1_buildFilterFunctionExpression(
-        functionName,
-        parameters,
-        openVariables,
-        compileContext,
-        processingContext,
-      );
-    }
-    case SUPPORTED_FUNCTIONS.EXISTS: {
-      return V1_buildExistsFunctionExpression(
-        functionName,
-        parameters,
-        openVariables,
-        compileContext,
-        processingContext,
-      );
-    }
-    default: {
-      const processed = parameters.map((p) =>
-        p.accept_ValueSpecificationVisitor(
-          new V1_ValueSpecificationBuilder(
-            compileContext,
-            processingContext,
-            openVariables,
-          ),
-        ),
-      );
-      const simpleFunction = processSimpleFunctionExpression(
-        processed,
-        functionName,
-        compileContext,
-      );
-      return [simpleFunction, processed];
+  const extraSimpleFunctionExpressionBuilders =
+    compileContext.extensions.plugins.flatMap(
+      (plugin) => plugin.V1_getExtraSimpleFunctionExpressionBuilders?.() ?? [],
+    );
+  for (const builder of extraSimpleFunctionExpressionBuilders) {
+    const metamodel = builder(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+    if (metamodel) {
+      return metamodel;
     }
   }
-}
-
-// ------------------------------------------ RESOLVE SUPPORTED FUNCTIONS -----------------------------------------
-
-export function V1_buildExistsFunctionExpression(
-  functionName: string,
-  parameters: V1_ValueSpecification[],
-  openVariables: string[],
-  compileContext: V1_GraphBuilderContext,
-  processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] {
-  if (parameters.length === 2) {
-    const processedValue = parameters[0].accept_ValueSpecificationVisitor(
+  const processedParams = parameters.map((p) =>
+    p.accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         compileContext,
         processingContext,
         openVariables,
       ),
-    );
-    processedValue.genericType = guaranteeType(
-      processedValue,
-      AbstractPropertyExpression,
-    ).func.genericType;
-    const lambda = parameters[1];
-    if (lambda instanceof V1_Lambda) {
-      lambda.parameters.forEach((p): void => {
-        if (p.name && !p.class) {
-          const _var = new VariableExpression(
-            p.name,
-            compileContext.graph.getTypicalMultiplicity(
-              TYPICAL_MULTIPLICITY_TYPE.ONE,
-            ),
-          );
-          _var.genericType = processedValue.genericType;
-          processingContext.addInferredVariables(p.name, _var);
-        }
-      });
-    }
-    const _processed = [
-      processedValue,
-      parameters[1].accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          compileContext,
-          processingContext,
-          openVariables,
-        ),
-      ),
-    ];
-    const _simpleFunction = processSimpleFunctionExpression(
-      _processed,
+    ),
+  );
+  return [
+    V1_buildSimpleFunctionExpression(
+      processedParams,
       functionName,
       compileContext,
-    );
-    return [_simpleFunction, _processed];
-  }
-  const processed = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
     ),
-  );
-  const simpleFunction = processSimpleFunctionExpression(
-    processed,
-    functionName,
-    compileContext,
-  );
-  return [simpleFunction, processed];
-}
-
-export function V1_buildFilterFunctionExpression(
-  functionName: string,
-  parameters: V1_ValueSpecification[],
-  openVariables: string[],
-  compileContext: V1_GraphBuilderContext,
-  processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] {
-  if (parameters.length === 2) {
-    const processedValue = parameters[0].accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    );
-    if (processedValue.genericType) {
-      const func = parameters[1];
-      if (func instanceof V1_Lambda) {
-        func.parameters.forEach((p): void => {
-          if (p.name && !p.class) {
-            const _var = new VariableExpression(
-              p.name,
-              processedValue.multiplicity,
-            );
-            _var.genericType = processedValue.genericType;
-            processingContext.addInferredVariables(p.name, _var);
-          }
-        });
-      }
-    }
-    const _processed = [
-      processedValue,
-      parameters[1].accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          compileContext,
-          processingContext,
-          openVariables,
-        ),
-      ),
-    ];
-    const _simpleFunction = processSimpleFunctionExpression(
-      _processed,
-      functionName,
-      compileContext,
-    );
-    // return type of filtered is of type of param 0 - filter_T_MANY__Function_1__T_MANY_
-    _simpleFunction.genericType = processedValue.genericType;
-    _simpleFunction.multiplicity = processedValue.multiplicity;
-    return [_simpleFunction, _processed];
-  }
-  const processed = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
-  );
-  const simpleFunction = processSimpleFunctionExpression(
-    processed,
-    functionName,
-    compileContext,
-  );
-  return [simpleFunction, processed];
-}
-
-export function V1_buildProjectFunctionExpression(
-  functionName: string,
-  parameters: V1_ValueSpecification[],
-  openVariables: string[],
-  compileContext: V1_GraphBuilderContext,
-  processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] {
-  let lambdasVariables: V1_Variable[] = [];
-  if (parameters.length === 2 || parameters.length === 3) {
-    const processedValue = parameters[0].accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    );
-    const func = parameters[1];
-    if (processedValue.genericType) {
-      if (parameters.length === 2 && func instanceof V1_Collection) {
-        lambdasVariables = func.values
-          .filter(
-            (v: V1_ValueSpecification): v is V1_AppliedFunction =>
-              v instanceof V1_AppliedFunction &&
-              v.function === SUPPORTED_FUNCTIONS.TDS_COL,
-          )
-          .map((v) => v.parameters)
-          .flat()
-          .filter(
-            (v: V1_ValueSpecification): v is V1_Lambda =>
-              v instanceof V1_Lambda,
-          )
-          .map((l) => l.parameters)
-          .flat();
-      } else if (parameters.length === 3 && func instanceof V1_Collection) {
-        lambdasVariables = func.values
-          .filter(
-            (v: V1_ValueSpecification): v is V1_Lambda =>
-              v instanceof V1_Lambda,
-          )
-          .map((l) => l.parameters)
-          .flat();
-      }
-      const variables = new Set<string>();
-      lambdasVariables.forEach((v) => {
-        if (!variables.has(v.name) && !v.class) {
-          const _var = new VariableExpression(
-            v.name,
-            processedValue.multiplicity,
-          );
-          _var.genericType = processedValue.genericType;
-          processingContext.addInferredVariables(v.name, _var);
-        }
-      });
-      const _processed = [
-        processedValue,
-        ...parameters
-          .slice(1)
-          .map((e) =>
-            e.accept_ValueSpecificationVisitor(
-              new V1_ValueSpecificationBuilder(
-                compileContext,
-                processingContext,
-                openVariables,
-              ),
-            ),
-          ),
-      ];
-      const _simpleFunction = processSimpleFunctionExpression(
-        _processed,
-        functionName,
-        compileContext,
-      );
-      return [_simpleFunction, _processed];
-    }
-  }
-  const processed = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
-  );
-  const simpleFunction = processSimpleFunctionExpression(
-    processed,
-    functionName,
-    compileContext,
-  );
-  return [simpleFunction, processed];
+    processedParams,
+  ];
 }

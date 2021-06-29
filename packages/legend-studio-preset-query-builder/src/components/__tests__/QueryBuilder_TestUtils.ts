@@ -21,11 +21,11 @@ import {
   getTestApplicationConfig,
   PluginManager,
 } from '@finos/legend-studio';
-import { QueryBuilderPlugin } from '../../QueryBuilderPlugin';
+import { QueryBuilder_Preset } from '../../QueryBuilder_Preset';
 
 export const buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = PluginManager.create();
-  pluginManager.usePlugins([new QueryBuilderPlugin()]).install();
+  pluginManager.usePresets([new QueryBuilder_Preset()]).install();
   const mockedApplicationStore = getMockedApplicationStore(
     getTestApplicationConfig(),
     pluginManager,

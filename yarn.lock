@@ -2197,10 +2197,10 @@ __metadata:
   dependencies:
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-plugin-query-builder": "workspace:*"
     "@finos/legend-studio-preset-dsl-text": "workspace:*"
     "@finos/legend-studio-preset-dummy": "workspace:*"
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*"
+    "@finos/legend-studio-preset-query-builder": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@types/react": 17.0.11
     copy-webpack-plugin: 9.0.1
@@ -2359,40 +2359,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-plugin-query-builder@workspace:*, @finos/legend-studio-plugin-query-builder@workspace:packages/legend-studio-plugin-query-builder":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-plugin-query-builder@workspace:packages/legend-studio-plugin-query-builder"
-  dependencies:
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@testing-library/dom": 8.0.0
-    "@testing-library/react": 12.0.0
-    "@types/papaparse": 5.2.5
-    "@types/react": 17.0.11
-    "@types/react-dom": 17.0.8
-    "@types/react-router-dom": 5.1.7
-    cross-env: 7.0.3
-    date-fns: 2.22.1
-    eslint: 7.29.0
-    jest: 27.0.5
-    mobx: 6.3.2
-    mobx-react-lite: 3.2.0
-    monaco-editor: 0.25.2
-    npm-run-all: 4.1.5
-    papaparse: 5.3.1
-    react: 17.0.2
-    react-dom: 17.0.2
-    react-router-dom: 5.2.0
-    rimraf: 3.0.2
-    sass: 1.35.1
-    typescript: 4.3.4
-  peerDependencies:
-    react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-studio-plugin-tracer-zipkin@workspace:packages/legend-studio-plugin-tracer-zipkin":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-plugin-tracer-zipkin@workspace:packages/legend-studio-plugin-tracer-zipkin"
@@ -2464,6 +2430,40 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.3.4
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-studio-preset-query-builder@workspace:*, @finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder"
+  dependencies:
+    "@finos/legend-studio": "workspace:*"
+    "@finos/legend-studio-components": "workspace:*"
+    "@finos/legend-studio-dev-utils": "workspace:*"
+    "@finos/legend-studio-shared": "workspace:*"
+    "@testing-library/dom": 8.0.0
+    "@testing-library/react": 12.0.0
+    "@types/papaparse": 5.2.5
+    "@types/react": 17.0.11
+    "@types/react-dom": 17.0.8
+    "@types/react-router-dom": 5.1.7
+    cross-env: 7.0.3
+    date-fns: 2.22.1
+    eslint: 7.29.0
+    jest: 27.0.5
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.25.2
+    npm-run-all: 4.1.5
+    papaparse: 5.3.1
+    react: 17.0.2
+    react-dom: 17.0.2
+    react-router-dom: 5.2.0
+    rimraf: 3.0.2
+    sass: 1.35.1
+    typescript: 4.3.4
+  peerDependencies:
+    react: ^17.0.0
   languageName: unknown
   linkType: soft
 

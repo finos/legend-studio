@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './QueryBuilderPlugin';
+export * from './QueryBuilder_Preset';

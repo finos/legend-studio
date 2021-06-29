@@ -36,6 +36,6 @@ export default {
     '^react-reflex$': '@finos/legend-studio/lib/testMocks/MockedReactReflex.js',
   },
   testMatch: [
-    '<rootDir>/packages/legend-studio-plugin-query-builder/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+    '<rootDir>/packages/legend-studio-preset-query-builder/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
 };
