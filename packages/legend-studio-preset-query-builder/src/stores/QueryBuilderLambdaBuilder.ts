@@ -30,13 +30,13 @@ import {
   PRIMITIVE_TYPE,
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-studio';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { buildFilterConditionExpressions } from './QueryBuilderFilterState';
+import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Constants';
 
 const buildGetAllFunction = (
   _class: Class,

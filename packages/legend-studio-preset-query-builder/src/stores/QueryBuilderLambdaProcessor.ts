@@ -51,7 +51,6 @@ import type {
 import {
   PackageableElementExplicitReference,
   PackageableElementImplicitReference,
-  SUPPORTED_FUNCTIONS,
   Class,
   CollectionInstanceValue,
   GraphFetchTreeInstanceValue,
@@ -63,6 +62,7 @@ import {
   InstanceValue,
 } from '@finos/legend-studio';
 import { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
+import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Constants';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,

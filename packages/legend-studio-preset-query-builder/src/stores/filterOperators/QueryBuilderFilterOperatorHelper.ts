@@ -25,7 +25,6 @@ import {
   LambdaFunction,
   LambdaFunctionInstanceValue,
   VariableExpression,
-  SUPPORTED_FUNCTIONS,
   AbstractPropertyExpression,
   GenericType,
   GenericTypeExplicitReference,
@@ -51,6 +50,7 @@ import type {
 import { FilterConditionState } from '../QueryBuilderFilterState';
 import format from 'date-fns/format';
 import { DATE_FORMAT } from '@finos/legend-studio/lib/const';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export const getDefaultPrimitiveInstanceValueForType = (
   type: PRIMITIVE_TYPE,

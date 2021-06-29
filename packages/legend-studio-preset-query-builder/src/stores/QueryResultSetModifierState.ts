@@ -31,9 +31,9 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
+import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Constants';
 
 export type COLUMN_SORT_TYPE =
   | SUPPORTED_FUNCTIONS.TDS_ASC

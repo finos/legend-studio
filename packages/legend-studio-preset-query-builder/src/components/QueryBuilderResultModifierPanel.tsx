@@ -27,7 +27,8 @@ import { Dialog } from '@material-ui/core';
 import { SortColumnState } from '../stores/QueryResultSetModifierState';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type { ProjectionColumnOption } from '../stores/QueryBuilderProjectionState';
-import { SUPPORTED_FUNCTIONS, useEditorStore } from '@finos/legend-studio';
+import { useEditorStore } from '@finos/legend-studio';
+import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Constants';
 
 const ColumnSortEditor = observer(
   (props: {

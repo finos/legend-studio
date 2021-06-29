@@ -34,13 +34,13 @@ import {
 } from '@finos/legend-studio';
 import {
   AbstractPropertyExpression,
-  SUPPORTED_FUNCTIONS,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-studio';
 import { PureProtocolProcessorPlugin } from '@finos/legend-studio';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import packageJson from '../../../../package.json';
+import { SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Constants';
 
 const buildGetAllFunctionExpression = (
   functionName: string,
