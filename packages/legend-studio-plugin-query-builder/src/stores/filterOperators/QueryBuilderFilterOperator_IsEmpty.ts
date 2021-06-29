@@ -31,7 +31,7 @@ import {
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
 
-const IS_EMPTY_FUNCTION_NAME = 'isEmpty';
+const IS_EMPTY_FUNCTION_NAME = 'isEmpty'; // meta::pure::functions::collection::isEmpty
 
 export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

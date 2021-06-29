@@ -35,7 +35,7 @@ import {
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
 
-const END_WITH_FUNCTION_NAME = 'endsWith';
+const END_WITH_FUNCTION_NAME = 'endsWith'; // meta::pure::functions::string::endsWith
 
 export class QueryBuilderFilterOperator_EndWith extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

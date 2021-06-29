@@ -33,7 +33,7 @@ import {
   getNonCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 
-const LESS_THAN_EQUAL_FUNCTION_NAME = 'lessThanEqual';
+const LESS_THAN_EQUAL_FUNCTION_NAME = 'lessThanEqual'; // meta::pure::functions::lang::tests::lessThanEqual
 
 export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

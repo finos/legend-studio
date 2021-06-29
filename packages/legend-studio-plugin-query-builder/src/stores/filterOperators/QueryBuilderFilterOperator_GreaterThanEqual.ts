@@ -33,7 +33,7 @@ import {
   getNonCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 
-const GREATER_THAN_EQUAL_FUNCTION_NAME = 'greaterThanEqual';
+const GREATER_THAN_EQUAL_FUNCTION_NAME = 'greaterThanEqual'; // meta::pure::functions::lang::tests::greaterThanEqual
 
 export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

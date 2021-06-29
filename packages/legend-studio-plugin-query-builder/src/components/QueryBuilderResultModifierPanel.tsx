@@ -24,13 +24,10 @@ import {
 } from 'react-icons/fa';
 import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
 import { Dialog } from '@material-ui/core';
-import {
-  COLUMN_SORT_TYPE,
-  SortColumnState,
-} from '../stores/QueryResultSetModifierState';
+import { SortColumnState } from '../stores/QueryResultSetModifierState';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type { ProjectionColumnOption } from '../stores/QueryBuilderProjectionState';
-import { useEditorStore } from '@finos/legend-studio';
+import { SUPPORTED_FUNCTIONS, useEditorStore } from '@finos/legend-studio';
 
 const ColumnSortEditor = observer(
   (props: {
@@ -53,9 +50,9 @@ const ColumnSortEditor = observer(
     const sortType = columnSort.sortType;
     const toggleSortType = (): void => {
       columnSort.setSortType(
-        sortType === COLUMN_SORT_TYPE.ASC
-          ? COLUMN_SORT_TYPE.DESC
-          : COLUMN_SORT_TYPE.ASC,
+        sortType === SUPPORTED_FUNCTIONS.TDS_ASC
+          ? SUPPORTED_FUNCTIONS.TDS_DESC
+          : SUPPORTED_FUNCTIONS.TDS_ASC,
       );
     };
     const deleteColumnSort = (): void =>
@@ -74,7 +71,7 @@ const ColumnSortEditor = observer(
           tabIndex={-1}
           onClick={toggleSortType}
         >
-          {sortType === COLUMN_SORT_TYPE.ASC ? (
+          {sortType === SUPPORTED_FUNCTIONS.TDS_ASC ? (
             <FaSortAlphaDown />
           ) : (
             <FaSortAlphaDownAlt />

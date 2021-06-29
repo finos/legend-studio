@@ -37,12 +37,12 @@ import {
 } from '@finos/legend-studio-shared';
 import { getAllByText, waitFor } from '@testing-library/dom';
 import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
-import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
 import {
   AbstractPropertyExpression,
   RawLambda,
   setUpEditorWithDefaultSDLCData,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Constants';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
@@ -217,13 +217,13 @@ test(
         (e) => e.columnState === fistNameCol,
       ),
     );
-    expect(firstnameSortState.sortType).toBe(COLUMN_SORT_TYPE.ASC);
+    expect(firstnameSortState.sortType).toBe(SUPPORTED_FUNCTIONS.TDS_ASC);
     const legalNameColSortState = guaranteeNonNullable(
       resultSetModifierState.sortColumns.find(
         (e) => e.columnState === legalNameCol,
       ),
     );
-    expect(legalNameColSortState.sortType).toBe(COLUMN_SORT_TYPE.DESC);
+    expect(legalNameColSortState.sortType).toBe(SUPPORTED_FUNCTIONS.TDS_DESC);
     const queryBuilder = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
     );

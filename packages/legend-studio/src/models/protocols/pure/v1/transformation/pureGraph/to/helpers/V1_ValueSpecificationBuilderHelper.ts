@@ -910,8 +910,8 @@ export function V1_buildFunctionExpression(
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] {
   switch (functionName) {
-    case SUPPORTED_FUNCTIONS.FILTER: {
-      return V1_buildFilterFunctionExpression(
+    case SUPPORTED_FUNCTIONS.TDS_PROJECT: {
+      return V1_buildProjectFunctionExpression(
         functionName,
         parameters,
         openVariables,
@@ -919,8 +919,8 @@ export function V1_buildFunctionExpression(
         processingContext,
       );
     }
-    case SUPPORTED_FUNCTIONS.PROJECT: {
-      return V1_buildProjectFunctionExpression(
+    case SUPPORTED_FUNCTIONS.FILTER: {
+      return V1_buildFilterFunctionExpression(
         functionName,
         parameters,
         openVariables,
@@ -1117,7 +1117,7 @@ export function V1_buildProjectFunctionExpression(
           .filter(
             (v: V1_ValueSpecification): v is V1_AppliedFunction =>
               v instanceof V1_AppliedFunction &&
-              v.function === SUPPORTED_FUNCTIONS.COL,
+              v.function === SUPPORTED_FUNCTIONS.TDS_COL,
           )
           .map((v) => v.parameters)
           .flat()

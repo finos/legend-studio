@@ -39,7 +39,7 @@ import {
   getCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 
-const IN_FUNCTION_NAME = 'in';
+const IN_FUNCTION_NAME = 'in'; // meta::pure::functions::collection::in
 
 export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

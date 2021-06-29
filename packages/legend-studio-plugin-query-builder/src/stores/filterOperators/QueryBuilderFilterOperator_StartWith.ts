@@ -35,7 +35,7 @@ import {
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
 
-const START_WITH_FUNCTION_NAME = 'startsWith';
+const START_WITH_FUNCTION_NAME = 'startsWith'; // meta::pure::functions::string::startsWith
 
 export class QueryBuilderFilterOperator_StartWith extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

@@ -137,7 +137,7 @@ export const buildLambdaFunction = (
     queryBuilderState.fetchStructureState.projectionState.columns.length
   ) {
     const projectFunction = new SimpleFunctionExpression(
-      SUPPORTED_FUNCTIONS.PROJECT,
+      SUPPORTED_FUNCTIONS.TDS_PROJECT,
       multiplicityOne,
     );
     const colLambdas = new CollectionInstanceValue(multiplicityOne);

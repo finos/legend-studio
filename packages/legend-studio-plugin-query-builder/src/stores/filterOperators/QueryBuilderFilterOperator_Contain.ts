@@ -35,7 +35,7 @@ import {
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
 
-const CONTAIN_FUNCTION_NAME = 'contains';
+const CONTAIN_FUNCTION_NAME = 'contains'; // meta::pure::functions::string::contains
 
 export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

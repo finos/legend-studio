@@ -24,10 +24,7 @@ import {
   printObject,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import {
-  COLUMN_SORT_TYPE,
-  SortColumnState,
-} from './QueryResultSetModifierState';
+import { SortColumnState } from './QueryResultSetModifierState';
 import type { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import {
   QueryBuilderFilterTreeGroupNodeData,
@@ -239,7 +236,7 @@ export class QueryBuilderLambdaProcessor
     valueSpecification: SimpleFunctionExpression,
   ): void {
     const functionName = valueSpecification.functionName;
-    if (functionName === SUPPORTED_FUNCTIONS.PROJECT) {
+    if (functionName === SUPPORTED_FUNCTIONS.TDS_PROJECT) {
       const params = valueSpecification.parametersValues;
       if (params.length === 3) {
         const paramOne = guaranteeType(params[0], SimpleFunctionExpression);
@@ -286,7 +283,7 @@ export class QueryBuilderLambdaProcessor
           aliases = [getNullableStringValueFromValueSpec(lambdaAlias) ?? ''];
         } else {
           throw new Error(
-            `Expecting different specification for function ${SUPPORTED_FUNCTIONS.PROJECT}`,
+            `Expecting different specification for function ${SUPPORTED_FUNCTIONS.TDS_PROJECT}`,
           );
         }
         this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
@@ -295,7 +292,7 @@ export class QueryBuilderLambdaProcessor
         return;
       }
       throw new Error(
-        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.PROJECT}'`,
+        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.TDS_PROJECT}'`,
       );
     } else if (functionName === SUPPORTED_FUNCTIONS.GET_ALL) {
       const paramOne = valueSpecification.parametersValues[0];
@@ -320,7 +317,7 @@ export class QueryBuilderLambdaProcessor
       throw new Error(
         `Expecting different specification for function '${SUPPORTED_FUNCTIONS.GET_ALL}'`,
       );
-    } else if (functionName === SUPPORTED_FUNCTIONS.TAKE) {
+    } else if (functionName === SUPPORTED_FUNCTIONS.TDS_TAKE) {
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
           valueSpecification.parametersValues[0],
@@ -334,10 +331,10 @@ export class QueryBuilderLambdaProcessor
         assertTrue(
           (
             [
-              SUPPORTED_FUNCTIONS.TAKE,
-              SUPPORTED_FUNCTIONS.DISTINCT,
-              SUPPORTED_FUNCTIONS.SORT_FUNC,
-              SUPPORTED_FUNCTIONS.PROJECT,
+              SUPPORTED_FUNCTIONS.TDS_TAKE,
+              SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+              SUPPORTED_FUNCTIONS.TDS_SORT,
+              SUPPORTED_FUNCTIONS.TDS_PROJECT,
             ] as string[]
           ).includes(paramOne.functionName),
           'Only support take() in TDS expression',
@@ -350,9 +347,9 @@ export class QueryBuilderLambdaProcessor
         return;
       }
       throw new Error(
-        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.TAKE}'`,
+        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.TDS_TAKE}'`,
       );
-    } else if (functionName === SUPPORTED_FUNCTIONS.DISTINCT) {
+    } else if (functionName === SUPPORTED_FUNCTIONS.TDS_DISTINCT) {
       if (valueSpecification.parametersValues.length === 1) {
         const paramOne = guaranteeType(
           valueSpecification.parametersValues[0],
@@ -366,10 +363,10 @@ export class QueryBuilderLambdaProcessor
         assertTrue(
           (
             [
-              SUPPORTED_FUNCTIONS.TAKE,
-              SUPPORTED_FUNCTIONS.DISTINCT,
-              SUPPORTED_FUNCTIONS.SORT_FUNC,
-              SUPPORTED_FUNCTIONS.PROJECT,
+              SUPPORTED_FUNCTIONS.TDS_TAKE,
+              SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+              SUPPORTED_FUNCTIONS.TDS_SORT,
+              SUPPORTED_FUNCTIONS.TDS_PROJECT,
             ] as string[]
           ).includes(paramOne.functionName),
           'Only support distinct() in TDS expression',
@@ -379,9 +376,9 @@ export class QueryBuilderLambdaProcessor
         return;
       }
       throw new Error(
-        `Expecting no parameter for '${SUPPORTED_FUNCTIONS.DISTINCT}'`,
+        `Expecting no parameter for '${SUPPORTED_FUNCTIONS.TDS_DISTINCT}'`,
       );
-    } else if (functionName === SUPPORTED_FUNCTIONS.SORT_FUNC) {
+    } else if (functionName === SUPPORTED_FUNCTIONS.TDS_SORT) {
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
           valueSpecification.parametersValues[0],
@@ -395,10 +392,10 @@ export class QueryBuilderLambdaProcessor
         assertTrue(
           (
             [
-              SUPPORTED_FUNCTIONS.TAKE,
-              SUPPORTED_FUNCTIONS.DISTINCT,
-              SUPPORTED_FUNCTIONS.SORT_FUNC,
-              SUPPORTED_FUNCTIONS.PROJECT,
+              SUPPORTED_FUNCTIONS.TDS_TAKE,
+              SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+              SUPPORTED_FUNCTIONS.TDS_SORT,
+              SUPPORTED_FUNCTIONS.TDS_PROJECT,
             ] as string[]
           ).includes(paramOne.functionName),
           'Only support sort() in TDS expression',
@@ -418,13 +415,12 @@ export class QueryBuilderLambdaProcessor
         }
       }
       throw new Error(
-        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.SORT_FUNC}'`,
+        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.TDS_SORT}'`,
       );
     } else if (
-      (functionName === COLUMN_SORT_TYPE.ASC ||
-        functionName === COLUMN_SORT_TYPE.DESC) &&
-      this.nextFunctionExpression?.functionName ===
-        SUPPORTED_FUNCTIONS.SORT_FUNC
+      (functionName === SUPPORTED_FUNCTIONS.TDS_ASC ||
+        functionName === SUPPORTED_FUNCTIONS.TDS_DESC) &&
+      this.nextFunctionExpression?.functionName === SUPPORTED_FUNCTIONS.TDS_SORT
     ) {
       if (valueSpecification.parametersValues.length === 1) {
         const sortColumnName = getNullableStringValueFromValueSpec(
@@ -584,7 +580,8 @@ export class QueryBuilderLambdaProcessor
     valueSpecification: AbstractPropertyExpression,
   ): void {
     if (
-      this.nextFunctionExpression?.functionName === SUPPORTED_FUNCTIONS.PROJECT
+      this.nextFunctionExpression?.functionName ===
+      SUPPORTED_FUNCTIONS.TDS_PROJECT
     ) {
       const projectionState =
         this.queryBuilderState.fetchStructureState.projectionState;

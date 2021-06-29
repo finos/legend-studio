@@ -35,15 +35,14 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 
-export enum COLUMN_SORT_TYPE {
-  ASC = 'asc',
-  DESC = 'desc',
-}
+export type COLUMN_SORT_TYPE =
+  | SUPPORTED_FUNCTIONS.TDS_ASC
+  | SUPPORTED_FUNCTIONS.TDS_DESC;
 
 export class SortColumnState {
   editorStore: EditorStore;
   columnState: QueryBuilderProjectionColumnState;
-  sortType = COLUMN_SORT_TYPE.ASC;
+  sortType = SUPPORTED_FUNCTIONS.TDS_ASC;
 
   constructor(
     editorStore: EditorStore,
@@ -163,13 +162,13 @@ export class QueryResultSetModifierState {
       const func = lambda.expressionSequence[0];
       if (func instanceof SimpleFunctionExpression) {
         switch (func.functionName) {
-          case SUPPORTED_FUNCTIONS.PROJECT: {
+          case SUPPORTED_FUNCTIONS.TDS_PROJECT: {
             let currentExpression = func;
 
             // distinct
             if (this.distinct) {
               const val = new SimpleFunctionExpression(
-                SUPPORTED_FUNCTIONS.DISTINCT,
+                SUPPORTED_FUNCTIONS.TDS_DISTINCT,
                 multiplicityOne,
               );
               val.parametersValues[0] = currentExpression;
@@ -179,7 +178,7 @@ export class QueryResultSetModifierState {
             // sort
             if (this.sortColumns.length) {
               const val = new SimpleFunctionExpression(
-                SUPPORTED_FUNCTIONS.SORT_FUNC,
+                SUPPORTED_FUNCTIONS.TDS_SORT,
                 multiplicityOne,
               );
               const multiplicity = new Multiplicity(
@@ -218,7 +217,7 @@ export class QueryResultSetModifierState {
                 ),
               ];
               const limitColFuncs = new SimpleFunctionExpression(
-                SUPPORTED_FUNCTIONS.TAKE,
+                SUPPORTED_FUNCTIONS.TDS_TAKE,
                 multiplicityOne,
               );
 
@@ -251,7 +250,7 @@ export class QueryResultSetModifierState {
               );
               limitColumnValue.values = [options.overridingLimit];
               const limitColFuncs = new SimpleFunctionExpression(
-                SUPPORTED_FUNCTIONS.TAKE,
+                SUPPORTED_FUNCTIONS.TDS_TAKE,
                 multiplicityOne,
               );
 
