@@ -292,7 +292,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_Path(valueSpecification: V1_Path): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   // Instance Types
@@ -489,74 +489,74 @@ export class V1_ValueSpecificationBuilder
   visit_RuntimeInstance(
     valueSpecification: V1_RuntimeInstance,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_AggregateValue(
     valueSpecification: V1_AggregateValue,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_SerializationConfig(
     valueSpecification: V1_SerializationConfig,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_UnitType(valueSpecification: V1_UnitType): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_UnitInstance(valueSpecification: V1_UnitInstance): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_KeyExpression(
     valueSpecification: V1_KeyExpression,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_ExecutionContextInstance(
     valueSpecification: V1_ExecutionContextInstance,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PrimitiveType(
     valueSpecification: V1_PrimitiveType,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   // Not Supported For NOW
   visit_TDSAggregateValue(
     valueSpecification: V1_TDSAggregateValue,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_TDSColumnInformation(
     valueSpecification: V1_TDSColumnInformation,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_TDSSortInformation(
     valueSpecification: V1_TDSSortInformation,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_TdsOlapRank(valueSpecification: V1_TdsOlapRank): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_TdsOlapAggregation(
     valueSpecification: V1_TdsOlapAggregation,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 

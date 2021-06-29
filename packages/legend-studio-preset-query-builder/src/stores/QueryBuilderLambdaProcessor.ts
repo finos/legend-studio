@@ -22,6 +22,7 @@ import {
   isNumber,
   isString,
   printObject,
+  UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { SortColumnState } from './QueryResultSetModifierState';
@@ -190,47 +191,47 @@ export class QueryBuilderLambdaProcessor
   visit_RootGraphFetchTreeInstanceValue(
     valueSpecification: RootGraphFetchTreeInstanceValue,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_PropertyGraphFetchTreeInstanceValue(
     valueSpecification: PropertyGraphFetchTreeInstanceValue,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_AlloySerializationConfigInstanceValue(
     valueSpecification: AlloySerializationConfigInstanceValue,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_PrimitiveInstanceValue(
     valueSpecification: PrimitiveInstanceValue,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_EnumValueInstanceValue(
     valueSpecification: EnumValueInstanceValue,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_PairInstanceValue(valueSpecification: PairInstanceValue): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_MappingInstanceValue(valueSpecification: MappingInstanceValue): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_PureListInsanceValue(valueSpecification: PureListInstanceValue): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_CollectionInstanceValue(
     valueSpecification: CollectionInstanceValue,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_FunctionExpression(valueSpecification: FunctionExpression): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_SimpleFunctionExpression(
     valueSpecification: SimpleFunctionExpression,
@@ -556,7 +557,7 @@ export class QueryBuilderLambdaProcessor
   }
 
   visit_VariableExpression(valueSpecification: VariableExpression): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_LambdaFunctionInstanceValue(
@@ -606,6 +607,6 @@ export class QueryBuilderLambdaProcessor
   }
 
   visit_InstanceValue(valueSpecification: InstanceValue): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }

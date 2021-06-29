@@ -18,6 +18,7 @@ import {
   isNonNullable,
   assertTrue,
   assertType,
+  UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import { getDecoratedSetImplementationPropertyMappings } from '../../../../utils/MappingResolutionUtil';
 import type {
@@ -325,7 +326,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_RelationalInstanceSetImplementation(
     setImplementation: RelationalInstanceSetImplementation,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_RootRelationalInstanceSetImplementation(
@@ -475,7 +476,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 
@@ -564,6 +565,6 @@ export class MappingElementDecorationCleaner
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }

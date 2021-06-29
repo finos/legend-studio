@@ -22,6 +22,7 @@ import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 import type { Function } from '../../model/packageableElements/domain/Function';
 import type { AbstractProperty } from '../../model/packageableElements/domain/AbstractProperty';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 
 export class Expression extends ValueSpecification {
   classifierGenericType?: GenericTypeReference;
@@ -29,7 +30,7 @@ export class Expression extends ValueSpecification {
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 

@@ -127,7 +127,7 @@ export class V1_ValueSpecificationTransformer
   visit_AlloySerializationConfigInstanceValue(
     valueSpecification: AlloySerializationConfigInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PrimitiveInstanceValue(
@@ -246,25 +246,25 @@ export class V1_ValueSpecificationTransformer
   visit_RuntimeInstanceValue(
     valueSpecification: RuntimeInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PairInstanceValue(
     valueSpecification: PairInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_MappingInstanceValue(
     valueSpecification: MappingInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PureListInsanceValue(
     valueSpecification: PureListInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_CollectionInstanceValue(
