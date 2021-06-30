@@ -35,6 +35,11 @@ import {
   PRIMITIVE_TYPE,
 } from '../../../../MetaModelConst';
 
+/**
+ * `InstanceValue` is the main type, its subtypes are purely created in Studio
+ * so that we can narrow down the types of `values`. These subtypes are not
+ * part of Pure metamodel.
+ */
 export class InstanceValue extends ValueSpecification {
   values: unknown[] = [];
 

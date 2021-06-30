@@ -121,7 +121,7 @@ import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_
 
 const LET_FUNCTION = 'letFunction';
 
-const getPrimtiveInstanceValue = (
+const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
   values: unknown[],
   context: V1_GraphBuilderContext,
@@ -150,7 +150,8 @@ export class V1_ValueSpecificationBuilder
     this.openVariables = openVariables;
   }
 
-  // Function val specs
+  // --------------------------------------------- Function ---------------------------------------------
+
   visit_Variable(variable: V1_Variable): ValueSpecification {
     this.openVariables.push(variable.name);
     if (variable.class && variable.multiplicity) {
@@ -230,7 +231,8 @@ export class V1_ValueSpecificationBuilder
     );
   }
 
-  // core value specs
+  // --------------------------------------------- Core ---------------------------------------------
+
   visit_Collection(valueSpecification: V1_Collection): ValueSpecification {
     const transformed = valueSpecification.values.map((v) =>
       v.accept_ValueSpecificationVisitor(
@@ -295,7 +297,7 @@ export class V1_ValueSpecificationBuilder
     throw new UnsupportedOperationError();
   }
 
-  // Instance Types
+  // --------------------------------------------- Instance Value ---------------------------------------------
 
   visit_PackageableElementPtr(
     valueSpecification: V1_PackageableElementPtr,
@@ -340,9 +342,10 @@ export class V1_ValueSpecificationBuilder
     return instance;
   }
 
-  // Primitive Type
+  // --------------------------------------------- Primitive Type ---------------------------------------------
+
   visit_CInteger(valueSpecification: V1_CInteger): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.INTEGER,
       valueSpecification.values,
       this.context,
@@ -354,7 +357,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CDecimal(valueSpecification: V1_CDecimal): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.DECIMAL,
       valueSpecification.values,
       this.context,
@@ -366,7 +369,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CString(valueSpecification: V1_CString): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRING,
       valueSpecification.values,
       this.context,
@@ -378,7 +381,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CBoolean(valueSpecification: V1_CBoolean): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.BOOLEAN,
       valueSpecification.values,
       this.context,
@@ -390,7 +393,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CFloat(valueSpecification: V1_CFloat): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.FLOAT,
       valueSpecification.values,
       this.context,
@@ -402,7 +405,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CDateTime(valueSpecification: V1_CDateTime): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.DATETIME,
       valueSpecification.values,
       this.context,
@@ -414,7 +417,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CStrictDate(valueSpecification: V1_CStrictDate): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRICTDATE,
       valueSpecification.values,
       this.context,
@@ -426,7 +429,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CStrictTime(valueSpecification: V1_CStrictTime): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRICTTIME,
       valueSpecification.values,
       this.context,
@@ -438,7 +441,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CLatestDate(valueSpecification: V1_CLatestDate): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.LATESTDATE,
       [],
       this.context,
@@ -449,7 +452,8 @@ export class V1_ValueSpecificationBuilder
     );
   }
 
-  // Graph Fetch Tree
+  // --------------------------------------------- Graph Fetch Tree ---------------------------------------------
+
   visit_RootGraphFetchTree(
     valueSpecification: V1_RootGraphFetchTree,
   ): ValueSpecification {
@@ -484,7 +488,7 @@ export class V1_ValueSpecificationBuilder
     return instance;
   }
 
-  // TODO
+  // --------------------------------------------- TODO ---------------------------------------------
 
   visit_RuntimeInstance(
     valueSpecification: V1_RuntimeInstance,

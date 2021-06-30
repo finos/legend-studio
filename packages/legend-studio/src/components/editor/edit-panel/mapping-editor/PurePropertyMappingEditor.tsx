@@ -26,7 +26,6 @@ import type {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import type { EditorStore } from '../../../../stores/EditorStore';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
@@ -42,35 +41,6 @@ import {
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import type { ValueSpecification } from '../../../../models/metamodels/pure/model/valueSpecification/ValueSpecification';
-import { VariableExpression } from '../../../../models/metamodels/pure/model/valueSpecification/VariableExpression';
-
-export const getDerivedPropertyArgumentStrings = (
-  editorStore: EditorStore,
-  derivedProperty: DerivedProperty,
-): string => {
-  const variables = (
-    Array.isArray(derivedProperty.parameters) ? derivedProperty.parameters : []
-  )
-    .map((parameter) =>
-      editorStore.graphState.graphManager.buildValueSpecification(
-        parameter as Record<PropertyKey, unknown>,
-        editorStore.graphState.graph,
-      ),
-    )
-    .filter(
-      (valueSpec: ValueSpecification): valueSpec is VariableExpression =>
-        valueSpec instanceof VariableExpression,
-    );
-  return `(${variables
-    .map(
-      (e, idx) =>
-        `/*arg${idx + 1}:${e.genericType?.value.rawType.name ?? ''}[${
-          e.multiplicity.str
-        }]*/`,
-    )
-    .join(',')})`;
-};
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -345,12 +315,7 @@ export const PurePropertyMappingEditor = observer(
             } else {
               toAppend = dropItem.data.id;
               if (dropItem.data.property instanceof DerivedProperty) {
-                toAppend =
-                  toAppend +
-                  getDerivedPropertyArgumentStrings(
-                    purePropertyMappingState.editorStore,
-                    dropItem.data.property,
-                  );
+                toAppend += '()';
               }
             }
             if (toAppend) {

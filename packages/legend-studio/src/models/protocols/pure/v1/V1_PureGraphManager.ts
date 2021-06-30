@@ -1681,8 +1681,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  // ------------------------------------------- V1_RawValueSpecification -------------------------------------------
-
   serializeRawValueSpecification(
     metamodel: RawValueSpecification,
   ): Record<PropertyKey, unknown> {
