@@ -71,16 +71,16 @@ const checkGrammarRoundtrip = async (
   editorStore = getTestEditorStore(),
 ): Promise<void> => {
   // parse the grammar
-  const content = fs.readFileSync(file, { encoding: 'utf-8' });
-  const json = await axios.post(
+  const grammarText = fs.readFileSync(file, { encoding: 'utf-8' });
+  const transformGrammarToJsonResult = await axios.post(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/transformGrammarToJson`,
     {
-      code: content,
+      code: grammarText,
     },
     {},
   );
   const entities = editorStore.graphState.graphManager.pureProtocolToEntities(
-    JSON.stringify(json.data.modelDataContext),
+    JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
 
   await editorStore.graphState.initializeSystem();
@@ -101,7 +101,7 @@ const checkGrammarRoundtrip = async (
       .map(editorStore.graphState.graphManager.pruneSourceInformation),
   ).toIncludeSameMembers(
     // expected: protocol JSON parsed from grammar text
-    json.data.modelDataContext.elements
+    transformGrammarToJsonResult.data.modelDataContext.elements
       .map(editorStore.graphState.graphManager.pruneSourceInformation)
       .filter(
         (elementProtocol: PlainObject<V1_PackageableElement>) =>
@@ -128,6 +128,23 @@ const checkGrammarRoundtrip = async (
         change.oldPath !== '__internal__::SectionIndex',
     ).length,
   ).toBe(0);
+
+  // compose grammar and compare that with original grammar text
+  // NOTE: this is optional test as `grammar text <-> protocol` test should be covered
+  // in engine already.
+  // Here, we do it just so we might be able to detect problem in the grammar roundtrip in engine
+  const transformJsonToGrammarResult = await axios.post(
+    `${ENGINE_SERVER_URL}/pure/v1/grammar/transformJsonToGrammar`,
+    {
+      modelDataContext: {
+        _type: 'data',
+        elements: transformedEntities.map((entity) => entity.content),
+      },
+      renderStyle: 'STANDARD',
+    },
+    {},
+  );
+  expect(transformJsonToGrammarResult.data.code).toEqual(grammarText);
 };
 
 const testNameFrom = (fileName: string): string => {
