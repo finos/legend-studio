@@ -203,7 +203,7 @@ export abstract class BasicModel {
     return extensionElementClasses.map((extensionElementClass) => {
       if (FORBIDDEN_EXTENSION_ELEMENT_CLASS.has(extensionElementClass)) {
         throw new IllegalStateError(
-          `Pure graph extension not allowed for class '${extensionElementClass.name}'. Consider removing this extension from plugins.`,
+          `Pure graph extension not allowed for the specified class. Consider removing this extension from plugins.`,
         );
       }
       return new PureGraphExtension(extensionElementClass);
@@ -294,11 +294,11 @@ export abstract class BasicModel {
     );
     if (extensions.length === 0) {
       throw new UnsupportedOperationError(
-        `Can't find graph extension for element class '${_class.name}'. No compatible graph extensions available from plugins.`,
+        `Can't find graph extension for the specified element class. No compatible graph extensions available from plugins.`,
       );
     } else if (extensions.length > 1) {
       throw new IllegalStateError(
-        `Found multiple extensions for element class '${_class.name}'`,
+        `Found multiple extensions for the specified element class`,
       );
     }
     return extensions[0] as PureGraphExtension<T>;

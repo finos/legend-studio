@@ -30,7 +30,7 @@ import {
   IllegalStateError,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { MappingElementDecorateVisitor } from './MappingElementDecorateVisitor';
+import { MappingElementDecorator } from './MappingElementDecorator';
 import type { SourceInformation } from '../../../../models/metamodels/pure/action/SourceInformation';
 import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
@@ -183,7 +183,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
    */
   decorate(): void {
     this.mappingElement.accept_SetImplementationVisitor(
-      new MappingElementDecorateVisitor(),
+      new MappingElementDecorator(),
     );
     const newPropertyMappingStates: FlatDataPropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(
@@ -322,14 +322,16 @@ export class EmbeddedFlatDataInstanceSetImplementationState
   lambdaString = '';
   parserError?: ParserError;
   compilationError?: CompilationError;
+
   setLambdaString(val: string): void {
-    throw new UnsupportedOperationError();
+    return;
   }
   setParserError(error: ParserError | undefined): void {
-    throw new UnsupportedOperationError();
+    return;
   }
   setCompilationError(error: CompilationError | undefined): void {
-    throw new UnsupportedOperationError();
+    // TODO
+    return;
   }
   get fullLambdaString(): string {
     throw new UnsupportedOperationError();
@@ -343,7 +345,8 @@ export class EmbeddedFlatDataInstanceSetImplementationState
     throw new UnsupportedOperationError();
   }
   clearErrors(): void {
-    throw new UnsupportedOperationError();
+    // TODO
+    return;
   }
   convertLambdaGrammarStringToObject = flow(function* (
     this: EmbeddedFlatDataInstanceSetImplementationState,

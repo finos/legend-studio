@@ -27,7 +27,7 @@ export class V1_SectionIndex extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SECTION_INDEX,
-      super.hashCode,
+      this.path,
       hashArray(this.sections),
     ]);
   }

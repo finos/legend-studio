@@ -16,10 +16,7 @@
 
 import type { EditorStore } from '../../EditorStore';
 import { observable, action, makeObservable } from 'mobx';
-import {
-  UnsupportedOperationError,
-  getClass,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
@@ -64,9 +61,8 @@ export class UMLEditorState extends ElementEditorState {
       this.selectedTab = UML_EDITOR_TAB.PROPERTIES;
     } else {
       throw new UnsupportedOperationError(
-        `Can't build UML editor state for element of type '${
-          getClass(element).name
-        }'`,
+        `Can't build UML editor state for element`,
+        element,
       );
     }
   }

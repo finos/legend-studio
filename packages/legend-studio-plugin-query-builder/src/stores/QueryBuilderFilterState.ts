@@ -53,7 +53,7 @@ export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
   OR = 'or',
 }
 
-export abstract class QueryBuilderOperator {
+export abstract class QueryBuilderFilterOperator {
   uuid = uuid();
 
   abstract getLabel(filterConditionState: FilterConditionState): string;
@@ -100,7 +100,7 @@ export class FilterConditionState {
   editorStore: EditorStore;
   filterState: QueryBuilderFilterState;
   propertyEditorState: QueryBuilderPropertyEditorState;
-  operator!: QueryBuilderOperator;
+  operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification;
   existsLambdaParamNames: string[] = [];
 
@@ -135,7 +135,7 @@ export class FilterConditionState {
     this.value = this.operator.getDefaultFilterConditionValue(this);
   }
 
-  get operators(): QueryBuilderOperator[] {
+  get operators(): QueryBuilderFilterOperator[] {
     return this.filterState.operators.filter((op) =>
       op.isCompatibleWithFilterConditionProperty(this),
     );
@@ -166,14 +166,14 @@ export class FilterConditionState {
     }
   }
 
-  changeOperator(val: QueryBuilderOperator): void {
+  changeOperator(val: QueryBuilderFilterOperator): void {
     this.setOperator(val);
     if (!this.operator.isCompatibleWithFilterConditionValue(this)) {
       this.setValue(this.operator.getDefaultFilterConditionValue(this));
     }
   }
 
-  setOperator(val: QueryBuilderOperator): void {
+  setOperator(val: QueryBuilderFilterOperator): void {
     this.operator = val;
   }
 
@@ -297,6 +297,66 @@ export class QueryBuilderFilterTreeBlankConditionNodeData extends QueryBuilderFi
   }
 }
 
+const buildFilterConditionExpression = (
+  filterState: QueryBuilderFilterState,
+  node: QueryBuilderFilterTreeNodeData,
+): ValueSpecification | undefined => {
+  if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+    return node.condition.getFunctionExpression();
+  } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
+    const multiplicityOne =
+      filterState.editorStore.graphState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
+    const func = new SimpleFunctionExpression(
+      node.groupOperation,
+      multiplicityOne,
+    );
+    const clauses = node.childrenIds
+      .map((e) => filterState.nodes.get(e))
+      .filter(isNonNullable)
+      .map((e) => buildFilterConditionExpression(filterState, e))
+      .filter(isNonNullable);
+    /**
+     * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
+     * like and/or do not take more than 2 parameters, as such, if we have more than 2, we need
+     * to create a chain of this operation to accomondate.
+     *
+     * This means that in the read direction, we might need to flatten the chains down to group with
+     * multiple clauses. This means user's intended grouping will not be kept.
+     */
+    if (clauses.length > 2) {
+      const firstClause = clauses[0];
+      let currentClause: ValueSpecification = clauses[clauses.length - 1];
+      for (let i = clauses.length - 2; i > 0; --i) {
+        const clause1 = clauses[i];
+        const clause2 = currentClause;
+        const groupClause = new SimpleFunctionExpression(
+          node.groupOperation,
+          multiplicityOne,
+        );
+        groupClause.parametersValues = [clause1, clause2];
+        currentClause = groupClause;
+      }
+      func.parametersValues = [firstClause, currentClause];
+    } else {
+      func.parametersValues = clauses;
+    }
+    return func.parametersValues.length ? func : undefined;
+  }
+  return undefined;
+};
+
+export const buildFilterConditionExpressions = (
+  filterState: QueryBuilderFilterState,
+): ValueSpecification[] | undefined => {
+  const expressions = filterState.rootIds
+    .map((e) => guaranteeNonNullable(filterState.nodes.get(e)))
+    .map((e) => buildFilterConditionExpression(filterState, e))
+    .filter(isNonNullable);
+  return !expressions.length ? undefined : expressions;
+};
+
 export class QueryBuilderFilterState
   implements TreeData<QueryBuilderFilterTreeNodeData>
 {
@@ -307,13 +367,13 @@ export class QueryBuilderFilterState
   nodes = new Map<string, QueryBuilderFilterTreeNodeData>();
   selectedNode?: QueryBuilderFilterTreeNodeData;
   isRearrangingConditions = false;
-  operators: QueryBuilderOperator[] = [];
+  operators: QueryBuilderFilterOperator[] = [];
   private _suppressClickawayEventListener = false;
 
   constructor(
     editorStore: EditorStore,
     queryBuilderState: QueryBuilderState,
-    operators: QueryBuilderOperator[],
+    operators: QueryBuilderFilterOperator[],
   ) {
     makeAutoObservable(this, {
       editorStore: false,
@@ -721,64 +781,8 @@ export class QueryBuilderFilterState
   collapseTree(): void {
     Array.from(this.nodes.values()).forEach((node) => node.setIsOpen(false));
   }
+
   expandTree(): void {
     Array.from(this.nodes.values()).forEach((node) => node.setIsOpen(true));
-  }
-
-  buildSimpleFunctionExpression(
-    node: QueryBuilderFilterTreeNodeData,
-  ): ValueSpecification | undefined {
-    if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-      return node.condition.getFunctionExpression();
-    } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
-      const multiplicityOne =
-        this.editorStore.graphState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        );
-      const func = new SimpleFunctionExpression(
-        node.groupOperation,
-        multiplicityOne,
-      );
-      const clauses = node.childrenIds
-        .map((e) => this.nodes.get(e))
-        .filter(isNonNullable)
-        .map((e) => this.buildSimpleFunctionExpression(e))
-        .filter(isNonNullable);
-      /**
-       * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
-       * like and/or do not take more than 2 parameters, as such, if we have more than 2, we need
-       * to create a chain of this operation to accomondate.
-       *
-       * This means that in the read direction, we might need to flatten the chains down to group with
-       * multiple clauses. This means user's intended grouping will not be kept.
-       */
-      if (clauses.length > 2) {
-        const firstClause = clauses[0];
-        let currentClause: ValueSpecification = clauses[clauses.length - 1];
-        for (let i = clauses.length - 2; i > 0; --i) {
-          const clause1 = clauses[i];
-          const clause2 = currentClause;
-          const groupClause = new SimpleFunctionExpression(
-            node.groupOperation,
-            multiplicityOne,
-          );
-          groupClause.parametersValues = [clause1, clause2];
-          currentClause = groupClause;
-        }
-        func.parametersValues = [firstClause, currentClause];
-      } else {
-        func.parametersValues = clauses;
-      }
-      return func.parametersValues.length ? func : undefined;
-    }
-    return undefined;
-  }
-
-  getParameterValues(): ValueSpecification[] | undefined {
-    const parametersValues = this.rootIds
-      .map((e) => guaranteeNonNullable(this.nodes.get(e)))
-      .map((e) => this.buildSimpleFunctionExpression(e))
-      .filter(isNonNullable);
-    return !parametersValues.length ? undefined : parametersValues;
   }
 }

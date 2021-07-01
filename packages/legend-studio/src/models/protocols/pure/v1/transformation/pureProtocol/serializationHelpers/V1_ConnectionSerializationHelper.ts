@@ -27,7 +27,6 @@ import {
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   usingConstantValueSchema,
-  getClass,
   IllegalStateError,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -195,9 +194,8 @@ export const V1_serializeDatasourceSpecification = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize datasource specification of type '${
-      getClass(protocol).name
-    }'. No compatible serializer available from plugins.`,
+    `Can't serialize datasource specification. No compatible serializer available from plugins.`,
+    protocol,
   );
 };
 
@@ -326,9 +324,8 @@ export const V1_serializeAuthenticationStrategy = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize authentication strategy of type '${
-      getClass(protocol).name
-    }'. No compatible serializer available from plugins.`,
+    `Can't serialize authentication strategy. No compatible serializer available from plugins.`,
+    protocol,
   );
 };
 
@@ -401,9 +398,7 @@ export const V1_serializeConnectionValue = (
       `Serializing connection pointer is not allowed here`,
     );
   }
-  throw new UnsupportedOperationError(
-    `Can't serialize connection of type '${getClass(protocol).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't serialize connection`, protocol);
 };
 
 export const V1_deserializeConnectionValue = (
@@ -443,7 +438,8 @@ export const V1_serializeDatabaseConnectionValue = (
     return serialize(V1_RelationalDatabaseConnection, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize database connection of type '${getClass(protocol).name}'`,
+    `Can't serialize database connection`,
+    protocol,
   );
 };
 

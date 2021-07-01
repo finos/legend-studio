@@ -20,6 +20,7 @@ import type {
   RelationalPropertyMappingState,
   RootRelationalInstanceSetImplementationState,
 } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
+import { EmbeddedRelationalInstanceSetImplementationState } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
@@ -298,12 +299,13 @@ export const RelationalPropertyMappingEditor = observer(
         );
       case CLASS_PROPERTY_TYPE.CLASS: {
         if (
-          relationalInstanceSetImplementationState.mappingElement.isEmbedded
+          relationalPropertyMappingState instanceof
+          EmbeddedRelationalInstanceSetImplementationState
         ) {
           return (
             <div className="property-mapping-editor__entry--embedded">
-              Editing embedded property mapping is currently not supported in
-              form mode
+              Embedded property mapping specified, but not supported in form
+              mode
             </div>
           );
         }

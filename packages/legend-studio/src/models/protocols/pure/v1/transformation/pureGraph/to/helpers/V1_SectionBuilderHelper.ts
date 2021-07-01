@@ -18,7 +18,6 @@ import {
   UnsupportedOperationError,
   isNonNullable,
   uniq,
-  getClass,
 } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../../../../../../utils/Logger';
 import type { Section } from '../../../../../../../metamodels/pure/model/packageableElements/section/Section';
@@ -36,7 +35,7 @@ import {
   V1_DefaultCodeSection,
 } from '../../../../model/packageableElements/section/V1_Section';
 
-export const V1_processSection = (
+export const V1_buildSection = (
   section: V1_Section,
   context: V1_GraphBuilderContext,
   parentSectionIndex: SectionIndex,
@@ -65,9 +64,7 @@ export const V1_processSection = (
   } else if (section instanceof V1_DefaultCodeSection) {
     sec = new DefaultCodeSection(section.parserName, parentSectionIndex);
   } else {
-    throw new UnsupportedOperationError(
-      `Can't build section of type '${getClass(section).name}'`,
-    );
+    throw new UnsupportedOperationError(`Can't build section`, section);
   }
   // NOTE: we ignore not-found element path and duplicated import packages, but we will prune them as well
   sec.elements = uniq(section.elements)

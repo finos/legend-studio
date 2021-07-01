@@ -36,7 +36,6 @@ import {
 import {
   addUniqueEntry,
   assertTrue,
-  getClass,
   guaranteeType,
   isNonNullable,
   UnsupportedOperationError,
@@ -68,8 +67,11 @@ import type { Join } from '../../../../../models/metamodels/pure/model/packageab
 import type { View } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 
 export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
+
 const JOIN_OPERATOR = '>';
 const JOIN_AT_SYMBOL = '@';
+const JOIN_PIPE_SYMBOL = '|';
+
 const generateDatabasePointerText = (database: string): string =>
   `[${database}]`;
 
@@ -124,12 +126,13 @@ const generateColumnTreeNodeId = (
   relation: Table | View,
   parentNode: TableOrViewTreeNodeData | undefined,
 ): string =>
-  `${
-    parentNode?.id ??
-    `${generateDatabasePointerText(relation.schema.owner.path)}${
-      relation.schema.name
-    }.${relation.name}`
-  }.${column.name}`;
+  parentNode
+    ? parentNode instanceof JoinNodeData
+      ? `${parentNode.id} ${JOIN_PIPE_SYMBOL} ${relation.name}.${column.name}`
+      : `${parentNode.id}.${column.name}`
+    : `${generateDatabasePointerText(relation.schema.owner.path)}${
+        relation.schema.name
+      }.${relation.name}`;
 
 const getColumnTreeNodeData = (
   column: Column,
@@ -304,7 +307,8 @@ const generateColumnTypeLabel = (type: DataType): string => {
     return `OTHER`;
   }
   throw new UnsupportedOperationError(
-    `Can't generate column label of data type '${getClass(type).name}'`,
+    `Can't generate label for unsupported column data type`,
+    type,
   );
 };
 
@@ -344,9 +348,7 @@ const renderColumnTypeIcon = (type: DataType): React.ReactNode => {
       <UnknownTypeIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
     );
   }
-  throw new UnsupportedOperationError(
-    `Can't render column of data type '${getClass(type).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't render column data type`, type);
 };
 
 const RelationalOperationElementTreeNodeContainer: React.FC<

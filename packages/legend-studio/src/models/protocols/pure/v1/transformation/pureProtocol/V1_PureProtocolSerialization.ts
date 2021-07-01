@@ -27,7 +27,6 @@ import {
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   usingConstantValueSchema,
-  getClass,
   UnsupportedOperationError,
   assertErrorThrown,
   usingModelSchema,
@@ -174,8 +173,7 @@ export const V1_serializePureModelContext = (
     return serialize(V1_pureModelContextCompositeModelSchema, pureModelContext);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize Pure model context of type '${
-      getClass(pureModelContext).name
-    }'`,
+    `Can't serialize Pure model context`,
+    pureModelContext,
   );
 };

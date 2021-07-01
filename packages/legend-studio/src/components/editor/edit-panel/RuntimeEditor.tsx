@@ -66,7 +66,6 @@ import {
 import { useDrop } from 'react-dnd';
 import {
   assertErrorThrown,
-  getClass,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -110,7 +109,8 @@ const getConnectionTooltipText = (connection: Connection): string => {
     return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
   }
   throw new UnsupportedOperationError(
-    `Can't get tooltip text for connection type '${getClass(connection).name}'`,
+    `Can't build tooltip text for connection`,
+    connection,
   );
 };
 

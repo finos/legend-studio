@@ -15,14 +15,10 @@
  */
 
 import packageJson from '../../../../../package.json';
-import { freeze, PureGraphManagerPlugin } from '@finos/legend-studio';
+import { PureGraphManagerPlugin } from '@finos/legend-studio';
 import { Text } from '../model/packageableElements/Text';
 import type { Clazz } from '@finos/legend-studio-shared';
-import type {
-  ElementFreezer,
-  PluginManager,
-  PackageableElement,
-} from '@finos/legend-studio';
+import type { PluginManager, PackageableElement } from '@finos/legend-studio';
 
 export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -38,15 +34,5 @@ export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
     return [Text];
-  }
-
-  override getExtraElementFreezers(): ElementFreezer[] {
-    return [
-      (element: PackageableElement): void => {
-        if (element instanceof Text) {
-          freeze(element);
-        }
-      },
-    ];
   }
 }

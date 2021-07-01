@@ -212,7 +212,7 @@ export class PureModel extends BasicModel {
   /**
    * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
    * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
-   * the fact that we want to get hashCode inside a setTimeout to make this non-blocking, but that way `mobx` will
+   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
    * not trigger memoization on computed so we need to enable `keepAlive`
    */
   precomputeHashes = flow(function* (

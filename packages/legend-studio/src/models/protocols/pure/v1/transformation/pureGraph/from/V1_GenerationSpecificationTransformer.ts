@@ -32,7 +32,7 @@ import {
   V1_transformElementReferencePointer,
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 
 // ----------------------------------------------- GENERATION SPECIFICATION ----------------------------------------
 

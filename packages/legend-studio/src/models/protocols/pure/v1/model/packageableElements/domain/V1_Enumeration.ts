@@ -31,7 +31,7 @@ export class V1_Enumeration extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ENUMERATION,
-      super.hashCode,
+      this.path,
       hashArray(this.values),
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),

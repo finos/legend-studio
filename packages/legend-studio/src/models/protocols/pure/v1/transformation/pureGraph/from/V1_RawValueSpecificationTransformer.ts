@@ -29,7 +29,7 @@ import {
   V1_transformOptionalElementReference,
   V1_transformMultiplicity,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 import type { V1_RawGraphFetchTree } from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
 import {
   V1_RawPropertyGraphFetchTree,

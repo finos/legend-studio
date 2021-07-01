@@ -17,7 +17,6 @@
 import { BusinessMilestoning } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/milestoning/BusinessMilestoning';
 import {
   assertNonEmptyString,
-  getClass,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -127,8 +126,7 @@ export const V1_buildMilestoning = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build milestoning of type '${
-      getClass(protocol).name
-    }'. No compatible builder available from plugins.`,
+    `Can't build milestoning. No compatible builder available from plugins.`,
+    protocol,
   );
 };

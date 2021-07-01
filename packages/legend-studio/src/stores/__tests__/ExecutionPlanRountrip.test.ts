@@ -17,10 +17,7 @@
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import { unitTest } from '@finos/legend-studio-shared';
 import { getTestEditorStore } from '../StoreTestUtils';
-import {
-  entities,
-  plan,
-} from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
+import { simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
 
 type RoundtripTestCase = [
   string,
@@ -31,11 +28,11 @@ type RoundtripTestCase = [
 ];
 
 const ctx = {
-  entities: entities,
+  entities: simpleRelationalPlan.entities,
 };
 
 const cases: RoundtripTestCase[] = [
-  ['Simple relational execution plan', ctx, plan],
+  ['Simple relational execution plan', ctx, simpleRelationalPlan.plan],
 ];
 
 describe(unitTest('Execution plan processing roundtrip test'), () => {

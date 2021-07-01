@@ -17,7 +17,6 @@
 import {
   hashArray,
   UnsupportedOperationError,
-  getClass,
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import {
@@ -53,9 +52,8 @@ export const V1_getEnumValueMappingSourceValueType = (
     return sourceValue.enumeration;
   }
   throw new UnsupportedOperationError(
-    `Can't extract source value for enum value mapping of type '${
-      getClass(sourceValue).name
-    }'`,
+    `Can't classify enum value mapping source value`,
+    sourceValue,
   );
 };
 

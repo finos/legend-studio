@@ -22,11 +22,8 @@ import {
   projectionWithResultSetModifiers,
   getAllWithGroupedFilter,
   getAllWithOneConditionFilter,
-  unSupportedGetAllWithOneConditionFilter,
-  errorInGraphLambda,
-  unSupportedFunctionName,
   projectWithDerivedProperty,
-  firmPersonGraphFetch,
+  complexGraphFetch,
   simpleGraphFetch,
 } from './QueryBuilder_TestData';
 import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
@@ -105,8 +102,9 @@ test(
       rootNode.setImpl,
     );
     expect(rootNode.mapped).toBe(true);
+
     // simpleProjection
-    queryBuilderState.initWithRawLambda(getRawLambda(simpleProjection));
+    queryBuilderState.init(getRawLambda(simpleProjection));
     let projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -122,11 +120,11 @@ test(
         projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
       ),
     ).not.toBeNull();
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      2,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(2);
     let fistNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === FIRST_NAME_ALIAS,
       ),
     );
@@ -134,7 +132,7 @@ test(
       fistNameCol.propertyEditorState.propertyExpression.func;
     expect(firstNameProperty).toBe(_personClass.getProperty('firstName'));
     const lastNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === LAST_NAME_ALIAS,
       ),
     );
@@ -142,11 +140,10 @@ test(
       lastNameCol.propertyEditorState.propertyExpression.func;
     expect(lastNameProperty).toBe(_personClass.getProperty('lastName'));
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
-    queryBuilderState.initWithRawLambda(
-      getRawLambda(projectionWithChainedProperty),
-    );
+    queryBuilderState.init(getRawLambda(projectionWithChainedProperty));
     const projectionWithChainedPropertyCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -157,11 +154,11 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      1,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(1);
     let legalNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -174,11 +171,10 @@ test(
     );
     expect(_firmPropertyExpression.func).toBe(_personClass.getProperty('firm'));
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+
     // result set modifiers
     const RESULT_LIMIT = 500;
-    queryBuilderState.initWithRawLambda(
-      getRawLambda(projectionWithResultSetModifiers),
-    );
+    queryBuilderState.init(getRawLambda(projectionWithResultSetModifiers));
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -199,20 +195,20 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      3,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(3);
     const resultSetModifierState = queryBuilderState.resultSetModifierState;
     expect(resultSetModifierState.limit).toBe(RESULT_LIMIT);
     expect(resultSetModifierState.distinct).toBe(true);
     expect(resultSetModifierState.sortColumns).toHaveLength(2);
     fistNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === FIRST_NAME_ALIAS,
       ),
     );
     legalNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionColumns.find(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -246,11 +242,10 @@ test(
       ),
     ).not.toBeNull();
     fireEvent.click(getByText(modal, 'Close'));
+
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initWithRawLambda(
-      getRawLambda(getAllWithOneConditionFilter),
-    );
+    queryBuilderState.init(getRawLambda(getAllWithOneConditionFilter));
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
@@ -264,13 +259,14 @@ test(
     await waitFor(() => getByText(filterPanel, 'is'));
     const filterState = queryBuilderState.filterState;
     expect(filterState.nodes.size).toBe(1);
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      0,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(0);
+
     // filter with group condition
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initWithRawLambda(getRawLambda(getAllWithGroupedFilter));
+    queryBuilderState.init(getRawLambda(getAllWithGroupedFilter));
     filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
@@ -293,15 +289,14 @@ test(
     ).not.toBeNull();
     await waitFor(() => getByText(filterPanel, 'Last Name'));
     expect(queryBuilderState.filterState.nodes.size).toBe(3);
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      0,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(0);
+
     // projection column with derived property
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initWithRawLambda(
-      getRawLambda(projectWithDerivedProperty),
-    );
+    queryBuilderState.init(getRawLambda(projectWithDerivedProperty));
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -311,9 +306,9 @@ test(
       ),
     ).not.toBeNull();
     await waitFor(() => getByText(projectionCols, 'Name With Title'));
-    expect(queryBuilderState.fetchStructureState.projectionColumns.length).toBe(
-      1,
-    );
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(1);
     fireEvent.click(
       getByTitle(projectionCols, 'Set Derived Property Argument(s)...'),
     );
@@ -358,12 +353,13 @@ test(
     );
     await waitFor(() => getByText(queryBuilderSetup, 'NPerson'));
     await waitFor(() => getByText(queryBuilderSetup, 'MyMapping'));
+
     // simple graph fetch
-    queryBuilderState.initWithRawLambda(getRawLambda(simpleGraphFetch));
+    queryBuilderState.init(getRawLambda(simpleGraphFetch));
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
-    queryBuilderState.initWithRawLambda(getRawLambda(firmPersonGraphFetch));
+    queryBuilderState.init(getRawLambda(complexGraphFetch));
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
@@ -374,57 +370,4 @@ test(
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);
   },
   // TODO: add more test when we rework the graph fetch tree
-);
-
-test(
-  integrationTest(
-    'Query builder lambda processer should properly handle unsupported functions',
-  ),
-  async () => {
-    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
-    const renderResult = await setUpEditorWithDefaultSDLCData(
-      mockedEditorStore,
-      {
-        entities: ComplexRelationalModel,
-      },
-    );
-    MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-    MOBX__disableSpyOrMock();
-    const queryBuilderState =
-      mockedEditorStore.getEditorExtensionState(QueryBuilderState);
-    await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-    queryBuilderState.querySetupState.setClass(
-      mockedEditorStore.graphState.graph.getClass(
-        'model::pure::tests::model::simple::Person',
-      ),
-    );
-    queryBuilderState.resetData();
-    const queryBuilderSetup = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-    );
-    // ensure form has updated with respect to the new state
-    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
-    await waitFor(() =>
-      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
-    );
-    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
-    // test various lambdas
-    // Unable to update query builder with grammar due to: Function testUnSupported currently not supported
-    expect(() =>
-      queryBuilderState.buildWithRawLambda(
-        getRawLambda(unSupportedGetAllWithOneConditionFilter),
-      ),
-    ).toThrowError(`Can't build filter expression function`);
-    expect(() =>
-      queryBuilderState.buildWithRawLambda(getRawLambda(errorInGraphLambda)),
-    ).toThrowError(
-      "Can't find type 'model::pure::tests::model::simple::NotFound'",
-    );
-    expect(() =>
-      queryBuilderState.buildWithRawLambda(
-        getRawLambda(unSupportedFunctionName),
-      ),
-    ).toThrowError(`Can't build function 'testUnSupported'`);
-  },
 );

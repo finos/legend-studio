@@ -33,7 +33,7 @@ export class V1_FileGenerationSpecification
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FILE_GENERATION,
-      super.hashCode,
+      this.path,
       this.type,
       this.generationOutputPath ?? '',
       hashArray(this.scopeElements),

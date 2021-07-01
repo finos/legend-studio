@@ -21,7 +21,6 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
-  getClass,
 } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
 import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtility';
@@ -78,7 +77,7 @@ export const V1_getInferredClassMappingId = (
     classMapping.id,
   );
 
-const processEnumValueMapping = (
+const buildEnumValueMapping = (
   srcEnumValueMapping: V1_EnumValueMapping,
   enumeration: PackageableElementImplicitReference<Enumeration>,
   sourceType?: Type,
@@ -124,7 +123,7 @@ const processEnumValueMapping = (
   return enumValueMapping;
 };
 
-export const V1_processEnumerationMapping = (
+export const V1_buildEnumerationMapping = (
   srcEnumerationMapping: V1_EnumerationMapping,
   context: V1_GraphBuilderContext,
   parentMapping: Mapping,
@@ -170,7 +169,7 @@ export const V1_processEnumerationMapping = (
   );
   enumerationMapping.enumValueMappings =
     srcEnumerationMapping.enumValueMappings.map((enumValueMapping) =>
-      processEnumValueMapping(
+      buildEnumValueMapping(
         enumValueMapping,
         targetEnumeration,
         sourceTypeReference?.value,
@@ -179,7 +178,7 @@ export const V1_processEnumerationMapping = (
   return enumerationMapping;
 };
 
-export const V1_processMappingInclude = (
+export const V1_buildMappingInclude = (
   mappingInclude: V1_MappingInclude,
   context: V1_GraphBuilderContext,
   parentMapping: Mapping,
@@ -200,7 +199,7 @@ export const V1_processMappingInclude = (
   return includedMapping;
 };
 
-export const V1_processMappingTestInputData = (
+const V1_buildMappingTestInputData = (
   inputData: V1_InputData,
   context: V1_GraphBuilderContext,
 ): InputData => {
@@ -255,11 +254,12 @@ export const V1_processMappingTestInputData = (
     );
   }
   throw new UnsupportedOperationError(
-    `Can't build mapping test input data of type '${getClass(inputData).name}'`,
+    `Can't build mapping test input data`,
+    inputData,
   );
 };
 
-export const V1_processMappingTest = (
+export const V1_buildMappingTest = (
   mappingTest: V1_MappingTest,
   context: V1_GraphBuilderContext,
 ): MappingTest => {
@@ -280,7 +280,7 @@ export const V1_processMappingTest = (
     mappingTest.assert.expectedOutput,
   );
   const inputData = mappingTest.inputData.map((input) =>
-    V1_processMappingTestInputData(input, context),
+    V1_buildMappingTestInputData(input, context),
   );
   // TODO: maybe we want to validate the graph fetch tree here so we can throw user into
   // text mode to resolve the issue but as of now, we don't do that because it's just test

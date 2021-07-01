@@ -98,11 +98,11 @@ export class V1_GraphBuilderExtensions {
         const _class = builder.getElementProtocolClass();
         if (FORBIDDEN_BUILDER_PROTOCOL_CLASSES.has(_class)) {
           throw new IllegalStateError(
-            `Element builder not allowed for protocol class '${_class.name}'. Consider removing this builder from plugins.`,
+            `Element builder not allowed for protocol class '${builder.elementClassName}'. Consider removing this builder from plugins.`,
           );
         } else if (index.has(_class)) {
           throw new IllegalStateError(
-            `Conflicting element builders found for protocol class '${_class.name}'`,
+            `Conflicting element builders found for protocol class '${builder.elementClassName}'`,
           );
         }
         index.set(_class, builder);
@@ -118,9 +118,8 @@ export class V1_GraphBuilderExtensions {
     );
     if (!builder) {
       throw new UnsupportedOperationError(
-        `Can't find builder for element '${element.path}' of protocol class '${
-          getClass(element).name
-        }'. No compatible builder available from plugins.`,
+        `Can't find builder for element '${element.path}'. No compatible builder available from plugins.`,
+        element,
       );
     }
     return builder;
@@ -132,7 +131,7 @@ export class V1_GraphBuilderExtensions {
     const builder = this.getExtraBuilderForProtocolClass(_class);
     if (!builder) {
       throw new UnsupportedOperationError(
-        `Can't find element builder for protocol class '${_class.name}'. No compatible builder available from plugins.`,
+        `Can't find element builder for the specified protocol class. No compatible builder available from plugins.`,
       );
     }
     return builder;
@@ -268,7 +267,7 @@ export class V1_GraphBuilderExtensions {
             `Can't consistently sort element builders for protocol classes: ${Array.from(
               remaining.keys(),
             )
-              .map((builder) => builder.getElementProtocolClass().name)
+              .map((builder) => builder.elementClassName)
               .join(
                 ', ',
               )}. This implies presence of loop(s) in the pre-requite chain between these builders.`,

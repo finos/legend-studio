@@ -24,6 +24,7 @@ export default {
   displayName: packageJson.name,
   name: packageJson.name,
   rootDir: '../..',
+  testEnvironment: 'jsdom',
   moduleNameMapper: {
     ...base.moduleNameMapper,
     // manual mocks - TODO: we might eventually want to move these to `@finos/legend-studio-components` or `@finos/legend-studio-test-mocks`, etc.

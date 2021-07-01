@@ -45,9 +45,9 @@ import { MdModeEdit } from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
 import { noop } from '@finos/legend-studio-shared';
 import {
-  MappingElementDecorateVisitor,
-  MapppingElementDecorationCleanUpVisitor,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
+  MappingElementDecorator,
+  MappingElementDecorationCleaner,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import type {
   PackageableElementSelectOption,
@@ -348,14 +348,14 @@ export const EnumerationMappingEditor = observer(
     );
     useEffect(() => {
       if (!isReadOnly) {
-        new MappingElementDecorateVisitor().visitEnumerationMapping(
+        new MappingElementDecorator().visitEnumerationMapping(
           enumerationMapping,
         );
       }
       return isReadOnly
         ? noop()
         : (): void =>
-            new MapppingElementDecorationCleanUpVisitor().visitEnumerationMapping(
+            new MappingElementDecorationCleaner().visitEnumerationMapping(
               enumerationMapping,
             );
     }, [enumerationMapping, isReadOnly]);

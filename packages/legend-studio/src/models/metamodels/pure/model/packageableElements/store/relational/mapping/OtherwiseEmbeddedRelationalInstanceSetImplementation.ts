@@ -16,8 +16,11 @@
 
 import { observable, computed, makeObservable } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
+import {
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { OtherwiseEmebddedSetImplementation } from '../../../../../model/packageableElements/mapping/EmbeddedSetImplementation';
 import type {
@@ -75,12 +78,12 @@ export class OtherwiseEmbeddedRelationalInstanceSetImplementation
   override accept_SetImplementationVisitor<T>(
     visitor: SetImplementationVisitor<T>,
   ): T {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.OTHERWISE_EMBEDDED_REALTIONAL_PROPERTY_MAPPPING,
+      CORE_HASH_STRUCTURE.OTHERWISE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
       this.otherwisePropertyMapping,
     ]);

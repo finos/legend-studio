@@ -51,7 +51,7 @@ export class V1_Measure extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MEASURE,
-      super.hashCode,
+      this.path,
       this.canonicalUnit ?? '',
       hashArray(this.nonCanonicalUnits),
     ]);

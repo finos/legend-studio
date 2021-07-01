@@ -53,11 +53,10 @@ import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState
 import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
-import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
+import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
 import {
   isNonNullable,
-  getClass,
   assertErrorThrown,
   guaranteeType,
   guaranteeNonNullable,
@@ -666,7 +665,7 @@ export class EditorStore {
     return guaranteeType(
       this.currentEditorState,
       clazz,
-      `Expected current editor state to be of type '${clazz.name}' (this is caused by calling this method at the wrong place)`,
+      `Current editor state is not of the specified type (this is likely caused by calling this method at the wrong place)`,
     );
   }
 
@@ -675,7 +674,7 @@ export class EditorStore {
       this.editorExtensionStates.find(
         (extenionState): extenionState is T => extenionState instanceof clazz,
       ),
-      `Can't find extension editor state of type '${clazz.name}'. No built extension editor state available from plugins.`,
+      `Can't find extension editor state of the specified type. No built extension editor state available from plugins.`,
     );
   }
 
@@ -801,7 +800,8 @@ export class EditorStore {
       this.openSingletonEditorState(this.projectConfigurationEditorState);
     } else {
       throw new UnsupportedOperationError(
-        `Can't open unsupported editor state '${getClass(editorState).name}'`,
+        `Can't open editor state`,
+        editorState,
       );
     }
     this.explorerTreeState.reprocess();
@@ -910,9 +910,8 @@ export class EditorStore {
       }
     }
     throw new UnsupportedOperationError(
-      `Can't create editor state for element of type '${getClass(
-        element,
-      )}'. No compatible editor state creator available from plugins.`,
+      `Can't create editor state for element. No compatible editor state creator available from plugins.`,
+      element,
     );
   }
 
@@ -1143,9 +1142,7 @@ export class EditorStore {
   get classPropertyGenericTypeOptions(): PackageableElementSelectOption<Type>[] {
     return this.graphState.graph.primitiveTypes
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
-      .map(
-        (e) => e.selectOption as PackageableElementSelectOption<PrimitiveType>,
-      )
+      .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
       .concat(
         this.graphState.graph.types
           .concat(this.graphState.graph.systemModel.types)

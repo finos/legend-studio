@@ -31,7 +31,6 @@ import {
   toGrammarString,
   fromGrammarString,
   createUrlStringFromData,
-  getClass,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceTestResult } from '../../../../models/metamodels/pure/action/service/ServiceTestResult';
@@ -238,9 +237,8 @@ export class TestContainerState {
           );
         } else {
           throw new UnsupportedOperationError(
-            `Can't decorate with test data connection of type '${
-              getClass(connection).name
-            }'`,
+            `Can't apply test data for runtime connection`,
+            connection,
           );
         }
       });

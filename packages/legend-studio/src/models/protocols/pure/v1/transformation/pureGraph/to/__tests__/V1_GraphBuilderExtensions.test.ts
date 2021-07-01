@@ -76,11 +76,13 @@ const stubFirstPass = (
 ): PackageableElement => new StubPackageableElement('');
 
 const stubElementBuilder = (
+  elementClassName: string,
   _class: Clazz<V1_PackageableElement>,
   prerequisites?: Clazz<V1_PackageableElement>[],
 ): V1_ElementBuilder<V1_PackageableElement> =>
   new V1_ElementBuilder({
-    _class: _class,
+    elementClassName,
+    _class,
     prerequisites,
     firstPass: stubFirstPass,
   });
@@ -96,8 +98,8 @@ test(unitTest('Test sort empty extra element builders'), () => {
 test(
   unitTest('Test sort extra element builders with no pre-requisites'),
   () => {
-    const builder1 = stubElementBuilder(TestElement1);
-    const builder2 = stubElementBuilder(TestElement2);
+    const builder1 = stubElementBuilder('TestElement1', TestElement1);
+    const builder2 = stubElementBuilder('TestElement2', TestElement2);
     const graphBuilderExtensions = new V1_GraphBuilderExtensions([
       new StubGraphManagerPlugin([builder1, builder2]),
     ]);
@@ -131,9 +133,13 @@ test(
 test(
   unitTest('Test simple sort extra element builders with pre-requisites'),
   () => {
-    const builder1 = stubElementBuilder(TestElement1);
-    const builder2 = stubElementBuilder(TestElement2, [TestElement1]);
-    const builder3 = stubElementBuilder(TestElement3, [TestElement1]);
+    const builder1 = stubElementBuilder('TestElement1', TestElement1);
+    const builder2 = stubElementBuilder('TestElement2', TestElement2, [
+      TestElement1,
+    ]);
+    const builder3 = stubElementBuilder('TestElement3', TestElement3, [
+      TestElement1,
+    ]);
     const graphBuilderExtensions = new V1_GraphBuilderExtensions([
       new StubGraphManagerPlugin([builder3, builder2, builder1]),
     ]);
@@ -145,14 +151,20 @@ test(
 test(
   unitTest('Test complex sort extra element builders with pre-requisites'),
   () => {
-    const builder1 = stubElementBuilder(TestElement1, [TestElement345]);
-    const builder2 = stubElementBuilder(TestElement2, [
+    const builder1 = stubElementBuilder('TestElement1', TestElement1, [
+      TestElement345,
+    ]);
+    const builder2 = stubElementBuilder('TestElement2', TestElement2, [
       TestElement1,
       TestElement3,
     ]);
-    const builder3 = stubElementBuilder(TestElement3);
-    const builder4 = stubElementBuilder(TestElement4, [TestElement3]);
-    const builder5 = stubElementBuilder(TestElement5, [TestElement4]);
+    const builder3 = stubElementBuilder('TestElement3', TestElement3);
+    const builder4 = stubElementBuilder('TestElement4', TestElement4, [
+      TestElement3,
+    ]);
+    const builder5 = stubElementBuilder('TestElement5', TestElement5, [
+      TestElement4,
+    ]);
     const graphBuilderExtensions = new V1_GraphBuilderExtensions([
       new StubGraphManagerPlugin([
         builder1,
@@ -175,12 +187,14 @@ test(
 test(
   unitTest('Test sort extra element builders with simple pre-requisites loop'),
   () => {
-    const builder1 = stubElementBuilder(TestElement1, [TestElement2]);
-    const builder2 = stubElementBuilder(TestElement2, [
+    const builder1 = stubElementBuilder('TestElement1', TestElement1, [
+      TestElement2,
+    ]);
+    const builder2 = stubElementBuilder('TestElement2', TestElement2, [
       TestElement1,
       TestElement3,
     ]);
-    const builder3 = stubElementBuilder(TestElement3);
+    const builder3 = stubElementBuilder('TestElement3', TestElement3);
     expect(
       () =>
         new V1_GraphBuilderExtensions([
@@ -195,14 +209,20 @@ test(
 test(
   unitTest('Test sort extra element builders with complex pre-requisites loop'),
   () => {
-    const builder1 = stubElementBuilder(TestElement1, [TestElement345]);
-    const builder2 = stubElementBuilder(TestElement2, [
+    const builder1 = stubElementBuilder('TestElement1', TestElement1, [
+      TestElement345,
+    ]);
+    const builder2 = stubElementBuilder('TestElement2', TestElement2, [
       TestElement1,
       TestElement3,
     ]);
-    const builder3 = stubElementBuilder(TestElement3);
-    const builder4 = stubElementBuilder(TestElement4, [TestElement2]);
-    const builder5 = stubElementBuilder(TestElement5, [TestElement12]);
+    const builder3 = stubElementBuilder('TestElement3', TestElement3);
+    const builder4 = stubElementBuilder('TestElement4', TestElement4, [
+      TestElement2,
+    ]);
+    const builder5 = stubElementBuilder('TestElement5', TestElement5, [
+      TestElement12,
+    ]);
     expect(
       () =>
         new V1_GraphBuilderExtensions([

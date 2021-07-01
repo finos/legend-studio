@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { FlatData } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
 import {
   FlatDataString,
@@ -54,7 +51,7 @@ import {
   V1_FlatDataBoolean,
   V1_FlatDataString,
 } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
-import { V1_initPackageableElement } from './V1_CoreTransformerHelpers';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper';
 import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';
 
 function transformFlatDataType(type: FlatDataDataType): V1_FlatDataDataType {
@@ -114,7 +111,8 @@ function transformFlatDataType(type: FlatDataDataType): V1_FlatDataDataType {
     return protocol;
   }
   throw new UnsupportedOperationError(
-    `Can't serialize flat-data data type of type '${getClass(type).name}'`,
+    `Can't transform flat-data data type`,
+    type,
   );
 }
 

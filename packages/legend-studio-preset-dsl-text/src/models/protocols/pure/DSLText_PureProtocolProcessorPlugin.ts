@@ -38,8 +38,8 @@ import { deserialize, serialize } from 'serializr';
 import {
   V1_textModelSchema,
   V1_TEXT_ELEMENT_PROTOCOL_TYPE,
-} from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelpers';
-import { getText } from '../../metamodels/pure/graph/DSLText_GraphManagerHelpers';
+} from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelper';
+import { getText } from '../../metamodels/pure/graph/DSLText_GraphManagerHelper';
 import {
   Text,
   TEXT_TYPE,
@@ -62,6 +62,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
     return [
       new V1_ElementBuilder<V1_Text>({
+        elementClassName: 'Text',
         _class: V1_Text,
         firstPass: (
           elementProtocol: V1_PackageableElement,

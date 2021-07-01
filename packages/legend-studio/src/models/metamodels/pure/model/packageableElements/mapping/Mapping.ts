@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
   hashArray,
-  IllegalStateError,
   guaranteeNonNullable,
   UnsupportedOperationError,
   guaranteeType,
-  getClass,
   deleteEntry,
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
@@ -102,7 +100,7 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<Mapping, '_elementHashCode'>(this, {
       includes: observable,
       classMappings: observable,
       enumerationMappings: observable,
@@ -116,7 +114,7 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
       createClassMapping: action,
       createEnumerationMapping: action,
       isStub: computed,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -390,18 +388,10 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     );
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING,
-      super.hashCode,
+      this.path,
       // TODO mapping include
       hashArray(this.classMappings),
       hashArray(this.enumerationMappings),
@@ -431,9 +421,8 @@ export const getMappingElementType = (
     return MAPPING_ELEMENT_TYPE.CLASS;
   }
   throw new UnsupportedOperationError(
-    `Can't derive mapping element type of type '${
-      getClass(mappingElement).name
-    }'`,
+    `Can't classfify mapping element`,
+    mappingElement,
   );
 };
 
@@ -455,9 +444,8 @@ export const getMappingElementTarget = (
     return mappingElement.class.value;
   }
   throw new UnsupportedOperationError(
-    `Can't derive mapping element type target of type '${
-      getClass(mappingElement).name
-    }'`,
+    `Can't derive target of mapping element`,
+    mappingElement,
   );
 };
 
@@ -497,9 +485,8 @@ export const getMappingElementSource = (
     return getMappingElementSource(mappingElement.mainSetImplementation);
   }
   throw new UnsupportedOperationError(
-    `Can't get mapping element source of type '${
-      getClass(mappingElement).name
-    }'`,
+    `Can't derive source of mapping element`,
+    mappingElement,
   );
 };
 

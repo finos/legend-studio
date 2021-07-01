@@ -29,7 +29,7 @@ import {
   getGenerationTreeData,
   openNode,
   populateDirectoryTreeNodeChildren,
-  processGenerationResultToGenerationDirectory,
+  buildGenerationDirectory,
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
 import type { FileGenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
@@ -148,11 +148,7 @@ export class FileGenerationState {
       });
     });
     // take generation outputs and put them into the root directory
-    processGenerationResultToGenerationDirectory(
-      this.root,
-      generationResultMap,
-      this.filesIndex,
-    );
+    buildGenerationDirectory(this.root, generationResultMap, this.filesIndex);
     this.directoryTreeData = getGenerationTreeData(this.root);
     this.reprocessNodeTree(
       Array.from(generationResultMap.values()),

@@ -32,9 +32,9 @@ import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
 import { noop } from '@finos/legend-studio-shared';
 import {
-  MappingElementDecorateVisitor,
-  MapppingElementDecorationCleanUpVisitor,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorateVisitor';
+  MappingElementDecorator,
+  MappingElementDecorationCleaner,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
   OperationSetImplementation,
@@ -147,14 +147,14 @@ export const OperationSetImplementationEditor = observer(
     useEffect(() => {
       if (!isReadOnly) {
         setImplementation.accept_SetImplementationVisitor(
-          new MappingElementDecorateVisitor(),
+          new MappingElementDecorator(),
         );
       }
       return isReadOnly
         ? noop()
         : (): void =>
             setImplementation.accept_SetImplementationVisitor(
-              new MapppingElementDecorationCleanUpVisitor(),
+              new MappingElementDecorationCleaner(),
             );
     }, [setImplementation, isReadOnly]);
 

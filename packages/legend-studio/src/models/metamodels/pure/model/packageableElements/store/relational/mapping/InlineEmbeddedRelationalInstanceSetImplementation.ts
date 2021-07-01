@@ -28,6 +28,7 @@ import type { RootRelationalInstanceSetImplementation } from '../../../../../mod
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
 import type { Class } from '../../../../../model/packageableElements/domain/Class';
 import type { InferableMappingElementIdValue } from '../../../../../model/packageableElements/mapping/InferableMappingElementId';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 
 export class InlineEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation
@@ -68,6 +69,6 @@ export class InlineEmbeddedRelationalInstanceSetImplementation
   override accept_SetImplementationVisitor<T>(
     visitor: SetImplementationVisitor<T>,
   ): T {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }

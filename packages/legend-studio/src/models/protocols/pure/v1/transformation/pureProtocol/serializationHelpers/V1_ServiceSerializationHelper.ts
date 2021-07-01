@@ -29,7 +29,6 @@ import {
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
-  getClass,
 } from '@finos/legend-studio-shared';
 import type { V1_ServiceExecution } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import {
@@ -82,7 +81,8 @@ const V1_serializeRuntimeValue = (
     return serialize(V1_legacyRuntimeModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize runtime value of type '${getClass(protocol).name}'`,
+    `Can't serialize runtime value`,
+    protocol,
   );
 };
 
@@ -149,7 +149,8 @@ const V1_serializeServiceExecution = (
     return serialize(pureMultiExecutionModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize service excution of type '${getClass(protocol).name}'`,
+    `Can't serialize service excution`,
+    protocol,
   );
 };
 
@@ -207,9 +208,7 @@ const V1_serializeServiceTest = (
   } else if (protocol instanceof V1_MultiExecutionTest) {
     return serialize(multiExecutionTestModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(
-    `Can't serialize service test of type '${getClass(protocol).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't serialize service test`, protocol);
 };
 
 const V1_deserializeServiceTest = (

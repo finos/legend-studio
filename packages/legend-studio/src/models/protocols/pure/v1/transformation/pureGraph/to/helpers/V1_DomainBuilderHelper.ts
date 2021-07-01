@@ -45,7 +45,7 @@ import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Me
 import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
 import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
 
-export const V1_processTaggedValue = (
+export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
   context: V1_GraphBuilderContext,
 ): TaggedValue | undefined => {
@@ -56,7 +56,7 @@ export const V1_processTaggedValue = (
   );
 };
 
-export const V1_processClassConstraint = (
+export const V1_buildConstraint = (
   constraint: V1_Constraint,
   _class: Class,
   context: V1_GraphBuilderContext,
@@ -87,7 +87,7 @@ export const V1_processClassConstraint = (
   return pureConstraint;
 };
 
-export const V1_processVariable = (
+export const V1_buildVariable = (
   variable: V1_RawVariable,
   context: V1_GraphBuilderContext,
 ): RawVariableExpression => {
@@ -102,7 +102,7 @@ export const V1_processVariable = (
   return new RawVariableExpression(variable.name, multiplicity, type);
 };
 
-export const V1_processUnit = (
+export const V1_buildUnit = (
   unit: V1_Unit,
   parentMeasure: Measure,
   currentGraph: BasicModel,
@@ -134,7 +134,7 @@ export const V1_processUnit = (
   return pureUnit;
 };
 
-export const V1_processProperty = (
+export const V1_buildProperty = (
   property: V1_Property,
   context: V1_GraphBuilderContext,
   owner: PropertyOwner,
@@ -156,12 +156,12 @@ export const V1_processProperty = (
     .map((stereotype) => context.resolveStereotype(stereotype))
     .filter(isNonNullable);
   pureProperty.taggedValues = property.taggedValues
-    .map((taggedValue) => V1_processTaggedValue(taggedValue, context))
+    .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
     .filter(isNonNullable);
   return pureProperty;
 };
 
-export const V1_processDerivedProperty = (
+export const V1_buildDerivedProperty = (
   property: V1_DerivedProperty,
   context: V1_GraphBuilderContext,
   owner: PropertyOwner,
@@ -188,7 +188,7 @@ export const V1_processDerivedProperty = (
     .map((stereotype) => context.resolveStereotype(stereotype))
     .filter(isNonNullable);
   derivedProperty.taggedValues = property.taggedValues
-    .map((taggedValue) => V1_processTaggedValue(taggedValue, context))
+    .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
     .filter(isNonNullable);
   const rawLambda = V1_resolvePathsInRawLambda(
     context,
@@ -200,7 +200,7 @@ export const V1_processDerivedProperty = (
   return derivedProperty;
 };
 
-export const V1_processAssociationProperty = (
+export const V1_buildAssociationProperty = (
   currentProperty: V1_Property,
   associatedProperty: V1_Property,
   context: V1_GraphBuilderContext,
@@ -211,11 +211,7 @@ export const V1_processAssociationProperty = (
     'Association associated property type is missing',
   );
   const associatedClass = context.resolveClass(associatedPropertyClassType);
-  const property = V1_processProperty(
-    currentProperty,
-    context,
-    pureAssociation,
-  );
+  const property = V1_buildProperty(currentProperty, context, pureAssociation);
   associatedClass.value.propertiesFromAssociations.push(property);
   return property;
 };

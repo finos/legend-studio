@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, action, makeObservable, override } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
 import {
-  getClass,
-  IllegalStateError,
   guaranteeNonNullable,
   guaranteeType,
   assertTrue,
@@ -83,7 +81,7 @@ export class Association
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<Association, '_elementHashCode'>(this, {
       properties: observable,
       stereotypes: observable,
       taggedValues: observable,
@@ -95,7 +93,7 @@ export class Association
       changeStereotype: action,
       addStereotype: action,
       isStub: computed,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -122,7 +120,8 @@ export class Association
       );
     }
     throw new UnsupportedOperationError(
-      `Can't get association property of type '${getClass(property).name}'`,
+      `Can't get associated class of property`,
+      property,
     );
   };
 
@@ -182,18 +181,10 @@ export class Association
     return super.isStub && isStubArray(this.properties);
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ASSOCIATION,
-      super.hashCode,
+      this.path,
       hashArray(this.properties),
       hashArray(this.derivedProperties),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),

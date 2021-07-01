@@ -22,7 +22,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-studio-shared';
-import type { QueryBuilderOperator } from './QueryBuilderFilterState';
+import type { QueryBuilderFilterOperator } from './QueryBuilderFilterState';
 import { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState';
 import { QueryResultSetModifierState } from './QueryResultSetModifierState';
@@ -35,58 +35,45 @@ import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
 import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type { EditorStore } from '@finos/legend-studio';
+import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
 import {
   EditorExtensionState,
-  CollectionInstanceValue,
   CompilationError,
-  CORE_ELEMENT_PATH,
   CORE_LOG_EVENT,
-  FunctionType,
-  GenericType,
-  GenericTypeExplicitReference,
-  getAllFunction,
   getElementCoordinates,
-  LambdaFunction,
   LambdaFunctionInstanceValue,
-  PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
   RawLambda,
-  RootGraphFetchTreeInstanceValue,
-  SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
   TYPICAL_MULTIPLICITY_TYPE,
-  VariableExpression,
 } from '@finos/legend-studio';
 import {
-  QueryBuilderEqualOperator,
-  QueryBuilderNotEqualOperator,
-} from './operators/QueryBuilderEqualOperator';
-import { QueryBuilderGreaterThanOperator } from './operators/QueryBuilderGreaterThanOperator';
+  QueryBuilderFilterOperator_Equal,
+  QueryBuilderFilterOperator_NotEqual,
+} from './filterOperators/QueryBuilderFilterOperator_Equal';
+import { QueryBuilderFilterOperator_GreaterThan } from './filterOperators/QueryBuilderFilterOperator_GreaterThan';
 import {
-  QueryBuilderNotStartWithOperator,
-  QueryBuilderStartWithOperator,
-} from './operators/QueryBuilderStartWithOperator';
-import { QueryBuilderGreaterThanEqualOperator } from './operators/QueryBuilderGreaterThanEqualOperator';
-import { QueryBuilderLessThanEqualOperator } from './operators/QueryBuilderLessThanEqualOperator';
-import { QueryBuilderLessThanOperator } from './operators/QueryBuilderLessThanOperator';
+  QueryBuilderFilterOperator_NotStartWith,
+  QueryBuilderFilterOperator_StartWith,
+} from './filterOperators/QueryBuilderFilterOperator_StartWith';
+import { QueryBuilderFilterOperator_GreaterThanEqual } from './filterOperators/QueryBuilderFilterOperator_GreaterThanEqual';
+import { QueryBuilderFilterOperator_LessThanEqual } from './filterOperators/QueryBuilderFilterOperator_LessThanEqual';
+import { QueryBuilderFilterOperator_LessThan } from './filterOperators/QueryBuilderFilterOperator_LessThan';
 import {
-  QueryBuilderEndWithOperator,
-  QueryBuilderNotEndWithOperator,
-} from './operators/QueryBuilderEndWithOperator';
+  QueryBuilderFilterOperator_EndWith,
+  QueryBuilderFilterOperator_NotEndWith,
+} from './filterOperators/QueryBuilderFilterOperator_EndWith';
 import {
-  QueryBuilderContainOperator,
-  QueryBuilderNotContainOperator,
-} from './operators/QueryBuilderContainOperator';
+  QueryBuilderFilterOperator_Contain,
+  QueryBuilderFilterOperator_NotContain,
+} from './filterOperators/QueryBuilderFilterOperator_Contain';
 import {
-  QueryBuilderIsEmptyOperator,
-  QueryBuilderIsNotEmptyOperator,
-} from './operators/QueryBuilderIsEmptyOperator';
+  QueryBuilderFilterOperator_IsEmpty,
+  QueryBuilderFilterOperator_IsNotEmpty,
+} from './filterOperators/QueryBuilderFilterOperator_IsEmpty';
 import {
-  QueryBuilderInOperator,
-  QueryBuilderNotInOperator,
-} from './operators/QueryBuilderInOperator';
-import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
+  QueryBuilderFilterOperator_In,
+  QueryBuilderFilterOperator_NotIn,
+} from './filterOperators/QueryBuilderFilterOperator_In';
+import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 
 export class QueryBuilderState extends EditorExtensionState {
   editorStore: EditorStore;
@@ -99,23 +86,23 @@ export class QueryBuilderState extends EditorExtensionState {
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   openQueryBuilder = false;
-  operators: QueryBuilderOperator[] = [
-    new QueryBuilderEqualOperator(),
-    new QueryBuilderNotEqualOperator(),
-    new QueryBuilderLessThanOperator(),
-    new QueryBuilderLessThanEqualOperator(),
-    new QueryBuilderGreaterThanOperator(),
-    new QueryBuilderGreaterThanEqualOperator(),
-    new QueryBuilderStartWithOperator(),
-    new QueryBuilderNotStartWithOperator(),
-    new QueryBuilderContainOperator(),
-    new QueryBuilderNotContainOperator(),
-    new QueryBuilderEndWithOperator(),
-    new QueryBuilderNotEndWithOperator(),
-    new QueryBuilderInOperator(),
-    new QueryBuilderNotInOperator(),
-    new QueryBuilderIsEmptyOperator(),
-    new QueryBuilderIsNotEmptyOperator(),
+  filterOperators: QueryBuilderFilterOperator[] = [
+    new QueryBuilderFilterOperator_Equal(),
+    new QueryBuilderFilterOperator_NotEqual(),
+    new QueryBuilderFilterOperator_LessThan(),
+    new QueryBuilderFilterOperator_LessThanEqual(),
+    new QueryBuilderFilterOperator_GreaterThan(),
+    new QueryBuilderFilterOperator_GreaterThanEqual(),
+    new QueryBuilderFilterOperator_StartWith(),
+    new QueryBuilderFilterOperator_NotStartWith(),
+    new QueryBuilderFilterOperator_Contain(),
+    new QueryBuilderFilterOperator_NotContain(),
+    new QueryBuilderFilterOperator_EndWith(),
+    new QueryBuilderFilterOperator_NotEndWith(),
+    new QueryBuilderFilterOperator_In(),
+    new QueryBuilderFilterOperator_NotIn(),
+    new QueryBuilderFilterOperator_IsEmpty(),
+    new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
 
   constructor(editorStore: EditorStore) {
@@ -134,7 +121,7 @@ export class QueryBuilderState extends EditorExtensionState {
       setOpenQueryBuilder: flow,
       reset: action,
       resetData: action,
-      buildWithRawLambda: action,
+      buildStateFromRawLambda: action,
       saveQuery: action,
     });
 
@@ -148,7 +135,7 @@ export class QueryBuilderState extends EditorExtensionState {
     this.filterState = new QueryBuilderFilterState(
       editorStore,
       this,
-      this.operators,
+      this.filterOperators,
     );
     this.resultSetModifierState = new QueryResultSetModifierState(
       editorStore,
@@ -162,9 +149,9 @@ export class QueryBuilderState extends EditorExtensionState {
     );
   }
 
-  getRawLambdaQuery(): RawLambda {
+  getQuery(): RawLambda {
     return this.isQuerySupported()
-      ? this.buildRawLambdaFromLambdaFunction(this.buildLambdaFunction())
+      ? this.buildRawLambdaFromLambdaFunction(buildLambdaFunction(this))
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
@@ -197,8 +184,10 @@ export class QueryBuilderState extends EditorExtensionState {
       if (!this.editorStore.graphState.hasCompilationError) {
         this.openQueryBuilder = val;
       }
+      this.editorStore.setBlockGlobalHotkeys(true);
     } else {
       this.openQueryBuilder = val;
+      this.editorStore.setBlockGlobalHotkeys(false);
     }
   }
 
@@ -223,7 +212,7 @@ export class QueryBuilderState extends EditorExtensionState {
     this.filterState = new QueryBuilderFilterState(
       this.editorStore,
       this,
-      this.operators,
+      this.filterOperators,
     );
     this.resultSetModifierState = new QueryResultSetModifierState(
       this.editorStore,
@@ -248,167 +237,16 @@ export class QueryBuilderState extends EditorExtensionState {
     this.querySetupState = val;
   }
 
-  buildLambdaFunction(options?: {
-    /**
-     * Set this to `true` when we construct query for execution within the app.
-     * This will make the lambda function building process overrides several query values, such as the row limit.
-     */
-    isBuildingExecutionQuery?: boolean;
-  }): LambdaFunction {
-    const _class = guaranteeNonNullable(
-      this.querySetupState._class,
-      'Class is required to execute query',
-    );
-    const multiplicityOne =
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
-    const stringType = this.editorStore.graphState.graph.getPrimitiveType(
-      PRIMITIVE_TYPE.STRING,
-    );
-    const typeAny = this.editorStore.graphState.graph.getClass(
-      CORE_ELEMENT_PATH.ANY,
-    );
-    const lambdaFunction = new LambdaFunction(
-      new FunctionType(typeAny, multiplicityOne),
-    );
-    // build base `getAll` function
-    const _getAllFunc = getAllFunction(_class, multiplicityOne);
-    lambdaFunction.expressionSequence[0] = _getAllFunc;
-    const filterFunction = this.buildFilterExpression(_getAllFunc);
-    if (filterFunction) {
-      lambdaFunction.expressionSequence[0] = filterFunction;
-    }
-    // add `fetch` function
-    if (
-      this.fetchStructureState.isProjectionMode() &&
-      this.fetchStructureState.projectionColumns.length
-    ) {
-      const projectFunction = new SimpleFunctionExpression(
-        SUPPORTED_FUNCTIONS.PROJECT,
-        multiplicityOne,
-      );
-      const colLambdas = new CollectionInstanceValue(multiplicityOne);
-      const colNames = new CollectionInstanceValue(multiplicityOne);
-      this.fetchStructureState.projectionColumns.forEach((projection) => {
-        const lambdaVariable = new VariableExpression(
-          projection.lambdaVariableName,
-          this.editorStore.graphState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
-        );
-        // Add column name
-        const colName = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(stringType)),
-          multiplicityOne,
-        );
-        colName.values.push(projection.columnName);
-        colNames.values.push(colName);
-        // Add column projection
-        const colLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-        const colLambdaFunctionType = new FunctionType(
-          typeAny,
-          multiplicityOne,
-        );
-        colLambdaFunctionType.parameters.push(lambdaVariable);
-        const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-        colLambdaFunction.expressionSequence.push(
-          projection.propertyEditorState.propertyExpression,
-        );
-        colLambda.values.push(colLambdaFunction);
-        colLambdas.values.push(colLambda);
-      });
-      const expression = lambdaFunction.expressionSequence[0];
-      projectFunction.parametersValues = [expression, colLambdas, colNames];
-      lambdaFunction.expressionSequence[0] = projectFunction;
-    } else if (
-      this.fetchStructureState.isGraphFetchMode() &&
-      this.fetchStructureState.graphFetchTreeState.treeData &&
-      !isGraphFetchTreeDataEmpty(
-        this.fetchStructureState.graphFetchTreeState.treeData,
-      )
-    ) {
-      const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
-        multiplicityOne,
-      );
-      graphFetchInstance.values = [
-        this.fetchStructureState.graphFetchTreeState.treeData.tree,
-      ];
-      const serializeFunction = new SimpleFunctionExpression(
-        SUPPORTED_FUNCTIONS.SERIALIZE,
-        multiplicityOne,
-      );
-      const graphFetchFunc = new SimpleFunctionExpression(
-        this.fetchStructureState.graphFetchTreeState.isChecked
-          ? SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED
-          : SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-        multiplicityOne,
-      );
-      const expression = lambdaFunction.expressionSequence[0];
-      graphFetchFunc.parametersValues = [expression, graphFetchInstance];
-      serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
-      lambdaFunction.expressionSequence[0] = serializeFunction;
-    }
-    // apply result set modifier options
-    this.resultSetModifierState.processModifiersOnLambda(lambdaFunction, {
-      overridingLimit: options?.isBuildingExecutionQuery
-        ? this.resultState.previewLimit
-        : undefined,
-    });
-    return lambdaFunction;
-  }
-
-  buildFilterExpression(
-    getAllFunc: SimpleFunctionExpression,
-  ): SimpleFunctionExpression | undefined {
-    const lambdaVariable = new VariableExpression(
-      this.filterState.lambdaVariableName,
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      ),
-    );
-    const parameters = this.filterState.getParameterValues();
-    if (!parameters) {
-      return undefined;
-    }
-    const typeAny = this.editorStore.graphState.graph.getClass(
-      CORE_ELEMENT_PATH.ANY,
-    );
-    const multiplicityOne =
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
-    // main filter expression
-    const filterExpression = new SimpleFunctionExpression(
-      SUPPORTED_FUNCTIONS.FILTER,
-      multiplicityOne,
-    );
-    // param [0]
-    filterExpression.parametersValues.push(getAllFunc);
-    // param [1]
-    const filterLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-    const filterLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-    filterLambdaFunctionType.parameters.push(lambdaVariable);
-    const colLambdaFunction = new LambdaFunction(filterLambdaFunctionType);
-    colLambdaFunction.expressionSequence = parameters;
-    filterLambda.values.push(colLambdaFunction);
-    filterExpression.parametersValues.push(filterLambda);
-    return filterExpression;
-  }
-
-  initWithRawLambda(
-    rawLambda: RawLambda,
-    options?: { notifyError: boolean },
-  ): void {
+  init(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
     try {
-      this.buildWithRawLambda(rawLambda);
+      this.buildStateFromRawLambda(rawLambda);
     } catch (error: unknown) {
       this.querySetupState.setClass(undefined, true);
       this.resetData();
       assertErrorThrown(error);
       if (options?.notifyError) {
         this.editorStore.applicationStore.notifyError(
-          `Unable to build query builder: ${error.message}`,
+          `Unable to initialize query builder: ${error.message}`,
         );
       }
       this.queryUnsupportedState.setLambdaError(error);
@@ -417,34 +255,32 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   /**
-   * Using the rawLambda, this query builder is rebuilt
+   * Process the raw lambda, and build the query builder state.
+   *
    * @throws error if there is an issue building the compiled lambda or rebuilding the state.
-   * consumers of function should handle the errors
-   * @param rawLambda
+   * consumers of function should handle the errors.
    */
-  buildWithRawLambda(rawLambda: RawLambda): void {
+  buildStateFromRawLambda(rawLambda: RawLambda): void {
     this.resetData();
     if (!rawLambda.isStub) {
-      const compiledLambda = this.buildLambdaFunctionFromRawLambda(rawLambda);
+      const valueSpec =
+        this.editorStore.graphState.graphManager.buildValueSpecification(
+          rawLambda,
+          this.editorStore.graphState.graph,
+        );
+      const compiledValueSpecification = guaranteeType(
+        valueSpec,
+        LambdaFunctionInstanceValue,
+      );
+      const compiledLambda = guaranteeNonNullable(
+        compiledValueSpecification.values[0],
+      );
       compiledLambda.expressionSequence.map((e) =>
         e.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(this, undefined),
         ),
       );
     }
-  }
-
-  buildLambdaFunctionFromRawLambda(rawLambda: RawLambda): LambdaFunction {
-    const valueSpec =
-      this.editorStore.graphState.graphManager.buildValueSpecification(
-        rawLambda,
-        this.editorStore.graphState.graph,
-      );
-    const compiledValueSpecification = guaranteeType(
-      valueSpec,
-      LambdaFunctionInstanceValue,
-    );
-    return guaranteeNonNullable(compiledValueSpecification.values[0]);
   }
 
   buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
@@ -468,7 +304,7 @@ export class QueryBuilderState extends EditorExtensionState {
     const onQuerySave = this.querySetupState.onSave;
     if (onQuerySave) {
       try {
-        const rawLambda = this.getRawLambdaQuery();
+        const rawLambda = this.getQuery();
         await onQuerySave(rawLambda);
       } catch (error: unknown) {
         assertErrorThrown(error);

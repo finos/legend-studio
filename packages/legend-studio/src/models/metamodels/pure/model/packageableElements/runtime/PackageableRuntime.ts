@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
-import { hashArray, IllegalStateError } from '@finos/legend-studio-shared';
+import { observable, action, makeObservable, override } from 'mobx';
+import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
@@ -28,10 +28,10 @@ export class PackageableRuntime extends PackageableElement implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<PackageableRuntime, '_elementHashCode'>(this, {
       runtimeValue: observable,
       setRuntimeValue: action,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -39,18 +39,10 @@ export class PackageableRuntime extends PackageableElement implements Hashable {
     this.runtimeValue = value;
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGEABLE_RUNTIME,
-      super.hashCode,
+      this.path,
       this.runtimeValue,
     ]);
   }

@@ -15,7 +15,12 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, hashString, uuid } from '@finos/legend-studio-shared';
+import {
+  hashArray,
+  hashString,
+  IllegalStateError,
+  uuid,
+} from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import {
   CORE_HASH_STRUCTURE,
@@ -77,21 +82,22 @@ export abstract class PackageableElement implements Hashable, Stubable {
   constructor(name: string) {
     makeObservable<
       PackageableElement,
-      '_isDeleted' | '_isDisposed' | '_isImmutable'
+      '_isDeleted' | '_isDisposed' | '_isImmutable' | '_elementHashCode'
     >(this, {
       _isDeleted: observable,
       _isDisposed: observable,
       _isImmutable: observable,
       name: observable,
-      package: observable,
-      generationParentElement: observable,
       isReadOnly: computed,
       isDeleted: computed,
+      selectOption: computed,
+      path: computed,
+      _elementHashCode: computed,
+      // We need to enable `keepAlive` to facillitate precomutation of element hash code
+      hashCode: computed({ keepAlive: true }),
       setName: action,
       setIsDeleted: action,
       deleteElementFromGraph: action,
-      selectOption: computed,
-      path: computed,
       dispose: action,
       freeze: action,
     });
@@ -171,8 +177,30 @@ export abstract class PackageableElement implements Hashable, Stubable {
     }
   }
 
-  get hashCode(): string {
+  protected get _elementHashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT, this.path]);
+  }
+
+  get hashCode(): string {
+    if (this._isDisposed) {
+      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
+    }
+    // If this computation is placed after checking for immutability flag,
+    // error will be thrown and therefore, `mobx` will not recompute this at all.
+    // By putting this here, we make sure that even when the element is frozen,
+    // if somehow the element modified, computation of the hash code will be triggered.
+    // As a result, error will be thrown again. This is a good way to notify developer
+    // that the object has been modified, this is a better alternative to than using
+    // `Object.freeze`, which requires a more complicated setup.
+    // Also, using `Object.freeze` does not really solve the problem
+    // See https://github.com/mobxjs/mobx/issues/3008
+    const hashCode = this._elementHashCode;
+    if (this._isImmutable) {
+      throw new IllegalStateError(
+        `Readonly element '${this.path}' is modified`,
+      );
+    }
+    return hashCode;
   }
 
   abstract accept_PackageableElementVisitor<T>(
