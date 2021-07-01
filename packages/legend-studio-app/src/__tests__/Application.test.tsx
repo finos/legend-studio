@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-studio-shared';
 import studioConfig from '../../studio.config';
 
-test(integrationTest('App can start with a dummy preset'), async () => {
+test(integrationTest('Application can start with a dummy preset'), async () => {
   const application = Studio.create();
 
   MOBX__enableSpyOrMock();

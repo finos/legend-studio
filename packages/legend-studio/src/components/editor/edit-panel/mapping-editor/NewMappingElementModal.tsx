@@ -143,17 +143,17 @@ export const NewMappingElementModal = observer(() => {
   const handleSubmit = (): void => {
     if (spec) {
       if (id && spec.target) {
-        let newMapppingElement: MappingElement | undefined = undefined;
+        let newMappingElement: MappingElement | undefined = undefined;
         if (spec.target instanceof Class) {
           if (classMappingType?.value) {
-            newMapppingElement = mapping.createClassMapping(
+            newMappingElement = mapping.createClassMapping(
               id,
               spec.target,
               classMappingType.value,
             );
           }
         } else if (spec.target instanceof Enumeration) {
-          newMapppingElement = mapping.createEnumerationMapping(
+          newMappingElement = mapping.createEnumerationMapping(
             id,
             spec.target,
             editorStore.graphState.graph.getPrimitiveType(
@@ -164,11 +164,11 @@ export const NewMappingElementModal = observer(() => {
           throw new UnsupportedOperationError();
         }
         if (spec.postSubmitAction) {
-          spec.postSubmitAction(newMapppingElement);
+          spec.postSubmitAction(newMappingElement);
         }
-        if (newMapppingElement) {
+        if (newMappingElement) {
           mappingEditorState.openMappingElement(
-            newMapppingElement,
+            newMappingElement,
             spec.openInAdjacentTab,
           );
         }

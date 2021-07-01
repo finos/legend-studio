@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-manual-tests",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "private": true,
   "description": "Legend Studio manual tests",
   "keywords": [
@@ -32,10 +32,10 @@
     "@finos/legend-studio-dev-utils": "workspace:*",
     "axios": "0.21.1",
     "cross-env": "7.0.3",
-    "eslint": "7.28.0",
-    "jest": "27.0.4",
+    "eslint": "7.29.0",
+    "jest": "27.0.5",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "typescript": "4.3.2"
+    "typescript": "4.3.4"
   }
 }

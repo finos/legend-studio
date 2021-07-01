@@ -64,12 +64,12 @@ import {
 } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
 import type { V1_FlatDataProperty } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';
 
-const processFlatDataDataType = (
+const buildFlatDataDataType = (
   type: V1_FlatDataDataType,
   parentSection: FlatDataSection,
   context: V1_GraphBuilderContext,
 ): FlatDataDataType => {
-  const processFlatDataField = (
+  const buildFlatDataField = (
     field: V1_FlatDataRecordField,
   ): FlatDataRecordField => {
     assertNonEmptyString(
@@ -86,7 +86,7 @@ const processFlatDataDataType = (
     );
     const recordField = new FlatDataRecordField(
       field.label,
-      processFlatDataDataType(field.flatDataDataType, parentSection, context),
+      buildFlatDataDataType(field.flatDataDataType, parentSection, context),
       field.optional,
     );
     recordField.setAddress(field.address);
@@ -143,23 +143,23 @@ const processFlatDataDataType = (
     if (type instanceof V1_RootFlatDataRecordType) {
       recordType = new RootFlatDataRecordType(parentSection);
     }
-    recordType.fields = type.fields.map((field) => processFlatDataField(field));
+    recordType.fields = type.fields.map((field) => buildFlatDataField(field));
     return recordType;
   }
   throw new UnsupportedOperationError('Unsupported flat-data data type');
 };
 
-const processFlatDataRecordType = (
+const buildFlatDataRecordType = (
   recordType: V1_RootFlatDataRecordType,
   parentSection: FlatDataSection,
   context: V1_GraphBuilderContext,
 ): RootFlatDataRecordType =>
   guaranteeType(
-    processFlatDataDataType(recordType, parentSection, context),
+    buildFlatDataDataType(recordType, parentSection, context),
     RootFlatDataRecordType,
   );
 
-const processFlatDataProperty = (
+const buildFlatDataProperty = (
   property: V1_FlatDataProperty,
 ): FlatDataProperty => {
   assertNonEmptyString(property.name, 'Flat-data property name is missing');
@@ -173,7 +173,7 @@ const processFlatDataProperty = (
   return new FlatDataProperty(property.name, property.value);
 };
 
-export const V1_processFlatDataSection = (
+export const V1_buildFlatDataSection = (
   section: V1_FlatDataSection,
   parentFlatData: FlatData,
   context: V1_GraphBuilderContext,
@@ -186,10 +186,10 @@ export const V1_processFlatDataSection = (
     parentFlatData,
   );
   flatDataSection.sectionProperties = section.sectionProperties.map(
-    (sectionProperty) => processFlatDataProperty(sectionProperty),
+    (sectionProperty) => buildFlatDataProperty(sectionProperty),
   );
   if (section.recordType) {
-    flatDataSection.recordType = processFlatDataRecordType(
+    flatDataSection.recordType = buildFlatDataRecordType(
       section.recordType,
       flatDataSection,
       context,

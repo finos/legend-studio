@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, flowResult, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -31,6 +31,7 @@ import {
   PureSingleExecution,
   Service,
 } from '@finos/legend-studio';
+import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -80,7 +81,7 @@ export class QueryBuilderResultState {
       const runtime = this.queryBuilderState.querySetupState.runtime;
       let query: RawLambda;
       if (this.queryBuilderState.isQuerySupported()) {
-        const lambdaFunction = this.queryBuilderState.buildLambdaFunction({
+        const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
           isBuildingExecutionQuery: true,
         });
         query =
@@ -122,7 +123,7 @@ export class QueryBuilderResultState {
         'Mapping is required to execute query',
       );
       const runtime = this.queryBuilderState.querySetupState.runtime;
-      const query = this.queryBuilderState.getRawLambdaQuery();
+      const query = this.queryBuilderState.getQuery();
       const result =
         (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
           this.editorStore.graphState.graph,
@@ -143,18 +144,17 @@ export class QueryBuilderResultState {
     }
   }
 
-  promoteToService = flow(function* (
-    this: QueryBuilderResultState,
+  *promoteToService(
     packageName: string,
     serviceName: string,
-  ) {
+  ): GeneratorFn<void> {
     try {
       const mapping = guaranteeNonNullable(
         this.queryBuilderState.querySetupState.mapping,
         'Mapping is required to execute query',
       );
       const runtime = this.queryBuilderState.querySetupState.runtime;
-      const query = this.queryBuilderState.getRawLambdaQuery();
+      const query = this.queryBuilderState.getQuery();
       const service = new Service(serviceName);
       service.initNewService();
       service.setExecution(
@@ -186,5 +186,5 @@ export class QueryBuilderResultState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 }

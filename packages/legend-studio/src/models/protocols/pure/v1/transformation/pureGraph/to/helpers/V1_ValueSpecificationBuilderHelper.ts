@@ -20,7 +20,6 @@ import {
   guaranteeType,
   returnUndefOnError,
   UnsupportedOperationError,
-  getClass,
 } from '@finos/legend-studio-shared';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
@@ -643,9 +642,8 @@ export function V1_buildGraphFetchTree(
     );
   }
   throw new UnsupportedOperationError(
-    `Can't build graph fetch tree node of type '${
-      getClass(graphFetchTree).name
-    }'`,
+    `Can't build graph fetch tree`,
+    graphFetchTree,
   );
 }
 
@@ -801,9 +799,8 @@ export function V1_processExecutionContext(
   }
   // TODO add processor
   throw new UnsupportedOperationError(
-    `Can't build execution context of type '${
-      getClass(executionContext).name
-    }'`,
+    `Can't build execution context`,
+    executionContext,
   );
 }
 

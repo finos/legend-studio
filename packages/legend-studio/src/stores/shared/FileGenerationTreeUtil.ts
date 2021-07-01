@@ -263,7 +263,7 @@ export const getFileGenerationChildNodes = (
   return [];
 };
 
-export const processGenerationResultToGenerationDirectory = (
+export const buildGenerationDirectory = (
   rootDirectory: GenerationDirectory,
   generationResultMap: Map<string, GenerationOutputResult>,
   filesIndex: Map<string, GenerationFile>,

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, makeObservable } from 'mobx';
+import { computed, observable, action, makeObservable, override } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
   hashArray,
-  IllegalStateError,
   addUniqueEntry,
   deleteEntry,
 } from '@finos/legend-studio-shared';
@@ -83,7 +82,7 @@ export class GenerationSpecification
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<GenerationSpecification, '_elementHashCode'>(this, {
       generationNodes: observable,
       fileGenerations: observable,
       deleteFileGeneration: action,
@@ -92,7 +91,7 @@ export class GenerationSpecification
       addNode: action,
       addFileGeneration: action,
       findGenerationElementById: action,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -142,18 +141,10 @@ export class GenerationSpecification
       ?.generationElement.value;
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GENERATION_TREE,
-      super.hashCode,
+      this.path,
       hashArray(this.generationNodes),
       hashArray(
         this.fileGenerations.map((fileGeneration) =>

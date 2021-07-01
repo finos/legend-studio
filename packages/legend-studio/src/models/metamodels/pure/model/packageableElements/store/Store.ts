@@ -15,9 +15,7 @@
  */
 
 import { observable, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
 import type { PackageableElementReference } from '../../../model/packageableElements/PackageableElementReference';
 
@@ -30,13 +28,5 @@ export abstract class Store extends PackageableElement implements Hashable {
     makeObservable(this, {
       includes: observable,
     });
-  }
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.STORE,
-      super.hashCode,
-      hashArray(this.includes.map((include) => include.valueForSerialization)),
-    ]);
   }
 }

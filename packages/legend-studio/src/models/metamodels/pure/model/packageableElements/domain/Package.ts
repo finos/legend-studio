@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, makeObservable, override } from 'mobx';
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
@@ -42,7 +42,7 @@ export class Package extends PackageableElement implements Hashable {
       setPackage: action,
       addChild: action,
       addElement: action,
-      hashCode: computed,
+      hashCode: override,
     });
   }
 
@@ -122,7 +122,7 @@ export class Package extends PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGE,
-      super.hashCode,
+      this.path,
       hashArray(this.children.map((child) => child.path)),
     ]);
   }

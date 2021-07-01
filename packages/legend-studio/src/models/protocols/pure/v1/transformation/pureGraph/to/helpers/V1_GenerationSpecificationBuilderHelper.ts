@@ -22,7 +22,7 @@ import type { V1_GraphBuilderContext } from '../../../../transformation/pureGrap
 import type { V1_GenerationTreeNode } from '../../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
 import type { V1_PackageableElementPointer } from '../../../../model/packageableElements/V1_PackageableElement';
 
-export const V1_processGenerationTreeNode = (
+export const V1_buildGenerationTreeNode = (
   generationNode: V1_GenerationTreeNode,
   context: V1_GraphBuilderContext,
 ): GenerationTreeNode => {
@@ -38,7 +38,7 @@ export const V1_processGenerationTreeNode = (
   return genNode;
 };
 
-export const V1_processFileGenerationPointer = (
+export const V1_buildFileGenerationPointer = (
   fileGeneration: V1_PackageableElementPointer,
   context: V1_GraphBuilderContext,
 ): PackageableElementReference<FileGenerationSpecification> => {

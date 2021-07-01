@@ -27,11 +27,11 @@ import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExpl
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import { useDragLayer, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import type {
+import type { QueryBuilderProjectionColumnDragSource } from '../stores/QueryBuilderProjectionState';
+import {
   QueryBuilderProjectionColumnState,
-  QueryBuilderProjectionColumnDragSource,
-} from '../stores/QueryBuilderFetchStructureState';
-import { QUERY_BUILDER_PROJECTION_DND_TYPE } from '../stores/QueryBuilderFetchStructureState';
+  QUERY_BUILDER_PROJECTION_DND_TYPE,
+} from '../stores/QueryBuilderProjectionState';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
 import { getPropertyPath } from '../stores/QueryBuilderPropertyEditorState';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
@@ -88,7 +88,8 @@ const QueryBuilderProjectionColumn = observer(
     const { projectionColumnState, isRearrangingColumns } = props;
     const queryBuilderState =
       projectionColumnState.projectionState.queryBuilderState;
-    const projectionState = queryBuilderState.fetchStructureState;
+    const projectionState =
+      queryBuilderState.fetchStructureState.projectionState;
     const applicationStore = useApplicationStore();
     const setAggregation = (): void =>
       applicationStore.notifyUnsupportedFeature('Column aggregation');
@@ -96,7 +97,7 @@ const QueryBuilderProjectionColumn = observer(
       event,
     ) => projectionColumnState.setColumnName(event.target.value);
     const removeColumn = (): void =>
-      projectionState.removeProjectionColumn(projectionColumnState);
+      projectionState.removeColumn(projectionColumnState);
     const onPropertyExpressionChange = (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ): void => projectionColumnState.changeProperty(node);
@@ -107,10 +108,10 @@ const QueryBuilderProjectionColumn = observer(
         item: QueryBuilderProjectionColumnDragSource,
         monitor: DropTargetMonitor,
       ): void => {
-        const dragIndex = projectionState.projectionColumns.findIndex(
+        const dragIndex = projectionState.columns.findIndex(
           (e) => e === item.columnState,
         );
-        const hoverIndex = projectionState.projectionColumns.findIndex(
+        const hoverIndex = projectionState.columns.findIndex(
           (e) => e === projectionColumnState,
         );
         if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
@@ -130,7 +131,7 @@ const QueryBuilderProjectionColumn = observer(
         if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
           return;
         }
-        projectionState.moveProjectionColumn(dragIndex, hoverIndex);
+        projectionState.moveColumn(dragIndex, hoverIndex);
       },
       [projectionColumnState, projectionState],
     );
@@ -236,15 +237,22 @@ const QueryBuilderProjectionColumn = observer(
 export const QueryBuilderProjectionPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const projectionState = queryBuilderState.fetchStructureState;
-    const projectionColumns = projectionState.projectionColumns;
+    const projectionState =
+      queryBuilderState.fetchStructureState.projectionState;
+    const projectionColumns = projectionState.columns;
     // Drag and Drop
     const isRearrangingColumns = projectionColumns.some(
       (columnState) => columnState.isBeingDragged,
     );
     const handleDrop = useCallback(
       (item: QueryBuilderExplorerTreeDragSource): void =>
-        projectionState.addProjectionColumn(item.node),
+        projectionState.addColumn(
+          new QueryBuilderProjectionColumnState(
+            projectionState.editorStore,
+            projectionState,
+            item.node,
+          ),
+        ),
       [projectionState],
     );
     const [{ isPropertyDragOver }, dropConnector] = useDrop(

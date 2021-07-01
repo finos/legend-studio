@@ -34,7 +34,6 @@ export class Constraint implements Hashable, Stubable {
   constructor(name: string, owner: Class, functionDefinition: RawLambda) {
     makeObservable(this, {
       name: observable,
-      owner: observable,
       functionDefinition: observable,
       externalId: observable,
       enforcementLevel: observable,

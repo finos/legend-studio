@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { Service } from '../../../../../../metamodels/pure/model/packageableElements/service/Service';
 import type {
   KeyedSingleExecutionTest,
@@ -39,7 +36,7 @@ import {
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service';
 import type { V1_ServiceExecution } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import {
@@ -99,16 +96,17 @@ const transformMultiExecution = (
 };
 
 const transformServiceExecution = (
-  value: ServiceExecution,
+  metamodel: ServiceExecution,
   context: V1_GraphTransformerContext,
 ): V1_ServiceExecution => {
-  if (value instanceof PureSingleExecution) {
-    return transformSingleExecution(value, context);
-  } else if (value instanceof PureMultiExecution) {
-    return transformMultiExecution(value, context);
+  if (metamodel instanceof PureSingleExecution) {
+    return transformSingleExecution(metamodel, context);
+  } else if (metamodel instanceof PureMultiExecution) {
+    return transformMultiExecution(metamodel, context);
   }
   throw new UnsupportedOperationError(
-    `Can't transform service execution of type '${getClass(value).name}'`,
+    `Can't transform service execution`,
+    metamodel,
   );
 };
 
@@ -169,9 +167,7 @@ const transformServiceTest = (
   } else if (value instanceof MultiExecutionTest) {
     return transformMultiExecutiontest(value, context);
   }
-  throw new UnsupportedOperationError(
-    `Can't transform service test of type '${getClass(value).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't transform service test`, value);
 };
 
 export const V1_transformService = (

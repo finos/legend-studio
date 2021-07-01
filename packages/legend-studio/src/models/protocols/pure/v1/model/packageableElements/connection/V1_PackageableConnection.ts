@@ -30,7 +30,7 @@ export class V1_PackageableConnection
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PACKAGEABLE_CONNECTION,
-      super.hashCode,
+      this.path,
       this.connectionValue,
     ]);
   }

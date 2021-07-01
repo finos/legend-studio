@@ -38,10 +38,6 @@ export {
 export * from './models/metamodels/pure/model/Stubable'; // TODO: to be removed
 export { BasicModel } from './models/metamodels/pure/graph/BasicModel';
 export { PureModel } from './models/metamodels/pure/graph/PureModel';
-export {
-  freeze,
-  freezeArray,
-} from './models/metamodels/pure/action/freezer/GraphFreezerHelper';
 export * from './models/metamodels/pure/action/EngineError';
 export * from './models/metamodels/pure/model/packageableElements/PackageableElement';
 export * from './models/metamodels/pure/model/packageableElements/PackageableElementReference';
@@ -66,7 +62,6 @@ export { VariableExpression } from './models/metamodels/pure/model/valueSpecific
 export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
-  getAllFunction,
   SUPPORTED_FUNCTIONS,
   FunctionExpression,
 } from './models/metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
@@ -114,7 +109,7 @@ export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_Graph
 export {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelpers';
+} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper';
 export { V1_RawValueSpecificationTransformer } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 export { V1_rawLambdaModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';

@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { PackageableRuntime } from '../../../../../../metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
 import {
   EngineRuntime,
@@ -32,7 +29,7 @@ import {
   V1_initPackageableElement,
   V1_transformElementReference,
   V1_transformElementReferencePointer,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
@@ -96,9 +93,7 @@ export const V1_transformRuntime = (
   } else if (metamodel instanceof RuntimePointer) {
     return transformRunTimePointer(metamodel);
   }
-  throw new UnsupportedOperationError(
-    `Can't transform runtime of type '${getClass(metamodel).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't transform runtime`, metamodel);
 };
 
 export const V1_transformPackageableRuntime = (

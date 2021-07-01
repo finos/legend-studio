@@ -36,7 +36,7 @@ export class V1_Class extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.CLASS,
-      super.hashCode,
+      this.path,
       hashArray(this.properties),
       hashArray(this.derivedProperties),
       hashArray(this.superTypes),

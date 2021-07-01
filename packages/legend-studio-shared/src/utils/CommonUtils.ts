@@ -16,6 +16,7 @@
 
 import { cloneDeep as deepClone, mergeWith, pickBy } from 'lodash-es';
 import { UnsupportedOperationError } from './ErrorUtils';
+import { format as prettyPrintObject } from 'pretty-format';
 
 // NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
 // in case we want to swap out the implementation
@@ -254,3 +255,26 @@ export type GeneratorFn<T> = Generator<
   Promise<unknown>, // force to manually handle casting for any promise called within the generator function
   T
 >;
+
+export const printObject = (
+  val: unknown,
+  options?: {
+    deep?: boolean;
+  },
+): string => {
+  const opts = pruneObject({
+    printFunctionName: false,
+    maxDepth: options?.deep ? undefined : 1,
+  });
+  const text = prettyPrintObject(val, opts);
+
+  return (
+    text
+      // We do these replacements because when we do this for production and the class name is minified,
+      // we'd better show `[Object]` instead.
+      .replace(/.*\s\{/g, '{')
+      .replace(/\[.*\]/g, (val) =>
+        ['[Array]', '[Function]'].includes(val) ? val : '[Object]',
+      )
+  );
+};

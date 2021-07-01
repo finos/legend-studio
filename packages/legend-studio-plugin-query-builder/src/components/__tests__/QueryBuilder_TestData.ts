@@ -888,99 +888,6 @@ export const fullComplexProjectionQuery = {
   parameters: [],
 };
 
-// unsupported
-export const unSupportedGetAllWithOneConditionFilter = {
-  _type: 'lambda',
-  body: [
-    {
-      _type: 'func',
-      function: 'filter',
-      parameters: [
-        {
-          _type: 'func',
-          function: 'getAll',
-          parameters: [
-            {
-              _type: 'packageableElementPtr',
-              fullPath: 'model::pure::tests::model::simple::Person',
-            },
-          ],
-        },
-        {
-          _type: 'lambda',
-          body: [
-            {
-              _type: 'func',
-              function: 'testUnSupported',
-              parameters: [
-                {
-                  _type: 'property',
-                  property: 'firstName',
-                  parameters: [
-                    {
-                      _type: 'var',
-                      name: 'x',
-                    },
-                  ],
-                },
-                {
-                  _type: 'string',
-                  values: ['testFirstName'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
-            },
-          ],
-          parameters: [
-            {
-              _type: 'var',
-              name: 'x',
-            },
-          ],
-        },
-      ],
-    },
-  ],
-  parameters: [],
-};
-
-export const errorInGraphLambda = {
-  _type: 'lambda',
-  body: [
-    {
-      _type: 'func',
-      function: 'getAll',
-      parameters: [
-        {
-          _type: 'packageableElementPtr',
-          fullPath: 'model::pure::tests::model::simple::NotFound',
-        },
-      ],
-    },
-  ],
-  parameters: [],
-};
-
-export const unSupportedFunctionName = {
-  _type: 'lambda',
-  body: [
-    {
-      _type: 'func',
-      function: 'testUnSupported',
-      parameters: [
-        {
-          _type: 'class',
-          fullPath: 'model::pure::tests::model::simple::GeographicEntityType',
-        },
-      ],
-    },
-  ],
-  parameters: [],
-};
-
 export const simpleGraphFetch = {
   _type: 'lambda',
   body: [
@@ -1034,7 +941,7 @@ export const simpleGraphFetch = {
   parameters: [],
 };
 
-export const firmPersonGraphFetch = {
+export const complexGraphFetch = {
   _type: 'lambda',
   body: [
     {

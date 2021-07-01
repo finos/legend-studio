@@ -22,7 +22,7 @@ import { PackageableElementExplicitReference } from '../../../../../../../metamo
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_ConfigurationProperty } from '../../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty';
 
-export const V1_processConfigurationProperty = (
+export const V1_buildConfigurationProperty = (
   propSpec: V1_ConfigurationProperty,
 ): ConfigurationProperty =>
   new ConfigurationProperty(propSpec.name, propSpec.value);
@@ -31,7 +31,7 @@ export const V1_processConfigurationProperty = (
 // This is allowed because file generation is the LAST step of generation.
 // We resolve first by looking at the packages, then the elements. This prevents us from resolving something like `test` to
 // 'meta::pure::profiles::test` instead of the package `test` in the user project.
-export const V1_processScopeElement = (
+export const V1_buildScopeElement = (
   path: string,
   context: V1_GraphBuilderContext,
 ): PackageableElementReference<PackageableElement> | string => {

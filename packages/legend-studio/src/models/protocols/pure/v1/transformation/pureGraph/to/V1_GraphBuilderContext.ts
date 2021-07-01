@@ -319,11 +319,11 @@ export class V1_GraphBuilderContext {
   resolveDataType = (
     path: string,
   ): PackageableElementImplicitReference<DataType> =>
-    this.createImplicitPackageableElementReference(path, (path) =>
+    this.createImplicitPackageableElementReference(path, (_path) =>
       guaranteeType(
-        this.graph.getType(path),
+        this.graph.getType(_path),
         DataType,
-        `Can't find data type '${path}'`,
+        `Can't find data type '${_path}'`,
       ),
     );
   resolveProfile = (

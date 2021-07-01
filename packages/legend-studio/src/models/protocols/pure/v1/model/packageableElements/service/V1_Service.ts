@@ -33,7 +33,7 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE,
-      super.hashCode,
+      this.path,
       this.pattern,
       hashArray(this.owners),
       this.documentation,

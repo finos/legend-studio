@@ -65,7 +65,7 @@ export class RelationalPropertyMapping
 
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.REALTIONAL_PROPERTY_MAPPPING,
+      CORE_HASH_STRUCTURE.REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
       this.transformer?.id.value ?? '',
       hashObjectWithoutSourceInformation(this.relationalOperation),

@@ -48,10 +48,22 @@ import type { V1_PackageableElement } from '@finos/legend-studio';
 import { EntityChangeType, getTestEditorStore } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-studio-shared';
 
-const ENGINE_SERVER_URL = 'http://localhost:6060/api';
+const engineConfig = JSON.parse(
+  fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
+    encoding: 'utf-8',
+  }),
+) as object;
+const ENGINE_SERVER_PORT = (engineConfig as any).server.connector // eslint-disable-line @typescript-eslint/no-explicit-any
+  .port as number;
+const ENGINE_SERVER_URL = `http://localhost:${ENGINE_SERVER_PORT}/api`;
 const TEST_CASE_DIR = resolve(__dirname, 'cases');
 const EXCLUDED_CASE_FILES: string[] = [
-  'embedded-relational-mapping-with-imports.pure', // TODO?
+  // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
+  // See https://github.com/finos/legend-studio/issues/295
+  // See https://github.com/finos/legend-studio/issues/294
+  'embedded-relational-mapping.pure',
+  'nested-embedded-relational-mapping.pure',
+  'relational-mapping-filter.pure',
 ];
 
 const checkGrammarRoundtrip = async (

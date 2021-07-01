@@ -17,14 +17,13 @@
 import {
   deepEqual,
   isEmpty,
-  IllegalStateError,
   guaranteeNonNullable,
   hashArray,
   addUniqueEntry,
   deleteEntry,
   changeEntry,
 } from '@finos/legend-studio-shared';
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, makeObservable, override } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { GenerationProperty } from '../../../action/generation/GenerationConfigurationDescription';
@@ -66,7 +65,7 @@ export class FileGenerationSpecification
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<FileGenerationSpecification, '_elementHashCode'>(this, {
       type: observable,
       generationOutputPath: observable,
       scopeElements: observable,
@@ -79,7 +78,7 @@ export class FileGenerationSpecification
       updateParameters: action,
       handleMapParameterUpdate: action,
       setGenerationOutputPath: action,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -205,18 +204,10 @@ export class FileGenerationSpecification
     return config;
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FILE_GENERATION,
-      super.hashCode,
+      this.path,
       this.type,
       this.generationOutputPath ?? '',
       hashArray(

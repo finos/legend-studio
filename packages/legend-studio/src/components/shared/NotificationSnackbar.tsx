@@ -36,6 +36,7 @@ export const NotificationSnackbar = observer(() => {
   const applicationStore = useApplicationStore();
   const notification = applicationStore.notification;
   const isOpen = Boolean(notification);
+  // TODO: have a better way to truncate message in snackbar
   const message = notification?.message ?? '';
   const severity = notification?.severity ?? NOTIFCATION_SEVERITY.INFO;
   let notificationIcon = (

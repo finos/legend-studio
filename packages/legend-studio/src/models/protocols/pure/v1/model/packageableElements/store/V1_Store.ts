@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 
 export abstract class V1_Store
@@ -24,12 +22,4 @@ export abstract class V1_Store
   implements Hashable
 {
   includedStores: string[] = [];
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.STORE,
-      super.hashCode,
-      hashArray(this.includedStores),
-    ]);
-  }
 }

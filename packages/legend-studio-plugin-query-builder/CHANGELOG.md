@@ -1,5 +1,24 @@
 # @finos/legend-studio-plugin-query-builder
 
+## 0.0.17
+
+### Patch Changes
+
+- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Support for `take()` function only for execution using `graphFetch()`, not actual result modifier. This is because we want make it clear that there are 2 distinct `take()` functions being used: `meta::pure::tds::take()` in projection query and `meta::pure::functions::collection::take()` in graph fetch query. The latter works on the collection of instances itself and therefore, not so useful, whereas the former actually affects execution performance.
+
+* [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - In query builder, we now allow adding all simple properties of the root class to the fetch structure (https://github.com/finos/legend-studio/issues/270).
+
+- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Relax the mapped property check for the explorer tree. When we encounter derived properties or mapped properties whose target set implementation is of type `OperationSetImplementation`, we will skip mappedness checking for the whole branch. The rationale here is that Studio would not try to analyze the mappedness of those complicated cases as Studio will never fully try to understand the lambdas (used in derived properties and operation class mappings). This way, the user can drilled down to these branches. The validation on execution will be handled by the engine. _NOTE: we can potentially show some indicator to let user know mappedness checking has been disabled for branch, but that is for future discussions._
+
+* [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Do strict checks on parameters of supported function while processing lambda. With this, functions like `project()`, `distinct()`, `take()`, etc. must be placed in very specific order to be supported in form mode, otherwise, we will fallback to text-mode.
+
+- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Make sure user cannot access Studio editor global hotkey while working in query builder.
+
+- Updated dependencies [[`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`f08d984`](https://github.com/finos/legend-studio/commit/f08d9845ace8dbbd54a8ab228ceb23b3bca1aca3), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693)]:
+  - @finos/legend-studio@0.1.14
+  - @finos/legend-studio-components@0.0.20
+  - @finos/legend-studio-shared@0.0.16
+
 ## 0.0.16
 
 ### Patch Changes

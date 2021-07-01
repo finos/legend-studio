@@ -57,14 +57,14 @@ import {
   V1_StoreConnections,
   V1_IdentifiedConnection,
 } from '../../../../model/packageableElements/runtime/V1_Runtime';
-import { V1_processEngineRuntime } from './V1_RuntimeBuilderHelper';
+import { V1_buildEngineRuntime } from './V1_RuntimeBuilderHelper';
 import {
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
 } from '../../../../model/packageableElements/V1_PackageableElement';
 import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
 
-export const V1_processServiceTest = (
+export const V1_buildServiceTest = (
   serviceTest: V1_ServiceTest,
   context: V1_GraphBuilderContext,
   parentService: Service,
@@ -178,7 +178,7 @@ export const V1_processServiceTest = (
   throw new UnsupportedOperationError();
 };
 
-export const V1_processServiceExecutionRuntime = (
+const buildServiceExecutionRuntime = (
   runtime: V1_Runtime,
   mapping: string,
   context: V1_GraphBuilderContext,
@@ -194,7 +194,7 @@ export const V1_processServiceExecutionRuntime = (
     runtime.mappings = runtime.mappings.length
       ? runtime.mappings
       : [mappingPointer];
-    return V1_processEngineRuntime(runtime, context);
+    return V1_buildEngineRuntime(runtime, context);
   } else if (runtime instanceof V1_LegacyRuntime) {
     const engineRuntime = new V1_EngineRuntime();
     engineRuntime.mappings = runtime.mappings.length
@@ -224,12 +224,12 @@ export const V1_processServiceExecutionRuntime = (
       }
       storeConnections.storeConnections.push(identifiedConnection);
     });
-    return V1_processEngineRuntime(engineRuntime, context);
+    return V1_buildEngineRuntime(engineRuntime, context);
   }
   throw new UnsupportedOperationError();
 };
 
-export const V1_processServiceExecution = (
+export const V1_buildServiceExecution = (
   serviceExecution: V1_ServiceExecution,
   context: V1_GraphBuilderContext,
   parentService: Service,
@@ -247,7 +247,7 @@ export const V1_processServiceExecution = (
       ),
       parentService,
       context.resolveMapping(serviceExecution.mapping),
-      V1_processServiceExecutionRuntime(
+      buildServiceExecutionRuntime(
         serviceExecution.runtime,
         serviceExecution.mapping,
         context,
@@ -290,7 +290,7 @@ export const V1_processServiceExecution = (
         return new KeyedExecutionParameter(
           keyedExecutionParameter.key,
           context.resolveMapping(keyedExecutionParameter.mapping),
-          V1_processServiceExecutionRuntime(
+          buildServiceExecutionRuntime(
             keyedExecutionParameter.runtime,
             keyedExecutionParameter.mapping,
             context,

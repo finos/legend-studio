@@ -35,7 +35,7 @@ export class V1_Mapping extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING,
-      super.hashCode,
+      this.path,
       hashArray(this.classMappings),
       hashArray(this.enumerationMappings),
       hashArray(this.associationMappings),

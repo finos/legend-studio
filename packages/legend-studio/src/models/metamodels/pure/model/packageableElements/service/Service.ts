@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
   hashArray,
-  IllegalStateError,
   uniq,
   uuid,
   addUniqueEntry,
@@ -57,7 +56,7 @@ export class Service extends PackageableElement implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<Service, '_elementHashCode'>(this, {
       pattern: observable,
       owners: observable,
       documentation: observable,
@@ -75,7 +74,7 @@ export class Service extends PackageableElement implements Hashable {
       deleteOwner: action,
       removePatternParameter: action,
       patternParameters: computed,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
 
     this.test = new SingleExecutionTest(this, '');
@@ -126,18 +125,10 @@ export class Service extends PackageableElement implements Hashable {
     );
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE,
-      super.hashCode,
+      this.path,
       this.pattern,
       hashArray(this.owners),
       this.documentation,

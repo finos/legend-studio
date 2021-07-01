@@ -1,5 +1,22 @@
 # @finos/legend-studio
 
+## 0.1.14
+
+### Patch Changes
+
+- [#286](https://github.com/finos/legend-studio/pull/286) [`f08d984`](https://github.com/finos/legend-studio/commit/f08d9845ace8dbbd54a8ab228ceb23b3bca1aca3) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Include all runtimes and mappings in execution input to support connections referencing other mappings such as ModelChainConnections.
+
+* [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** Remove `GraphFreezer` as we now can rely on hashing to detect unexpected changes to immutable objects. As a result, the config flag `DEV__enableGraphImmutabilityRuntimeCheck` will be removed as well.
+
+- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** Simplify element hash computation: now, the the computation should be placed in `_elementHashCode`, `hashCode` is specified at `PackageableElement` level that does some logical check for disposed and frozen objects before returning `_elementHashCode`. This way, we don't need to repeat as much code when introducing newer types of `PackageableElement` and we would output error when frozen elements are modified somehow.
+
+* [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where relational mapping editor _swallows_ embedded property mapping (https://github.com/finos/legend-studio/issues/285).
+
+* Updated dependencies [[`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693)]:
+  - @finos/legend-studio-components@0.0.20
+  - @finos/legend-studio-network@0.0.18
+  - @finos/legend-studio-shared@0.0.16
+
 ## 0.1.13
 
 ### Patch Changes

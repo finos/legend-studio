@@ -48,7 +48,6 @@ import {
   guaranteeType,
   UnsupportedOperationError,
   assertTrue,
-  getClass,
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
 import { MappingExecutionState } from './MappingExecutionState';
@@ -612,9 +611,8 @@ export class MappingEditorState extends ElementEditorState {
           newSetImp = newRootRelationalInstanceSetImplementation;
         } else {
           throw new UnsupportedOperationError(
-            `Can't use class mapping source of type '${
-              getClass(newSource).name
-            }'`,
+            `Can't use the specified class mapping source`,
+            newSource,
           );
         }
 
@@ -704,10 +702,10 @@ export class MappingEditorState extends ElementEditorState {
       if (showNewMappingModal) {
         this.setNewMappingElementSpec(spec);
       } else {
-        let newMapppingElement: MappingElement | undefined = undefined;
+        let newMappingElement: MappingElement | undefined = undefined;
         if (spec.target instanceof Enumeration) {
           // We default to a source type of String when creating a new enumeration mapping
-          newMapppingElement = this.mapping.createEnumerationMapping(
+          newMappingElement = this.mapping.createEnumerationMapping(
             suggestedId,
             spec.target,
             this.editorStore.graphState.graph.getPrimitiveType(
@@ -717,11 +715,11 @@ export class MappingEditorState extends ElementEditorState {
         }
         // NOTE: we don't support association now, nor do we support this for class
         // since class requires a step to choose the class mapping type
-        if (newMapppingElement) {
-          this.openMappingElement(newMapppingElement, true);
+        if (newMappingElement) {
+          this.openMappingElement(newMappingElement, true);
         }
         if (spec.postSubmitAction) {
-          spec.postSubmitAction(newMapppingElement);
+          spec.postSubmitAction(newMappingElement);
         }
       }
     } else {
@@ -1099,9 +1097,8 @@ export class MappingEditorState extends ElementEditorState {
       );
     } else {
       throw new UnsupportedOperationError(
-        `Can't create new mapping test input data with source of type '${
-          getClass(source).name
-        }'`,
+        `Can't create new mapping test input data with the specified source`,
+        source,
       );
     }
     const newTest = new MappingTest(

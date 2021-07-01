@@ -31,7 +31,6 @@ import {
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
-  getClass,
 } from '@finos/legend-studio-shared';
 import { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData';
@@ -177,7 +176,8 @@ const V1_serializeFlatDataDataType = (
     return serialize(V1_flatDataRecordTypeSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize flat-data data type of type '${getClass(protocol).name}'`,
+    `Can't serialize flat-data data type`,
+    protocol,
   );
 };
 

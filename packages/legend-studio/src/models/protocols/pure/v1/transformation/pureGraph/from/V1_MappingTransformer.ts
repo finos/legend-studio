@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import {
-  getClass,
   isNonNullable,
   recursiveOmit,
   UnsupportedOperationError,
@@ -73,7 +72,7 @@ import {
   V1_transformElementReferencePointer,
   V1_transformMultiplicity,
   V1_transformOptionalElementReference,
-} from './V1_CoreTransformerHelpers';
+} from './V1_CoreTransformerHelper';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
 import {
   V1_EnumValueMapping,
@@ -190,7 +189,8 @@ const transformEnumValueMapping = (
         return _enum;
       }
       throw new UnsupportedOperationError(
-        `Can't serialize enum value of type '${getClass(value).name}'`,
+        `Can't transform enum value mapping`,
+        value,
       );
     });
   return enumValueMapping;
@@ -274,9 +274,8 @@ const transformMappingTestInputData = (inputData: InputData): V1_InputData => {
     return transformRelationalInputData(inputData);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize mapping test input data of type '${
-      getClass(inputData).name
-    }'`,
+    `Can't transform mapping test input data`,
+    inputData,
   );
 };
 
@@ -287,9 +286,8 @@ const transformTestAssert = (
     return transformExpectedOutputMappingTestAssert(mappingTestAssert);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize mapping test assert of type '${
-      getClass(mappingTestAssert).name
-    }'`,
+    `Can't transform mapping test assert`,
+    mappingTestAssert,
   );
 };
 
@@ -1086,9 +1084,8 @@ const transformAssociationImplementation = (
     return transformXStorelAssociationImplementation(element, context);
   }
   throw new UnsupportedOperationError(
-    `Can't transform association implementation of type '${
-      getClass(element).name
-    }'`,
+    `Can't transform association implementation`,
+    element,
   );
 };
 

@@ -111,7 +111,7 @@ export const QueryBuilderResultPanel = observer(
         val === '' ? 0 : parseInt(val, 10),
       );
     };
-    const isQuerySupported = queryBuilderState.isQuerySupported();
+    const allowSettingPreviewLimit = queryBuilderState.isQuerySupported();
 
     return (
       <div className="panel query-builder__result">
@@ -125,7 +125,7 @@ export const QueryBuilderResultPanel = observer(
             <div className="panel__header__title__label">result</div>
           </div>
           <div className="panel__header__actions">
-            {isQuerySupported && (
+            {allowSettingPreviewLimit && (
               <div className="query-builder__result__limit">
                 <div className="query-builder__result__limit__label">
                   preview limit
@@ -206,7 +206,9 @@ export const QueryBuilderResultPanel = observer(
             promoteToService={(
               name: string,
               packageName: string,
-            ): Promise<void> => resultState.promoteToService(name, packageName)}
+            ): Promise<void> =>
+              flowResult(resultState.promoteToService(name, packageName))
+            }
           />
         )}
       </div>

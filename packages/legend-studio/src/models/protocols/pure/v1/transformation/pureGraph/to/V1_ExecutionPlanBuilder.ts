@@ -15,7 +15,6 @@
  */
 
 import {
-  getClass,
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
@@ -53,7 +52,7 @@ import type { V1_SQLResultColumn } from '../../../model/executionPlan/nodes/V1_S
 import type { V1_ExecutionPlan } from '../../../model/executionPlan/V1_ExecutionPlan';
 import { V1_SimpleExecutionPlan } from '../../../model/executionPlan/V1_SimpleExecutionPlan';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
-import { V1_ProtocolToMetaModelConnectionVisitor } from './V1_ProtocolToMetaModelConnectionVisitor';
+import { V1_ProtocolToMetaModelConnectionBuilder } from './V1_ProtocolToMetaModelConnectionBuilder';
 import type { V1_ResultType } from '../../../model/executionPlan/results/V1_ResultType';
 import type { ResultType } from '../../../../../../metamodels/pure/model/executionPlan/result/ResultType';
 import { V1_DataTypeResultType } from '../../../model/executionPlan/results/V1_DataTypeResultType';
@@ -170,9 +169,8 @@ const buildResultType = (
     return buildTDSResultType(protocol, context);
   }
   throw new UnsupportedOperationError(
-    `Can't build execution node result type of type '${
-      getClass(protocol).name
-    }'`,
+    `Can't build execution node result type`,
+    protocol,
   );
 };
 
@@ -225,7 +223,7 @@ const buildSQLExecutionNode = (
     protocol.onConnectionCloseRollbackQuery;
   metamodel.connection = guaranteeType(
     protocol.connection.accept_ConnectionVisitor(
-      new V1_ProtocolToMetaModelConnectionVisitor(context),
+      new V1_ProtocolToMetaModelConnectionBuilder(context),
     ),
     DatabaseConnection,
     'SQL execution node connection must be of type database connection',
@@ -252,9 +250,7 @@ function buildExecutionNode(
   } else if (protocol instanceof V1_RelationalTDSInstantiationExecutionNode) {
     return buildRelationalTDSInstantiationExecutionNode(protocol, context);
   }
-  throw new UnsupportedOperationError(
-    `Can't build execution node of type '${getClass(protocol).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't build execution node`, protocol);
 }
 
 // ---------------------------------------- Execution Plan ----------------------------------------
@@ -277,7 +273,5 @@ export const V1_buildExecutionPlan = (
     );
     return metamodel;
   }
-  throw new UnsupportedOperationError(
-    `Can't build execution plan of type '${getClass(protocol).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't build execution plan`, protocol);
 };

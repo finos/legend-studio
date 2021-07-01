@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, makeObservable, override } from 'mobx';
 import {
   hashArray,
-  IllegalStateError,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
@@ -42,7 +41,7 @@ export class Unit extends DataType implements Hashable {
       measure: observable,
       conversionFunction: observable,
       setConversionFunction: action,
-      hashCode: computed,
+      hashCode: override,
     });
 
     this.measure = measure;
@@ -82,11 +81,11 @@ export class Measure extends Type implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<Measure, '_elementHashCode'>(this, {
       canonicalUnit: observable,
       nonCanonicalUnits: observable,
       setCanonicalUnit: action,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -97,22 +96,15 @@ export class Measure extends Type implements Hashable {
   isSubType(type: Type): boolean {
     return false;
   }
+
   isSuperType(type: Type): boolean {
     return type instanceof Unit && type.measure === this;
   }
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MEASURE,
-      super.hashCode,
+      this.path,
       this.canonicalUnit ?? '',
       hashArray(this.nonCanonicalUnits),
     ]);

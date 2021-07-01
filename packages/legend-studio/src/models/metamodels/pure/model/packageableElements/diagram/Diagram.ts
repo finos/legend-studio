@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, makeObservable, override } from 'mobx';
 import {
   hashArray,
-  IllegalStateError,
   addUniqueEntry,
   deleteEntry,
 } from '@finos/legend-studio-shared';
@@ -39,7 +38,7 @@ export class Diagram extends PackageableElement implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable(this, {
+    makeObservable<Diagram, '_elementHashCode'>(this, {
       classViews: observable,
       associationViews: observable,
       generalizationViews: observable,
@@ -55,7 +54,7 @@ export class Diagram extends PackageableElement implements Hashable {
       setPropertyViews: action,
       addPropertyView: action,
       deletePropertyView: action,
-      hashCode: computed({ keepAlive: true }),
+      _elementHashCode: override,
     });
   }
 
@@ -96,18 +95,10 @@ export class Diagram extends PackageableElement implements Hashable {
   getClassView = (sourceViewId: string): ClassView | undefined =>
     this.classViews.find((c) => c.id === sourceViewId);
 
-  override get hashCode(): string {
-    if (this._isDisposed) {
-      throw new IllegalStateError(`Element '${this.path}' is already disposed`);
-    }
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
+  protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DIAGRAM,
-      super.hashCode,
+      this.path,
       hashArray(this.classViews),
       // TODO: association views
       hashArray(this.generalizationViews),

@@ -23,7 +23,6 @@ import {
   UnsupportedOperationError,
   uniq,
   addUniqueEntry,
-  getClass,
   assertErrorThrown,
 } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
@@ -442,9 +441,8 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
       );
     }
     throw new UnsupportedOperationError(
-      `Can't create custom connection for unsupported store type '${
-        getClass(this.store).name
-      }'`,
+      `Can't create custom connection for the specified store`,
+      this.store,
     );
   }
 

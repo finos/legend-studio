@@ -18,12 +18,8 @@ import { AbstractPlugin } from '@finos/legend-studio-shared';
 import type { Clazz } from '@finos/legend-studio-shared';
 import type { PackageableElement } from '../model/packageableElements/PackageableElement';
 
-export type ElementFreezer = (element: PackageableElement) => void;
-
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
 
   getExtraPureGraphExtensionClasses?(): Clazz<PackageableElement>[];
-
-  getExtraElementFreezers?(): ElementFreezer[];
 }

@@ -16,17 +16,12 @@
 
 import { observable, makeObservable } from 'mobx';
 import type { GenericTypeReference } from '../../model/packageableElements/domain/GenericTypeReference';
-import { GenericTypeExplicitReference } from '../../model/packageableElements/domain/GenericTypeReference';
 import type { Multiplicity } from '../../model/packageableElements/domain/Multiplicity';
 import type { PackageableElementReference } from '../../model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../model/packageableElements/PackageableElementReference';
 import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 import type { Function } from '../../model/packageableElements/domain/Function';
 import type { AbstractProperty } from '../../model/packageableElements/domain/AbstractProperty';
-import type { Class } from '../../model/packageableElements/domain/Class';
-import { InstanceValue } from '../../model/valueSpecification/InstanceValue';
-import { GenericType } from '../../model/packageableElements/domain/GenericType';
 
 export enum SUPPORTED_FUNCTIONS {
   FILTER = 'filter',
@@ -93,21 +88,4 @@ export class AbstractPropertyExpression extends FunctionExpression {
   ): T {
     return visitor.visit_AbstractPropertyExpression(this);
   }
-}
-
-export function getAllFunction(
-  _class: Class,
-  multiplicity: Multiplicity,
-): SimpleFunctionExpression {
-  const _func = new SimpleFunctionExpression(
-    SUPPORTED_FUNCTIONS.GET_ALL,
-    multiplicity,
-  );
-  const classInstance = new InstanceValue(
-    multiplicity,
-    GenericTypeExplicitReference.create(new GenericType(_class)),
-  );
-  classInstance.values[0] = PackageableElementExplicitReference.create(_class);
-  _func.parametersValues.push(classInstance);
-  return _func;
 }

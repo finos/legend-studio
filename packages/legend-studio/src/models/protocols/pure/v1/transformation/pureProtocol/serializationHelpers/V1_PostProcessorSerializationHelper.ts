@@ -31,7 +31,6 @@ import {
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   usingConstantValueSchema,
-  getClass,
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
@@ -69,9 +68,7 @@ export const V1_serializeMapper = (
   } else if (protocol instanceof V1_SchemaNameMapper) {
     return serialize(V1_schemaNameMapperModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(
-    `Can't serialize mapper of type '${getClass(protocol).name}'`,
-  );
+  throw new UnsupportedOperationError(`Can't serialize mapper`, protocol);
 };
 
 export const V1_deserializeMapper = (
@@ -122,9 +119,8 @@ export const V1_serializePostProcessor = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize post-processor of type '${
-      getClass(value).name
-    }'. No compatible serializer available from plugins.`,
+    `Can't serialize post-processor. No compatible serializer available from plugins.`,
+    value,
   );
 };
 

@@ -16,7 +16,6 @@
 
 import { BusinessMilestoning } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/milestoning/BusinessMilestoning';
 import {
-  getClass,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
@@ -95,8 +94,7 @@ export const V1_transformMilestoning = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform milestoning of type '${
-      getClass(metamodel).name
-    }'. No compatible transformer available from plugins.`,
+    `Can't transform milestoning. No compatible transformer available from plugins.`,
+    metamodel,
   );
 };
