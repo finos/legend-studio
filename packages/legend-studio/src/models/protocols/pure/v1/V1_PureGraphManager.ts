@@ -82,7 +82,6 @@ import { ServiceExecutionMode } from '../../../metamodels/pure/action/service/Se
 import { PureSingleExecution } from '../../../metamodels/pure/model/packageableElements/service/ServiceExecution';
 import {
   V1_deserializeRawValueSpecification,
-  V1_RawValueSpecificationType,
   V1_serializeRawValueSpecification,
 } from './transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 import {
@@ -117,7 +116,6 @@ import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from './transforma
 import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext';
 import type { V1_GraphBuilderContext } from './transformation/pureGraph/to/V1_GraphBuilderContext';
 import { V1_GraphBuilderContextBuilder } from './transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_RawFunctionValueSpecification } from './model/rawValueSpecification/V1_RawValueSpecification';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer';
 import { V1_Engine } from './engine/V1_Engine';
 import { V1_PackageableElementTransformer } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
@@ -1563,7 +1561,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
   ): GeneratorFn<string> {
     return (yield this.engine.getLambdaReturnType(
-      lambda.accept_ValueSpecificationVisitor(
+      lambda.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
           new V1_GraphTransformerContextBuilder(
             this.pureProtocolProcessorPlugins,
@@ -1685,7 +1683,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     metamodel: RawValueSpecification,
   ): Record<PropertyKey, unknown> {
     return V1_serializeRawValueSpecification(
-      metamodel.accept_ValueSpecificationVisitor(
+      metamodel.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
           new V1_GraphTransformerContextBuilder(
             this.pureProtocolProcessorPlugins,
@@ -2408,7 +2406,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           function: 'getAll',
           parameters: [
             {
-              _type: V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
+              _type: 'packageableElementPtr',
               fullPath: _class.path,
             },
           ],
@@ -2442,7 +2440,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                   property: 'values',
                 },
                 {
-                  _type: V1_RawValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
+                  _type: 'packageableElementPtr',
                   fullPath: 'String',
                 },
               ],
@@ -2462,8 +2460,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     let json: string | undefined;
     try {
       json = (
-        ((query.body as unknown[])[0] as V1_RawFunctionValueSpecification)
-          .parameters[1] as { values: (string | undefined)[] }
+        (
+          ((query.body as unknown[])[0] as Record<PropertyKey, unknown>) // FunctionValue
+            .parameters as unknown[]
+        )[1] as {
+          values: (string | undefined)[];
+        }
       ).values[0];
       assertTrue(typeof json === 'string', `Expected value of type 'string'`);
     } catch (error: unknown) {

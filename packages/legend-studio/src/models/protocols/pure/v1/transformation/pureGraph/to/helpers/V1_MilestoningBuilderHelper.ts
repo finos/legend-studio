@@ -28,9 +28,9 @@ import { BusinessSnapshotMilestoning } from '../../../../../../../metamodels/pur
 import { V1_ProcessingMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning';
 import { ProcessingMilestoning } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/milestoning/ProcessingMilestoning';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
-import { PrimitiveInstanceValue } from '../../../../../../../metamodels/pure/model/valueSpecification/InstanceValue';
-import { V1_buildValueSpecification } from './V1_ValueSpecificationBuilderHelper';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import { RawInstanceValue } from '../../../../../../../metamodels/pure/model/rawValueSpecification/RawInstanceValue';
+import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from '../V1_ProtocolToMetaModelRawValueSpecificationBuilder';
 
 const buildBusinessMilesoning = (
   protocol: V1_BusinessMilestoning,
@@ -51,8 +51,10 @@ const buildBusinessMilesoning = (
   );
   if (protocol.infinityDate) {
     metamodel.infinityDate = guaranteeType(
-      V1_buildValueSpecification(protocol.infinityDate, context),
-      PrimitiveInstanceValue,
+      protocol.infinityDate.accept_RawValueSpecificationVisitor(
+        new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
+      ),
+      RawInstanceValue,
     );
   }
   return metamodel;
@@ -69,8 +71,10 @@ const buildBusinessSnapshotMilestoning = (
   const metamodel = new BusinessSnapshotMilestoning(protocol.snapshotDate);
   if (protocol.infinityDate) {
     metamodel.infinityDate = guaranteeType(
-      V1_buildValueSpecification(protocol.infinityDate, context),
-      PrimitiveInstanceValue,
+      protocol.infinityDate.accept_RawValueSpecificationVisitor(
+        new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
+      ),
+      RawInstanceValue,
     );
   }
   return metamodel;
@@ -95,8 +99,10 @@ const buildProcessingMilestoning = (
   );
   if (protocol.infinityDate) {
     metamodel.infinityDate = guaranteeType(
-      V1_buildValueSpecification(protocol.infinityDate, context),
-      PrimitiveInstanceValue,
+      protocol.infinityDate.accept_RawValueSpecificationVisitor(
+        new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
+      ),
+      RawInstanceValue,
     );
   }
   return metamodel;

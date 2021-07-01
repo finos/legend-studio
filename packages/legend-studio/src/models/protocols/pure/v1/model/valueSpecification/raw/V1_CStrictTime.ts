@@ -16,26 +16,15 @@
 
 import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
 import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import type { Hashable } from '@finos/legend-studio-shared';
-import { hashArray } from '@finos/legend-studio-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
 
-export class V1_CStrictTime extends V1_ValueSpecification implements Hashable {
+export class V1_CStrictTime extends V1_ValueSpecification {
   multiplicity!: V1_Multiplicity;
-
   values: string[] = [];
+
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_CStrictTime(this);
-  }
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.CSTRICT_TIME,
-      hashArray([this.multiplicity]),
-      hashArray(this.values),
-    ]);
   }
 }

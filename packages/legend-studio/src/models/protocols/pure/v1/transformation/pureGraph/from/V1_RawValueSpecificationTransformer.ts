@@ -15,29 +15,21 @@
  */
 
 import { toJS } from 'mobx';
-import type {
-  RawPropertyGraphFetchTree,
-  RawRootGraphFetchTree,
-} from '../../../../../../metamodels/pure/model/rawValueSpecification/RawGraphFetchTree';
 import type { RawValueSpecificationVisitor } from '../../../../../../metamodels/pure/model/rawValueSpecification/RawValueSpecification';
 import type { RawLambda } from '../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { RawVariableExpression } from '../../../../../../metamodels/pure/model/rawValueSpecification/RawVariableExpression';
-import type { V1_RawValueSpecification } from '../../../model/rawValueSpecification/V1_RawValueSpecification';
 import { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
 import {
-  V1_transformOptionalElementReference,
   V1_transformMultiplicity,
   V1_transformElementReference,
 } from './V1_CoreTransformerHelper';
-import type { V1_RawGraphFetchTree } from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
-import {
-  V1_RawPropertyGraphFetchTree,
-  V1_RawRootGraphFetchTree,
-} from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
 import { SOURCE_INFORMATION_KEY } from '../../../../../../MetaModelConst';
 import { recursiveOmit } from '@finos/legend-studio-shared';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import type { V1_RawValueSpecification } from '../../../model/rawValueSpecification/V1_RawValueSpecification';
+import { V1_RawInstanceValue } from '../../../model/rawValueSpecification/V1_RawInstanceValue';
+import type { RawInstanceValue } from '../../../../../../metamodels/pure/model/rawValueSpecification/RawInstanceValue';
 
 export class V1_RawValueSpecificationTransformer
   implements RawValueSpecificationVisitor<V1_RawValueSpecification>
@@ -94,37 +86,18 @@ export class V1_RawValueSpecificationTransformer
     return rawVariable;
   }
 
-  visit_RawRootGraphFetchTree(
-    rawValueSpecification: RawRootGraphFetchTree,
+  visit_RawInstanceValue(
+    rawValueSpecification: RawInstanceValue,
   ): V1_RawValueSpecification {
-    const rawRrootGraphFetchTree = new V1_RawRootGraphFetchTree();
-    rawRrootGraphFetchTree.class = V1_transformElementReference(
-      rawValueSpecification.class,
+    const rawInstanceValue = new V1_RawInstanceValue();
+    rawInstanceValue.type = V1_transformElementReference(
+      rawValueSpecification.type,
     );
-    rawRrootGraphFetchTree.subTrees = rawValueSpecification.subTrees.map(
-      (subTree) =>
-        subTree.accept_ValueSpecificationVisitor(this) as V1_RawGraphFetchTree,
+    rawInstanceValue.multiplicity = V1_transformMultiplicity(
+      rawValueSpecification.multiplicity,
     );
-    return rawRrootGraphFetchTree;
-  }
-
-  visit_RawPropertyGraphFetchTree(
-    rawValueSpecification: RawPropertyGraphFetchTree,
-  ): V1_RawValueSpecification {
-    const rawPropertyGraphFetchTree = new V1_RawPropertyGraphFetchTree();
-    rawPropertyGraphFetchTree.alias = rawValueSpecification.alias;
-    rawPropertyGraphFetchTree.property =
-      rawValueSpecification.property.value.name;
-    rawPropertyGraphFetchTree.parameters =
-      rawValueSpecification.parameters.map(toJS);
-    rawPropertyGraphFetchTree.subTrees = rawValueSpecification.subTrees.map(
-      (subTree) =>
-        subTree.accept_ValueSpecificationVisitor(this) as V1_RawGraphFetchTree,
-    );
-    rawPropertyGraphFetchTree.subType = V1_transformOptionalElementReference(
-      rawValueSpecification.subType,
-    );
-    return rawPropertyGraphFetchTree;
+    rawInstanceValue.values = rawValueSpecification.values;
+    return rawInstanceValue;
   }
 }
 
@@ -132,6 +105,6 @@ export const V1_transformRawLambda = (
   rawLambda: RawLambda,
   context: V1_GraphTransformerContext,
 ): V1_RawLambda =>
-  rawLambda.accept_ValueSpecificationVisitor(
+  rawLambda.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;

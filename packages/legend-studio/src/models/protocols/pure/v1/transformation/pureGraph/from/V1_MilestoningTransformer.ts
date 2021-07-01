@@ -26,10 +26,10 @@ import { V1_BusinessSnapshotMilestoning } from '../../../model/packageableElemen
 import { BusinessSnapshotMilestoning } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/milestoning/BusinessSnapshotMilestoning';
 import { V1_ProcessingMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning';
 import { ProcessingMilestoning } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/milestoning/ProcessingMilestoning';
-import { V1_ValueSpecificationTransformer } from './V1_ValueSpecificationTransformer';
-import { V1_CDate } from '../../../model/valueSpecification/raw/V1_CDate';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import { V1_RawInstanceValue } from '../../../model/rawValueSpecification/V1_RawInstanceValue';
+import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer';
 
 const transformBusinessMilesoning = (
   metamodel: BusinessMilestoning,
@@ -51,21 +51,19 @@ const transformBusinessSnapshotMilestoning = (
 
 const transformProcessingMilestoning = (
   metamodel: ProcessingMilestoning,
+  context: V1_GraphTransformerContext,
 ): V1_ProcessingMilestoning => {
   const protocol = new V1_ProcessingMilestoning();
   protocol.in = metamodel.in;
   protocol.out = metamodel.out;
   protocol.outIsInclusive = metamodel.outIsInclusive;
   if (metamodel.infinityDate) {
-    const valueSpec = metamodel.infinityDate.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationTransformer(
-        [],
-        new Map<string, unknown[]>(),
-        false,
-        false,
+    protocol.infinityDate = guaranteeType(
+      metamodel.infinityDate.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
       ),
+      V1_RawInstanceValue,
     );
-    protocol.infinityDate = guaranteeType(valueSpec, V1_CDate);
   }
   return protocol;
 };
@@ -79,7 +77,7 @@ export const V1_transformMilestoning = (
   } else if (metamodel instanceof BusinessSnapshotMilestoning) {
     return transformBusinessSnapshotMilestoning(metamodel);
   } else if (metamodel instanceof ProcessingMilestoning) {
-    return transformProcessingMilestoning(metamodel);
+    return transformProcessingMilestoning(metamodel, context);
   }
   const extraMilestoningTransformers = context.plugins.flatMap(
     (plugin) =>

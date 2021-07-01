@@ -14,36 +14,35 @@
  * limitations under the License.
  */
 
+import { hashArray } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-studio-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { V1_RawValueSpecificationVisitor } from '../../model/rawValueSpecification/V1_RawValueSpecification';
 import { V1_RawValueSpecification } from '../../model/rawValueSpecification/V1_RawValueSpecification';
+import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity';
 
-export abstract class V1_RawGraphFetchTree extends V1_RawValueSpecification {
-  subTrees: V1_RawGraphFetchTree[] = [];
+export class V1_RawInstanceValue
+  extends V1_RawValueSpecification
+  implements Hashable
+{
+  type!: string;
+  multiplicity!: V1_Multiplicity;
+  values?: (string | number)[]; // to be revised?
 
-  abstract override accept_RawValueSpecificationVisitor<T>(
-    visitor: V1_RawValueSpecificationVisitor<T>,
-  ): T;
-}
-
-export class V1_RawPropertyGraphFetchTree extends V1_RawGraphFetchTree {
-  alias?: string;
-  parameters: object[] = [];
-  property!: string;
-  subType?: string;
-
-  accept_RawValueSpecificationVisitor<T>(
-    visitor: V1_RawValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PropertyGraphFetchTree(this);
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RAW_INSTANCE_VALUE,
+      this.type,
+      this.multiplicity,
+      this.values
+        ? hashArray(this.values.map((value) => value.toString()))
+        : '',
+    ]);
   }
-}
-
-export class V1_RawRootGraphFetchTree extends V1_RawGraphFetchTree {
-  class!: string;
 
   accept_RawValueSpecificationVisitor<T>(
     visitor: V1_RawValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_RootGraphFetchTree(this);
+    return visitor.visit_InstanceValue(this);
   }
 }

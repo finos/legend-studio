@@ -27,7 +27,7 @@ export class V1_RawLambda extends V1_RawValueSpecification implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.LAMBDA,
+      CORE_HASH_STRUCTURE.RAW_LAMBDA,
       hashLambda(this.parameters, this.body),
     ]);
   }

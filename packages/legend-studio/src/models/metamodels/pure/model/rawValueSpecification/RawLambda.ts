@@ -51,12 +51,12 @@ export class RawLambda
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.LAMBDA,
+      CORE_HASH_STRUCTURE.RAW_LAMBDA,
       hashLambda(this.parameters, this.body),
     ]);
   }
 
-  accept_ValueSpecificationVisitor<T>(
+  accept_RawValueSpecificationVisitor<T>(
     visitor: RawValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_RawLambda(this);
