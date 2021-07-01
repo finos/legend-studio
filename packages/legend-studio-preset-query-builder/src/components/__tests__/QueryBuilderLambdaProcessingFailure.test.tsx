@@ -19,8 +19,9 @@ import { getByText } from '@testing-library/react';
 import {
   unsupportedGetAllWithOneConditionFilter,
   errorInGraphLambda,
-  unsupportedFunctionName,
+  unsupportedFunction,
   misplacedTakeFunction,
+  unsupportedFunctionWithFullPath,
 } from './QueryBuilder_FailureTestData';
 import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
 import type { PlainObject } from '@finos/legend-studio-shared';
@@ -76,8 +77,14 @@ const cases: TestCase[] = [
   [
     'Unsupported function',
     relationalCtx,
-    unsupportedFunctionName,
-    `Can't build function 'testUnSupported'`,
+    unsupportedFunction,
+    `Can't build expression with unsupported function 'testUnSupported'`,
+  ],
+  [
+    'Unsupported function (with full-path)',
+    relationalCtx,
+    unsupportedFunctionWithFullPath,
+    `Can't build expression with unsupported function 'something::getAll'`,
   ],
   [
     'Malformed filter() function',
@@ -89,7 +96,7 @@ const cases: TestCase[] = [
     'Misplaced take() function',
     relationalCtx,
     misplacedTakeFunction,
-    `Only support take() in TDS expression`,
+    `Can't build 'take()' expression. Only support 'take()' in TDS expression`,
   ],
 ];
 

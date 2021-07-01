@@ -23,23 +23,25 @@ export enum QUERY_BUILDER_TEST_ID {
 }
 
 export enum SUPPORTED_FUNCTIONS {
-  TDS_ASC = 'asc', // meta::pure::tds::asc
-  TDS_DESC = 'desc', // meta::pure::tds::desc
-  TDS_AGG = 'agg', // meta::pure::tds::agg
-  TDS_COL = 'col', // meta::pure::tds::col
-  TDS_DISTINCT = 'distinct', // meta::pure::tds::distinct
-  TDS_PROJECT = 'project', // meta::pure::tds::project
-  TDS_GROUP_BY = 'groupBy', // meta::pure::tds::groupBy
-  TDS_SORT = 'sort', // meta::pure::tds::sort
-  TDS_TAKE = 'take', // meta::pure::tds::take
-  EXISTS = 'exists', // meta::pure::functions::collection::exists
-  FILTER = 'filter', // meta::pure::functions::collection::filter
-  GET_ALL = 'getAll', // meta::pure::functions::collection::getAll
-  GRAPH_FETCH = 'graphFetch', // meta::pure::graphFetch::execution::graphFetch
-  GRAPH_FETCH_CHECKED = 'graphFetchChecked', // meta::pure::graphFetch::execution::graphFetchChecked
-  SERIALIZE = 'serialize', // meta::pure::graphFetch::execution::serialize
-  NOT = 'not', // meta::pure::functions::boolean::not
-  TAKE = 'take', // meta::pure::functions::collection::take
+  EXISTS = 'meta::pure::functions::collection::exists',
+  FILTER = 'meta::pure::functions::collection::filter',
+  GET_ALL = 'meta::pure::functions::collection::getAll',
+  NOT = 'meta::pure::functions::boolean::not',
+  TAKE = 'meta::pure::functions::collection::take',
+
+  GRAPH_FETCH = 'meta::pure::graphFetch::execution::graphFetch',
+  GRAPH_FETCH_CHECKED = 'meta::pure::graphFetch::execution::graphFetchChecked',
+  SERIALIZE = 'meta::pure::graphFetch::execution::serialize',
+
+  TDS_ASC = 'meta::pure::tds::asc',
+  TDS_DESC = 'meta::pure::tds::desc',
+  TDS_AGG = 'meta::pure::tds::agg',
+  TDS_COL = 'meta::pure::tds::col',
+  TDS_DISTINCT = 'meta::pure::tds::distinct',
+  TDS_PROJECT = 'meta::pure::tds::project',
+  TDS_GROUP_BY = 'meta::pure::tds::groupBy',
+  TDS_SORT = 'meta::pure::tds::sort',
+  TDS_TAKE = 'meta::pure::tds::take',
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';

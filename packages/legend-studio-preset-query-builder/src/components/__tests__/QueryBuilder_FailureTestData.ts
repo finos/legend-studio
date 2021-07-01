@@ -89,7 +89,7 @@ export const unsupportedGetAllWithOneConditionFilter = {
   parameters: [],
 };
 
-export const unsupportedFunctionName = {
+export const unsupportedFunction = {
   _type: 'lambda',
   body: [
     {
@@ -99,6 +99,23 @@ export const unsupportedFunctionName = {
         {
           _type: 'class',
           fullPath: 'model::pure::tests::model::simple::GeographicEntityType',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const unsupportedFunctionWithFullPath = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'something::getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'model::pure::tests::model::simple::Person',
         },
       ],
     },

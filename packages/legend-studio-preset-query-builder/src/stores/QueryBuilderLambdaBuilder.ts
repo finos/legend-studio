@@ -16,6 +16,7 @@
 
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { Class, Multiplicity } from '@finos/legend-studio';
+import { extractElementNameFromPath } from '@finos/legend-studio';
 import {
   InstanceValue,
   PackageableElementExplicitReference,
@@ -43,7 +44,7 @@ const buildGetAllFunction = (
   multiplicity: Multiplicity,
 ): SimpleFunctionExpression => {
   const _func = new SimpleFunctionExpression(
-    SUPPORTED_FUNCTIONS.GET_ALL,
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.GET_ALL),
     multiplicity,
   );
   const classInstance = new InstanceValue(
@@ -80,7 +81,7 @@ const buildFilterExpression = (
     );
   // main filter expression
   const filterExpression = new SimpleFunctionExpression(
-    SUPPORTED_FUNCTIONS.FILTER,
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FILTER),
     multiplicityOne,
   );
   // param [0]
@@ -137,7 +138,7 @@ export const buildLambdaFunction = (
     queryBuilderState.fetchStructureState.projectionState.columns.length
   ) {
     const projectFunction = new SimpleFunctionExpression(
-      SUPPORTED_FUNCTIONS.TDS_PROJECT,
+      extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_PROJECT),
       multiplicityOne,
     );
     const colLambdas = new CollectionInstanceValue(multiplicityOne);
@@ -189,13 +190,13 @@ export const buildLambdaFunction = (
       queryBuilderState.fetchStructureState.graphFetchTreeState.treeData.tree,
     ];
     const serializeFunction = new SimpleFunctionExpression(
-      SUPPORTED_FUNCTIONS.SERIALIZE,
+      extractElementNameFromPath(SUPPORTED_FUNCTIONS.SERIALIZE),
       multiplicityOne,
     );
     const graphFetchFunc = new SimpleFunctionExpression(
       queryBuilderState.fetchStructureState.graphFetchTreeState.isChecked
-        ? SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED
-        : SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+        ? extractElementNameFromPath(SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED)
+        : extractElementNameFromPath(SUPPORTED_FUNCTIONS.GRAPH_FETCH),
       multiplicityOne,
     );
     const expression = lambdaFunction.expressionSequence[0];

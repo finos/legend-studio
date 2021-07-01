@@ -14,12 +14,31 @@
  * limitations under the License.
  */
 
-import { fromElementPathToMappingElementId } from '../MetaModelUtility';
+import {
+  extractElementNameFromPath,
+  fromElementPathToMappingElementId,
+  matchFunctionName,
+} from '../MetaModelUtility';
 import { unitTest } from '@finos/legend-studio-shared';
 
+test(unitTest('Extract element name in full element path'), () => {
+  expect(extractElementNameFromPath('namePart')).toBe('namePart');
+  expect(extractElementNameFromPath('p1::p2::p3::namePart')).toBe('namePart');
+});
+
+test(unitTest('Matches function name'), () => {
+  expect(matchFunctionName('fnX', 'p1::p2::p3::fnX')).toBe(true);
+  expect(matchFunctionName('fnX', 'fnX')).toBe(true);
+  expect(matchFunctionName('p5::fnX', 'p1::p2::p3::fnX')).toBe(false);
+  expect(matchFunctionName('p3::fnX', 'p1::p2::p3::fnX')).toBe(false);
+  expect(matchFunctionName('fnY', 'fnX')).toBe(false);
+});
+
 test(unitTest('Converts element path to mapping element default ID'), () => {
-  const _class =
-    'meta::pure::mapping::modelToModel::test::shared::dest::Person';
-  const expected = 'meta_pure_mapping_modelToModel_test_shared_dest_Person';
-  expect(fromElementPathToMappingElementId(_class)).toBe(expected);
+  expect(
+    fromElementPathToMappingElementId(
+      'meta::pure::mapping::modelToModel::test::shared::dest::Person',
+    ),
+  ).toBe('meta_pure_mapping_modelToModel_test_shared_dest_Person');
+  expect(fromElementPathToMappingElementId('Person')).toBe('Person');
 });

@@ -24,6 +24,7 @@ import type {
   V1_Variable,
   ValueSpecification,
 } from '@finos/legend-studio';
+import { matchFunctionName } from '@finos/legend-studio';
 import { InstanceValue } from '@finos/legend-studio';
 import {
   V1_AppliedFunction,
@@ -229,7 +230,7 @@ const buildProjectFunctionExpression = (
           .filter(
             (v: V1_ValueSpecification): v is V1_AppliedFunction =>
               v instanceof V1_AppliedFunction &&
-              v.function === SUPPORTED_FUNCTIONS.TDS_COL,
+              matchFunctionName(v.function, SUPPORTED_FUNCTIONS.TDS_COL),
           )
           .map((v) => v.parameters)
           .flat()
@@ -319,46 +320,46 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
         compileContext: V1_GraphBuilderContext,
         processingContext: V1_ProcessingContext,
       ): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
-        switch (functionName) {
-          case SUPPORTED_FUNCTIONS.GET_ALL: {
-            return buildGetAllFunctionExpression(
-              functionName,
-              parameters,
-              openVariables,
-              compileContext,
-              processingContext,
-            );
-          }
-          case SUPPORTED_FUNCTIONS.FILTER: {
-            return buildFilterFunctionExpression(
-              functionName,
-              parameters,
-              openVariables,
-              compileContext,
-              processingContext,
-            );
-          }
-          case SUPPORTED_FUNCTIONS.EXISTS: {
-            return buildExistsFunctionExpression(
-              functionName,
-              parameters,
-              openVariables,
-              compileContext,
-              processingContext,
-            );
-          }
-          case SUPPORTED_FUNCTIONS.TDS_PROJECT: {
-            return buildProjectFunctionExpression(
-              functionName,
-              parameters,
-              openVariables,
-              compileContext,
-              processingContext,
-            );
-          }
-          default:
-            return undefined;
+        if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
+          return buildGetAllFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)
+        ) {
+          return buildFilterFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.EXISTS)
+        ) {
+          return buildExistsFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
+        ) {
+          return buildProjectFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
         }
+        return undefined;
       },
     ];
   }

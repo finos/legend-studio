@@ -59,7 +59,16 @@ import {
 import {
   lambda_input_filterWithExists,
   lambda_output_filterWithExists,
-} from './QueryBuilder_TestFilterQueriesWithExits';
+} from './QueryBuilder_TestFilterQueriesWithExists';
+import {
+  lambda_input_graphFetchWithFullPathFunctions,
+  lambda_output_graphFetchWithFullPathFunctions,
+  lambda_input_filterWithFullPathFunctions,
+  lambda_output_filterWithFullPathFunctions,
+  lambda_input_projectionWithFullPathFunctions,
+  lambda_output_projectionWithFullPathFunctions,
+} from './QueryBuilder_TestQueriesWithFullPathFunctions';
+
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 
 type RoundtripTestCase = [
@@ -129,9 +138,21 @@ const cases: RoundtripTestCase[] = [
     projectWithDerivedProperty,
     undefined,
   ],
+  [
+    '(auto-fix) Projection with full-path functions',
+    projectionCtx,
+    lambda_output_projectionWithFullPathFunctions,
+    lambda_input_projectionWithFullPathFunctions,
+  ],
   // graph fetch
   ['Simple graph fetch', graphFetchCtx, simpleGraphFetch, undefined],
   ['Complex graph fetch', graphFetchCtx, complexGraphFetch, undefined],
+  [
+    '(auto-fix) Graph-fetch with full-path functions',
+    graphFetchCtx,
+    lambda_output_graphFetchWithFullPathFunctions,
+    lambda_input_graphFetchWithFullPathFunctions,
+  ],
   // filter
   [
     'Simple filter',
@@ -201,6 +222,12 @@ const cases: RoundtripTestCase[] = [
     m2mFilterCtx,
     lambda_output_filterWithExists,
     lambda_input_filterWithExists,
+  ],
+  [
+    '(auto-fix) Filter with full-path functions',
+    m2mFilterCtx,
+    lambda_output_filterWithFullPathFunctions,
+    lambda_input_filterWithFullPathFunctions,
   ],
 ];
 

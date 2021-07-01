@@ -43,13 +43,11 @@ import {
   RawLambda,
   setUpEditorWithDefaultSDLCData,
 } from '@finos/legend-studio';
-import {
-  QUERY_BUILDER_TEST_ID,
-  SUPPORTED_FUNCTIONS,
-} from '../../QueryBuilder_Constants';
+import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Constants';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
@@ -219,13 +217,13 @@ test(
         (e) => e.columnState === fistNameCol,
       ),
     );
-    expect(firstnameSortState.sortType).toBe(SUPPORTED_FUNCTIONS.TDS_ASC);
+    expect(firstnameSortState.sortType).toBe(COLUMN_SORT_TYPE.ASC);
     const legalNameColSortState = guaranteeNonNullable(
       resultSetModifierState.sortColumns.find(
         (e) => e.columnState === legalNameCol,
       ),
     );
-    expect(legalNameColSortState.sortType).toBe(SUPPORTED_FUNCTIONS.TDS_DESC);
+    expect(legalNameColSortState.sortType).toBe(COLUMN_SORT_TYPE.DESC);
     const queryBuilder = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
     );

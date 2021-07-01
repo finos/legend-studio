@@ -25,7 +25,10 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import { SortColumnState } from './QueryResultSetModifierState';
+import {
+  COLUMN_SORT_TYPE,
+  SortColumnState,
+} from './QueryResultSetModifierState';
 import type { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import {
   QueryBuilderFilterTreeGroupNodeData,
@@ -50,6 +53,8 @@ import type {
   PackageableElement,
 } from '@finos/legend-studio';
 import {
+  matchFunctionName,
+  extractElementNameFromPath,
   PackageableElementExplicitReference,
   PackageableElementImplicitReference,
   Class,
@@ -237,7 +242,7 @@ export class QueryBuilderLambdaProcessor
     valueSpecification: SimpleFunctionExpression,
   ): void {
     const functionName = valueSpecification.functionName;
-    if (functionName === SUPPORTED_FUNCTIONS.TDS_PROJECT) {
+    if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)) {
       const params = valueSpecification.parametersValues;
       if (params.length === 3) {
         const paramOne = guaranteeType(params[0], SimpleFunctionExpression);
@@ -247,13 +252,10 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          (
-            [
-              SUPPORTED_FUNCTIONS.GET_ALL,
-              SUPPORTED_FUNCTIONS.FILTER,
-            ] as string[]
-          ).includes(paramOne.functionName),
-          'Only support project() immediately following either getAll() or filter()',
+          [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
+            matchFunctionName(paramOne.functionName, fn),
+          ),
+          `Can't build 'project()' expression. Only support 'project()' immediately following either 'getAll()' or 'filter()'`,
         );
 
         const lambdaParam = params[1];
@@ -283,19 +285,15 @@ export class QueryBuilderLambdaProcessor
         } else if (lambdaAlias instanceof PrimitiveInstanceValue) {
           aliases = [getNullableStringValueFromValueSpec(lambdaAlias) ?? ''];
         } else {
-          throw new Error(
-            `Expecting different specification for function ${SUPPORTED_FUNCTIONS.TDS_PROJECT}`,
-          );
+          throw new Error(`Can't build 'project()' expression`);
         }
         this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
           (e, idx) => e.setColumnName(aliases[idx]),
         );
         return;
       }
-      throw new Error(
-        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.TDS_PROJECT}'`,
-      );
-    } else if (functionName === SUPPORTED_FUNCTIONS.GET_ALL) {
+      throw new Error(`Can't build 'project()' expression`);
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
       const paramOne = valueSpecification.parametersValues[0];
       if (paramOne instanceof InstanceValue) {
         assertTrue(
@@ -304,7 +302,7 @@ export class QueryBuilderLambdaProcessor
               PackageableElementExplicitReference ||
               paramOne.values[0] instanceof
                 PackageableElementImplicitReference),
-          'getAll() class is missing',
+          `Can't build 'getAll()' expression. 'getAll()' class is missing`,
         );
         const _class = (
           paramOne.values[0] as PackageableElementReference<PackageableElement>
@@ -315,10 +313,8 @@ export class QueryBuilderLambdaProcessor
           return;
         }
       }
-      throw new Error(
-        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.GET_ALL}'`,
-      );
-    } else if (functionName === SUPPORTED_FUNCTIONS.TDS_TAKE) {
+      throw new Error(`Can't build 'getAll()' expression`);
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_TAKE)) {
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
           valueSpecification.parametersValues[0],
@@ -330,15 +326,13 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          (
-            [
-              SUPPORTED_FUNCTIONS.TDS_TAKE,
-              SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-              SUPPORTED_FUNCTIONS.TDS_SORT,
-              SUPPORTED_FUNCTIONS.TDS_PROJECT,
-            ] as string[]
-          ).includes(paramOne.functionName),
-          'Only support take() in TDS expression',
+          [
+            SUPPORTED_FUNCTIONS.TDS_TAKE,
+            SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+            SUPPORTED_FUNCTIONS.TDS_SORT,
+            SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
+          `Can't build 'take()' expression. Only support 'take()' in TDS expression`,
         );
 
         const takeValue = getNullableNumberValueFromValueSpec(
@@ -347,10 +341,10 @@ export class QueryBuilderLambdaProcessor
         this.queryBuilderState.resultSetModifierState.setLimit(takeValue);
         return;
       }
-      throw new Error(
-        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.TDS_TAKE}'`,
-      );
-    } else if (functionName === SUPPORTED_FUNCTIONS.TDS_DISTINCT) {
+      throw new Error(`Can't build 'take()' expression`);
+    } else if (
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DISTINCT)
+    ) {
       if (valueSpecification.parametersValues.length === 1) {
         const paramOne = guaranteeType(
           valueSpecification.parametersValues[0],
@@ -362,24 +356,20 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          (
-            [
-              SUPPORTED_FUNCTIONS.TDS_TAKE,
-              SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-              SUPPORTED_FUNCTIONS.TDS_SORT,
-              SUPPORTED_FUNCTIONS.TDS_PROJECT,
-            ] as string[]
-          ).includes(paramOne.functionName),
-          'Only support distinct() in TDS expression',
+          [
+            SUPPORTED_FUNCTIONS.TDS_TAKE,
+            SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+            SUPPORTED_FUNCTIONS.TDS_SORT,
+            SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
+          `Can't build 'distinct()' expression. Only support 'distinct()' in TDS expression`,
         );
 
         this.queryBuilderState.resultSetModifierState.distinct = true;
         return;
       }
-      throw new Error(
-        `Expecting no parameter for '${SUPPORTED_FUNCTIONS.TDS_DISTINCT}'`,
-      );
-    } else if (functionName === SUPPORTED_FUNCTIONS.TDS_SORT) {
+      throw new Error(`Can't build 'distinct()' expression`);
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_SORT)) {
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
           valueSpecification.parametersValues[0],
@@ -391,15 +381,13 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          (
-            [
-              SUPPORTED_FUNCTIONS.TDS_TAKE,
-              SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-              SUPPORTED_FUNCTIONS.TDS_SORT,
-              SUPPORTED_FUNCTIONS.TDS_PROJECT,
-            ] as string[]
-          ).includes(paramOne.functionName),
-          'Only support sort() in TDS expression',
+          [
+            SUPPORTED_FUNCTIONS.TDS_TAKE,
+            SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+            SUPPORTED_FUNCTIONS.TDS_SORT,
+            SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
+          `Can't build 'sort()' expression. Only support 'sort()' in TDS expression`,
         );
 
         const sortParam = valueSpecification.parametersValues[1];
@@ -415,13 +403,15 @@ export class QueryBuilderLambdaProcessor
           return;
         }
       }
-      throw new Error(
-        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.TDS_SORT}'`,
-      );
+      throw new Error(`Can't build 'sort()' expression`);
     } else if (
-      (functionName === SUPPORTED_FUNCTIONS.TDS_ASC ||
-        functionName === SUPPORTED_FUNCTIONS.TDS_DESC) &&
-      this.nextFunctionExpression?.functionName === SUPPORTED_FUNCTIONS.TDS_SORT
+      (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_ASC) ||
+        matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DESC)) &&
+      this.nextFunctionExpression &&
+      matchFunctionName(
+        this.nextFunctionExpression.functionName,
+        SUPPORTED_FUNCTIONS.TDS_SORT,
+      )
     ) {
       if (valueSpecification.parametersValues.length === 1) {
         const sortColumnName = getNullableStringValueFromValueSpec(
@@ -437,7 +427,12 @@ export class QueryBuilderLambdaProcessor
             editorStore,
             queryBuilderProjectionColumnState,
           );
-          sortColumnState.sortType = functionName;
+          sortColumnState.sortType = matchFunctionName(
+            functionName,
+            SUPPORTED_FUNCTIONS.TDS_ASC,
+          )
+            ? COLUMN_SORT_TYPE.ASC
+            : COLUMN_SORT_TYPE.DESC;
           this.queryBuilderState.resultSetModifierState.addSortColumn(
             sortColumnState,
           );
@@ -445,9 +440,11 @@ export class QueryBuilderLambdaProcessor
         }
       }
       throw new Error(
-        `Expecting different specification for function '${functionName}'`,
+        `Can't build '${extractElementNameFromPath(
+          functionName,
+        )}()' expression`,
       );
-    } else if (functionName === SUPPORTED_FUNCTIONS.FILTER) {
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)) {
       const filterState = this.queryBuilderState.filterState;
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
@@ -460,8 +457,8 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          paramOne.functionName === SUPPORTED_FUNCTIONS.GET_ALL,
-          'Only support filter() immediately following getAll()',
+          matchFunctionName(paramOne.functionName, SUPPORTED_FUNCTIONS.GET_ALL),
+          `Can't build 'filter()' expression. Only support 'filter()' immediately following 'getAll()'`,
         );
 
         const filterExpression = valueSpecification.parametersValues[1];
@@ -477,10 +474,8 @@ export class QueryBuilderLambdaProcessor
           return;
         }
       }
-      throw new Error(
-        `Expecting different specification for function '${SUPPORTED_FUNCTIONS.FILTER}'`,
-      );
-    } else if (functionName === SUPPORTED_FUNCTIONS.SERIALIZE) {
+      throw new Error(`Can't build 'filter()' expression`);
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.SERIALIZE)) {
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
           valueSpecification.parametersValues[0],
@@ -495,13 +490,11 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          (
-            [
-              SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-              SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
-            ] as string[]
-          ).includes(paramOne.functionName),
-          'Only support serialize() for graph-fetch',
+          [
+            SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+            SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+          ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
+          `Can't build 'serialize()' expression. Only support 'serialize()' immediately following graph-fetch expression`,
         );
 
         const serializeFunc = valueSpecification.parametersValues[1];
@@ -519,13 +512,22 @@ export class QueryBuilderLambdaProcessor
         }
       }
     } else if (
-      (functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED ||
-        functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH) &&
-      this.nextFunctionExpression?.functionName ===
-        SUPPORTED_FUNCTIONS.SERIALIZE
+      (matchFunctionName(
+        functionName,
+        SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+      ) ||
+        matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GRAPH_FETCH)) &&
+      this.nextFunctionExpression &&
+      matchFunctionName(
+        this.nextFunctionExpression.functionName,
+        SUPPORTED_FUNCTIONS.SERIALIZE,
+      )
     ) {
       this.queryBuilderState.fetchStructureState.graphFetchTreeState.setChecked(
-        functionName === SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+        matchFunctionName(
+          functionName,
+          SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+        ),
       );
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
@@ -541,19 +543,18 @@ export class QueryBuilderLambdaProcessor
 
         // check caller
         assertTrue(
-          (
-            [
-              SUPPORTED_FUNCTIONS.FILTER,
-              SUPPORTED_FUNCTIONS.GET_ALL,
-            ] as string[]
-          ).includes(paramOne.functionName),
-          'Only support graphFetch() and graphFetchChecked() immediately following either getAll() or filter()',
+          [SUPPORTED_FUNCTIONS.FILTER, SUPPORTED_FUNCTIONS.GET_ALL].some((fn) =>
+            matchFunctionName(paramOne.functionName, fn),
+          ),
+          `Can't build graph-fetch expression. Only support 'graphFetch()' and 'graphFetchChecked()' immediately following either 'getAll()' or 'filter()'`,
         );
 
         return;
       }
     }
-    throw new Error(`Can't build function '${functionName}'`);
+    throw new Error(
+      `Can't build expression with unsupported function '${functionName}'`,
+    );
   }
 
   visit_VariableExpression(valueSpecification: VariableExpression): void {
@@ -581,8 +582,11 @@ export class QueryBuilderLambdaProcessor
     valueSpecification: AbstractPropertyExpression,
   ): void {
     if (
-      this.nextFunctionExpression?.functionName ===
-      SUPPORTED_FUNCTIONS.TDS_PROJECT
+      this.nextFunctionExpression &&
+      matchFunctionName(
+        this.nextFunctionExpression.functionName,
+        SUPPORTED_FUNCTIONS.TDS_PROJECT,
+      )
     ) {
       const projectionState =
         this.queryBuilderState.fetchStructureState.projectionState;
@@ -603,7 +607,7 @@ export class QueryBuilderLambdaProcessor
       }
       return;
     }
-    throw new Error('Error processing property expression');
+    throw new Error(`Can't build property expression`);
   }
 
   visit_InstanceValue(valueSpecification: InstanceValue): void {

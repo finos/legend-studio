@@ -33,7 +33,8 @@ import {
   getNonCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 
-const GREATER_THAN_FUNCTION_NAME = 'greaterThan'; // meta::pure::functions::lang::tests::greaterThan
+const FUNCTION__GREATER_THAN =
+  'meta::pure::functions::lang::tests::greaterThan';
 
 export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -106,7 +107,7 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      GREATER_THAN_FUNCTION_NAME,
+      FUNCTION__GREATER_THAN,
     );
   }
 
@@ -117,7 +118,7 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
     return buildFilterConditionState(
       filterState,
       expression,
-      GREATER_THAN_FUNCTION_NAME,
+      FUNCTION__GREATER_THAN,
       this,
     );
   }

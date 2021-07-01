@@ -35,7 +35,7 @@ import {
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
 
-const CONTAIN_FUNCTION_NAME = 'contains'; // meta::pure::functions::string::contains
+const FUNCTION__CONTAINS = 'meta::pure::functions::string::contains';
 
 export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -88,7 +88,7 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      CONTAIN_FUNCTION_NAME,
+      FUNCTION__CONTAINS,
     );
   }
 
@@ -99,7 +99,7 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
     return buildFilterConditionState(
       filterState,
       expression,
-      CONTAIN_FUNCTION_NAME,
+      FUNCTION__CONTAINS,
       this,
     );
   }

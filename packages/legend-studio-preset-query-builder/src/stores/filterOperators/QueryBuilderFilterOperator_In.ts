@@ -39,7 +39,7 @@ import {
   getCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 
-const IN_FUNCTION_NAME = 'in'; // meta::pure::functions::collection::in
+const FUNCTION__IN = 'meta::pure::functions::collection::in';
 
 export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -128,10 +128,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
-    return buildFilterConditionExpression(
-      filterConditionState,
-      IN_FUNCTION_NAME,
-    );
+    return buildFilterConditionExpression(filterConditionState, FUNCTION__IN);
   }
 
   buildFilterConditionState(
@@ -141,7 +138,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      IN_FUNCTION_NAME,
+      FUNCTION__IN,
       this,
     );
   }

@@ -20,6 +20,8 @@ import {
 } from './MetaModelConst';
 import {
   EnrichedError,
+  findLast,
+  guaranteeNonNullable,
   hashArray,
   hashObject,
 } from '@finos/legend-studio-shared';
@@ -48,8 +50,15 @@ export class SystemGraphProcessingError extends EnrichedError {
   }
 }
 
-export const fromElementPathToMappingElementId = (className: string): string =>
-  className.split(ELEMENT_PATH_DELIMITER).join('_');
+export const extractElementNameFromPath = (fullPath: string): string =>
+  guaranteeNonNullable(findLast(fullPath.split(ELEMENT_PATH_DELIMITER)));
+
+export const matchFunctionName = (
+  functionName: string,
+  functionFullPath: string,
+): boolean =>
+  functionName === functionFullPath ||
+  extractElementNameFromPath(functionFullPath) === functionName;
 
 /**
  * This method concatenate 2 fully-qualified elementh paths to form a single one
@@ -61,7 +70,9 @@ export const resolvePackageNameAndElementName = (
 ): [string, string] => {
   const index = path.lastIndexOf(ELEMENT_PATH_DELIMITER);
   const elementName =
-    index === -1 ? path : path.substring(index + 2, path.length);
+    index === -1
+      ? path
+      : path.substring(index + ELEMENT_PATH_DELIMITER.length, path.length);
   const packageName = index === -1 ? defaultPath : path.substring(0, index);
   return [packageName, elementName];
 };
@@ -74,6 +85,9 @@ export const hashObjectWithoutSourceInformation = (val: object): string =>
   hashObject(val, {
     excludeKeys: (key: string) => key === SOURCE_INFORMATION_KEY,
   });
+
+export const fromElementPathToMappingElementId = (className: string): string =>
+  className.split(ELEMENT_PATH_DELIMITER).join('_');
 
 export const hashLambda = (
   parameters: object | undefined,

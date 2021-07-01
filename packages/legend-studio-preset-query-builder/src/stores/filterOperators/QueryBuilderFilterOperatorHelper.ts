@@ -21,6 +21,10 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  extractElementNameFromPath,
+  matchFunctionName,
+} from '@finos/legend-studio';
+import {
   FunctionType,
   LambdaFunction,
   LambdaFunctionInstanceValue,
@@ -109,7 +113,7 @@ const getPropertyExpressionChainVariable = (
 
 const buildFilterConditionExpressionWithExists = (
   filterConditionState: FilterConditionState,
-  operatorFunctionName: string,
+  operatorFunctionFullPath: string,
 ): ValueSpecification => {
   const multiplicityOne =
     filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
@@ -182,7 +186,7 @@ const buildFilterConditionExpressionWithExists = (
   );
   for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
     const simpleFunctionExpression = new SimpleFunctionExpression(
-      SUPPORTED_FUNCTIONS.EXISTS,
+      extractElementNameFromPath(SUPPORTED_FUNCTIONS.EXISTS),
       multiplicityOne,
     );
     simpleFunctionExpression.parametersValues.push(
@@ -192,7 +196,7 @@ const buildFilterConditionExpressionWithExists = (
   }
   // build the leaf simple function expression which uses the operator
   const operatorEpression = new SimpleFunctionExpression(
-    operatorFunctionName,
+    extractElementNameFromPath(operatorFunctionFullPath),
     multiplicityOne,
   );
   operatorEpression.parametersValues.push(
@@ -230,7 +234,7 @@ const buildFilterConditionExpressionWithExists = (
 
 export const buildFilterConditionExpression = (
   filterConditionState: FilterConditionState,
-  operatorFunctionName: string,
+  operatorFunctionFullPath: string,
 ): ValueSpecification => {
   const multiplicityOne =
     filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
@@ -239,11 +243,11 @@ export const buildFilterConditionExpression = (
   if (filterConditionState.propertyEditorState.requiresExistsHandling) {
     return buildFilterConditionExpressionWithExists(
       filterConditionState,
-      operatorFunctionName,
+      operatorFunctionFullPath,
     );
   }
   const expression = new SimpleFunctionExpression(
-    operatorFunctionName,
+    extractElementNameFromPath(operatorFunctionFullPath),
     multiplicityOne,
   );
   expression.parametersValues.push(
@@ -272,14 +276,19 @@ export const buildFilterConditionExpression = (
 const buildFilterConditionStateWithExists = (
   filterState: QueryBuilderFilterState,
   expression: SimpleFunctionExpression,
-  operatorFunctionName: string,
+  operatorFunctionFullPath: string,
 ): [FilterConditionState | undefined, SimpleFunctionExpression | undefined] => {
-  if (expression.functionName === SUPPORTED_FUNCTIONS.EXISTS) {
+  if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.EXISTS)) {
     // 1. Decompose the exists() lambda chain into property expression chains
     const existsLambdaParameterNames: string[] = [];
     const propertyExpressions: AbstractPropertyExpression[] = [];
     let currentExpression: SimpleFunctionExpression = expression;
-    while (currentExpression.functionName === SUPPORTED_FUNCTIONS.EXISTS) {
+    while (
+      matchFunctionName(
+        currentExpression.functionName,
+        SUPPORTED_FUNCTIONS.EXISTS,
+      )
+    ) {
       const existsLambda = guaranteeNonNullable(
         guaranteeType(
           currentExpression.parametersValues[1],
@@ -322,7 +331,12 @@ const buildFilterConditionStateWithExists = (
       }
     }
     // NOTE: make sure that the inner most function expression is the one we support
-    if (currentExpression.functionName !== operatorFunctionName) {
+    if (
+      !matchFunctionName(
+        currentExpression.functionName,
+        operatorFunctionFullPath,
+      )
+    ) {
       return [undefined, undefined];
     }
 
@@ -385,7 +399,7 @@ const buildFilterConditionStateWithExists = (
 export const buildFilterConditionState = (
   filterState: QueryBuilderFilterState,
   expression: SimpleFunctionExpression,
-  operatorFunctionName: string,
+  operatorFunctionFullPath: string,
   operator: QueryBuilderFilterOperator,
   /**
    * Use this flag for operator that does not require any param (e.g. isEmpty)
@@ -400,7 +414,7 @@ export const buildFilterConditionState = (
   // NOTE: this might be short-sighted design, if more complicated use case coming up
   // we probably should just move the post-build check logic into simple operator case
   let mainExpressionWithOperator: SimpleFunctionExpression | undefined;
-  if (expression.functionName === operatorFunctionName) {
+  if (matchFunctionName(expression.functionName, operatorFunctionFullPath)) {
     const propertyExpression = guaranteeType(
       expression.parametersValues[0],
       AbstractPropertyExpression,
@@ -418,12 +432,14 @@ export const buildFilterConditionState = (
       propertyExpression,
     );
     mainExpressionWithOperator = expression;
-  } else if (expression.functionName === SUPPORTED_FUNCTIONS.EXISTS) {
+  } else if (
+    matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.EXISTS)
+  ) {
     [filterConditionState, mainExpressionWithOperator] =
       buildFilterConditionStateWithExists(
         filterState,
         expression,
-        operatorFunctionName,
+        operatorFunctionFullPath,
       );
   }
 
@@ -462,7 +478,7 @@ export const buildNotExpression = (
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   const expressionNot = new SimpleFunctionExpression(
-    SUPPORTED_FUNCTIONS.NOT,
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.NOT),
     multiplicityOne,
   );
   expressionNot.parametersValues.push(expression);
@@ -472,7 +488,7 @@ export const buildNotExpression = (
 export const unwrapNotExpression = (
   expression: SimpleFunctionExpression,
 ): SimpleFunctionExpression | undefined => {
-  if (expression.functionName === SUPPORTED_FUNCTIONS.NOT) {
+  if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.NOT)) {
     return guaranteeType(
       expression.parametersValues[0],
       SimpleFunctionExpression,
