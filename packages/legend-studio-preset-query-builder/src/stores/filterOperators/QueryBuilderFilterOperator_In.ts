@@ -38,7 +38,7 @@ import {
   unwrapNotExpression,
   getCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 
 export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

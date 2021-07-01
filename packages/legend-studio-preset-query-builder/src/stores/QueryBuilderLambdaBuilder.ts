@@ -37,7 +37,7 @@ import {
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { buildFilterConditionExpressions } from './QueryBuilderFilterState';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Constants';
+import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 
 const buildGetAllFunction = (
   _class: Class,

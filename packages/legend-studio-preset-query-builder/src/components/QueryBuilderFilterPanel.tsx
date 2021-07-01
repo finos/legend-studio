@@ -72,7 +72,7 @@ import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpre
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { assertErrorThrown } from '@finos/legend-studio-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Constants';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
   useApplicationStore,

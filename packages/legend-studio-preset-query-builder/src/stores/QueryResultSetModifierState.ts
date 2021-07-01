@@ -35,7 +35,7 @@ import {
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Constants';
+import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 
 export enum COLUMN_SORT_TYPE {
   ASC,

@@ -41,7 +41,7 @@ import {
   returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
-import { SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Constants';
+import { SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const';
 
 const buildBaseSimpleFunctionExpression = (
   processedParameters: ValueSpecification[],

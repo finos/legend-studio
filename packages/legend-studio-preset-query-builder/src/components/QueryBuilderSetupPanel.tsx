@@ -40,7 +40,7 @@ import {
   MappingIcon,
   RuntimeIcon,
 } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Constants';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

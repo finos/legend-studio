@@ -30,7 +30,7 @@ import {
   buildFilterConditionExpression,
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 
 export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

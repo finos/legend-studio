@@ -52,7 +52,7 @@ import type {
 } from '../QueryBuilderFilterState';
 import { FilterConditionState } from '../QueryBuilderFilterState';
 import format from 'date-fns/format';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 
 export const getDefaultPrimitiveInstanceValueForType = (
   type: PRIMITIVE_TYPE,

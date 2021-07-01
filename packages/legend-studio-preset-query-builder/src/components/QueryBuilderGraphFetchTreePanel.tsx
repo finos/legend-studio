@@ -30,7 +30,7 @@ import {
 } from '@finos/legend-studio-components';
 import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Constants';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import { isNonNullable } from '@finos/legend-studio-shared';
 import { getClassPropertyIcon } from '@finos/legend-studio';
 import type {

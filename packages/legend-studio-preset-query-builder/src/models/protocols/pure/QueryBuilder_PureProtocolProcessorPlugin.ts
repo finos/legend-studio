@@ -28,7 +28,7 @@ import {
   matchFunctionName,
 } from '@finos/legend-studio';
 import packageJson from '../../../../package.json';
-import { SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Constants';
+import { SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const';
 import {
   V1_buildExistsFunctionExpression,
   V1_buildFilterFunctionExpression,

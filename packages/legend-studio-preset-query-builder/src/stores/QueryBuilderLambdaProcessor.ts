@@ -68,7 +68,7 @@ import {
   InstanceValue,
 } from '@finos/legend-studio';
 import { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Constants';
+import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,

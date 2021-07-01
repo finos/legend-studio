@@ -36,7 +36,7 @@ import {
   RawLambda,
   setUpEditorWithDefaultSDLCData,
 } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Constants';
+import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';

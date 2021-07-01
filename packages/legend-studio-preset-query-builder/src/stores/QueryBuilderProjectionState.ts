@@ -30,7 +30,7 @@ import type {
   EditorStore,
 } from '@finos/legend-studio';
 import { TYPICAL_MULTIPLICITY_TYPE } from '@finos/legend-studio';
-import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Constants';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 
 export type ProjectionColumnOption = {
   label: string;

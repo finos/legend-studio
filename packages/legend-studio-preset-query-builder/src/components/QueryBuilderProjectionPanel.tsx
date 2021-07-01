@@ -38,7 +38,7 @@ import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpre
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
 import { useApplicationStore } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Constants';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

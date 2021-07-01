@@ -51,7 +51,7 @@ import {
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   SUPPORTED_FUNCTIONS,
-} from '../QueryBuilder_Constants';
+} from '../QueryBuilder_Const';
 
 export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
   AND = 'and',

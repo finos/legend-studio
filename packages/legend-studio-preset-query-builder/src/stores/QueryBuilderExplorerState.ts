@@ -39,7 +39,7 @@ import {
   Property,
   VariableExpression,
 } from '@finos/legend-studio';
-import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Constants';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',

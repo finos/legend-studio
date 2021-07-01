@@ -30,7 +30,7 @@ import {
   QueryBuilderUnsupportedPanel,
 } from './QueryBuilderUnsupportedPanel';
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Constants';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import { useApplicationStore } from '@finos/legend-studio';
 
 const QueryBuilderStatusBar = observer(
