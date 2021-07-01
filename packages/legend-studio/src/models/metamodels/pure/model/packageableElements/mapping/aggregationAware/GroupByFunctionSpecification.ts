@@ -18,7 +18,7 @@ import type { RawLambda } from '../../../../model/rawValueSpecification/RawLambd
 import { hashArray } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import { hashLambda } from '../../../../../../MetaModelUtility';
+import { hashLambda } from '../../../../../../MetaModelUtils';
 
 export class GroupByFunctionSpecification implements Hashable {
   groupByFn: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda

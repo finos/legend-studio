@@ -37,7 +37,7 @@ import {
   TEST_RESULT,
 } from './MappingTestState';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtility';
+import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   generateEnumerableNameFromToken,

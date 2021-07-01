@@ -16,7 +16,7 @@
 
 import { computed, observable, makeObservable } from 'mobx';
 import { hashArray } from '@finos/legend-studio-shared';
-import { hashLambda } from '../../../../MetaModelUtility';
+import { hashLambda } from '../../../../MetaModelUtils';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 import type { RawValueSpecificationVisitor } from '../../model/rawValueSpecification/RawValueSpecification';

@@ -20,7 +20,7 @@ import SplitPane from 'react-split-pane';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
-import { resolvePackageNameAndElementName } from '../../../../models/MetaModelUtility';
+import { resolvePackageNameAndElementName } from '../../../../models/MetaModelUtils';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
 import { guaranteeType } from '@finos/legend-studio-shared';

@@ -50,7 +50,7 @@ import {
 } from '../../../models/metamodels/pure/action/generation/GenerateStoreInput';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
 import type { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { resolvePackageNameAndElementName } from '../../../models/MetaModelUtility';
+import { resolvePackageNameAndElementName } from '../../../models/MetaModelUtils';
 import type { ValidationIssue } from '../../../models/metamodels/pure/action/validator/ValidationResult';
 import { createValidationError } from '../../../models/metamodels/pure/action/validator/ValidationResult';
 import type { StoreRelational_EditorPlugin_Extension } from '../../StoreRelational_EditorPlugin_Extension';

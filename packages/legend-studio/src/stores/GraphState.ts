@@ -43,7 +43,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import {
   GraphDataParserError,
   DependencyGraphProcessingError,
-} from '../models/MetaModelUtility';
+} from '../models/MetaModelUtils';
 import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';

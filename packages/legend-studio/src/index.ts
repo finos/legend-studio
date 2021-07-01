@@ -25,7 +25,7 @@ export * from './stores/network/Tracer';
 // metamodels
 export * from './models/metamodels/pure/graph/PureGraphExtension';
 export * from './models/metamodels/pure/graph/PureGraphManagerPlugin';
-export * from './models/MetaModelUtility';
+export * from './models/MetaModelUtils';
 export {
   PRIMITIVE_TYPE,
   CLIENT_VERSION,

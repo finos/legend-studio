@@ -43,7 +43,7 @@ import {
   GraphError,
   SystemGraphProcessingError,
   DependencyGraphProcessingError,
-} from '../../../MetaModelUtility';
+} from '../../../MetaModelUtils';
 import type { AbstractEngineConfig } from '../../../metamodels/pure/action/AbstractEngineConfiguration';
 import type {
   EngineSetupConfig,

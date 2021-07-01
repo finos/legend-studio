@@ -23,7 +23,7 @@ import {
   assertNonEmptyString,
   guaranteeType,
 } from '@finos/legend-studio-shared';
-import { GraphError } from '../../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../../MetaModelUtils';
 import { GenericType } from '../../../../../../metamodels/pure/model/packageableElements/domain/GenericType';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { PureModel } from '../../../../../../metamodels/pure/graph/PureModel';

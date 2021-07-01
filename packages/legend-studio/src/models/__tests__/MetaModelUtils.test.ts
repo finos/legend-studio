@@ -18,7 +18,7 @@ import {
   extractElementNameFromPath,
   fromElementPathToMappingElementId,
   matchFunctionName,
-} from '../MetaModelUtility';
+} from '../MetaModelUtils';
 import { unitTest } from '@finos/legend-studio-shared';
 
 test(unitTest('Extract element name in full element path'), () => {

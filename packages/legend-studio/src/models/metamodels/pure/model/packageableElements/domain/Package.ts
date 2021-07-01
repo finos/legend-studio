@@ -25,7 +25,7 @@ import {
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import { GraphError } from '../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../MetaModelUtils';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
 

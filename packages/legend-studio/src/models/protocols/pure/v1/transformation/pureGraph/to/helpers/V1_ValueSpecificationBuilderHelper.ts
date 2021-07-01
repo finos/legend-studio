@@ -25,7 +25,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   PRIMITIVE_TYPE,
 } from '../../../../../../../MetaModelConst';
-import { GraphError } from '../../../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../../../MetaModelUtils';
 import {
   LambdaFunction,
   FunctionType,

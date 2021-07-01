@@ -19,7 +19,7 @@ import { useEditorStore } from '../../../../stores/EditorStore';
 import { nominateRootSetImplementation } from '../../../../utils/MappingResolutionUtil';
 import { InstanceSetImplementationEditor } from './InstanceSetImplementationEditor';
 import { OperationSetImplementationEditor } from './OperationSetImplementationEditor';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtility';
+import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import { FaRegSquare, FaCheckSquare } from 'react-icons/fa';
 import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
 import { ClassIcon, getElementTypeIcon } from '../../../shared/Icon';
