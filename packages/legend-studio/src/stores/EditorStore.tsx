@@ -253,7 +253,7 @@ export class EditorStore {
       Boolean(
         this.sdlcState.currentProject &&
           this.sdlcState.currentWorkspace &&
-          this.sdlcState.currentRevision,
+          (this.sdlcState.currentRevision || this.isInViewerMode),
       ) && this.graphState.systemModel.isBuilt
     );
   }

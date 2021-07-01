@@ -91,6 +91,7 @@ export const GrammarTextEditor = observer(() => {
         ...baseTextEditorSettings,
         language: EDITOR_LANGUAGE.PURE,
         theme: EDITOR_THEME.STUDIO,
+        readOnly: editorStore.isInViewerMode,
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(_editor.getValue());
