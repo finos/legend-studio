@@ -47,7 +47,7 @@ export type V1_ElementProtocolDeserializer = (
   protocol: PlainObject<V1_PackageableElement>,
 ) => V1_PackageableElement | undefined;
 
-export type V1_SimpleFunctionExpressionBuilder = (
+export type V1_FunctionExpressionBuilder = (
   functionName: string,
   parameters: V1_ValueSpecification[],
   openVariables: string[],
@@ -79,7 +79,7 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
 
   V1_getExtraSourceInformationKeys?(): string[];
 
-  V1_getExtraSimpleFunctionExpressionBuilders?(): V1_SimpleFunctionExpressionBuilder[];
+  V1_getExtraFunctionExpressionBuilders?(): V1_FunctionExpressionBuilder[];
 
   /**
    * Used to specify any additional packageable elements added to the graph that is

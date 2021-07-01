@@ -33,6 +33,7 @@ import {
   addUniqueEntry,
   deleteEntry,
   assertErrorThrown,
+  UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
 import { QueryBuilderPropertyEditorState } from './QueryBuilderPropertyEditorState';
@@ -43,10 +44,14 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  extractElementNameFromPath,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
-import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Constants';
+import {
+  DEFAULT_LAMBDA_VARIABLE_NAME,
+  SUPPORTED_FUNCTIONS,
+} from '../QueryBuilder_Constants';
 
 export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
   AND = 'and',
@@ -223,7 +228,7 @@ export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeN
 
   constructor(
     parentId: string | undefined,
-    operation: QUERY_BUILDER_FILTER_GROUP_OPERATION,
+    groupOperation: QUERY_BUILDER_FILTER_GROUP_OPERATION,
   ) {
     super(parentId);
 
@@ -236,7 +241,7 @@ export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeN
       dragLayerLabel: computed,
     });
 
-    this.groupOperation = operation;
+    this.groupOperation = groupOperation;
     this.isOpen = true;
   }
 
@@ -297,6 +302,21 @@ export class QueryBuilderFilterTreeBlankConditionNodeData extends QueryBuilderFi
   }
 }
 
+const fromGroupOperation = (
+  operation: QUERY_BUILDER_FILTER_GROUP_OPERATION,
+): string => {
+  switch (operation) {
+    case QUERY_BUILDER_FILTER_GROUP_OPERATION.AND:
+      return SUPPORTED_FUNCTIONS.AND;
+    case QUERY_BUILDER_FILTER_GROUP_OPERATION.OR:
+      return SUPPORTED_FUNCTIONS.OR;
+    default:
+      throw new UnsupportedOperationError(
+        `Can't derive function name from group operation '${operation}'`,
+      );
+  }
+};
+
 const buildFilterConditionExpression = (
   filterState: QueryBuilderFilterState,
   node: QueryBuilderFilterTreeNodeData,
@@ -309,7 +329,7 @@ const buildFilterConditionExpression = (
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const func = new SimpleFunctionExpression(
-      node.groupOperation,
+      extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
       multiplicityOne,
     );
     const clauses = node.childrenIds
@@ -332,7 +352,7 @@ const buildFilterConditionExpression = (
         const clause1 = clauses[i];
         const clause2 = currentClause;
         const groupClause = new SimpleFunctionExpression(
-          node.groupOperation,
+          extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
           multiplicityOne,
         );
         groupClause.parametersValues = [clause1, clause2];

@@ -23,10 +23,12 @@ export enum QUERY_BUILDER_TEST_ID {
 }
 
 export enum SUPPORTED_FUNCTIONS {
+  AND = 'meta::pure::functions::boolean::and',
   EXISTS = 'meta::pure::functions::collection::exists',
   FILTER = 'meta::pure::functions::collection::filter',
   GET_ALL = 'meta::pure::functions::collection::getAll',
   NOT = 'meta::pure::functions::boolean::not',
+  OR = 'meta::pure::functions::boolean::or',
   TAKE = 'meta::pure::functions::collection::take',
 
   GRAPH_FETCH = 'meta::pure::graphFetch::execution::graphFetch',
@@ -42,6 +44,17 @@ export enum SUPPORTED_FUNCTIONS {
   TDS_GROUP_BY = 'meta::pure::tds::groupBy',
   TDS_SORT = 'meta::pure::tds::sort',
   TDS_TAKE = 'meta::pure::tds::take',
+
+  CONTAINS = 'meta::pure::functions::string::contains',
+  ENDS_WITH = 'meta::pure::functions::string::endsWith',
+  EQUAL = 'meta::pure::functions::boolean::equal',
+  GREATER_THAN = 'meta::pure::functions::lang::tests::greaterThan',
+  GREATER_THAN_EQUAL = 'meta::pure::functions::lang::tests::greaterThanEqual',
+  IN = 'meta::pure::functions::collection::in',
+  IS_EMPTY = 'meta::pure::functions::collection::isEmpty',
+  LESS_THAN = 'meta::pure::functions::lang::tests::lessThan',
+  LESS_THAN_EQUAL = 'meta::pure::functions::lang::tests::lessThanEqual',
+  STARTS_WITH = 'meta::pure::functions::string::startsWith',
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';

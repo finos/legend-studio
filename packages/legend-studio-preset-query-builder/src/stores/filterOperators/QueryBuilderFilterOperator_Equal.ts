@@ -42,8 +42,7 @@ import {
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
-
-const FUNCTION__EQUAL = 'meta::pure::functions::boolean::equal';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -156,7 +155,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      FUNCTION__EQUAL,
+      SUPPORTED_FUNCTIONS.EQUAL,
     );
   }
 
@@ -167,7 +166,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
     return buildFilterConditionState(
       filterState,
       expression,
-      FUNCTION__EQUAL,
+      SUPPORTED_FUNCTIONS.EQUAL,
       this,
     );
   }

@@ -17,7 +17,7 @@
 /// <reference types="jest-extended" />
 import { getByText } from '@testing-library/react';
 import {
-  unsupportedGetAllWithOneConditionFilter,
+  malformedFilterExpression,
   errorInGraphLambda,
   unsupportedFunction,
   misplacedTakeFunction,
@@ -78,25 +78,25 @@ const cases: TestCase[] = [
     'Unsupported function',
     relationalCtx,
     unsupportedFunction,
-    `Can't build expression with unsupported function 'testUnSupported'`,
+    `Can't find expression builder for function 'testUnsupported'. No function expression builder available from plugins.`,
   ],
   [
     'Unsupported function (with full-path)',
     relationalCtx,
     unsupportedFunctionWithFullPath,
-    `Can't build expression with unsupported function 'something::getAll'`,
+    `Can't find expression builder for function 'something::getAll'. No function expression builder available from plugins.`,
   ],
   [
-    'Malformed filter() function',
+    'Malformed filter()',
     relationalCtx,
-    unsupportedGetAllWithOneConditionFilter,
-    `Can't build filter expression function`,
+    malformedFilterExpression,
+    `Can't process 'filter()' expression`,
   ],
   [
-    'Misplaced take() function',
+    'Misplaced take()',
     relationalCtx,
     misplacedTakeFunction,
-    `Can't build 'take()' expression. Only support 'take()' in TDS expression`,
+    `Can't process 'take()' expression. Only support 'take()' in TDS expression`,
   ],
 ];
 

@@ -94,6 +94,19 @@ const getNullableNumberValueFromValueSpec = (
   return undefined;
 };
 
+const toGroupOperation = (
+  functionName: string,
+): QUERY_BUILDER_FILTER_GROUP_OPERATION => {
+  if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.AND)) {
+    return QUERY_BUILDER_FILTER_GROUP_OPERATION.AND;
+  } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.OR)) {
+    return QUERY_BUILDER_FILTER_GROUP_OPERATION.OR;
+  }
+  throw new UnsupportedOperationError(
+    `Can't derive group operation from function name '${functionName}'`,
+  );
+};
+
 const processFilterExpression = (
   expression: SimpleFunctionExpression,
   filterState: QueryBuilderFilterState,
@@ -103,13 +116,13 @@ const processFilterExpression = (
     ? filterState.getNode(parentFilterNodeId)
     : undefined;
   if (
-    Object.values(QUERY_BUILDER_FILTER_GROUP_OPERATION).includes(
-      expression.functionName as QUERY_BUILDER_FILTER_GROUP_OPERATION,
+    [SUPPORTED_FUNCTIONS.AND, SUPPORTED_FUNCTIONS.OR].some((fn) =>
+      matchFunctionName(expression.functionName, fn),
     )
   ) {
     const groupNode = new QueryBuilderFilterTreeGroupNodeData(
       parentFilterNodeId,
-      expression.functionName as QUERY_BUILDER_FILTER_GROUP_OPERATION,
+      toGroupOperation(expression.functionName),
     );
     filterState.nodes.set(groupNode.id, groupNode);
     expression.parametersValues.forEach((filterExpression) =>
@@ -117,7 +130,7 @@ const processFilterExpression = (
         guaranteeType(
           filterExpression,
           SimpleFunctionExpression,
-          `Can't build filter expression\n${printObject(filterExpression)}`,
+          `Can't process filter expression\n${printObject(filterExpression)}`,
         ),
         filterState,
         groupNode.id,
@@ -141,7 +154,7 @@ const processFilterExpression = (
         return;
       }
     }
-    throw new Error(`Can't build filter expression function`);
+    throw new Error(`Can't process filter expression function`);
   }
 };
 
@@ -169,7 +182,7 @@ const processFilterFunction = (
     );
     processFilterExpression(rootExpression, filterQueryState, undefined);
   } else {
-    throw new Error(`Can't build filter function`);
+    throw new Error(`Can't process filter function`);
   }
 };
 
@@ -255,7 +268,7 @@ export class QueryBuilderLambdaProcessor
           [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
             matchFunctionName(paramOne.functionName, fn),
           ),
-          `Can't build 'project()' expression. Only support 'project()' immediately following either 'getAll()' or 'filter()'`,
+          `Can't process 'project()' expression. Only support 'project()' immediately following either 'getAll()' or 'filter()'`,
         );
 
         const lambdaParam = params[1];
@@ -285,14 +298,14 @@ export class QueryBuilderLambdaProcessor
         } else if (lambdaAlias instanceof PrimitiveInstanceValue) {
           aliases = [getNullableStringValueFromValueSpec(lambdaAlias) ?? ''];
         } else {
-          throw new Error(`Can't build 'project()' expression`);
+          throw new Error(`Can't process 'project()' expression`);
         }
         this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
           (e, idx) => e.setColumnName(aliases[idx]),
         );
         return;
       }
-      throw new Error(`Can't build 'project()' expression`);
+      throw new Error(`Can't process 'project()' expression`);
     } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
       const paramOne = valueSpecification.parametersValues[0];
       if (paramOne instanceof InstanceValue) {
@@ -302,7 +315,7 @@ export class QueryBuilderLambdaProcessor
               PackageableElementExplicitReference ||
               paramOne.values[0] instanceof
                 PackageableElementImplicitReference),
-          `Can't build 'getAll()' expression. 'getAll()' class is missing`,
+          `Can't process 'getAll()' expression. 'getAll()' class is missing`,
         );
         const _class = (
           paramOne.values[0] as PackageableElementReference<PackageableElement>
@@ -313,7 +326,7 @@ export class QueryBuilderLambdaProcessor
           return;
         }
       }
-      throw new Error(`Can't build 'getAll()' expression`);
+      throw new Error(`Can't process 'getAll()' expression`);
     } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_TAKE)) {
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
@@ -332,7 +345,7 @@ export class QueryBuilderLambdaProcessor
             SUPPORTED_FUNCTIONS.TDS_SORT,
             SUPPORTED_FUNCTIONS.TDS_PROJECT,
           ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
-          `Can't build 'take()' expression. Only support 'take()' in TDS expression`,
+          `Can't process 'take()' expression. Only support 'take()' in TDS expression`,
         );
 
         const takeValue = getNullableNumberValueFromValueSpec(
@@ -341,7 +354,7 @@ export class QueryBuilderLambdaProcessor
         this.queryBuilderState.resultSetModifierState.setLimit(takeValue);
         return;
       }
-      throw new Error(`Can't build 'take()' expression`);
+      throw new Error(`Can't process 'take()' expression`);
     } else if (
       matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DISTINCT)
     ) {
@@ -362,13 +375,13 @@ export class QueryBuilderLambdaProcessor
             SUPPORTED_FUNCTIONS.TDS_SORT,
             SUPPORTED_FUNCTIONS.TDS_PROJECT,
           ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
-          `Can't build 'distinct()' expression. Only support 'distinct()' in TDS expression`,
+          `Can't process 'distinct()' expression. Only support 'distinct()' in TDS expression`,
         );
 
         this.queryBuilderState.resultSetModifierState.distinct = true;
         return;
       }
-      throw new Error(`Can't build 'distinct()' expression`);
+      throw new Error(`Can't process 'distinct()' expression`);
     } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_SORT)) {
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
@@ -387,7 +400,7 @@ export class QueryBuilderLambdaProcessor
             SUPPORTED_FUNCTIONS.TDS_SORT,
             SUPPORTED_FUNCTIONS.TDS_PROJECT,
           ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
-          `Can't build 'sort()' expression. Only support 'sort()' in TDS expression`,
+          `Can't process 'sort()' expression. Only support 'sort()' in TDS expression`,
         );
 
         const sortParam = valueSpecification.parametersValues[1];
@@ -403,7 +416,7 @@ export class QueryBuilderLambdaProcessor
           return;
         }
       }
-      throw new Error(`Can't build 'sort()' expression`);
+      throw new Error(`Can't process 'sort()' expression`);
     } else if (
       (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_ASC) ||
         matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DESC)) &&
@@ -440,7 +453,7 @@ export class QueryBuilderLambdaProcessor
         }
       }
       throw new Error(
-        `Can't build '${extractElementNameFromPath(
+        `Can't process '${extractElementNameFromPath(
           functionName,
         )}()' expression`,
       );
@@ -458,7 +471,7 @@ export class QueryBuilderLambdaProcessor
         // check caller
         assertTrue(
           matchFunctionName(paramOne.functionName, SUPPORTED_FUNCTIONS.GET_ALL),
-          `Can't build 'filter()' expression. Only support 'filter()' immediately following 'getAll()'`,
+          `Can't process 'filter()' expression. Only support 'filter()' immediately following 'getAll()'`,
         );
 
         const filterExpression = valueSpecification.parametersValues[1];
@@ -474,7 +487,7 @@ export class QueryBuilderLambdaProcessor
           return;
         }
       }
-      throw new Error(`Can't build 'filter()' expression`);
+      throw new Error(`Can't process 'filter()' expression`);
     } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.SERIALIZE)) {
       if (valueSpecification.parametersValues.length === 2) {
         const paramOne = guaranteeType(
@@ -494,7 +507,7 @@ export class QueryBuilderLambdaProcessor
             SUPPORTED_FUNCTIONS.GRAPH_FETCH,
             SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
           ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
-          `Can't build 'serialize()' expression. Only support 'serialize()' immediately following graph-fetch expression`,
+          `Can't process 'serialize()' expression. Only support 'serialize()' immediately following graph-fetch expression`,
         );
 
         const serializeFunc = valueSpecification.parametersValues[1];
@@ -546,15 +559,13 @@ export class QueryBuilderLambdaProcessor
           [SUPPORTED_FUNCTIONS.FILTER, SUPPORTED_FUNCTIONS.GET_ALL].some((fn) =>
             matchFunctionName(paramOne.functionName, fn),
           ),
-          `Can't build graph-fetch expression. Only support 'graphFetch()' and 'graphFetchChecked()' immediately following either 'getAll()' or 'filter()'`,
+          `Can't process graph-fetch expression. Only support 'graphFetch()' and 'graphFetchChecked()' immediately following either 'getAll()' or 'filter()'`,
         );
 
         return;
       }
     }
-    throw new Error(
-      `Can't build expression with unsupported function '${functionName}'`,
-    );
+    throw new Error(`Can't process expression for function '${functionName}'`);
   }
 
   visit_VariableExpression(valueSpecification: VariableExpression): void {
@@ -607,7 +618,7 @@ export class QueryBuilderLambdaProcessor
       }
       return;
     }
-    throw new Error(`Can't build property expression`);
+    throw new Error(`Can't process property expression`);
   }
 
   visit_InstanceValue(valueSpecification: InstanceValue): void {

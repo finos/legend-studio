@@ -34,8 +34,7 @@ import {
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
-
-const FUNCTION__ENDS_WITH = 'meta::pure::functions::string::endsWith';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export class QueryBuilderFilterOperator_EndWith extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -88,7 +87,7 @@ export class QueryBuilderFilterOperator_EndWith extends QueryBuilderFilterOperat
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      FUNCTION__ENDS_WITH,
+      SUPPORTED_FUNCTIONS.ENDS_WITH,
     );
   }
 
@@ -99,7 +98,7 @@ export class QueryBuilderFilterOperator_EndWith extends QueryBuilderFilterOperat
     return buildFilterConditionState(
       filterState,
       expression,
-      FUNCTION__ENDS_WITH,
+      SUPPORTED_FUNCTIONS.ENDS_WITH,
       this,
     );
   }

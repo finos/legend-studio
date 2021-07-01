@@ -32,9 +32,7 @@ import {
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
-
-const FUNCTION__LESS_THAN_EQUAL =
-  'meta::pure::functions::lang::tests::lessThanEqual';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -107,7 +105,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      FUNCTION__LESS_THAN_EQUAL,
+      SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
     );
   }
 
@@ -118,7 +116,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
     return buildFilterConditionState(
       filterState,
       expression,
-      FUNCTION__LESS_THAN_EQUAL,
+      SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
       this,
     );
   }

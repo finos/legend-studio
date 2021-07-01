@@ -34,8 +34,7 @@ import {
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
-
-const FUNCTION__CONTAINS = 'meta::pure::functions::string::contains';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -88,7 +87,7 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      FUNCTION__CONTAINS,
+      SUPPORTED_FUNCTIONS.CONTAINS,
     );
   }
 
@@ -99,7 +98,7 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
     return buildFilterConditionState(
       filterState,
       expression,
-      FUNCTION__CONTAINS,
+      SUPPORTED_FUNCTIONS.CONTAINS,
       this,
     );
   }

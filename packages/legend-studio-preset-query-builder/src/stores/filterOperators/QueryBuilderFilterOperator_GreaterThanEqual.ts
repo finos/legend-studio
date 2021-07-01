@@ -32,9 +32,7 @@ import {
   getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
-
-const FUNCTION__GREATER_THAN_EQUAL =
-  'meta::pure::functions::lang::tests::greaterThanEqual';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -107,7 +105,7 @@ export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFil
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      FUNCTION__GREATER_THAN_EQUAL,
+      SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
     );
   }
 
@@ -118,7 +116,7 @@ export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFil
     return buildFilterConditionState(
       filterState,
       expression,
-      FUNCTION__GREATER_THAN_EQUAL,
+      SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
       this,
     );
   }

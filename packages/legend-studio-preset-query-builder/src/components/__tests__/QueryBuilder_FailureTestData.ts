@@ -31,7 +31,7 @@ export const errorInGraphLambda = {
   parameters: [],
 };
 
-export const unsupportedGetAllWithOneConditionFilter = {
+export const malformedFilterExpression = {
   _type: 'lambda',
   body: [
     {
@@ -48,41 +48,6 @@ export const unsupportedGetAllWithOneConditionFilter = {
             },
           ],
         },
-        {
-          _type: 'lambda',
-          body: [
-            {
-              _type: 'func',
-              function: 'testUnSupported',
-              parameters: [
-                {
-                  _type: 'property',
-                  property: 'firstName',
-                  parameters: [
-                    {
-                      _type: 'var',
-                      name: 'x',
-                    },
-                  ],
-                },
-                {
-                  _type: 'string',
-                  values: ['testFirstName'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
-            },
-          ],
-          parameters: [
-            {
-              _type: 'var',
-              name: 'x',
-            },
-          ],
-        },
       ],
     },
   ],
@@ -94,7 +59,7 @@ export const unsupportedFunction = {
   body: [
     {
       _type: 'func',
-      function: 'testUnSupported',
+      function: 'testUnsupported',
       parameters: [
         {
           _type: 'class',

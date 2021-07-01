@@ -16,8 +16,8 @@
 
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { Class, Multiplicity } from '@finos/legend-studio';
-import { extractElementNameFromPath } from '@finos/legend-studio';
 import {
+  extractElementNameFromPath,
   InstanceValue,
   PackageableElementExplicitReference,
   CollectionInstanceValue,

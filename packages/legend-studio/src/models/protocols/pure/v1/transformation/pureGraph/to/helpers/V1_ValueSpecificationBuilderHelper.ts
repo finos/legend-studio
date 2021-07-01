@@ -18,7 +18,6 @@ import {
   Pair,
   guaranteeNonNullable,
   guaranteeType,
-  returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import {
@@ -47,10 +46,8 @@ import {
   RootGraphFetchTreeInstanceValue,
 } from '../../../../../../../metamodels/pure/model/valueSpecification/GraphFetchTree';
 import { ValueSpecification } from '../../../../../../../metamodels/pure/model/valueSpecification/ValueSpecification';
-import {
-  AbstractPropertyExpression,
-  SimpleFunctionExpression,
-} from '../../../../../../../metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
+import type { SimpleFunctionExpression } from '../../../../../../../metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
+import { AbstractPropertyExpression } from '../../../../../../../metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
 import { GenericType } from '../../../../../../../metamodels/pure/model/packageableElements/domain/GenericType';
 import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/GenericTypeReference';
 import {
@@ -191,7 +188,9 @@ export class V1_ValueSpecificationBuilder
   visit_AppliedFunction(
     appliedFunction: V1_AppliedFunction,
   ): ValueSpecification {
-    this.processingContext.push(`Applying ${appliedFunction.function}`);
+    this.processingContext.push(
+      `Applying function '${appliedFunction.function}'`,
+    );
     if (appliedFunction.function === LET_FUNCTION) {
       const vs = appliedFunction.parameters.map((expression) =>
         expression.accept_ValueSpecificationVisitor(
@@ -580,7 +579,7 @@ export function V1_buildLambdaBody(
   context: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): LambdaFunction {
-  processingContext.push('new V1_Lambda');
+  processingContext.push('Creating new lambda');
   const pureParameters = parameters.map(
     (p) =>
       p.accept_ValueSpecificationVisitor(
@@ -689,7 +688,7 @@ function buildPropertyGraphFetchTree(
       parameters,
       propertyGraphFetchTree.property,
     );
-    processingContext.push('PropertyTree');
+    processingContext.push('Creating graph-fetch property tree');
     processingContext.addInferredVariables(
       'this',
       createThisVariableForClass(context, parentClass.path),
@@ -867,30 +866,14 @@ export function V1_processProperty(
   );
 }
 
-export const V1_buildSimpleFunctionExpression = (
-  processedParameters: ValueSpecification[],
-  functionName: string,
-  compileContext: V1_GraphBuilderContext,
-): SimpleFunctionExpression => {
-  const _function = new SimpleFunctionExpression(
-    functionName,
-    compileContext.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-  );
-  const _func = returnUndefOnError(() =>
-    compileContext.resolveFunction(functionName),
-  );
-  _function.func = _func;
-  if (_func) {
-    const val = _func.value;
-    _function.genericType = GenericTypeExplicitReference.create(
-      new GenericType(val.returnType.value),
-    );
-    _function.multiplicity = val.returnMultiplicity;
-  }
-  _function.parametersValues = processedParameters;
-  return _function;
-};
-
+/**
+ * This is fairly similar to how engine does function matching in a way.
+ * Notice that Studio core should not attempt to do any function inferencing/matching
+ * at all as the job is meant for engine.
+ *
+ * On the other hand, the function handling/matching plugin mechanism is meant
+ * for extensions which should try to understand/match functions such as query builder.
+ */
 export function V1_buildFunctionExpression(
   functionName: string,
   parameters: V1_ValueSpecification[],
@@ -898,11 +881,11 @@ export function V1_buildFunctionExpression(
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] {
-  const extraSimpleFunctionExpressionBuilders =
+  const extraFunctionExpressionBuilders =
     compileContext.extensions.plugins.flatMap(
-      (plugin) => plugin.V1_getExtraSimpleFunctionExpressionBuilders?.() ?? [],
+      (plugin) => plugin.V1_getExtraFunctionExpressionBuilders?.() ?? [],
     );
-  for (const builder of extraSimpleFunctionExpressionBuilders) {
+  for (const builder of extraFunctionExpressionBuilders) {
     const metamodel = builder(
       functionName,
       parameters,
@@ -914,21 +897,7 @@ export function V1_buildFunctionExpression(
       return metamodel;
     }
   }
-  const processedParams = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
+  throw new UnsupportedOperationError(
+    `Can't find expression builder for function '${functionName}'. No function expression builder available from plugins.`,
   );
-  return [
-    V1_buildSimpleFunctionExpression(
-      processedParams,
-      functionName,
-      compileContext,
-    ),
-    processedParams,
-  ];
 }

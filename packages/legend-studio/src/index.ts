@@ -129,10 +129,7 @@ export { V1_AppliedFunction } from './models/protocols/pure/v1/model/valueSpecif
 export { V1_Collection } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Collection';
 export { V1_Lambda } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Lambda';
 export { V1_Variable } from './models/protocols/pure/v1/model/valueSpecification/V1_Variable';
-export {
-  V1_buildSimpleFunctionExpression,
-  V1_ValueSpecificationBuilder,
-} from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
+export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 
 // SDLC
 export { Entity } from './models/sdlc/models/entity/Entity';
@@ -169,7 +166,7 @@ export { LambdaEditor } from './components/shared/LambdaEditor';
 export * from './utils/Logger'; // TODO: to be removed when we move this to @finos/legend-studio-shared
 
 // test
-export { CORE_TEST_ID } from './const';
+export * from './const';
 export {
   getTestApplicationConfig,
   getTestEditorStore,

@@ -38,8 +38,7 @@ import {
   unwrapNotExpression,
   getCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
-
-const FUNCTION__IN = 'meta::pure::functions::collection::in';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -128,7 +127,10 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
-    return buildFilterConditionExpression(filterConditionState, FUNCTION__IN);
+    return buildFilterConditionExpression(
+      filterConditionState,
+      SUPPORTED_FUNCTIONS.IN,
+    );
   }
 
   buildFilterConditionState(
@@ -138,7 +140,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      FUNCTION__IN,
+      SUPPORTED_FUNCTIONS.IN,
       this,
     );
   }

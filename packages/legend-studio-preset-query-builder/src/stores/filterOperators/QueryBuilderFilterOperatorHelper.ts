@@ -21,10 +21,9 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  DATE_FORMAT,
   extractElementNameFromPath,
   matchFunctionName,
-} from '@finos/legend-studio';
-import {
   FunctionType,
   LambdaFunction,
   LambdaFunctionInstanceValue,
@@ -53,7 +52,6 @@ import type {
 } from '../QueryBuilderFilterState';
 import { FilterConditionState } from '../QueryBuilderFilterState';
 import format from 'date-fns/format';
-import { DATE_FORMAT } from '@finos/legend-studio/lib/const';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export const getDefaultPrimitiveInstanceValueForType = (
@@ -294,7 +292,7 @@ const buildFilterConditionStateWithExists = (
           currentExpression.parametersValues[1],
           LambdaFunctionInstanceValue,
         ).values[0],
-        'exists() lambda function is missing',
+        `Can't process exists() function expression. exists() lambda function is missing`,
       );
       if (
         existsLambda.expressionSequence.length === 1 &&
@@ -327,7 +325,7 @@ const buildFilterConditionStateWithExists = (
           );
         }
       } else {
-        throw new Error(`Can't build exists() lambda function`);
+        throw new Error(`Can't process exists() lambda function`);
       }
     }
     // NOTE: make sure that the inner most function expression is the one we support
@@ -373,7 +371,7 @@ const buildFilterConditionStateWithExists = (
       }
       assertTrue(
         pes.length > 0,
-        `exists() usage with non-chain property expression is not supported`,
+        `Can't process exists() function expression. exists() usage with non-chain property expression is not supported`,
       );
       for (let i = 0; i < pes.length - 1; ++i) {
         pes[i].parametersValues.unshift(pes[i + 1]);

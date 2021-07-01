@@ -15,8 +15,11 @@
  */
 
 import type { Entity } from '@finos/legend-studio';
-import { getTestApplicationConfig, PluginManager } from '@finos/legend-studio';
-import { getTestEditorStore } from '@finos/legend-studio';
+import {
+  getTestApplicationConfig,
+  PluginManager,
+  getTestEditorStore,
+} from '@finos/legend-studio';
 import { unitTest } from '@finos/legend-studio-shared';
 import { QueryBuilder_Preset } from '../../QueryBuilder_Preset';
 import {

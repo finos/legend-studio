@@ -30,8 +30,7 @@ import {
   buildFilterConditionExpression,
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
-
-const FUNCTION__IS_EMPTY = 'meta::pure::functions::collection::isEmpty';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Constants';
 
 export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -73,7 +72,7 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      FUNCTION__IS_EMPTY,
+      SUPPORTED_FUNCTIONS.IS_EMPTY,
     );
   }
 
@@ -84,7 +83,7 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
     return buildFilterConditionState(
       filterState,
       expression,
-      FUNCTION__IS_EMPTY,
+      SUPPORTED_FUNCTIONS.IS_EMPTY,
       this,
       true,
     );
