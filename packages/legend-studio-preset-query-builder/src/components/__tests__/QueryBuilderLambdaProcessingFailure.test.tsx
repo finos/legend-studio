@@ -90,7 +90,7 @@ const cases: TestCase[] = [
     'Malformed filter()',
     relationalCtx,
     malformedFilterExpression,
-    `Can't process 'filter()' expression`,
+    `Can't build 'filter()' expression`,
   ],
   [
     'Misplaced take()',

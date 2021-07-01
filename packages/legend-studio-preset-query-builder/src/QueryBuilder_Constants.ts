@@ -55,6 +55,8 @@ export enum SUPPORTED_FUNCTIONS {
   LESS_THAN = 'meta::pure::functions::lang::tests::lessThan',
   LESS_THAN_EQUAL = 'meta::pure::functions::lang::tests::lessThanEqual',
   STARTS_WITH = 'meta::pure::functions::string::startsWith',
+
+  UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';

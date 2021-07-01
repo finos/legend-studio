@@ -34,6 +34,7 @@ import {
   V1_buildFilterFunctionExpression,
   V1_buildGenericFunctionExpression,
   V1_buildGetAllFunctionExpression,
+  V1_buildGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
 } from './v1/V1_QueryBuilder_FunctionExpressionBuilder';
 
@@ -90,6 +91,16 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
         ) {
           return V1_buildProjectFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_GROUP_BY)
+        ) {
+          return V1_buildGroupByFunctionExpression(
             functionName,
             parameters,
             openVariables,
