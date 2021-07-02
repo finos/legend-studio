@@ -227,12 +227,12 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       );
       if (tables.size !== 1) {
         throw new Error(
-          `Can't find the main table for class '${rootRelationalInstanceSetImplementation.class.value.path}'. Please specify a main table using the ~mainTable directive.`,
+          `Can't find the main table for class '${rootRelationalInstanceSetImplementation.class.value.path}'. Please specify a main table using the ~mainTable directive`,
         );
       }
       if (dbs.size !== 1) {
         throw new Error(
-          `Can't find the main table for class '${rootRelationalInstanceSetImplementation.class.value.path}'. Inconsistent database definitions for the mapping`,
+          `Can't find the main table for class '${rootRelationalInstanceSetImplementation.class.value.path}': inconsistent database definitions for the mapping`,
         );
       }
       mainTableAlias = new TableAlias();

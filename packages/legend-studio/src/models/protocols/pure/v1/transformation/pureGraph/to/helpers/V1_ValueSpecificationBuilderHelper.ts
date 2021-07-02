@@ -898,6 +898,6 @@ export function V1_buildFunctionExpression(
     }
   }
   throw new UnsupportedOperationError(
-    `Can't find expression builder for function '${functionName}'. No function expression builder available from plugins.`,
+    `Can't find expression builder for function '${functionName}': no compatible function expression builder available from plugins`,
   );
 }

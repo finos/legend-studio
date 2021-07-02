@@ -361,7 +361,7 @@ export const V1_buildGroupByFunctionExpression = (
   assertType(
     columnExpressions,
     V1_Collection,
-    `Can't build 'groupBy()' expression. First parameter must be a collection.`,
+    `Can't build 'groupBy()' expression: first parameter must be a collection`,
   );
   variablesFromTopLevelLambdas = columnExpressions.values
     .filter(
@@ -376,7 +376,7 @@ export const V1_buildGroupByFunctionExpression = (
   assertType(
     aggregationExpressions,
     V1_Collection,
-    `Can't build 'groupBy()' expression. Second parameter must be a collection.`,
+    `Can't build 'groupBy()' expression: second parameter must be a collection`,
   );
   variablesFromTopLevelLambdas = aggregationExpressions.values
     .filter(

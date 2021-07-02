@@ -192,7 +192,7 @@ export class V1_ValueSpecificationTransformer
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't transform primtive instance value of unsupported type '${type.name}'`,
+          `Can't transform primtive instance value of type '${type.name}'`,
         );
     }
   }
@@ -229,7 +229,8 @@ export class V1_ValueSpecificationTransformer
       }
     }
     throw new UnsupportedOperationError(
-      `Can't transform unsupported form of instance value.`,
+      `Can't transform instance value`,
+      valueSpecification,
     );
   }
 

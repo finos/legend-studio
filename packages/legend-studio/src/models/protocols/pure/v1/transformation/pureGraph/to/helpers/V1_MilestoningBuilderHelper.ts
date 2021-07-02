@@ -132,7 +132,7 @@ export const V1_buildMilestoning = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build milestoning. No compatible builder available from plugins.`,
+    `Can't build milestoning: no compatible builder available from plugins`,
     protocol,
   );
 };

@@ -202,7 +202,7 @@ const MappingExecutionQueryEditor = observer(
           ) {
             if (setImplementation instanceof OperationSetImplementation) {
               editorStore.applicationStore.notifyWarning(
-                `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+                `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
               );
             } else {
               executionState.setInputDataStateBasedOnSource(

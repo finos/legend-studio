@@ -262,7 +262,7 @@ export class EditorSdlcState {
         if (latestRevision.id !== this.currentRevisionId) {
           // make sure there is no good recovery from this, at this point all users work risk conflict
           throw new Error(
-            `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
+            `Can't run local change detection: current workspace revision is not the latest. Please backup your work and refresh the application`,
           );
         }
         entities = (yield this.sdlcClient.getEntitiesByRevision(

@@ -42,7 +42,7 @@ const cases: RoundtripTestCase[] = [
     { entities: [] },
     V1_unsupportedFunctionExpression,
     {
-      errorMessage: `Can't find expression builder for function 'getAll'. No function expression builder available from plugins.`,
+      errorMessage: `Can't find expression builder for function 'getAll': no compatible function expression builder available from plugins`,
     },
   ],
 ];

@@ -1070,7 +1070,7 @@ export class MappingEditorState extends ElementEditorState {
     const source = getMappingElementSource(setImplementation);
     if (setImplementation instanceof OperationSetImplementation) {
       this.editorStore.applicationStore.notifyWarning(
-        `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+        `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
       );
     }
     let inputData: InputData;

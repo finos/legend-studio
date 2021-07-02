@@ -130,7 +130,7 @@ const processFilterExpression = (
         guaranteeType(
           filterExpression,
           SimpleFunctionExpression,
-          `Can't process filter group function expression: Each child expression must be a function expression`,
+          `Can't process filter group function expression: each child expression must be a function expression`,
         ),
         filterState,
         groupNode.id,
@@ -155,7 +155,7 @@ const processFilterExpression = (
       }
     }
     throw new UnsupportedOperationError(
-      `Can't process filter expression function: No filter operator processer available from plugins`,
+      `Can't process filter expression function: no compatible filter operator processer available from plugins`,
     );
   }
 };
@@ -263,7 +263,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         InstanceValue,
-        `Can't process getAll() expression: Only support getAll() as the first function in the expression`,
+        `Can't process getAll() expression: only support getAll() as the first function in the expression`,
       );
       assertTrue(
         precedingExpression.values.length !== 0 &&
@@ -295,7 +295,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         SimpleFunctionExpression,
-        `Can't process filter() expression: Only support filter() immediately following an expression`,
+        `Can't process filter() expression: only support filter() immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
@@ -307,14 +307,14 @@ export class QueryBuilderLambdaProcessor
           precedingExpression.functionName,
           SUPPORTED_FUNCTIONS.GET_ALL,
         ),
-        `Can't process filter() expression: Only support filter() immediately following getAll()`,
+        `Can't process filter() expression: only support filter() immediately following getAll()`,
       );
 
       const filterExpression = valueSpecification.parametersValues[1];
       assertType(
         filterExpression,
         LambdaFunctionInstanceValue,
-        `Can't process filter() expression: Second parameter should be a lambda function`,
+        `Can't process filter() expression: second parameter should be a lambda function`,
       );
       processFilterFunction(filterExpression, filterState);
       /**
@@ -338,7 +338,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         params[0],
         SimpleFunctionExpression,
-        `Can't process project() expression: Only support project() immediately following an expression`,
+        `Can't process project() expression: only support project() immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
@@ -349,7 +349,7 @@ export class QueryBuilderLambdaProcessor
         [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
           matchFunctionName(precedingExpression.functionName, fn),
         ),
-        `Can't process project() expression: Only support project() immediately following either getAll() or filter()`,
+        `Can't process project() expression: only support project() immediately following either getAll() or filter()`,
       );
 
       // columns
@@ -381,12 +381,12 @@ export class QueryBuilderLambdaProcessor
       assertTrue(
         columnAliases instanceof CollectionInstanceValue ||
           columnAliases instanceof PrimitiveInstanceValue,
-        `Can't process project() expression: Aliases are not properly supplied`,
+        `Can't process project() expression: aliases are not properly supplied`,
       );
       if (columnAliases instanceof CollectionInstanceValue) {
         assertTrue(
           columnNumber === columnAliases.values.length,
-          `Can't process project() expression: Aliases does not match the number of columns`,
+          `Can't process project() expression: aliases does not match the number of columns`,
         );
         aliases = columnAliases.values
           .map(getNullableStringValueFromValueSpec)
@@ -394,7 +394,7 @@ export class QueryBuilderLambdaProcessor
       } else if (columnAliases instanceof PrimitiveInstanceValue) {
         assertTrue(
           columnNumber === 1,
-          `Can't process project() expression: Aliases does not match the number of columns`,
+          `Can't process project() expression: aliases does not match the number of columns`,
         );
         aliases = [getNullableStringValueFromValueSpec(columnAliases) ?? ''];
       }
@@ -412,7 +412,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         SimpleFunctionExpression,
-        `Can't process take() expression: Only support take() immediately following an expression`,
+        `Can't process take() expression: only support take() immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
@@ -426,7 +426,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
-        `Can't process take() expression: Only support take() in TDS expression`,
+        `Can't process take() expression: only support take() in TDS expression`,
       );
 
       const takeValue = getNullableNumberValueFromValueSpec(
@@ -446,7 +446,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         SimpleFunctionExpression,
-        `Can't process distinct() expression: Only support distinct() immediately following an expression`,
+        `Can't process distinct() expression: only support distinct() immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
@@ -460,7 +460,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
-        `Can't process distinct() expression: Only support distinct() in TDS expression`,
+        `Can't process distinct() expression: only support distinct() in TDS expression`,
       );
 
       this.queryBuilderState.resultSetModifierState.distinct = true;
@@ -475,7 +475,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         SimpleFunctionExpression,
-        `Can't process sort() expression: Only support sort() immediately following an expression`,
+        `Can't process sort() expression: only support sort() immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
@@ -489,7 +489,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
-        `Can't process sort() expression: Only support sort() in TDS expression`,
+        `Can't process sort() expression: only support sort() in TDS expression`,
       );
 
       const sortParam = valueSpecification.parametersValues[1];
@@ -559,7 +559,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         params[0],
         SimpleFunctionExpression,
-        `Can't process groupBy() expression: Only support groupBy() immediately following an expression`,
+        `Can't process groupBy() expression: only support groupBy() immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
@@ -570,7 +570,7 @@ export class QueryBuilderLambdaProcessor
         [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
           matchFunctionName(precedingExpression.functionName, fn),
         ),
-        `Can't process groupBy() expression: Only support groupBy() immediately following either getAll() or filter()`,
+        `Can't process groupBy() expression: only support groupBy() immediately following either getAll() or filter()`,
       );
 
       // columns
@@ -621,13 +621,13 @@ export class QueryBuilderLambdaProcessor
           this.precedingExpression.functionName,
           SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         ),
-        `Can't process agg() expression: Only support agg() used in aggregation`,
+        `Can't process agg() expression: only support agg() used in aggregation`,
       );
 
       const groupByPrecedingExpression = guaranteeType(
         this.precedingExpression.parametersValues[0],
         SimpleFunctionExpression,
-        `Can't process agg() expression: Only support agg() immediately following an expression`,
+        `Can't process agg() expression: only support agg() immediately following an expression`,
       );
 
       // add columns to aggregation
@@ -642,7 +642,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         SimpleFunctionExpression,
-        `Can't process serialize() expression: Only support serialize() immediately following an expression`,
+        `Can't process serialize() expression: only support serialize() immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(
@@ -657,7 +657,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.GRAPH_FETCH,
           SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
-        `Can't process serialize() expression: Only support serialize() in graph-fetch expression`,
+        `Can't process serialize() expression: only support serialize() in graph-fetch expression`,
       );
 
       const serializeFunc = guaranteeType(
@@ -698,7 +698,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         SimpleFunctionExpression,
-        `Can't process '${functionName}()' expression: Only support '${functionName}()' immediately following an expression`,
+        `Can't process '${functionName}()' expression: only support '${functionName}()' immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(
@@ -712,7 +712,7 @@ export class QueryBuilderLambdaProcessor
         [SUPPORTED_FUNCTIONS.FILTER, SUPPORTED_FUNCTIONS.GET_ALL].some((fn) =>
           matchFunctionName(precedingExpression.functionName, fn),
         ),
-        `Can't process graph-fetch expression: Only support graphFetch() and graphFetchChecked() immediately following either getAll() or filter()`,
+        `Can't process graph-fetch expression: only support graphFetch() and graphFetchChecked() immediately following either getAll() or filter()`,
       );
 
       this.queryBuilderState.fetchStructureState.graphFetchTreeState.setChecked(

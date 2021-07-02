@@ -92,7 +92,7 @@ export const V1_transformMilestoning = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform milestoning. No compatible transformer available from plugins.`,
+    `Can't transform milestoning: no compatible transformer available from plugins`,
     metamodel,
   );
 };

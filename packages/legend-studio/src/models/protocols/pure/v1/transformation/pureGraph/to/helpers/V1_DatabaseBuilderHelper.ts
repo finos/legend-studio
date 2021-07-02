@@ -516,12 +516,12 @@ export const V1_buildDatabaseJoin = (
     }
   } else if (aliases.length > 2) {
     throw new Error(
-      `Can't build join of more than 2 tables. Please use V1_Join chains (using '>') in your mapping in order to compose them.`,
+      `Can't build join of more than 2 tables. Please use V1_Join chains (using '>') in your mapping in order to compose them`,
     );
   } else if (aliases.length === 1) {
     if (!selfJoinTargets.length) {
       throw new Error(
-        `Can't build join of 1 table, unless it is a self-join. Please use the '{target}' notation in order to define a directed self-join.`,
+        `Can't build join of 1 table, unless it is a self-join. Please use the '{target}' notation in order to define a directed self-join`,
       );
     }
     const existingAlias = aliases[0];
@@ -546,7 +546,7 @@ export const V1_buildDatabaseJoin = (
         ) as Column | undefined;
       }
       if (!col) {
-        throw new Error(`Can't find column '" ${columnName} + "' in the table`);
+        throw new Error(`Can't find column '${columnName}' in the table`);
       }
       selfJoinTarget.column = ColumnExplicitReference.create(col);
     });

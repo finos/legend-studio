@@ -201,7 +201,7 @@ test(
           new StubGraphManagerPlugin([builder1, builder2, builder3]),
         ]),
     ).toThrowError(
-      `Can't consistently sort element builders for protocol classes: TestElement1, TestElement2. This implies presence of loop(s) in the pre-requite chain between these builders.`,
+      `Can't consistently sort element builders for protocol classes [TestElement1, TestElement2]: this implies presence of loop(s) in the pre-requite chain between these builders`,
     );
   },
 );
@@ -235,7 +235,7 @@ test(
           ]),
         ]),
     ).toThrowError(
-      `Can't consistently sort element builders for protocol classes: TestElement1, TestElement2, TestElement4, TestElement5. This implies presence of loop(s) in the pre-requite chain between these builders.`,
+      `Can't consistently sort element builders for protocol classes [TestElement1, TestElement2, TestElement4, TestElement5]: this implies presence of loop(s) in the pre-requite chain between these builders`,
     );
   },
 );

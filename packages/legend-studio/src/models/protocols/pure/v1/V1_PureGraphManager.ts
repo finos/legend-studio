@@ -1624,7 +1624,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
     if (!generatedModel) {
       throw new UnsupportedOperationError(
-        `Can't generate model using the specified generation element. No compatible generator available from plugins.`,
+        `Can't generate model using the specified generation element: no compatible generator available from plugins`,
         generationElement,
       );
     }
@@ -2351,7 +2351,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
     }
     throw new UnsupportedOperationError(
-      `Can't get classifier path for element '${el.path}'. No compatible classifier path getter available from plugins.`,
+      `Can't get classifier path for element '${el.path}': no compatible classifier path getter available from plugins`,
     );
   };
 

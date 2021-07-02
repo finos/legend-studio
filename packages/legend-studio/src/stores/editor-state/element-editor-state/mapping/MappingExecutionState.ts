@@ -729,7 +729,7 @@ export class MappingExecutionState {
       if (this.inputDataState instanceof MappingExecutionEmptyInputDataState) {
         if (setImplementation instanceof OperationSetImplementation) {
           this.editorStore.applicationStore.notifyWarning(
-            `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+            `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
           );
         } else {
           this.setInputDataStateBasedOnSource(

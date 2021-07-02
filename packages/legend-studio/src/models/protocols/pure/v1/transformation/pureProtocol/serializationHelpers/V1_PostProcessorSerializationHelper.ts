@@ -119,7 +119,7 @@ export const V1_serializePostProcessor = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize post-processor. No compatible serializer available from plugins.`,
+    `Can't serialize post-processor: no compatible serializer available from plugins`,
     value,
   );
 };
@@ -145,7 +145,7 @@ export const V1_deserializePostProcessor = (
         }
       }
       throw new UnsupportedOperationError(
-        `Can't deserialize post-processor of type '${value._type}'. No compatible deserializer available from plugins.`,
+        `Can't deserialize post-processor of type '${value._type}': no compatible deserializer available from plugins`,
       );
     }
   }

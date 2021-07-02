@@ -78,13 +78,13 @@ const cases: TestCase[] = [
     'Unsupported function',
     relationalCtx,
     unsupportedFunction,
-    `Can't find expression builder for function 'testUnsupported'. No function expression builder available from plugins.`,
+    `Can't find expression builder for function 'testUnsupported': no compatible function expression builder available from plugins`,
   ],
   [
     'Unsupported function (with full-path)',
     relationalCtx,
     unsupportedFunctionWithFullPath,
-    `Can't find expression builder for function 'something::getAll'. No function expression builder available from plugins.`,
+    `Can't find expression builder for function 'something::getAll': no compatible function expression builder available from plugins`,
   ],
   [
     'Malformed filter()',
@@ -96,7 +96,7 @@ const cases: TestCase[] = [
     'Misplaced take()',
     relationalCtx,
     misplacedTakeFunction,
-    `Can't process take() expression: Only support take() in TDS expression`,
+    `Can't process take() expression: only support take() in TDS expression`,
   ],
 ];
 
