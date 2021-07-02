@@ -1216,7 +1216,7 @@ const RelationalConnectionGeneralEditor = observer(
                   isReadOnly={isReadOnly}
                   value={connection.quoteIdentifiers}
                   propertyName="Quote identifiers"
-                  description="Use this to quote sql identifiers"
+                  description="Use this to quote SQL identifiers"
                   update={(value?: boolean): void =>
                     connection.setQuoteIdentifiers(Boolean(value))
                   }
