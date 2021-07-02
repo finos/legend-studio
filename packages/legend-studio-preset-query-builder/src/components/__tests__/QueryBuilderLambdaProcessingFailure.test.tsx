@@ -90,13 +90,13 @@ const cases: TestCase[] = [
     'Malformed filter()',
     relationalCtx,
     malformedFilterExpression,
-    `Can't build 'filter()' expression`,
+    `Can't build filter() expression: filter() expects 1 argument`,
   ],
   [
     'Misplaced take()',
     relationalCtx,
     misplacedTakeFunction,
-    `Can't process 'take()' expression. Only support 'take()' in TDS expression`,
+    `Can't process take() expression: Only support take() in TDS expression`,
   ],
 ];
 

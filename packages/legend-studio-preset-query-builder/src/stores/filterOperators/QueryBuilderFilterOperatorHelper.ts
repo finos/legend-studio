@@ -292,40 +292,42 @@ const buildFilterConditionStateWithExists = (
           currentExpression.parametersValues[1],
           LambdaFunctionInstanceValue,
         ).values[0],
-        `Can't process exists() function expression. exists() lambda function is missing`,
+        `Can't process exists() expression: exists() lambda is missing`,
       );
+      assertTrue(
+        existsLambda.expressionSequence.length === 1,
+        `Can't process exists() expression: exists() lambda body should hold an expression`,
+      );
+      currentExpression = guaranteeType(
+        existsLambda.expressionSequence[0],
+        SimpleFunctionExpression,
+        `Can't process exists() expression: exists() lambda body should hold an expression`,
+      );
+
+      // record the lambda parameter name
+      assertTrue(
+        existsLambda.functionType.parameters.length === 1,
+        `Can't process exists() function expression: exists() lambda should have 1 parameter`,
+      );
+      existsLambdaParameterNames.push(
+        guaranteeType(
+          existsLambda.functionType.parameters[0],
+          VariableExpression,
+          `Can't process exists() expression: exists() lambda should have 1 parameter`,
+        ).name,
+      );
+
+      // record the lambda property expression
       if (
-        existsLambda.expressionSequence.length === 1 &&
-        existsLambda.expressionSequence[0] instanceof
-          SimpleFunctionExpression &&
-        existsLambda.functionType.parameters.length === 1 &&
-        existsLambda.functionType.parameters[0] instanceof VariableExpression
+        currentExpression.parametersValues[0] instanceof
+        AbstractPropertyExpression
       ) {
-        currentExpression = guaranteeType(
-          existsLambda.expressionSequence[0],
-          SimpleFunctionExpression,
-        );
-        // record the lambda parameter name
-        existsLambdaParameterNames.push(
+        propertyExpressions.push(
           guaranteeType(
-            existsLambda.functionType.parameters[0],
-            VariableExpression,
-          ).name,
+            currentExpression.parametersValues[0],
+            AbstractPropertyExpression,
+          ),
         );
-        // record the lambda property expression
-        if (
-          currentExpression.parametersValues[0] instanceof
-          AbstractPropertyExpression
-        ) {
-          propertyExpressions.push(
-            guaranteeType(
-              currentExpression.parametersValues[0],
-              AbstractPropertyExpression,
-            ),
-          );
-        }
-      } else {
-        throw new Error(`Can't process exists() lambda function`);
       }
     }
     // NOTE: make sure that the inner most function expression is the one we support
@@ -371,7 +373,7 @@ const buildFilterConditionStateWithExists = (
       }
       assertTrue(
         pes.length > 0,
-        `Can't process exists() function expression. exists() usage with non-chain property expression is not supported`,
+        `Can't process exists() function expression: exists() usage with non-chain property expression is not supported`,
       );
       for (let i = 0; i < pes.length - 1; ++i) {
         pes[i].parametersValues.unshift(pes[i + 1]);

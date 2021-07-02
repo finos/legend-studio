@@ -31,10 +31,12 @@ export enum SUPPORTED_FUNCTIONS {
   OR = 'meta::pure::functions::boolean::or',
   TAKE = 'meta::pure::functions::collection::take',
 
+  // graph-fetch
   GRAPH_FETCH = 'meta::pure::graphFetch::execution::graphFetch',
   GRAPH_FETCH_CHECKED = 'meta::pure::graphFetch::execution::graphFetchChecked',
   SERIALIZE = 'meta::pure::graphFetch::execution::serialize',
 
+  // TDS
   TDS_ASC = 'meta::pure::tds::asc',
   TDS_DESC = 'meta::pure::tds::desc',
   TDS_AGG = 'meta::pure::tds::agg',
@@ -45,6 +47,7 @@ export enum SUPPORTED_FUNCTIONS {
   TDS_SORT = 'meta::pure::tds::sort',
   TDS_TAKE = 'meta::pure::tds::take',
 
+  // filter
   CONTAINS = 'meta::pure::functions::string::contains',
   ENDS_WITH = 'meta::pure::functions::string::endsWith',
   EQUAL = 'meta::pure::functions::boolean::equal',
@@ -56,6 +59,18 @@ export enum SUPPORTED_FUNCTIONS {
   LESS_THAN_EQUAL = 'meta::pure::functions::lang::tests::lessThanEqual',
   STARTS_WITH = 'meta::pure::functions::string::startsWith',
 
+  // aggregation
+  AVERAGE = 'meta::pure::functions::math::average',
+  COUNT = 'meta::pure::functions::collection::count',
+  CONCAT = 'meta::pure::functions::string::joinStrings',
+  DISTINCT = 'meta::pure::functions::collection::distinct',
+  DATE_MAX = 'meta::pure::functions::date::max',
+  DATE_MIN = 'meta::pure::functions::date::min',
+  MAX = 'meta::pure::functions::math::max',
+  MIN = 'meta::pure::functions::math::min',
+  STD_DEV_POPULATION = 'meta::pure::functions::math::stdDevPopulation',
+  STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
+  SUM = 'meta::pure::functions::math::sum',
   UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
 }
 

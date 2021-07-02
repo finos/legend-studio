@@ -15,13 +15,14 @@
  */
 
 import {
+  assertNonNullable,
   assertTrue,
+  assertType,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
   isNumber,
   isString,
-  printObject,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -54,7 +55,6 @@ import type {
 } from '@finos/legend-studio';
 import {
   matchFunctionName,
-  extractElementNameFromPath,
   PackageableElementExplicitReference,
   PackageableElementImplicitReference,
   Class,
@@ -130,7 +130,7 @@ const processFilterExpression = (
         guaranteeType(
           filterExpression,
           SimpleFunctionExpression,
-          `Can't process filter expression\n${printObject(filterExpression)}`,
+          `Can't process filter group function expression: Each child expression must be a function expression`,
         ),
         filterState,
         groupNode.id,
@@ -154,7 +154,9 @@ const processFilterExpression = (
         return;
       }
     }
-    throw new Error(`Can't process filter expression function`);
+    throw new UnsupportedOperationError(
+      `Can't process filter expression function: No filter operator processer available from plugins`,
+    );
   }
 };
 
@@ -164,46 +166,44 @@ const processFilterFunction = (
 ): void => {
   const lambdaFunc = guaranteeNonNullable(
     valueSpec.values[0],
-    'Lambda function is missing',
+    `Can't process filter() epxression: filter() lambda is missing`,
   );
-  if (
-    lambdaFunc.expressionSequence.length === 1 &&
-    lambdaFunc.expressionSequence[0] instanceof SimpleFunctionExpression &&
-    lambdaFunc.functionType.parameters.length === 1 &&
-    lambdaFunc.functionType.parameters[0] instanceof VariableExpression
-  ) {
-    const rootExpression = guaranteeType(
-      lambdaFunc.expressionSequence[0],
-      SimpleFunctionExpression,
-    );
-    filterQueryState.setLambdaVariableName(
-      guaranteeType(lambdaFunc.functionType.parameters[0], VariableExpression)
-        .name,
-    );
-    processFilterExpression(rootExpression, filterQueryState, undefined);
-  } else {
-    throw new Error(`Can't process filter function`);
-  }
+  assertTrue(
+    lambdaFunc.expressionSequence.length === 1,
+    `Can't process filter() expression: filter() lambda body should hold an expression`,
+  );
+  const rootExpression = guaranteeType(
+    lambdaFunc.expressionSequence[0],
+    SimpleFunctionExpression,
+    `Can't process filter() expression: filter() lambda body should hold an expression`,
+  );
+
+  assertTrue(
+    lambdaFunc.functionType.parameters.length === 1,
+    `Can't process filter() expression: filter() lambda should have 1 parameter`,
+  );
+  filterQueryState.setLambdaVariableName(
+    guaranteeType(
+      lambdaFunc.functionType.parameters[0],
+      VariableExpression,
+      `Can't process filter() expression: filter() lambda should have 1 parameter`,
+    ).name,
+  );
+  processFilterExpression(rootExpression, filterQueryState, undefined);
 };
 
 export class QueryBuilderLambdaProcessor
   implements ValueSpecificationVisitor<void>
 {
   queryBuilderState: QueryBuilderState;
-  /**
-   * In Pure grammar, the next function expression is what on the right of the current expression
-   * i.e. `something->thisExpression()->nextExpression()`
-   * But in the protocol presentation, the node that holds the next expression actually contains
-   * the node holding the current expression, hence the naming.
-   */
-  nextFunctionExpression?: SimpleFunctionExpression;
+  precedingExpression?: SimpleFunctionExpression;
 
   constructor(
     queryBuilderState: QueryBuilderState,
-    nextFunctionExpression: SimpleFunctionExpression | undefined,
+    precedingExpression: SimpleFunctionExpression | undefined,
   ) {
     this.queryBuilderState = queryBuilderState;
-    this.nextFunctionExpression = nextFunctionExpression;
+    this.precedingExpression = precedingExpression;
   }
 
   visit_RootGraphFetchTreeInstanceValue(
@@ -255,317 +255,478 @@ export class QueryBuilderLambdaProcessor
     valueSpecification: SimpleFunctionExpression,
   ): void {
     const functionName = valueSpecification.functionName;
-    if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)) {
+    if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 1,
+        `Can't process getAll() expression: getAll() expects no argument`,
+      );
+      const precedingExpression = guaranteeType(
+        valueSpecification.parametersValues[0],
+        InstanceValue,
+        `Can't process getAll() expression: Only support getAll() as the first function in the expression`,
+      );
+      assertTrue(
+        precedingExpression.values.length !== 0 &&
+          (precedingExpression.values[0] instanceof
+            PackageableElementExplicitReference ||
+            precedingExpression.values[0] instanceof
+              PackageableElementImplicitReference),
+        `Can't process getAll() expression: getAll() class is missing`,
+      );
+      const _class = guaranteeType(
+        (
+          precedingExpression
+            .values[0] as PackageableElementReference<PackageableElement>
+        ).value,
+        Class,
+        `Can't process getAll() expression: getAll() must be used with a class`,
+      );
+      this.queryBuilderState.querySetupState.setClass(_class, true);
+      this.queryBuilderState.explorerState.refreshTreeData();
+
+      return;
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 2,
+        `Can't process filter() expression: filter() expects 1 argument`,
+      );
+
+      const filterState = this.queryBuilderState.filterState;
+      const precedingExpression = guaranteeType(
+        valueSpecification.parametersValues[0],
+        SimpleFunctionExpression,
+        `Can't process filter() expression: Only support filter() immediately following an expression`,
+      );
+      precedingExpression.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
+      );
+
+      // check caller
+      assertTrue(
+        matchFunctionName(
+          precedingExpression.functionName,
+          SUPPORTED_FUNCTIONS.GET_ALL,
+        ),
+        `Can't process filter() expression: Only support filter() immediately following getAll()`,
+      );
+
+      const filterExpression = valueSpecification.parametersValues[1];
+      assertType(
+        filterExpression,
+        LambdaFunctionInstanceValue,
+        `Can't process filter() expression: Second parameter should be a lambda function`,
+      );
+      processFilterFunction(filterExpression, filterState);
+      /**
+       * NOTE: Since group operations ike and/or do not take more than 2 parameters, if there are
+       * more than 2 clauses in each group operations, then these clauses are converted into an
+       * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
+       * After building the filter state.
+       */
+      filterState.simplifyTree();
+
+      return;
+    } else if (
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
+    ) {
       const params = valueSpecification.parametersValues;
-      if (params.length === 3) {
-        const paramOne = guaranteeType(params[0], SimpleFunctionExpression);
-        paramOne.accept_ValueSpecificationVisitor(
-          new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
-        );
+      assertTrue(
+        params.length === 3,
+        `Can't process project() expression: project() expects 2 arguments`,
+      );
 
-        // check caller
-        assertTrue(
-          [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
-            matchFunctionName(paramOne.functionName, fn),
-          ),
-          `Can't process 'project()' expression. Only support 'project()' immediately following either 'getAll()' or 'filter()'`,
-        );
+      const precedingExpression = guaranteeType(
+        params[0],
+        SimpleFunctionExpression,
+        `Can't process project() expression: Only support project() immediately following an expression`,
+      );
+      precedingExpression.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
+      );
 
-        const lambdaParam = params[1];
-        const lambdaAlias = params[2];
-        if (lambdaParam instanceof CollectionInstanceValue) {
-          lambdaParam.values.map((e) =>
-            e.accept_ValueSpecificationVisitor(
-              new QueryBuilderLambdaProcessor(
-                this.queryBuilderState,
-                valueSpecification,
-              ),
-            ),
-          );
-        } else {
-          lambdaParam.accept_ValueSpecificationVisitor(
+      // check caller
+      assertTrue(
+        [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
+          matchFunctionName(precedingExpression.functionName, fn),
+        ),
+        `Can't process project() expression: Only support project() immediately following either getAll() or filter()`,
+      );
+
+      // columns
+      const columnExpressions = params[1];
+      const columnAliases = params[2];
+      let columnNumber = 0;
+      if (columnExpressions instanceof CollectionInstanceValue) {
+        columnNumber = columnExpressions.values.length;
+        columnExpressions.values.map((e) =>
+          e.accept_ValueSpecificationVisitor(
             new QueryBuilderLambdaProcessor(
               this.queryBuilderState,
               valueSpecification,
             ),
-          );
-        }
-        let aliases: string[] = [];
-        if (lambdaAlias instanceof CollectionInstanceValue) {
-          aliases = lambdaAlias.values
-            .map(getNullableStringValueFromValueSpec)
-            .filter(isNonNullable);
-        } else if (lambdaAlias instanceof PrimitiveInstanceValue) {
-          aliases = [getNullableStringValueFromValueSpec(lambdaAlias) ?? ''];
-        } else {
-          throw new Error(`Can't process 'project()' expression`);
-        }
-        this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
-          (e, idx) => e.setColumnName(aliases[idx]),
+          ),
         );
-        return;
-      }
-      throw new Error(`Can't process 'project()' expression`);
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
-      const paramOne = valueSpecification.parametersValues[0];
-      if (paramOne instanceof InstanceValue) {
-        assertTrue(
-          paramOne.values.length !== 0 &&
-            (paramOne.values[0] instanceof
-              PackageableElementExplicitReference ||
-              paramOne.values[0] instanceof
-                PackageableElementImplicitReference),
-          `Can't process 'getAll()' expression. 'getAll()' class is missing`,
-        );
-        const _class = (
-          paramOne.values[0] as PackageableElementReference<PackageableElement>
-        ).value;
-        if (_class instanceof Class) {
-          this.queryBuilderState.querySetupState.setClass(_class, true);
-          this.queryBuilderState.explorerState.refreshTreeData();
-          return;
-        }
-      }
-      throw new Error(`Can't process 'getAll()' expression`);
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_TAKE)) {
-      if (valueSpecification.parametersValues.length === 2) {
-        const paramOne = guaranteeType(
-          valueSpecification.parametersValues[0],
-          SimpleFunctionExpression,
-        );
-        paramOne.accept_ValueSpecificationVisitor(
-          new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
-        );
-
-        // check caller
-        assertTrue(
-          [
-            SUPPORTED_FUNCTIONS.TDS_TAKE,
-            SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-            SUPPORTED_FUNCTIONS.TDS_SORT,
-            SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
-          `Can't process 'take()' expression. Only support 'take()' in TDS expression`,
-        );
-
-        const takeValue = getNullableNumberValueFromValueSpec(
-          valueSpecification.parametersValues[1],
-        );
-        this.queryBuilderState.resultSetModifierState.setLimit(takeValue);
-        return;
-      }
-      throw new Error(`Can't process 'take()' expression`);
-    } else if (
-      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DISTINCT)
-    ) {
-      if (valueSpecification.parametersValues.length === 1) {
-        const paramOne = guaranteeType(
-          valueSpecification.parametersValues[0],
-          SimpleFunctionExpression,
-        );
-        paramOne.accept_ValueSpecificationVisitor(
-          new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
-        );
-
-        // check caller
-        assertTrue(
-          [
-            SUPPORTED_FUNCTIONS.TDS_TAKE,
-            SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-            SUPPORTED_FUNCTIONS.TDS_SORT,
-            SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
-          `Can't process 'distinct()' expression. Only support 'distinct()' in TDS expression`,
-        );
-
-        this.queryBuilderState.resultSetModifierState.distinct = true;
-        return;
-      }
-      throw new Error(`Can't process 'distinct()' expression`);
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_SORT)) {
-      if (valueSpecification.parametersValues.length === 2) {
-        const paramOne = guaranteeType(
-          valueSpecification.parametersValues[0],
-          SimpleFunctionExpression,
-        );
-        paramOne.accept_ValueSpecificationVisitor(
-          new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
-        );
-
-        // check caller
-        assertTrue(
-          [
-            SUPPORTED_FUNCTIONS.TDS_TAKE,
-            SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-            SUPPORTED_FUNCTIONS.TDS_SORT,
-            SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
-          `Can't process 'sort()' expression. Only support 'sort()' in TDS expression`,
-        );
-
-        const sortParam = valueSpecification.parametersValues[1];
-        if (sortParam instanceof CollectionInstanceValue) {
-          sortParam.values.map((e) =>
-            e.accept_ValueSpecificationVisitor(
-              new QueryBuilderLambdaProcessor(
-                this.queryBuilderState,
-                valueSpecification,
-              ),
-            ),
-          );
-          return;
-        }
-      }
-      throw new Error(`Can't process 'sort()' expression`);
-    } else if (
-      (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_ASC) ||
-        matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DESC)) &&
-      this.nextFunctionExpression &&
-      matchFunctionName(
-        this.nextFunctionExpression.functionName,
-        SUPPORTED_FUNCTIONS.TDS_SORT,
-      )
-    ) {
-      if (valueSpecification.parametersValues.length === 1) {
-        const sortColumnName = getNullableStringValueFromValueSpec(
-          valueSpecification.parametersValues[0],
-        );
-        const queryBuilderProjectionColumnState =
-          this.queryBuilderState.fetchStructureState.projectionState.columns.find(
-            (e) => e.columnName === sortColumnName,
-          );
-        if (queryBuilderProjectionColumnState) {
-          const editorStore = this.queryBuilderState.editorStore;
-          const sortColumnState = new SortColumnState(
-            editorStore,
-            queryBuilderProjectionColumnState,
-          );
-          sortColumnState.sortType = matchFunctionName(
-            functionName,
-            SUPPORTED_FUNCTIONS.TDS_ASC,
-          )
-            ? COLUMN_SORT_TYPE.ASC
-            : COLUMN_SORT_TYPE.DESC;
-          this.queryBuilderState.resultSetModifierState.addSortColumn(
-            sortColumnState,
-          );
-          return;
-        }
-      }
-      throw new Error(
-        `Can't process '${extractElementNameFromPath(
-          functionName,
-        )}()' expression`,
-      );
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)) {
-      const filterState = this.queryBuilderState.filterState;
-      if (valueSpecification.parametersValues.length === 2) {
-        const paramOne = guaranteeType(
-          valueSpecification.parametersValues[0],
-          SimpleFunctionExpression,
-        );
-        paramOne.accept_ValueSpecificationVisitor(
-          new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
-        );
-
-        // check caller
-        assertTrue(
-          matchFunctionName(paramOne.functionName, SUPPORTED_FUNCTIONS.GET_ALL),
-          `Can't process 'filter()' expression. Only support 'filter()' immediately following 'getAll()'`,
-        );
-
-        const filterExpression = valueSpecification.parametersValues[1];
-        if (filterExpression instanceof LambdaFunctionInstanceValue) {
-          processFilterFunction(filterExpression, filterState);
-          /**
-           * NOTE: Since group operations ike and/or do not take more than 2 parameters, if there are
-           * more than 2 clauses in each group operations, then these clauses are converted into an
-           * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
-           * After building the filter state.
-           */
-          filterState.simplifyTree();
-          return;
-        }
-      }
-      throw new Error(`Can't process 'filter()' expression`);
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.SERIALIZE)) {
-      if (valueSpecification.parametersValues.length === 2) {
-        const paramOne = guaranteeType(
-          valueSpecification.parametersValues[0],
-          SimpleFunctionExpression,
-        );
-        paramOne.accept_ValueSpecificationVisitor(
+      } else {
+        columnNumber = 1;
+        columnExpressions.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(
             this.queryBuilderState,
             valueSpecification,
           ),
         );
-
-        // check caller
-        assertTrue(
-          [
-            SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-            SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
-          ].some((fn) => matchFunctionName(paramOne.functionName, fn)),
-          `Can't process 'serialize()' expression. Only support 'serialize()' immediately following graph-fetch expression`,
-        );
-
-        const serializeFunc = valueSpecification.parametersValues[1];
-        if (serializeFunc instanceof GraphFetchTreeInstanceValue) {
-          const value = serializeFunc.values[0];
-          if (value instanceof RootGraphFetchTree) {
-            this.queryBuilderState.fetchStructureState.setFetchStructureMode(
-              FETCH_STRUCTURE_MODE.GRAPH_FETCH,
-            );
-            this.queryBuilderState.fetchStructureState.graphFetchTreeState.init(
-              value,
-            );
-            return;
-          }
-        }
       }
+
+      // alias
+      let aliases: string[] = [];
+      assertTrue(
+        columnAliases instanceof CollectionInstanceValue ||
+          columnAliases instanceof PrimitiveInstanceValue,
+        `Can't process project() expression: Aliases are not properly supplied`,
+      );
+      if (columnAliases instanceof CollectionInstanceValue) {
+        assertTrue(
+          columnNumber === columnAliases.values.length,
+          `Can't process project() expression: Aliases does not match the number of columns`,
+        );
+        aliases = columnAliases.values
+          .map(getNullableStringValueFromValueSpec)
+          .filter(isNonNullable);
+      } else if (columnAliases instanceof PrimitiveInstanceValue) {
+        assertTrue(
+          columnNumber === 1,
+          `Can't process project() expression: Aliases does not match the number of columns`,
+        );
+        aliases = [getNullableStringValueFromValueSpec(columnAliases) ?? ''];
+      }
+      this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
+        (e, idx) => e.setColumnName(aliases[idx]),
+      );
+
+      return;
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_TAKE)) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 2,
+        `Can't process take() expression: take() expects 1 argument`,
+      );
+
+      const precedingExpression = guaranteeType(
+        valueSpecification.parametersValues[0],
+        SimpleFunctionExpression,
+        `Can't process take() expression: Only support take() immediately following an expression`,
+      );
+      precedingExpression.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
+      );
+
+      // check caller
+      assertTrue(
+        [
+          SUPPORTED_FUNCTIONS.TDS_TAKE,
+          SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+          SUPPORTED_FUNCTIONS.TDS_SORT,
+          SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+        `Can't process take() expression: Only support take() in TDS expression`,
+      );
+
+      const takeValue = getNullableNumberValueFromValueSpec(
+        valueSpecification.parametersValues[1],
+      );
+      this.queryBuilderState.resultSetModifierState.setLimit(takeValue);
+
+      return;
+    } else if (
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DISTINCT)
+    ) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 1,
+        `Can't process disctinct() expression: distinct() expects no parameter`,
+      );
+
+      const precedingExpression = guaranteeType(
+        valueSpecification.parametersValues[0],
+        SimpleFunctionExpression,
+        `Can't process distinct() expression: Only support distinct() immediately following an expression`,
+      );
+      precedingExpression.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
+      );
+
+      // check caller
+      assertTrue(
+        [
+          SUPPORTED_FUNCTIONS.TDS_TAKE,
+          SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+          SUPPORTED_FUNCTIONS.TDS_SORT,
+          SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+        `Can't process distinct() expression: Only support distinct() in TDS expression`,
+      );
+
+      this.queryBuilderState.resultSetModifierState.distinct = true;
+
+      return;
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_SORT)) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 2,
+        `Can't process sort() expression: sort() expects 1 argument`,
+      );
+
+      const precedingExpression = guaranteeType(
+        valueSpecification.parametersValues[0],
+        SimpleFunctionExpression,
+        `Can't process sort() expression: Only support sort() immediately following an expression`,
+      );
+      precedingExpression.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
+      );
+
+      // check caller
+      assertTrue(
+        [
+          SUPPORTED_FUNCTIONS.TDS_TAKE,
+          SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+          SUPPORTED_FUNCTIONS.TDS_SORT,
+          SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+        `Can't process sort() expression: Only support sort() in TDS expression`,
+      );
+
+      const sortParam = valueSpecification.parametersValues[1];
+      assertType(
+        sortParam,
+        CollectionInstanceValue,
+        `Can't process sort() expression: sort() argument should be a collection`,
+      );
+      sortParam.values.map((e) =>
+        e.accept_ValueSpecificationVisitor(
+          new QueryBuilderLambdaProcessor(
+            this.queryBuilderState,
+            valueSpecification,
+          ),
+        ),
+      );
+
+      return;
+    } else if (
+      (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_ASC) ||
+        matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DESC)) &&
+      this.precedingExpression &&
+      matchFunctionName(
+        this.precedingExpression.functionName,
+        SUPPORTED_FUNCTIONS.TDS_SORT,
+      )
+    ) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 1,
+        `Can't process ${functionName}() expression: ${functionName}() expects no argument`,
+      );
+
+      const sortColumnName = getNullableStringValueFromValueSpec(
+        valueSpecification.parametersValues[0],
+      );
+      const queryBuilderProjectionColumnState =
+        this.queryBuilderState.fetchStructureState.projectionState.columns.find(
+          (e) => e.columnName === sortColumnName,
+        );
+      if (queryBuilderProjectionColumnState) {
+        const editorStore = this.queryBuilderState.editorStore;
+        const sortColumnState = new SortColumnState(
+          editorStore,
+          queryBuilderProjectionColumnState,
+        );
+        sortColumnState.sortType = matchFunctionName(
+          functionName,
+          SUPPORTED_FUNCTIONS.TDS_ASC,
+        )
+          ? COLUMN_SORT_TYPE.ASC
+          : COLUMN_SORT_TYPE.DESC;
+        this.queryBuilderState.resultSetModifierState.addSortColumn(
+          sortColumnState,
+        );
+      }
+
+      return;
+    } else if (
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_GROUP_BY)
+    ) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 4,
+        `Can't process groupBy() expression: groupBy() expects 3 arguments`,
+      );
+
+      const params = valueSpecification.parametersValues;
+      const precedingExpression = guaranteeType(
+        params[0],
+        SimpleFunctionExpression,
+        `Can't process groupBy() expression: Only support groupBy() immediately following an expression`,
+      );
+      precedingExpression.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
+      );
+
+      // check caller
+      assertTrue(
+        [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
+          matchFunctionName(precedingExpression.functionName, fn),
+        ),
+        `Can't process groupBy() expression: Only support groupBy() immediately following either getAll() or filter()`,
+      );
+
+      // columns
+      const columnExpressions = params[1];
+      assertType(columnExpressions, CollectionInstanceValue, '');
+      columnExpressions.values.map((e) =>
+        e.accept_ValueSpecificationVisitor(
+          new QueryBuilderLambdaProcessor(
+            this.queryBuilderState,
+            valueSpecification,
+          ),
+        ),
+      );
+
+      // aggregations
+      const aggregationExpressions = params[2];
+      assertType(aggregationExpressions, CollectionInstanceValue, '');
+      aggregationExpressions.values.map((e) =>
+        e.accept_ValueSpecificationVisitor(
+          new QueryBuilderLambdaProcessor(
+            this.queryBuilderState,
+            valueSpecification,
+          ),
+        ),
+      );
+
+      // aliases
+      const columnAliases = params[3];
+      assertType(columnAliases, CollectionInstanceValue, '');
+      const aliases = columnAliases.values
+        .map(getNullableStringValueFromValueSpec)
+        .filter(isNonNullable);
+      this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
+        (e, idx) => e.setColumnName(aliases[idx]),
+      );
+
+      return;
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_AGG)) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 2,
+        `Can't process agg() expression: agg() expects 2 arguments`,
+      );
+
+      // check caller
+      assertNonNullable(this.precedingExpression);
+      assertTrue(
+        matchFunctionName(
+          this.precedingExpression.functionName,
+          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        ),
+        `Can't process agg() expression: Only support agg() used in aggregation`,
+      );
+
+      const groupByPrecedingExpression = guaranteeType(
+        this.precedingExpression.parametersValues[0],
+        SimpleFunctionExpression,
+        `Can't process agg() expression: Only support agg() immediately following an expression`,
+      );
+
+      // add columns to aggregation
+      // [agg(x | $x.kerberos, y | $y->uniqueValueOnly())],
+      return;
+    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.SERIALIZE)) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 2,
+        `Can't process serialize() expression: serialize() expects 1 argument`,
+      );
+
+      const precedingExpression = guaranteeType(
+        valueSpecification.parametersValues[0],
+        SimpleFunctionExpression,
+        `Can't process serialize() expression: Only support serialize() immediately following an expression`,
+      );
+      precedingExpression.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(
+          this.queryBuilderState,
+          valueSpecification,
+        ),
+      );
+
+      // check caller
+      assertTrue(
+        [
+          SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+          SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+        ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+        `Can't process serialize() expression: Only support serialize() in graph-fetch expression`,
+      );
+
+      const serializeFunc = guaranteeType(
+        valueSpecification.parametersValues[1],
+        GraphFetchTreeInstanceValue,
+        `Can't process serialize() expression: serialize() graph-fetch is missing`,
+      );
+      const value = guaranteeType(
+        serializeFunc.values[0],
+        RootGraphFetchTree,
+        `Can't process serialize(): serialize() graph-fetch tree root is missing`,
+      );
+      this.queryBuilderState.fetchStructureState.setFetchStructureMode(
+        FETCH_STRUCTURE_MODE.GRAPH_FETCH,
+      );
+      this.queryBuilderState.fetchStructureState.graphFetchTreeState.init(
+        value,
+      );
+
+      return;
     } else if (
       (matchFunctionName(
         functionName,
         SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
       ) ||
         matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GRAPH_FETCH)) &&
-      this.nextFunctionExpression &&
+      this.precedingExpression &&
       matchFunctionName(
-        this.nextFunctionExpression.functionName,
+        this.precedingExpression.functionName,
         SUPPORTED_FUNCTIONS.SERIALIZE,
       )
     ) {
+      assertTrue(
+        valueSpecification.parametersValues.length === 2,
+        `Can't process ${functionName}() expression: ${functionName}() expects 1 argument`,
+      );
+
+      const precedingExpression = guaranteeType(
+        valueSpecification.parametersValues[0],
+        SimpleFunctionExpression,
+        `Can't process '${functionName}()' expression: Only support '${functionName}()' immediately following an expression`,
+      );
+      precedingExpression.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(
+          this.queryBuilderState,
+          valueSpecification,
+        ),
+      );
+
+      // check caller
+      assertTrue(
+        [SUPPORTED_FUNCTIONS.FILTER, SUPPORTED_FUNCTIONS.GET_ALL].some((fn) =>
+          matchFunctionName(precedingExpression.functionName, fn),
+        ),
+        `Can't process graph-fetch expression: Only support graphFetch() and graphFetchChecked() immediately following either getAll() or filter()`,
+      );
+
       this.queryBuilderState.fetchStructureState.graphFetchTreeState.setChecked(
         matchFunctionName(
           functionName,
           SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
         ),
       );
-      if (valueSpecification.parametersValues.length === 2) {
-        const paramOne = guaranteeType(
-          valueSpecification.parametersValues[0],
-          SimpleFunctionExpression,
-        );
-        paramOne.accept_ValueSpecificationVisitor(
-          new QueryBuilderLambdaProcessor(
-            this.queryBuilderState,
-            valueSpecification,
-          ),
-        );
 
-        // check caller
-        assertTrue(
-          [SUPPORTED_FUNCTIONS.FILTER, SUPPORTED_FUNCTIONS.GET_ALL].some((fn) =>
-            matchFunctionName(paramOne.functionName, fn),
-          ),
-          `Can't process graph-fetch expression. Only support 'graphFetch()' and 'graphFetchChecked()' immediately following either 'getAll()' or 'filter()'`,
-        );
-
-        return;
-      }
+      return;
     }
-    throw new Error(`Can't process expression for function '${functionName}'`);
+    throw new UnsupportedOperationError(
+      `Can't process expression of function ${functionName}()`,
+    );
   }
 
   visit_VariableExpression(valueSpecification: VariableExpression): void {
@@ -581,7 +742,7 @@ export class QueryBuilderLambdaProcessor
           e.accept_ValueSpecificationVisitor(
             new QueryBuilderLambdaProcessor(
               this.queryBuilderState,
-              this.nextFunctionExpression,
+              this.precedingExpression,
             ),
           ),
         ),
@@ -592,10 +753,13 @@ export class QueryBuilderLambdaProcessor
   visit_AbstractPropertyExpression(
     valueSpecification: AbstractPropertyExpression,
   ): void {
+    assertNonNullable(
+      this.precedingExpression,
+      `Can't process property expression: property expression preceding expression cannot be retrieved`,
+    );
     if (
-      this.nextFunctionExpression &&
       matchFunctionName(
-        this.nextFunctionExpression.functionName,
+        this.precedingExpression.functionName,
         SUPPORTED_FUNCTIONS.TDS_PROJECT,
       )
     ) {
@@ -617,8 +781,34 @@ export class QueryBuilderLambdaProcessor
         );
       }
       return;
+    } else if (
+      matchFunctionName(
+        this.precedingExpression.functionName,
+        SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+      )
+    ) {
+      const projectionState =
+        this.queryBuilderState.fetchStructureState.projectionState;
+      const columnState = new QueryBuilderProjectionColumnState(
+        projectionState.editorStore,
+        projectionState,
+        valueSpecification,
+        true,
+      );
+      projectionState.addColumn(columnState);
+
+      if (
+        valueSpecification.parametersValues[0] instanceof VariableExpression
+      ) {
+        columnState.setLambdaVariableName(
+          valueSpecification.parametersValues[0].name,
+        );
+      }
+      return;
     }
-    throw new Error(`Can't process property expression`);
+    throw new UnsupportedOperationError(
+      `Can't process property expression with preceding expression of function ${this.precedingExpression.functionName}()`,
+    );
   }
 
   visit_InstanceValue(valueSpecification: InstanceValue): void {
