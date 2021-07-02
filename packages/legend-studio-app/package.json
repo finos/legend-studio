@@ -41,7 +41,7 @@
     "@finos/legend-studio-preset-dsl-text": "workspace:*",
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*",
     "@finos/legend-studio-preset-query-builder": "workspace:*",
-    "@types/react": "17.0.11",
+    "@types/react": "17.0.13",
     "react": "17.0.2"
   },
   "devDependencies": {
@@ -51,11 +51,11 @@
     "copy-webpack-plugin": "9.0.1",
     "cross-env": "7.0.3",
     "eslint": "7.29.0",
-    "jest": "27.0.5",
+    "jest": "27.0.6",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "typescript": "4.3.4",
-    "webpack": "5.40.0",
+    "typescript": "4.3.5",
+    "webpack": "5.42.0",
     "webpack-bundle-analyzer": "4.4.2",
     "webpack-cli": "4.7.2",
     "webpack-dev-server": "4.0.0-beta.3"
