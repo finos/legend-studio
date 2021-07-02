@@ -20,6 +20,7 @@ import {
   isNonNullable,
   guaranteeType,
   assertNonEmptyString,
+  assertTrue,
 } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../../../../../utils/Logger';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
@@ -225,16 +226,14 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
           (e) => e.relation.value.schema.owner,
         ),
       );
-      if (tables.size !== 1) {
-        throw new Error(
-          `Can't find the main table for class '${rootRelationalInstanceSetImplementation.class.value.path}'. Please specify a main table using the ~mainTable directive`,
-        );
-      }
-      if (dbs.size !== 1) {
-        throw new Error(
-          `Can't find the main table for class '${rootRelationalInstanceSetImplementation.class.value.path}': inconsistent database definitions for the mapping`,
-        );
-      }
+      assertTrue(
+        tables.size === 1,
+        `Can't find the main table for class '${rootRelationalInstanceSetImplementation.class.value.path}'. Please specify a main table using the ~mainTable directive`,
+      );
+      assertTrue(
+        dbs.size === 1,
+        `Can't find the main table for class '${rootRelationalInstanceSetImplementation.class.value.path}': inconsistent database definitions for the mapping`,
+      );
       mainTableAlias = new TableAlias();
       mainTableAlias.name = '';
       mainTableAlias.relation = Array.from(tables.values())[0];

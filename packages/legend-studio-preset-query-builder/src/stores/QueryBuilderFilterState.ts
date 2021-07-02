@@ -131,11 +131,12 @@ export class FilterConditionState {
       editorStore,
       propertyExpression,
     );
-    if (this.operators.length === 0) {
-      throw new Error(
-        `Can't find an operator for property '${this.propertyEditorState.path}'`,
-      );
-    }
+
+    // operator
+    assertTrue(
+      this.operators.length !== 0,
+      `Can't find an operator for property '${this.propertyEditorState.path}': no operators registered`,
+    );
     this.operator = this.operators[0];
     this.value = this.operator.getDefaultFilterConditionValue(this);
   }

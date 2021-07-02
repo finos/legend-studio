@@ -16,6 +16,7 @@
 
 import { computed, observable, action, makeObservable, override } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
   hashArray,
@@ -96,23 +97,24 @@ export class GenerationSpecification
   }
 
   // NOTE as of now the generation specification only supports model generation elements i.e elements that generate another graph compatabile with the current graph.
-  addGenerationElement(packageableElement: PackageableElement): void {
+  addGenerationElement(element: PackageableElement): void {
     if (
       !(
-        packageableElement instanceof ModelGenerationSpecification ||
-        packageableElement instanceof FileGenerationSpecification
+        element instanceof ModelGenerationSpecification ||
+        element instanceof FileGenerationSpecification
       )
     ) {
-      throw new Error(
-        'Only model generation elements can be added to the generation specification',
+      throw new UnsupportedOperationError(
+        `Can't add generation element: only model generation elements can be added to the generation specification`,
+        element,
       );
     }
-    if (packageableElement instanceof FileGenerationSpecification) {
-      this.addFileGeneration(packageableElement);
+    if (element instanceof FileGenerationSpecification) {
+      this.addFileGeneration(element);
     } else {
       this.addNode(
         new GenerationTreeNode(
-          PackageableElementExplicitReference.create(packageableElement),
+          PackageableElementExplicitReference.create(element),
         ),
       );
     }

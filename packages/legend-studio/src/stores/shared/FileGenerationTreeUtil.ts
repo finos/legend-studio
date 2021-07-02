@@ -79,7 +79,6 @@ export class GenerationDirectory extends GenerationFileNodeElement {
     parent: GenerationDirectory,
     directoryName: string,
     insert: boolean,
-    fileGenerationParent?: string,
   ): GenerationDirectory {
     const index = directoryName.indexOf(DIRECTORY_PATH_DELIMITER);
     const str =
@@ -90,15 +89,14 @@ export class GenerationDirectory extends GenerationFileNodeElement {
         child instanceof GenerationDirectory && child.name === str,
     );
     if (!node) {
-      if (insert) {
-        // create the node if it is not in parent directory
-        node = GenerationDirectory.createDirectoryFromParent(str, parent);
-        parent.addChild(node);
-      } else {
+      if (!insert) {
         throw new Error(
           `Can't find file node '${str}' in directory '${directoryName}'`,
         );
       }
+      // create the node if it is not in parent directory
+      node = GenerationDirectory.createDirectoryFromParent(str, parent);
+      parent.addChild(node);
     }
     if (index !== -1) {
       return GenerationDirectory.getOrCreateDirectory(
@@ -287,7 +285,6 @@ export const buildGenerationDirectory = (
         rootDirectory,
         directoryName,
         true,
-        generationFileInfo.parentId,
       );
     }
     const file = new GenerationFile(

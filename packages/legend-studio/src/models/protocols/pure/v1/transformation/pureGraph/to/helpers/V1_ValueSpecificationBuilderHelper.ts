@@ -861,7 +861,7 @@ export function V1_processProperty(
     ];
     return enumValueInstanceValue;
   }
-  throw new Error(
+  throw new UnsupportedOperationError(
     `Can't resolve property '${property}' of type '${inferredType?.name}'`,
   );
 }

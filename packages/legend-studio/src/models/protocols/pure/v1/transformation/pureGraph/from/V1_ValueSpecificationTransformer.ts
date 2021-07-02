@@ -411,7 +411,7 @@ export function V1_transformGraphFetchTree(
     );
     return _propertyGraphTree;
   }
-  throw new Error(
+  throw new UnsupportedOperationError(
     `Can't build graph fetch tree node of type '${value.toString()}'`,
   );
 }

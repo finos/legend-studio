@@ -21,6 +21,7 @@ import {
   guaranteeNonNullable,
   assertNonNullable,
   guaranteeType,
+  assertTrue,
 } from '@finos/legend-studio-shared';
 import { Database } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
 import { getAllIncludedDbs } from '../../../../../../../metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
@@ -117,22 +118,22 @@ import type { V1_Filter } from '../../../../model/packageableElements/store/rela
 import { V1_buildMilestoning } from './V1_MilestoningBuilderHelper';
 import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../../../../MetaModelConst';
 
-export const V1_schemaExistsInDatabase = (
-  dbVisited: Set<Database>,
+const _schemaExists = (
   db: Database,
-  _schema: string,
+  schemaName: string,
+  visitedDbs: Set<Database>,
 ): boolean => {
-  if (!dbVisited.has(db)) {
-    dbVisited.add(db);
-    if (db.schemas.some((e) => e.name === _schema)) {
+  if (!visitedDbs.has(db)) {
+    visitedDbs.add(db);
+    if (db.schemas.some((e) => e.name === schemaName)) {
       return true;
     }
     const foundSchema = db.includes.find((includedStore) => {
       if (
-        V1_schemaExistsInDatabase(
-          dbVisited,
+        _schemaExists(
           guaranteeType(includedStore.value, Database),
-          _schema,
+          schemaName,
+          visitedDbs,
         )
       ) {
         return true;
@@ -145,57 +146,51 @@ export const V1_schemaExistsInDatabase = (
   }
   return false;
 };
+
 const schemaExists = (database: Database, _schema: string): boolean =>
   DEFAULT_DATABASE_SCHEMA_NAME === _schema ||
-  V1_schemaExistsInDatabase(new Set<Database>(), database, _schema);
+  _schemaExists(database, _schema, new Set<Database>());
 
 export const V1_findRelation = (
-  db: Database,
-  _schema: string,
-  _table: string,
+  database: Database,
+  schemaName: string,
+  tableName: string,
 ): Relation | undefined => {
-  const tables: Relation[] = [];
-  getAllIncludedDbs(db).forEach((d) => {
-    const schema = d.schemas.find((e) => e.name === _schema);
+  const relations: Relation[] = [];
+  getAllIncludedDbs(database).forEach((db) => {
+    const schema = db.schemas.find((schema) => schema.name === schemaName);
     if (schema) {
-      let table: Relation | undefined = schema.tables.find(
-        (t) => t.name === _table,
+      let relation: Relation | undefined = schema.tables.find(
+        (table) => table.name === tableName,
       );
-      if (!table) {
-        table = schema.views.find((v) => v.name === _table);
+      if (!relation) {
+        relation = schema.views.find((view) => view.name === tableName);
       }
-      if (table) {
-        tables.push(table);
+      if (relation) {
+        relations.push(relation);
       }
     }
   });
-  switch (tables.length) {
-    case 0:
-      return undefined;
-    case 1:
-      return tables[0];
-    default:
-      throw new Error(
-        `The relation ${_table} has been found more than one time in the database ${db.path} with schema ${_schema}`,
-      );
-  }
+  assertTrue(
+    relations.length < 2,
+    `Found multiple relations with name '${tableName}' in schema '${schemaName}' of database '${database.path}'`,
+  );
+  return relations.length === 0 ? undefined : relations[0];
 };
 
 export const V1_getRelation = (
   db: Database,
-  _schema: string,
-  _table: string,
+  schemaName: string,
+  relationName: string,
 ): Relation => {
-  if (!schemaExists(db, _schema)) {
-    throw new Error(`Can't find schema '${_schema}' in database '${db}'`);
-  }
-  const table = V1_findRelation(db, _schema, _table);
-  if (!table) {
-    throw new Error(
-      `Can't find table '${_table}' in schema '${_schema}' and database '${db.path}'`,
-    );
-  }
-  return table;
+  assertTrue(
+    schemaExists(db, schemaName),
+    `Can't find schema '${schemaName}' in database '${db}'`,
+  );
+  return guaranteeNonNullable(
+    V1_findRelation(db, schemaName, relationName),
+    `Can't find table '${relationName}' in schema '${schemaName}' and database '${db.path}'`,
+  );
 };
 
 const buildJoinTreeNode = (
@@ -509,21 +504,21 @@ export const V1_buildDatabaseJoin = (
     ),
   );
   const aliases = Array.from(aliasMap.values());
+  assertTrue(aliases.length > 0, `Can't build join with no table`);
+  assertTrue(
+    aliases.length <= 2,
+    `Can't build join of more than 2 tables. Please use V1_Join chains (using '>') in your mapping in order to compose them`,
+  );
   if (aliases.length === 2) {
     const target = aliases.filter((alias) => alias.name === srcJoin.target);
     if (target.length) {
       join.target = target[target.length - 1];
     }
-  } else if (aliases.length > 2) {
-    throw new Error(
-      `Can't build join of more than 2 tables. Please use V1_Join chains (using '>') in your mapping in order to compose them`,
-    );
   } else if (aliases.length === 1) {
-    if (!selfJoinTargets.length) {
-      throw new Error(
-        `Can't build join of 1 table, unless it is a self-join. Please use the '{target}' notation in order to define a directed self-join`,
-      );
-    }
+    assertTrue(
+      selfJoinTargets.length !== 0,
+      `Can't build join of 1 table, unless it is a self-join. Please use the '{target}' notation in order to define a directed self-join`,
+    );
     const existingAlias = aliases[0];
     const existingAliasName = existingAlias.name;
     const existingRelationalElement = existingAlias.relation;
@@ -545,13 +540,9 @@ export const V1_buildDatabaseJoin = (
           (c) => c instanceof Column && c.name === columnName,
         ) as Column | undefined;
       }
-      if (!col) {
-        throw new Error(`Can't find column '${columnName}' in the table`);
-      }
+      assertNonNullable(col, `Can't find column '${columnName}' in the table`);
       selfJoinTarget.column = ColumnExplicitReference.create(col);
     });
-  } else {
-    throw new Error(`Can't build join with no table`);
   }
   join.aliases = [
     new Pair<TableAlias, TableAlias>(aliases[0], aliases[1]),
