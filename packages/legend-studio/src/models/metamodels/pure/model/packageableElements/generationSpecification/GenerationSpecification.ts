@@ -16,9 +16,9 @@
 
 import { computed, observable, action, makeObservable, override } from 'mobx';
 import type { Hashable } from '@finos/legend-studio-shared';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
+  UnsupportedOperationError,
   hashArray,
   addUniqueEntry,
   deleteEntry,

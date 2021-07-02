@@ -624,11 +624,11 @@ export class QueryBuilderLambdaProcessor
         `Can't process agg() expression: only support agg() used in aggregation`,
       );
 
-      const groupByPrecedingExpression = guaranteeType(
-        this.precedingExpression.parametersValues[0],
-        SimpleFunctionExpression,
-        `Can't process agg() expression: only support agg() immediately following an expression`,
-      );
+      // const groupByPrecedingExpression = guaranteeType(
+      //   this.precedingExpression.parametersValues[0],
+      //   SimpleFunctionExpression,
+      //   `Can't process agg() expression: only support agg() immediately following an expression`,
+      // );
 
       // add columns to aggregation
       // [agg(x | $x.kerberos, y | $y->uniqueValueOnly())],
