@@ -2,4 +2,4 @@
 "@finos/legend-studio": patch
 ---
 
-Add button for quotedIdentifiersIgnoreCase flag.
+Add button for `quotedIdentifiersIgnoreCase` flag.
