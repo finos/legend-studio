@@ -196,7 +196,6 @@ import {
   V1_serializeExecutionPlan,
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
-import { V1_Runtime } from './model/packageableElements/runtime/V1_Runtime';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1792,7 +1791,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           element instanceof V1_Measure ||
           element instanceof V1_Store ||
           element instanceof V1_PackageableConnection ||
-          element instanceof V1_Runtime ||
+          element instanceof V1_PackageableRuntime ||
           element instanceof V1_Mapping,
       )
       .concat(extraExecutionElements);
