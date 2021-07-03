@@ -244,7 +244,7 @@ export const addCopyrightHeaderToBundledOutput = async ({
   const bundledOutputFile = resolve(basePath, file);
   if (!existsSync(bundledOutputFile)) {
     exitWithError(
-      `Can't find bundled output file: ${bundledOutputFile}. Make sure to build before running this script.`,
+      `Can't find bundled output file '${bundledOutputFile}'. Make sure to build before running this script`,
     );
   }
 

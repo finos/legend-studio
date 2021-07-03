@@ -25,7 +25,7 @@ import {
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import { GraphError } from '../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../MetaModelUtils';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
 
@@ -99,15 +99,14 @@ export class Package extends PackageableElement implements Hashable {
         child instanceof Package && child.name === str,
     );
     if (!node) {
-      if (insert) {
-        // create the node if it is not in parent package
-        node = Package.createPackageFromParent(str, parent);
-        parent.addChild(node);
-      } else {
+      if (!insert) {
         throw new GraphError(
           `Can't find packageable element '${str}' in package '${packageName}'`,
         );
       }
+      // create the node if it is not in parent package
+      node = Package.createPackageFromParent(str, parent);
+      parent.addChild(node);
     }
     if (index !== -1) {
       return Package.getOrCreatePackage(

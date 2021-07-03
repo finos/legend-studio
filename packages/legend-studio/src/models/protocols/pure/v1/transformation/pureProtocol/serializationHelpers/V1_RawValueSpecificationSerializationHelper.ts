@@ -16,12 +16,13 @@
 
 import {
   createModelSchema,
-  custom,
-  list,
   primitive,
   raw,
   serialize,
   deserialize,
+  optional,
+  list,
+  custom,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -29,10 +30,6 @@ import {
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
-import {
-  V1_RawRootGraphFetchTree,
-  V1_RawPropertyGraphFetchTree,
-} from '../../../model/rawValueSpecification/V1_RawGraphFetchTree';
 import { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 import type {
   V1_RawValueSpecification,
@@ -41,6 +38,8 @@ import type {
 import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
 import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import { V1_RawBaseExecutionContext } from '../../../model/rawValueSpecification/V1_RawExecutionContext';
+import { V1_RawInstanceValue } from '../../../model/rawValueSpecification/V1_RawInstanceValue';
+import { PRIMITIVE_TYPE } from '../../../../../../MetaModelConst';
 
 enum V1_RawExecutionContextType {
   BASE_EXECUTION_CONTEXT = 'BaseExecutionContext',
@@ -49,10 +48,16 @@ enum V1_RawExecutionContextType {
 export enum V1_RawValueSpecificationType {
   LAMBDA = 'lambda',
   VARIABLE = 'var',
-  ROOT_GRAPH_FETCH_TREE = 'rootGraphFetchTree',
-  PROPERTY_GRAPH_FETCH_TREE = 'propertyGraphFetchTree',
-  PACKAGEABLE_ELEMENT_PTR = 'packageableElementPtr',
-  FUNCTION = 'func',
+
+  CINTEGER = 'integer',
+  CDECIMAL = 'decimal',
+  CSTRING = 'string',
+  CBOOLEAN = 'boolean',
+  CFLOAT = 'float',
+  CDATETIME = 'dateTime',
+  CSTRICTDATE = 'strictDate',
+  CSTRICTTIME = 'strictTime',
+  CLATESTDATE = 'latestDate',
 }
 
 export const V1_rawBaseExecutionContextModelSchema = createModelSchema(
@@ -79,41 +84,65 @@ export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
   name: primitive(),
 });
 
-const V1_rawPropertyGraphFetchTreeModelSchema = createModelSchema(
-  V1_RawPropertyGraphFetchTree,
+export const V1_rawInstanceValueSchema = createModelSchema(
+  V1_RawInstanceValue,
   {
-    _type: usingConstantValueSchema(
-      V1_RawValueSpecificationType.PROPERTY_GRAPH_FETCH_TREE,
+    _type: custom(
+      (val) => {
+        switch (val) {
+          case PRIMITIVE_TYPE.INTEGER:
+            return V1_RawValueSpecificationType.CINTEGER;
+          case PRIMITIVE_TYPE.DECIMAL:
+            return V1_RawValueSpecificationType.CDECIMAL;
+          case PRIMITIVE_TYPE.STRING:
+            return V1_RawValueSpecificationType.CSTRING;
+          case PRIMITIVE_TYPE.BOOLEAN:
+            return V1_RawValueSpecificationType.CBOOLEAN;
+          case PRIMITIVE_TYPE.FLOAT:
+            return V1_RawValueSpecificationType.CFLOAT;
+          case PRIMITIVE_TYPE.DATETIME:
+            return V1_RawValueSpecificationType.CDATETIME;
+          case PRIMITIVE_TYPE.STRICTDATE:
+            return V1_RawValueSpecificationType.CSTRICTDATE;
+          case PRIMITIVE_TYPE.STRICTTIME:
+            return V1_RawValueSpecificationType.CSTRICTTIME;
+          case PRIMITIVE_TYPE.LATESTDATE:
+            return V1_RawValueSpecificationType.CLATESTDATE;
+          default:
+            throw new UnsupportedOperationError(
+              `Can't serialize raw instance value type '${val}'`,
+            );
+        }
+      },
+      (val) => {
+        switch (val) {
+          case V1_RawValueSpecificationType.CINTEGER:
+            return PRIMITIVE_TYPE.INTEGER;
+          case V1_RawValueSpecificationType.CDECIMAL:
+            return PRIMITIVE_TYPE.DECIMAL;
+          case V1_RawValueSpecificationType.CSTRING:
+            return PRIMITIVE_TYPE.STRING;
+          case V1_RawValueSpecificationType.CBOOLEAN:
+            return PRIMITIVE_TYPE.BOOLEAN;
+          case V1_RawValueSpecificationType.CFLOAT:
+            return PRIMITIVE_TYPE.FLOAT;
+          case V1_RawValueSpecificationType.CDATETIME:
+            return PRIMITIVE_TYPE.DATETIME;
+          case V1_RawValueSpecificationType.CSTRICTDATE:
+            return PRIMITIVE_TYPE.STRICTDATE;
+          case V1_RawValueSpecificationType.CSTRICTTIME:
+            return PRIMITIVE_TYPE.STRICTTIME;
+          case V1_RawValueSpecificationType.CLATESTDATE:
+            return PRIMITIVE_TYPE.LATESTDATE;
+          default:
+            throw new UnsupportedOperationError(
+              `Can't deserialize raw value instance value type '${val}'`,
+            );
+        }
+      },
     ),
-    alias: primitive(),
-    parameters: custom(
-      () => [],
-      () => [],
-    ),
-    property: primitive(),
-    subType: primitive(),
-    subTrees: list(
-      custom(
-        (value) => V1_serializeRawValueSpecification(value),
-        (value) => V1_deserializeRawValueSpecification(value),
-      ),
-    ),
-  },
-);
-
-const V1_rawRootGraphFetchTreeModelSchema = createModelSchema(
-  V1_RawRootGraphFetchTree,
-  {
-    _type: usingConstantValueSchema(
-      V1_RawValueSpecificationType.ROOT_GRAPH_FETCH_TREE,
-    ),
-    class: primitive(),
-    subTrees: list(
-      custom(
-        (value) => V1_serializeRawValueSpecification(value),
-        (value) => V1_deserializeRawValueSpecification(value),
-      ),
-    ),
+    multiplicity: usingModelSchema(V1_multiplicitySchema),
+    values: optional(list(primitive())),
   },
 );
 
@@ -131,21 +160,10 @@ class V1_RawValueSpecificationSerializer
   ): PlainObject<V1_RawValueSpecification> {
     return serialize(V1_rawVariableModelSchema, rawValueSpecification);
   }
-  visit_RootGraphFetchTree(
-    rawValueSpecification: V1_RawRootGraphFetchTree,
+  visit_InstanceValue(
+    rawValueSpecification: V1_RawInstanceValue,
   ): PlainObject<V1_RawValueSpecification> {
-    return serialize(
-      V1_rawRootGraphFetchTreeModelSchema,
-      rawValueSpecification,
-    );
-  }
-  visit_PropertyGraphFetchTree(
-    rawValueSpecification: V1_RawPropertyGraphFetchTree,
-  ): PlainObject<V1_RawValueSpecification> {
-    return serialize(
-      V1_rawPropertyGraphFetchTreeModelSchema,
-      rawValueSpecification,
-    );
+    return serialize(V1_rawInstanceValueSchema, rawValueSpecification);
   }
 }
 
@@ -165,13 +183,19 @@ export function V1_deserializeRawValueSpecification(
       return deserialize(V1_rawLambdaModelSchema, json);
     case V1_RawValueSpecificationType.VARIABLE:
       return deserialize(V1_rawVariableModelSchema, json);
-    case V1_RawValueSpecificationType.ROOT_GRAPH_FETCH_TREE:
-      return deserialize(V1_rawRootGraphFetchTreeModelSchema, json);
-    case V1_RawValueSpecificationType.PROPERTY_GRAPH_FETCH_TREE:
-      return deserialize(V1_rawPropertyGraphFetchTreeModelSchema, json);
+    case V1_RawValueSpecificationType.CINTEGER:
+    case V1_RawValueSpecificationType.CDECIMAL:
+    case V1_RawValueSpecificationType.CSTRING:
+    case V1_RawValueSpecificationType.CBOOLEAN:
+    case V1_RawValueSpecificationType.CFLOAT:
+    case V1_RawValueSpecificationType.CDATETIME:
+    case V1_RawValueSpecificationType.CSTRICTDATE:
+    case V1_RawValueSpecificationType.CSTRICTTIME:
+    case V1_RawValueSpecificationType.CLATESTDATE:
+      return deserialize(V1_rawVariableModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Can't deserialize raw value specification of type ${json._type}`,
+        `Can't deserialize raw value specification of type '${json._type}'`,
       );
   }
 }

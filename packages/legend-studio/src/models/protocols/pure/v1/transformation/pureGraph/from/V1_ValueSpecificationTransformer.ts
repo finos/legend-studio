@@ -127,7 +127,7 @@ export class V1_ValueSpecificationTransformer
   visit_AlloySerializationConfigInstanceValue(
     valueSpecification: AlloySerializationConfigInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PrimitiveInstanceValue(
@@ -192,7 +192,7 @@ export class V1_ValueSpecificationTransformer
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't transform primtive instance value of unsupported type '${type.name}'`,
+          `Can't transform primtive instance value of type '${type.name}'`,
         );
     }
   }
@@ -229,7 +229,8 @@ export class V1_ValueSpecificationTransformer
       }
     }
     throw new UnsupportedOperationError(
-      `Can't transform unsupported form of instance value.`,
+      `Can't transform instance value`,
+      valueSpecification,
     );
   }
 
@@ -246,25 +247,25 @@ export class V1_ValueSpecificationTransformer
   visit_RuntimeInstanceValue(
     valueSpecification: RuntimeInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PairInstanceValue(
     valueSpecification: PairInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_MappingInstanceValue(
     valueSpecification: MappingInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PureListInsanceValue(
     valueSpecification: PureListInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_CollectionInstanceValue(
@@ -410,8 +411,8 @@ export function V1_transformGraphFetchTree(
     );
     return _propertyGraphTree;
   }
-  throw new Error(
-    `Can't build graph fetch tree node of type ${value.toString()}`,
+  throw new UnsupportedOperationError(
+    `Can't build graph fetch tree node of type '${value.toString()}'`,
   );
 }
 

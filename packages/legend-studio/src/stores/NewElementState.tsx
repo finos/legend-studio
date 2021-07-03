@@ -698,7 +698,7 @@ export class NewElementState {
         }
         if (!element) {
           throw new UnsupportedOperationError(
-            `Can't create element of type '${this.type}'. No compatible element creator available from plugins.`,
+            `Can't create element of type '${this.type}': no compatible element creator available from plugins`,
           );
         }
       }

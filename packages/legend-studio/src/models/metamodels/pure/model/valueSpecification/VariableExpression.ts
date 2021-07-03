@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import type { GenericType } from '../../model/packageableElements/domain/GenericType';
 import type { Multiplicity } from '../../model/packageableElements/domain/Multiplicity';
 import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 
 export class VariableExpression extends ValueSpecification {
   name: string;
-  inferredType?: GenericType;
 
   constructor(name: string, multiplicity: Multiplicity) {
     super(multiplicity);

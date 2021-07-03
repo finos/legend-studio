@@ -137,7 +137,7 @@ export const AppRoot = observer(() => {
        */
       if (entry.urlPattern.startsWith('/:')) {
         applicationStore.notifyIllegalState(
-          `Can't render extra application page with URL pattern '${entry.urlPattern}' from plugins due to pattern conflicts.`,
+          `Can't render extra application page with URL pattern '${entry.urlPattern}' from plugins due to pattern conflicts`,
         );
         return false;
       }

@@ -21,6 +21,7 @@ import {
   IllegalStateError,
   assertNonNullable,
   guaranteeNonNullable,
+  assertTrue,
 } from '@finos/legend-studio-shared';
 import { Stereotype } from '../../../../../../metamodels/pure/model/packageableElements/domain/Stereotype';
 import { Tag } from '../../../../../../metamodels/pure/model/packageableElements/domain/Tag';
@@ -238,13 +239,12 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     mapping.includes = element.includedMappings.map((i) => {
       assertNonEmptyString(
         i.includedMappingPath,
-        'Included mapping path is missing',
+        'Mapping include path is missing',
       );
-      if (mappingIncludesSet.has(i.includedMappingPath)) {
-        throw new Error(
-          `Duplicated mapping include '${i.includedMappingPath}' in mapping '${mapping.path}'`,
-        );
-      }
+      assertTrue(
+        !mappingIncludesSet.has(i.includedMappingPath),
+        `Duplicated mapping include '${i.includedMappingPath}' in mapping '${mapping.path}'`,
+      );
       mappingIncludesSet.add(i.includedMappingPath);
       return V1_buildMappingInclude(i, this.context, mapping);
     });

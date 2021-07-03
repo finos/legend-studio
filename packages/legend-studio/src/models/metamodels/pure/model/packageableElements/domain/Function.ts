@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
 
@@ -32,7 +33,7 @@ export class NativeFunctiion extends Function {
   accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {
-    throw new Error('Method not implemented');
+    throw new UnsupportedOperationError();
   }
 }
 
@@ -40,6 +41,6 @@ export class LambdaFunction extends FunctionDefinition {
   accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {
-    throw new Error('Method not implemented');
+    throw new UnsupportedOperationError();
   }
 }

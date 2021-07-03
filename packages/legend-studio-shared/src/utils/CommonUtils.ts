@@ -17,6 +17,7 @@
 import { cloneDeep as deepClone, mergeWith, pickBy } from 'lodash-es';
 import { UnsupportedOperationError } from './ErrorUtils';
 import { format as prettyPrintObject } from 'pretty-format';
+import { assertTrue } from './AssertionUtils';
 
 // NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
 // in case we want to swap out the implementation
@@ -149,11 +150,10 @@ export const generateEnumerableNameFromToken = (
   existingNames: string[],
   token: string,
 ): string => {
-  if (!token.match(/^[\w_-]+$/)) {
-    throw new Error(
-      'Token must only contain any digits, letters, or special characters _ and -',
-    );
-  }
+  assertTrue(
+    Boolean(token.match(/^[\w_-]+$/)),
+    'Token must only contain digits, letters, or special characters _ and -',
+  );
   const maxCounter = existingNames
     .map((name) => {
       const matchingCount = name.match(new RegExp(`^${token}_(?<count>\\d+)$`));

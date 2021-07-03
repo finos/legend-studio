@@ -110,7 +110,7 @@ export const V1_serializeMilestoning = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize milestoning. No compatible serializer available from plugins.`,
+    `Can't serialize milestoning: no compatible serializer available from plugins`,
     protocol,
   );
 };
@@ -140,7 +140,7 @@ export const V1_deserializeMilestoning = (
         }
       }
       throw new UnsupportedOperationError(
-        `Can't deserialize milestoning of type '${json._type}'. No compatible deserializer available from plugins.`,
+        `Can't deserialize milestoning of type '${json._type}': no compatible deserializer available from plugins`,
       );
     }
   }

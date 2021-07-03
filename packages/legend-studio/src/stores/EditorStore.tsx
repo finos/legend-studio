@@ -674,7 +674,7 @@ export class EditorStore {
       this.editorExtensionStates.find(
         (extenionState): extenionState is T => extenionState instanceof clazz,
       ),
-      `Can't find extension editor state of the specified type. No built extension editor state available from plugins.`,
+      `Can't find extension editor state of the specified type: no built extension editor state available from plugins`,
     );
   }
 
@@ -910,7 +910,7 @@ export class EditorStore {
       }
     }
     throw new UnsupportedOperationError(
-      `Can't create editor state for element. No compatible editor state creator available from plugins.`,
+      `Can't create editor state for element: no compatible editor state creator available from plugins`,
       element,
     );
   }
@@ -968,7 +968,7 @@ export class EditorStore {
     this.explorerTreeState.reprocess();
     // re-compile after deletion
     yield this.graphState.globalCompileInFormMode({
-      message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging.`,
+      message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
     });
   });
 
@@ -1062,7 +1062,7 @@ export class EditorStore {
       } catch (error: unknown) {
         assertErrorThrown(error);
         this.applicationStore.notifyWarning(
-          `Can't enter text mode. Transformation to grammar text failed: ${error.message}`,
+          `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
         );
         this.setBlockingAlert(undefined);
         return;

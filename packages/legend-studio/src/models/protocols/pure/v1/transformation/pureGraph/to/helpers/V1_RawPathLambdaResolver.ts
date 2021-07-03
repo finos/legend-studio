@@ -22,7 +22,7 @@ import { CORE_LOG_EVENT } from '../../../../../../../../utils/Logger';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { RawLambda } from '../../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
-import { isValidFullPath } from '../../../../../../../MetaModelUtility';
+import { isValidFullPath } from '../../../../../../../MetaModelUtils';
 import { V1_RawLambda } from '../../../../model/rawValueSpecification/V1_RawLambda';
 import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction';
 import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty';

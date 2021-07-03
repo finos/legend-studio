@@ -20,6 +20,7 @@ import {
   NetworkClientError,
   HttpStatus,
   guaranteeNonNullable,
+  assertTrue,
 } from '@finos/legend-studio-shared';
 import type { PlainObject, GeneratorFn } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../utils/Logger';
@@ -259,12 +260,11 @@ export class EditorSdlcState {
             RevisionAlias.CURRENT,
           )) as PlainObject<Revision>,
         );
-        if (latestRevision.id !== this.currentRevisionId) {
-          // make sure there is no good recovery from this, at this point all users work risk conflict
-          throw new Error(
-            `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
-          );
-        }
+        // make sure there is no good recovery from this, at this point all users work risk conflict
+        assertTrue(
+          latestRevision.id === this.currentRevisionId,
+          `Can't run local change detection: current workspace revision is not the latest. Please backup your work and refresh the application`,
+        );
         entities = (yield this.sdlcClient.getEntitiesByRevision(
           this.currentProjectId,
           this.currentWorkspaceId,

@@ -110,7 +110,7 @@ const transformUnit = (
   const unit = new V1_Unit();
   V1_initPackageableElement(unit, element);
   unit.conversionFunction =
-    element.conversionFunction?.accept_ValueSpecificationVisitor(
+    element.conversionFunction?.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda | undefined;
   unit.measure = element.measure.path;
@@ -138,7 +138,7 @@ const transformConstraint = (
 ): V1_Constraint => {
   const constraint = new V1_Constraint();
   constraint.functionDefinition =
-    element.functionDefinition.accept_ValueSpecificationVisitor(
+    element.functionDefinition.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
   constraint.name = element.name;
@@ -146,7 +146,7 @@ const transformConstraint = (
   constraint.enforcementLevel = element.enforcementLevel;
   if (element.messageFunction && !element.messageFunction.isStub) {
     constraint.messageFunction =
-      element.messageFunction.accept_ValueSpecificationVisitor(
+      element.messageFunction.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawLambda;
   }
@@ -226,7 +226,7 @@ export const V1_transformFunction = (
   _function.body = toJS(element.body);
   _function.parameters = element.parameters.map((v) =>
     toJS(
-      v.accept_ValueSpecificationVisitor(
+      v.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
     ),

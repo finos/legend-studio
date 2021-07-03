@@ -178,17 +178,13 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- ValueSpecification  -------------------------------------------
 
   abstract buildValueSpecification(
-    rawValueSpecification: RawValueSpecification,
+    valueSpecificationJson: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification;
   abstract buildRawValueSpecification(
     compiledValueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification;
-  abstract buildValueSpecificationFromJson(
-    valueSpecificationJson: Record<PropertyKey, unknown>,
-    graph: PureModel,
-  ): ValueSpecification;
   abstract serializeRawValueSpecification(
     rawValueSpecification: RawValueSpecification,
   ): Record<PropertyKey, unknown>;

@@ -67,7 +67,7 @@ export const V1_buildPostProcessor = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build post-processor. No compatible builder available from plugins.`,
+    `Can't build post-processor: no compatible builder available from plugins`,
     protocol,
   );
 };

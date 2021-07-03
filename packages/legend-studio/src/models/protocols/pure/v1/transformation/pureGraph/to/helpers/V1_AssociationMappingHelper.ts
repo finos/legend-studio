@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtility';
+import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtils';
 import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import type { Mapping } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RelationalAssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/RelationalAssociationImplementation';

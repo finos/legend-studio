@@ -18,6 +18,7 @@ import {
   isNonNullable,
   assertTrue,
   assertType,
+  UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import { getDecoratedSetImplementationPropertyMappings } from '../../../../utils/MappingResolutionUtil';
 import type {
@@ -325,7 +326,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_RelationalInstanceSetImplementation(
     setImplementation: RelationalInstanceSetImplementation,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_RootRelationalInstanceSetImplementation(
@@ -412,6 +413,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         });
         return ePropertyMapping;
       } else if (propertyType instanceof Class) {
+        let propertyMappings: PropertyMapping[] = [];
         // TODO: should we try to get leaf implementation here from the root
         // or should we just simply find all class mappings for the target class
         // as we should not try to `understand` operation class mapping union?
@@ -420,11 +422,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
             property.genericType.value.getRawType(Class),
           );
         // if there are no root-resolved set implementations for the class, return empty array
-        if (!resolvedLeafSetImps) {
-          return [];
-        }
-        return (
-          resolvedLeafSetImps
+        if (resolvedLeafSetImps) {
+          propertyMappings = resolvedLeafSetImps
             // from root of the class property, resolve leaf set implementations and add property mappings for them
             // NOTE: here we actually remove existing property mapping if it no longer part of resolved
             // leaf set implementation of the class property
@@ -452,14 +451,13 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               ).id.value.localeCompare(
                 (b.targetSetImplementation as SetImplementation).id.value,
               ),
-            )
-            // add the embedded property mapping to the end of the list
-            .concat(
-              existingPropertyMappings.filter(
-                (pm) =>
-                  pm instanceof EmbeddedRelationalInstanceSetImplementation,
-              ),
-            )
+            );
+        }
+        // add the embedded property mapping to the end of the list
+        return propertyMappings.concat(
+          existingPropertyMappings.filter(
+            (pm) => pm instanceof EmbeddedRelationalInstanceSetImplementation,
+          ),
         );
       }
       return [];
@@ -475,7 +473,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 
@@ -564,6 +562,6 @@ export class MappingElementDecorationCleaner
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }

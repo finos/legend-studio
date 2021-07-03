@@ -81,7 +81,7 @@ import {
 import {
   isValidFullPath,
   resolvePackageNameAndElementName,
-} from '../../../../models/MetaModelUtility';
+} from '../../../../models/MetaModelUtils';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

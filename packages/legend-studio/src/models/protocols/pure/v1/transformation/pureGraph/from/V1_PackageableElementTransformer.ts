@@ -94,7 +94,7 @@ export class V1_PackageableElementTransformer
       }
     }
     throw new UnsupportedOperationError(
-      `Can't transform element '${element.path}'. No compatible transformer available from plugins.`,
+      `Can't transform element '${element.path}': no compatible transformer available from plugins`,
       element,
     );
   }

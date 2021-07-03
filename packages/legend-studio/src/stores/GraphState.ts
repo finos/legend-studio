@@ -43,7 +43,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import {
   GraphDataParserError,
   DependencyGraphProcessingError,
-} from '../models/MetaModelUtility';
+} from '../models/MetaModelUtils';
 import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
@@ -678,7 +678,7 @@ export class GraphState {
         if (this.graph.failedToBuild) {
           // FIXME when we support showing multiple notification, we can split this into 2 messages
           this.editorStore.applicationStore.notifyWarning(
-            `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed: ${error.message}`,
+            `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
           );
         } else {
           this.editorStore.applicationStore.notifyWarning(
@@ -1127,7 +1127,7 @@ export class GraphState {
       }
     }
     throw new UnsupportedOperationError(
-      `Can't get type label for element '${element.path}'. No compatible label getter available from plugins.`,
+      `Can't get type label for element '${element.path}': no compatible label getter available from plugins`,
     );
   }
 

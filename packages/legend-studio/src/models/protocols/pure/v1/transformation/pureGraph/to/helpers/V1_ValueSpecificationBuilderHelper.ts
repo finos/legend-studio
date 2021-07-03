@@ -18,14 +18,13 @@ import {
   Pair,
   guaranteeNonNullable,
   guaranteeType,
-  returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
   PRIMITIVE_TYPE,
 } from '../../../../../../../MetaModelConst';
-import { GraphError } from '../../../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../../../MetaModelUtils';
 import {
   LambdaFunction,
   FunctionType,
@@ -47,11 +46,8 @@ import {
   RootGraphFetchTreeInstanceValue,
 } from '../../../../../../../metamodels/pure/model/valueSpecification/GraphFetchTree';
 import { ValueSpecification } from '../../../../../../../metamodels/pure/model/valueSpecification/ValueSpecification';
-import {
-  AbstractPropertyExpression,
-  SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
-} from '../../../../../../../metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
+import type { SimpleFunctionExpression } from '../../../../../../../metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
+import { AbstractPropertyExpression } from '../../../../../../../metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
 import { GenericType } from '../../../../../../../metamodels/pure/model/packageableElements/domain/GenericType';
 import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/GenericTypeReference';
 import {
@@ -74,7 +70,7 @@ import type {
   V1_ValueSpecification,
 } from '../../../../model/valueSpecification/V1_ValueSpecification';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
+import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
 import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable';
 import { V1_ProcessingContext } from './V1_ProcessingContext';
 import type { V1_ExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_ExecutionContext';
@@ -84,7 +80,7 @@ import { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/
 import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity';
 import { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
 import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_GraphFetchTree';
-import { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction';
+import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction';
 import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty';
 import type { V1_AggregateValue } from '../../../../model/valueSpecification/raw/V1_AggregateValue';
 import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean';
@@ -94,7 +90,7 @@ import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CD
 import type { V1_CFloat } from '../../../../model/valueSpecification/raw/V1_CFloat';
 import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CInteger';
 import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate';
-import { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection';
+import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection';
 import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate';
 import { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString';
 import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue';
@@ -122,7 +118,7 @@ import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_
 
 const LET_FUNCTION = 'letFunction';
 
-const getPrimtiveInstanceValue = (
+const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
   values: unknown[],
   context: V1_GraphBuilderContext,
@@ -151,7 +147,8 @@ export class V1_ValueSpecificationBuilder
     this.openVariables = openVariables;
   }
 
-  // Function val specs
+  // --------------------------------------------- Function ---------------------------------------------
+
   visit_Variable(variable: V1_Variable): ValueSpecification {
     this.openVariables.push(variable.name);
     if (variable.class && variable.multiplicity) {
@@ -191,7 +188,9 @@ export class V1_ValueSpecificationBuilder
   visit_AppliedFunction(
     appliedFunction: V1_AppliedFunction,
   ): ValueSpecification {
-    this.processingContext.push(`Applying ${appliedFunction.function}`);
+    this.processingContext.push(
+      `Applying function '${appliedFunction.function}'`,
+    );
     if (appliedFunction.function === LET_FUNCTION) {
       const vs = appliedFunction.parameters.map((expression) =>
         expression.accept_ValueSpecificationVisitor(
@@ -231,7 +230,8 @@ export class V1_ValueSpecificationBuilder
     );
   }
 
-  // core value specs
+  // --------------------------------------------- Core ---------------------------------------------
+
   visit_Collection(valueSpecification: V1_Collection): ValueSpecification {
     const transformed = valueSpecification.values.map((v) =>
       v.accept_ValueSpecificationVisitor(
@@ -293,10 +293,10 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_Path(valueSpecification: V1_Path): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
-  // Instance Types
+  // --------------------------------------------- Instance Value ---------------------------------------------
 
   visit_PackageableElementPtr(
     valueSpecification: V1_PackageableElementPtr,
@@ -341,9 +341,10 @@ export class V1_ValueSpecificationBuilder
     return instance;
   }
 
-  // Primitive Type
+  // --------------------------------------------- Primitive Type ---------------------------------------------
+
   visit_CInteger(valueSpecification: V1_CInteger): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.INTEGER,
       valueSpecification.values,
       this.context,
@@ -355,7 +356,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CDecimal(valueSpecification: V1_CDecimal): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.DECIMAL,
       valueSpecification.values,
       this.context,
@@ -367,7 +368,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CString(valueSpecification: V1_CString): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRING,
       valueSpecification.values,
       this.context,
@@ -379,7 +380,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CBoolean(valueSpecification: V1_CBoolean): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.BOOLEAN,
       valueSpecification.values,
       this.context,
@@ -391,7 +392,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CFloat(valueSpecification: V1_CFloat): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.FLOAT,
       valueSpecification.values,
       this.context,
@@ -403,7 +404,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CDateTime(valueSpecification: V1_CDateTime): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.DATETIME,
       valueSpecification.values,
       this.context,
@@ -415,7 +416,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CStrictDate(valueSpecification: V1_CStrictDate): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRICTDATE,
       valueSpecification.values,
       this.context,
@@ -427,7 +428,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CStrictTime(valueSpecification: V1_CStrictTime): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRICTTIME,
       valueSpecification.values,
       this.context,
@@ -439,7 +440,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CLatestDate(valueSpecification: V1_CLatestDate): ValueSpecification {
-    return getPrimtiveInstanceValue(
+    return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.LATESTDATE,
       [],
       this.context,
@@ -450,7 +451,8 @@ export class V1_ValueSpecificationBuilder
     );
   }
 
-  // Graph Fetch Tree
+  // --------------------------------------------- Graph Fetch Tree ---------------------------------------------
+
   visit_RootGraphFetchTree(
     valueSpecification: V1_RootGraphFetchTree,
   ): ValueSpecification {
@@ -485,79 +487,79 @@ export class V1_ValueSpecificationBuilder
     return instance;
   }
 
-  // TODO
+  // --------------------------------------------- TODO ---------------------------------------------
 
   visit_RuntimeInstance(
     valueSpecification: V1_RuntimeInstance,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_AggregateValue(
     valueSpecification: V1_AggregateValue,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_SerializationConfig(
     valueSpecification: V1_SerializationConfig,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_UnitType(valueSpecification: V1_UnitType): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_UnitInstance(valueSpecification: V1_UnitInstance): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_KeyExpression(
     valueSpecification: V1_KeyExpression,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_ExecutionContextInstance(
     valueSpecification: V1_ExecutionContextInstance,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PrimitiveType(
     valueSpecification: V1_PrimitiveType,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   // Not Supported For NOW
   visit_TDSAggregateValue(
     valueSpecification: V1_TDSAggregateValue,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_TDSColumnInformation(
     valueSpecification: V1_TDSColumnInformation,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_TDSSortInformation(
     valueSpecification: V1_TDSSortInformation,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_TdsOlapRank(valueSpecification: V1_TdsOlapRank): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_TdsOlapAggregation(
     valueSpecification: V1_TdsOlapAggregation,
   ): ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 
@@ -577,7 +579,7 @@ export function V1_buildLambdaBody(
   context: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): LambdaFunction {
-  processingContext.push('new V1_Lambda');
+  processingContext.push('Creating new lambda');
   const pureParameters = parameters.map(
     (p) =>
       p.accept_ValueSpecificationVisitor(
@@ -686,7 +688,7 @@ function buildPropertyGraphFetchTree(
       parameters,
       propertyGraphFetchTree.property,
     );
-    processingContext.push('PropertyTree');
+    processingContext.push('Creating graph-fetch property tree');
     processingContext.addInferredVariables(
       'this',
       createThisVariableForClass(context, parentClass.path),
@@ -859,49 +861,19 @@ export function V1_processProperty(
     ];
     return enumValueInstanceValue;
   }
-  throw new Error(
-    `Unable to resolve property '${property}' of type '${inferredType?.name}'`,
+  throw new UnsupportedOperationError(
+    `Can't resolve property '${property}' of type '${inferredType?.name}'`,
   );
 }
 
-const resolveFunctionReturnType = (
-  functionName: string,
-  _function: SimpleFunctionExpression,
-): void => {
-  if (functionName === SUPPORTED_FUNCTIONS.GET_ALL) {
-    const first = _function.parametersValues[0];
-    if (first instanceof InstanceValue) {
-      _function.genericType = first.genericType;
-      _function.multiplicity = first.multiplicity;
-    }
-  }
-};
-
-const processSimpleFunctionExpression = (
-  processedParameters: ValueSpecification[],
-  functionName: string,
-  compileContext: V1_GraphBuilderContext,
-): SimpleFunctionExpression => {
-  const _function = new SimpleFunctionExpression(
-    functionName,
-    compileContext.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-  );
-  const _func = returnUndefOnError(() =>
-    compileContext.resolveFunction(functionName),
-  );
-  _function.func = _func;
-  if (_func) {
-    const val = _func.value;
-    _function.genericType = GenericTypeExplicitReference.create(
-      new GenericType(val.returnType.value),
-    );
-    _function.multiplicity = val.returnMultiplicity;
-  }
-  _function.parametersValues = processedParameters;
-  resolveFunctionReturnType(functionName, _function);
-  return _function;
-};
-
+/**
+ * This is fairly similar to how engine does function matching in a way.
+ * Notice that Studio core should not attempt to do any function inferencing/matching
+ * at all as the job is meant for engine.
+ *
+ * On the other hand, the function handling/matching plugin mechanism is meant
+ * for extensions which should try to understand/match functions such as query builder.
+ */
 export function V1_buildFunctionExpression(
   functionName: string,
   parameters: V1_ValueSpecification[],
@@ -909,279 +881,23 @@ export function V1_buildFunctionExpression(
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] {
-  switch (functionName) {
-    case SUPPORTED_FUNCTIONS.FILTER: {
-      return V1_buildFilterFunctionExpression(
-        functionName,
-        parameters,
-        openVariables,
-        compileContext,
-        processingContext,
-      );
-    }
-    case SUPPORTED_FUNCTIONS.PROJECT: {
-      return V1_buildProjectFunctionExpression(
-        functionName,
-        parameters,
-        openVariables,
-        compileContext,
-        processingContext,
-      );
-    }
-    case SUPPORTED_FUNCTIONS.EXISTS: {
-      return V1_buildExistsFunctionExpression(
-        functionName,
-        parameters,
-        openVariables,
-        compileContext,
-        processingContext,
-      );
-    }
-    default: {
-      const processed = parameters.map((p) =>
-        p.accept_ValueSpecificationVisitor(
-          new V1_ValueSpecificationBuilder(
-            compileContext,
-            processingContext,
-            openVariables,
-          ),
-        ),
-      );
-      const simpleFunction = processSimpleFunctionExpression(
-        processed,
-        functionName,
-        compileContext,
-      );
-      return [simpleFunction, processed];
-    }
-  }
-}
-
-// ------------------------------------------ RESOLVE SUPPORTED FUNCTIONS -----------------------------------------
-
-export function V1_buildExistsFunctionExpression(
-  functionName: string,
-  parameters: V1_ValueSpecification[],
-  openVariables: string[],
-  compileContext: V1_GraphBuilderContext,
-  processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] {
-  if (parameters.length === 2) {
-    const processedValue = parameters[0].accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
+  const extraFunctionExpressionBuilders =
+    compileContext.extensions.plugins.flatMap(
+      (plugin) => plugin.V1_getExtraFunctionExpressionBuilders?.() ?? [],
     );
-    processedValue.genericType = guaranteeType(
-      processedValue,
-      AbstractPropertyExpression,
-    ).func.genericType;
-    const lambda = parameters[1];
-    if (lambda instanceof V1_Lambda) {
-      lambda.parameters.forEach((p): void => {
-        if (p.name && !p.class) {
-          const _var = new VariableExpression(
-            p.name,
-            compileContext.graph.getTypicalMultiplicity(
-              TYPICAL_MULTIPLICITY_TYPE.ONE,
-            ),
-          );
-          _var.genericType = processedValue.genericType;
-          processingContext.addInferredVariables(p.name, _var);
-        }
-      });
-    }
-    const _processed = [
-      processedValue,
-      parameters[1].accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          compileContext,
-          processingContext,
-          openVariables,
-        ),
-      ),
-    ];
-    const _simpleFunction = processSimpleFunctionExpression(
-      _processed,
+  for (const builder of extraFunctionExpressionBuilders) {
+    const metamodel = builder(
       functionName,
+      parameters,
+      openVariables,
       compileContext,
+      processingContext,
     );
-    return [_simpleFunction, _processed];
-  }
-  const processed = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
-  );
-  const simpleFunction = processSimpleFunctionExpression(
-    processed,
-    functionName,
-    compileContext,
-  );
-  return [simpleFunction, processed];
-}
-
-export function V1_buildFilterFunctionExpression(
-  functionName: string,
-  parameters: V1_ValueSpecification[],
-  openVariables: string[],
-  compileContext: V1_GraphBuilderContext,
-  processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] {
-  if (parameters.length === 2) {
-    const processedValue = parameters[0].accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    );
-    if (processedValue.genericType) {
-      const func = parameters[1];
-      if (func instanceof V1_Lambda) {
-        func.parameters.forEach((p): void => {
-          if (p.name && !p.class) {
-            const _var = new VariableExpression(
-              p.name,
-              processedValue.multiplicity,
-            );
-            _var.genericType = processedValue.genericType;
-            processingContext.addInferredVariables(p.name, _var);
-          }
-        });
-      }
-    }
-    const _processed = [
-      processedValue,
-      parameters[1].accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          compileContext,
-          processingContext,
-          openVariables,
-        ),
-      ),
-    ];
-    const _simpleFunction = processSimpleFunctionExpression(
-      _processed,
-      functionName,
-      compileContext,
-    );
-    // return type of filtered is of type of param 0 - filter_T_MANY__Function_1__T_MANY_
-    _simpleFunction.genericType = processedValue.genericType;
-    _simpleFunction.multiplicity = processedValue.multiplicity;
-    return [_simpleFunction, _processed];
-  }
-  const processed = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
-  );
-  const simpleFunction = processSimpleFunctionExpression(
-    processed,
-    functionName,
-    compileContext,
-  );
-  return [simpleFunction, processed];
-}
-
-export function V1_buildProjectFunctionExpression(
-  functionName: string,
-  parameters: V1_ValueSpecification[],
-  openVariables: string[],
-  compileContext: V1_GraphBuilderContext,
-  processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] {
-  let lambdasVariables: V1_Variable[] = [];
-  if (parameters.length === 2 || parameters.length === 3) {
-    const processedValue = parameters[0].accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    );
-    const func = parameters[1];
-    if (processedValue.genericType) {
-      if (parameters.length === 2 && func instanceof V1_Collection) {
-        lambdasVariables = func.values
-          .filter(
-            (v: V1_ValueSpecification): v is V1_AppliedFunction =>
-              v instanceof V1_AppliedFunction &&
-              v.function === SUPPORTED_FUNCTIONS.COL,
-          )
-          .map((v) => v.parameters)
-          .flat()
-          .filter(
-            (v: V1_ValueSpecification): v is V1_Lambda =>
-              v instanceof V1_Lambda,
-          )
-          .map((l) => l.parameters)
-          .flat();
-      } else if (parameters.length === 3 && func instanceof V1_Collection) {
-        lambdasVariables = func.values
-          .filter(
-            (v: V1_ValueSpecification): v is V1_Lambda =>
-              v instanceof V1_Lambda,
-          )
-          .map((l) => l.parameters)
-          .flat();
-      }
-      const variables = new Set<string>();
-      lambdasVariables.forEach((v) => {
-        if (!variables.has(v.name) && !v.class) {
-          const _var = new VariableExpression(
-            v.name,
-            processedValue.multiplicity,
-          );
-          _var.genericType = processedValue.genericType;
-          processingContext.addInferredVariables(v.name, _var);
-        }
-      });
-      const _processed = [
-        processedValue,
-        ...parameters
-          .slice(1)
-          .map((e) =>
-            e.accept_ValueSpecificationVisitor(
-              new V1_ValueSpecificationBuilder(
-                compileContext,
-                processingContext,
-                openVariables,
-              ),
-            ),
-          ),
-      ];
-      const _simpleFunction = processSimpleFunctionExpression(
-        _processed,
-        functionName,
-        compileContext,
-      );
-      return [_simpleFunction, _processed];
+    if (metamodel) {
+      return metamodel;
     }
   }
-  const processed = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
+  throw new UnsupportedOperationError(
+    `Can't find expression builder for function '${functionName}': no compatible function expression builder available from plugins`,
   );
-  const simpleFunction = processSimpleFunctionExpression(
-    processed,
-    functionName,
-    compileContext,
-  );
-  return [simpleFunction, processed];
 }

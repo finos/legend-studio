@@ -359,12 +359,11 @@ export class ConflictResolutionState {
           RevisionAlias.CURRENT,
         ),
       );
-      if (latestRevision.id !== this.sdlcState.currentRevisionId) {
-        // make sure there is no good recovery from this, at this point all users work risk conflict
-        throw new Error(
-          `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
-        );
-      }
+      // make sure there is no good recovery from this, at this point all users work risk conflict
+      assertTrue(
+        latestRevision.id === this.sdlcState.currentRevisionId,
+        `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
+      );
       const entities =
         (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,

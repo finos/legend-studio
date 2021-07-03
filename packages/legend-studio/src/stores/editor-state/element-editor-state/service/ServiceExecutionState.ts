@@ -213,7 +213,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
   convertLambdaGrammarStringToObject(): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 

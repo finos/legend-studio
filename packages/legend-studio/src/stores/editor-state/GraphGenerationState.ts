@@ -18,6 +18,7 @@ import { observable, flow, action, computed, makeObservable } from 'mobx';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  assertTrue,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
@@ -190,17 +191,15 @@ export class GraphGenerationState {
       if (!generationSpecs.length) {
         return;
       }
-      if (generationSpecs.length > 1) {
-        throw new Error(
-          'Only one generation specification permitted to generate',
-        );
-      }
+      assertTrue(
+        generationSpecs.length === 1,
+        `Can't generate models: only one generation specification permitted to generate`,
+      );
       const generationSpec = generationSpecs[0];
       const generationNodes = generationSpec.generationNodes;
       for (let i = 0; i < generationNodes.length; i++) {
         const node = generationNodes[i];
         let generatedEntities: Entity[] = [];
-        /* @MARKER: FIX TRY CATCH ERRORING */
         try {
           generatedEntities = (yield this.generateGenerationElement(
             node.generationElement.value,
@@ -208,9 +207,11 @@ export class GraphGenerationState {
         } catch (error: unknown) {
           assertErrorThrown(error);
           throw new Error(
-            `Generation failed in step ${i + 1} for element ${
+            `Can't generate models: failure occured at step ${
+              i + 1
+            } with specification '${
               node.generationElement.value.path
-            }: ${error.message}`,
+            }'. Error: ${error.message}`,
           );
         }
         this.generatedEntities.set(
@@ -244,11 +245,10 @@ export class GraphGenerationState {
       if (!generationSpecs.length) {
         return;
       }
-      if (generationSpecs.length > 1) {
-        throw new Error(
-          'Only one generation specification permitted to generate',
-        );
-      }
+      assertTrue(
+        generationSpecs.length === 1,
+        `Can't generate models: only one generation specification permitted to generate`,
+      );
       const generationSpec = generationSpecs[0];
       const fileGenerations = generationSpec.fileGenerations;
       // we don't need to keep 'fetching' the main model as it won't grow with each file generation
@@ -267,7 +267,7 @@ export class GraphGenerationState {
         } catch (error: unknown) {
           assertErrorThrown(error);
           throw new Error(
-            `Failed generating files for ${fileGeneration.value.path}: ${error.message}`,
+            `Can't generate files using specification '${fileGeneration.value.path}'. Error: ${error.message}`,
           );
         }
         generationResultMap.set(fileGeneration.value.path, result);

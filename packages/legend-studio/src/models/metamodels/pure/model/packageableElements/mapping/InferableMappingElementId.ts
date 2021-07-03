@@ -15,7 +15,7 @@
  */
 
 import { computed, makeObservable } from 'mobx';
-import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtility';
+import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { InferableValue } from '../../../model/InferableValue';
 
 export abstract class InferableMappingElementIdValue extends InferableValue<

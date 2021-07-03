@@ -18,6 +18,6 @@
     { "path": "../legend-studio-preset-dummy" },
     { "path": "../legend-studio-preset-dsl-text" },
     { "path": "../legend-studio-preset-external-format-json-schema" },
-    { "path": "../legend-studio-plugin-query-builder" }
+    { "path": "../legend-studio-preset-query-builder" }
   ]
 }
