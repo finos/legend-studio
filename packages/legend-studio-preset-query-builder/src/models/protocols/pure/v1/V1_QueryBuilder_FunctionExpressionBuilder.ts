@@ -113,11 +113,15 @@ export const V1_buildGetAllFunctionExpression = (
     compileContext,
     processingContext,
   );
-  const paramOne = expression.parametersValues[0];
-  if (paramOne instanceof InstanceValue) {
-    expression.genericType = paramOne.genericType;
-    expression.multiplicity = paramOne.multiplicity;
-  }
+  const precedingExpression = expression.parametersValues[0];
+
+  assertType(
+    precedingExpression,
+    InstanceValue,
+    `Can't build getAll() expression: only support getAll() immediately following a class`,
+  );
+  expression.genericType = precedingExpression.genericType;
+  expression.multiplicity = precedingExpression.multiplicity;
   return [expression, processedParams];
 };
 
@@ -247,8 +251,8 @@ export const V1_buildProjectFunctionExpression = (
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] => {
   assertTrue(
-    parameters.length === 2 || parameters.length === 3,
-    `Can't build project() expression: project() expects at 1-2 arguments`,
+    parameters.length === 3,
+    `Can't build project() expression: project() expects 2 arguments`,
   );
 
   let variablesFromTopLevelLambdas: V1_Variable[] = [];
@@ -261,43 +265,23 @@ export const V1_buildProjectFunctionExpression = (
   );
   assertNonNullable(
     precedingExperession.genericType,
-    `Can't process project() expression: preceding expression return type is missing`,
+    `Can't build project() expression: preceding expression return type is missing`,
   );
 
   const columnExpressions = parameters[1];
-  if (
-    // NOTE: this is to support the form `col(lambda, 'alias')`
-    parameters.length === 2 &&
-    columnExpressions instanceof V1_Collection
-  ) {
-    variablesFromTopLevelLambdas = columnExpressions.values
-      .filter(
-        (value: V1_ValueSpecification): value is V1_AppliedFunction =>
-          value instanceof V1_AppliedFunction &&
-          matchFunctionName(value.function, SUPPORTED_FUNCTIONS.TDS_COL),
-      )
-      .map((value) => value.parameters)
-      .flat()
-      .filter(
-        (value: V1_ValueSpecification): value is V1_Lambda =>
-          value instanceof V1_Lambda,
-      )
-      .map((lambda) => lambda.parameters)
-      .flat();
-  } else if (
-    parameters.length === 3 &&
-    columnExpressions instanceof V1_Collection
-  ) {
-    // This is for the case where there's a third parameter as the column names for project()
-    // Here, each column expression is just a simple lambda with property expression
-    variablesFromTopLevelLambdas = columnExpressions.values
-      .filter(
-        (value: V1_ValueSpecification): value is V1_Lambda =>
-          value instanceof V1_Lambda,
-      )
-      .map((lambda) => lambda.parameters)
-      .flat();
-  }
+  assertType(
+    columnExpressions,
+    V1_Collection,
+    `Can't build project() expression: project() expects argument #1 to be a collection`,
+  );
+  variablesFromTopLevelLambdas = columnExpressions.values
+    .filter(
+      (value: V1_ValueSpecification): value is V1_Lambda =>
+        value instanceof V1_Lambda,
+    )
+    .map((lambda) => lambda.parameters)
+    .flat();
+
   const variables = new Set<string>();
   variablesFromTopLevelLambdas.forEach((variable) => {
     if (!variables.has(variable.name) && !variable.class) {
@@ -340,7 +324,7 @@ export const V1_buildGroupByFunctionExpression = (
 ): [SimpleFunctionExpression, ValueSpecification[]] => {
   let variablesFromTopLevelLambdas: V1_Variable[] = [];
   assertTrue(
-    parameters.length === 3,
+    parameters.length === 4,
     `Can't build groupBy() expression: groupBy() expects 3 arguments`,
   );
 
@@ -353,7 +337,7 @@ export const V1_buildGroupByFunctionExpression = (
   );
   assertNonNullable(
     precedingExperession.genericType,
-    `Can't process project() expression: preceding expression return type is missing`,
+    `Can't build groupBy() expression: preceding expression return type is missing`,
   );
 
   // normal columns
@@ -361,7 +345,7 @@ export const V1_buildGroupByFunctionExpression = (
   assertType(
     columnExpressions,
     V1_Collection,
-    `Can't build 'groupBy()' expression: first parameter must be a collection`,
+    `Can't build groupBy() expression: groupBy() expects argument #1 to be a collection`,
   );
   variablesFromTopLevelLambdas = columnExpressions.values
     .filter(
@@ -376,7 +360,7 @@ export const V1_buildGroupByFunctionExpression = (
   assertType(
     aggregationExpressions,
     V1_Collection,
-    `Can't build 'groupBy()' expression: second parameter must be a collection`,
+    `Can't build groupBy() expression: groupBy() expects argument #2 to be a collection`,
   );
   variablesFromTopLevelLambdas = aggregationExpressions.values
     .filter(

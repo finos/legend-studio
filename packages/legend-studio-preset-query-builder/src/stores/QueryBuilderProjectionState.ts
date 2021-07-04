@@ -31,6 +31,13 @@ import type {
 } from '@finos/legend-studio';
 import { TYPICAL_MULTIPLICITY_TYPE } from '@finos/legend-studio';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
+import { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
+import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count';
+import { QueryBuilderAggregateOperator_Distinct } from './aggregateOperators/QueryBuilderAggregateOperator_Distinct';
+import { QueryBuilderAggregateOperator_Sum } from './aggregateOperators/QueryBuilderAggregateOperator_Sum';
+import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average';
+import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population';
+import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample';
 
 export type ProjectionColumnOption = {
   label: string;
@@ -48,8 +55,8 @@ export interface QueryBuilderProjectionColumnDragSource {
 export class QueryBuilderProjectionColumnState {
   uuid = uuid();
   editorStore: EditorStore;
-  lambdaVariableName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
   projectionState: QueryBuilderProjectionState;
+  lambdaVariableName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
   columnName: string;
   propertyEditorState: QueryBuilderPropertyEditorState;
   isBeingDragged = false;
@@ -127,6 +134,7 @@ export class QueryBuilderProjectionState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   columns: QueryBuilderProjectionColumnState[] = [];
+  aggregationState: QueryBuilderAggregationState;
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -139,6 +147,18 @@ export class QueryBuilderProjectionState {
 
     this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
+    this.aggregationState = new QueryBuilderAggregationState(
+      this.editorStore,
+      this,
+      [
+        new QueryBuilderAggregateOperator_Count(),
+        new QueryBuilderAggregateOperator_Distinct(),
+        new QueryBuilderAggregateOperator_Sum(),
+        new QueryBuilderAggregateOperator_Average(),
+        new QueryBuilderAggregateOperator_StdDev_Population(),
+        new QueryBuilderAggregateOperator_StdDev_Sample(),
+      ],
+    );
   }
 
   get columnOptions(): ProjectionColumnOption[] {

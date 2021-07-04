@@ -23,7 +23,7 @@ export const simpleAllFunc = {
       parameters: [
         {
           _type: 'packageableElementPtr',
-          fullPath: 'apps::pure::studio::tests::model::simple::Person',
+          fullPath: 'test::Person',
         },
       ],
     },
@@ -44,7 +44,7 @@ export const simpleFilterFunc = {
           parameters: [
             {
               _type: 'packageableElementPtr',
-              fullPath: 'apps::pure::studio::tests::model::simple::Person',
+              fullPath: 'test::Person',
             },
           ],
         },
@@ -102,7 +102,7 @@ export const simpleProjection = {
           parameters: [
             {
               _type: 'packageableElementPtr',
-              fullPath: 'apps::pure::studio::tests::model::simple::Person',
+              fullPath: 'test::Person',
             },
           ],
         },
@@ -172,7 +172,7 @@ export const projectWithCols = {
           parameters: [
             {
               _type: 'packageableElementPtr',
-              fullPath: 'apps::pure::studio::tests::model::simple::Person',
+              fullPath: 'test::Person',
             },
           ],
         },
@@ -184,74 +184,71 @@ export const projectWithCols = {
           },
           values: [
             {
-              _type: 'func',
-              function: 'col',
-              parameters: [
+              _type: 'lambda',
+              body: [
                 {
-                  _type: 'lambda',
-                  body: [
-                    {
-                      _type: 'property',
-                      parameters: [
-                        {
-                          _type: 'var',
-                          name: 'x',
-                        },
-                      ],
-                      property: 'firstName',
-                    },
-                  ],
+                  _type: 'property',
                   parameters: [
                     {
                       _type: 'var',
                       name: 'x',
                     },
                   ],
+                  property: 'firstName',
                 },
+              ],
+              parameters: [
                 {
-                  _type: 'string',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: ['firstName'],
+                  _type: 'var',
+                  name: 'x',
                 },
               ],
             },
             {
-              _type: 'func',
-              function: 'col',
-              parameters: [
+              _type: 'lambda',
+              body: [
                 {
-                  _type: 'lambda',
-                  body: [
-                    {
-                      _type: 'property',
-                      parameters: [
-                        {
-                          _type: 'var',
-                          name: 'x',
-                        },
-                      ],
-                      property: 'lastName',
-                    },
-                  ],
+                  _type: 'property',
                   parameters: [
                     {
                       _type: 'var',
                       name: 'x',
                     },
                   ],
-                },
-                {
-                  _type: 'string',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: ['last Name S'],
+                  property: 'lastName',
                 },
               ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+          values: [
+            {
+              _type: 'string',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: ['firstName'],
+            },
+            {
+              _type: 'string',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: ['Last Name S'],
             },
           ],
         },
@@ -278,7 +275,7 @@ export const simpleProjectionWithFilter = {
               parameters: [
                 {
                   _type: 'packageableElementPtr',
-                  fullPath: 'apps::pure::studio::tests::model::simple::Person',
+                  fullPath: 'test::Person',
                 },
               ],
             },
@@ -374,11 +371,11 @@ export const simpleProjectionWithFilter = {
 
 export const ComplexRelationalModel = [
   {
-    path: 'apps::pure::studio::tests::model::simple::Person',
+    path: 'test::Person',
     content: {
       _type: 'class',
       name: 'Person',
-      package: 'apps::pure::studio::tests::model::simple',
+      package: 'test',
       properties: [
         {
           multiplicity: {
@@ -456,7 +453,7 @@ export const ComplexRelationalModel = [
       classMappings: [
         {
           _type: 'relational',
-          class: 'apps::pure::studio::tests::model::simple::Person',
+          class: 'test::Person',
           distinct: false,
           id: 'apps_pure_studio_tests_model_simple_Person',
           mainTable: {
@@ -484,7 +481,7 @@ export const ComplexRelationalModel = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::pure::studio::tests::model::simple::Person',
+                class: 'test::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -503,7 +500,7 @@ export const ComplexRelationalModel = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::pure::studio::tests::model::simple::Person',
+                class: 'test::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -1145,3 +1142,167 @@ export const M2MModel = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
+
+export const simpleGroupBy = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'groupBy',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'test::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'lastName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'lastName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'func',
+              function: 'agg',
+              parameters: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'lastName',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'uniqueValueOnly',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'y',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'y',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'string',
+              values: ['Last Name'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+            {
+              _type: 'string',
+              values: ['Last Name2'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+            {
+              _type: 'string',
+              values: ['Last Name3'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

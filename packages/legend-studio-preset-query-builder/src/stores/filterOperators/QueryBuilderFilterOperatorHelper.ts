@@ -102,11 +102,11 @@ export const buildPrimitiveInstanceValue = (
 const getPropertyExpressionChainVariable = (
   propertyExpression: AbstractPropertyExpression,
 ): VariableExpression => {
-  let currentPe: ValueSpecification = propertyExpression;
-  while (currentPe instanceof AbstractPropertyExpression) {
-    currentPe = currentPe.parametersValues[0];
+  let currentExpression: ValueSpecification = propertyExpression;
+  while (currentExpression instanceof AbstractPropertyExpression) {
+    currentExpression = currentExpression.parametersValues[0];
   }
-  return guaranteeType(currentPe, VariableExpression);
+  return guaranteeType(currentExpression, VariableExpression);
 };
 
 const buildFilterConditionExpressionWithExists = (
@@ -179,7 +179,7 @@ const buildFilterConditionExpressionWithExists = (
 
   // 3. Build each property chain into an exists() simple function expression
   const simpleFunctionExpressions: SimpleFunctionExpression[] = [];
-  const typeAny = filterConditionState.editorStore.graphState.graph.getClass(
+  const typeAny = filterConditionState.editorStore.graphState.graph.getType(
     CORE_ELEMENT_PATH.ANY,
   );
   for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
@@ -409,23 +409,40 @@ export const buildFilterConditionState = (
   hasNoValue = false,
 ): FilterConditionState | undefined => {
   let filterConditionState: FilterConditionState | undefined;
-  // We use this to keep track of the main expression that uses the operator. This is needed
-  // for the post-build check logic
-  // NOTE: this might be short-sighted design, if more complicated use case coming up
-  // we probably should just move the post-build check logic into simple operator case
+  // This is the simple expression of form `{property} {operator} {value}`
+  // This is used for post-build checks (useful when this expression is nested inside a longer
+  // chain of expression, e.g. ->exists($x|x == 'something'), etc.)
   let mainExpressionWithOperator: SimpleFunctionExpression | undefined;
+
   if (matchFunctionName(expression.functionName, operatorFunctionFullPath)) {
+    assertTrue(
+      expression.parametersValues.length === (hasNoValue ? 1 : 2),
+      `Can't process ${extractElementNameFromPath(
+        operatorFunctionFullPath,
+      )}() expression: ${extractElementNameFromPath(
+        operatorFunctionFullPath,
+      )}() expects ${hasNoValue ? 'no argument' : '1 argument'}`,
+    );
+
     const propertyExpression = guaranteeType(
       expression.parametersValues[0],
       AbstractPropertyExpression,
+      `Can't process ${extractElementNameFromPath(
+        operatorFunctionFullPath,
+      )}() expression: expects property expression in lambda body`,
     );
-    // Make sure the variable name used in the property expression matches the lambda parameter
-    if (
-      filterState.lambdaVariableName !==
-      getPropertyExpressionChainVariable(propertyExpression).name
-    ) {
-      return undefined;
-    }
+
+    const variableName =
+      getPropertyExpressionChainVariable(propertyExpression).name;
+    assertTrue(
+      filterState.lambdaVariableName === variableName,
+      `Can't process ${extractElementNameFromPath(
+        operatorFunctionFullPath,
+      )}() expression: expects variable used in lambda body '${variableName}' to match lambda parameter '${
+        filterState.lambdaVariableName
+      }'`,
+    );
+
     filterConditionState = new FilterConditionState(
       filterState.editorStore,
       filterState,
@@ -444,18 +461,15 @@ export const buildFilterConditionState = (
   }
 
   // Post-build check: make sure the simple filter condition LHS, RHS, and operator are compatible
-  // otherwise, reset the value of the condition automatically.
-  // TODO: consider if this is the good thing to do, or should we throw and redirect to text-mode?
+  // and set the value of the condition in the state accordingly.
   if (filterConditionState && mainExpressionWithOperator) {
-    if (
-      !operator.isCompatibleWithFilterConditionProperty(filterConditionState)
-    ) {
-      return undefined;
-    }
+    assertTrue(
+      operator.isCompatibleWithFilterConditionProperty(filterConditionState),
+      `Can't process ${extractElementNameFromPath(
+        operatorFunctionFullPath,
+      )}() expression: property is not compatible with operator`,
+    );
     filterConditionState.setOperator(operator);
-    if (!hasNoValue && mainExpressionWithOperator.parametersValues.length < 2) {
-      return undefined;
-    }
     filterConditionState.setValue(
       hasNoValue ? undefined : mainExpressionWithOperator.parametersValues[1],
     );

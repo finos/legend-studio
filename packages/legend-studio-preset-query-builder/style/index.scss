@@ -15,6 +15,9 @@
  */
 
 @forward 'query-builder';
+@forward 'query-builder-explorer';
+@forward 'query-builder-filter';
+@forward 'query-builder-projection';
 @forward 'service-query-builder';
 @forward 'mapping-execution-query-builder';
 @forward 'mapping-test-query-builder';

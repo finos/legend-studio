@@ -40,7 +40,6 @@ export enum SUPPORTED_FUNCTIONS {
   TDS_ASC = 'meta::pure::tds::asc',
   TDS_DESC = 'meta::pure::tds::desc',
   TDS_AGG = 'meta::pure::tds::agg',
-  TDS_COL = 'meta::pure::tds::col',
   TDS_DISTINCT = 'meta::pure::tds::distinct',
   TDS_PROJECT = 'meta::pure::tds::project',
   TDS_GROUP_BY = 'meta::pure::tds::groupBy',

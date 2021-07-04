@@ -16,9 +16,12 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { clsx, BlankPanelPlaceholder } from '@finos/legend-studio-components';
+import {
+  clsx,
+  BlankPanelPlaceholder,
+  TimesIcon,
+} from '@finos/legend-studio-components';
 import { MdFunctions } from 'react-icons/md';
-import { FaInfoCircle, FaTimes } from 'react-icons/fa';
 import type {
   QueryBuilderExplorerTreeDragSource,
   QueryBuilderExplorerTreePropertyNodeData,
@@ -32,8 +35,6 @@ import {
   QueryBuilderProjectionColumnState,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
 } from '../stores/QueryBuilderProjectionState';
-import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
-import { getPropertyPath } from '../stores/QueryBuilderPropertyEditorState';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
@@ -194,22 +195,7 @@ const QueryBuilderProjectionColumn = observer(
                 />
               </div>
             </div>
-            <div className="query-builder__projection__column__actions">
-              <QueryBuilderPropertyInfoTooltip
-                property={
-                  projectionColumnState.propertyEditorState.propertyExpression
-                    .func
-                }
-                path={getPropertyPath(
-                  projectionColumnState.propertyEditorState.propertyExpression,
-                )}
-                isMapped={true}
-                placement="bottom-end"
-              >
-                <div className="query-builder__projection__column__action">
-                  <FaInfoCircle />
-                </div>
-              </QueryBuilderPropertyInfoTooltip>
+            <div className="query-builder__projection__column__aggregate">
               <button
                 className="query-builder__projection__column__action"
                 tabIndex={-1}
@@ -218,13 +204,72 @@ const QueryBuilderProjectionColumn = observer(
               >
                 <MdFunctions className="query-builder__icon query-builder__icon__aggregate" />
               </button>
+
+              {/**
+               * width: auto;
+    height: 2.2rem;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.2rem;
+    width: 2.2rem;
+               */}
+
+              {/* <DropdownMenu
+            className="query-builder-filter-tree__condition-node__operator"
+            content={
+              <MenuContent>
+                {node.condition.operators.map((op) => (
+                  <MenuContentItem
+                    key={op.uuid}
+                    className="query-builder-filter-tree__condition-node__operator__dropdown__option"
+                    onClick={changeOperation(op)}
+                  >
+                    {op.getLabel(node.condition)}
+                  </MenuContentItem>
+                ))}
+              </MenuContent>
+            }
+            menuProps={{
+              anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+              transformOrigin: { vertical: 'top', horizontal: 'left' },
+              elevation: 7,
+            }}
+          >
+            <div className="query-builder-filter-tree__condition-node__operator__label">
+              {node.condition.operator.getLabel(node.condition)}
+            </div>
+            <button
+              className="query-builder-filter-tree__condition-node__operator__dropdown__trigger"
+              tabIndex={-1}
+              title="Choose Operator..."
+            >
+              <FaCaretDown />
+            </button>
+          </DropdownMenu> */}
+
+              {/* <input
+                className="query-builder__projection__column__value__input"
+                spellCheck={false}
+                value={projectionColumnState.columnName}
+                onChange={changeColumnName}
+              />
+              <div className="query-builder__projection__column__value__property">
+                <QueryBuilderPropertyExpressionBadge
+                  propertyEditorState={
+                    projectionColumnState.propertyEditorState
+                  }
+                  onPropertyExpressionChange={onPropertyExpressionChange}
+                />
+              </div> */}
+            </div>
+            <div className="query-builder__projection__column__actions">
               <button
                 className="query-builder__projection__column__action"
                 tabIndex={-1}
                 onClick={removeColumn}
                 title={`Remove`}
               >
-                <FaTimes />
+                <TimesIcon />
               </button>
             </div>
           </>

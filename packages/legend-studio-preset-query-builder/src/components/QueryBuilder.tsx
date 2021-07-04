@@ -145,7 +145,7 @@ export const QueryBuilder = observer(
             <ReflexElement minSize={132}>
               {isQuerySupported ? (
                 <ReflexContainer orientation="vertical">
-                  <ReflexElement size={450} minSize={0}>
+                  <ReflexElement size={450} minSize={300}>
                     <QueryBuilderSetupPanel
                       queryBuilderState={queryBuilderState}
                     />
@@ -154,13 +154,13 @@ export const QueryBuilder = observer(
                     />
                   </ReflexElement>
                   <ReflexSplitter />
-                  <ReflexElement minSize={0}>
+                  <ReflexElement minSize={300}>
                     <QueryBuilderFetchStructurePanel
                       queryBuilderState={queryBuilderState}
                     />
                   </ReflexElement>
                   <ReflexSplitter />
-                  <ReflexElement minSize={0}>
+                  <ReflexElement minSize={300}>
                     <QueryBuilderFilterPanel
                       queryBuilderState={queryBuilderState}
                     />

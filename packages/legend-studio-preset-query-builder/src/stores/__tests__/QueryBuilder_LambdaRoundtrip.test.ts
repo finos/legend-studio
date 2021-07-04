@@ -30,6 +30,7 @@ import {
   simpleFilterFunc,
   simpleProjection,
   simpleProjectionWithFilter,
+  simpleGroupBy,
   simpleGraphFetch,
   firmPersonGraphFetch,
 } from './QueryBuilder_LambdaRoundtripTestData';
@@ -59,6 +60,7 @@ const cases: RoundtripTestCase[] = [
   ['Simple project() function', relationalCtx, simpleProjection],
   ['Simple project() function with columns', relationalCtx, projectWithCols],
   ['Simple project() and filter()', relationalCtx, simpleProjectionWithFilter],
+  ['Simple groupBy()', relationalCtx, simpleGroupBy],
   ['Simple graph fetch', m2mCtx, simpleGraphFetch],
   ['Complex graph fetch', m2mCtx, firmPersonGraphFetch],
 ];
