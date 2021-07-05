@@ -22,22 +22,23 @@ import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
+import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper';
 
 export class QueryBuilderAggregateOperator_StdDev_Sample extends QueryBuilderAggregateOperator {
-  getLabel(aggregateColumnState: QueryBuilderAggregateColumnState): string {
+  getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'Std Dev (Sample)';
   }
 
   isCompatibleWithColumn(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    projectionColumnState: QueryBuilderProjectionColumnState,
   ): boolean {
     const propertyType =
-      aggregateColumnState.projectionColumnState.propertyEditorState
-        .propertyExpression.func.genericType.value.rawType;
+      projectionColumnState.propertyEditorState.propertyExpression.func
+        .genericType.value.rawType;
     return (
       [
         PRIMITIVE_TYPE.NUMBER,

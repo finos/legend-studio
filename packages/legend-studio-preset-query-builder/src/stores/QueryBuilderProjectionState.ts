@@ -170,6 +170,15 @@ export class QueryBuilderProjectionState {
 
   removeColumn(val: QueryBuilderProjectionColumnState): void {
     deleteEntry(this.columns, val);
+
+    // remove aggregation that goes with the projection
+    const existingAggregateColumnState = this.aggregationState.columns.find(
+      (column) => column.projectionColumnState === val,
+    );
+    if (existingAggregateColumnState) {
+      this.aggregationState.removeColumn(existingAggregateColumnState);
+    }
+
     // TODO: do a check here when we support more types of fetch structure
     this.queryBuilderState.resultSetModifierState.updateSortColumns();
   }
@@ -182,5 +191,7 @@ export class QueryBuilderProjectionState {
     const dragColumn = this.columns[dragIndex];
     this.columns.splice(dragIndex, 1);
     this.columns.splice(hoverIndex, 0, dragColumn);
+
+    // TODO: take into account aggregation columns
   }
 }

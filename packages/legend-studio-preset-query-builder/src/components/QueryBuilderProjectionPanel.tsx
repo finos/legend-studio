@@ -20,6 +20,10 @@ import {
   clsx,
   BlankPanelPlaceholder,
   TimesIcon,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-studio-components';
 import { MdFunctions } from 'react-icons/md';
 import type {
@@ -38,8 +42,8 @@ import {
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
-import { useApplicationStore } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
+import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -91,9 +95,6 @@ const QueryBuilderProjectionColumn = observer(
       projectionColumnState.projectionState.queryBuilderState;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
-    const applicationStore = useApplicationStore();
-    const setAggregation = (): void =>
-      applicationStore.notifyUnsupportedFeature('Column aggregation');
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => projectionColumnState.setColumnName(event.target.value);
@@ -102,6 +103,20 @@ const QueryBuilderProjectionColumn = observer(
     const onPropertyExpressionChange = (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ): void => projectionColumnState.changeProperty(node);
+
+    // aggregation
+    const aggregateColumnState = projectionState.aggregationState.columns.find(
+      (column) => column.projectionColumnState === projectionColumnState,
+    );
+    const aggreateOperators = projectionState.aggregationState.operators.filter(
+      (op) => op.isCompatibleWithColumn(projectionColumnState),
+    );
+    const changeOperator =
+      (val: QueryBuilderAggregateOperator | undefined) => (): void =>
+        projectionState.aggregationState.changeColumnAggregateOperator(
+          val,
+          projectionColumnState,
+        );
 
     // Drag and Drop
     const handleHover = useCallback(
@@ -196,71 +211,63 @@ const QueryBuilderProjectionColumn = observer(
               </div>
             </div>
             <div className="query-builder__projection__column__aggregate">
-              <button
-                className="query-builder__projection__column__action"
-                tabIndex={-1}
-                onClick={setAggregation}
-                title={`Aggregate...`}
+              {aggregateColumnState && (
+                <div className="query-builder__projection__column__aggregate__operator__label">
+                  {aggregateColumnState.operator.getLabel(
+                    projectionColumnState,
+                  )}
+                </div>
+              )}
+              <DropdownMenu
+                className="query-builder__projection__column__aggregate__operator__dropdown"
+                content={
+                  <MenuContent>
+                    {aggregateColumnState && (
+                      <MenuContentItem
+                        className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                        onClick={changeOperator(undefined)}
+                      >
+                        (none)
+                      </MenuContentItem>
+                    )}
+                    {aggreateOperators.map((op) => (
+                      <MenuContentItem
+                        key={op.uuid}
+                        className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                        onClick={changeOperator(op)}
+                      >
+                        {op.getLabel(projectionColumnState)}
+                      </MenuContentItem>
+                    ))}
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                  transformOrigin: { vertical: 'top', horizontal: 'left' },
+                  elevation: 7,
+                }}
               >
-                <MdFunctions className="query-builder__icon query-builder__icon__aggregate" />
-              </button>
-
-              {/**
-               * width: auto;
-    height: 2.2rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-300);
-    border-radius: 0.2rem;
-    width: 2.2rem;
-               */}
-
-              {/* <DropdownMenu
-            className="query-builder-filter-tree__condition-node__operator"
-            content={
-              <MenuContent>
-                {node.condition.operators.map((op) => (
-                  <MenuContentItem
-                    key={op.uuid}
-                    className="query-builder-filter-tree__condition-node__operator__dropdown__option"
-                    onClick={changeOperation(op)}
-                  >
-                    {op.getLabel(node.condition)}
-                  </MenuContentItem>
-                ))}
-              </MenuContent>
-            }
-            menuProps={{
-              anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-              transformOrigin: { vertical: 'top', horizontal: 'left' },
-              elevation: 7,
-            }}
-          >
-            <div className="query-builder-filter-tree__condition-node__operator__label">
-              {node.condition.operator.getLabel(node.condition)}
-            </div>
-            <button
-              className="query-builder-filter-tree__condition-node__operator__dropdown__trigger"
-              tabIndex={-1}
-              title="Choose Operator..."
-            >
-              <FaCaretDown />
-            </button>
-          </DropdownMenu> */}
-
-              {/* <input
-                className="query-builder__projection__column__value__input"
-                spellCheck={false}
-                value={projectionColumnState.columnName}
-                onChange={changeColumnName}
-              />
-              <div className="query-builder__projection__column__value__property">
-                <QueryBuilderPropertyExpressionBadge
-                  propertyEditorState={
-                    projectionColumnState.propertyEditorState
-                  }
-                  onPropertyExpressionChange={onPropertyExpressionChange}
-                />
-              </div> */}
+                <button
+                  className={clsx(
+                    'query-builder__projection__column__aggregate__badge',
+                    {
+                      'query-builder__projection__column__aggregate__badge--activated':
+                        Boolean(aggregateColumnState),
+                    },
+                  )}
+                  tabIndex={-1}
+                  title="Choose Operator..."
+                >
+                  <MdFunctions />
+                </button>
+                <button
+                  className="query-builder__projection__column__aggregate__operator__dropdown__trigger"
+                  tabIndex={-1}
+                  title="Choose Operator..."
+                >
+                  <CaretDownIcon />
+                </button>
+              </DropdownMenu>
             </div>
             <div className="query-builder__projection__column__actions">
               <button

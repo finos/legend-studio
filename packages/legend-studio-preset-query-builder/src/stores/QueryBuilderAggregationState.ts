@@ -39,11 +39,11 @@ export abstract class QueryBuilderAggregateOperator {
   uuid = uuid();
 
   abstract getLabel(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    projectionColumnState: QueryBuilderProjectionColumnState,
   ): string;
 
   abstract isCompatibleWithColumn(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    projectionColumnState: QueryBuilderProjectionColumnState,
   ): boolean;
 
   abstract buildAggregateExpression(
@@ -148,5 +148,37 @@ export class QueryBuilderAggregationState {
 
   addColumn(val: QueryBuilderAggregateColumnState): void {
     addUniqueEntry(this.columns, val);
+  }
+
+  changeColumnAggregateOperator(
+    val: QueryBuilderAggregateOperator | undefined,
+    projectionColumnState: QueryBuilderProjectionColumnState,
+  ): void {
+    const aggregateColumnState = this.columns.find(
+      (column) => column.projectionColumnState === projectionColumnState,
+    );
+    const aggreateOperators = this.operators.filter((op) =>
+      op.isCompatibleWithColumn(projectionColumnState),
+    );
+    if (val) {
+      if (!aggreateOperators.includes(val)) {
+        return;
+      }
+      if (aggregateColumnState) {
+        aggregateColumnState.setOperator(val);
+      } else {
+        const newAggregateColumnState = new QueryBuilderAggregateColumnState(
+          this.editorStore,
+          this,
+          projectionColumnState,
+        );
+        newAggregateColumnState.setOperator(val);
+        this.addColumn(newAggregateColumnState);
+      }
+    } else {
+      if (aggregateColumnState) {
+        this.removeColumn(aggregateColumnState);
+      }
+    }
   }
 }

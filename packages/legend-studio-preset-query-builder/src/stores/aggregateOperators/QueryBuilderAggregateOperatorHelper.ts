@@ -87,7 +87,9 @@ export const buildAggregateColumnState = (
     );
 
     assertTrue(
-      operator.isCompatibleWithColumn(aggregateColumnState),
+      operator.isCompatibleWithColumn(
+        aggregateColumnState.projectionColumnState,
+      ),
       `Can't process ${extractElementNameFromPath(
         operatorFunctionFullPath,
       )}() expression: property is not compatible with operator`,

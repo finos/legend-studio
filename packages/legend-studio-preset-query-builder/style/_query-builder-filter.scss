@@ -231,11 +231,10 @@
       font-weight: 500;
       background: var(--color-dark-grey-200);
       height: 1.8rem;
-      color: var(--color-light-grey-100);
       border-radius: 0 0.2rem 0.2rem 0;
-      font-size: 1.1rem;
 
       & svg {
+        color: var(--color-light-grey-100);
         font-size: 1.2rem;
       }
     }
