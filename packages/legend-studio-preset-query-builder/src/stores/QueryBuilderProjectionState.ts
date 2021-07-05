@@ -15,7 +15,13 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-studio-shared';
+import {
+  uuid,
+  deleteEntry,
+  addUniqueEntry,
+  guaranteeNonNullable,
+  findLast,
+} from '@finos/legend-studio-shared';
 import {
   QueryBuilderExplorerTreePropertyNodeData,
   getPropertyExpression,
@@ -185,21 +191,68 @@ export class QueryBuilderProjectionState {
 
   addColumn(val: QueryBuilderProjectionColumnState): void {
     addUniqueEntry(this.columns, val);
+
+    // sort columns: aggregate columns go last
+    this.columns = this.columns
+      .slice()
+      .sort(
+        (colA, colB) =>
+          (this.aggregationState.columns.find(
+            (column) => column.projectionColumnState === colA,
+          )
+            ? 1
+            : 0) -
+          (this.aggregationState.columns.find(
+            (column) => column.projectionColumnState === colB,
+          )
+            ? 1
+            : 0),
+      );
   }
 
-  moveColumn(dragIndex: number, hoverIndex: number): void {
+  moveColumn(sourceIndex: number, targetIndex: number): void {
     if (
-      dragIndex < 0 ||
-      dragIndex >= this.columns.length ||
-      hoverIndex < 0 ||
-      hoverIndex >= this.columns.length
+      sourceIndex < 0 ||
+      sourceIndex >= this.columns.length ||
+      targetIndex < 0 ||
+      targetIndex >= this.columns.length
     ) {
       return;
     }
-    const dragColumn = this.columns[dragIndex];
-    this.columns.splice(dragIndex, 1);
-    this.columns.splice(hoverIndex, 0, dragColumn);
 
-    // TODO: take into account aggregation columns
+    const sourceColumn = guaranteeNonNullable(this.columns[sourceIndex]);
+
+    // find last non aggregate column index for computation
+    const lastNonAggregateColumn = findLast(
+      this.columns,
+      (projectionCol) =>
+        !this.aggregationState.columns.find(
+          (column) => column.projectionColumnState === projectionCol,
+        ),
+    );
+
+    const lastNonAggregateColumnIndex = lastNonAggregateColumn
+      ? this.columns.lastIndexOf(lastNonAggregateColumn)
+      : 0;
+    if (
+      this.aggregationState.columns.find(
+        (column) => column.projectionColumnState === sourceColumn,
+      )
+    ) {
+      // if the column being moved is an aggregate column,
+      // it cannot be moved to before the first aggregate column
+      targetIndex = Math.max(
+        targetIndex,
+        Math.min(lastNonAggregateColumnIndex + 1, this.columns.length - 1),
+      );
+    } else {
+      // if the column being moved is not an aggregate column,
+      // it cannot be moved to after the last non-aggregate column
+      targetIndex = Math.min(targetIndex, lastNonAggregateColumnIndex);
+    }
+
+    // move
+    this.columns.splice(sourceIndex, 1);
+    this.columns.splice(targetIndex, 0, sourceColumn);
   }
 }

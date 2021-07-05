@@ -15,12 +15,7 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import {
-  uuid,
-  deleteEntry,
-  addUniqueEntry,
-  findLast,
-} from '@finos/legend-studio-shared';
+import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-studio-shared';
 import type {
   EditorStore,
   SimpleFunctionExpression,
@@ -191,24 +186,11 @@ export class QueryBuilderAggregationState {
       }
     } else {
       if (aggregateColumnState) {
-        // automatically move the column to the last position before
-        // the aggregate columns
-        const lastNonAggregateColumn = findLast(
-          this.projectionState.columns,
-          (projectionCol) =>
-            !this.columns.find(
-              (column) => column.projectionColumnState === projectionCol,
-            ),
-        );
-        const lastNonAggregateColumnIndex = lastNonAggregateColumn
-          ? this.projectionState.columns.lastIndexOf(lastNonAggregateColumn)
-          : 0;
+        // automatically move the column to the last position before the aggregate columns
+        // NOTE: `moveColumn` will take care of this placement calculation
         this.projectionState.moveColumn(
           this.projectionState.columns.indexOf(projectionColumnState),
-          Math.min(
-            lastNonAggregateColumnIndex + 1,
-            this.projectionState.columns.length - 1,
-          ),
+          0,
         );
 
         this.removeColumn(aggregateColumnState);
