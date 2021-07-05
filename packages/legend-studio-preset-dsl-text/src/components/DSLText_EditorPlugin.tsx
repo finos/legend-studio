@@ -134,6 +134,10 @@ export class DSLText_EditorPlugin
     ];
   }
 
+  getExtraGrammarTextEditorDnDTypes(): string[] {
+    return [TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
+  }
+
   getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
     return [
       (element: PackageableElement): string | undefined => {
