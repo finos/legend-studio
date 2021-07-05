@@ -19,8 +19,7 @@ import type {
   SimpleFunctionExpression,
   VariableExpression,
 } from '@finos/legend-studio';
-import { matchFunctionName } from '@finos/legend-studio';
-import { PRIMITIVE_TYPE } from '@finos/legend-studio';
+import { matchFunctionName, PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';

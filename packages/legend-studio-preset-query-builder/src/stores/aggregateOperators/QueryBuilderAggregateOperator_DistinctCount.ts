@@ -25,8 +25,10 @@ import {
 } from '@finos/legend-studio';
 import { assertTrue, guaranteeType } from '@finos/legend-studio-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
-import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
+import {
+  QueryBuilderAggregateColumnState,
+  QueryBuilderAggregateOperator,
+} from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
 
 export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAggregateOperator {
