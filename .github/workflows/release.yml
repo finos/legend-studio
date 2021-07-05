@@ -12,7 +12,7 @@ jobs:
     if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
         with:
           # fetch all Git history so that `changesets` can generate changelogs with the correct commits
           fetch-depth: 0
@@ -28,7 +28,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.1.5
+        uses: actions/setup-node@v2.2.0
         with:
           node-version: 14.x
       - name: Install dependencies
