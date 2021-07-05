@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-Allow users to toggle hackermode/text-mode while in viewer mode.
+Allow users to use text-mode while viewing project in read-only mode.

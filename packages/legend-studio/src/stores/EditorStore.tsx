@@ -252,7 +252,7 @@ export class EditorStore {
       Boolean(
         this.sdlcState.currentProject &&
           this.sdlcState.currentWorkspace &&
-          (this.sdlcState.currentRevision || this.isInViewerMode),
+          this.sdlcState.currentRevision,
       ) && this.graphState.systemModel.isBuilt
     );
   }
@@ -1031,9 +1031,10 @@ export class EditorStore {
         this.isInConflictResolutionMode &&
         !this.conflictResolutionState.hasResolvedAllConflicts;
       if (
-        this.isInitialized &&
-        !isResolvingConflicts &&
-        !this.blockGlobalHotkeys
+        (this.isInitialized &&
+          !isResolvingConflicts &&
+          !this.blockGlobalHotkeys) ||
+        this.isInViewerMode
       ) {
         handler();
       }
