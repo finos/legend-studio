@@ -15,7 +15,12 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-studio-shared';
+import {
+  uuid,
+  deleteEntry,
+  addUniqueEntry,
+  findLast,
+} from '@finos/legend-studio-shared';
 import type {
   EditorStore,
   SimpleFunctionExpression,
@@ -174,9 +179,38 @@ export class QueryBuilderAggregationState {
         );
         newAggregateColumnState.setOperator(val);
         this.addColumn(newAggregateColumnState);
+
+        // automatically move the column to the end
+        // as aggregate column should always be the last one
+        // NOTE: unless we do `olap` aggregation
+        // See https://github.com/finos/legend-studio/issues/253
+        this.projectionState.moveColumn(
+          this.projectionState.columns.indexOf(projectionColumnState),
+          this.projectionState.columns.length - 1,
+        );
       }
     } else {
       if (aggregateColumnState) {
+        // automatically move the column to the last position before
+        // the aggregate columns
+        const lastNonAggregateColumn = findLast(
+          this.projectionState.columns,
+          (projectionCol) =>
+            !this.columns.find(
+              (column) => column.projectionColumnState === projectionCol,
+            ),
+        );
+        const lastNonAggregateColumnIndex = lastNonAggregateColumn
+          ? this.projectionState.columns.lastIndexOf(lastNonAggregateColumn)
+          : 0;
+        this.projectionState.moveColumn(
+          this.projectionState.columns.indexOf(projectionColumnState),
+          Math.min(
+            lastNonAggregateColumnIndex + 1,
+            this.projectionState.columns.length - 1,
+          ),
+        );
+
         this.removeColumn(aggregateColumnState);
       }
     }

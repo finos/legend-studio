@@ -188,6 +188,14 @@ export class QueryBuilderProjectionState {
   }
 
   moveColumn(dragIndex: number, hoverIndex: number): void {
+    if (
+      dragIndex < 0 ||
+      dragIndex >= this.columns.length ||
+      hoverIndex < 0 ||
+      hoverIndex >= this.columns.length
+    ) {
+      return;
+    }
     const dragColumn = this.columns[dragIndex];
     this.columns.splice(dragIndex, 1);
     this.columns.splice(hoverIndex, 0, dragColumn);
