@@ -67,6 +67,8 @@ export const getDefaultPrimitiveInstanceValueForType = (
     case PRIMITIVE_TYPE.FLOAT:
     case PRIMITIVE_TYPE.INTEGER:
       return 0;
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.STRICTDATE:
       return format(new Date(Date.now()), DATE_FORMAT);
     default:

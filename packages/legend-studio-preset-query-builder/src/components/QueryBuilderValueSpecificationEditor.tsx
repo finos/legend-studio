@@ -411,7 +411,9 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
             isInteger={_type.path === PRIMITIVE_TYPE.INTEGER}
           />
         );
+      case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
+      case PRIMITIVE_TYPE.DATETIME:
         return (
           <DatePrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}

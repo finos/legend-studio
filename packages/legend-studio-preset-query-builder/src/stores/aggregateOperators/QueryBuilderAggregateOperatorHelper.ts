@@ -17,7 +17,6 @@
 import type { ValueSpecification } from '@finos/legend-studio';
 import {
   SimpleFunctionExpression,
-  AbstractPropertyExpression,
   extractElementNameFromPath,
   matchFunctionName,
   VariableExpression,
@@ -63,7 +62,6 @@ export const buildAggregateColumnState = (
       projectionColumnState,
       operator,
     );
-
     aggregateColumnState.setLambdaParameterName(lambdaParam.name);
 
     assertTrue(
@@ -75,15 +73,16 @@ export const buildAggregateColumnState = (
       )}() expects no argument`,
     );
 
-    let currentExpression: ValueSpecification = expression.parametersValues[0];
-    while (currentExpression instanceof AbstractPropertyExpression) {
-      currentExpression = currentExpression.parametersValues[0];
-    }
+    // variable
     const variableExpression = guaranteeType(
-      currentExpression,
+      expression.parametersValues[0],
       VariableExpression,
+      `Can't process ${extractElementNameFromPath(
+        operatorFunctionFullPath,
+      )}() expression: only support ${extractElementNameFromPath(
+        operatorFunctionFullPath,
+      )}() immediately following a variable expression`,
     );
-
     assertTrue(
       aggregateColumnState.lambdaParameterName === variableExpression.name,
       `Can't process ${extractElementNameFromPath(
@@ -95,6 +94,7 @@ export const buildAggregateColumnState = (
       }'`,
     );
 
+    // operator
     assertTrue(
       operator.isCompatibleWithColumn(
         aggregateColumnState.projectionColumnState,

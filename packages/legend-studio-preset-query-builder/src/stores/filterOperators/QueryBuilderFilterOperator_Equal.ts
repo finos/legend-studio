@@ -64,8 +64,10 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
           PRIMITIVE_TYPE.INTEGER,
           PRIMITIVE_TYPE.DECIMAL,
           PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DATE,
           PRIMITIVE_TYPE.STRICTDATE,
-        ] as unknown as string
+          PRIMITIVE_TYPE.DATETIME,
+        ] as string[]
       ).includes(propertyType.path) ||
       // if the type is enumeration, make sure the enumeration has some value
       (propertyType instanceof Enumeration && propertyType.values.length > 0)
@@ -91,8 +93,10 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
           PRIMITIVE_TYPE.INTEGER,
           PRIMITIVE_TYPE.DECIMAL,
           PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DATE,
           PRIMITIVE_TYPE.STRICTDATE,
-        ] as unknown as string
+          PRIMITIVE_TYPE.DATETIME,
+        ] as string[]
       ).includes(type.path) ||
         type === propertyType)
     );
@@ -107,7 +111,9 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING:
       case PRIMITIVE_TYPE.BOOLEAN:
+      case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
+      case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL:
       case PRIMITIVE_TYPE.FLOAT:

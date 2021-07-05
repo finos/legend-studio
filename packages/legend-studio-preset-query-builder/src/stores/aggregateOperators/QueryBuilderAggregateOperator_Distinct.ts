@@ -48,8 +48,10 @@ export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregat
         PRIMITIVE_TYPE.INTEGER,
         PRIMITIVE_TYPE.DECIMAL,
         PRIMITIVE_TYPE.FLOAT,
+        PRIMITIVE_TYPE.DATE,
         PRIMITIVE_TYPE.STRICTDATE,
-      ] as unknown as string
+        PRIMITIVE_TYPE.DATETIME,
+      ] as string[]
     ).includes(propertyType.path);
   }
 

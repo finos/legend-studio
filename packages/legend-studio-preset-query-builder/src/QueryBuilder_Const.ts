@@ -61,7 +61,7 @@ export enum SUPPORTED_FUNCTIONS {
   // aggregation
   AVERAGE = 'meta::pure::functions::math::average',
   COUNT = 'meta::pure::functions::collection::count',
-  CONCAT = 'meta::pure::functions::string::joinStrings',
+  JOIN_STRINGS = 'meta::pure::functions::string::joinStrings',
   DISTINCT = 'meta::pure::functions::collection::distinct',
   DATE_MAX = 'meta::pure::functions::date::max',
   DATE_MIN = 'meta::pure::functions::date::min',

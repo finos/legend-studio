@@ -51,7 +51,7 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
         PRIMITIVE_TYPE.INTEGER,
         PRIMITIVE_TYPE.DECIMAL,
         PRIMITIVE_TYPE.FLOAT,
-      ] as unknown as string
+      ] as string[]
     ).includes(propertyType.path);
   }
 

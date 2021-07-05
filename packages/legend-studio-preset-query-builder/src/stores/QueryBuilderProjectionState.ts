@@ -45,6 +45,9 @@ import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/Quer
 import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population';
 import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample';
 import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperators/QueryBuilderAggregateOperator_DistinctCount';
+import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min';
+import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max';
+import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString';
 
 export type ProjectionColumnOption = {
   label: string;
@@ -163,8 +166,11 @@ export class QueryBuilderProjectionState {
         new QueryBuilderAggregateOperator_Distinct(),
         new QueryBuilderAggregateOperator_Sum(),
         new QueryBuilderAggregateOperator_Average(),
+        new QueryBuilderAggregateOperator_Min(),
+        new QueryBuilderAggregateOperator_Max(),
         new QueryBuilderAggregateOperator_StdDev_Population(),
         new QueryBuilderAggregateOperator_StdDev_Sample(),
+        new QueryBuilderAggregateOperator_JoinString(),
       ],
     );
   }

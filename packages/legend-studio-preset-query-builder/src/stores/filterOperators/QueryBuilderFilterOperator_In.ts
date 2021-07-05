@@ -59,7 +59,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
           PRIMITIVE_TYPE.INTEGER,
           PRIMITIVE_TYPE.DECIMAL,
           PRIMITIVE_TYPE.FLOAT,
-        ] as unknown as string
+        ] as string[]
       ).includes(propertyType.path) ||
       // TODO: do we care if the enumeration type has no value (like in the case of `==` operator)?
       propertyType instanceof Enumeration

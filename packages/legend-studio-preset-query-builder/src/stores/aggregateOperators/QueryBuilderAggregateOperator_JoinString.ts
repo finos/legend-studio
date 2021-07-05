@@ -16,11 +16,14 @@
 
 import type { ValueSpecification } from '@finos/legend-studio';
 import {
+  matchFunctionName,
   SimpleFunctionExpression,
   VariableExpression,
   TYPICAL_MULTIPLICITY_TYPE,
   extractElementNameFromPath,
-  matchFunctionName,
+  PrimitiveInstanceValue,
+  GenericTypeExplicitReference,
+  GenericType,
   PRIMITIVE_TYPE,
 } from '@finos/legend-studio';
 import { assertTrue, guaranteeType } from '@finos/legend-studio-shared';
@@ -29,9 +32,9 @@ import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationStat
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
 
-export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
-    return 'distinct count';
+    return 'join';
   }
 
   isCompatibleWithColumn(
@@ -40,19 +43,7 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
     const propertyType =
       projectionColumnState.propertyEditorState.propertyExpression.func
         .genericType.value.rawType;
-    return (
-      [
-        PRIMITIVE_TYPE.STRING,
-        PRIMITIVE_TYPE.BOOLEAN,
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-        PRIMITIVE_TYPE.DATE,
-        PRIMITIVE_TYPE.STRICTDATE,
-        PRIMITIVE_TYPE.DATETIME,
-      ] as string[]
-    ).includes(propertyType.path);
+    return PRIMITIVE_TYPE.STRING === propertyType.path;
   }
 
   buildAggregateExpression(
@@ -62,22 +53,29 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       aggregateColumnState.editorStore.graphState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
-    const distinctExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.DISTINCT),
+    const expression = new SimpleFunctionExpression(
+      extractElementNameFromPath(SUPPORTED_FUNCTIONS.JOIN_STRINGS),
       multiplicityOne,
     );
-    distinctExpression.parametersValues.push(
+    const delimiter = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          aggregateColumnState.editorStore.graphState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.STRING,
+          ),
+        ),
+      ),
+      multiplicityOne,
+    );
+    delimiter.values = [';'];
+    expression.parametersValues.push(
       new VariableExpression(
         aggregateColumnState.lambdaParameterName,
         multiplicityOne,
       ),
+      delimiter,
     );
-    const distinctCountExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.COUNT),
-      multiplicityOne,
-    );
-    distinctCountExpression.parametersValues.push(distinctExpression);
-    return distinctCountExpression;
+    return expression;
   }
 
   buildAggregateColumnState(
@@ -85,7 +83,12 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
     lambdaParam: VariableExpression,
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): QueryBuilderAggregateColumnState | undefined {
-    if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.COUNT)) {
+    if (
+      matchFunctionName(
+        expression.functionName,
+        SUPPORTED_FUNCTIONS.JOIN_STRINGS,
+      )
+    ) {
       const aggregateColumnState = new QueryBuilderAggregateColumnState(
         projectionColumnState.editorStore,
         projectionColumnState.projectionState.aggregationState,
@@ -94,49 +97,37 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       );
       aggregateColumnState.setLambdaParameterName(lambdaParam.name);
 
-      // count expression
       assertTrue(
-        expression.parametersValues.length === 1,
-        `Can't process count() expression: count() expects no argument`,
-      );
-
-      // distinct expression
-      const distinctExpression = guaranteeType(
-        expression.parametersValues[0],
-        SimpleFunctionExpression,
-        `Can't process '${this.getLabel(
-          projectionColumnState,
-        )}' aggregate lambda: only support count() immediately following an expression`,
-      );
-      assertTrue(
-        matchFunctionName(
-          distinctExpression.functionName,
-          SUPPORTED_FUNCTIONS.DISTINCT,
-        ),
-        `Can't process '${this.getLabel(
-          projectionColumnState,
-        )}' aggregate lambda: only support count() immediately following distinct() expression`,
-      );
-      assertTrue(
-        distinctExpression.parametersValues.length === 1,
-        `Can't process distinct() expression: distinct() expects no argument`,
+        expression.parametersValues.length === 2,
+        `Can't process joinStrings() expression: joinStrings() expects 1 argument`,
       );
 
       // variable
       const variableExpression = guaranteeType(
-        distinctExpression.parametersValues[0],
+        expression.parametersValues[0],
         VariableExpression,
-        `Can't process distinct() expression: only support distinct() immediately following a variable expression`,
+        `Can't process joinStrings() expression: only support joinStrings() immediately following a variable expression`,
       );
       assertTrue(
         aggregateColumnState.lambdaParameterName === variableExpression.name,
-        `Can't process distinct() expression: expects variable used in lambda body '${variableExpression.name}' to match lambda parameter '${aggregateColumnState.lambdaParameterName}'`,
+        `Can't process joinStrings() expression: expects variable used in lambda body '${variableExpression.name}' to match lambda parameter '${aggregateColumnState.lambdaParameterName}'`,
+      );
+
+      // delimiter
+      const delimiter = guaranteeType(
+        expression.parametersValues[1],
+        PrimitiveInstanceValue,
+        `Can't process joinStrings() expression: joinStrings() expects arugment #1 to be a primitive instance value`,
+      );
+      assertTrue(
+        delimiter.values.length === 1 && delimiter.values[0] === ';',
+        `Can't process joinStrings() expression: only support ';' as delimiter`,
       );
 
       // operator
       assertTrue(
         this.isCompatibleWithColumn(aggregateColumnState.projectionColumnState),
-        `Can't process disc expression: property is not compatible with operator`,
+        `Can't process joinStrings() expression: property is not compatible with operator`,
       );
       aggregateColumnState.setOperator(this);
 

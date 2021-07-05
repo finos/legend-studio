@@ -19,6 +19,7 @@ import type {
   SimpleFunctionExpression,
   VariableExpression,
 } from '@finos/legend-studio';
+import { matchFunctionName } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
@@ -29,9 +30,9 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper';
 
-export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
-    return 'count';
+    return 'max';
   }
 
   isCompatibleWithColumn(
@@ -42,8 +43,6 @@ export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOp
         .genericType.value.rawType;
     return (
       [
-        PRIMITIVE_TYPE.STRING,
-        PRIMITIVE_TYPE.BOOLEAN,
         PRIMITIVE_TYPE.NUMBER,
         PRIMITIVE_TYPE.INTEGER,
         PRIMITIVE_TYPE.DECIMAL,
@@ -58,9 +57,20 @@ export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOp
   buildAggregateExpression(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): ValueSpecification {
+    const propertyType =
+      aggregateColumnState.projectionColumnState.propertyEditorState
+        .propertyExpression.func.genericType.value.rawType;
     return buildAggregateExpression(
       aggregateColumnState,
-      SUPPORTED_FUNCTIONS.COUNT,
+      (
+        [
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
+        ] as string[]
+      ).includes(propertyType.path)
+        ? SUPPORTED_FUNCTIONS.DATE_MAX
+        : SUPPORTED_FUNCTIONS.MAX,
     );
   }
 
@@ -69,12 +79,48 @@ export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOp
     lambdaParam: VariableExpression,
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): QueryBuilderAggregateColumnState | undefined {
-    return buildAggregateColumnState(
-      projectionColumnState,
-      lambdaParam,
-      expression,
-      SUPPORTED_FUNCTIONS.COUNT,
-      this,
-    );
+    const propertyType =
+      projectionColumnState.propertyEditorState.propertyExpression.func
+        .genericType.value.rawType;
+    switch (propertyType.path) {
+      case PRIMITIVE_TYPE.NUMBER:
+      case PRIMITIVE_TYPE.INTEGER:
+      case PRIMITIVE_TYPE.DECIMAL:
+      case PRIMITIVE_TYPE.FLOAT: {
+        if (
+          !matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.MAX)
+        ) {
+          return undefined;
+        }
+        return buildAggregateColumnState(
+          projectionColumnState,
+          lambdaParam,
+          expression,
+          SUPPORTED_FUNCTIONS.MAX,
+          this,
+        );
+      }
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE:
+      case PRIMITIVE_TYPE.DATETIME: {
+        if (
+          !matchFunctionName(
+            expression.functionName,
+            SUPPORTED_FUNCTIONS.DATE_MAX,
+          )
+        ) {
+          return undefined;
+        }
+        return buildAggregateColumnState(
+          projectionColumnState,
+          lambdaParam,
+          expression,
+          SUPPORTED_FUNCTIONS.DATE_MAX,
+          this,
+        );
+      }
+      default:
+        return undefined;
+    }
   }
 }
