@@ -17,6 +17,7 @@
 import type {
   ValueSpecification,
   SimpleFunctionExpression,
+  VariableExpression,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
@@ -60,10 +61,12 @@ export class QueryBuilderAggregateOperator_StdDev_Population extends QueryBuilde
 
   buildAggregateColumnState(
     expression: SimpleFunctionExpression,
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    lambdaParam: VariableExpression,
+    projectionColumnState: QueryBuilderProjectionColumnState,
   ): QueryBuilderAggregateColumnState | undefined {
     return buildAggregateColumnState(
-      aggregateColumnState,
+      projectionColumnState,
+      lambdaParam,
       expression,
       SUPPORTED_FUNCTIONS.STD_DEV_POPULATION,
       this,

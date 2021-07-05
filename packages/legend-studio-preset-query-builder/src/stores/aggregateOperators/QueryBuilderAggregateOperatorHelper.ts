@@ -24,10 +24,9 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 import { guaranteeType, assertTrue } from '@finos/legend-studio-shared';
-import type {
-  QueryBuilderAggregateColumnState,
-  QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+import type { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
+import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
+import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
 
 export const buildAggregateExpression = (
   aggregateColumnState: QueryBuilderAggregateColumnState,
@@ -43,7 +42,7 @@ export const buildAggregateExpression = (
   );
   expression.parametersValues.push(
     new VariableExpression(
-      aggregateColumnState.lambdaVariableName,
+      aggregateColumnState.lambdaParameterName,
       multiplicityOne,
     ),
   );
@@ -51,12 +50,22 @@ export const buildAggregateExpression = (
 };
 
 export const buildAggregateColumnState = (
-  aggregateColumnState: QueryBuilderAggregateColumnState,
+  projectionColumnState: QueryBuilderProjectionColumnState,
+  lambdaParam: VariableExpression,
   expression: SimpleFunctionExpression,
   operatorFunctionFullPath: string,
   operator: QueryBuilderAggregateOperator,
 ): QueryBuilderAggregateColumnState | undefined => {
   if (matchFunctionName(expression.functionName, operatorFunctionFullPath)) {
+    const aggregateColumnState = new QueryBuilderAggregateColumnState(
+      projectionColumnState.editorStore,
+      projectionColumnState.projectionState.aggregationState,
+      projectionColumnState,
+      operator,
+    );
+
+    aggregateColumnState.setLambdaParameterName(lambdaParam.name);
+
     assertTrue(
       expression.parametersValues.length === 1,
       `Can't process ${extractElementNameFromPath(
@@ -76,13 +85,13 @@ export const buildAggregateColumnState = (
     );
 
     assertTrue(
-      aggregateColumnState.lambdaVariableName === variableExpression.name,
+      aggregateColumnState.lambdaParameterName === variableExpression.name,
       `Can't process ${extractElementNameFromPath(
         operatorFunctionFullPath,
       )}() expression: expects variable used in lambda body '${
         variableExpression.name
       }' to match lambda parameter '${
-        aggregateColumnState.lambdaVariableName
+        aggregateColumnState.lambdaParameterName
       }'`,
     );
 

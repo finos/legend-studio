@@ -29,9 +29,9 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper';
 
-export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
-    return 'sum';
+    return 'distinct count';
   }
 
   isCompatibleWithColumn(
@@ -42,10 +42,13 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
         .genericType.value.rawType;
     return (
       [
+        PRIMITIVE_TYPE.STRING,
+        PRIMITIVE_TYPE.BOOLEAN,
         PRIMITIVE_TYPE.NUMBER,
         PRIMITIVE_TYPE.INTEGER,
         PRIMITIVE_TYPE.DECIMAL,
         PRIMITIVE_TYPE.FLOAT,
+        PRIMITIVE_TYPE.STRICTDATE,
       ] as unknown as string
     ).includes(propertyType.path);
   }
@@ -55,7 +58,7 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
   ): ValueSpecification {
     return buildAggregateExpression(
       aggregateColumnState,
-      SUPPORTED_FUNCTIONS.SUM,
+      SUPPORTED_FUNCTIONS.DISTINCT,
     );
   }
 
@@ -68,7 +71,7 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
       projectionColumnState,
       lambdaParam,
       expression,
-      SUPPORTED_FUNCTIONS.SUM,
+      SUPPORTED_FUNCTIONS.DISTINCT,
       this,
     );
   }

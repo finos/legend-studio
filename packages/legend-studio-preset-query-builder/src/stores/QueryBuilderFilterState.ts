@@ -376,7 +376,7 @@ export const buildFilterExpression = (
   getAllFunc: SimpleFunctionExpression,
 ): SimpleFunctionExpression | undefined => {
   const lambdaVariable = new VariableExpression(
-    filterState.lambdaVariableName,
+    filterState.lambdaParameterName,
     filterState.editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     ),
@@ -420,7 +420,7 @@ export class QueryBuilderFilterState
 {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
-  lambdaVariableName = DEFAULT_LAMBDA_VARIABLE_NAME;
+  lambdaParameterName = DEFAULT_LAMBDA_VARIABLE_NAME;
   rootIds: string[] = [];
   nodes = new Map<string, QueryBuilderFilterTreeNodeData>();
   selectedNode?: QueryBuilderFilterTreeNodeData;
@@ -437,7 +437,7 @@ export class QueryBuilderFilterState
       editorStore: false,
       queryBuilderState: false,
       isValidMove: false,
-      setLambdaVariableName: action,
+      setLambdaParameterName: action,
       setRearrangingConditions: action,
       suppressClickawayEventListener: action,
       handleClickaway: action,
@@ -462,8 +462,8 @@ export class QueryBuilderFilterState
     return !this.nodes.size && !this.rootIds.length;
   }
 
-  setLambdaVariableName(val: string): void {
-    this.lambdaVariableName = val;
+  setLambdaParameterName(val: string): void {
+    this.lambdaParameterName = val;
   }
 
   setRearrangingConditions(val: boolean): void {

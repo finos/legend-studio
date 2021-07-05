@@ -162,7 +162,7 @@ const buildFilterConditionExpressionWithExists = (
         existsLambdaParamNames.push(
           generateEnumerableNameFromToken(
             existsLambdaParamNames,
-            filterConditionState.filterState.lambdaVariableName,
+            filterConditionState.filterState.lambdaParameterName,
           ),
         );
         assertTrue(currentParamNameIndex === existsLambdaParamNames.length - 1);
@@ -435,11 +435,11 @@ export const buildFilterConditionState = (
     const variableName =
       getPropertyExpressionChainVariable(propertyExpression).name;
     assertTrue(
-      filterState.lambdaVariableName === variableName,
+      filterState.lambdaParameterName === variableName,
       `Can't process ${extractElementNameFromPath(
         operatorFunctionFullPath,
       )}() expression: expects variable used in lambda body '${variableName}' to match lambda parameter '${
-        filterState.lambdaVariableName
+        filterState.lambdaParameterName
       }'`,
     );
 

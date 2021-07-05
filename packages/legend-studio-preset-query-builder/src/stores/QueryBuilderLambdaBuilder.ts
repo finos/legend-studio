@@ -139,7 +139,7 @@ export const buildLambdaFunction = (
           );
           colLambdaFunctionType.parameters.push(
             new VariableExpression(
-              projectionColumnState.lambdaVariableName,
+              projectionColumnState.lambdaParameterName,
               multiplicityOne,
             ),
           );
@@ -203,7 +203,7 @@ export const buildLambdaFunction = (
           );
           colLambdaFunctionType.parameters.push(
             new VariableExpression(
-              projectionColumnState.lambdaVariableName,
+              projectionColumnState.lambdaParameterName,
               multiplicityOne,
             ),
           );

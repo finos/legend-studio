@@ -44,6 +44,7 @@ import { QueryBuilderAggregateOperator_Sum } from './aggregateOperators/QueryBui
 import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average';
 import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population';
 import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample';
+import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperators/QueryBuilderAggregateOperator_DistinctCount';
 
 export type ProjectionColumnOption = {
   label: string;
@@ -62,7 +63,7 @@ export class QueryBuilderProjectionColumnState {
   uuid = uuid();
   editorStore: EditorStore;
   projectionState: QueryBuilderProjectionState;
-  lambdaVariableName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
+  lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
   columnName: string;
   propertyEditorState: QueryBuilderPropertyEditorState;
   isBeingDragged = false;
@@ -77,7 +78,7 @@ export class QueryBuilderProjectionColumnState {
       uuid: false,
       editorStore: false,
       projectionState: false,
-      setLambdaVariableName: action,
+      setLambdaParameterName: action,
       setIsBeingDragged: action,
       setColumnName: action,
       changeProperty: action,
@@ -106,8 +107,8 @@ export class QueryBuilderProjectionColumnState {
     );
   }
 
-  setLambdaVariableName(val: string): void {
-    this.lambdaVariableName = val;
+  setLambdaParameterName(val: string): void {
+    this.lambdaParameterName = val;
   }
 
   setIsBeingDragged(val: boolean): void {
@@ -158,6 +159,7 @@ export class QueryBuilderProjectionState {
       this,
       [
         new QueryBuilderAggregateOperator_Count(),
+        new QueryBuilderAggregateOperator_DistinctCount(),
         new QueryBuilderAggregateOperator_Distinct(),
         new QueryBuilderAggregateOperator_Sum(),
         new QueryBuilderAggregateOperator_Average(),

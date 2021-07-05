@@ -23,6 +23,7 @@ import {
   isNonNullable,
   isNumber,
   isString,
+  returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -65,7 +66,7 @@ import {
 } from '@finos/legend-studio';
 import { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-import { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState';
+import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -136,9 +137,11 @@ const processFilterExpression = (
     filterState.addNodeFromNode(groupNode, parentNode);
   } else {
     for (const operator of filterState.operators) {
-      const filterConditionState = operator.buildFilterConditionState(
-        filterState,
-        expression,
+      // NOTE: this allow plugin author to either return `undefined` or throw error
+      // if there is a problem with building the lambda. Either case, the plugin is
+      // considered as not supporting the lambda.
+      const filterConditionState = returnUndefOnError(() =>
+        operator.buildFilterConditionState(filterState, expression),
       );
       if (filterConditionState) {
         filterState.addNodeFromNode(
@@ -179,7 +182,7 @@ const processFilterLambda = (
     lambdaFunc.functionType.parameters.length === 1,
     `Can't process filter() lambda: only support filter() lambda with 1 parameter`,
   );
-  filterState.setLambdaVariableName(
+  filterState.setLambdaParameterName(
     guaranteeType(
       lambdaFunc.functionType.parameters[0],
       VariableExpression,
@@ -189,27 +192,10 @@ const processFilterLambda = (
   processFilterExpression(rootExpression, filterState, undefined);
 };
 
-const processAggregateExpression = (
-  expression: SimpleFunctionExpression,
-  aggregateColumnState: QueryBuilderAggregateColumnState,
-): void => {
-  for (const operator of aggregateColumnState.aggregationState.operators) {
-    const filterConditionState = operator.buildAggregateColumnState(
-      expression,
-      aggregateColumnState,
-    );
-    if (filterConditionState) {
-      return;
-    }
-  }
-  throw new UnsupportedOperationError(
-    `Can't process aggregate expression function: no compatible aggregate operator processer available from plugins`,
-  );
-};
-
 const processAggregateLambda = (
   aggregateLambda: LambdaFunctionInstanceValue,
-  aggregateColumnState: QueryBuilderAggregateColumnState,
+  projectionColumnState: QueryBuilderProjectionColumnState,
+  aggregationState: QueryBuilderAggregationState,
 ): void => {
   const lambdaFunc = guaranteeNonNullable(
     aggregateLambda.values[0],
@@ -229,14 +215,32 @@ const processAggregateLambda = (
     lambdaFunc.functionType.parameters.length === 1,
     `Can't process agg() lambda: only support agg() lambda with 1 parameter`,
   );
-  aggregateColumnState.setLambdaVariableName(
-    guaranteeType(
-      lambdaFunc.functionType.parameters[0],
-      VariableExpression,
-      `Can't process agg() lambda: only support agg() lambda with 1 parameter`,
-    ).name,
+
+  const lambdaParam = guaranteeType(
+    lambdaFunc.functionType.parameters[0],
+    VariableExpression,
+    `Can't process agg() lambda: only support agg() lambda with 1 parameter`,
   );
-  processAggregateExpression(expression, aggregateColumnState);
+
+  for (const operator of aggregationState.operators) {
+    // NOTE: this allow plugin author to either return `undefined` or throw error
+    // if there is a problem with building the lambda. Either case, the plugin is
+    // considered as not supporting the lambda.
+    const aggregateColumnState = returnUndefOnError(() =>
+      operator.buildAggregateColumnState(
+        expression,
+        lambdaParam,
+        projectionColumnState,
+      ),
+    );
+    if (aggregateColumnState) {
+      aggregationState.addColumn(aggregateColumnState);
+      return;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't process aggregate expression function: no compatible aggregate operator processer available from plugins`,
+  );
 };
 
 /**
@@ -693,23 +697,37 @@ export class QueryBuilderLambdaProcessor
         `Can't process agg() expression: agg() expects argument #1 to be a lambda function`,
       );
 
-      const aggregationIndex = guaranteeType(
+      const aggregationLambdas = guaranteeType(
         this.precedingExpression.parametersValues[2],
         CollectionInstanceValue,
-      ).values.findIndex((value) => value === valueSpecification);
+      );
+
+      const aggregationIndex = aggregationLambdas.values.findIndex(
+        (value) => value === valueSpecification,
+      );
+      const aggregationColumnIndex =
+        this.queryBuilderState.fetchStructureState.projectionState.columns
+          .length -
+        aggregationLambdas.values.length +
+        aggregationIndex;
+
       assertTrue(
         aggregationIndex !== -1 &&
-          aggregationIndex <
-            this.queryBuilderState.fetchStructureState.projectionState
-              .aggregationState.columns.length,
+          aggregationColumnIndex <
+            this.queryBuilderState.fetchStructureState.projectionState.columns
+              .length,
         `Can't process agg() expression: agg() column lambda is not processed`,
       );
+
       processAggregateLambda(
         aggregateLambda,
         guaranteeNonNullable(
-          this.queryBuilderState.fetchStructureState.projectionState
-            .aggregationState.columns[aggregationIndex],
+          this.queryBuilderState.fetchStructureState.projectionState.columns[
+            aggregationColumnIndex
+          ],
         ),
+        this.queryBuilderState.fetchStructureState.projectionState
+          .aggregationState,
       );
 
       return;
@@ -858,22 +876,8 @@ export class QueryBuilderLambdaProcessor
       if (
         valueSpecification.parametersValues[0] instanceof VariableExpression
       ) {
-        columnState.setLambdaVariableName(
+        columnState.setLambdaParameterName(
           valueSpecification.parametersValues[0].name,
-        );
-      }
-
-      // aggregation
-      const aggregationState = projectionState.aggregationState;
-      if (
-        matchFunctionName(precedingExpressionName, SUPPORTED_FUNCTIONS.TDS_AGG)
-      ) {
-        aggregationState.addColumn(
-          new QueryBuilderAggregateColumnState(
-            columnState.editorStore,
-            aggregationState,
-            columnState,
-          ),
         );
       }
       return;

@@ -52,7 +52,8 @@ export abstract class QueryBuilderAggregateOperator {
 
   abstract buildAggregateColumnState(
     expression: SimpleFunctionExpression,
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    lambdaParam: VariableExpression,
+    projectionColumnState: QueryBuilderProjectionColumnState,
   ): QueryBuilderAggregateColumnState | undefined;
 }
 
@@ -70,7 +71,7 @@ export const buildAggregateLambda = (
   const colLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
   colLambdaFunctionType.parameters.push(
     new VariableExpression(
-      aggregateColumnState.lambdaVariableName,
+      aggregateColumnState.lambdaParameterName,
       multiplicityOne,
     ),
   );
@@ -89,29 +90,31 @@ export class QueryBuilderAggregateColumnState {
   editorStore: EditorStore;
   aggregationState: QueryBuilderAggregationState;
   projectionColumnState: QueryBuilderProjectionColumnState;
-  lambdaVariableName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
-  operator!: QueryBuilderAggregateOperator;
+  lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
+  operator: QueryBuilderAggregateOperator;
 
   constructor(
     editorStore: EditorStore,
     aggregationState: QueryBuilderAggregationState,
     projectionColumnState: QueryBuilderProjectionColumnState,
+    operator: QueryBuilderAggregateOperator,
   ) {
     makeAutoObservable(this, {
       uuid: false,
       editorStore: false,
       aggregationState: false,
-      setLambdaVariableName: action,
+      setLambdaParameterName: action,
       setOperator: action,
     });
 
     this.editorStore = editorStore;
     this.aggregationState = aggregationState;
     this.projectionColumnState = projectionColumnState;
+    this.operator = operator;
   }
 
-  setLambdaVariableName(val: string): void {
-    this.lambdaVariableName = val;
+  setLambdaParameterName(val: string): void {
+    this.lambdaParameterName = val;
   }
 
   setOperator(val: QueryBuilderAggregateOperator): void {
@@ -171,6 +174,7 @@ export class QueryBuilderAggregationState {
           this.editorStore,
           this,
           projectionColumnState,
+          val,
         );
         newAggregateColumnState.setOperator(val);
         this.addColumn(newAggregateColumnState);
