@@ -73,6 +73,15 @@ export class V1_OAuthAuthenticationStrategy
   }
 }
 
+export class V1_DeltaLakeAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.DELTALAKE_AUTHENTICATION_STRATEGY]);
+  }
+}
+
 export class V1_SnowflakePublicAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable

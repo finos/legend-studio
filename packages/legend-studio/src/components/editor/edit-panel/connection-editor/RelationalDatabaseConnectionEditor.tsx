@@ -48,12 +48,14 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  DeltaLakeAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  DeltaLakeDatasourceSpecification,
   StaticDatasourceSpecification,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { runInAction } from 'mobx';
@@ -478,6 +480,43 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
   },
 );
 
+const DeltaLakeDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: DeltaLakeDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.shard}
+          propertyName={'shard'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setShard(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.httpPath}
+          propertyName={'httpPath'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setHttpPath(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.token}
+          propertyName={'token'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setToken(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 const SnowflakeDatasourceSpecificationEditor = observer(
   (props: {
     sourceSpec: SnowflakeDatasourceSpecification;
@@ -565,6 +604,10 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
 
 const DefaultH2AuthenticationStrategyEditor = observer(
   (props: { authSpec: DefaultH2AuthenticationStrategy }) => null,
+);
+
+const DeltaLakeAuthenticationStrategyEditor = observer(
+  (props: { authSpec: DeltaLakeAuthenticationStrategy }) => null,
 );
 
 const SnowflakePublicAuthenticationStrategyEditor = observer(
@@ -1028,6 +1071,13 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec instanceof DeltaLakeDatasourceSpecification) {
+    return (
+      <DeltaLakeDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else if (sourceSpec instanceof SnowflakeDatasourceSpecification) {
     return (
       <SnowflakeDatasourceSpecificationEditor
@@ -1080,6 +1130,8 @@ const renderAuthenticationStrategyEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (authSpec instanceof DeltaLakeAuthenticationStrategy) {
+    return <DeltaLakeAuthenticationStrategyEditor authSpec={authSpec} />;
   } else if (authSpec instanceof TestDatabaseAuthenticationStrategy) {
     return <TestDatabaseAuthenticationStrategyEditor authSpec={authSpec} />;
   } else if (authSpec instanceof DefaultH2AuthenticationStrategy) {

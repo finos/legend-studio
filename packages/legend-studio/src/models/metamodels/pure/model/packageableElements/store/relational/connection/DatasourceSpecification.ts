@@ -72,6 +72,50 @@ export class StaticDatasourceSpecification
   }
 }
 
+export class DeltaLakeDatasourceSpecification
+  extends DatasourceSpecification
+  implements Hashable
+{
+  shard: string;
+  httpPath: string;
+  token: string;
+
+  constructor(shard: string, httpPath: string, token: string) {
+    super();
+
+    makeObservable(this, {
+      shard: observable,
+      httpPath: observable,
+      token: observable,
+      hashCode: computed,
+    });
+    this.shard = shard;
+    this.httpPath = httpPath;
+    this.token = token;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DELTALAKE_DATASOURCE_SPECIFICATION,
+      this.shard,
+      this.httpPath,
+      this.token,
+    ]);
+  }
+
+  setShard(val: string): void {
+    this.shard = val;
+  }
+
+  setHttpPath(val: string): void {
+    this.httpPath = val;
+  }
+
+  setToken(val: string): void {
+    this.token = val;
+  }
+}
+
 export class EmbeddedH2DatasourceSpecification
   extends DatasourceSpecification
   implements Hashable

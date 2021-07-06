@@ -32,6 +32,7 @@ import type { AuthenticationStrategy } from '../../../../../../metamodels/pure/m
 import {
   DefaultH2AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  DeltaLakeAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   OAuthAuthenticationStrategy,
@@ -41,6 +42,7 @@ import {
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
+  DeltaLakeDatasourceSpecification,
   SnowflakeDatasourceSpecification,
 } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { ModelChainConnection } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/connection/ModelChainConnection';
@@ -54,12 +56,14 @@ import {
   V1_LocalH2DataSourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
+  V1_DeltaLakeDatasourceSpecification,
   V1_StaticDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
   V1_DefaultH2AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
+  V1_DeltaLakeAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -96,6 +100,16 @@ const transformEmbeddedH2DatasourceSpecification = (
   return source;
 };
 
+const transformDeltaLakeDatasourceSpecification = (
+  metamodel: DeltaLakeDatasourceSpecification,
+): V1_DeltaLakeDatasourceSpecification => {
+  const source = new V1_DeltaLakeDatasourceSpecification();
+  source.shard = metamodel.shard;
+  source.httpPath = metamodel.httpPath;
+  source.token = metamodel.token;
+  return source;
+};
+
 const transformSnowflakeDatasourceSpecification = (
   metamodel: SnowflakeDatasourceSpecification,
 ): V1_SnowflakeDatasourceSpecification => {
@@ -117,6 +131,8 @@ const transformDatasourceSpecification = (
     return transformStaticDatasourceSpecification(metamodel);
   } else if (metamodel instanceof EmbeddedH2DatasourceSpecification) {
     return transformEmbeddedH2DatasourceSpecification(metamodel);
+  } else if (metamodel instanceof DeltaLakeDatasourceSpecification) {
+    return transformDeltaLakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof LocalH2DatasourceSpecification) {
@@ -167,6 +183,8 @@ const transformAuthenticationStrategy = (
     return new V1_TestDatabaseAuthenticationStrategy();
   } else if (metamodel instanceof OAuthAuthenticationStrategy) {
     return transformOAuthtAuthenticationStrategy(metamodel);
+  } else if (metamodel instanceof DeltaLakeAuthenticationStrategy) {
+    return new V1_DeltaLakeAuthenticationStrategy();
   } else if (metamodel instanceof SnowflakePublicAuthenticationStrategy) {
     const auth = new V1_SnowflakePublicAuthenticationStrategy();
     auth.privateKeyVaultReference = metamodel.privateKeyVaultReference;

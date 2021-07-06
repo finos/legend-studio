@@ -68,6 +68,23 @@ export class DefaultH2AuthenticationStrategy
   }
 }
 
+export class DeltaLakeAuthenticationStrategy
+  extends AuthenticationStrategy
+  implements Hashable
+{
+  constructor() {
+    super();
+
+    makeObservable(this, {
+      hashCode: computed,
+    });
+  }
+
+  override get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.DELTALAKE_AUTHENTICATION_STRATEGY]);
+  }
+}
+
 export class TestDatabaseAuthenticationStrategy
   extends DefaultH2AuthenticationStrategy
   implements Hashable
