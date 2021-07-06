@@ -104,6 +104,7 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderFilterOperator_IsEmpty(),
     new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
+  isCompiling = false;
 
   constructor(editorStore: EditorStore) {
     super();
@@ -118,7 +119,9 @@ export class QueryBuilderState extends EditorExtensionState {
       queryTextEditorState: observable,
       queryUnsupportedState: observable,
       openQueryBuilder: observable,
+      isCompiling: observable,
       setOpenQueryBuilder: flow,
+      compileQuery: flow,
       reset: action,
       resetData: action,
       buildStateFromRawLambda: action,
@@ -317,41 +320,124 @@ export class QueryBuilderState extends EditorExtensionState {
     }
   }
 
-  isEditingInTextMode(): boolean {
-    return (
-      this.openQueryBuilder &&
-      this.queryTextEditorState.mode === QueryTextEditorMode.TEXT
-    );
-  }
-
   isQuerySupported(): boolean {
     return !this.queryUnsupportedState.rawLambda;
   }
 
-  compileQuery = flow(function* (this: QueryBuilderState) {
-    if (this.isEditingInTextMode()) {
-      try {
-        this.queryTextEditorState.setCompilationError(undefined);
-        (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
-          this.queryTextEditorState.rawLambdaState.lambda,
-          this.editorStore.graphState.graph,
-        )) as string;
-        this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
-      } catch (error: unknown) {
-        assertErrorThrown(error);
-        if (error instanceof CompilationError) {
+  *compileQuery(this: QueryBuilderState): GeneratorFn<void> {
+    if (this.openQueryBuilder) {
+      if (!this.queryTextEditorState.mode) {
+        this.isCompiling = true;
+        // form mode
+        try {
+          this.queryTextEditorState.setCompilationError(undefined);
+          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+            this.getQuery(),
+            this.editorStore.graphState.graph,
+          )) as string;
+          this.editorStore.applicationStore.notifySuccess(
+            'Compiled sucessfully',
+          );
+        } catch (error: unknown) {
+          assertErrorThrown(error);
           this.editorStore.applicationStore.logger.error(
             CORE_LOG_EVENT.COMPILATION_PROBLEM,
             error,
           );
-          const errorElementCoordinates = getElementCoordinates(
-            error.sourceInformation,
-          );
-          if (errorElementCoordinates) {
-            this.queryTextEditorState.setCompilationError(error);
+          const fallbackToTextModeForDebugging = true;
+          // if compilation failed, we try to reveal the error in form mode,
+          // if even this fail, we will fall back to show it in text mode
+          if (error instanceof CompilationError) {
+            const errorElementCoordinates = getElementCoordinates(
+              error.sourceInformation,
+            );
+            if (errorElementCoordinates) {
+              // const element = this.editorStore.graphState.graph.getNullableElement(
+              //   errorElementCoordinates.elementPath,
+              //   false,
+              // );
+              // if (element) {
+              //   this.editorStore.openElement(element);
+              //   if (
+              //     this.editorStore.currentEditorState instanceof
+              //     ElementEditorState
+              //   ) {
+              //     // check if we can reveal the error in the element editor state
+              //     fallbackToTextModeForDebugging =
+              //       !this.editorStore.currentEditorState.revealCompilationError(
+              //         error,
+              //       );
+              //   }
+              // }
+            }
           }
+
+          // decide if we need to fall back to text mode for debugging
+          if (fallbackToTextModeForDebugging) {
+            this.editorStore.applicationStore.notifyWarning(
+              'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
+            );
+            this.queryTextEditorState.openModal(QueryTextEditorMode.TEXT);
+            // TODO: trigger another compilation
+
+            // try {
+            //   const code = (yield this.graphManager.graphToPureCode(
+            //     this.graph,
+            //   )) as string;
+            //   this.editorStore.grammarTextEditorState.setGraphGrammarText(code);
+            // } catch (error2: unknown) {
+            //   assertErrorThrown(error2);
+            //   this.editorStore.applicationStore.notifyWarning(
+            //     `Can't enter text mode. Transformation to grammar text failed: ${error2.message}`,
+            //   );
+            //   return;
+            // }
+            // this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
+            // yield this.globalCompileInTextMode({
+            //   ignoreBlocking: true,
+            //   suppressCompilationFailureMessage: true,
+            // });
+          } else {
+            this.editorStore.applicationStore.notifyWarning(
+              `Compilation failed: ${error.message}`,
+            );
+          }
+        } finally {
+          this.isCompiling = false;
+        }
+      } else if (this.queryTextEditorState.mode === QueryTextEditorMode.TEXT) {
+        this.isCompiling = true;
+        try {
+          this.queryTextEditorState.setCompilationError(undefined);
+          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+            this.queryTextEditorState.rawLambdaState.lambda,
+            this.editorStore.graphState.graph,
+            { keepSourceInformation: true },
+          )) as string;
+          this.editorStore.applicationStore.notifySuccess(
+            'Compiled sucessfully',
+          );
+        } catch (error: unknown) {
+          assertErrorThrown(error);
+          if (error instanceof CompilationError) {
+            this.editorStore.applicationStore.logger.error(
+              CORE_LOG_EVENT.COMPILATION_PROBLEM,
+              error,
+            );
+            this.editorStore.applicationStore.notifyWarning(
+              `Compilaion failed: ${error.message}`,
+            );
+            const errorElementCoordinates = getElementCoordinates(
+              error.sourceInformation,
+            );
+            if (errorElementCoordinates) {
+              this.queryTextEditorState.setCompilationError(error);
+            }
+          }
+        } finally {
+          this.isCompiling = false;
         }
       }
     }
-  });
+  }
 }

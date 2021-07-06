@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { FaUserSecret, FaRobot, FaSave } from 'react-icons/fa';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx, HammerIcon } from '@finos/legend-studio-components';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
@@ -32,17 +32,38 @@ import {
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import { useApplicationStore } from '@finos/legend-studio';
+import { flowResult } from 'mobx';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const openLambdaEditor = (mode: QueryTextEditorMode): void =>
       queryBuilderState.queryTextEditorState.openModal(mode);
+    const compile = (): Promise<void> =>
+      flowResult(queryBuilderState.compileQuery()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
 
     return (
       <div className="query-builder__status-bar">
         <div className="query-builder__status-bar__left"></div>
         <div className="query-builder__status-bar__right">
+          <button
+            className={clsx(
+              'query-builder__status-bar__action query-builder__status-bar__compile-btn',
+              {
+                'query-builder__status-bar__compile-btn--wiggling':
+                  queryBuilderState.isCompiling,
+              },
+            )}
+            disabled={queryBuilderState.isCompiling}
+            onClick={compile}
+            tabIndex={-1}
+            title="Compile (F9)"
+          >
+            <HammerIcon />
+          </button>
           <button
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__action__toggler',

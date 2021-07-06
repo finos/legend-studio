@@ -28,6 +28,7 @@ export {
   FaSquare as SquareIcon,
   FaCheckSquare as CheckSquareIcon,
   FaHashtag as HashtagIcon,
+  FaHammer as HammerIcon,
   FaHashtag as NumberTypeIcon,
   FaClock as DateTypeIcon,
   FaToggleOn as BooleanTypeIcon,

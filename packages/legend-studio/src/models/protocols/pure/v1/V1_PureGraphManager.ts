@@ -1558,13 +1558,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this: V1_PureGraphManager,
     lambda: RawLambda,
     graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
   ): GeneratorFn<string> {
     return (yield this.engine.getLambdaReturnType(
       lambda.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
           new V1_GraphTransformerContextBuilder(
             this.pureProtocolProcessorPlugins,
-          ).build(),
+          )
+            .withKeepSourceInformationFlag(
+              Boolean(options?.keepSourceInformation),
+            )
+            .build(),
         ),
       ) as V1_RawLambda,
       this.getFullGraphModelData(graph),

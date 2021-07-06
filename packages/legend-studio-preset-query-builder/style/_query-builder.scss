@@ -233,6 +233,34 @@
         color: var(--color-dark-shade-300);
       }
     }
+
+    &__compile-btn {
+      @include flexCenter;
+
+      background: none;
+      color: var(--color-light-grey-0);
+      cursor: pointer;
+      padding: 0 0.5rem;
+
+      &[disabled] {
+        color: var(--color-dark-shade-300);
+      }
+
+      &--wiggling svg {
+        animation: hammer-wiggle 0.5s infinite ease;
+        transform-origin: bottom left;
+      }
+
+      @keyframes hammer-wiggle {
+        from {
+          transform: rotate(-7deg);
+        }
+
+        to {
+          transform: rotate(10deg);
+        }
+      }
+    }
   }
 }
 
@@ -627,7 +655,7 @@
   }
 
   &__modal--has-error {
-    border: 0.1rem solid var(--color-red-280) !important;
+    border: 0.1rem solid var(--color-red-200) !important;
 
     .modal__header {
       background: var(--color-red-200);
