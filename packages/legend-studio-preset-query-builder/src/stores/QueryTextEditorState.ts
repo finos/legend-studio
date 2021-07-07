@@ -168,7 +168,8 @@ export class QueryTextEditorState extends LambdaEditorState {
     const rawLambda = this.queryBuilderState.getQuery();
     if (mode === QueryTextEditorMode.TEXT) {
       this.setQueryRawLambdaState(new QueryRawLambdaState(rawLambda));
-    } else if (mode === QueryTextEditorMode.JSON) {
+    }
+    if (mode === QueryTextEditorMode.JSON) {
       this.setLambdaJson(
         JSON.stringify(
           this.editorStore.graphState.graphManager.pruneSourceInformation(

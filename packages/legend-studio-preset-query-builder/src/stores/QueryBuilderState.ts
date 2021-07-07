@@ -152,9 +152,13 @@ export class QueryBuilderState extends EditorExtensionState {
     );
   }
 
-  getQuery(): RawLambda {
+  getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
     return this.isQuerySupported()
-      ? this.buildRawLambdaFromLambdaFunction(buildLambdaFunction(this))
+      ? this.buildRawLambdaFromLambdaFunction(
+          buildLambdaFunction(this, {
+            keepSourceInformation: Boolean(options?.keepSourceInformation),
+          }),
+        )
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
@@ -324,16 +328,24 @@ export class QueryBuilderState extends EditorExtensionState {
     return !this.queryUnsupportedState.rawLambda;
   }
 
+  clearCompilationError(): void {
+    this.fetchStructureState.projectionState.clearCompilationError();
+  }
+
   *compileQuery(this: QueryBuilderState): GeneratorFn<void> {
     if (this.openQueryBuilder) {
       if (!this.queryTextEditorState.mode) {
         this.isCompiling = true;
+        this.clearCompilationError();
         // form mode
         try {
           this.queryTextEditorState.setCompilationError(undefined);
+          // NOTE: retain the source information on the lambda in order to be able
+          // to pin-point compilation issue in form mode
           (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
-            this.getQuery(),
+            this.getQuery({ keepSourceInformation: true }),
             this.editorStore.graphState.graph,
+            { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(
             'Compiled sucessfully',
@@ -344,32 +356,14 @@ export class QueryBuilderState extends EditorExtensionState {
             CORE_LOG_EVENT.COMPILATION_PROBLEM,
             error,
           );
-          const fallbackToTextModeForDebugging = true;
+          let fallbackToTextModeForDebugging = true;
           // if compilation failed, we try to reveal the error in form mode,
           // if even this fail, we will fall back to show it in text mode
-          if (error instanceof CompilationError) {
-            const errorElementCoordinates = extractSourceInformationCoordinates(
-              error.sourceInformation,
-            );
-            if (errorElementCoordinates) {
-              // const element = this.editorStore.graphState.graph.getNullableElement(
-              //   errorElementCoordinates.elementPath,
-              //   false,
-              // );
-              // if (element) {
-              //   this.editorStore.openElement(element);
-              //   if (
-              //     this.editorStore.currentEditorState instanceof
-              //     ElementEditorState
-              //   ) {
-              //     // check if we can reveal the error in the element editor state
-              //     fallbackToTextModeForDebugging =
-              //       !this.editorStore.currentEditorState.revealCompilationError(
-              //         error,
-              //       );
-              //   }
-              // }
-            }
+          if (error instanceof CompilationError && error.sourceInformation) {
+            fallbackToTextModeForDebugging =
+              !this.fetchStructureState.projectionState.revealCompilationError(
+                error,
+              );
           }
 
           // decide if we need to fall back to text mode for debugging

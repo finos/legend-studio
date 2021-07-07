@@ -80,6 +80,7 @@ export const buildLambdaFunction = (
      * queryBuilderState will make the lambda function building process overrides several query values, such as the row limit.
      */
     isBuildingExecutionQuery?: boolean;
+    keepSourceInformation?: boolean;
   },
 ): LambdaFunction => {
   const _class = guaranteeNonNullable(
@@ -182,7 +183,11 @@ export const buildLambdaFunction = (
                   new V1_GraphTransformerContextBuilder(
                     // TODO?: do we need to include the plugins here?
                     [],
-                  ).build(),
+                  )
+                    .withKeepSourceInformationFlag(
+                      Boolean(options?.keepSourceInformation),
+                    )
+                    .build(),
                 ),
               ),
             );
@@ -275,7 +280,11 @@ export const buildLambdaFunction = (
                   new V1_GraphTransformerContextBuilder(
                     // TODO?: do we need to include the plugins here?
                     [],
-                  ).build(),
+                  )
+                    .withKeepSourceInformationFlag(
+                      Boolean(options?.keepSourceInformation),
+                    )
+                    .build(),
                 ),
               ),
             );

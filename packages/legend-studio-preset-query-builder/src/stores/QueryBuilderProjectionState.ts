@@ -40,9 +40,11 @@ import {
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   AbstractPropertyExpression,
+  CompilationError,
   EditorStore,
 } from '@finos/legend-studio';
 import {
+  extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
@@ -478,5 +480,48 @@ export class QueryBuilderProjectionState {
     // move
     this.columns.splice(sourceIndex, 1);
     this.columns.splice(targetIndex, 0, sourceColumn);
+  }
+
+  revealCompilationError(compilationError: CompilationError): boolean {
+    const elementCoordinates = extractSourceInformationCoordinates(
+      compilationError.sourceInformation,
+    );
+    if (
+      elementCoordinates &&
+      elementCoordinates.length === 3 &&
+      elementCoordinates[0] === QUERY_BUILDER_SOURCE_ID_LABEL.QUERY_BUILDER &&
+      elementCoordinates[1] === QUERY_BUILDER_SOURCE_ID_LABEL.PROJECTION
+    ) {
+      const derivationProjectionState = this.columns.find(
+        (projectionColumnState) =>
+          projectionColumnState.uuid === elementCoordinates[2],
+      );
+      if (
+        derivationProjectionState instanceof
+        QueryBuilderDerivationProjectionColumnState
+      ) {
+        derivationProjectionState.derivationLambdaEditorState.setCompilationError(
+          compilationError,
+        );
+        return true;
+      }
+    }
+    return false;
+  }
+
+  clearCompilationError(): void {
+    this.columns
+      .filter(
+        (
+          projectionColumnState,
+        ): projectionColumnState is QueryBuilderDerivationProjectionColumnState =>
+          projectionColumnState instanceof
+          QueryBuilderDerivationProjectionColumnState,
+      )
+      .forEach((derivationProjectionColumnState) =>
+        derivationProjectionColumnState.derivationLambdaEditorState.setCompilationError(
+          undefined,
+        ),
+      );
   }
 }

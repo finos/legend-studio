@@ -247,19 +247,20 @@ const QueryBuilderProjectionColumnEditor = observer(
         )}
         {!projectionColumnState.isBeingDragged && (
           <>
-            <div className="query-builder__projection__column__dnd__indicator__container">
-              <div className="query-builder__projection__column__dnd__indicator">
+            <div className="query-builder__projection__column__dnd__indicator">
+              <div className="query-builder__projection__column__dnd__indicator__handler">
                 <GripVerticalIcon />
               </div>
             </div>
-            <div className="query-builder__projection__column__value">
+            <div className="query-builder__projection__column__name">
               <input
-                className="query-builder__projection__column__value__input"
+                className="query-builder__projection__column__name__input"
                 spellCheck={false}
                 value={projectionColumnState.columnName}
                 onChange={changeColumnName}
               />
-
+            </div>
+            <div className="query-builder__projection__column__value">
               {projectionColumnState instanceof
                 QueryBuilderSimpleProjectionColumnState && (
                 <QueryBuilderSimpleProjectionColumnEditor
@@ -274,63 +275,65 @@ const QueryBuilderProjectionColumnEditor = observer(
               )}
             </div>
             <div className="query-builder__projection__column__aggregate">
-              {aggregateColumnState && (
-                <div className="query-builder__projection__column__aggregate__operator__label">
-                  {aggregateColumnState.operator.getLabel(
-                    projectionColumnState,
-                  )}
-                </div>
-              )}
-              <DropdownMenu
-                className="query-builder__projection__column__aggregate__operator__dropdown"
-                content={
-                  <MenuContent>
-                    {aggregateColumnState && (
-                      <MenuContentItem
-                        className="query-builder__projection__column__aggregate__operator__dropdown__option"
-                        onClick={changeOperator(undefined)}
-                      >
-                        (none)
-                      </MenuContentItem>
+              <div className="query-builder__projection__column__aggregate__operator">
+                {aggregateColumnState && (
+                  <div className="query-builder__projection__column__aggregate__operator__label">
+                    {aggregateColumnState.operator.getLabel(
+                      projectionColumnState,
                     )}
-                    {aggreateOperators.map((op) => (
-                      <MenuContentItem
-                        key={op.uuid}
-                        className="query-builder__projection__column__aggregate__operator__dropdown__option"
-                        onClick={changeOperator(op)}
-                      >
-                        {op.getLabel(projectionColumnState)}
-                      </MenuContentItem>
-                    ))}
-                  </MenuContent>
-                }
-                menuProps={{
-                  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-                  transformOrigin: { vertical: 'top', horizontal: 'left' },
-                  elevation: 7,
-                }}
-              >
-                <button
-                  className={clsx(
-                    'query-builder__projection__column__aggregate__badge',
-                    {
-                      'query-builder__projection__column__aggregate__badge--activated':
-                        Boolean(aggregateColumnState),
-                    },
-                  )}
-                  tabIndex={-1}
-                  title="Choose Operator..."
+                  </div>
+                )}
+                <DropdownMenu
+                  className="query-builder__projection__column__aggregate__operator__dropdown"
+                  content={
+                    <MenuContent>
+                      {aggregateColumnState && (
+                        <MenuContentItem
+                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                          onClick={changeOperator(undefined)}
+                        >
+                          (none)
+                        </MenuContentItem>
+                      )}
+                      {aggreateOperators.map((op) => (
+                        <MenuContentItem
+                          key={op.uuid}
+                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                          onClick={changeOperator(op)}
+                        >
+                          {op.getLabel(projectionColumnState)}
+                        </MenuContentItem>
+                      ))}
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                    transformOrigin: { vertical: 'top', horizontal: 'left' },
+                    elevation: 7,
+                  }}
                 >
-                  <MdFunctions />
-                </button>
-                <button
-                  className="query-builder__projection__column__aggregate__operator__dropdown__trigger"
-                  tabIndex={-1}
-                  title="Choose Operator..."
-                >
-                  <CaretDownIcon />
-                </button>
-              </DropdownMenu>
+                  <button
+                    className={clsx(
+                      'query-builder__projection__column__aggregate__operator__badge',
+                      {
+                        'query-builder__projection__column__aggregate__operator__badge--activated':
+                          Boolean(aggregateColumnState),
+                      },
+                    )}
+                    tabIndex={-1}
+                    title="Choose Operator..."
+                  >
+                    <MdFunctions />
+                  </button>
+                  <button
+                    className="query-builder__projection__column__aggregate__operator__dropdown__trigger"
+                    tabIndex={-1}
+                    title="Choose Operator..."
+                  >
+                    <CaretDownIcon />
+                  </button>
+                </DropdownMenu>
+              </div>
             </div>
             <div className="query-builder__projection__column__actions">
               <button
