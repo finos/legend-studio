@@ -153,7 +153,7 @@ export const QueryResultModifierModal = observer(
     const resultModifier = queryBuilderState.resultSetModifierState;
     const limitResults = resultModifier.limit;
     const distinct = resultModifier.distinct;
-    const close = (): void => resultModifier.setModal(false);
+    const close = (): void => resultModifier.setShowModal(false);
     const toggleDistinct = (): void => resultModifier.toggleDistinct();
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
@@ -161,7 +161,7 @@ export const QueryResultModifierModal = observer(
     };
     return (
       <Dialog
-        open={Boolean(resultModifier.modal)}
+        open={Boolean(resultModifier.showModal)}
         onClose={close}
         classes={{
           root: 'editor-modal__root-container',

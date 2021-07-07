@@ -482,6 +482,26 @@ export class QueryBuilderProjectionState {
     this.columns.splice(targetIndex, 0, sourceColumn);
   }
 
+  addNewBlankDerivation(): void {
+    const derivation = new QueryBuilderDerivationProjectionColumnState(
+      this.editorStore,
+      this,
+      // default lambda for derivation is `x|''`
+      new RawLambda(
+        [{ _type: 'var', name: 'x' }],
+        [
+          {
+            _type: 'string',
+            multiplicity: { lowerBound: 1, upperBound: 1 },
+            values: [''],
+          },
+        ],
+      ),
+    );
+    this.addColumn(derivation);
+    derivation.derivationLambdaEditorState.setLambdaString(`x|''`);
+  }
+
   revealCompilationError(compilationError: CompilationError): boolean {
     const elementCoordinates = extractSourceInformationCoordinates(
       compilationError.sourceInformation,
