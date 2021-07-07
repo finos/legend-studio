@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import {
+  action,
+  flow,
+  makeAutoObservable,
+  makeObservable,
+  observable,
+} from 'mobx';
 import {
   uuid,
   deleteEntry,
@@ -35,7 +41,12 @@ import type {
   AbstractPropertyExpression,
   EditorStore,
 } from '@finos/legend-studio';
-import { TYPICAL_MULTIPLICITY_TYPE } from '@finos/legend-studio';
+import { ParserError, RawLambda } from '@finos/legend-studio';
+import {
+  CORE_LOG_EVENT,
+  LambdaEditorState,
+  TYPICAL_MULTIPLICITY_TYPE,
+} from '@finos/legend-studio';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 import { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count';
@@ -62,14 +73,45 @@ export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
 }
 
-export class QueryBuilderProjectionColumnState {
+export abstract class QueryBuilderProjectionColumnState {
   uuid = uuid();
   editorStore: EditorStore;
   projectionState: QueryBuilderProjectionState;
-  lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
-  columnName: string;
-  propertyEditorState: QueryBuilderPropertyEditorState;
   isBeingDragged = false;
+  columnName: string;
+
+  constructor(
+    editorStore: EditorStore,
+    projectionState: QueryBuilderProjectionState,
+    columnName: string,
+  ) {
+    makeObservable(this, {
+      uuid: false,
+      editorStore: false,
+      projectionState: false,
+      isBeingDragged: observable,
+      columnName: observable,
+      setIsBeingDragged: action,
+      setColumnName: action,
+    });
+
+    this.editorStore = editorStore;
+    this.projectionState = projectionState;
+    this.columnName = columnName;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
+  }
+
+  setColumnName(val: string): void {
+    this.columnName = val;
+  }
+}
+
+export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProjectionColumnState {
+  lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
+  propertyEditorState: QueryBuilderPropertyEditorState;
 
   constructor(
     editorStore: EditorStore,
@@ -77,18 +119,15 @@ export class QueryBuilderProjectionColumnState {
     data: QueryBuilderExplorerTreePropertyNodeData | AbstractPropertyExpression,
     propertyExpressionProcessed?: boolean,
   ) {
-    makeAutoObservable(this, {
-      uuid: false,
-      editorStore: false,
-      projectionState: false,
+    super(editorStore, projectionState, '');
+
+    makeObservable(this, {
+      lambdaParameterName: observable,
+      propertyEditorState: observable,
       setLambdaParameterName: action,
-      setIsBeingDragged: action,
-      setColumnName: action,
       changeProperty: action,
     });
 
-    this.editorStore = editorStore;
-    this.projectionState = projectionState;
     const propertyExpression =
       data instanceof QueryBuilderExplorerTreePropertyNodeData
         ? getPropertyExpression(
@@ -114,14 +153,6 @@ export class QueryBuilderProjectionColumnState {
     this.lambdaParameterName = val;
   }
 
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
-  }
-
-  setColumnName(val: string): void {
-    this.columnName = val;
-  }
-
   changeProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
     this.propertyEditorState = new QueryBuilderPropertyEditorState(
       this.editorStore,
@@ -137,6 +168,134 @@ export class QueryBuilderProjectionColumnState {
     this.columnName = getPropertyChainName(
       this.propertyEditorState.propertyExpression,
     );
+  }
+}
+
+class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
+  editorStore: EditorStore;
+  derivationProjectionColumnState: QueryBuilderDerivationProjectionColumnState;
+  isConvertingLambdaToString = false;
+  /**
+   * This is used to store the JSON string when viewing the query in JSON mode
+   * TODO: consider moving this to another state if we need to simplify the logic of text-mode
+   */
+  readOnlylambdaJson = '';
+
+  constructor(
+    editorStore: EditorStore,
+    derivationProjectionColumnState: QueryBuilderDerivationProjectionColumnState,
+  ) {
+    super('', `x|`);
+
+    makeObservable(this, {
+      isConvertingLambdaToString: observable,
+    });
+
+    this.editorStore = editorStore;
+    this.derivationProjectionColumnState = derivationProjectionColumnState;
+  }
+
+  get lambdaId(): string {
+    return `query_builder-projection-${this.derivationProjectionColumnState.uuid}`;
+  }
+
+  setLambdaJson(lambdaJson: string): void {
+    this.readOnlylambdaJson = lambdaJson;
+  }
+
+  convertLambdaGrammarStringToObject = flow(function* (
+    this: QueryBuilderDerivationProjectionLambdaState,
+  ) {
+    const emptyLambda = RawLambda.createStub();
+    if (this.lambdaString) {
+      try {
+        const lambda =
+          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+            this.fullLambdaString,
+            this.lambdaId,
+          )) as RawLambda | undefined;
+        this.setParserError(undefined);
+        this.derivationProjectionColumnState.setLambda(lambda ?? emptyLambda);
+      } catch (error: unknown) {
+        if (error instanceof ParserError) {
+          this.setParserError(error);
+        }
+        this.editorStore.applicationStore.logger.error(
+          CORE_LOG_EVENT.PARSING_PROBLEM,
+          error,
+        );
+      }
+    } else {
+      this.clearErrors();
+      this.derivationProjectionColumnState.setLambda(emptyLambda);
+    }
+  });
+
+  convertLambdaObjectToGrammarString = flow(function* (
+    this: QueryBuilderDerivationProjectionLambdaState,
+    pretty: boolean,
+  ) {
+    if (this.derivationProjectionColumnState.lambda.body) {
+      this.isConvertingLambdaToString = true;
+      try {
+        const lambdas = new Map<string, RawLambda>();
+        lambdas.set(
+          this.lambdaId,
+          new RawLambda(
+            this.derivationProjectionColumnState.lambda.parameters,
+            this.derivationProjectionColumnState.lambda.body,
+          ),
+        );
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+            pretty,
+          )) as Map<string, string>;
+        const grammarText = isolatedLambdas.get(this.lambdaId);
+        this.setLambdaString(
+          grammarText !== undefined
+            ? this.extractLambdaString(grammarText)
+            : '',
+        );
+        this.clearErrors();
+        this.isConvertingLambdaToString = false;
+      } catch (error: unknown) {
+        this.editorStore.applicationStore.logger.error(
+          CORE_LOG_EVENT.PARSING_PROBLEM,
+          error,
+        );
+        this.isConvertingLambdaToString = false;
+      }
+    } else {
+      this.clearErrors();
+      this.setLambdaString('');
+    }
+  });
+}
+
+export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderProjectionColumnState {
+  derivationLambdaEditorState: QueryBuilderDerivationProjectionLambdaState;
+  lambda: RawLambda;
+
+  constructor(
+    editorStore: EditorStore,
+    projectionState: QueryBuilderProjectionState,
+    lambda: RawLambda,
+  ) {
+    super(editorStore, projectionState, '');
+
+    makeObservable(this, {
+      lambda: observable,
+      setLambda: action,
+    });
+
+    this.derivationLambdaEditorState =
+      new QueryBuilderDerivationProjectionLambdaState(editorStore, this);
+    this.lambda = lambda;
+  }
+
+  setLambda(val: RawLambda): void {
+    this.lambda = val;
   }
 }
 

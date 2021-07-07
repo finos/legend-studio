@@ -24,6 +24,7 @@ import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
+import { QueryBuilderSimpleProjectionColumnState } from '../QueryBuilderProjectionState';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
@@ -37,28 +38,36 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
   isCompatibleWithColumn(
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): boolean {
-    const propertyType =
-      projectionColumnState.propertyEditorState.propertyExpression.func
-        .genericType.value.rawType;
-    return (
-      [
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-        PRIMITIVE_TYPE.DATE,
-        PRIMITIVE_TYPE.STRICTDATE,
-        PRIMITIVE_TYPE.DATETIME,
-      ] as string[]
-    ).includes(propertyType.path);
+    if (
+      projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+    ) {
+      const propertyType =
+        projectionColumnState.propertyEditorState.propertyExpression.func
+          .genericType.value.rawType;
+      return (
+        [
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
+        ] as string[]
+      ).includes(propertyType.path);
+    }
+    return true;
   }
 
   buildAggregateExpression(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): ValueSpecification {
-    const propertyType =
-      aggregateColumnState.projectionColumnState.propertyEditorState
-        .propertyExpression.func.genericType.value.rawType;
+    const propertyTypePath =
+      aggregateColumnState.projectionColumnState instanceof
+      QueryBuilderSimpleProjectionColumnState
+        ? aggregateColumnState.projectionColumnState.propertyEditorState
+            .propertyExpression.func.genericType.value.rawType.path
+        : PRIMITIVE_TYPE.NUMBER; // this decision does not affect the output expression
     return buildAggregateExpression(
       aggregateColumnState,
       (
@@ -67,7 +76,7 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
           PRIMITIVE_TYPE.STRICTDATE,
           PRIMITIVE_TYPE.DATETIME,
         ] as string[]
-      ).includes(propertyType.path)
+      ).includes(propertyTypePath)
         ? SUPPORTED_FUNCTIONS.DATE_MAX
         : SUPPORTED_FUNCTIONS.MAX,
     );
@@ -78,48 +87,72 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
     lambdaParam: VariableExpression,
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): QueryBuilderAggregateColumnState | undefined {
-    const propertyType =
-      projectionColumnState.propertyEditorState.propertyExpression.func
-        .genericType.value.rawType;
-    switch (propertyType.path) {
-      case PRIMITIVE_TYPE.NUMBER:
-      case PRIMITIVE_TYPE.INTEGER:
-      case PRIMITIVE_TYPE.DECIMAL:
-      case PRIMITIVE_TYPE.FLOAT: {
-        if (
-          !matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.MAX)
-        ) {
-          return undefined;
+    if (
+      projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+    ) {
+      const propertyType =
+        projectionColumnState.propertyEditorState.propertyExpression.func
+          .genericType.value.rawType;
+      switch (propertyType.path) {
+        case PRIMITIVE_TYPE.NUMBER:
+        case PRIMITIVE_TYPE.INTEGER:
+        case PRIMITIVE_TYPE.DECIMAL:
+        case PRIMITIVE_TYPE.FLOAT: {
+          if (
+            !matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.MAX)
+          ) {
+            return undefined;
+          }
+          return buildAggregateColumnState(
+            projectionColumnState,
+            lambdaParam,
+            expression,
+            SUPPORTED_FUNCTIONS.MAX,
+            this,
+          );
         }
-        return buildAggregateColumnState(
-          projectionColumnState,
-          lambdaParam,
-          expression,
-          SUPPORTED_FUNCTIONS.MAX,
-          this,
-        );
-      }
-      case PRIMITIVE_TYPE.DATE:
-      case PRIMITIVE_TYPE.STRICTDATE:
-      case PRIMITIVE_TYPE.DATETIME: {
-        if (
-          !matchFunctionName(
-            expression.functionName,
+        case PRIMITIVE_TYPE.DATE:
+        case PRIMITIVE_TYPE.STRICTDATE:
+        case PRIMITIVE_TYPE.DATETIME: {
+          if (
+            !matchFunctionName(
+              expression.functionName,
+              SUPPORTED_FUNCTIONS.DATE_MAX,
+            )
+          ) {
+            return undefined;
+          }
+          return buildAggregateColumnState(
+            projectionColumnState,
+            lambdaParam,
+            expression,
             SUPPORTED_FUNCTIONS.DATE_MAX,
-          )
-        ) {
-          return undefined;
+            this,
+          );
         }
-        return buildAggregateColumnState(
-          projectionColumnState,
-          lambdaParam,
-          expression,
-          SUPPORTED_FUNCTIONS.DATE_MAX,
-          this,
-        );
+        default:
+          return undefined;
       }
-      default:
-        return undefined;
     }
+    if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.MAX)) {
+      return buildAggregateColumnState(
+        projectionColumnState,
+        lambdaParam,
+        expression,
+        SUPPORTED_FUNCTIONS.MAX,
+        this,
+      );
+    } else if (
+      matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.DATE_MAX)
+    ) {
+      return buildAggregateColumnState(
+        projectionColumnState,
+        lambdaParam,
+        expression,
+        SUPPORTED_FUNCTIONS.DATE_MAX,
+        this,
+      );
+    }
+    return undefined;
   }
 }

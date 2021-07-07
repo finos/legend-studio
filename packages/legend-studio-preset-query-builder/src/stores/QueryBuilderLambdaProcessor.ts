@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   assertNonNullable,
   assertTrue,
@@ -52,8 +53,10 @@ import type {
   ValueSpecificationVisitor,
   AbstractPropertyExpression,
   InstanceValue,
+  UnknownValue,
 } from '@finos/legend-studio';
 import {
+  RawLambda,
   matchFunctionName,
   Class,
   CollectionInstanceValue,
@@ -63,8 +66,14 @@ import {
   RootGraphFetchTree,
   SimpleFunctionExpression,
   VariableExpression,
+  V1_deserializeRawValueSpecification,
+  V1_RawLambda,
 } from '@finos/legend-studio';
-import { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
+import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from './QueryBuilderProjectionState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 
@@ -263,6 +272,47 @@ export class QueryBuilderLambdaProcessor
   ) {
     this.queryBuilderState = queryBuilderState;
     this.precedingExpression = precedingExpression;
+  }
+
+  visit_UnknownValue(valueSpecification: UnknownValue): void {
+    assertNonNullable(
+      this.precedingExpression,
+      `Can't process unknown value: unknown value preceding expression cannot be retrieved`,
+    );
+    const precedingExpressionName = this.precedingExpression.functionName;
+    if (
+      [
+        SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        SUPPORTED_FUNCTIONS.TDS_AGG,
+      ].some((fn) => matchFunctionName(precedingExpressionName, fn))
+    ) {
+      const projectionState =
+        this.queryBuilderState.fetchStructureState.projectionState;
+      const rawLambdaProtocol = returnUndefOnError(() =>
+        guaranteeType(
+          V1_deserializeRawValueSpecification(
+            valueSpecification.content as PlainObject<V1_RawLambda>,
+          ),
+          V1_RawLambda,
+        ),
+      );
+      assertNonNullable(
+        rawLambdaProtocol,
+        `Can't process unknown value: only support ${precedingExpressionName}() column expression as a lambda`,
+      );
+
+      const columnState = new QueryBuilderDerivationProjectionColumnState(
+        projectionState.editorStore,
+        projectionState,
+        new RawLambda(rawLambdaProtocol.parameters, rawLambdaProtocol.body),
+      );
+      projectionState.addColumn(columnState);
+      return;
+    }
+    throw new UnsupportedOperationError(
+      `Can't process unknown value with preceding expression of function ${this.precedingExpression.functionName}()`,
+    );
   }
 
   visit_RootGraphFetchTreeInstanceValue(
@@ -865,7 +915,7 @@ export class QueryBuilderLambdaProcessor
     ) {
       const projectionState =
         this.queryBuilderState.fetchStructureState.projectionState;
-      const columnState = new QueryBuilderProjectionColumnState(
+      const columnState = new QueryBuilderSimpleProjectionColumnState(
         projectionState.editorStore,
         projectionState,
         valueSpecification,

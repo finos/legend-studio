@@ -33,6 +33,7 @@ import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePan
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import { useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
+import Backdrop from '@material-ui/core/Backdrop';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -161,6 +162,10 @@ export const QueryBuilder = observer(
         className="query-builder"
       >
         <QueryBuilderHeader queryBuilderState={queryBuilderState} />
+        <Backdrop
+          className="backdrop"
+          open={queryBuilderState.editorStore.backdrop}
+        />
         <div className="query-builder__content">
           <ReflexContainer orientation="horizontal">
             <ReflexElement minSize={132}>

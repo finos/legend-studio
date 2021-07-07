@@ -24,6 +24,7 @@ import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
+import { QueryBuilderSimpleProjectionColumnState } from '../QueryBuilderProjectionState';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
@@ -37,17 +38,22 @@ export class QueryBuilderAggregateOperator_StdDev_Sample extends QueryBuilderAgg
   isCompatibleWithColumn(
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): boolean {
-    const propertyType =
-      projectionColumnState.propertyEditorState.propertyExpression.func
-        .genericType.value.rawType;
-    return (
-      [
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-      ] as string[]
-    ).includes(propertyType.path);
+    if (
+      projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+    ) {
+      const propertyType =
+        projectionColumnState.propertyEditorState.propertyExpression.func
+          .genericType.value.rawType;
+      return (
+        [
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+        ] as string[]
+      ).includes(propertyType.path);
+    }
+    return true;
   }
 
   buildAggregateExpression(

@@ -30,6 +30,7 @@ import {
   QueryBuilderAggregateOperator,
 } from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
+import { QueryBuilderSimpleProjectionColumnState } from '../QueryBuilderProjectionState';
 
 export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
@@ -39,22 +40,27 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
   isCompatibleWithColumn(
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): boolean {
-    const propertyType =
-      projectionColumnState.propertyEditorState.propertyExpression.func
-        .genericType.value.rawType;
-    return (
-      [
-        PRIMITIVE_TYPE.STRING,
-        PRIMITIVE_TYPE.BOOLEAN,
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-        PRIMITIVE_TYPE.DATE,
-        PRIMITIVE_TYPE.STRICTDATE,
-        PRIMITIVE_TYPE.DATETIME,
-      ] as string[]
-    ).includes(propertyType.path);
+    if (
+      projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+    ) {
+      const propertyType =
+        projectionColumnState.propertyEditorState.propertyExpression.func
+          .genericType.value.rawType;
+      return (
+        [
+          PRIMITIVE_TYPE.STRING,
+          PRIMITIVE_TYPE.BOOLEAN,
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
+        ] as string[]
+      ).includes(propertyType.path);
+    }
+    return true;
   }
 
   buildAggregateExpression(

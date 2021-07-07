@@ -79,6 +79,8 @@ import { Class } from '../../../../../../metamodels/pure/model/packageableElemen
 import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
 import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
+import type { UnknownValue } from '../../../../../../metamodels/pure/model/valueSpecification/UnknownValue';
+import { V1_UnknownValue } from '../../../model/valueSpecification/V1_UnknownValue';
 
 export class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -98,6 +100,12 @@ export class V1_ValueSpecificationTransformer
     this.open = open;
     this.isParameter = isParameter;
     this.useAppliedFunction = useAppliedFunction;
+  }
+
+  visit_UnknownValue(valueSpecification: UnknownValue): V1_ValueSpecification {
+    const protocol = new V1_UnknownValue();
+    protocol.content = valueSpecification.content;
+    return protocol;
   }
 
   visit_RootGraphFetchTreeInstanceValue(

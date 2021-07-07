@@ -22,6 +22,10 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  CollectionInstanceValue,
+  Multiplicity,
+  UnknownValue,
+  V1_serializeValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
   SimpleFunctionExpression,
@@ -36,6 +40,7 @@ import {
   VariableExpression,
 } from '@finos/legend-studio';
 import {
+  assertErrorThrown,
   assertNonNullable,
   assertTrue,
   assertType,
@@ -293,19 +298,39 @@ export const V1_buildProjectFunctionExpression = (
       processingContext.addInferredVariables(variable.name, variableExpression);
     }
   });
+
+  // process column expressions taking into account of derivation
+  const processedColumnExpressions = new CollectionInstanceValue(
+    new Multiplicity(
+      columnExpressions.multiplicity.lowerBound,
+      columnExpressions.multiplicity.upperBound,
+    ),
+  );
+  processedColumnExpressions.values = columnExpressions.values.map((value) => {
+    try {
+      return value.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          compileContext,
+          processingContext,
+          openVariables,
+        ),
+      );
+    } catch (e: unknown) {
+      assertErrorThrown(e);
+      return new UnknownValue(V1_serializeValueSpecification(value));
+    }
+  });
+
   const processedParams = [
     precedingExperession,
-    ...parameters
-      .slice(1)
-      .map((parameter) =>
-        parameter.accept_ValueSpecificationVisitor(
-          new V1_ValueSpecificationBuilder(
-            compileContext,
-            processingContext,
-            openVariables,
-          ),
-        ),
+    processedColumnExpressions,
+    parameters[2].accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
       ),
+    ),
   ];
   const expression = buildBaseSimpleFunctionExpression(
     processedParams,
@@ -388,6 +413,7 @@ export const V1_buildGroupByFunctionExpression = (
       processingContext.addInferredVariables(variable.name, variableExpression);
     }
   });
+
   const processedParams = [
     precedingExperession,
     ...parameters

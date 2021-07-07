@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
-import type { Class, Multiplicity } from '@finos/legend-studio';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-studio-shared';
+import type {
+  Class,
+  Multiplicity,
+  ValueSpecification,
+} from '@finos/legend-studio';
 import {
   extractElementNameFromPath,
   InstanceValue,
@@ -39,6 +46,10 @@ import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import { buildFilterExpression } from './QueryBuilderFilterState';
 import { buildAggregateLambda } from './QueryBuilderAggregationState';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from './QueryBuilderProjectionState';
 
 const buildGetAllFunction = (
   _class: Class,
@@ -132,22 +143,41 @@ export const buildLambdaFunction = (
             );
 
           // column projection
-          const colLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-          const colLambdaFunctionType = new FunctionType(
-            typeAny,
-            multiplicityOne,
-          );
-          colLambdaFunctionType.parameters.push(
-            new VariableExpression(
-              projectionColumnState.lambdaParameterName,
+          let columnLambda: ValueSpecification;
+          if (
+            projectionColumnState instanceof
+            QueryBuilderSimpleProjectionColumnState
+          ) {
+            const simpleColLambda = new LambdaFunctionInstanceValue(
               multiplicityOne,
-            ),
-          );
-          const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-          colLambdaFunction.expressionSequence.push(
-            projectionColumnState.propertyEditorState.propertyExpression,
-          );
-          colLambda.values.push(colLambdaFunction);
+            );
+            const colLambdaFunctionType = new FunctionType(
+              typeAny,
+              multiplicityOne,
+            );
+            colLambdaFunctionType.parameters.push(
+              new VariableExpression(
+                projectionColumnState.lambdaParameterName,
+                multiplicityOne,
+              ),
+            );
+            const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
+            colLambdaFunction.expressionSequence.push(
+              projectionColumnState.propertyEditorState.propertyExpression,
+            );
+            simpleColLambda.values.push(colLambdaFunction);
+            columnLambda = simpleColLambda;
+          } else if (
+            projectionColumnState instanceof
+            QueryBuilderDerivationProjectionColumnState
+          ) {
+            throw new UnsupportedOperationError('TODO');
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't build project() column expression: unsupported projection column state`,
+              projectionColumnState,
+            );
+          }
 
           // column aggregation
           if (aggregateColumnState) {
@@ -157,13 +187,13 @@ export const buildLambdaFunction = (
             );
             const aggregateLambda = buildAggregateLambda(aggregateColumnState);
             aggregateFunctionExpression.parametersValues = [
-              colLambda,
+              columnLambda,
               aggregateLambda,
             ];
 
             aggregateLambdas.values.push(aggregateFunctionExpression);
           } else {
-            colLambdas.values.push(colLambda);
+            colLambdas.values.push(columnLambda);
           }
         },
       );
@@ -196,23 +226,42 @@ export const buildLambdaFunction = (
           colAliases.values.push(colAlias);
 
           // column projection
-          const colLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-          const colLambdaFunctionType = new FunctionType(
-            typeAny,
-            multiplicityOne,
-          );
-          colLambdaFunctionType.parameters.push(
-            new VariableExpression(
-              projectionColumnState.lambdaParameterName,
+          let columnLambda: ValueSpecification;
+          if (
+            projectionColumnState instanceof
+            QueryBuilderSimpleProjectionColumnState
+          ) {
+            const simpleColLambda = new LambdaFunctionInstanceValue(
               multiplicityOne,
-            ),
-          );
-          const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-          colLambdaFunction.expressionSequence.push(
-            projectionColumnState.propertyEditorState.propertyExpression,
-          );
-          colLambda.values.push(colLambdaFunction);
-          colLambdas.values.push(colLambda);
+            );
+            const colLambdaFunctionType = new FunctionType(
+              typeAny,
+              multiplicityOne,
+            );
+            colLambdaFunctionType.parameters.push(
+              new VariableExpression(
+                projectionColumnState.lambdaParameterName,
+                multiplicityOne,
+              ),
+            );
+            const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
+            colLambdaFunction.expressionSequence.push(
+              projectionColumnState.propertyEditorState.propertyExpression,
+            );
+            simpleColLambda.values.push(colLambdaFunction);
+            columnLambda = simpleColLambda;
+          } else if (
+            projectionColumnState instanceof
+            QueryBuilderDerivationProjectionColumnState
+          ) {
+            throw new UnsupportedOperationError('TODO');
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't build project() column expression: unsupported projection column state`,
+              projectionColumnState,
+            );
+          }
+          colLambdas.values.push(columnLambda);
         },
       );
       const expression = lambdaFunction.expressionSequence[0];

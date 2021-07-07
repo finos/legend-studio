@@ -428,8 +428,8 @@
   &__dnd__placeholder {
     @include flexCenter;
 
-    height: 2.2rem;
-    font-size: 1.1rem;
+    height: 2.8rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--color-dark-grey-300);
   }
@@ -438,7 +438,7 @@
     @include flexVCenter;
 
     width: 100%;
-    height: 1.8rem;
+    height: 2.2rem;
     border-radius: 0.2rem;
     color: var(--color-light-grey-0);
 
@@ -459,7 +459,7 @@
     @include ellipsisTextOverflow;
 
     padding: 0 1rem;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 700;
     width: 100%;
   }
@@ -467,8 +467,8 @@
   &__property__info {
     @include flexCenter;
 
-    height: 1.8rem;
-    width: 1.8rem;
+    height: 2.2rem;
+    width: 2.2rem;
     margin: 0.3rem;
 
     svg {
@@ -480,8 +480,8 @@
   &__action {
     width: 4.6rem;
     min-width: 4.6rem;
-    height: 1.8rem;
-    line-height: 1.8rem;
+    height: 2.2rem;
+    line-height: 2.2rem;
     font-weight: 700;
     font-size: 1rem;
     font-family: 'Roboto Mono', monospace;
@@ -528,7 +528,7 @@
     @include flexCenter;
 
     width: 100%;
-    height: 1.8rem;
+    height: 2.2rem;
     background: var(--color-dark-grey-280);
     border-radius: 0.2rem;
     font-size: 1.1rem;
@@ -586,9 +586,9 @@
   &__list-editor__preview {
     @include ellipsisTextOverflow;
 
-    line-height: 1.8rem;
+    line-height: 2.2rem;
     width: calc(100% - 1.8rem);
-    height: 1.8rem;
+    height: 2.2rem;
     font-size: 1.1rem;
     font-family: 'Roboto Mono', monospace;
     background: var(--color-dark-grey-250);
@@ -600,9 +600,9 @@
   &__list-editor__save-button {
     @include flexCenter;
 
-    height: 2.2rem;
-    width: 2.2rem;
-    min-width: 2.2rem;
+    height: 2.8rem;
+    width: 2.8rem;
+    min-width: 2.8rem;
 
     svg {
       font-size: 1.2rem;
@@ -612,7 +612,7 @@
   &__list-editor__edit-icon {
     @include flexCenter;
 
-    height: 1.8rem;
+    height: 2.2rem;
     width: 2.7rem;
     min-width: 2.7rem;
     background: var(--color-dark-grey-250);
@@ -639,17 +639,15 @@
     }
   }
 
-  &__lambda {
-    &-editor {
-      height: 100% !important;
-      background: var(--color-dark-grey-50);
-      padding-top: 1rem;
+  &__lambda-editor {
+    height: 100% !important;
+    background: var(--color-dark-grey-50);
+    padding-top: 1rem;
 
-      .monaco-editor {
-        .margin,
-        .monaco-editor-background {
-          background: var(--color-dark-grey-50) !important;
-        }
+    .monaco-editor {
+      .margin,
+      .monaco-editor-background {
+        background: var(--color-dark-grey-50) !important;
       }
     }
   }
@@ -671,6 +669,24 @@
       padding: 0.5rem;
       font-size: 1.2rem;
       user-select: none;
+    }
+  }
+}
+
+.query-builder__lambda-editor {
+  background: var(--color-dark-grey-50);
+  border: 0.1rem solid var(--color-dark-grey-280);
+
+  &__container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .monaco-editor {
+    .margin,
+    .monaco-editor-background {
+      background: var(--color-dark-grey-50) !important;
     }
   }
 }

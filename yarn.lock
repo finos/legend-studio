@@ -2441,6 +2441,7 @@ __metadata:
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
+    "@material-ui/core": 4.11.4
     "@testing-library/dom": 8.1.0
     "@testing-library/react": 12.0.0
     "@types/papaparse": 5.2.5

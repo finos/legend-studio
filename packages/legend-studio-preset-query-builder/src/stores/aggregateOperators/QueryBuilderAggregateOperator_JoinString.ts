@@ -33,6 +33,7 @@ import {
   QueryBuilderAggregateOperator,
 } from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
+import { QueryBuilderSimpleProjectionColumnState } from '../QueryBuilderProjectionState';
 
 export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
@@ -42,10 +43,15 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
   isCompatibleWithColumn(
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): boolean {
-    const propertyType =
-      projectionColumnState.propertyEditorState.propertyExpression.func
-        .genericType.value.rawType;
-    return PRIMITIVE_TYPE.STRING === propertyType.path;
+    if (
+      projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+    ) {
+      const propertyType =
+        projectionColumnState.propertyEditorState.propertyExpression.func
+          .genericType.value.rawType;
+      return PRIMITIVE_TYPE.STRING === propertyType.path;
+    }
+    return true;
   }
 
   buildAggregateExpression(
