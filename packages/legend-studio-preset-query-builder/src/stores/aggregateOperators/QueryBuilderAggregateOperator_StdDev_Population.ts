@@ -32,7 +32,7 @@ import {
 
 export class QueryBuilderAggregateOperator_StdDev_Population extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
-    return 'Std Dev (Population)';
+    return 'std dev (population)';
   }
 
   isCompatibleWithColumn(

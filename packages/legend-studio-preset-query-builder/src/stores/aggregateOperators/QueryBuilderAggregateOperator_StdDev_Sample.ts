@@ -32,7 +32,7 @@ import {
 
 export class QueryBuilderAggregateOperator_StdDev_Sample extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
-    return 'Std Dev (Sample)';
+    return 'std dev (sample)';
   }
 
   isCompatibleWithColumn(
