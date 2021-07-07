@@ -192,9 +192,11 @@ export class QueryBuilderState extends EditorExtensionState {
         this.openQueryBuilder = val;
       }
       this.editorStore.setBlockGlobalHotkeys(true);
+      this.editorStore.setHotkeys([]);
     } else {
       this.openQueryBuilder = val;
       this.editorStore.setBlockGlobalHotkeys(false);
+      this.editorStore.resetHotkeys();
     }
   }
 

@@ -15,6 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { GlobalHotKeys } from 'react-hotkeys';
 import { FaUserSecret, FaRobot, FaSave } from 'react-icons/fa';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { clsx, HammerIcon } from '@finos/legend-studio-components';
@@ -31,7 +32,7 @@ import {
 } from './QueryBuilderUnsupportedPanel';
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
-import { useApplicationStore } from '@finos/legend-studio';
+import { HOTKEY, HOTKEY_MAP, useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import Backdrop from '@material-ui/core/Backdrop';
 
@@ -154,60 +155,78 @@ const QueryBuilderUnsupported = observer(
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const isQuerySupported = queryBuilderState.isQuerySupported();
+
+    // Hotkeys
+    const keyMap = {
+      [HOTKEY.COMPILE]: [HOTKEY_MAP.COMPILE],
+    };
+    const handlers = {
+      [HOTKEY.COMPILE]: (event: KeyboardEvent | undefined): void => {
+        event?.preventDefault();
+        flowResult(queryBuilderState.compileQuery()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      },
+    };
 
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
       >
-        <QueryBuilderHeader queryBuilderState={queryBuilderState} />
-        <Backdrop
-          className="backdrop"
-          open={queryBuilderState.editorStore.backdrop}
-        />
-        <div className="query-builder__content">
-          <ReflexContainer orientation="horizontal">
-            <ReflexElement minSize={132}>
-              {isQuerySupported ? (
-                <ReflexContainer orientation="vertical">
-                  <ReflexElement size={450} minSize={300}>
-                    <QueryBuilderSetupPanel
-                      queryBuilderState={queryBuilderState}
-                    />
-                    <QueryBuilderExplorerPanel
-                      queryBuilderState={queryBuilderState}
-                    />
-                  </ReflexElement>
-                  <ReflexSplitter />
-                  <ReflexElement minSize={300}>
-                    <QueryBuilderFetchStructurePanel
-                      queryBuilderState={queryBuilderState}
-                    />
-                  </ReflexElement>
-                  <ReflexSplitter />
-                  <ReflexElement minSize={300}>
-                    <QueryBuilderFilterPanel
-                      queryBuilderState={queryBuilderState}
-                    />
-                  </ReflexElement>
-                </ReflexContainer>
-              ) : (
-                <QueryBuilderUnsupported
+        <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
+          <QueryBuilderHeader queryBuilderState={queryBuilderState} />
+          <Backdrop
+            className="backdrop"
+            open={queryBuilderState.editorStore.backdrop}
+          />
+          <div className="query-builder__content">
+            <ReflexContainer orientation="horizontal">
+              <ReflexElement minSize={132}>
+                {isQuerySupported ? (
+                  <ReflexContainer orientation="vertical">
+                    <ReflexElement size={450} minSize={300}>
+                      <QueryBuilderSetupPanel
+                        queryBuilderState={queryBuilderState}
+                      />
+                      <QueryBuilderExplorerPanel
+                        queryBuilderState={queryBuilderState}
+                      />
+                    </ReflexElement>
+                    <ReflexSplitter />
+                    <ReflexElement minSize={300}>
+                      <QueryBuilderFetchStructurePanel
+                        queryBuilderState={queryBuilderState}
+                      />
+                    </ReflexElement>
+                    <ReflexSplitter />
+                    <ReflexElement minSize={300}>
+                      <QueryBuilderFilterPanel
+                        queryBuilderState={queryBuilderState}
+                      />
+                    </ReflexElement>
+                  </ReflexContainer>
+                ) : (
+                  <QueryBuilderUnsupported
+                    queryBuilderState={queryBuilderState}
+                  />
+                )}
+              </ReflexElement>
+              <ReflexSplitter />
+              <ReflexElement size={300} minSize={28}>
+                <QueryBuilderResultPanel
                   queryBuilderState={queryBuilderState}
                 />
-              )}
-            </ReflexElement>
-            <ReflexSplitter />
-            <ReflexElement size={300} minSize={28}>
-              <QueryBuilderResultPanel queryBuilderState={queryBuilderState} />
-            </ReflexElement>
-          </ReflexContainer>
-        </div>
-        <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
-        {queryBuilderState.queryTextEditorState.mode && (
-          <QueryBuilderLambdaEditor queryBuilderState={queryBuilderState} />
-        )}
+              </ReflexElement>
+            </ReflexContainer>
+          </div>
+          <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
+          {queryBuilderState.queryTextEditorState.mode && (
+            <QueryBuilderLambdaEditor queryBuilderState={queryBuilderState} />
+          )}
+        </GlobalHotKeys>
       </div>
     );
   },
