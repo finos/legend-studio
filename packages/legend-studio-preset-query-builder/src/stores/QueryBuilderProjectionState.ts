@@ -285,7 +285,7 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
     projectionState: QueryBuilderProjectionState,
     lambda: RawLambda,
   ) {
-    super(editorStore, projectionState, '');
+    super(editorStore, projectionState, '(derivation)');
 
     makeObservable(this, {
       lambda: observable,
@@ -351,28 +351,18 @@ export class QueryBuilderProjectionState {
       string,
       QueryBuilderDerivationProjectionColumnState
     >();
-    this.columns
-      .filter(
-        (
-          projectionColumnState,
-        ): projectionColumnState is QueryBuilderDerivationProjectionColumnState =>
-          projectionColumnState instanceof
-          QueryBuilderDerivationProjectionColumnState,
-      )
-      .forEach((derivationProjectionColumnState) => {
-        if (!derivationProjectionColumnState.lambda.isStub) {
-          lambdas.set(
-            derivationProjectionColumnState.derivationLambdaEditorState
-              .lambdaId,
-            derivationProjectionColumnState.lambda,
-          );
-          derivationProjectionColumnStateMap.set(
-            derivationProjectionColumnState.derivationLambdaEditorState
-              .lambdaId,
-            derivationProjectionColumnState,
-          );
-        }
-      });
+    this.derivations.forEach((derivationProjectionColumnState) => {
+      if (!derivationProjectionColumnState.lambda.isStub) {
+        lambdas.set(
+          derivationProjectionColumnState.derivationLambdaEditorState.lambdaId,
+          derivationProjectionColumnState.lambda,
+        );
+        derivationProjectionColumnStateMap.set(
+          derivationProjectionColumnState.derivationLambdaEditorState.lambdaId,
+          derivationProjectionColumnState,
+        );
+      }
+    });
     if (lambdas.size) {
       this.isConvertDerivationProjectionObjects = true;
       try {
@@ -529,19 +519,27 @@ export class QueryBuilderProjectionState {
     return false;
   }
 
+  get derivations(): QueryBuilderDerivationProjectionColumnState[] {
+    return this.columns.filter(
+      (
+        projectionColumnState,
+      ): projectionColumnState is QueryBuilderDerivationProjectionColumnState =>
+        projectionColumnState instanceof
+        QueryBuilderDerivationProjectionColumnState,
+    );
+  }
+
+  get hasParserError(): boolean {
+    return this.derivations.some(
+      (derivation) => derivation.derivationLambdaEditorState.parserError,
+    );
+  }
+
   clearCompilationError(): void {
-    this.columns
-      .filter(
-        (
-          projectionColumnState,
-        ): projectionColumnState is QueryBuilderDerivationProjectionColumnState =>
-          projectionColumnState instanceof
-          QueryBuilderDerivationProjectionColumnState,
-      )
-      .forEach((derivationProjectionColumnState) =>
-        derivationProjectionColumnState.derivationLambdaEditorState.setCompilationError(
-          undefined,
-        ),
-      );
+    this.derivations.forEach((derivationProjectionColumnState) =>
+      derivationProjectionColumnState.derivationLambdaEditorState.setCompilationError(
+        undefined,
+      ),
+    );
   }
 }

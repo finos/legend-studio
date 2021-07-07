@@ -116,12 +116,44 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
     projectionColumnState: QueryBuilderDerivationProjectionColumnState;
   }) => {
     const { projectionColumnState } = props;
+    const hasParserError = projectionColumnState.projectionState.hasParserError;
+
+    const handleDrop = useCallback(
+      (item: QueryBuilderExplorerTreeDragSource): void => {
+        projectionColumnState.derivationLambdaEditorState.setLambdaString(
+          projectionColumnState.derivationLambdaEditorState.lambdaString +
+            item.node.dndText,
+        );
+      },
+      [projectionColumnState],
+    );
+    const [, dropConnector] = useDrop(
+      () => ({
+        accept: [
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY,
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+        ],
+        drop: (item: QueryBuilderExplorerTreeDragSource, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item);
+          } // prevent drop event propagation to accomondate for nested DnD
+        },
+        collect: (monitor): { item: unknown; dragItemType: string } => ({
+          item: monitor.getItem(),
+          dragItemType: monitor.getItemType() as string,
+        }),
+      }),
+      [handleDrop],
+    );
 
     return (
       <div
+        ref={dropConnector}
         className={clsx(
           'query-builder__lambda-editor__container query-builder__projection__column__derivation',
-          { backdrop__element: true },
+          { backdrop__element: hasParserError },
         )}
       >
         <LambdaEditor
@@ -131,7 +163,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
               .isConvertDerivationProjectionObjects
           }
           lambdaEditorState={projectionColumnState.derivationLambdaEditorState}
-          forceBackdrop={true}
+          forceBackdrop={hasParserError}
         />
       </div>
     );

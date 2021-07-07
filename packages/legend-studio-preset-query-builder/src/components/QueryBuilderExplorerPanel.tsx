@@ -660,7 +660,7 @@ export const QueryBuilderExplorerPanel = observer(
             </DropdownMenu>
           </div>
         </div>
-        <div className="panel__content query-builder__query-builder-tree__content">
+        <div className="panel__content query-builder-tree__content">
           <QueryBuilderExplorerPropertyDragLayer
             queryBuilderState={queryBuilderState}
           />

@@ -57,6 +57,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   isOpen?: boolean;
   id: string;
   label: string;
+  dndText: string;
   childrenIds: string[] = [];
   mapped: boolean;
   /**
@@ -72,6 +73,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   constructor(
     id: string,
     label: string,
+    dndText: string,
     mapped: boolean,
     skipMappingCheck: boolean,
     type: Type,
@@ -79,6 +81,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   ) {
     this.id = id;
     this.label = label;
+    this.dndText = dndText;
     this.mapped = mapped;
     this.skipMappingCheck = skipMappingCheck;
     this.type = type;
@@ -95,6 +98,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
   constructor(
     id: string,
     label: string,
+    dndText: string,
     property: AbstractProperty,
     parentId: string,
     mapped: boolean,
@@ -104,6 +108,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     super(
       id,
       label,
+      dndText,
       mapped,
       skipMappingCheck,
       property.genericType.value.rawType,
@@ -226,6 +231,11 @@ export const getQueryBuilderPropertyNodeData = (
         : `${parentNode.id}.`
     }${property.name}`,
     property.name,
+    `${
+      parentNode instanceof QueryBuilderExplorerTreeRootNodeData
+        ? '$x'
+        : parentNode.dndText
+    }.${property.name}`,
     property,
     parentNode.id,
     mappingData.mapped,
@@ -252,6 +262,7 @@ const getQueryBuilderTreeData = (
   const treeRootNode = new QueryBuilderExplorerTreeRootNodeData(
     '@dummy_rootNode',
     rootClass.name,
+    rootClass.path,
     true,
     // NOTE: we will not try to analyze property mappedness for operation class mapping
     rootSetImpl instanceof OperationSetImplementation,
