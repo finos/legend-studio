@@ -34,7 +34,7 @@ import type { CompilationError } from '../../../../../models/metamodels/pure/act
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
 import { MappingElementDecorator } from '../MappingElementDecorator';
-import { SOURCR_ID_LABEL } from '../../../../../models/MetaModelConst';
+import { SOURCE_ID_LABEL } from '../../../../../models/MetaModelConst';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { SourceInformation } from '../../../../../models/metamodels/pure/action/SourceInformation';
 import { buildSourceInformationSourceId } from '../../../../../models/metamodels/pure/action/SourceInformationHelper';
@@ -63,7 +63,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     return buildSourceInformationSourceId(
       [
         this.propertyMapping.owner.parent.path,
-        SOURCR_ID_LABEL.RELATIONAL_CLASS_MAPPING,
+        SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING,
         this.propertyMapping.owner.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,

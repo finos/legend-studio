@@ -18,7 +18,7 @@ import { computed, observable, makeObservable, override } from 'mobx';
 import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
-import { SOURCR_ID_LABEL } from '../../../models/MetaModelConst';
+import { SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
 import { ClassState } from './ClassState';
 import type { EditorStore } from '../../EditorStore';
 import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
@@ -59,7 +59,7 @@ export class ClassEditorState extends UMLEditorState {
         if (elementCoordinates) {
           const sourceId = compilationError.sourceInformation.sourceId;
           const classTab = elementCoordinates[1];
-          if (classTab === SOURCR_ID_LABEL.CONSTRAINT) {
+          if (classTab === SOURCE_ID_LABEL.CONSTRAINT) {
             this.setSelectedTab(UML_EDITOR_TAB.CONSTRAINTS);
             const constraintState = this.classState.constraintStates.find(
               (state) => state.lambdaId === sourceId,
@@ -68,7 +68,7 @@ export class ClassEditorState extends UMLEditorState {
               constraintState.setCompilationError(compilationError);
               return true;
             }
-          } else if (classTab === SOURCR_ID_LABEL.DERIVED_PROPERTY) {
+          } else if (classTab === SOURCE_ID_LABEL.DERIVED_PROPERTY) {
             this.setSelectedTab(UML_EDITOR_TAB.DERIVED_PROPERTIES);
             const derivedPropertyState =
               this.classState.derivedPropertyStates.find(
