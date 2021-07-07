@@ -67,9 +67,6 @@ const LambdaErrorFeedback: React.FC<{
           >
             Discard Changes
           </button>
-          <div className="lambda-editor__error-feedback__parsing-error__message">
-            fix error or discard changes to leave
-          </div>
         </div>
       )}
     </div>
