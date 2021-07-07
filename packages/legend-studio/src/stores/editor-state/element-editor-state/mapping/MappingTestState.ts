@@ -99,7 +99,6 @@ export enum TEST_RESULT {
 export class MappingTestQueryState extends LambdaEditorState {
   editorStore: EditorStore;
   test: MappingTest;
-  isConvertingLambdaToString = false;
   isInitializingLambda = false;
   query: RawLambda;
 
@@ -108,7 +107,6 @@ export class MappingTestQueryState extends LambdaEditorState {
 
     makeObservable(this, {
       query: observable,
-      isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
       convertLambdaObjectToGrammarString: action,
@@ -140,7 +138,6 @@ export class MappingTestQueryState extends LambdaEditorState {
     pretty?: boolean,
   ) {
     if (!this.query.isStub) {
-      this.isConvertingLambdaToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
@@ -156,13 +153,11 @@ export class MappingTestQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-        this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.PARSING_PROBLEM,
           error,
         );
-        this.isConvertingLambdaToString = false;
       }
     } else {
       this.clearErrors();

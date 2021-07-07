@@ -33,7 +33,8 @@ import {
   simpleGroupBy,
   simpleGraphFetch,
   firmPersonGraphFetch,
-} from './QueryBuilder_LambdaRoundtripTestData';
+} from './QueryBuilder_LambdaProcessingRoundtripTestData';
+import { simpleDerivationProjection } from './QueryBuilder_ProcessingRoundtrip_TestDerivation';
 
 const pluginManager = PluginManager.create();
 pluginManager.usePresets([new QueryBuilder_Preset()]).install();
@@ -60,6 +61,11 @@ const cases: RoundtripTestCase[] = [
   ['Simple project() function', relationalCtx, simpleProjection],
   ['Simple project() function with columns', relationalCtx, projectWithCols],
   ['Simple project() and filter()', relationalCtx, simpleProjectionWithFilter],
+  [
+    'Simple project() with derivation',
+    relationalCtx,
+    simpleDerivationProjection,
+  ],
   ['Simple groupBy()', relationalCtx, simpleGroupBy],
   ['Simple graph fetch', m2mCtx, simpleGraphFetch],
   ['Complex graph fetch', m2mCtx, firmPersonGraphFetch],

@@ -24,6 +24,10 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  UnknownValue,
+  V1_GraphTransformerContextBuilder,
+  V1_serializeRawValueSpecification,
+  V1_transformRawLambda,
   extractElementNameFromPath,
   InstanceValue,
   PackageableElementExplicitReference,
@@ -171,7 +175,17 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderDerivationProjectionColumnState
           ) {
-            throw new UnsupportedOperationError('TODO');
+            columnLambda = new UnknownValue(
+              V1_serializeRawValueSpecification(
+                V1_transformRawLambda(
+                  projectionColumnState.lambda,
+                  new V1_GraphTransformerContextBuilder(
+                    // TODO?: do we need to include the plugins here?
+                    [],
+                  ).build(),
+                ),
+              ),
+            );
           } else {
             throw new UnsupportedOperationError(
               `Can't build project() column expression: unsupported projection column state`,
@@ -254,7 +268,17 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderDerivationProjectionColumnState
           ) {
-            throw new UnsupportedOperationError('TODO');
+            columnLambda = new UnknownValue(
+              V1_serializeRawValueSpecification(
+                V1_transformRawLambda(
+                  projectionColumnState.lambda,
+                  new V1_GraphTransformerContextBuilder(
+                    // TODO?: do we need to include the plugins here?
+                    [],
+                  ).build(),
+                ),
+              ),
+            );
           } else {
             throw new UnsupportedOperationError(
               `Can't build project() column expression: unsupported projection column state`,

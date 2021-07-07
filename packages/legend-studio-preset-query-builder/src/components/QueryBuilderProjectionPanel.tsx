@@ -49,7 +49,8 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState';
-import { LambdaEditor } from '@finos/legend-studio';
+import { LambdaEditor, useApplicationStore } from '@finos/legend-studio';
+import { flowResult } from 'mobx';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -126,8 +127,8 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
         <LambdaEditor
           className="query-builder__lambda-editor"
           disabled={
-            projectionColumnState.derivationLambdaEditorState
-              .isConvertingLambdaToString
+            projectionColumnState.projectionState
+              .isConvertDerivationProjectionObjects
           }
           lambdaEditorState={projectionColumnState.derivationLambdaEditorState}
           forceBackdrop={true}
@@ -350,6 +351,7 @@ const QueryBuilderProjectionColumnEditor = observer(
 
 export const QueryBuilderProjectionPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
+    const applicationStore = useApplicationStore();
     const { queryBuilderState } = props;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
@@ -389,6 +391,12 @@ export const QueryBuilderProjectionPanel = observer(
       }),
       [handleDrop],
     );
+
+    useEffect(() => {
+      flowResult(projectionState.convertDerivationProjectionObjects()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [applicationStore, projectionState]);
 
     return (
       <div

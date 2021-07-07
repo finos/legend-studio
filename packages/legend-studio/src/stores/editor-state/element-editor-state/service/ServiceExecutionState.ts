@@ -127,14 +127,12 @@ export abstract class ServiceExecutionState {
 class ServicePureExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
   execution: PureExecution;
-  isConvertingLambdaToString = false;
   isInitializingLambda = false;
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', LAMBDA_START);
     makeObservable(this, {
       execution: observable,
-      isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
       setLambda: action,
@@ -179,7 +177,6 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     pretty?: boolean,
   ) {
     if (this.execution.func.body) {
-      this.isConvertingLambdaToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(
@@ -201,13 +198,11 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-        this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.PARSING_PROBLEM,
           error,
         );
-        this.isConvertingLambdaToString = false;
       }
     } else {
       this.clearErrors();

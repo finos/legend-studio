@@ -21,6 +21,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   uuid,
   deleteEntry,
@@ -41,13 +42,18 @@ import type {
   AbstractPropertyExpression,
   EditorStore,
 } from '@finos/legend-studio';
-import { ParserError, RawLambda } from '@finos/legend-studio';
 import {
+  buildSourceInformationSourceId,
+  ParserError,
+  RawLambda,
   CORE_LOG_EVENT,
   LambdaEditorState,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
-import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
+import {
+  DEFAULT_LAMBDA_VARIABLE_NAME,
+  QUERY_BUILDER_SOURCE_ID_LABEL,
+} from '../QueryBuilder_Const';
 import { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count';
 import { QueryBuilderAggregateOperator_Distinct } from './aggregateOperators/QueryBuilderAggregateOperator_Distinct';
@@ -174,7 +180,6 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
 class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
   editorStore: EditorStore;
   derivationProjectionColumnState: QueryBuilderDerivationProjectionColumnState;
-  isConvertingLambdaToString = false;
   /**
    * This is used to store the JSON string when viewing the query in JSON mode
    * TODO: consider moving this to another state if we need to simplify the logic of text-mode
@@ -185,18 +190,17 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
     editorStore: EditorStore,
     derivationProjectionColumnState: QueryBuilderDerivationProjectionColumnState,
   ) {
-    super('', `x|`);
-
-    makeObservable(this, {
-      isConvertingLambdaToString: observable,
-    });
-
+    super('', '');
     this.editorStore = editorStore;
     this.derivationProjectionColumnState = derivationProjectionColumnState;
   }
 
   get lambdaId(): string {
-    return `query_builder-projection-${this.derivationProjectionColumnState.uuid}`;
+    return buildSourceInformationSourceId([
+      QUERY_BUILDER_SOURCE_ID_LABEL.QUERY_BUILDER,
+      QUERY_BUILDER_SOURCE_ID_LABEL.PROJECTION,
+      this.derivationProjectionColumnState.uuid,
+    ]);
   }
 
   setLambdaJson(lambdaJson: string): void {
@@ -236,7 +240,6 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
     pretty: boolean,
   ) {
     if (this.derivationProjectionColumnState.lambda.body) {
-      this.isConvertingLambdaToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(
@@ -258,13 +261,11 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-        this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.PARSING_PROBLEM,
           error,
         );
-        this.isConvertingLambdaToString = false;
       }
     } else {
       this.clearErrors();
@@ -304,6 +305,7 @@ export class QueryBuilderProjectionState {
   queryBuilderState: QueryBuilderState;
   columns: QueryBuilderProjectionColumnState[] = [];
   aggregationState: QueryBuilderAggregationState;
+  isConvertDerivationProjectionObjects = false;
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -339,6 +341,61 @@ export class QueryBuilderProjectionState {
       label: projectionCol.columnName,
       value: projectionCol,
     }));
+  }
+
+  *convertDerivationProjectionObjects(): GeneratorFn<void> {
+    const lambdas = new Map<string, RawLambda>();
+    const derivationProjectionColumnStateMap = new Map<
+      string,
+      QueryBuilderDerivationProjectionColumnState
+    >();
+    this.columns
+      .filter(
+        (
+          projectionColumnState,
+        ): projectionColumnState is QueryBuilderDerivationProjectionColumnState =>
+          projectionColumnState instanceof
+          QueryBuilderDerivationProjectionColumnState,
+      )
+      .forEach((derivationProjectionColumnState) => {
+        if (!derivationProjectionColumnState.lambda.isStub) {
+          lambdas.set(
+            derivationProjectionColumnState.derivationLambdaEditorState
+              .lambdaId,
+            derivationProjectionColumnState.lambda,
+          );
+          derivationProjectionColumnStateMap.set(
+            derivationProjectionColumnState.derivationLambdaEditorState
+              .lambdaId,
+            derivationProjectionColumnState,
+          );
+        }
+      });
+    if (lambdas.size) {
+      this.isConvertDerivationProjectionObjects = true;
+      try {
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+            lambdas,
+          )) as Map<string, string>;
+        isolatedLambdas.forEach((grammarText, key) => {
+          const derivationProjectionColumnState =
+            derivationProjectionColumnStateMap.get(key);
+          derivationProjectionColumnState?.derivationLambdaEditorState.setLambdaString(
+            derivationProjectionColumnState.derivationLambdaEditorState.extractLambdaString(
+              grammarText,
+            ),
+          );
+        });
+      } catch (error: unknown) {
+        this.editorStore.applicationStore.logger.error(
+          CORE_LOG_EVENT.PARSING_PROBLEM,
+          error,
+        );
+      } finally {
+        this.isConvertDerivationProjectionObjects = false;
+      }
+    }
   }
 
   removeColumn(val: QueryBuilderProjectionColumnState): void {

@@ -15,7 +15,7 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import { LAMBDA_START, SOURCR_ID_LABEL } from '../../../models/MetaModelConst';
+import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
@@ -47,7 +47,7 @@ export class DerivedPropertyState extends LambdaEditorState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.derivedProperty.owner.path,
-      SOURCR_ID_LABEL.DERIVED_PROPERTY,
+      SOURCE_ID_LABEL.DERIVED_PROPERTY,
       this.derivedProperty.name,
       this.uuid, // in case of duplications
     ]);
@@ -144,7 +144,7 @@ export class ConstraintState extends LambdaEditorState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.constraint.owner.path,
-      SOURCR_ID_LABEL.CONSTRAINT,
+      SOURCE_ID_LABEL.CONSTRAINT,
       this.constraint.name,
       this.uuid, // in case of duplications
     ]);

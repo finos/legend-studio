@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+export enum QUERY_BUILDER_SOURCE_ID_LABEL {
+  QUERY_BUILDER = 'query-builder',
+  PROJECTION = 'projection',
+}
+
 export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER = 'query__builder',
   QUERY_BUILDER_SETUP = 'query__builder__setup',

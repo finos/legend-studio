@@ -105,7 +105,6 @@ import { buildSourceInformationSourceId } from '../../../../models/metamodels/pu
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
-  isConvertingLambdaToString = false;
   isInitializingLambda = false;
   query: RawLambda;
 
@@ -114,7 +113,6 @@ export class MappingExecutionQueryState extends LambdaEditorState {
 
     makeObservable(this, {
       query: observable,
-      isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
       convertLambdaObjectToGrammarString: action,
@@ -147,7 +145,6 @@ export class MappingExecutionQueryState extends LambdaEditorState {
     pretty?: boolean,
   ) {
     if (!this.query.isStub) {
-      this.isConvertingLambdaToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
@@ -163,13 +160,11 @@ export class MappingExecutionQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-        this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.PARSING_PROBLEM,
           error,
         );
-        this.isConvertingLambdaToString = false;
       }
     } else {
       this.clearErrors();
