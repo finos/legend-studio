@@ -22,7 +22,7 @@ import { SOURCR_ID_LABEL } from '../../../models/MetaModelConst';
 import { ClassState } from './ClassState';
 import type { EditorStore } from '../../EditorStore';
 import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
-import { getElementCoordinates } from '../../../models/metamodels/pure/action/EngineError';
+import { extractSourceInformationCoordinates } from '../../../models/metamodels/pure/action/SourceInformationHelper';
 import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 
@@ -53,12 +53,12 @@ export class ClassEditorState extends UMLEditorState {
   override revealCompilationError(compilationError: CompilationError): boolean {
     try {
       if (compilationError.sourceInformation) {
-        const errorElementCoordinates = getElementCoordinates(
+        const elementCoordinates = extractSourceInformationCoordinates(
           compilationError.sourceInformation,
         );
-        if (errorElementCoordinates) {
+        if (elementCoordinates) {
           const sourceId = compilationError.sourceInformation.sourceId;
-          const classTab = errorElementCoordinates.coordinates[0];
+          const classTab = elementCoordinates[1];
           if (classTab === SOURCR_ID_LABEL.CONSTRAINT) {
             this.setSelectedTab(UML_EDITOR_TAB.CONSTRAINTS);
             const constraintState = this.classState.constraintStates.find(

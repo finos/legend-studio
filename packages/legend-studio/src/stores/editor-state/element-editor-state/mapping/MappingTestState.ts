@@ -87,6 +87,7 @@ import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/p
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { LambdaEditorState } from '../LambdaEditorState';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -121,7 +122,7 @@ export class MappingTestQueryState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    return this.uuid;
+    return buildSourceInformationSourceId([this.uuid]);
   }
 
   setIsInitializingLambda(val: boolean): void {

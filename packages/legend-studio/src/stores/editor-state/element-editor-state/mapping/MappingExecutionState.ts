@@ -101,6 +101,7 @@ import {
 } from '../../../ApplicationStore';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -126,7 +127,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    return this.uuid;
+    return buildSourceInformationSourceId([this.uuid]);
   }
 
   setIsInitializingLambda(val: boolean): void {

@@ -40,7 +40,7 @@ import {
   EditorExtensionState,
   CompilationError,
   CORE_LOG_EVENT,
-  getElementCoordinates,
+  extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -348,7 +348,7 @@ export class QueryBuilderState extends EditorExtensionState {
           // if compilation failed, we try to reveal the error in form mode,
           // if even this fail, we will fall back to show it in text mode
           if (error instanceof CompilationError) {
-            const errorElementCoordinates = getElementCoordinates(
+            const errorElementCoordinates = extractSourceInformationCoordinates(
               error.sourceInformation,
             );
             if (errorElementCoordinates) {
@@ -427,7 +427,7 @@ export class QueryBuilderState extends EditorExtensionState {
             this.editorStore.applicationStore.notifyWarning(
               `Compilaion failed: ${error.message}`,
             );
-            const errorElementCoordinates = getElementCoordinates(
+            const errorElementCoordinates = extractSourceInformationCoordinates(
               error.sourceInformation,
             );
             if (errorElementCoordinates) {

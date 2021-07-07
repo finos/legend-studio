@@ -16,6 +16,7 @@
 
 import type { EditorStore } from '@finos/legend-studio';
 import {
+  buildSourceInformationSourceId,
   CORE_LOG_EVENT,
   LambdaEditorState,
   LAMBDA_START,
@@ -79,7 +80,7 @@ export class QueryTextEditorState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    return 'query-builder';
+    return buildSourceInformationSourceId(['query-builder']);
   }
 
   setQueryRawLambdaState(rawLambdaState: QueryRawLambdaState): void {

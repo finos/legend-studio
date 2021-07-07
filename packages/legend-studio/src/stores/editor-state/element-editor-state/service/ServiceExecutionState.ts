@@ -53,6 +53,7 @@ import {
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -147,7 +148,10 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    return `${this.execution.owner.path}-execution`;
+    return buildSourceInformationSourceId([
+      this.execution.owner.path,
+      'execution',
+    ]);
   }
 
   get query(): RawLambda {

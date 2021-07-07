@@ -26,6 +26,7 @@ import { ParserError } from '../../../models/metamodels/pure/action/EngineError'
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
 import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export enum FUNCTION_SPEC_TAB {
   GENERAL = 'GENERAL',
@@ -54,7 +55,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    return `${this.functionElement.path}`;
+    return buildSourceInformationSourceId([this.functionElement.path]);
   }
 
   convertLambdaGrammarStringToObject = flow(function* (
