@@ -69,7 +69,9 @@ export abstract class PropertyReference
     return [
       CORE_HASH_STRUCTURE.PROPERTY_POINTER,
       this.value.name,
-      this.ownerReference.valueForSerialization,
+      this.value.owner instanceof Association
+        ? ''
+        : this.ownerReference.valueForSerialization,
     ]
       .map(hashString)
       .join(',');
