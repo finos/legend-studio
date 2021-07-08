@@ -1792,7 +1792,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           element instanceof V1_Measure ||
           element instanceof V1_Store ||
           element instanceof V1_PackageableConnection ||
-          element instanceof V1_Runtime ||
+          element instanceof V1_PackageableRuntime ||
           element instanceof V1_Mapping,
       )
       .concat(extraExecutionElements);

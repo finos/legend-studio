@@ -162,7 +162,6 @@ const deltaLakeDatasourceSpecificationModelSchema = createModelSchema(
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.DELTALAKE),
     shard: primitive(),
     httpPath: primitive(),
-    token: primitive(),
   },
 );
 
@@ -284,7 +283,10 @@ const V1_testDatabaseAuthenticationStrategyModelSchema = createModelSchema(
 
 const V1_deltaLakeAuthenticationStrategyModelSchema = createModelSchema(
   V1_DeltaLakeAuthenticationStrategy,
-  { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.DELTALAKE) },
+  {
+    _type: usingConstantValueSchema(V1_AuthenticationStrategyType.DELTALAKE),
+    apiToken: primitive(),
+  },
 );
 
 const V1_snowflakePublicAuthenticationStrategyModelSchema = createModelSchema(

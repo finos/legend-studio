@@ -72,16 +72,29 @@ export class DeltaLakeAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
-  constructor() {
+  apiToken: string;
+
+  constructor(apiToken: string) {
     super();
 
     makeObservable(this, {
+      apiToken: observable,
+      setApiToken: action,
       hashCode: computed,
     });
+
+    this.apiToken = apiToken;
   }
 
-  override get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.DELTALAKE_AUTHENTICATION_STRATEGY]);
+  setApiToken(val: string): void {
+    this.apiToken = val;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DELTALAKE_AUTHENTICATION_STRATEGY,
+      this.apiToken,
+    ]);
   }
 }
 

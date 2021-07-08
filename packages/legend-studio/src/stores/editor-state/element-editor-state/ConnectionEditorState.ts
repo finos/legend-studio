@@ -298,7 +298,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_DATASOURCE_SPEC_TYPE.DELTALAKE: {
         this.connection.setDatasourceSpecification(
-          new DeltaLakeDatasourceSpecification('', '', ''),
+          new DeltaLakeDatasourceSpecification('', ''),
         );
         return;
       }
@@ -377,7 +377,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.DELTALAKE: {
         this.connection.setAuthenticationStrategy(
-          new DeltaLakeAuthenticationStrategy(),
+          new DeltaLakeAuthenticationStrategy(''),
         );
         return;
       }

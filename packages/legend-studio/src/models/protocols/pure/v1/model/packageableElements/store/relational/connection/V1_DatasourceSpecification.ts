@@ -74,14 +74,12 @@ export class V1_DeltaLakeDatasourceSpecification
 {
   shard!: string;
   httpPath!: string;
-  token!: string;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DELTALAKE_DATASOURCE_SPECIFICATION,
       this.shard,
       this.httpPath,
-      this.token,
     ]);
   }
 }

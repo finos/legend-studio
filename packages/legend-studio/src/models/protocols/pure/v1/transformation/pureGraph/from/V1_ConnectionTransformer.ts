@@ -106,7 +106,6 @@ const transformDeltaLakeDatasourceSpecification = (
   const source = new V1_DeltaLakeDatasourceSpecification();
   source.shard = metamodel.shard;
   source.httpPath = metamodel.httpPath;
-  source.token = metamodel.token;
   return source;
 };
 
@@ -184,7 +183,9 @@ const transformAuthenticationStrategy = (
   } else if (metamodel instanceof OAuthAuthenticationStrategy) {
     return transformOAuthtAuthenticationStrategy(metamodel);
   } else if (metamodel instanceof DeltaLakeAuthenticationStrategy) {
-    return new V1_DeltaLakeAuthenticationStrategy();
+    const auth = new V1_DeltaLakeAuthenticationStrategy();
+    auth.apiToken = metamodel.apiToken;
+    return auth;
   } else if (metamodel instanceof SnowflakePublicAuthenticationStrategy) {
     const auth = new V1_SnowflakePublicAuthenticationStrategy();
     auth.privateKeyVaultReference = metamodel.privateKeyVaultReference;

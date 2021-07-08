@@ -108,14 +108,9 @@ export const V1_buildDatasourceSpecification = (
       protocol.httpPath,
       'DeltaLake httpPath specification is missing',
     );
-    assertNonEmptyString(
-      protocol.token,
-      'DeltaLake token specification is missing',
-    );
     const deltaLakeSpec = new DeltaLakeDatasourceSpecification(
       protocol.shard,
       protocol.httpPath,
-      protocol.token,
     );
     return deltaLakeSpec;
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
@@ -181,7 +176,11 @@ export const V1_buildAuthenticationStrategy = (
     metamodel.serverPrincipal = protocol.serverPrincipal;
     return metamodel;
   } else if (protocol instanceof V1_DeltaLakeAuthenticationStrategy) {
-    return new DeltaLakeAuthenticationStrategy();
+    assertNonEmptyString(
+      protocol.apiToken,
+      'DeltaLake API token is missing or empty',
+    );
+    return new DeltaLakeAuthenticationStrategy(protocol.apiToken);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     assertNonEmptyString(
       protocol.privateKeyVaultReference,

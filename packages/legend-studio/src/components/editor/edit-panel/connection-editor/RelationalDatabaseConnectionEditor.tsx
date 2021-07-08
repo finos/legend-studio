@@ -504,14 +504,6 @@ const DeltaLakeDatasourceSpecificationEditor = observer(
             sourceSpec.setHttpPath(value ?? '')
           }
         />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={sourceSpec.token}
-          propertyName={'token'}
-          update={(value: string | undefined): void =>
-            sourceSpec.setToken(value ?? '')
-          }
-        />
       </>
     );
   },
@@ -607,7 +599,24 @@ const DefaultH2AuthenticationStrategyEditor = observer(
 );
 
 const DeltaLakeAuthenticationStrategyEditor = observer(
-  (props: { authSpec: DeltaLakeAuthenticationStrategy }) => null,
+  (props: {
+    authSpec: DeltaLakeAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.apiToken}
+          propertyName={'apiToken'}
+          update={(value: string | undefined): void =>
+            authSpec.setApiToken(value ?? '')
+          }
+        />
+      </>
+    );
+  },
 );
 
 const SnowflakePublicAuthenticationStrategyEditor = observer(
@@ -1131,7 +1140,12 @@ const renderAuthenticationStrategyEditor = (
       />
     );
   } else if (authSpec instanceof DeltaLakeAuthenticationStrategy) {
-    return <DeltaLakeAuthenticationStrategyEditor authSpec={authSpec} />;
+    return (
+      <DeltaLakeAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else if (authSpec instanceof TestDatabaseAuthenticationStrategy) {
     return <TestDatabaseAuthenticationStrategyEditor authSpec={authSpec} />;
   } else if (authSpec instanceof DefaultH2AuthenticationStrategy) {

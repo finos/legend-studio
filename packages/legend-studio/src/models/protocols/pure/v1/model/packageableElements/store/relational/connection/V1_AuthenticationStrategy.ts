@@ -77,8 +77,13 @@ export class V1_DeltaLakeAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable
 {
+  apiToken!: string;
+
   get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.DELTALAKE_AUTHENTICATION_STRATEGY]);
+    return hashArray([
+      CORE_HASH_STRUCTURE.DELTALAKE_AUTHENTICATION_STRATEGY,
+      this.apiToken,
+    ]);
   }
 }
 

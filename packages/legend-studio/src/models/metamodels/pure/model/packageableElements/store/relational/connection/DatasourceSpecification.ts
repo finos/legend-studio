@@ -78,20 +78,17 @@ export class DeltaLakeDatasourceSpecification
 {
   shard: string;
   httpPath: string;
-  token: string;
 
-  constructor(shard: string, httpPath: string, token: string) {
+  constructor(shard: string, httpPath: string) {
     super();
 
     makeObservable(this, {
       shard: observable,
       httpPath: observable,
-      token: observable,
       hashCode: computed,
     });
     this.shard = shard;
     this.httpPath = httpPath;
-    this.token = token;
   }
 
   get hashCode(): string {
@@ -99,7 +96,6 @@ export class DeltaLakeDatasourceSpecification
       CORE_HASH_STRUCTURE.DELTALAKE_DATASOURCE_SPECIFICATION,
       this.shard,
       this.httpPath,
-      this.token,
     ]);
   }
 
@@ -109,10 +105,6 @@ export class DeltaLakeDatasourceSpecification
 
   setHttpPath(val: string): void {
     this.httpPath = val;
-  }
-
-  setToken(val: string): void {
-    this.token = val;
   }
 }
 
