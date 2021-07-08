@@ -353,14 +353,14 @@ const QueryBuilderProjectionColumnEditor = observer(
                       },
                     )}
                     tabIndex={-1}
-                    title="Choose Operator..."
+                    title="Choose Aggregate Operator..."
                   >
                     <MdFunctions />
                   </button>
                   <button
                     className="query-builder__projection__column__aggregate__operator__dropdown__trigger"
                     tabIndex={-1}
-                    title="Choose Operator..."
+                    title="Choose Aggregate Operator..."
                   >
                     <CaretDownIcon />
                   </button>

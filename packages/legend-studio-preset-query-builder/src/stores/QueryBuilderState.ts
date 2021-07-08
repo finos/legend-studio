@@ -374,7 +374,12 @@ export class QueryBuilderState extends EditorExtensionState {
               'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
             );
             this.queryTextEditorState.openModal(QueryTextEditorMode.TEXT);
-            // TODO: trigger another compilation
+            // TODO: trigger another compilation to pin-point the issue
+            // since we're using the lambda editor right now, we are a little bit limitted
+            // in terms of the timing to do compilation (since we're using an `useEffect` to
+            // convert the lambda to grammar text), we might as well wait for the refactor
+            // of query builder text-mode
+            // See https://github.com/finos/legend-studio/issues/319
 
             // try {
             //   const code = (yield this.graphManager.graphToPureCode(

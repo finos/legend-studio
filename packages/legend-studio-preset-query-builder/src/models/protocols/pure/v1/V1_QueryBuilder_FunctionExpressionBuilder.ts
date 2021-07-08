@@ -18,13 +18,15 @@ import type {
   V1_GraphBuilderContext,
   V1_ProcessingContext,
   V1_ValueSpecification,
-  V1_Variable,
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  extractElementNameFromPath,
+  V1_AppliedProperty,
   CollectionInstanceValue,
   Multiplicity,
   UnknownValue,
+  V1_Variable,
   V1_serializeValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
@@ -102,6 +104,126 @@ export const V1_buildGenericFunctionExpression = (
     ),
     processedParams,
   ];
+};
+
+const buildProjectionColumnLambda = (
+  valueSpecification: V1_ValueSpecification,
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): ValueSpecification => {
+  assertType(
+    valueSpecification,
+    V1_Lambda,
+    `Can't build projection column: only support lambda`,
+  );
+
+  // lambda parameter
+  assertTrue(
+    valueSpecification.parameters.length === 1,
+    `Can't build projection column: only support lambda with 1 parameter`,
+  );
+  const columnLambdaParameter = guaranteeType(
+    valueSpecification.parameters[0],
+    V1_Variable,
+    `Can't build projection column: only support lambda with 1 parameter`,
+  );
+
+  // lambda body
+  assertTrue(
+    valueSpecification.body.length === 1,
+    `Can't build projection column: only support lambda body with 1 expression`,
+  );
+  let currentPropertyExpression: V1_ValueSpecification =
+    valueSpecification.body[0];
+  assertType(
+    currentPropertyExpression,
+    V1_AppliedProperty,
+    `Can't build projection column: only support lambda body as property expression`,
+  );
+  while (currentPropertyExpression instanceof V1_AppliedProperty) {
+    assertTrue(
+      currentPropertyExpression.parameters.length >= 1,
+      `Can't build projection column: only support lambda body as property expression`,
+    );
+    currentPropertyExpression = currentPropertyExpression.parameters[0];
+  }
+
+  // check lambda variable and parameter match
+  assertType(
+    currentPropertyExpression,
+    V1_Variable,
+    `Can't build projection column: only support lambda body as property expression`,
+  );
+  assertTrue(
+    columnLambdaParameter.name === currentPropertyExpression.name,
+    `Can't build column lambda: expects variable used in lambda body '${currentPropertyExpression.name}' to match lambda parameter '${columnLambdaParameter.name}'`,
+  );
+  return valueSpecification.accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+};
+
+const buildAggregationExpression = (
+  valueSpecification: V1_ValueSpecification,
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): ValueSpecification => {
+  assertType(
+    valueSpecification,
+    V1_AppliedFunction,
+    `Can't build aggregation: only support function`,
+  );
+  assertTrue(
+    matchFunctionName(valueSpecification.function, SUPPORTED_FUNCTIONS.TDS_AGG),
+    `Can't build aggregation: only support agg()`,
+  );
+
+  assertTrue(
+    valueSpecification.parameters.length === 2,
+    `Can't build agg() expression: agg() expects 2 arguments`,
+  );
+
+  // column lambda
+  const columnLambda = guaranteeType(
+    valueSpecification.parameters[0],
+    V1_Lambda,
+    `Can't build agg() expression: agg() expects argument #1 as a lambda`,
+  );
+  const processedColumnLambda =
+    returnUndefOnError(() =>
+      buildProjectionColumnLambda(
+        columnLambda,
+        openVariables,
+        compileContext,
+        processingContext,
+      ),
+    ) ?? new UnknownValue(V1_serializeValueSpecification(columnLambda));
+
+  // aggregate lambda
+  const aggregateLambda = guaranteeType(
+    valueSpecification.parameters[1],
+    V1_Lambda,
+  );
+  const processedAggregateLambda =
+    aggregateLambda.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+
+  return buildBaseSimpleFunctionExpression(
+    [processedColumnLambda, processedAggregateLambda],
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_AGG),
+    compileContext,
+  );
 };
 
 export const V1_buildGetAllFunctionExpression = (
@@ -299,7 +421,7 @@ export const V1_buildProjectFunctionExpression = (
     }
   });
 
-  // process column expressions taking into account of derivation
+  // build column expressions taking into account of derivation
   const processedColumnExpressions = new CollectionInstanceValue(
     new Multiplicity(
       columnExpressions.multiplicity.lowerBound,
@@ -308,12 +430,11 @@ export const V1_buildProjectFunctionExpression = (
   );
   processedColumnExpressions.values = columnExpressions.values.map((value) => {
     try {
-      return value.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          compileContext,
-          processingContext,
-          openVariables,
-        ),
+      return buildProjectionColumnLambda(
+        value,
+        openVariables,
+        compileContext,
+        processingContext,
       );
     } catch (e: unknown) {
       assertErrorThrown(e);
@@ -414,19 +535,55 @@ export const V1_buildGroupByFunctionExpression = (
     }
   });
 
+  // build column expressions taking into account of derivation
+  const processedColumnExpressions = new CollectionInstanceValue(
+    new Multiplicity(
+      columnExpressions.multiplicity.lowerBound,
+      columnExpressions.multiplicity.upperBound,
+    ),
+  );
+  processedColumnExpressions.values = columnExpressions.values.map((value) => {
+    try {
+      return buildProjectionColumnLambda(
+        value,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
+    } catch (e: unknown) {
+      assertErrorThrown(e);
+      return new UnknownValue(V1_serializeValueSpecification(value));
+    }
+  });
+
+  // build aggregation expressions taking into account of derivation
+  const processedAggregationExpressions = new CollectionInstanceValue(
+    new Multiplicity(
+      aggregationExpressions.multiplicity.lowerBound,
+      aggregationExpressions.multiplicity.upperBound,
+    ),
+  );
+  processedAggregationExpressions.values = aggregationExpressions.values.map(
+    (value) =>
+      buildAggregationExpression(
+        value,
+        openVariables,
+        compileContext,
+        processingContext,
+      ),
+  );
+
   const processedParams = [
     precedingExperession,
-    ...parameters
-      .slice(1)
-      .map((parameter) =>
-        parameter.accept_ValueSpecificationVisitor(
-          new V1_ValueSpecificationBuilder(
-            compileContext,
-            processingContext,
-            openVariables,
-          ),
-        ),
+    processedColumnExpressions,
+    processedAggregationExpressions,
+    parameters[3].accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
       ),
+    ),
   ];
   const expression = buildBaseSimpleFunctionExpression(
     processedParams,

@@ -255,10 +255,15 @@ const processAggregateLambda = (
 /**
  * This is the expression processor for query builder.
  * Unlike expression builder which takes care of transforming the value specification
- * from protocol to metamodel, and type-inferencing, this takes care
- * of walking the expression to populate the query builder UI state. While walking
- * the expression, it also does some assertions and checks to make sure the expression
- * is valid/supported.
+ * from `protocol` to `metamodel`, and type-inferencing, this takes care
+ * of traversing the expression to populate the query builder UI state.
+ *
+ * NOTE: While traversing the expression, this processor also does a fair amount of
+ * validations and assertsions but just so enough to populate the UI state.
+ *
+ * Validation and assertion should be done by both the builder and processor, but the builder
+ * will do more structural checks to build the proper metamodel. The processor should never
+ * modify the metamodel, just traversing it.
  */
 export class QueryBuilderLambdaProcessor
   implements ValueSpecificationVisitor<void>
@@ -307,7 +312,7 @@ export class QueryBuilderLambdaProcessor
         projectionState,
         new RawLambda(rawLambdaProtocol.parameters, rawLambdaProtocol.body),
       );
-      projectionState.addColumn(columnState);
+      projectionState.addColumn(columnState, { skipSorting: true });
       return;
     }
     throw new UnsupportedOperationError(
@@ -464,8 +469,8 @@ export class QueryBuilderLambdaProcessor
         CollectionInstanceValue,
         `Can't process project() expression: project() expects argument #1 to be a collection`,
       );
-      columnLambdas.values.map((e) =>
-        e.accept_ValueSpecificationVisitor(
+      columnLambdas.values.map((value) =>
+        value.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(
             this.queryBuilderState,
             valueSpecification,
@@ -747,33 +752,14 @@ export class QueryBuilderLambdaProcessor
         `Can't process agg() expression: agg() expects argument #1 to be a lambda function`,
       );
 
-      const aggregationLambdas = guaranteeType(
-        this.precedingExpression.parametersValues[2],
-        CollectionInstanceValue,
-      );
-
-      const aggregationIndex = aggregationLambdas.values.findIndex(
-        (value) => value === valueSpecification,
-      );
-      const aggregationColumnIndex =
-        this.queryBuilderState.fetchStructureState.projectionState.columns
-          .length -
-        aggregationLambdas.values.length +
-        aggregationIndex;
-
-      assertTrue(
-        aggregationIndex !== -1 &&
-          aggregationColumnIndex <
-            this.queryBuilderState.fetchStructureState.projectionState.columns
-              .length,
-        `Can't process agg() expression: agg() column lambda is not processed`,
-      );
-
+      // NOTE: since we process agg() expressions one by one, we know that the current agg()
+      // always correspond to the last column projection state, based on our processing procedure
       processAggregateLambda(
         aggregateLambda,
         guaranteeNonNullable(
           this.queryBuilderState.fetchStructureState.projectionState.columns[
-            aggregationColumnIndex
+            this.queryBuilderState.fetchStructureState.projectionState.columns
+              .length - 1
           ],
         ),
         this.queryBuilderState.fetchStructureState.projectionState
@@ -921,11 +907,15 @@ export class QueryBuilderLambdaProcessor
         valueSpecification,
         true,
       );
-      projectionState.addColumn(columnState);
+      projectionState.addColumn(columnState, { skipSorting: true });
 
       if (
         valueSpecification.parametersValues[0] instanceof VariableExpression
       ) {
+        // NOTE: technically we should set the lambda parameter name when we process
+        // the lambda, not when we process the lambda body like this, but that requires
+        // some setup, so it's easier to do it here. The validation of this should have
+        // already been taken care of by the builder.
         columnState.setLambdaParameterName(
           valueSpecification.parametersValues[0].name,
         );

@@ -131,6 +131,7 @@ export {
   V1_stereotypePtrSchema,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
 export { V1_AppliedFunction } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedFunction';
+export { V1_AppliedProperty } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedProperty';
 export { V1_Collection } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Collection';
 export { V1_Lambda } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Lambda';
 export { V1_Variable } from './models/protocols/pure/v1/model/valueSpecification/V1_Variable';

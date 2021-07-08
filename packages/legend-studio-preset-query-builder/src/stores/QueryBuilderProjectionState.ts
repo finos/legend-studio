@@ -405,25 +405,38 @@ export class QueryBuilderProjectionState {
     this.queryBuilderState.resultSetModifierState.updateSortColumns();
   }
 
-  addColumn(val: QueryBuilderProjectionColumnState): void {
+  addColumn(
+    val: QueryBuilderProjectionColumnState,
+    options?: {
+      /**
+       * Often time, we would want to enforce doing a sort when adding new column
+       * to ensure aggregate columns stay at the bottom of the list of projections
+       * But sometimes, we can opt in to use this flag to disable this sorting behavior,
+       * such as when we build/process.
+       */
+      skipSorting?: boolean;
+    },
+  ): void {
     addUniqueEntry(this.columns, val);
 
-    // sort columns: aggregate columns go last
-    this.columns = this.columns
-      .slice()
-      .sort(
-        (colA, colB) =>
-          (this.aggregationState.columns.find(
-            (column) => column.projectionColumnState === colA,
-          )
-            ? 1
-            : 0) -
-          (this.aggregationState.columns.find(
-            (column) => column.projectionColumnState === colB,
-          )
-            ? 1
-            : 0),
-      );
+    if (!options?.skipSorting) {
+      // sort columns: aggregate columns go last
+      this.columns = this.columns
+        .slice()
+        .sort(
+          (colA, colB) =>
+            (this.aggregationState.columns.find(
+              (column) => column.projectionColumnState === colA,
+            )
+              ? 1
+              : 0) -
+            (this.aggregationState.columns.find(
+              (column) => column.projectionColumnState === colB,
+            )
+              ? 1
+              : 0),
+        );
+    }
   }
 
   moveColumn(sourceIndex: number, targetIndex: number): void {
