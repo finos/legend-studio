@@ -58,12 +58,15 @@ const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
   return (
     <Dialog
       open={Boolean(applicationStore.actionAlertInfo)}
-      onClose={handleClose}
+      onClose={(event, reason): void => {
+        // NOTE: for most of the use cases now for this alert, we do not allow the user to simply dismiss it
+        // but force them to take action so we can disable these following escape mechanisms
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        handleClose();
+      }}
       onEnter={handlEnter}
-      // NOTE: for most of the use cases now for this alert, we do not allow the user to simply dismiss it
-      // but force them to take action so we can disable these following escape mechanisms
-      disableBackdropClick={true}
-      disableEscapeKeyDown={true}
     >
       <form
         onSubmit={onSubmit}

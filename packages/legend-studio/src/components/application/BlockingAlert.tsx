@@ -34,12 +34,17 @@ export const BlockingAlert = observer(() => {
   return (
     <Dialog
       open={Boolean(info)}
+      onClose={(event, reason): void => {
+        // NOTE: for most of the use cases now for this alert, we do not allow the user to simply dismiss it
+        // but force them to take action so we can disable these following escape mechanisms
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+      }}
       classes={{
         root: 'blocking-alert__root-container',
         container: 'blocking-alert__container',
       }}
-      disableBackdropClick={true}
-      disableEscapeKeyDown={true}
     >
       <div className="modal modal--dark blocking-alert">
         <PanelLoadingIndicator isLoading={Boolean(info.showLoading)} />

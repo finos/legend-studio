@@ -48,9 +48,12 @@ export const QueryBuilderDialog = observer(() => {
   return (
     <Dialog
       open={Boolean(queryBuilderState.openQueryBuilder)}
-      onClose={closeQueryBuilder}
-      disableBackdropClick={true}
-      disableEscapeKeyDown={true}
+      onClose={(event, reason): void => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        closeQueryBuilder();
+      }}
       classes={{
         root: 'editor-modal__root-container',
         container: 'editor-modal__container',

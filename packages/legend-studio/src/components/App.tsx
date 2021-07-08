@@ -47,7 +47,7 @@ import { ActionAlert } from './application/ActionAlert';
 import { BlockingAlert } from './application/BlockingAlert';
 import { AppHeader, BasicAppHeader } from './shared/AppHeader';
 import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import type {
   ApplicationConfig,
   SDLCServerOption,
@@ -66,7 +66,7 @@ import { guaranteeNonNullable } from '@finos/legend-studio-shared';
  * TODO: Eventually, when we have componentize most of the apps, we can eliminate this usage
  * of Material UI Theme provider
  */
-const materialTheme = createMuiTheme({
+const materialTheme = createTheme({
   props: {
     MuiButtonBase: {
       // disable button ripples
