@@ -471,7 +471,7 @@ const transformRelationalPropertyMapping = (
   // source key needs to be interpeted here for consistency between engine protcol and studio protcol
   propertyMapping.source = renderSourceId
     ? transformPropertyMappingSource(element.sourceSetImplementation)
-    : undefined; // @MARKER: GRAMMAR ROUNDTRIP --- need this filed to render both source and target field in roundetrip Grammar
+    : undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
