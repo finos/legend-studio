@@ -489,7 +489,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.accountName}
-          propertyName={'account'}
+          propertyName="account"
           update={(value: string | undefined): void =>
             sourceSpec.setAccountName(value ?? '')
           }
@@ -497,7 +497,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.region}
-          propertyName={'region'}
+          propertyName="region"
           update={(value: string | undefined): void =>
             sourceSpec.setRegion(value ?? '')
           }
@@ -505,7 +505,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.warehouseName}
-          propertyName={'warehouse'}
+          propertyName="warehouse"
           update={(value: string | undefined): void =>
             sourceSpec.setWarehouseName(value ?? '')
           }
@@ -513,7 +513,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          propertyName={'database'}
+          propertyName="database"
           update={(value: string | undefined): void =>
             sourceSpec.setDatabaseName(value ?? '')
           }
@@ -521,7 +521,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.cloudType}
-          propertyName={'cloud type'}
+          propertyName="cloud type"
           update={(value: string | undefined): void =>
             sourceSpec.setCloudType(value)
           }
@@ -530,8 +530,8 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_BooleanEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.quotedIdentifiersIgnoreCase}
-          propertyName={'quoted identifiers ignore case'}
-          description={'Set this when account has this flag set as true'}
+          propertyName="quoted identifiers ignore case"
+          description="Controls whether Snowflake will treat alphabetic characters in double-quoted identifiers as uppercase"
           update={(value: boolean | undefined): void =>
             sourceSpec.setQuotedIdentifiersIgnoreCase(Boolean(value))
           }
@@ -1216,7 +1216,7 @@ const RelationalConnectionGeneralEditor = observer(
                   isReadOnly={isReadOnly}
                   value={connection.quoteIdentifiers}
                   propertyName="Quote identifiers"
-                  description="Use this to quote SQL identifiers"
+                  description="Specifies whether to use double-quotes for SQL identifiers"
                   update={(value?: boolean): void =>
                     connection.setQuoteIdentifiers(Boolean(value))
                   }
