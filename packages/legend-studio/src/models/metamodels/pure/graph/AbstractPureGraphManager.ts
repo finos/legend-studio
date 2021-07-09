@@ -182,8 +182,11 @@ export abstract class AbstractPureGraphManager {
     valueSpecificationJson: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification;
+  abstract serializeValueSpecification(
+    valueSpecification: ValueSpecification,
+  ): Record<PropertyKey, unknown>;
   abstract buildRawValueSpecification(
-    compiledValueSpecification: ValueSpecification,
+    valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification;
   abstract serializeRawValueSpecification(

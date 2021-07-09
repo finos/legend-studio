@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -25,6 +25,7 @@ import {
   MenuContentItem,
   CaretDownIcon,
   GripVerticalIcon,
+  ContextMenu,
 } from '@finos/legend-studio-components';
 import { MdFunctions } from 'react-icons/md';
 import type {
@@ -90,6 +91,38 @@ const ProjectionColumnDragLayer: React.FC = () => {
     </div>
   );
 };
+
+const QueryBuilderProjectionColumnContextMenu = observer(
+  (
+    props: {
+      projectionColumnState: QueryBuilderProjectionColumnState;
+    },
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const { projectionColumnState } = props;
+    const convertToDerivation = (): void => {
+      if (
+        projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+      ) {
+        projectionColumnState.projectionState.transformSimpleProjectionToDerivation(
+          projectionColumnState,
+        );
+      }
+    };
+
+    return (
+      <MenuContent ref={ref}>
+        {projectionColumnState instanceof
+          QueryBuilderSimpleProjectionColumnState && (
+          <MenuContentItem onClick={convertToDerivation}>
+            Convert To Derivation
+          </MenuContentItem>
+        )}
+      </MenuContent>
+    );
+  },
+  { forwardRef: true },
+);
 
 const QueryBuilderSimpleProjectionColumnEditor = observer(
   (props: {
@@ -176,6 +209,12 @@ const QueryBuilderProjectionColumnEditor = observer(
     isRearrangingColumns: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
+
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
+    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
+    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+
     const { projectionColumnState, isRearrangingColumns } = props;
     const queryBuilderState =
       projectionColumnState.projectionState.queryBuilderState;
@@ -278,7 +317,26 @@ const QueryBuilderProjectionColumnEditor = observer(
           </div>
         )}
         {!projectionColumnState.isBeingDragged && (
-          <>
+          <ContextMenu
+            content={
+              <QueryBuilderProjectionColumnContextMenu
+                projectionColumnState={projectionColumnState}
+              />
+            }
+            disabled={
+              !(
+                projectionColumnState instanceof
+                QueryBuilderSimpleProjectionColumnState
+              )
+            }
+            className={clsx('query-builder__projection__column__context-menu', {
+              'query-builder__projection__column--selected-from-context-menu':
+                isSelectedFromContextMenu,
+            })}
+            menuProps={{ elevation: 7 }}
+            onOpen={onContextMenuOpen}
+            onClose={onContextMenuClose}
+          >
             <div className="query-builder__projection__column__dnd__indicator">
               <div className="query-builder__projection__column__dnd__indicator__handler">
                 <GripVerticalIcon />
@@ -377,7 +435,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                 <TimesIcon />
               </button>
             </div>
-          </>
+          </ContextMenu>
         )}
       </div>
     );

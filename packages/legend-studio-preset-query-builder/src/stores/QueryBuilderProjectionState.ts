@@ -23,6 +23,8 @@ import {
 } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  changeEntry,
+  guaranteeType,
   uuid,
   deleteEntry,
   addUniqueEntry,
@@ -67,6 +69,7 @@ import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperator
 import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min';
 import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max';
 import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString';
+import { buildSimpleProjectionColumnLambda } from './QueryBuilderLambdaBuilder';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
@@ -311,6 +314,7 @@ export class QueryBuilderProjectionState {
       removeColumn: action,
       addColumn: action,
       moveColumn: action,
+      replaceColumn: action,
     });
 
     this.editorStore = editorStore;
@@ -376,6 +380,62 @@ export class QueryBuilderProjectionState {
         this.isConvertDerivationProjectionObjects = false;
       }
     }
+  }
+
+  transformSimpleProjectionToDerivation(
+    simpleProjectionColumnState: QueryBuilderSimpleProjectionColumnState,
+  ): void {
+    // setup new derivation column state
+    const columnColumnLambda = buildSimpleProjectionColumnLambda(
+      simpleProjectionColumnState,
+      this.queryBuilderState,
+    );
+    const derivationColumnState =
+      new QueryBuilderDerivationProjectionColumnState(
+        this.editorStore,
+        this,
+        guaranteeType(
+          this.editorStore.graphState.graphManager.buildRawValueSpecification(
+            columnColumnLambda,
+            this.editorStore.graphState.graph,
+          ),
+          RawLambda,
+        ),
+      );
+    derivationColumnState.setColumnName(simpleProjectionColumnState.columnName);
+
+    this.replaceColumn(simpleProjectionColumnState, derivationColumnState);
+
+    // convert to grammar for display
+    derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
+      false,
+    );
+  }
+
+  replaceColumn(
+    oldVal: QueryBuilderProjectionColumnState,
+    newVal: QueryBuilderProjectionColumnState,
+  ): void {
+    // reassociation with column aggregation state if applicable
+    const corresspondingAggregateColumnState =
+      this.aggregationState.columns.find(
+        (aggregateColState) =>
+          aggregateColState.projectionColumnState === oldVal,
+      );
+    if (corresspondingAggregateColumnState) {
+      corresspondingAggregateColumnState.setColumnState(newVal);
+    }
+
+    // reassociation with column sorting state if applicable
+    const corresspondingSortColumnState =
+      this.queryBuilderState.resultSetModifierState.sortColumns.find(
+        (sortColState) => sortColState.columnState === oldVal,
+      );
+    if (corresspondingSortColumnState) {
+      corresspondingSortColumnState.setColumnState(newVal);
+    }
+
+    changeEntry(this.columns, oldVal, newVal);
   }
 
   removeColumn(val: QueryBuilderProjectionColumnState): void {

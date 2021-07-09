@@ -72,6 +72,33 @@ const buildGetAllFunction = (
   return _func;
 };
 
+export const buildSimpleProjectionColumnLambda = (
+  simpleProjectionColumnState: QueryBuilderSimpleProjectionColumnState,
+  queryBuilderState: QueryBuilderState,
+): LambdaFunctionInstanceValue => {
+  const multiplicityOne =
+    queryBuilderState.editorStore.graphState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+  const typeAny = queryBuilderState.editorStore.graphState.graph.getType(
+    CORE_ELEMENT_PATH.ANY,
+  );
+  const simpleColLambda = new LambdaFunctionInstanceValue(multiplicityOne);
+  const colLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
+  colLambdaFunctionType.parameters.push(
+    new VariableExpression(
+      simpleProjectionColumnState.lambdaParameterName,
+      multiplicityOne,
+    ),
+  );
+  const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
+  colLambdaFunction.expressionSequence.push(
+    simpleProjectionColumnState.propertyEditorState.propertyExpression,
+  );
+  simpleColLambda.values.push(colLambdaFunction);
+  return simpleColLambda;
+};
+
 export const buildLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   options?: {
@@ -250,25 +277,10 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
-            const simpleColLambda = new LambdaFunctionInstanceValue(
-              multiplicityOne,
+            columnLambda = buildSimpleProjectionColumnLambda(
+              projectionColumnState,
+              queryBuilderState,
             );
-            const colLambdaFunctionType = new FunctionType(
-              typeAny,
-              multiplicityOne,
-            );
-            colLambdaFunctionType.parameters.push(
-              new VariableExpression(
-                projectionColumnState.lambdaParameterName,
-                multiplicityOne,
-              ),
-            );
-            const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-            colLambdaFunction.expressionSequence.push(
-              projectionColumnState.propertyEditorState.propertyExpression,
-            );
-            simpleColLambda.values.push(colLambdaFunction);
-            columnLambda = simpleColLambda;
           } else if (
             projectionColumnState instanceof
             QueryBuilderDerivationProjectionColumnState

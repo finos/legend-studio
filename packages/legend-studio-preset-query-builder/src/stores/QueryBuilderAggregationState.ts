@@ -103,6 +103,7 @@ export class QueryBuilderAggregateColumnState {
       uuid: false,
       editorStore: false,
       aggregationState: false,
+      setColumnState: action,
       setLambdaParameterName: action,
       setOperator: action,
     });
@@ -111,6 +112,10 @@ export class QueryBuilderAggregateColumnState {
     this.aggregationState = aggregationState;
     this.projectionColumnState = projectionColumnState;
     this.operator = operator;
+  }
+
+  setColumnState(val: QueryBuilderProjectionColumnState): void {
+    this.projectionColumnState = val;
   }
 
   setLambdaParameterName(val: string): void {
