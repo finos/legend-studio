@@ -68,11 +68,6 @@ import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBui
 import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max';
 import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString';
 
-export type ProjectionColumnOption = {
-  label: string;
-  value: QueryBuilderProjectionColumnState;
-};
-
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
 }
@@ -336,13 +331,6 @@ export class QueryBuilderProjectionState {
         new QueryBuilderAggregateOperator_JoinString(),
       ],
     );
-  }
-
-  get columnOptions(): ProjectionColumnOption[] {
-    return this.columns.map((projectionCol) => ({
-      label: projectionCol.columnName,
-      value: projectionCol,
-    }));
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {

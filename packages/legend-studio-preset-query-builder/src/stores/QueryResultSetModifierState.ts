@@ -53,7 +53,6 @@ export class SortColumnState {
   ) {
     makeAutoObservable(this, {
       editorStore: false,
-      columnState: false,
       setColumnState: action,
       setSortType: action,
     });
