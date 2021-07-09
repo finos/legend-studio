@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-preset-dummy",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "description": "Legend Studio dummy preset for testing",
   "keywords": [
