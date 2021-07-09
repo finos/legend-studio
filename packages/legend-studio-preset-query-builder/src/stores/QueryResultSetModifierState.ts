@@ -168,7 +168,11 @@ export class QueryResultSetModifierState {
       const func = lambda.expressionSequence[0];
       if (func instanceof SimpleFunctionExpression) {
         if (
-          matchFunctionName(func.functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
+          matchFunctionName(
+            func.functionName,
+            SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          ) ||
+          matchFunctionName(func.functionName, SUPPORTED_FUNCTIONS.TDS_GROUP_BY)
         ) {
           let currentExpression = func;
           // distinct

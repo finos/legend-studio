@@ -520,6 +520,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_DISTINCT,
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process take() expression: only support take() in TDS expression`,
       );
@@ -554,6 +555,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_DISTINCT,
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process distinct() expression: only support distinct() in TDS expression`,
       );
@@ -583,6 +585,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_DISTINCT,
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process sort() expression: only support sort() in TDS expression`,
       );
