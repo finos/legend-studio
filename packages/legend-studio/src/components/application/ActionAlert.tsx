@@ -22,6 +22,7 @@ import {
   ActionAlertType,
 } from '../../stores/ApplicationStore';
 import { observer } from 'mobx-react-lite';
+import { noop } from '@finos/legend-studio-shared';
 
 const getActionButtonClassName = (type: ActionAlertActionType): string => {
   switch (type) {
@@ -58,15 +59,10 @@ const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
   return (
     <Dialog
       open={Boolean(applicationStore.actionAlertInfo)}
-      onClose={(event, reason): void => {
-        // NOTE: for most of the use cases now for this alert, we do not allow the user to simply dismiss it
-        // but force them to take action so we can disable these following escape mechanisms
-        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
-          return;
-        }
-        handleClose();
+      onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
+      TransitionProps={{
+        onEnter: handlEnter,
       }}
-      onEnter={handlEnter}
     >
       <form
         onSubmit={onSubmit}

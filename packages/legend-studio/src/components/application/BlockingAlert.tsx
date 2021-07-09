@@ -18,6 +18,7 @@ import Dialog from '@material-ui/core/Dialog';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import { noop } from '@finos/legend-studio-shared';
 
 /**
  * The users of this need to justify their use case because blocking app disrupts the UX flow.
@@ -34,13 +35,7 @@ export const BlockingAlert = observer(() => {
   return (
     <Dialog
       open={Boolean(info)}
-      onClose={(event, reason): void => {
-        // NOTE: for most of the use cases now for this alert, we do not allow the user to simply dismiss it
-        // but force them to take action so we can disable these following escape mechanisms
-        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
-          return;
-        }
-      }}
+      onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
       classes={{
         root: 'blocking-alert__root-container',
         container: 'blocking-alert__container',

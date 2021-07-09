@@ -77,7 +77,9 @@ const NewFileGenerationModal = observer(
       <Dialog
         open={elementGenerationState.showNewFileGenerationModal}
         onClose={close}
-        onEnter={handleEnter}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
         PaperProps={{
           classes: {
             root: 'search-modal__inner-container',
