@@ -382,7 +382,9 @@ export const CreateNewElementModal = observer(() => {
     <Dialog
       open={newElementState.modal}
       onClose={closeModal}
-      onEnter={handleEnter}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >

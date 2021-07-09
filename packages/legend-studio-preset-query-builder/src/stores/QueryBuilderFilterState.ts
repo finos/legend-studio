@@ -44,6 +44,11 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  CORE_ELEMENT_PATH,
+  FunctionType,
+  LambdaFunction,
+  LambdaFunctionInstanceValue,
+  VariableExpression,
   extractElementNameFromPath,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -190,10 +195,6 @@ export class FilterConditionState {
   addExistsLambdaParamNames(val: string): void {
     this.existsLambdaParamNames.push(val);
   }
-
-  getFunctionExpression(): ValueSpecification {
-    return this.operator.buildFilterConditionExpression(this);
-  }
 }
 
 export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
@@ -323,7 +324,9 @@ const buildFilterConditionExpression = (
   node: QueryBuilderFilterTreeNodeData,
 ): ValueSpecification | undefined => {
   if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-    return node.condition.getFunctionExpression();
+    return node.condition.operator.buildFilterConditionExpression(
+      node.condition,
+    );
   } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
     const multiplicityOne =
       filterState.editorStore.graphState.graph.getTypicalMultiplicity(
@@ -368,14 +371,48 @@ const buildFilterConditionExpression = (
   return undefined;
 };
 
-export const buildFilterConditionExpressions = (
+export const buildFilterExpression = (
   filterState: QueryBuilderFilterState,
-): ValueSpecification[] | undefined => {
-  const expressions = filterState.rootIds
+  getAllFunc: SimpleFunctionExpression,
+): SimpleFunctionExpression | undefined => {
+  const lambdaVariable = new VariableExpression(
+    filterState.lambdaParameterName,
+    filterState.editorStore.graphState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    ),
+  );
+
+  const filterConditionExpressions = filterState.rootIds
     .map((e) => guaranteeNonNullable(filterState.nodes.get(e)))
     .map((e) => buildFilterConditionExpression(filterState, e))
     .filter(isNonNullable);
-  return !expressions.length ? undefined : expressions;
+
+  if (!filterConditionExpressions.length) {
+    return undefined;
+  }
+  const typeAny = filterState.editorStore.graphState.graph.getType(
+    CORE_ELEMENT_PATH.ANY,
+  );
+  const multiplicityOne =
+    filterState.editorStore.graphState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+  // main filter expression
+  const filterExpression = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FILTER),
+    multiplicityOne,
+  );
+  // param [0]
+  filterExpression.parametersValues.push(getAllFunc);
+  // param [1]
+  const filterLambda = new LambdaFunctionInstanceValue(multiplicityOne);
+  const filterLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
+  filterLambdaFunctionType.parameters.push(lambdaVariable);
+  const colLambdaFunction = new LambdaFunction(filterLambdaFunctionType);
+  colLambdaFunction.expressionSequence = filterConditionExpressions;
+  filterLambda.values.push(colLambdaFunction);
+  filterExpression.parametersValues.push(filterLambda);
+  return filterExpression;
 };
 
 export class QueryBuilderFilterState
@@ -383,7 +420,7 @@ export class QueryBuilderFilterState
 {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
-  lambdaVariableName = DEFAULT_LAMBDA_VARIABLE_NAME;
+  lambdaParameterName = DEFAULT_LAMBDA_VARIABLE_NAME;
   rootIds: string[] = [];
   nodes = new Map<string, QueryBuilderFilterTreeNodeData>();
   selectedNode?: QueryBuilderFilterTreeNodeData;
@@ -400,7 +437,7 @@ export class QueryBuilderFilterState
       editorStore: false,
       queryBuilderState: false,
       isValidMove: false,
-      setLambdaVariableName: action,
+      setLambdaParameterName: action,
       setRearrangingConditions: action,
       suppressClickawayEventListener: action,
       handleClickaway: action,
@@ -425,8 +462,8 @@ export class QueryBuilderFilterState
     return !this.nodes.size && !this.rootIds.length;
   }
 
-  setLambdaVariableName(val: string): void {
-    this.lambdaVariableName = val;
+  setLambdaParameterName(val: string): void {
+    this.lambdaParameterName = val;
   }
 
   setRearrangingConditions(val: boolean): void {

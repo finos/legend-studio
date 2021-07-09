@@ -48,10 +48,10 @@ import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
 import {
-  getElementCoordinates,
   CompilationError,
   EngineError,
 } from '../models/metamodels/pure/action/EngineError';
+import { extractSourceInformationCoordinates } from '../models/metamodels/pure/action/SourceInformationHelper';
 import {
   PureModel,
   CoreModel,
@@ -518,12 +518,12 @@ export class GraphState {
       // if compilation failed, we try to reveal the error in form mode,
       // if even this fail, we will fall back to show it in text mode
       if (error instanceof CompilationError) {
-        const errorElementCoordinates = getElementCoordinates(
+        const errorCoordinates = extractSourceInformationCoordinates(
           error.sourceInformation,
         );
-        if (errorElementCoordinates) {
+        if (errorCoordinates) {
           const element = this.graph.getNullableElement(
-            errorElementCoordinates.elementPath,
+            errorCoordinates[0],
             false,
           );
           if (element) {

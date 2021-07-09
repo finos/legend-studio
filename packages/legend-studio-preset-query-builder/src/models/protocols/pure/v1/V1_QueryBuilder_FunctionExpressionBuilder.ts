@@ -18,10 +18,16 @@ import type {
   V1_GraphBuilderContext,
   V1_ProcessingContext,
   V1_ValueSpecification,
-  V1_Variable,
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  extractElementNameFromPath,
+  V1_AppliedProperty,
+  CollectionInstanceValue,
+  Multiplicity,
+  UnknownValue,
+  V1_Variable,
+  V1_serializeValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
   SimpleFunctionExpression,
@@ -36,6 +42,7 @@ import {
   VariableExpression,
 } from '@finos/legend-studio';
 import {
+  assertErrorThrown,
   assertNonNullable,
   assertTrue,
   assertType,
@@ -99,6 +106,126 @@ export const V1_buildGenericFunctionExpression = (
   ];
 };
 
+const buildProjectionColumnLambda = (
+  valueSpecification: V1_ValueSpecification,
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): ValueSpecification => {
+  assertType(
+    valueSpecification,
+    V1_Lambda,
+    `Can't build projection column: only support lambda`,
+  );
+
+  // lambda parameter
+  assertTrue(
+    valueSpecification.parameters.length === 1,
+    `Can't build projection column: only support lambda with 1 parameter`,
+  );
+  const columnLambdaParameter = guaranteeType(
+    valueSpecification.parameters[0],
+    V1_Variable,
+    `Can't build projection column: only support lambda with 1 parameter`,
+  );
+
+  // lambda body
+  assertTrue(
+    valueSpecification.body.length === 1,
+    `Can't build projection column: only support lambda body with 1 expression`,
+  );
+  let currentPropertyExpression: V1_ValueSpecification =
+    valueSpecification.body[0];
+  assertType(
+    currentPropertyExpression,
+    V1_AppliedProperty,
+    `Can't build projection column: only support lambda body as property expression`,
+  );
+  while (currentPropertyExpression instanceof V1_AppliedProperty) {
+    assertTrue(
+      currentPropertyExpression.parameters.length >= 1,
+      `Can't build projection column: only support lambda body as property expression`,
+    );
+    currentPropertyExpression = currentPropertyExpression.parameters[0];
+  }
+
+  // check lambda variable and parameter match
+  assertType(
+    currentPropertyExpression,
+    V1_Variable,
+    `Can't build projection column: only support lambda body as property expression`,
+  );
+  assertTrue(
+    columnLambdaParameter.name === currentPropertyExpression.name,
+    `Can't build column lambda: expects variable used in lambda body '${currentPropertyExpression.name}' to match lambda parameter '${columnLambdaParameter.name}'`,
+  );
+  return valueSpecification.accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+};
+
+const buildAggregationExpression = (
+  valueSpecification: V1_ValueSpecification,
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): ValueSpecification => {
+  assertType(
+    valueSpecification,
+    V1_AppliedFunction,
+    `Can't build aggregation: only support function`,
+  );
+  assertTrue(
+    matchFunctionName(valueSpecification.function, SUPPORTED_FUNCTIONS.TDS_AGG),
+    `Can't build aggregation: only support agg()`,
+  );
+
+  assertTrue(
+    valueSpecification.parameters.length === 2,
+    `Can't build agg() expression: agg() expects 2 arguments`,
+  );
+
+  // column lambda
+  const columnLambda = guaranteeType(
+    valueSpecification.parameters[0],
+    V1_Lambda,
+    `Can't build agg() expression: agg() expects argument #1 as a lambda`,
+  );
+  const processedColumnLambda =
+    returnUndefOnError(() =>
+      buildProjectionColumnLambda(
+        columnLambda,
+        openVariables,
+        compileContext,
+        processingContext,
+      ),
+    ) ?? new UnknownValue(V1_serializeValueSpecification(columnLambda));
+
+  // aggregate lambda
+  const aggregateLambda = guaranteeType(
+    valueSpecification.parameters[1],
+    V1_Lambda,
+  );
+  const processedAggregateLambda =
+    aggregateLambda.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+
+  return buildBaseSimpleFunctionExpression(
+    [processedColumnLambda, processedAggregateLambda],
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_AGG),
+    compileContext,
+  );
+};
+
 export const V1_buildGetAllFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
@@ -113,11 +240,15 @@ export const V1_buildGetAllFunctionExpression = (
     compileContext,
     processingContext,
   );
-  const paramOne = expression.parametersValues[0];
-  if (paramOne instanceof InstanceValue) {
-    expression.genericType = paramOne.genericType;
-    expression.multiplicity = paramOne.multiplicity;
-  }
+  const precedingExpression = expression.parametersValues[0];
+
+  assertType(
+    precedingExpression,
+    InstanceValue,
+    `Can't build getAll() expression: only support getAll() immediately following a class`,
+  );
+  expression.genericType = precedingExpression.genericType;
+  expression.multiplicity = precedingExpression.multiplicity;
   return [expression, processedParams];
 };
 
@@ -247,8 +378,8 @@ export const V1_buildProjectFunctionExpression = (
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] => {
   assertTrue(
-    parameters.length === 2 || parameters.length === 3,
-    `Can't build project() expression: project() expects at 1-2 arguments`,
+    parameters.length === 3,
+    `Can't build project() expression: project() expects 2 arguments`,
   );
 
   let variablesFromTopLevelLambdas: V1_Variable[] = [];
@@ -261,43 +392,23 @@ export const V1_buildProjectFunctionExpression = (
   );
   assertNonNullable(
     precedingExperession.genericType,
-    `Can't process project() expression: preceding expression return type is missing`,
+    `Can't build project() expression: preceding expression return type is missing`,
   );
 
   const columnExpressions = parameters[1];
-  if (
-    // NOTE: this is to support the form `col(lambda, 'alias')`
-    parameters.length === 2 &&
-    columnExpressions instanceof V1_Collection
-  ) {
-    variablesFromTopLevelLambdas = columnExpressions.values
-      .filter(
-        (value: V1_ValueSpecification): value is V1_AppliedFunction =>
-          value instanceof V1_AppliedFunction &&
-          matchFunctionName(value.function, SUPPORTED_FUNCTIONS.TDS_COL),
-      )
-      .map((value) => value.parameters)
-      .flat()
-      .filter(
-        (value: V1_ValueSpecification): value is V1_Lambda =>
-          value instanceof V1_Lambda,
-      )
-      .map((lambda) => lambda.parameters)
-      .flat();
-  } else if (
-    parameters.length === 3 &&
-    columnExpressions instanceof V1_Collection
-  ) {
-    // This is for the case where there's a third parameter as the column names for project()
-    // Here, each column expression is just a simple lambda with property expression
-    variablesFromTopLevelLambdas = columnExpressions.values
-      .filter(
-        (value: V1_ValueSpecification): value is V1_Lambda =>
-          value instanceof V1_Lambda,
-      )
-      .map((lambda) => lambda.parameters)
-      .flat();
-  }
+  assertType(
+    columnExpressions,
+    V1_Collection,
+    `Can't build project() expression: project() expects argument #1 to be a collection`,
+  );
+  variablesFromTopLevelLambdas = columnExpressions.values
+    .filter(
+      (value: V1_ValueSpecification): value is V1_Lambda =>
+        value instanceof V1_Lambda,
+    )
+    .map((lambda) => lambda.parameters)
+    .flat();
+
   const variables = new Set<string>();
   variablesFromTopLevelLambdas.forEach((variable) => {
     if (!variables.has(variable.name) && !variable.class) {
@@ -309,19 +420,38 @@ export const V1_buildProjectFunctionExpression = (
       processingContext.addInferredVariables(variable.name, variableExpression);
     }
   });
+
+  // build column expressions taking into account of derivation
+  const processedColumnExpressions = new CollectionInstanceValue(
+    new Multiplicity(
+      columnExpressions.multiplicity.lowerBound,
+      columnExpressions.multiplicity.upperBound,
+    ),
+  );
+  processedColumnExpressions.values = columnExpressions.values.map((value) => {
+    try {
+      return buildProjectionColumnLambda(
+        value,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
+    } catch (e: unknown) {
+      assertErrorThrown(e);
+      return new UnknownValue(V1_serializeValueSpecification(value));
+    }
+  });
+
   const processedParams = [
     precedingExperession,
-    ...parameters
-      .slice(1)
-      .map((parameter) =>
-        parameter.accept_ValueSpecificationVisitor(
-          new V1_ValueSpecificationBuilder(
-            compileContext,
-            processingContext,
-            openVariables,
-          ),
-        ),
+    processedColumnExpressions,
+    parameters[2].accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
       ),
+    ),
   ];
   const expression = buildBaseSimpleFunctionExpression(
     processedParams,
@@ -340,7 +470,7 @@ export const V1_buildGroupByFunctionExpression = (
 ): [SimpleFunctionExpression, ValueSpecification[]] => {
   let variablesFromTopLevelLambdas: V1_Variable[] = [];
   assertTrue(
-    parameters.length === 3,
+    parameters.length === 4,
     `Can't build groupBy() expression: groupBy() expects 3 arguments`,
   );
 
@@ -353,7 +483,7 @@ export const V1_buildGroupByFunctionExpression = (
   );
   assertNonNullable(
     precedingExperession.genericType,
-    `Can't process project() expression: preceding expression return type is missing`,
+    `Can't build groupBy() expression: preceding expression return type is missing`,
   );
 
   // normal columns
@@ -361,7 +491,7 @@ export const V1_buildGroupByFunctionExpression = (
   assertType(
     columnExpressions,
     V1_Collection,
-    `Can't build 'groupBy()' expression: first parameter must be a collection`,
+    `Can't build groupBy() expression: groupBy() expects argument #1 to be a collection`,
   );
   variablesFromTopLevelLambdas = columnExpressions.values
     .filter(
@@ -376,7 +506,7 @@ export const V1_buildGroupByFunctionExpression = (
   assertType(
     aggregationExpressions,
     V1_Collection,
-    `Can't build 'groupBy()' expression: second parameter must be a collection`,
+    `Can't build groupBy() expression: groupBy() expects argument #2 to be a collection`,
   );
   variablesFromTopLevelLambdas = aggregationExpressions.values
     .filter(
@@ -404,19 +534,56 @@ export const V1_buildGroupByFunctionExpression = (
       processingContext.addInferredVariables(variable.name, variableExpression);
     }
   });
+
+  // build column expressions taking into account of derivation
+  const processedColumnExpressions = new CollectionInstanceValue(
+    new Multiplicity(
+      columnExpressions.multiplicity.lowerBound,
+      columnExpressions.multiplicity.upperBound,
+    ),
+  );
+  processedColumnExpressions.values = columnExpressions.values.map((value) => {
+    try {
+      return buildProjectionColumnLambda(
+        value,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
+    } catch (e: unknown) {
+      assertErrorThrown(e);
+      return new UnknownValue(V1_serializeValueSpecification(value));
+    }
+  });
+
+  // build aggregation expressions taking into account of derivation
+  const processedAggregationExpressions = new CollectionInstanceValue(
+    new Multiplicity(
+      aggregationExpressions.multiplicity.lowerBound,
+      aggregationExpressions.multiplicity.upperBound,
+    ),
+  );
+  processedAggregationExpressions.values = aggregationExpressions.values.map(
+    (value) =>
+      buildAggregationExpression(
+        value,
+        openVariables,
+        compileContext,
+        processingContext,
+      ),
+  );
+
   const processedParams = [
     precedingExperession,
-    ...parameters
-      .slice(1)
-      .map((parameter) =>
-        parameter.accept_ValueSpecificationVisitor(
-          new V1_ValueSpecificationBuilder(
-            compileContext,
-            processingContext,
-            openVariables,
-          ),
-        ),
+    processedColumnExpressions,
+    processedAggregationExpressions,
+    parameters[3].accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
       ),
+    ),
   ];
   const expression = buildBaseSimpleFunctionExpression(
     processedParams,

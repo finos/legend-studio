@@ -154,18 +154,10 @@
     padding: 0.5rem;
   }
 
-  &__parsing-error__message {
-    @include flexVCenter;
-
-    font-size: 1.2rem;
-    color: var(--color-red-400);
-    margin-right: 0.5rem;
-  }
-
   &__parsing-error__content {
     @include flexHSpaceBetween;
 
-    border-top: 0.1rem solid var(--color-red-200);
+    border-top: 0.1rem solid var(--color-dark-shade-230);
     padding: 0.5rem;
   }
 
@@ -173,7 +165,8 @@
     cursor: pointer;
     font-size: 1.2rem;
     height: 1.8rem;
-    background: var(--color-red-200);
+    background: var(--color-dark-shade-230);
+    white-space: nowrap;
     border-radius: 0.2rem;
     padding: 0 0.5rem;
     color: var(--color-light-grey-50);

@@ -51,7 +51,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
         PRIMITIVE_TYPE.INTEGER,
         PRIMITIVE_TYPE.DECIMAL,
         PRIMITIVE_TYPE.FLOAT,
-      ] as unknown as string
+      ] as string[]
     ).includes(propertyType.path);
   }
 
@@ -69,7 +69,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
           PRIMITIVE_TYPE.INTEGER,
           PRIMITIVE_TYPE.DECIMAL,
           PRIMITIVE_TYPE.FLOAT,
-        ] as unknown as string
+        ] as string[]
       ).includes(type.path)
     );
   }

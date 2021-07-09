@@ -16,9 +16,17 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { clsx, BlankPanelPlaceholder } from '@finos/legend-studio-components';
+import {
+  clsx,
+  BlankPanelPlaceholder,
+  TimesIcon,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
+  GripVerticalIcon,
+} from '@finos/legend-studio-components';
 import { MdFunctions } from 'react-icons/md';
-import { FaInfoCircle, FaTimes } from 'react-icons/fa';
 import type {
   QueryBuilderExplorerTreeDragSource,
   QueryBuilderExplorerTreePropertyNodeData,
@@ -27,18 +35,22 @@ import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExpl
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import { useDragLayer, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import type { QueryBuilderProjectionColumnDragSource } from '../stores/QueryBuilderProjectionState';
-import {
+import type {
+  QueryBuilderProjectionColumnDragSource,
   QueryBuilderProjectionColumnState,
+} from '../stores/QueryBuilderProjectionState';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
 } from '../stores/QueryBuilderProjectionState';
-import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
-import { getPropertyPath } from '../stores/QueryBuilderPropertyEditorState';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
-import { useApplicationStore } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
+import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState';
+import { LambdaEditor, useApplicationStore } from '@finos/legend-studio';
+import { flowResult } from 'mobx';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -79,7 +91,86 @@ const ProjectionColumnDragLayer: React.FC = () => {
   );
 };
 
-const QueryBuilderProjectionColumn = observer(
+const QueryBuilderSimpleProjectionColumnEditor = observer(
+  (props: {
+    projectionColumnState: QueryBuilderSimpleProjectionColumnState;
+  }) => {
+    const { projectionColumnState } = props;
+    const onPropertyExpressionChange = (
+      node: QueryBuilderExplorerTreePropertyNodeData,
+    ): void => projectionColumnState.changeProperty(node);
+
+    return (
+      <div className="query-builder__projection__column__value__property">
+        <QueryBuilderPropertyExpressionBadge
+          propertyEditorState={projectionColumnState.propertyEditorState}
+          onPropertyExpressionChange={onPropertyExpressionChange}
+        />
+      </div>
+    );
+  },
+);
+
+const QueryBuilderDerivationProjectionColumnEditor = observer(
+  (props: {
+    projectionColumnState: QueryBuilderDerivationProjectionColumnState;
+  }) => {
+    const { projectionColumnState } = props;
+    const hasParserError = projectionColumnState.projectionState.hasParserError;
+
+    const handleDrop = useCallback(
+      (item: QueryBuilderExplorerTreeDragSource): void => {
+        projectionColumnState.derivationLambdaEditorState.setLambdaString(
+          projectionColumnState.derivationLambdaEditorState.lambdaString +
+            item.node.dndText,
+        );
+      },
+      [projectionColumnState],
+    );
+    const [, dropConnector] = useDrop(
+      () => ({
+        accept: [
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY,
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+        ],
+        drop: (item: QueryBuilderExplorerTreeDragSource, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item);
+          } // prevent drop event propagation to accomondate for nested DnD
+        },
+        collect: (monitor): { item: unknown; dragItemType: string } => ({
+          item: monitor.getItem(),
+          dragItemType: monitor.getItemType() as string,
+        }),
+      }),
+      [handleDrop],
+    );
+
+    return (
+      <div
+        ref={dropConnector}
+        className={clsx(
+          'query-builder__lambda-editor__container query-builder__projection__column__derivation',
+          { backdrop__element: hasParserError },
+        )}
+      >
+        <LambdaEditor
+          className="query-builder__lambda-editor"
+          disabled={
+            projectionColumnState.projectionState
+              .isConvertDerivationProjectionObjects
+          }
+          lambdaEditorState={projectionColumnState.derivationLambdaEditorState}
+          forceBackdrop={hasParserError}
+        />
+      </div>
+    );
+  },
+);
+
+const QueryBuilderProjectionColumnEditor = observer(
   (props: {
     projectionColumnState: QueryBuilderProjectionColumnState;
     isRearrangingColumns: boolean;
@@ -90,17 +181,25 @@ const QueryBuilderProjectionColumn = observer(
       projectionColumnState.projectionState.queryBuilderState;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
-    const applicationStore = useApplicationStore();
-    const setAggregation = (): void =>
-      applicationStore.notifyUnsupportedFeature('Column aggregation');
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => projectionColumnState.setColumnName(event.target.value);
     const removeColumn = (): void =>
       projectionState.removeColumn(projectionColumnState);
-    const onPropertyExpressionChange = (
-      node: QueryBuilderExplorerTreePropertyNodeData,
-    ): void => projectionColumnState.changeProperty(node);
+
+    // aggregation
+    const aggregateColumnState = projectionState.aggregationState.columns.find(
+      (column) => column.projectionColumnState === projectionColumnState,
+    );
+    const aggreateOperators = projectionState.aggregationState.operators.filter(
+      (op) => op.isCompatibleWithColumn(projectionColumnState),
+    );
+    const changeOperator =
+      (val: QueryBuilderAggregateOperator | undefined) => (): void =>
+        projectionState.aggregationState.changeColumnAggregateOperator(
+          val,
+          projectionColumnState,
+        );
 
     // Drag and Drop
     const handleHover = useCallback(
@@ -174,57 +273,108 @@ const QueryBuilderProjectionColumn = observer(
         })}
       >
         {projectionColumnState.isBeingDragged && (
-          <div className="query-builder__dnd__placeholder" />
+          <div className="query-builder__projection__column__dnd__placeholder__container">
+            <div className="query-builder__dnd__placeholder query-builder__projection__column__dnd__placeholder" />
+          </div>
         )}
         {!projectionColumnState.isBeingDragged && (
           <>
-            <div className="query-builder__projection__column__value">
+            <div className="query-builder__projection__column__dnd__indicator">
+              <div className="query-builder__projection__column__dnd__indicator__handler">
+                <GripVerticalIcon />
+              </div>
+            </div>
+            <div className="query-builder__projection__column__name">
               <input
-                className="query-builder__projection__column__value__input"
+                className="query-builder__projection__column__name__input"
                 spellCheck={false}
                 value={projectionColumnState.columnName}
                 onChange={changeColumnName}
               />
-              <div className="query-builder__projection__column__value__property">
-                <QueryBuilderPropertyExpressionBadge
-                  propertyEditorState={
-                    projectionColumnState.propertyEditorState
-                  }
-                  onPropertyExpressionChange={onPropertyExpressionChange}
+            </div>
+            <div className="query-builder__projection__column__value">
+              {projectionColumnState instanceof
+                QueryBuilderSimpleProjectionColumnState && (
+                <QueryBuilderSimpleProjectionColumnEditor
+                  projectionColumnState={projectionColumnState}
                 />
+              )}
+              {projectionColumnState instanceof
+                QueryBuilderDerivationProjectionColumnState && (
+                <QueryBuilderDerivationProjectionColumnEditor
+                  projectionColumnState={projectionColumnState}
+                />
+              )}
+            </div>
+            <div className="query-builder__projection__column__aggregate">
+              <div className="query-builder__projection__column__aggregate__operator">
+                {aggregateColumnState && (
+                  <div className="query-builder__projection__column__aggregate__operator__label">
+                    {aggregateColumnState.operator.getLabel(
+                      projectionColumnState,
+                    )}
+                  </div>
+                )}
+                <DropdownMenu
+                  className="query-builder__projection__column__aggregate__operator__dropdown"
+                  content={
+                    <MenuContent>
+                      {aggregateColumnState && (
+                        <MenuContentItem
+                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                          onClick={changeOperator(undefined)}
+                        >
+                          (none)
+                        </MenuContentItem>
+                      )}
+                      {aggreateOperators.map((op) => (
+                        <MenuContentItem
+                          key={op.uuid}
+                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                          onClick={changeOperator(op)}
+                        >
+                          {op.getLabel(projectionColumnState)}
+                        </MenuContentItem>
+                      ))}
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                    transformOrigin: { vertical: 'top', horizontal: 'left' },
+                    elevation: 7,
+                  }}
+                >
+                  <button
+                    className={clsx(
+                      'query-builder__projection__column__aggregate__operator__badge',
+                      {
+                        'query-builder__projection__column__aggregate__operator__badge--activated':
+                          Boolean(aggregateColumnState),
+                      },
+                    )}
+                    tabIndex={-1}
+                    title="Choose Aggregate Operator..."
+                  >
+                    <MdFunctions />
+                  </button>
+                  <button
+                    className="query-builder__projection__column__aggregate__operator__dropdown__trigger"
+                    tabIndex={-1}
+                    title="Choose Aggregate Operator..."
+                  >
+                    <CaretDownIcon />
+                  </button>
+                </DropdownMenu>
               </div>
             </div>
             <div className="query-builder__projection__column__actions">
-              <QueryBuilderPropertyInfoTooltip
-                property={
-                  projectionColumnState.propertyEditorState.propertyExpression
-                    .func
-                }
-                path={getPropertyPath(
-                  projectionColumnState.propertyEditorState.propertyExpression,
-                )}
-                isMapped={true}
-                placement="bottom-end"
-              >
-                <div className="query-builder__projection__column__action">
-                  <FaInfoCircle />
-                </div>
-              </QueryBuilderPropertyInfoTooltip>
-              <button
-                className="query-builder__projection__column__action"
-                tabIndex={-1}
-                onClick={setAggregation}
-                title={`Aggregate...`}
-              >
-                <MdFunctions className="query-builder__icon query-builder__icon__aggregate" />
-              </button>
               <button
                 className="query-builder__projection__column__action"
                 tabIndex={-1}
                 onClick={removeColumn}
                 title={`Remove`}
               >
-                <FaTimes />
+                <TimesIcon />
               </button>
             </div>
           </>
@@ -236,6 +386,7 @@ const QueryBuilderProjectionColumn = observer(
 
 export const QueryBuilderProjectionPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
+    const applicationStore = useApplicationStore();
     const { queryBuilderState } = props;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
@@ -247,7 +398,7 @@ export const QueryBuilderProjectionPanel = observer(
     const handleDrop = useCallback(
       (item: QueryBuilderExplorerTreeDragSource): void =>
         projectionState.addColumn(
-          new QueryBuilderProjectionColumnState(
+          new QueryBuilderSimpleProjectionColumnState(
             projectionState.editorStore,
             projectionState,
             item.node,
@@ -276,6 +427,12 @@ export const QueryBuilderProjectionPanel = observer(
       [handleDrop],
     );
 
+    useEffect(() => {
+      flowResult(projectionState.convertDerivationProjectionObjects()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [applicationStore, projectionState]);
+
     return (
       <div
         className="panel__content dnd__overlay__container"
@@ -295,7 +452,7 @@ export const QueryBuilderProjectionPanel = observer(
           >
             <ProjectionColumnDragLayer />
             {projectionColumns.map((projectionColumnState) => (
-              <QueryBuilderProjectionColumn
+              <QueryBuilderProjectionColumnEditor
                 key={projectionColumnState.uuid}
                 projectionColumnState={projectionColumnState}
                 isRearrangingColumns={isRearrangingColumns}

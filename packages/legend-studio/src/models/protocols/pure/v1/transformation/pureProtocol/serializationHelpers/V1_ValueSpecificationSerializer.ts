@@ -81,6 +81,7 @@ import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/gr
 import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr';
 import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
 import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
+import type { V1_UnknownValue } from '../../../model/valueSpecification/V1_UnknownValue';
 
 enum V1_PathElementType {
   PROPERTY_PATH_ELEMENT = 'propertyPath',
@@ -496,6 +497,11 @@ const tdsOlapAggregationModelSchema = createModelSchema(V1_TdsOlapAggregation, {
 class V1_ValueSpecificationSerializer
   implements V1_ValueSpecificationVisitor<PlainObject<V1_ValueSpecification>>
 {
+  visit_UnknownValue(
+    valueSpecification: V1_UnknownValue,
+  ): PlainObject<V1_ValueSpecification> {
+    return valueSpecification.content as PlainObject<V1_ValueSpecification>;
+  }
   visit_PackageableElementPtr(
     valueSpecification: V1_PackageableElementPtr,
   ): PlainObject<V1_ValueSpecification> {

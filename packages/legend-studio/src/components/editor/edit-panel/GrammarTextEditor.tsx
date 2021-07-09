@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import { useEditorStore } from '../../../stores/EditorStore';
@@ -36,6 +36,11 @@ import { useResizeDetector } from 'react-resize-detector';
 import { FaUserSecret } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
+import type { ElementDragSource } from '../../../stores/shared/DnDUtil';
+import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
+import type { DropTargetMonitor } from 'react-dnd';
+import { useDrop } from 'react-dnd';
+import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   (props: {}, ref: React.Ref<HTMLDivElement>) => {
@@ -70,7 +75,7 @@ export const GrammarTextEditor = observer(() => {
     grammarTextEditorState.currentElementLabelRegexString;
   const error = grammarTextEditorState.error;
   const graphGrammarText = grammarTextEditorState.graphGrammarText;
-  const textInput = useRef<HTMLDivElement>(null);
+  const textEditorRef = useRef<HTMLDivElement>(null);
 
   const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
     editorStore.toggleTextMode(),
@@ -85,8 +90,8 @@ export const GrammarTextEditor = observer(() => {
   }, [editor, width, height]);
 
   useEffect(() => {
-    if (!editor && textInput.current) {
-      const element = textInput.current;
+    if (!editor && textEditorRef.current) {
+      const element = textEditorRef.current;
       const _editor = monacoEditorAPI.create(element, {
         ...baseTextEditorSettings,
         language: EDITOR_LANGUAGE.PURE,
@@ -119,6 +124,55 @@ export const GrammarTextEditor = observer(() => {
       setEditor(_editor);
     }
   }, [editorStore, applicationStore, editor, grammarTextEditorState]);
+
+  // Drag and Drop
+  const extraDnDTypes = applicationStore.pluginManager
+    .getEditorPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_EditorPlugin_Extension
+        ).getExtraGrammarTextEditorDnDTypes?.() ?? [],
+    );
+  const handleDrop = useCallback(
+    (item: ElementDragSource, monitor: DropTargetMonitor): void => {
+      if (editor) {
+        editor.trigger('keyboard', 'type', {
+          text: item.data.packageableElement.path,
+        });
+      }
+    },
+    [editor],
+  );
+  const [, dropConnector] = useDrop(
+    () => ({
+      accept: [
+        ...extraDnDTypes,
+        CORE_DND_TYPE.PROJECT_EXPLORER_PACKAGE,
+        CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
+        CORE_DND_TYPE.PROJECT_EXPLORER_ASSOCIATION,
+        CORE_DND_TYPE.PROJECT_EXPLORER_MEASURE,
+        CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
+        CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE,
+        CORE_DND_TYPE.PROJECT_EXPLORER_FUNCTION,
+        CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
+        CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
+        CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE_STORE,
+        CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
+        CORE_DND_TYPE.PROJECT_EXPLORER_DIAGRAM,
+        CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE,
+        CORE_DND_TYPE.PROJECT_EXPLORER_CONNECTION,
+        CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME,
+        CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION,
+        CORE_DND_TYPE.PROJECT_EXPLORER_GENERATION_TREE,
+      ],
+
+      drop: (item: ElementDragSource, monitor): void =>
+        handleDrop(item, monitor),
+    }),
+    [extraDnDTypes, handleDrop],
+  );
+  dropConnector(textEditorRef);
 
   if (editor) {
     // Set the value of the editor
@@ -229,7 +283,7 @@ export const GrammarTextEditor = observer(() => {
       </ContextMenu>
       <div className="panel__content edit-panel__content">
         <div ref={ref} className="text-editor__container">
-          <div className="text-editor__body" ref={textInput} />
+          <div className="text-editor__body" ref={textEditorRef} />
         </div>
       </div>
     </div>

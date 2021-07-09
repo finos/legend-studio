@@ -21,7 +21,7 @@ export const UNIT_PATH_DELIMITER = '~';
 export const LAMBDA_START = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
 
-export enum SOURCR_ID_LABEL {
+export enum SOURCE_ID_LABEL {
   CONSTRAINT = 'constraint',
   DERIVED_PROPERTY = 'derivedProperty',
   ENUMERATION_MAPPING = 'enumerationMapping',

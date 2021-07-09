@@ -169,7 +169,7 @@ const QueryBuilderFilterConditionEditor = observer(
     isPropertyDragOver: boolean;
   }) => {
     const { node, isPropertyDragOver } = props;
-    const changeOperation = (val: QueryBuilderFilterOperator) => (): void =>
+    const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeProperty = (
       propertyNode: QueryBuilderExplorerTreePropertyNodeData,
@@ -207,7 +207,7 @@ const QueryBuilderFilterConditionEditor = observer(
                   <MenuContentItem
                     key={op.uuid}
                     className="query-builder-filter-tree__condition-node__operator__dropdown__option"
-                    onClick={changeOperation(op)}
+                    onClick={changeOperator(op)}
                   >
                     {op.getLabel(node.condition)}
                   </MenuContentItem>

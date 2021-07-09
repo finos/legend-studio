@@ -16,14 +16,14 @@
 
 import { useCallback } from 'react';
 import Dialog from '@material-ui/core/Dialog';
-import { clsx } from '@finos/legend-studio-components';
-import { FaInfoCircle } from 'react-icons/fa';
+import { clsx, InfoCircleIcon } from '@finos/legend-studio-components';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import type {
   DerivedPropertyExpressionEditorState,
   QueryBuilderPropertyEditorState,
 } from '../stores/QueryBuilderPropertyEditorState';
+import { getPropertyPath } from '../stores/QueryBuilderPropertyEditorState';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import type {
@@ -32,6 +32,7 @@ import type {
 } from '../stores/QueryBuilderExplorerState';
 import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
 import { Class, Enumeration, PrimitiveType } from '@finos/legend-studio';
+import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
 
 const DerivedPropertyExpressionEditor = observer(
   (props: {
@@ -206,12 +207,22 @@ export const QueryBuilderPropertyExpressionBadge = observer(
                 onClick={setDerivedPropertyArguments}
                 title="Set Derived Property Argument(s)..."
               >
-                {!isValid && <FaInfoCircle />} (...)
+                {!isValid && <InfoCircleIcon />} (...)
               </button>
             )}
             <QueryBuilderPropertyExpressionEditor
               propertyEditorState={propertyEditorState}
             />
+            <QueryBuilderPropertyInfoTooltip
+              property={propertyEditorState.propertyExpression.func}
+              path={getPropertyPath(propertyEditorState.propertyExpression)}
+              isMapped={true}
+              placement="bottom-end"
+            >
+              <div className="query-builder-property-expression-badge__property__info">
+                <InfoCircleIcon />
+              </div>
+            </QueryBuilderPropertyInfoTooltip>
           </div>
         )}
       </div>

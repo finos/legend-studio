@@ -98,7 +98,6 @@ export type FlatDataPropertyMappingTransformDropTarget =
   FlatDataColumnDragSource;
 export type TransformDropTarget = TypeDragSource;
 export type OperationSetImplementationDropTarget = MappingElementDragSource;
-export type DiagramEditorDropTarget = ElementDragSource;
 export type MappingElementSourceDropTarget = ElementDragSource;
 export type MappingExplorerDropTarget = ElementDragSource;
 export type UMLEditorElementDropTarget = ElementDragSource;

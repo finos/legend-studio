@@ -40,7 +40,7 @@ import {
   EditorExtensionState,
   CompilationError,
   CORE_LOG_EVENT,
-  getElementCoordinates,
+  extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -104,6 +104,7 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderFilterOperator_IsEmpty(),
     new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
+  isCompiling = false;
 
   constructor(editorStore: EditorStore) {
     super();
@@ -118,7 +119,9 @@ export class QueryBuilderState extends EditorExtensionState {
       queryTextEditorState: observable,
       queryUnsupportedState: observable,
       openQueryBuilder: observable,
+      isCompiling: observable,
       setOpenQueryBuilder: flow,
+      compileQuery: flow,
       reset: action,
       resetData: action,
       buildStateFromRawLambda: action,
@@ -149,9 +152,13 @@ export class QueryBuilderState extends EditorExtensionState {
     );
   }
 
-  getQuery(): RawLambda {
+  getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
     return this.isQuerySupported()
-      ? this.buildRawLambdaFromLambdaFunction(buildLambdaFunction(this))
+      ? this.buildRawLambdaFromLambdaFunction(
+          buildLambdaFunction(this, {
+            keepSourceInformation: Boolean(options?.keepSourceInformation),
+          }),
+        )
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
@@ -185,9 +192,11 @@ export class QueryBuilderState extends EditorExtensionState {
         this.openQueryBuilder = val;
       }
       this.editorStore.setBlockGlobalHotkeys(true);
+      this.editorStore.setHotkeys([]);
     } else {
       this.openQueryBuilder = val;
       this.editorStore.setBlockGlobalHotkeys(false);
+      this.editorStore.resetHotkeys();
     }
   }
 
@@ -317,41 +326,119 @@ export class QueryBuilderState extends EditorExtensionState {
     }
   }
 
-  isEditingInTextMode(): boolean {
-    return (
-      this.openQueryBuilder &&
-      this.queryTextEditorState.mode === QueryTextEditorMode.TEXT
-    );
-  }
-
   isQuerySupported(): boolean {
     return !this.queryUnsupportedState.rawLambda;
   }
 
-  compileQuery = flow(function* (this: QueryBuilderState) {
-    if (this.isEditingInTextMode()) {
-      try {
-        this.queryTextEditorState.setCompilationError(undefined);
-        (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
-          this.queryTextEditorState.rawLambdaState.lambda,
-          this.editorStore.graphState.graph,
-        )) as string;
-        this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
-      } catch (error: unknown) {
-        assertErrorThrown(error);
-        if (error instanceof CompilationError) {
+  clearCompilationError(): void {
+    this.fetchStructureState.projectionState.clearCompilationError();
+  }
+
+  *compileQuery(this: QueryBuilderState): GeneratorFn<void> {
+    if (this.openQueryBuilder) {
+      if (!this.queryTextEditorState.mode) {
+        this.isCompiling = true;
+        this.clearCompilationError();
+        // form mode
+        try {
+          this.queryTextEditorState.setCompilationError(undefined);
+          // NOTE: retain the source information on the lambda in order to be able
+          // to pin-point compilation issue in form mode
+          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+            this.getQuery({ keepSourceInformation: true }),
+            this.editorStore.graphState.graph,
+            { keepSourceInformation: true },
+          )) as string;
+          this.editorStore.applicationStore.notifySuccess(
+            'Compiled sucessfully',
+          );
+        } catch (error: unknown) {
+          assertErrorThrown(error);
           this.editorStore.applicationStore.logger.error(
             CORE_LOG_EVENT.COMPILATION_PROBLEM,
             error,
           );
-          const errorElementCoordinates = getElementCoordinates(
-            error.sourceInformation,
-          );
-          if (errorElementCoordinates) {
-            this.queryTextEditorState.setCompilationError(error);
+          let fallbackToTextModeForDebugging = true;
+          // if compilation failed, we try to reveal the error in form mode,
+          // if even this fail, we will fall back to show it in text mode
+          if (error instanceof CompilationError && error.sourceInformation) {
+            fallbackToTextModeForDebugging =
+              !this.fetchStructureState.projectionState.revealCompilationError(
+                error,
+              );
           }
+
+          // decide if we need to fall back to text mode for debugging
+          if (fallbackToTextModeForDebugging) {
+            this.editorStore.applicationStore.notifyWarning(
+              'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
+            );
+            this.queryTextEditorState.openModal(QueryTextEditorMode.TEXT);
+            // TODO: trigger another compilation to pin-point the issue
+            // since we're using the lambda editor right now, we are a little bit limitted
+            // in terms of the timing to do compilation (since we're using an `useEffect` to
+            // convert the lambda to grammar text), we might as well wait for the refactor
+            // of query builder text-mode
+            // See https://github.com/finos/legend-studio/issues/319
+
+            // try {
+            //   const code = (yield this.graphManager.graphToPureCode(
+            //     this.graph,
+            //   )) as string;
+            //   this.editorStore.grammarTextEditorState.setGraphGrammarText(code);
+            // } catch (error2: unknown) {
+            //   assertErrorThrown(error2);
+            //   this.editorStore.applicationStore.notifyWarning(
+            //     `Can't enter text mode. Transformation to grammar text failed: ${error2.message}`,
+            //   );
+            //   return;
+            // }
+            // this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
+            // yield this.globalCompileInTextMode({
+            //   ignoreBlocking: true,
+            //   suppressCompilationFailureMessage: true,
+            // });
+          } else {
+            this.editorStore.applicationStore.notifyWarning(
+              `Compilation failed: ${error.message}`,
+            );
+          }
+        } finally {
+          this.isCompiling = false;
+        }
+      } else if (this.queryTextEditorState.mode === QueryTextEditorMode.TEXT) {
+        this.isCompiling = true;
+        try {
+          this.queryTextEditorState.setCompilationError(undefined);
+          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+            this.queryTextEditorState.rawLambdaState.lambda,
+            this.editorStore.graphState.graph,
+            { keepSourceInformation: true },
+          )) as string;
+          this.editorStore.applicationStore.notifySuccess(
+            'Compiled sucessfully',
+          );
+        } catch (error: unknown) {
+          assertErrorThrown(error);
+          if (error instanceof CompilationError) {
+            this.editorStore.applicationStore.logger.error(
+              CORE_LOG_EVENT.COMPILATION_PROBLEM,
+              error,
+            );
+            this.editorStore.applicationStore.notifyWarning(
+              `Compilaion failed: ${error.message}`,
+            );
+            const errorElementCoordinates = extractSourceInformationCoordinates(
+              error.sourceInformation,
+            );
+            if (errorElementCoordinates) {
+              this.queryTextEditorState.setCompilationError(error);
+            }
+          }
+        } finally {
+          this.isCompiling = false;
         }
       }
     }
-  });
+  }
 }
