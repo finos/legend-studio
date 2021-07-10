@@ -42,7 +42,7 @@ export class QueryBuilderAggregateOperator_Average extends QueryBuilderAggregate
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       const propertyType =
-        projectionColumnState.propertyEditorState.propertyExpression.func
+        projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return (
         [

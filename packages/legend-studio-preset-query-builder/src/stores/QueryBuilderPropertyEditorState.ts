@@ -18,15 +18,17 @@ import { action, makeAutoObservable } from 'mobx';
 import {
   getNullableFirstElement,
   guaranteeType,
-  isNonNullable,
   prettyCamelCase,
 } from '@finos/legend-studio-shared';
 import type {
   AbstractProperty,
   EditorStore,
+  PureModel,
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
+  TYPICAL_MULTIPLICITY_TYPE,
+  CollectionInstanceValue,
   AbstractPropertyExpression,
   DerivedProperty,
   Enumeration,
@@ -37,6 +39,7 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
 } from '@finos/legend-studio';
+import { generateDefaultValueForPrimitiveType } from './QueryBuilderUtils';
 
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
@@ -70,42 +73,73 @@ export const getPropertyPath = (
   return propertyNameChain.join('.');
 };
 
-const parameterToValueSpecification = (
-  variableExpression: VariableExpression,
-): ValueSpecification | undefined => {
-  const genericType = variableExpression.genericType;
-  if (genericType) {
-    const _type = genericType.value.rawType;
-    if (_type.name === PRIMITIVE_TYPE.STRING) {
-      const cString = new PrimitiveInstanceValue(
-        genericType,
-        variableExpression.multiplicity,
-      );
-      cString.values = [''];
-      return cString;
-    } else if (_type.name === PRIMITIVE_TYPE.INTEGER) {
-      const cInteger = new PrimitiveInstanceValue(
-        genericType,
-        variableExpression.multiplicity,
-      );
-      cInteger.values = [0];
-      return cInteger;
-    } else if (_type instanceof Enumeration) {
-      const enumValueInstanceValue = new EnumValueInstanceValue(
-        genericType,
-        variableExpression.multiplicity,
-      );
-      if (_type.values.length) {
-        const enumValueRef = EnumValueExplicitReference.create(_type.values[0]);
-        enumValueInstanceValue.values = [enumValueRef];
-      }
-      return enumValueInstanceValue;
+const fillDerivedPropertyArguments = (
+  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
+  graph: PureModel,
+): void => {
+  const propertyArguments: ValueSpecification[] =
+    derivedPropertyExpressionState.parameterValues;
+  derivedPropertyExpressionState.parameters.forEach((parameter, idx) => {
+    if (idx < derivedPropertyExpressionState.parameterValues.length) {
+      return;
     }
-  }
-  return undefined;
+    let argument: ValueSpecification | undefined;
+    const genericType = parameter.genericType;
+    if (genericType) {
+      const _type = genericType.value.rawType;
+      if (
+        (
+          [
+            PRIMITIVE_TYPE.STRING,
+            PRIMITIVE_TYPE.BOOLEAN,
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
+          ] as string[]
+        ).includes(_type.name)
+      ) {
+        const primitiveInstanceValue = new PrimitiveInstanceValue(
+          genericType,
+          parameter.multiplicity,
+        );
+        primitiveInstanceValue.values = [
+          generateDefaultValueForPrimitiveType(_type.name as PRIMITIVE_TYPE),
+        ];
+        argument = primitiveInstanceValue;
+      } else if (_type instanceof Enumeration) {
+        const enumValueInstanceValue = new EnumValueInstanceValue(
+          genericType,
+          parameter.multiplicity,
+        );
+        if (_type.values.length) {
+          const enumValueRef = EnumValueExplicitReference.create(
+            _type.values[0],
+          );
+          enumValueInstanceValue.values = [enumValueRef];
+        }
+        argument = enumValueInstanceValue;
+      }
+    }
+    // for arguments of types we don't support, we will fill them with `[]`
+    // which in Pure is equivalent to `null` in other languages
+    propertyArguments.push(
+      argument ??
+        new CollectionInstanceValue(
+          graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
+        ),
+    );
+  });
+  derivedPropertyExpressionState.propertyExpression.setParametersValues([
+    derivedPropertyExpressionState.propertyExpression.parametersValues[0],
+    ...propertyArguments,
+  ]);
 };
 
-export class DerivedPropertyExpressionEditorState {
+export class QueryBuilderDerivedPropertyExpressionState {
   editorStore: EditorStore;
   path: string;
   title: string;
@@ -116,7 +150,6 @@ export class DerivedPropertyExpressionEditorState {
   constructor(
     editorStore: EditorStore,
     propertyExpression: AbstractPropertyExpression,
-    parametersBuilt?: boolean,
   ) {
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression);
@@ -126,18 +159,25 @@ export class DerivedPropertyExpressionEditorState {
       propertyExpression.func,
       DerivedProperty,
     );
-    this.initDerivedParameters();
-    if (!parametersBuilt) {
-      this.propertyExpression.parametersValues =
-        this.propertyExpression.parametersValues.concat(
-          this.buildDerivedPropertyParameters(),
-        );
+    // build the parameters of the derived properties
+    if (Array.isArray(this.derivedProperty.parameters)) {
+      this.parameters = this.derivedProperty.parameters.map((parameter) =>
+        guaranteeType(
+          this.editorStore.graphState.graphManager.buildValueSpecification(
+            parameter,
+            this.editorStore.graphState.graph,
+          ),
+          VariableExpression,
+        ),
+      );
     }
+    fillDerivedPropertyArguments(this, editorStore.graphState.graph);
   }
 
   get property(): AbstractProperty {
     return this.propertyExpression.func;
   }
+
   get parameterValues(): ValueSpecification[] {
     return this.propertyExpression.parametersValues.slice(1);
   }
@@ -162,37 +202,19 @@ export class DerivedPropertyExpressionEditorState {
       return true;
     });
   }
-
-  initDerivedParameters(): void {
-    if (Array.isArray(this.derivedProperty.parameters)) {
-      const parameters = this.derivedProperty.parameters.map((parameter) =>
-        guaranteeType(
-          this.editorStore.graphState.graphManager.buildValueSpecification(
-            parameter,
-            this.editorStore.graphState.graph,
-          ),
-          VariableExpression,
-        ),
-      );
-      this.parameters = parameters;
-    }
-  }
-
-  buildDerivedPropertyParameters(): ValueSpecification[] {
-    return this.parameters
-      .map(parameterToValueSpecification)
-      .filter(isNonNullable);
-  }
 }
 
-export class QueryBuilderPropertyEditorState {
+export class QueryBuilderPropertyExpressionState {
   editorStore: EditorStore;
   path: string;
   title: string;
-  hasDerivedPropertyInChain = false;
   propertyExpression: AbstractPropertyExpression;
-  isEditingDerivedProperty = false;
-  propertyExpressionStates: DerivedPropertyExpressionEditorState[] = [];
+
+  isEditingDerivedPropertyExpression = false;
+  // Since this property is a chain expression, some link of the chain can be
+  // derived property, as such, we need to keep track of the derived properties state in an array
+  derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[] =
+    [];
   /**
    * If at least one property in the chain is of multiplicity greater than 1,
    * the property might have multiple values and can cause row explosions.
@@ -205,44 +227,34 @@ export class QueryBuilderPropertyEditorState {
   constructor(
     editorStore: EditorStore,
     propertyExpression: AbstractPropertyExpression,
-    propertyExpressionProcessed?: boolean,
   ) {
-    makeAutoObservable(this, {
+    makeAutoObservable<
+      QueryBuilderPropertyExpressionState,
+      'initDerivedPropertyExpressionStates'
+    >(this, {
       editorStore: false,
       setIsEditingDerivedProperty: action,
-      setPropertyExpression: action,
+      initDerivedPropertyExpressionStates: action,
     });
 
     this.editorStore = editorStore;
     this.propertyExpression = propertyExpression;
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression);
-    this.propertyExpressionStates = this.buildPropertyExpressionStates(
-      propertyExpressionProcessed,
-    );
+    this.initDerivedPropertyExpressionStates();
   }
 
   get isValid(): boolean {
-    return this.propertyExpressionStates.every((e) => e.isValid);
-  }
-
-  setPropertyExpression(propertyExpression: AbstractPropertyExpression): void {
-    this.propertyExpression = propertyExpression;
-    this.path = getPropertyPath(propertyExpression);
-    this.title = getPropertyChainName(propertyExpression);
-    this.propertyExpressionStates = this.buildPropertyExpressionStates();
+    return this.derivedPropertyExpressionStates.every((e) => e.isValid);
   }
 
   setIsEditingDerivedProperty(val: boolean): void {
-    this.isEditingDerivedProperty = val;
+    this.isEditingDerivedPropertyExpression = val;
   }
 
-  buildPropertyExpressionStates(
-    expressionProcessed?: boolean,
-  ): DerivedPropertyExpressionEditorState[] {
-    let canHaveMultipleValues = false;
-    let hasDerivedPropertyInChain = false;
-    const result: DerivedPropertyExpressionEditorState[] = [];
+  private initDerivedPropertyExpressionStates(): void {
+    let requiresExistsHandling = false;
+    const result: QueryBuilderDerivedPropertyExpressionState[] = [];
     let currentExpression: ValueSpecification | undefined =
       this.propertyExpression;
     while (currentExpression instanceof AbstractPropertyExpression) {
@@ -251,15 +263,14 @@ export class QueryBuilderPropertyEditorState {
         currentExpression.func.multiplicity.upperBound === undefined ||
         currentExpression.func.multiplicity.upperBound > 1
       ) {
-        canHaveMultipleValues = true;
+        requiresExistsHandling = true;
       }
+      // Create states to hold derived properties' parameters and arguments for editing
       if (currentExpression.func instanceof DerivedProperty) {
-        hasDerivedPropertyInChain = true;
         const derivedPropertyExpressionState =
-          new DerivedPropertyExpressionEditorState(
+          new QueryBuilderDerivedPropertyExpressionState(
             this.editorStore,
             currentExpression,
-            expressionProcessed,
           );
         result.push(derivedPropertyExpressionState);
       }
@@ -267,8 +278,7 @@ export class QueryBuilderPropertyEditorState {
         currentExpression.parametersValues,
       );
     }
-    this.requiresExistsHandling = canHaveMultipleValues;
-    this.hasDerivedPropertyInChain = hasDerivedPropertyInChain;
-    return result.reverse();
+    this.requiresExistsHandling = requiresExistsHandling;
+    this.derivedPropertyExpressionStates = result.reverse();
   }
 }

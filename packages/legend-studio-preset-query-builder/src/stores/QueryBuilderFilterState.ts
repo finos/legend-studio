@@ -36,7 +36,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
-import { QueryBuilderPropertyEditorState } from './QueryBuilderPropertyEditorState';
+import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   AbstractPropertyExpression,
@@ -109,7 +109,7 @@ export type QueryBuilderFilterConditionRearrangeDropTarget =
 export class FilterConditionState {
   editorStore: EditorStore;
   filterState: QueryBuilderFilterState;
-  propertyEditorState: QueryBuilderPropertyEditorState;
+  propertyExpressionState: QueryBuilderPropertyExpressionState;
   operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification;
   existsLambdaParamNames: string[] = [];
@@ -132,7 +132,7 @@ export class FilterConditionState {
 
     this.editorStore = editorStore;
     this.filterState = filterState;
-    this.propertyEditorState = new QueryBuilderPropertyEditorState(
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       editorStore,
       propertyExpression,
     );
@@ -140,7 +140,7 @@ export class FilterConditionState {
     // operator
     assertTrue(
       this.operators.length !== 0,
-      `Can't find an operator for property '${this.propertyEditorState.path}': no operators registered`,
+      `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
     );
     this.operator = this.operators[0];
     this.value = this.operator.getDefaultFilterConditionValue(this);
@@ -166,7 +166,7 @@ export class FilterConditionState {
       return;
     }
 
-    this.propertyEditorState = new QueryBuilderPropertyEditorState(
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.editorStore,
       propertyExpression,
     );
@@ -286,7 +286,7 @@ export class QueryBuilderFilterTreeConditionNodeData extends QueryBuilderFilterT
   }
 
   get dragLayerLabel(): string {
-    return this.condition.propertyEditorState.title;
+    return this.condition.propertyExpressionState.title;
   }
 }
 

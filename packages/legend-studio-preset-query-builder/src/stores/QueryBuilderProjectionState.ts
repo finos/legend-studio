@@ -31,13 +31,11 @@ import {
   guaranteeNonNullable,
   findLast,
 } from '@finos/legend-studio-shared';
-import {
-  QueryBuilderExplorerTreePropertyNodeData,
-  getPropertyExpression,
-} from './QueryBuilderExplorerState';
+import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
+import { buildPropertyExpressionFromExplorerTreeNodeData } from './QueryBuilderExplorerState';
 import {
   getPropertyChainName,
-  QueryBuilderPropertyEditorState,
+  QueryBuilderPropertyExpressionState,
 } from './QueryBuilderPropertyEditorState';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
@@ -52,7 +50,6 @@ import {
   RawLambda,
   CORE_LOG_EVENT,
   LambdaEditorState,
-  TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -117,41 +114,27 @@ export abstract class QueryBuilderProjectionColumnState {
 
 export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProjectionColumnState {
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
-  propertyEditorState: QueryBuilderPropertyEditorState;
+  propertyExpressionState: QueryBuilderPropertyExpressionState;
 
   constructor(
     editorStore: EditorStore,
     projectionState: QueryBuilderProjectionState,
-    data: QueryBuilderExplorerTreePropertyNodeData | AbstractPropertyExpression,
-    propertyExpressionProcessed?: boolean,
+    propertyExpression: AbstractPropertyExpression,
   ) {
     super(editorStore, projectionState, '');
 
     makeObservable(this, {
       lambdaParameterName: observable,
-      propertyEditorState: observable,
+      propertyExpressionState: observable,
       setLambdaParameterName: action,
       changeProperty: action,
     });
-
-    const propertyExpression =
-      data instanceof QueryBuilderExplorerTreePropertyNodeData
-        ? getPropertyExpression(
-            this.projectionState.queryBuilderState.explorerState
-              .nonNullableTreeData,
-            data,
-            this.editorStore.graphState.graph.getTypicalMultiplicity(
-              TYPICAL_MULTIPLICITY_TYPE.ONE,
-            ),
-          )
-        : data;
-    this.propertyEditorState = new QueryBuilderPropertyEditorState(
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       editorStore,
       propertyExpression,
-      propertyExpressionProcessed,
     );
     this.columnName = getPropertyChainName(
-      this.propertyEditorState.propertyExpression,
+      this.propertyExpressionState.propertyExpression,
     );
   }
 
@@ -160,19 +143,17 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
   }
 
   changeProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
-    this.propertyEditorState = new QueryBuilderPropertyEditorState(
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.editorStore,
-      getPropertyExpression(
+      buildPropertyExpressionFromExplorerTreeNodeData(
         this.projectionState.queryBuilderState.explorerState
           .nonNullableTreeData,
         node,
-        this.editorStore.graphState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
+        this.editorStore.graphState.graph,
       ),
     );
     this.columnName = getPropertyChainName(
-      this.propertyEditorState.propertyExpression,
+      this.propertyExpressionState.propertyExpression,
     );
   }
 }
@@ -388,7 +369,7 @@ export class QueryBuilderProjectionState {
     // setup new derivation column state
     const columnColumnLambda = buildSimpleProjectionColumnLambda(
       simpleProjectionColumnState,
-      this.queryBuilderState,
+      this.editorStore.graphState.graph,
     );
     const derivationColumnState =
       new QueryBuilderDerivationProjectionColumnState(

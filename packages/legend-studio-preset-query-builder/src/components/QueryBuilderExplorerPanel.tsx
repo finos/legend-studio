@@ -50,6 +50,7 @@ import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   getQueryBuilderPropertyNodeData,
+  buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { prettyCamelCase } from '@finos/legend-studio-shared';
@@ -145,7 +146,11 @@ const QueryBuilderExplorerContextMenu = observer(
             new QueryBuilderSimpleProjectionColumnState(
               projectionState.editorStore,
               projectionState,
-              node,
+              buildPropertyExpressionFromExplorerTreeNodeData(
+                queryBuilderState.explorerState.nonNullableTreeData,
+                node,
+                projectionState.editorStore.graphState.graph,
+              ),
             ),
           );
         }
@@ -194,7 +199,11 @@ const QueryBuilderExplorerContextMenu = observer(
               new QueryBuilderSimpleProjectionColumnState(
                 projectionState.editorStore,
                 projectionState,
-                nodeToAdd,
+                buildPropertyExpressionFromExplorerTreeNodeData(
+                  queryBuilderState.explorerState.nonNullableTreeData,
+                  nodeToAdd,
+                  projectionState.editorStore.graphState.graph,
+                ),
               ),
             );
           });

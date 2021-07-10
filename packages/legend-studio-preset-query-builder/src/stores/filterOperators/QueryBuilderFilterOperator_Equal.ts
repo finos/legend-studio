@@ -38,11 +38,11 @@ import {
   buildNotExpression,
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
-  getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderUtils';
 
 export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -53,7 +53,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
     return (
       (
@@ -78,7 +78,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
@@ -106,7 +106,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING:
@@ -121,7 +121,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
         return buildPrimitiveInstanceValue(
           filterConditionState,
           propertyType.path,
-          getDefaultPrimitiveInstanceValueForType(propertyType.path),
+          generateDefaultValueForPrimitiveType(propertyType.path),
         );
       }
       default:

@@ -15,6 +15,7 @@
  */
 
 import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   guaranteeNonNullable,
   addUniqueEntry,
@@ -25,12 +26,14 @@ import type {
   AbstractProperty,
   EditorStore,
   Mapping,
-  Multiplicity,
   PropertyMapping,
+  PureModel,
   SetImplementation,
   Type,
 } from '@finos/legend-studio';
 import {
+  TYPICAL_MULTIPLICITY_TYPE,
+  PRIMITIVE_TYPE,
   OperationSetImplementation,
   AbstractPropertyExpression,
   Class,
@@ -120,11 +123,14 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
   }
 }
 
-export const getPropertyExpression = (
+export const buildPropertyExpressionFromExplorerTreeNodeData = (
   treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
-  multiplicityOne: Multiplicity,
+  graph: PureModel,
 ): AbstractPropertyExpression => {
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
   const projectionColumnLambdaVariable = new VariableExpression(
     DEFAULT_LAMBDA_VARIABLE_NAME,
     multiplicityOne,
@@ -293,9 +299,32 @@ const getQueryBuilderTreeData = (
   return { rootIds, nodes };
 };
 
+export class QueryBuilderExplorerPreviewDataState {
+  node: QueryBuilderExplorerTreePropertyNodeData;
+  isGeneratingPreviewData = false;
+  previewData?: object;
+
+  constructor(node: QueryBuilderExplorerTreePropertyNodeData) {
+    makeAutoObservable(this, {
+      node: false,
+    });
+
+    this.node = node;
+  }
+
+  setIsGeneratingPreviewData(val: boolean): void {
+    this.isGeneratingPreviewData = val;
+  }
+
+  setPreviewData(val: object): void {
+    this.previewData = val;
+  }
+}
+
 export class QueryBuilderExplorerState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
+  previewDataState?: QueryBuilderExplorerPreviewDataState;
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData>;
   humanizePropertyName = true;
   showUnmappedProperties = false;
@@ -328,17 +357,21 @@ export class QueryBuilderExplorerState {
   ): void {
     this.treeData = val;
   }
+
   refreshTree(): void {
     if (this.treeData) {
       this.treeData = { ...this.treeData };
     }
   }
+
   setHumanizePropertyName(val: boolean): void {
     this.humanizePropertyName = val;
   }
+
   setShowUnmappedProperties(val: boolean): void {
     this.showUnmappedProperties = val;
   }
+
   refreshTreeData(): void {
     const _class = this.queryBuilderState.querySetupState._class;
     const _mapping = this.queryBuilderState.querySetupState.mapping;
@@ -347,5 +380,38 @@ export class QueryBuilderExplorerState {
         ? getQueryBuilderTreeData(this.editorStore, _class, _mapping)
         : undefined,
     );
+  }
+
+  *previewData(
+    node: QueryBuilderExplorerTreePropertyNodeData,
+  ): GeneratorFn<void> {
+    if (!node.mapped) {
+      return;
+    }
+    // const simpleProjectionColumnState =
+    //   new QueryBuilderSimpleProjectionColumnState(
+    //     buildSimpleProjectionColumnLambda,
+    //   );
+    const propertyType = node.property.genericType.value.rawType;
+    switch (propertyType.path) {
+      case PRIMITIVE_TYPE.NUMBER:
+      case PRIMITIVE_TYPE.INTEGER:
+      case PRIMITIVE_TYPE.DECIMAL:
+      case PRIMITIVE_TYPE.FLOAT: {
+        // build  `->groupBy([], [count, ...], ['Count', 'Distinct Count', 'Sum', 'Min', 'Max', 'Average', 'Std Dev (Population)', 'Std Dev (Sample)'])`
+        break;
+      }
+      case PRIMITIVE_TYPE.BOOLEAN:
+      case PRIMITIVE_TYPE.STRING:
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE:
+      case PRIMITIVE_TYPE.DATETIME: {
+        // build ->groupBy([x|$x.property], [agg(x|$x.property, x|$x.count())], ['Value', 'Count']])->take(10)->sort([desc('Count'), asc('Value')]
+        // do somethingg
+        break;
+      }
+      default:
+      // do something;
+    }
   }
 }

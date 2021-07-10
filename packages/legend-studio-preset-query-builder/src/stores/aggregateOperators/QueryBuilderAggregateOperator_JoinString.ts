@@ -47,7 +47,7 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       const propertyType =
-        projectionColumnState.propertyEditorState.propertyExpression.func
+        projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return PRIMITIVE_TYPE.STRING === propertyType.path;
     }

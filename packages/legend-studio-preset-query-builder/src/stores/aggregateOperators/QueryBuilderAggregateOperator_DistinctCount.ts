@@ -44,7 +44,7 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       const propertyType =
-        projectionColumnState.propertyEditorState.propertyExpression.func
+        projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return (
         [

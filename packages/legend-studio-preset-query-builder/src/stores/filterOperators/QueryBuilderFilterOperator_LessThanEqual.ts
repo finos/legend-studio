@@ -29,10 +29,10 @@ import {
   buildFilterConditionState,
   buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
-  getDefaultPrimitiveInstanceValueForType,
   getNonCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderUtils';
 
 export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -43,7 +43,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
     return (
       [
@@ -78,7 +78,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.NUMBER:
@@ -88,7 +88,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
         return buildPrimitiveInstanceValue(
           filterConditionState,
           propertyType.path,
-          getDefaultPrimitiveInstanceValueForType(propertyType.path),
+          generateDefaultValueForPrimitiveType(propertyType.path),
         );
       }
       default:

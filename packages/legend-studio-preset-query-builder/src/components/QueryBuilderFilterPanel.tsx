@@ -65,7 +65,7 @@ import type {
   QueryBuilderExplorerTreePropertyNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import {
-  getPropertyExpression,
+  buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryBuilderExplorerState';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
@@ -73,11 +73,7 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { assertErrorThrown } from '@finos/legend-studio-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
-import {
-  TYPICAL_MULTIPLICITY_TYPE,
-  useApplicationStore,
-  useEditorStore,
-} from '@finos/legend-studio';
+import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -175,13 +171,11 @@ const QueryBuilderFilterConditionEditor = observer(
       propertyNode: QueryBuilderExplorerTreePropertyNodeData,
     ): void =>
       node.condition.changeProperty(
-        getPropertyExpression(
+        buildPropertyExpressionFromExplorerTreeNodeData(
           node.condition.filterState.queryBuilderState.explorerState
             .nonNullableTreeData,
           propertyNode,
-          node.condition.filterState.editorStore.graphState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
+          node.condition.filterState.editorStore.graphState.graph,
         ),
       );
 
@@ -195,7 +189,7 @@ const QueryBuilderFilterConditionEditor = observer(
         <div className="query-builder-filter-tree__condition-node">
           <div className="query-builder-filter-tree__condition-node__property">
             <QueryBuilderPropertyExpressionBadge
-              propertyEditorState={node.condition.propertyEditorState}
+              propertyExpressionState={node.condition.propertyExpressionState}
               onPropertyExpressionChange={changeProperty}
             />
           </div>
@@ -237,7 +231,7 @@ const QueryBuilderFilterConditionEditor = observer(
                 valueSpecification={node.condition.value}
                 graph={node.condition.editorStore.graphState.graph}
                 expectedType={
-                  node.condition.propertyEditorState.propertyExpression.func
+                  node.condition.propertyExpressionState.propertyExpression.func
                     .genericType.value.rawType
                 }
               />
@@ -370,12 +364,10 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             filterConditionState = new FilterConditionState(
               editorStore,
               filterState,
-              getPropertyExpression(
+              buildPropertyExpressionFromExplorerTreeNodeData(
                 filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 dropNode,
-                filterState.editorStore.graphState.graph.getTypicalMultiplicity(
-                  TYPICAL_MULTIPLICITY_TYPE.ONE,
-                ),
+                filterState.editorStore.graphState.graph,
               ),
             );
           } catch (error: unknown) {
@@ -690,12 +682,10 @@ export const QueryBuilderFilterPanel = observer(
           filterConditionState = new FilterConditionState(
             editorStore,
             filterState,
-            getPropertyExpression(
+            buildPropertyExpressionFromExplorerTreeNodeData(
               filterState.queryBuilderState.explorerState.nonNullableTreeData,
               (item as QueryBuilderExplorerTreeDragSource).node,
-              filterState.editorStore.graphState.graph.getTypicalMultiplicity(
-                TYPICAL_MULTIPLICITY_TYPE.ONE,
-              ),
+              filterState.editorStore.graphState.graph,
             ),
           );
         } catch (error: unknown) {

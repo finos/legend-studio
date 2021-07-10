@@ -21,6 +21,7 @@ import {
 import type {
   Class,
   Multiplicity,
+  PureModel,
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
@@ -74,15 +75,12 @@ const buildGetAllFunction = (
 
 export const buildSimpleProjectionColumnLambda = (
   simpleProjectionColumnState: QueryBuilderSimpleProjectionColumnState,
-  queryBuilderState: QueryBuilderState,
+  graph: PureModel,
 ): LambdaFunctionInstanceValue => {
-  const multiplicityOne =
-    queryBuilderState.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  const typeAny = queryBuilderState.editorStore.graphState.graph.getType(
-    CORE_ELEMENT_PATH.ANY,
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
+  const typeAny = graph.getType(CORE_ELEMENT_PATH.ANY);
   const simpleColLambda = new LambdaFunctionInstanceValue(multiplicityOne);
   const colLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
   colLambdaFunctionType.parameters.push(
@@ -93,7 +91,7 @@ export const buildSimpleProjectionColumnLambda = (
   );
   const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
   colLambdaFunction.expressionSequence.push(
-    simpleProjectionColumnState.propertyEditorState.propertyExpression,
+    simpleProjectionColumnState.propertyExpressionState.propertyExpression,
   );
   simpleColLambda.values.push(colLambdaFunction);
   return simpleColLambda;
@@ -195,7 +193,7 @@ export const buildLambdaFunction = (
             );
             const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
             colLambdaFunction.expressionSequence.push(
-              projectionColumnState.propertyEditorState.propertyExpression,
+              projectionColumnState.propertyExpressionState.propertyExpression,
             );
             simpleColLambda.values.push(colLambdaFunction);
             columnLambda = simpleColLambda;
@@ -279,7 +277,7 @@ export const buildLambdaFunction = (
           ) {
             columnLambda = buildSimpleProjectionColumnLambda(
               projectionColumnState,
-              queryBuilderState,
+              queryBuilderState.editorStore.graphState.graph,
             );
           } else if (
             projectionColumnState instanceof

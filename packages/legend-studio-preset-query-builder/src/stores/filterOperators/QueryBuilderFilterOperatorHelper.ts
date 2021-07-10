@@ -21,7 +21,6 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
-  DATE_FORMAT,
   extractElementNameFromPath,
   matchFunctionName,
   FunctionType,
@@ -40,7 +39,6 @@ import {
 } from '@finos/legend-studio';
 import {
   guaranteeType,
-  UnsupportedOperationError,
   guaranteeNonNullable,
   assertTrue,
   generateEnumerableNameFromToken,
@@ -51,32 +49,7 @@ import type {
   QueryBuilderFilterOperator,
 } from '../QueryBuilderFilterState';
 import { FilterConditionState } from '../QueryBuilderFilterState';
-import format from 'date-fns/format';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-
-export const getDefaultPrimitiveInstanceValueForType = (
-  type: PRIMITIVE_TYPE,
-): unknown => {
-  switch (type) {
-    case PRIMITIVE_TYPE.STRING:
-      return '';
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return false;
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRIMITIVE_TYPE.INTEGER:
-      return 0;
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return format(new Date(Date.now()), DATE_FORMAT);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't get default value for primitive instance of type '${type}'`,
-      );
-  }
-};
 
 export const buildPrimitiveInstanceValue = (
   filterConditionState: FilterConditionState,
@@ -119,12 +92,14 @@ const buildFilterConditionExpressionWithExists = (
     filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
-  assertTrue(filterConditionState.propertyEditorState.requiresExistsHandling);
+  assertTrue(
+    filterConditionState.propertyExpressionState.requiresExistsHandling,
+  );
 
   // 1. Decompose property expression
   const pes: AbstractPropertyExpression[] = [];
   let currentPe: ValueSpecification =
-    filterConditionState.propertyEditorState.propertyExpression;
+    filterConditionState.propertyExpressionState.propertyExpression;
   while (currentPe instanceof AbstractPropertyExpression) {
     const pe = new AbstractPropertyExpression('', multiplicityOne);
     pe.func = currentPe.func;
@@ -240,7 +215,7 @@ export const buildFilterConditionExpression = (
     filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
-  if (filterConditionState.propertyEditorState.requiresExistsHandling) {
+  if (filterConditionState.propertyExpressionState.requiresExistsHandling) {
     return buildFilterConditionExpressionWithExists(
       filterConditionState,
       operatorFunctionFullPath,
@@ -251,7 +226,7 @@ export const buildFilterConditionExpression = (
     multiplicityOne,
   );
   expression.parametersValues.push(
-    filterConditionState.propertyEditorState.propertyExpression,
+    filterConditionState.propertyExpressionState.propertyExpression,
   );
   // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
   if (filterConditionState.value) {

@@ -42,7 +42,7 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       const propertyType =
-        projectionColumnState.propertyEditorState.propertyExpression.func
+        projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return (
         [
@@ -65,7 +65,7 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
     const propertyTypePath =
       aggregateColumnState.projectionColumnState instanceof
       QueryBuilderSimpleProjectionColumnState
-        ? aggregateColumnState.projectionColumnState.propertyEditorState
+        ? aggregateColumnState.projectionColumnState.propertyExpressionState
             .propertyExpression.func.genericType.value.rawType.path
         : PRIMITIVE_TYPE.NUMBER; // this decision does not affect the output expression
     return buildAggregateExpression(
@@ -91,7 +91,7 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       const propertyType =
-        projectionColumnState.propertyEditorState.propertyExpression.func
+        projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       switch (propertyType.path) {
         case PRIMITIVE_TYPE.NUMBER:

@@ -51,11 +51,11 @@ import type {
   RuntimeInstanceValue,
   ValueSpecification,
   ValueSpecificationVisitor,
-  AbstractPropertyExpression,
   InstanceValue,
   UnknownValue,
 } from '@finos/legend-studio';
 import {
+  DerivedProperty,
   RawLambda,
   matchFunctionName,
   Class,
@@ -66,6 +66,7 @@ import {
   RootGraphFetchTree,
   SimpleFunctionExpression,
   VariableExpression,
+  AbstractPropertyExpression,
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
 } from '@finos/legend-studio';
@@ -894,6 +895,7 @@ export class QueryBuilderLambdaProcessor
       this.precedingExpression,
       `Can't process property expression: property expression preceding expression cannot be retrieved`,
     );
+
     const precedingExpressionName = this.precedingExpression.functionName;
     if (
       [
@@ -902,27 +904,48 @@ export class QueryBuilderLambdaProcessor
         SUPPORTED_FUNCTIONS.TDS_AGG,
       ].some((fn) => matchFunctionName(precedingExpressionName, fn))
     ) {
+      // NOTE: we do this before creating the projection state, as we will
+      // auto-fill arguments for derived properties when missing as part of building
+      // the property expression state.
+      let currentPropertyExpression: ValueSpecification = valueSpecification;
+      while (currentPropertyExpression instanceof AbstractPropertyExpression) {
+        const propertyExpression =
+          currentPropertyExpression as AbstractPropertyExpression;
+        currentPropertyExpression =
+          currentPropertyExpression.parametersValues[0];
+        // here we just do a simple check to ensure that if we encounter derived properties
+        // the number of parameters and arguments provided match
+        if (propertyExpression.func instanceof DerivedProperty) {
+          assertTrue(
+            (Array.isArray(propertyExpression.func.parameters)
+              ? propertyExpression.func.parameters.length
+              : 0) ===
+              propertyExpression.parametersValues.length - 1,
+            `Can't process property expression: derived property '${propertyExpression.func.name}' expects number of provided arguments to match number of parameters`,
+          );
+        }
+      }
+      assertType(
+        currentPropertyExpression,
+        VariableExpression,
+        `Can't process property expression: expects expression root to be a variable`,
+      );
+
       const projectionState =
         this.queryBuilderState.fetchStructureState.projectionState;
       const columnState = new QueryBuilderSimpleProjectionColumnState(
         projectionState.editorStore,
         projectionState,
         valueSpecification,
-        true,
       );
+
       projectionState.addColumn(columnState, { skipSorting: true });
 
-      if (
-        valueSpecification.parametersValues[0] instanceof VariableExpression
-      ) {
-        // NOTE: technically we should set the lambda parameter name when we process
-        // the lambda, not when we process the lambda body like this, but that requires
-        // some setup, so it's easier to do it here. The validation of this should have
-        // already been taken care of by the builder.
-        columnState.setLambdaParameterName(
-          valueSpecification.parametersValues[0].name,
-        );
-      }
+      // NOTE: technically we should set the lambda parameter name when we process
+      // the lambda, not when we process the lambda body like this, but that requires
+      // some setup, so it's easier to do it here. The validation of this should have
+      // already been taken care of by the builder.
+      columnState.setLambdaParameterName(currentPropertyExpression.name);
       return;
     }
     throw new UnsupportedOperationError(

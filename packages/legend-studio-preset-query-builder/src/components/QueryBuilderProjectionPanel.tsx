@@ -32,7 +32,10 @@ import type {
   QueryBuilderExplorerTreeDragSource,
   QueryBuilderExplorerTreePropertyNodeData,
 } from '../stores/QueryBuilderExplorerState';
-import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
+import {
+  buildPropertyExpressionFromExplorerTreeNodeData,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
+} from '../stores/QueryBuilderExplorerState';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import { useDragLayer, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -136,7 +139,9 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
     return (
       <div className="query-builder__projection__column__value__property">
         <QueryBuilderPropertyExpressionBadge
-          propertyEditorState={projectionColumnState.propertyEditorState}
+          propertyExpressionState={
+            projectionColumnState.propertyExpressionState
+          }
           onPropertyExpressionChange={onPropertyExpressionChange}
         />
       </div>
@@ -459,10 +464,14 @@ export const QueryBuilderProjectionPanel = observer(
           new QueryBuilderSimpleProjectionColumnState(
             projectionState.editorStore,
             projectionState,
-            item.node,
+            buildPropertyExpressionFromExplorerTreeNodeData(
+              queryBuilderState.explorerState.nonNullableTreeData,
+              item.node,
+              projectionState.editorStore.graphState.graph,
+            ),
           ),
         ),
-      [projectionState],
+      [queryBuilderState, projectionState],
     );
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
       () => ({
