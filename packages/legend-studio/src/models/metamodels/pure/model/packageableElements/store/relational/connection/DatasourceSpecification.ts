@@ -137,6 +137,7 @@ export class LocalH2DatasourceSpecification
       testDataSetupCsv: observable,
       testDataSetupSqls: observable,
       setTestDataSetupCsv: action,
+      setTestDataSetupSqls: action,
       hashCode: computed,
     });
   }
