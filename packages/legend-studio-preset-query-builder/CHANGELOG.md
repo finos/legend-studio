@@ -1,5 +1,16 @@
 # @finos/legend-studio-preset-query-builder
 
+## 0.0.19
+
+### Patch Changes
+
+- [#328](https://github.com/finos/legend-studio/pull/328) [`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371) Thanks [@akphi](https://github.com/akphi)! - Allow previewing data for mapped properties in explorer tree: for numeric fields, information such as `count`, `sum`, `average`, `max`, `min`, `standard deviation`, etc. are shown, whereas for non-numeric fields, we only show the top-10 most common values.
+
+- Updated dependencies [[`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371), [`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371)]:
+  - @finos/legend-studio@0.1.16
+  - @finos/legend-studio-components@0.0.22
+  - @finos/legend-studio-shared@0.0.18
+
 ## 0.0.18
 
 ### Patch Changes
