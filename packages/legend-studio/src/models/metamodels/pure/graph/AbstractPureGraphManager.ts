@@ -262,11 +262,11 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): ExecutionPlan;
 
-  abstract transformExecutionPlan(
+  abstract serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): RawExecutionPlan;
 
-  abstract getExecutionNodeProtocolJson(executionNode: ExecutionNode): object;
+  abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
   // ------------------------------------------- Store -------------------------------------------
 

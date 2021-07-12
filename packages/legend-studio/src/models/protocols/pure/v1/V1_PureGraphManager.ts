@@ -1907,7 +1907,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  transformExecutionPlan(
+  serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): PlainObject<V1_ExecutionPlan> {
     return V1_serializeExecutionPlan(
@@ -1920,7 +1920,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  getExecutionNodeProtocolJson(
+  serializeExecutionNode(
     executionNode: ExecutionNode,
   ): PlainObject<V1_ExecutionNode> {
     return V1_serializeExecutionNode(
