@@ -8,7 +8,7 @@
 
 * [#293](https://github.com/finos/legend-studio/pull/293) [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502) Thanks [@akphi](https://github.com/akphi)! - Avoid printing out Javascript class name as these will get obfuscated and modified due to minification in production build. As such, unsupported operation error messages are resructured to print out the unsupported objects instead of their classes' names.
 
-- [#313](https://github.com/finos/legend-studio/pull/313) [`547089b`](https://github.com/finos/legend-studio/commit/547089b71ec534be6d2362369748d08d63cd8243) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - Add button for `quotedIdentifiersIgnoreCase` flag.
+- [#313](https://github.com/finos/legend-studio/pull/313) [`547089b`](https://github.com/finos/legend-studio/commit/547089b71ec534be6d2362369748d08d63cd8243) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - Add support for configuring Snowflake datasource specification `quotedIdentifiersIgnoreCase` flag in form mode.
 
 * [#293](https://github.com/finos/legend-studio/pull/293) [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE** Element builder for DSL now requires `elementClassName` to better print error message when loading plugins.
 

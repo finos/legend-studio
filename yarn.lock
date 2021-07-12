@@ -2211,7 +2211,7 @@ __metadata:
     react: 17.0.2
     rimraf: 3.0.2
     typescript: 4.3.5
-    webpack: 5.43.0
+    webpack: 5.44.0
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.7.2
     webpack-dev-server: 4.0.0-beta.3
@@ -2262,7 +2262,7 @@ __metadata:
     "@changesets/write": 0.1.4
     "@manypkg/get-packages": 1.1.1
     "@pmmmwh/react-refresh-webpack-plugin": 0.5.0-rc.1
-    autoprefixer: 10.2.6
+    autoprefixer: 10.3.0
     babel-jest: 27.0.6
     babel-loader: 8.2.2
     chalk: 4.1.1
@@ -2294,7 +2294,7 @@ __metadata:
     strip-ansi: 7.0.0
     text-table: 0.2.0
     typescript: 4.3.5
-    webpack: 5.43.0
+    webpack: 5.44.0
     wrap-ansi: 8.0.0
   languageName: unknown
   linkType: soft
@@ -2437,6 +2437,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder"
   dependencies:
+    "@ag-grid-community/client-side-row-model": 25.3.0
+    "@ag-grid-community/core": 25.3.0
+    "@ag-grid-community/react": 25.3.0
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
@@ -2475,7 +2478,7 @@ __metadata:
   dependencies:
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@types/lodash-es": 4.17.4
-    "@types/lossless-json": 1.0.0
+    "@types/lossless-json": 1.0.1
     "@types/object-hash": 2.1.1
     "@types/pako": 1.0.2
     "@types/seedrandom": 3.0.1
@@ -2505,9 +2508,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 25.3.0
-    "@ag-grid-community/core": 25.3.0
-    "@ag-grid-community/react": 25.3.0
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-network": "workspace:*"
@@ -3323,10 +3323,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/estree@npm:^0.0.49":
-  version: 0.0.49
-  resolution: "@types/estree@npm:0.0.49"
-  checksum: a01577ca7bdb30a668ac92d07122afcca8b1eb44d95ae1efe6dfefbc0b54953a137d7c2ebcab034568f1c04f2a42e85bf6bb97af47cdfaf9d5f01e58ac27ecf5
+"@types/estree@npm:^0.0.50":
+  version: 0.0.50
+  resolution: "@types/estree@npm:0.0.50"
+  checksum: 9a2b6a4a8c117f34d08fbda5e8f69b1dfb109f7d149b60b00fd7a9fb6ac545c078bc590aa4ec2f0a256d680cf72c88b3b28b60c326ee38a7bc8ee1ee95624922
   languageName: node
   linkType: hard
 
@@ -3447,10 +3447,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lossless-json@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@types/lossless-json@npm:1.0.0"
-  checksum: 008d14e59efa5b40488e475096e0587851a9f72a9a1fd525fecda1bf4d8039965cf9e7b9149c1b4ef5da272fecc894702120ddb1421b8a31f21984a8f99388fb
+"@types/lossless-json@npm:1.0.1":
+  version: 1.0.1
+  resolution: "@types/lossless-json@npm:1.0.1"
+  checksum: c256b17b9ac339d4bb4724f0bc3df2199af7c89457b6a68b282d19ce76f2e0433df2559198c1a4026174251d4932602f2c994224d20ee959dcb200a9a07a9dd5
   languageName: node
   linkType: hard
 
@@ -3484,10 +3484,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:15.14.1":
-  version: 15.14.1
-  resolution: "@types/node@npm:15.14.1"
-  checksum: efcc7e52a2d4d2e64c9e80ec72e3a08271a8536a713ffbfaa8391bd2a34bce599b8c2926eddc2f060a32df1c5dbd6a5d58be20ef4ac3fc6a45920622d4c87707
+"@types/node@npm:16.3.1":
+  version: 16.3.1
+  resolution: "@types/node@npm:16.3.1"
+  checksum: 2a9d69db32540157827a06893a80dcbc9c86a6287dace38e1ff27490f34ec4b4164426165f2c4146c412eca451bf1b782be17d5ce57a935b1fd1e7c5fae89f43
   languageName: node
   linkType: hard
 
@@ -4544,12 +4544,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:10.2.6":
-  version: 10.2.6
-  resolution: "autoprefixer@npm:10.2.6"
+"autoprefixer@npm:10.3.0":
+  version: 10.3.0
+  resolution: "autoprefixer@npm:10.3.0"
   dependencies:
     browserslist: ^4.16.6
-    caniuse-lite: ^1.0.30001230
+    caniuse-lite: ^1.0.30001243
     colorette: ^1.2.2
     fraction.js: ^4.1.1
     normalize-range: ^0.1.2
@@ -4558,7 +4558,7 @@ __metadata:
     postcss: ^8.1.0
   bin:
     autoprefixer: bin/autoprefixer
-  checksum: dedcc56739b3e5beda3927c13cd4dbb8e1eeb568418b28fb6b4a52697e951ec72ae3aca89e5d871c310e520a8bbbe24267b7401d21f96c07bf0ea6527977f9e8
+  checksum: afd7db17e3c598878880f8004a3b165f5d42a9f2d0eb76a8b3249d88d85d2dd221f10f6e4629f0d539ef7cdaecc2fbb117840cc347f2985f91482f839bcc70fc
   languageName: node
   linkType: hard
 
@@ -5070,10 +5070,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001109, caniuse-lite@npm:^1.0.30001219, caniuse-lite@npm:^1.0.30001230":
+"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001109, caniuse-lite@npm:^1.0.30001219":
   version: 1.0.30001235
   resolution: "caniuse-lite@npm:1.0.30001235"
   checksum: 4703293ada758a8e73e5dae0a988a3247b7a9d80e6d4cad38ca9347f54767fcee4e9e627f05926dde50e9de0fec305c603959ee78a4f8f92bfe0dce309df2b01
+  languageName: node
+  linkType: hard
+
+"caniuse-lite@npm:^1.0.30001243":
+  version: 1.0.30001243
+  resolution: "caniuse-lite@npm:1.0.30001243"
+  checksum: 912cf885036847a8b6972cd65170d9f355a08b08cfd6b06bcaa8de965755ee5b35a4bbe4eb73844aac313a42e2038ae0971a5b4c9b94d631db2f073c906ce1d6
   languageName: node
   linkType: hard
 
@@ -9994,7 +10001,7 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 26.0.24
-    "@types/node": 15.14.1
+    "@types/node": 16.3.1
     chalk: 4.1.1
     cross-env: 7.0.3
     eslint: 7.30.0
@@ -15503,12 +15510,12 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.43.0":
-  version: 5.43.0
-  resolution: "webpack@npm:5.43.0"
+"webpack@npm:5.44.0":
+  version: 5.44.0
+  resolution: "webpack@npm:5.44.0"
   dependencies:
     "@types/eslint-scope": ^3.7.0
-    "@types/estree": ^0.0.49
+    "@types/estree": ^0.0.50
     "@webassemblyjs/ast": 1.11.1
     "@webassemblyjs/wasm-edit": 1.11.1
     "@webassemblyjs/wasm-parser": 1.11.1
@@ -15535,7 +15542,7 @@ typescript@4.3.5:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 24f3a34758c8836db22d8f107a11ca63ad76a23c6a60759ee27386e77df5674ba71f15af9dc5077e2d049c4e6cf278f9e047725ad65ffbe6cb1f797aa51ebcca
+  checksum: a173d875045267b5cb8ead959c1b47dc06ca191ee7cdbf6a094d5947261f1e4e167addc20eb65945078500247b74497e65270f4dbca1bcaf17327b462800c0ef
   languageName: node
   linkType: hard
 

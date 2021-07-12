@@ -1652,23 +1652,27 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  serializeValueSpecification(
+    valueSpecification: ValueSpecification,
+  ): Record<PropertyKey, unknown> {
+    return V1_serializeValueSpecification(
+      valueSpecification.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationTransformer(
+          [],
+          new Map<string, unknown[]>(),
+          true,
+          false,
+        ),
+      ),
+    ) as Record<PropertyKey, unknown>;
+  }
+
   buildRawValueSpecification(
-    protocol: ValueSpecification,
+    valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification {
     // converts value spec to json
-    const _valueSpecification = protocol.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationTransformer(
-        [],
-        new Map<string, unknown[]>(),
-        true,
-        false,
-      ),
-    );
-    const json = V1_serializeValueSpecification(_valueSpecification) as Record<
-      PropertyKey,
-      unknown
-    >;
+    const json = this.serializeValueSpecification(valueSpecification);
     // deserialize json and builds metamodal raw value spec
     const rawValueSpecification = V1_deserializeRawValueSpecification(json);
     return rawValueSpecification.accept_RawValueSpecificationVisitor(
@@ -1903,7 +1907,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  transformExecutionPlan(
+  serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): PlainObject<V1_ExecutionPlan> {
     return V1_serializeExecutionPlan(
@@ -1916,7 +1920,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  getExecutionNodeProtocolJson(
+  serializeExecutionNode(
     executionNode: ExecutionNode,
   ): PlainObject<V1_ExecutionNode> {
     return V1_serializeExecutionNode(

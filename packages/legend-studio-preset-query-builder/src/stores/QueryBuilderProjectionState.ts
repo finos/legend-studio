@@ -23,34 +23,40 @@ import {
 } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  assertType,
+  UnsupportedOperationError,
+  assertErrorThrown,
+  changeEntry,
+  guaranteeType,
   uuid,
   deleteEntry,
   addUniqueEntry,
   guaranteeNonNullable,
   findLast,
 } from '@finos/legend-studio-shared';
-import {
-  QueryBuilderExplorerTreePropertyNodeData,
-  getPropertyExpression,
-} from './QueryBuilderExplorerState';
+import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
+import { buildPropertyExpressionFromExplorerTreeNodeData } from './QueryBuilderExplorerState';
 import {
   getPropertyChainName,
-  QueryBuilderPropertyEditorState,
+  QueryBuilderPropertyExpressionState,
 } from './QueryBuilderPropertyEditorState';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   AbstractPropertyExpression,
   CompilationError,
   EditorStore,
+  ExecutionResult,
 } from '@finos/legend-studio';
 import {
+  TdsExecutionResult,
+  CLIENT_VERSION,
+  PRIMITIVE_TYPE,
   extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
   CORE_LOG_EVENT,
   LambdaEditorState,
-  TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -67,11 +73,12 @@ import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperator
 import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min';
 import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max';
 import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString';
-
-export type ProjectionColumnOption = {
-  label: string;
-  value: QueryBuilderProjectionColumnState;
-};
+import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
+import {
+  buildNonNumericPreviewDataQuery,
+  buildNumericPreviewDataQuery,
+} from './QueryBuilderPreviewDataHelper';
+import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
@@ -119,41 +126,27 @@ export abstract class QueryBuilderProjectionColumnState {
 
 export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProjectionColumnState {
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
-  propertyEditorState: QueryBuilderPropertyEditorState;
+  propertyExpressionState: QueryBuilderPropertyExpressionState;
 
   constructor(
     editorStore: EditorStore,
     projectionState: QueryBuilderProjectionState,
-    data: QueryBuilderExplorerTreePropertyNodeData | AbstractPropertyExpression,
-    propertyExpressionProcessed?: boolean,
+    propertyExpression: AbstractPropertyExpression,
   ) {
     super(editorStore, projectionState, '');
 
     makeObservable(this, {
       lambdaParameterName: observable,
-      propertyEditorState: observable,
+      propertyExpressionState: observable,
       setLambdaParameterName: action,
       changeProperty: action,
     });
-
-    const propertyExpression =
-      data instanceof QueryBuilderExplorerTreePropertyNodeData
-        ? getPropertyExpression(
-            this.projectionState.queryBuilderState.explorerState
-              .nonNullableTreeData,
-            data,
-            this.editorStore.graphState.graph.getTypicalMultiplicity(
-              TYPICAL_MULTIPLICITY_TYPE.ONE,
-            ),
-          )
-        : data;
-    this.propertyEditorState = new QueryBuilderPropertyEditorState(
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       editorStore,
       propertyExpression,
-      propertyExpressionProcessed,
     );
     this.columnName = getPropertyChainName(
-      this.propertyEditorState.propertyExpression,
+      this.propertyExpressionState.propertyExpression,
     );
   }
 
@@ -162,19 +155,17 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
   }
 
   changeProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
-    this.propertyEditorState = new QueryBuilderPropertyEditorState(
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.editorStore,
-      getPropertyExpression(
+      buildPropertyExpressionFromExplorerTreeNodeData(
         this.projectionState.queryBuilderState.explorerState
           .nonNullableTreeData,
         node,
-        this.editorStore.graphState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
+        this.editorStore.graphState.graph,
       ),
     );
     this.columnName = getPropertyChainName(
-      this.propertyEditorState.propertyExpression,
+      this.propertyExpressionState.propertyExpression,
     );
   }
 }
@@ -316,6 +307,7 @@ export class QueryBuilderProjectionState {
       removeColumn: action,
       addColumn: action,
       moveColumn: action,
+      replaceColumn: action,
     });
 
     this.editorStore = editorStore;
@@ -336,13 +328,6 @@ export class QueryBuilderProjectionState {
         new QueryBuilderAggregateOperator_JoinString(),
       ],
     );
-  }
-
-  get columnOptions(): ProjectionColumnOption[] {
-    return this.columns.map((projectionCol) => ({
-      label: projectionCol.columnName,
-      value: projectionCol,
-    }));
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {
@@ -388,6 +373,63 @@ export class QueryBuilderProjectionState {
         this.isConvertDerivationProjectionObjects = false;
       }
     }
+  }
+
+  transformSimpleProjectionToDerivation(
+    simpleProjectionColumnState: QueryBuilderSimpleProjectionColumnState,
+  ): void {
+    // setup new derivation column state
+    const columnColumnLambda = buildGenericLambdaFunctionInstanceValue(
+      simpleProjectionColumnState.lambdaParameterName,
+      [simpleProjectionColumnState.propertyExpressionState.propertyExpression],
+      this.editorStore.graphState.graph,
+    );
+    const derivationColumnState =
+      new QueryBuilderDerivationProjectionColumnState(
+        this.editorStore,
+        this,
+        guaranteeType(
+          this.editorStore.graphState.graphManager.buildRawValueSpecification(
+            columnColumnLambda,
+            this.editorStore.graphState.graph,
+          ),
+          RawLambda,
+        ),
+      );
+    derivationColumnState.setColumnName(simpleProjectionColumnState.columnName);
+
+    this.replaceColumn(simpleProjectionColumnState, derivationColumnState);
+
+    // convert to grammar for display
+    derivationColumnState.derivationLambdaEditorState
+      .convertLambdaObjectToGrammarString(false)
+      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
+  }
+
+  replaceColumn(
+    oldVal: QueryBuilderProjectionColumnState,
+    newVal: QueryBuilderProjectionColumnState,
+  ): void {
+    // reassociation with column aggregation state if applicable
+    const corresspondingAggregateColumnState =
+      this.aggregationState.columns.find(
+        (aggregateColState) =>
+          aggregateColState.projectionColumnState === oldVal,
+      );
+    if (corresspondingAggregateColumnState) {
+      corresspondingAggregateColumnState.setColumnState(newVal);
+    }
+
+    // reassociation with column sorting state if applicable
+    const corresspondingSortColumnState =
+      this.queryBuilderState.resultSetModifierState.sortColumns.find(
+        (sortColState) => sortColState.columnState === oldVal,
+      );
+    if (corresspondingSortColumnState) {
+      corresspondingSortColumnState.setColumnState(newVal);
+    }
+
+    changeEntry(this.columns, oldVal, newVal);
   }
 
   removeColumn(val: QueryBuilderProjectionColumnState): void {
@@ -554,5 +596,126 @@ export class QueryBuilderProjectionState {
         undefined,
       ),
     );
+  }
+
+  *previewData(
+    node: QueryBuilderExplorerTreePropertyNodeData,
+  ): GeneratorFn<void> {
+    if (
+      !node.mapped ||
+      !this.queryBuilderState.querySetupState._class ||
+      !this.queryBuilderState.querySetupState.mapping
+    ) {
+      return;
+    }
+    if (
+      this.queryBuilderState.explorerState.previewDataState
+        .isGeneratingPreviewData
+    ) {
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't preview data for property '${node.property.name}': another preview request is being executed`,
+      );
+      return;
+    }
+    this.queryBuilderState.explorerState.previewDataState.setPropertyName(
+      node.property.name,
+    );
+    this.queryBuilderState.explorerState.previewDataState.setIsGeneratingPreviewData(
+      true,
+    );
+    const propertyExpression = buildPropertyExpressionFromExplorerTreeNodeData(
+      this.queryBuilderState.explorerState.nonNullableTreeData,
+      node,
+      this.editorStore.graphState.graph,
+    );
+    const propertyType = node.property.genericType.value.rawType;
+    try {
+      switch (propertyType.path) {
+        case PRIMITIVE_TYPE.NUMBER:
+        case PRIMITIVE_TYPE.INTEGER:
+        case PRIMITIVE_TYPE.DECIMAL:
+        case PRIMITIVE_TYPE.FLOAT: {
+          const previewResult =
+            (yield this.editorStore.graphState.graphManager.executeMapping(
+              this.editorStore.graphState.graph,
+              this.queryBuilderState.querySetupState.mapping,
+              this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+                buildNumericPreviewDataQuery(
+                  propertyExpression,
+                  this.queryBuilderState.querySetupState._class,
+                  this.editorStore.graphState.graph,
+                ),
+              ),
+              this.queryBuilderState.querySetupState.runtime,
+              CLIENT_VERSION.VX_X_X,
+              false,
+            )) as ExecutionResult;
+          assertType(
+            previewResult,
+            TdsExecutionResult,
+            `Unexpected preview data format`,
+          );
+          const previewResultData =
+            previewResult.values as QueryBuilderPreviewData;
+          // transpose the result
+          const transposedPreviewResultData = {
+            columns: ['Aggregation', 'Value'],
+            rows: previewResultData.columns.map((column, idx) => ({
+              values: [column, previewResultData.rows[0].values[idx]],
+            })),
+          };
+          this.queryBuilderState.explorerState.previewDataState.setPreviewData(
+            transposedPreviewResultData,
+          );
+          break;
+        }
+        case PRIMITIVE_TYPE.BOOLEAN:
+        case PRIMITIVE_TYPE.STRING:
+        case PRIMITIVE_TYPE.DATE:
+        case PRIMITIVE_TYPE.STRICTDATE:
+        case PRIMITIVE_TYPE.DATETIME: {
+          const previewResult =
+            (yield this.editorStore.graphState.graphManager.executeMapping(
+              this.editorStore.graphState.graph,
+              this.queryBuilderState.querySetupState.mapping,
+              this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+                buildNonNumericPreviewDataQuery(
+                  propertyExpression,
+                  this.queryBuilderState.querySetupState._class,
+                  this.editorStore.graphState.graph,
+                ),
+              ),
+              this.queryBuilderState.querySetupState.runtime,
+              CLIENT_VERSION.VX_X_X,
+              false,
+            )) as ExecutionResult;
+          assertType(
+            previewResult,
+            TdsExecutionResult,
+            `Unexpected preview data format`,
+          );
+          this.queryBuilderState.explorerState.previewDataState.setPreviewData(
+            previewResult.values as QueryBuilderPreviewData,
+          );
+          break;
+        }
+        default:
+          throw new UnsupportedOperationError(
+            `No preview support for property of type '${propertyType.path}'`,
+          );
+      }
+    } catch (e: unknown) {
+      assertErrorThrown(e);
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't preview data for property '${node.property.name}'. Error: ${e.message}`,
+      );
+      this.queryBuilderState.explorerState.previewDataState.setPreviewData(
+        undefined,
+      );
+    } finally {
+      this.queryBuilderState.explorerState.previewDataState.setIsGeneratingPreviewData(
+        false,
+      );
+    }
   }
 }

@@ -257,7 +257,7 @@ export type GeneratorFn<T> = Generator<
 >;
 
 export const printObject = (
-  val: unknown,
+  value: unknown,
   options?: {
     deep?: boolean;
   },
@@ -266,7 +266,7 @@ export const printObject = (
     printFunctionName: false,
     maxDepth: options?.deep ? undefined : 1,
   });
-  const text = prettyPrintObject(val, opts);
+  const text = prettyPrintObject(value, opts);
 
   return (
     text

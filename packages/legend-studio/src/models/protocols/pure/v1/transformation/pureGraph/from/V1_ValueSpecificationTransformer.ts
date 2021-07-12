@@ -152,6 +152,14 @@ export class V1_ValueSpecificationTransformer
         cInteger.multiplicity = multiplicity;
         return cInteger;
       }
+      case PRIMITIVE_TYPE.FLOAT: {
+        const cFloat = new V1_CFloat();
+        cFloat.values = valueSpecification.values as number[];
+        cFloat.multiplicity = multiplicity;
+        return cFloat;
+      }
+      // since we don't have a corresponding protocol for abstract type `Number`, we will default to use `Decimal`
+      case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL: {
         const cDecimal = new V1_CDecimal();
         cDecimal.values = valueSpecification.values as number[];
@@ -170,12 +178,8 @@ export class V1_ValueSpecificationTransformer
         cBoolean.multiplicity = multiplicity;
         return cBoolean;
       }
-      case PRIMITIVE_TYPE.FLOAT: {
-        const cFloat = new V1_CFloat();
-        cFloat.values = valueSpecification.values as number[];
-        cFloat.multiplicity = multiplicity;
-        return cFloat;
-      }
+      // since we don't have a corresponding protocol for abstract type `Date`, we will default to use `DateTime`
+      case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.DATETIME: {
         const cDateTime = new V1_CDateTime();
         cDateTime.values = valueSpecification.values as string[];

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { ValueSpecification } from '@finos/legend-studio';
+import type {
+  AbstractPropertyExpression,
+  PureModel,
+  ValueSpecification,
+} from '@finos/legend-studio';
 import {
   matchFunctionName,
   SimpleFunctionExpression,
@@ -47,7 +51,7 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       const propertyType =
-        projectionColumnState.propertyEditorState.propertyExpression.func
+        projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return PRIMITIVE_TYPE.STRING === propertyType.path;
     }
@@ -55,32 +59,26 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
   }
 
   buildAggregateExpression(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    propertyExpression: AbstractPropertyExpression | undefined,
+    variableName: string,
+    graph: PureModel,
   ): ValueSpecification {
-    const multiplicityOne =
-      aggregateColumnState.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
+    const multiplicityOne = graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
     const expression = new SimpleFunctionExpression(
       extractElementNameFromPath(SUPPORTED_FUNCTIONS.JOIN_STRINGS),
       multiplicityOne,
     );
     const delimiter = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
-        new GenericType(
-          aggregateColumnState.editorStore.graphState.graph.getPrimitiveType(
-            PRIMITIVE_TYPE.STRING,
-          ),
-        ),
+        new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
       ),
       multiplicityOne,
     );
     delimiter.values = [';'];
     expression.parametersValues.push(
-      new VariableExpression(
-        aggregateColumnState.lambdaParameterName,
-        multiplicityOne,
-      ),
+      new VariableExpression(variableName, multiplicityOne),
       delimiter,
     );
     return expression;

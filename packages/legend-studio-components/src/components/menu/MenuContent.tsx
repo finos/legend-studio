@@ -29,7 +29,7 @@ export const MenuContent = forwardRef<
   );
 });
 
-MenuContent.displayName = 'MenuContentItem';
+MenuContent.displayName = 'MenuContent';
 
 export const MenuContentItem: React.FC<{
   className?: string;

@@ -14,19 +14,28 @@
  * limitations under the License.
  */
 
-@forward 'base/variables';
-@forward 'base/normalize';
-@forward 'base/utils';
-@forward 'base/common';
-@forward 'base/icon';
-@forward 'base/button';
-@forward 'base/input';
-@forward 'base/panel';
-@forward 'base/modal';
-@forward 'base/menu';
-@forward 'base/table';
+.table {
+  th,
+  td {
+    padding: 1rem;
+    text-align: center;
+    vertical-align: middle;
+    border: 0.1rem solid var(--color-dark-grey-250);
+  }
 
-@forward 'components/panel-loading-indicator';
-@forward 'components/blank-panel-placeholder';
-@forward 'components/selector-input';
-@forward 'components/tree-view';
+  thead {
+    background: var(--color-dark-grey-100);
+  }
+
+  th {
+    font-weight: 500;
+  }
+
+  tr {
+    height: 3.4rem;
+  }
+
+  &__cell--left {
+    text-align: left !important;
+  }
+}

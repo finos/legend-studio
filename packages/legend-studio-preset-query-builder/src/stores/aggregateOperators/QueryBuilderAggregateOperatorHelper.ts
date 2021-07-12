@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ValueSpecification } from '@finos/legend-studio';
+import type { PureModel, ValueSpecification } from '@finos/legend-studio';
 import {
   SimpleFunctionExpression,
   extractElementNameFromPath,
@@ -28,22 +28,19 @@ import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationStat
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
 
 export const buildAggregateExpression = (
-  aggregateColumnState: QueryBuilderAggregateColumnState,
   operatorFunctionFullPath: string,
+  graph: PureModel,
+  variableName: string,
 ): ValueSpecification => {
-  const multiplicityOne =
-    aggregateColumnState.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
   const expression = new SimpleFunctionExpression(
     extractElementNameFromPath(operatorFunctionFullPath),
     multiplicityOne,
   );
   expression.parametersValues.push(
-    new VariableExpression(
-      aggregateColumnState.lambdaParameterName,
-      multiplicityOne,
-    ),
+    new VariableExpression(variableName, multiplicityOne),
   );
   return expression;
 };

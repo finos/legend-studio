@@ -36,7 +36,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
-import { QueryBuilderPropertyEditorState } from './QueryBuilderPropertyEditorState';
+import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   AbstractPropertyExpression,
@@ -44,11 +44,6 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
-  CORE_ELEMENT_PATH,
-  FunctionType,
-  LambdaFunction,
-  LambdaFunctionInstanceValue,
-  VariableExpression,
   extractElementNameFromPath,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -57,6 +52,7 @@ import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const';
+import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
 
 export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
   AND = 'and',
@@ -109,7 +105,7 @@ export type QueryBuilderFilterConditionRearrangeDropTarget =
 export class FilterConditionState {
   editorStore: EditorStore;
   filterState: QueryBuilderFilterState;
-  propertyEditorState: QueryBuilderPropertyEditorState;
+  propertyExpressionState: QueryBuilderPropertyExpressionState;
   operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification;
   existsLambdaParamNames: string[] = [];
@@ -132,7 +128,7 @@ export class FilterConditionState {
 
     this.editorStore = editorStore;
     this.filterState = filterState;
-    this.propertyEditorState = new QueryBuilderPropertyEditorState(
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       editorStore,
       propertyExpression,
     );
@@ -140,7 +136,7 @@ export class FilterConditionState {
     // operator
     assertTrue(
       this.operators.length !== 0,
-      `Can't find an operator for property '${this.propertyEditorState.path}': no operators registered`,
+      `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
     );
     this.operator = this.operators[0];
     this.value = this.operator.getDefaultFilterConditionValue(this);
@@ -166,7 +162,7 @@ export class FilterConditionState {
       return;
     }
 
-    this.propertyEditorState = new QueryBuilderPropertyEditorState(
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.editorStore,
       propertyExpression,
     );
@@ -286,7 +282,7 @@ export class QueryBuilderFilterTreeConditionNodeData extends QueryBuilderFilterT
   }
 
   get dragLayerLabel(): string {
-    return this.condition.propertyEditorState.title;
+    return this.condition.propertyExpressionState.title;
   }
 }
 
@@ -375,13 +371,6 @@ export const buildFilterExpression = (
   filterState: QueryBuilderFilterState,
   getAllFunc: SimpleFunctionExpression,
 ): SimpleFunctionExpression | undefined => {
-  const lambdaVariable = new VariableExpression(
-    filterState.lambdaParameterName,
-    filterState.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    ),
-  );
-
   const filterConditionExpressions = filterState.rootIds
     .map((e) => guaranteeNonNullable(filterState.nodes.get(e)))
     .map((e) => buildFilterConditionExpression(filterState, e))
@@ -390,9 +379,6 @@ export const buildFilterExpression = (
   if (!filterConditionExpressions.length) {
     return undefined;
   }
-  const typeAny = filterState.editorStore.graphState.graph.getType(
-    CORE_ELEMENT_PATH.ANY,
-  );
   const multiplicityOne =
     filterState.editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
@@ -405,13 +391,13 @@ export const buildFilterExpression = (
   // param [0]
   filterExpression.parametersValues.push(getAllFunc);
   // param [1]
-  const filterLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-  const filterLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-  filterLambdaFunctionType.parameters.push(lambdaVariable);
-  const colLambdaFunction = new LambdaFunction(filterLambdaFunctionType);
-  colLambdaFunction.expressionSequence = filterConditionExpressions;
-  filterLambda.values.push(colLambdaFunction);
-  filterExpression.parametersValues.push(filterLambda);
+  filterExpression.parametersValues.push(
+    buildGenericLambdaFunctionInstanceValue(
+      filterState.lambdaParameterName,
+      filterConditionExpressions,
+      filterState.editorStore.graphState.graph,
+    ),
+  );
   return filterExpression;
 };
 

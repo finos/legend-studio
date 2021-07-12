@@ -182,8 +182,11 @@ export abstract class AbstractPureGraphManager {
     valueSpecificationJson: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification;
+  abstract serializeValueSpecification(
+    valueSpecification: ValueSpecification,
+  ): Record<PropertyKey, unknown>;
   abstract buildRawValueSpecification(
-    compiledValueSpecification: ValueSpecification,
+    valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification;
   abstract serializeRawValueSpecification(
@@ -259,11 +262,11 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): ExecutionPlan;
 
-  abstract transformExecutionPlan(
+  abstract serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): RawExecutionPlan;
 
-  abstract getExecutionNodeProtocolJson(executionNode: ExecutionNode): object;
+  abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
   // ------------------------------------------- Store -------------------------------------------
 

@@ -18,6 +18,8 @@ import type {
   ValueSpecification,
   SimpleFunctionExpression,
   VariableExpression,
+  AbstractPropertyExpression,
+  PureModel,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
@@ -42,7 +44,7 @@ export class QueryBuilderAggregateOperator_StdDev_Population extends QueryBuilde
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       const propertyType =
-        projectionColumnState.propertyEditorState.propertyExpression.func
+        projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return (
         [
@@ -57,11 +59,14 @@ export class QueryBuilderAggregateOperator_StdDev_Population extends QueryBuilde
   }
 
   buildAggregateExpression(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    propertyExpression: AbstractPropertyExpression | undefined,
+    variableName: string,
+    graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      aggregateColumnState,
       SUPPORTED_FUNCTIONS.STD_DEV_POPULATION,
+      graph,
+      variableName,
     );
   }
 

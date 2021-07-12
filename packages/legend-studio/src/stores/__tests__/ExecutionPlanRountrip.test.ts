@@ -53,7 +53,7 @@ describe(unitTest('Execution plan processing roundtrip test'), () => {
         editorStore.graphState.graph,
       );
     const _executionPlanJson =
-      editorStore.graphState.graphManager.transformExecutionPlan(executionPlan);
+      editorStore.graphState.graphManager.serializeExecutionPlan(executionPlan);
     expect(_executionPlanJson).toEqual(executionPlanJson);
   });
 });

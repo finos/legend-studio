@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
+import { observable, makeObservable, action } from 'mobx';
 import type { GenericTypeReference } from '../../model/packageableElements/domain/GenericTypeReference';
 import type { Multiplicity } from '../../model/packageableElements/domain/Multiplicity';
 import type { PackageableElementReference } from '../../model/packageableElements/PackageableElementReference';
@@ -46,7 +46,12 @@ export class FunctionExpression extends Expression {
       functionName: observable,
       parametersValues: observable,
       classifierGenericType: observable,
+      setParametersValues: action,
     });
+  }
+
+  setParametersValues(val: ValueSpecification[]): void {
+    this.parametersValues = val;
   }
 
   override accept_ValueSpecificationVisitor<T>(
