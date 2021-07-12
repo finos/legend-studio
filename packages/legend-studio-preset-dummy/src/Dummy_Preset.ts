@@ -17,6 +17,9 @@
 import packageJson from '../package.json';
 import type { PluginManager } from '@finos/legend-studio';
 import { AbstractPreset } from '@finos/legend-studio-shared';
+import { Dummy_PureProtocolProcessorPlugin } from './models/protocols/pure/Dummy_PureProtocolProcessorPlugin';
+import { Dummy_PureGraphManagerPlugin } from './models/metamodels/pure/graph/Dummy_PureGraphManagerPlugin';
+import { Dummy_EditorPlugin } from './components/Dummy_EditorPlugin';
 
 export class Dummy_Preset extends AbstractPreset {
   constructor() {
@@ -24,6 +27,8 @@ export class Dummy_Preset extends AbstractPreset {
   }
 
   install(pluginManager: PluginManager): void {
-    // do nothing
+    new Dummy_EditorPlugin().install(pluginManager);
+    new Dummy_PureGraphManagerPlugin().install(pluginManager);
+    new Dummy_PureProtocolProcessorPlugin().install(pluginManager);
   }
 }

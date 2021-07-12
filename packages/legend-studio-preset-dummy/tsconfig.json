@@ -3,6 +3,10 @@
   "compilerOptions": {
     "outDir": "lib",
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
+    // NOTE: we have to disable this flag because if we use the keyword `override`, when we do the backward
+    // compatibility check and when we introduce a new method that the old version of core does not have
+    // error will be thrown, we don't need those noise, but rather care more about type-compatibility
+    "noImplicitOverride": false,
     "rootDir": "src",
     "jsx": "react-jsxdev"
   },
