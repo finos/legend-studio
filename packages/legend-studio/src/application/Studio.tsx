@@ -44,18 +44,13 @@ import {
 } from '@finos/legend-studio-shared';
 import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
 import { App } from '../components/App';
-import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { PluginManager } from './PluginManager';
 import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';
 
 // This is not considered side-effect that hinders tree-shaking because the effectful calls
 // are embedded in the function
 // See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
-const setupReactApp = (pluginManager: PluginManager): void => {
-  // Register module extensions for `ag-grid`
-  agGrid_ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
+const setupUILibrary = async (pluginManager: PluginManager): Promise<void> => {
   // Register Pure as a language in `monaco-editor`
   monacoEditorAPI.defineTheme(EDITOR_THEME.STUDIO, theme);
   monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
@@ -116,6 +111,18 @@ const setupReactApp = (pluginManager: PluginManager): void => {
       `;
     document.head.prepend(stylesheet);
   }
+
+  await Promise.all(
+    pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_EditorPlugin_Extension
+          ).getExtraEditorPluginSetups?.() ?? [],
+      )
+      .map((setup) => setup(pluginManager)),
+  );
 };
 export class Studio {
   private pluginManager = PluginManager.create();
@@ -207,7 +214,7 @@ export class Studio {
       this.pluginManager.install();
 
       // Setup React application libraries
-      setupReactApp(this.pluginManager);
+      await setupUILibrary(this.pluginManager);
 
       // Render React application
       const root = ((): Element => {

@@ -2437,6 +2437,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder"
   dependencies:
+    "@ag-grid-community/client-side-row-model": 25.3.0
+    "@ag-grid-community/core": 25.3.0
+    "@ag-grid-community/react": 25.3.0
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
@@ -2505,9 +2508,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 25.3.0
-    "@ag-grid-community/core": 25.3.0
-    "@ag-grid-community/react": 25.3.0
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-network": "workspace:*"

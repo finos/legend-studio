@@ -37,9 +37,6 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "25.3.0",
-    "@ag-grid-community/core": "25.3.0",
-    "@ag-grid-community/react": "25.3.0",
     "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-network": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
