@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -34,6 +34,7 @@ import {
 } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx } from '@finos/legend-studio-components';
+import { isNonNullable } from '@finos/legend-studio-shared';
 import { NotificationSnackbar } from '../shared/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from '../../stores/ViewerStore';
@@ -168,6 +169,19 @@ export const ViewerInner = observer(() => {
       );
     }
   };
+  // Extensions
+  const extraEditorExtensionComponents =
+    editorStore.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
+          [],
+      )
+      .filter(isNonNullable)
+      .map((config) => (
+        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+      ));
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys
@@ -230,6 +244,7 @@ export const ViewerInner = observer(() => {
               </div>
             </div>
             <ViewerStatusBar />
+            {extraEditorExtensionComponents}
             {allowOpeningElement && <ProjectSearchCommand />}
           </GlobalHotKeys>
         </div>
