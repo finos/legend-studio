@@ -36,6 +36,7 @@ export enum DatabaseType {
   SqlServer = 'SqlServer',
   Hive = 'Hive',
   Snowflake = 'Snowflake',
+  DeltaLake = 'DeltaLake',
   Presto = 'Presto',
 }
 

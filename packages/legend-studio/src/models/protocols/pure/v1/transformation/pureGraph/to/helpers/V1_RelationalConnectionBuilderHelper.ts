@@ -25,11 +25,13 @@ import {
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
+  DeltaLakeDatasourceSpecification,
   SnowflakeDatasourceSpecification,
 } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { AuthenticationStrategy } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   SnowflakePublicAuthenticationStrategy,
+  DeltaLakeAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
@@ -41,6 +43,7 @@ import {
   V1_LocalH2DataSourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
+  V1_DeltaLakeDatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
@@ -48,6 +51,7 @@ import {
   V1_SnowflakePublicAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
+  V1_DeltaLakeAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
@@ -95,6 +99,20 @@ export const V1_buildDatasourceSpecification = (
       protocol.autoServerMode,
     );
     return embeddedSpec;
+  } else if (protocol instanceof V1_DeltaLakeDatasourceSpecification) {
+    assertNonEmptyString(
+      protocol.shard,
+      'DeltaLake shard specification is missing',
+    );
+    assertNonEmptyString(
+      protocol.httpPath,
+      'DeltaLake httpPath specification is missing',
+    );
+    const deltaLakeSpec = new DeltaLakeDatasourceSpecification(
+      protocol.shard,
+      protocol.httpPath,
+    );
+    return deltaLakeSpec;
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     assertNonEmptyString(
       protocol.accountName,
@@ -157,6 +175,12 @@ export const V1_buildAuthenticationStrategy = (
     const metamodel = new DelegatedKerberosAuthenticationStrategy();
     metamodel.serverPrincipal = protocol.serverPrincipal;
     return metamodel;
+  } else if (protocol instanceof V1_DeltaLakeAuthenticationStrategy) {
+    assertNonEmptyString(
+      protocol.apiToken,
+      'DeltaLake API token is missing or empty',
+    );
+    return new DeltaLakeAuthenticationStrategy(protocol.apiToken);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     assertNonEmptyString(
       protocol.privateKeyVaultReference,
