@@ -139,7 +139,7 @@ const transformDatasourceSpecification = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform datasource specification. No compatible transformer available from plugins.`,
+    `Can't transform datasource specification: no compatible transformer available from plugins`,
     metamodel,
   );
 };
@@ -188,7 +188,7 @@ const transformAuthenticationStrategy = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform authentication strategy. No compatible transformer available from plugins.`,
+    `Can't transform authentication strategy: no compatible transformer available from plugins`,
     metamodel,
   );
 };

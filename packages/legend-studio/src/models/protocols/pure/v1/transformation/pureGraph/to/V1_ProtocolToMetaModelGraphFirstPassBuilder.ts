@@ -15,14 +15,16 @@
  */
 
 import { assertNonEmptyString, assertTrue } from '@finos/legend-studio-shared';
-import { PRIMITIVE_TYPE } from '../../../../../../MetaModelConst';
+import {
+  PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
+} from '../../../../../../MetaModelConst';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import { Profile } from '../../../../../../metamodels/pure/model/packageableElements/domain/Profile';
 import { Enumeration } from '../../../../../../metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Measure } from '../../../../../../metamodels/pure/model/packageableElements/domain/Measure';
 import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import { Association } from '../../../../../../metamodels/pure/model/packageableElements/domain/Association';
-import { Multiplicity } from '../../../../../../metamodels/pure/model/packageableElements/domain/Multiplicity';
 import { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
 import { FlatData } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
 import { Database } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
@@ -195,7 +197,9 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       PackageableElementExplicitReference.create(
         this.context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
       ),
-      new Multiplicity(0, undefined),
+      this.context.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
+      ),
     );
     const path = this.context.currentSubGraph.buildPackageString(
       element.package,

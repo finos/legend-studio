@@ -15,7 +15,7 @@
  */
 
 import { hashArray } from '@finos/legend-studio-shared';
-import { hashLambda } from '../../../../../MetaModelUtility';
+import { hashLambda } from '../../../../../MetaModelUtils';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { V1_RawValueSpecificationVisitor } from '../../model/rawValueSpecification/V1_RawValueSpecification';
@@ -27,7 +27,7 @@ export class V1_RawLambda extends V1_RawValueSpecification implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.LAMBDA,
+      CORE_HASH_STRUCTURE.RAW_LAMBDA,
       hashLambda(this.parameters, this.body),
     ]);
   }

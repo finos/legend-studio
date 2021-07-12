@@ -37,7 +37,7 @@ import {
   TEST_RESULT,
 } from './MappingTestState';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtility';
+import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   generateEnumerableNameFromToken,
@@ -58,7 +58,7 @@ import {
 import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
 import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
-import { getElementCoordinates } from '../../../../models/metamodels/pure/action/EngineError';
+import { extractSourceInformationCoordinates } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import type {
@@ -832,14 +832,14 @@ export class MappingEditorState extends ElementEditorState {
     let revealed = false;
     try {
       if (compilationError.sourceInformation) {
-        const errorElementCoordinates = getElementCoordinates(
+        const errorCoordinates = extractSourceInformationCoordinates(
           compilationError.sourceInformation,
         );
-        if (errorElementCoordinates) {
+        if (errorCoordinates) {
           const sourceId = compilationError.sourceInformation.sourceId;
-          assertTrue(errorElementCoordinates.coordinates.length > 4);
-          const [mappingType, mappingId, propertyName, targetPropertyId] =
-            errorElementCoordinates.coordinates;
+          assertTrue(errorCoordinates.length >= 5);
+          const [, mappingType, mappingId, propertyName, targetPropertyId] =
+            errorCoordinates;
           const newMappingElement = this.mapping.getMappingElementByTypeAndId(
             mappingType,
             mappingId,
@@ -1070,7 +1070,7 @@ export class MappingEditorState extends ElementEditorState {
     const source = getMappingElementSource(setImplementation);
     if (setImplementation instanceof OperationSetImplementation) {
       this.editorStore.applicationStore.notifyWarning(
-        `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+        `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
       );
     }
     let inputData: InputData;

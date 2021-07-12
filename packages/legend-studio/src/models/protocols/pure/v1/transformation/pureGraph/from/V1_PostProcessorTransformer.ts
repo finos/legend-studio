@@ -92,7 +92,7 @@ export const V1_transformPostProcessor = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform post-processor. No compatible transformer available from plugins.`,
+    `Can't transform post-processor: no compatible transformer available from plugins`,
     postProcessor,
   );
 };

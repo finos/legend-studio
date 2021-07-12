@@ -180,4 +180,6 @@ export interface DSL_EditorPlugin_Extension extends EditorPlugin {
   getExtraPureGrammarParserNames?(): string[];
 
   getExtraPureGrammarKeywords?(): string[];
+
+  getExtraGrammarTextEditorDnDTypes?(): string[];
 }

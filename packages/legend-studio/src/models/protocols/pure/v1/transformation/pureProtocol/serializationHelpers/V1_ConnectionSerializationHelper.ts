@@ -194,7 +194,7 @@ export const V1_serializeDatasourceSpecification = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize datasource specification. No compatible serializer available from plugins.`,
+    `Can't serialize datasource specification: no compatible serializer available from plugins`,
     protocol,
   );
 };
@@ -228,7 +228,7 @@ export const V1_deserializeDatasourceSpecification = (
         }
       }
       throw new UnsupportedOperationError(
-        `Can't deserialize datasource specification of type '${json._type}'. No compatible deserializer available from plugins.`,
+        `Can't deserialize datasource specification of type '${json._type}': no compatible deserializer available from plugins`,
       );
     }
   }
@@ -324,7 +324,7 @@ export const V1_serializeAuthenticationStrategy = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize authentication strategy. No compatible serializer available from plugins.`,
+    `Can't serialize authentication strategy: no compatible serializer available from plugins`,
     protocol,
   );
 };
@@ -369,7 +369,7 @@ export const V1_deserializeAuthenticationStrategy = (
         }
       }
       throw new UnsupportedOperationError(
-        `Can't deserialize authentication strategy of type '${json._type}'. No compatible deserializer available from plugins.`,
+        `Can't deserialize authentication strategy of type '${json._type}': no compatible deserializer available from plugins`,
       );
     }
   }

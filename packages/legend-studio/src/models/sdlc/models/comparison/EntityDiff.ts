@@ -86,7 +86,7 @@ export class EntityDiff {
     diff.entityChangeType === EntityChangeType.RENAME;
 
   getValidatedOldPath(): string {
-    const errorMessage = `old entity path is not defined for change type ${this.entityChangeType}`;
+    const errorMessage = `old entity path is not defined for change type '${this.entityChangeType}'`;
     if (EntityDiff.shouldOldEntityExist(this)) {
       return guaranteeNonNullable(this.oldPath, errorMessage);
     }
@@ -94,7 +94,7 @@ export class EntityDiff {
   }
 
   getValidatedNewPath(): string {
-    const errorMessage = `new entity path is not defined for change type ${this.entityChangeType}`;
+    const errorMessage = `new entity path is not defined for change type '${this.entityChangeType}'`;
     if (EntityDiff.shouldNewEntityExist(this)) {
       return guaranteeNonNullable(this.newPath, errorMessage);
     }

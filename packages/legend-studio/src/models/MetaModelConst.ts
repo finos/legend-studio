@@ -21,7 +21,7 @@ export const UNIT_PATH_DELIMITER = '~';
 export const LAMBDA_START = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
 
-export enum SOURCR_ID_LABEL {
+export enum SOURCE_ID_LABEL {
   CONSTRAINT = 'constraint',
   DERIVED_PROPERTY = 'derivedProperty',
   ENUMERATION_MAPPING = 'enumerationMapping',
@@ -306,13 +306,10 @@ export enum CORE_HASH_STRUCTURE {
   SECTION = 'SECTION',
   IMPORT_AWARE_CODE_SECTION = 'IMPORT_AWARE_CODE_SECTION',
   DEFAULT_CODE_SECTION = 'DEFAULT_CODE_SECTION',
-  // value specification
-  LAMBDA = 'LAMBDA',
-  VARIABLE = 'VARIABLE',
-  CLATEST_DATE = 'CLATEST_DATE',
-  CDATE_TIME = 'CDATE_TIME',
-  CSTRICT_DATE = 'CSTRICT_DATE',
-  CSTRICT_TIME = 'CSTRICT_TIME',
+  // raw value specification
+  RAW_LAMBDA = 'RAW_LAMBDA',
+  RAW_VARIABLE = 'RAW_VARIABLE',
+  RAW_INSTANCE_VALUE = 'RAW_INSTANCE_VALUE',
 }
 
 export const DEFAULT_DATABASE_SCHEMA_NAME = 'default';

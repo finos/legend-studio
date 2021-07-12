@@ -1,6 +1,6 @@
 {
   "name": "@finos/eslint-plugin-legend-studio",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "ESLint rules for Legend Studio",
   "keywords": [
     "legend",
@@ -31,9 +31,9 @@
   "dependencies": {
     "@babel/core": "7.14.6",
     "@babel/eslint-parser": "7.14.7",
-    "@typescript-eslint/eslint-plugin": "4.28.0",
-    "@typescript-eslint/parser": "4.28.0",
-    "eslint": "7.29.0",
+    "@typescript-eslint/eslint-plugin": "4.28.2",
+    "@typescript-eslint/parser": "4.28.2",
+    "eslint": "7.30.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.23.4",
     "eslint-plugin-prettier": "3.4.0",

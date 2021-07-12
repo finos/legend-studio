@@ -24,7 +24,7 @@ import {
   createFilter,
 } from '@finos/legend-studio-components';
 import type { SelectComponent } from '@finos/legend-studio-components';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtility';
+import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   UnsupportedOperationError,
@@ -197,7 +197,9 @@ export const NewMappingElementModal = observer(() => {
     <Dialog
       open={Boolean(spec)}
       onClose={handleClose}
-      onEnter={handleEnter}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
       classes={{
         container: 'search-modal__container',
       }}

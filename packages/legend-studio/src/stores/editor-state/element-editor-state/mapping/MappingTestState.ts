@@ -87,6 +87,7 @@ import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/p
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { LambdaEditorState } from '../LambdaEditorState';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -98,7 +99,6 @@ export enum TEST_RESULT {
 export class MappingTestQueryState extends LambdaEditorState {
   editorStore: EditorStore;
   test: MappingTest;
-  isConvertingLambdaToString = false;
   isInitializingLambda = false;
   query: RawLambda;
 
@@ -107,7 +107,6 @@ export class MappingTestQueryState extends LambdaEditorState {
 
     makeObservable(this, {
       query: observable,
-      isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
       convertLambdaObjectToGrammarString: action,
@@ -121,7 +120,7 @@ export class MappingTestQueryState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    return this.uuid;
+    return buildSourceInformationSourceId([this.uuid]);
   }
 
   setIsInitializingLambda(val: boolean): void {
@@ -139,7 +138,6 @@ export class MappingTestQueryState extends LambdaEditorState {
     pretty?: boolean,
   ) {
     if (!this.query.isStub) {
-      this.isConvertingLambdaToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
@@ -155,13 +153,11 @@ export class MappingTestQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-        this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.PARSING_PROBLEM,
           error,
         );
-        this.isConvertingLambdaToString = false;
       }
     } else {
       this.clearErrors();
@@ -171,7 +167,7 @@ export class MappingTestQueryState extends LambdaEditorState {
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
   convertLambdaGrammarStringToObject(): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 

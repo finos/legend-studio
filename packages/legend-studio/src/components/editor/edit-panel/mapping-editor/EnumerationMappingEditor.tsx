@@ -103,7 +103,9 @@ const EnumerationMappingSourceSelectorModal = observer(
       <Dialog
         open={open}
         onClose={closeModal}
-        onEnter={handleEnter}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
         classes={{
           container: 'search-modal__container',
         }}

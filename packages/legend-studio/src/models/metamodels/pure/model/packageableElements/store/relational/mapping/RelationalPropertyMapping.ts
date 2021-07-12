@@ -24,7 +24,7 @@ import { PropertyMapping } from '../../../../../model/packageableElements/mappin
 import type { PropertyMappingsImplementation } from '../../../../../model/packageableElements/mapping/PropertyMappingsImplementation';
 import type { PropertyReference } from '../../../../../model/packageableElements/domain/PropertyReference';
 import type { SetImplementation } from '../../../../../model/packageableElements/mapping/SetImplementation';
-import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtility';
+import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils';
 import { isStubRelationalOperationElement } from '../model/RawRelationalOperationElement';
 import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement';
 

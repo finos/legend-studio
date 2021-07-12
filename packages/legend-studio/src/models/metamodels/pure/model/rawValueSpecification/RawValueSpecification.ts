@@ -16,22 +16,16 @@
 
 import type { RawVariableExpression } from '../../model/rawValueSpecification/RawVariableExpression';
 import type { RawLambda } from '../../model/rawValueSpecification/RawLambda';
-import type {
-  RawRootGraphFetchTree,
-  RawPropertyGraphFetchTree,
-} from '../../model/rawValueSpecification/RawGraphFetchTree';
+import type { RawInstanceValue } from './RawInstanceValue';
 
 export interface RawValueSpecificationVisitor<T> {
   visit_RawLambda(valueSpecification: RawLambda): T;
   visit_RawVariable(valueSpecification: RawVariableExpression): T;
-  visit_RawRootGraphFetchTree(valueSpecification: RawRootGraphFetchTree): T;
-  visit_RawPropertyGraphFetchTree(
-    valueSpecification: RawPropertyGraphFetchTree,
-  ): T;
+  visit_RawInstanceValue(valueSpecification: RawInstanceValue): T;
 }
 
 export abstract class RawValueSpecification {
-  abstract accept_ValueSpecificationVisitor<T>(
+  abstract accept_RawValueSpecificationVisitor<T>(
     visitor: RawValueSpecificationVisitor<T>,
   ): T;
 }

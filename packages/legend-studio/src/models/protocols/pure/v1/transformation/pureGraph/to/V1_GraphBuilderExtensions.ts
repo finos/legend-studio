@@ -98,7 +98,7 @@ export class V1_GraphBuilderExtensions {
         const _class = builder.getElementProtocolClass();
         if (FORBIDDEN_BUILDER_PROTOCOL_CLASSES.has(_class)) {
           throw new IllegalStateError(
-            `Element builder not allowed for protocol class '${builder.elementClassName}'. Consider removing this builder from plugins.`,
+            `Element builder not allowed for protocol class '${builder.elementClassName}'. Consider removing this builder from plugins`,
           );
         } else if (index.has(_class)) {
           throw new IllegalStateError(
@@ -118,7 +118,7 @@ export class V1_GraphBuilderExtensions {
     );
     if (!builder) {
       throw new UnsupportedOperationError(
-        `Can't find builder for element '${element.path}'. No compatible builder available from plugins.`,
+        `Can't find builder for element '${element.path}': no compatible builder available from plugins`,
         element,
       );
     }
@@ -131,7 +131,7 @@ export class V1_GraphBuilderExtensions {
     const builder = this.getExtraBuilderForProtocolClass(_class);
     if (!builder) {
       throw new UnsupportedOperationError(
-        `Can't find element builder for the specified protocol class. No compatible builder available from plugins.`,
+        `Can't find element builder for the specified protocol class: no compatible builder available from plugins`,
       );
     }
     return builder;
@@ -264,13 +264,13 @@ export class V1_GraphBuilderExtensions {
           // builders. This implies that there's some sort of loop, and we cannot consistently order the
           // remaining builders.
           throw new IllegalStateError(
-            `Can't consistently sort element builders for protocol classes: ${Array.from(
+            `Can't consistently sort element builders for protocol classes [${Array.from(
               remaining.keys(),
             )
               .map((builder) => builder.elementClassName)
               .join(
                 ', ',
-              )}. This implies presence of loop(s) in the pre-requite chain between these builders.`,
+              )}]: this implies presence of loop(s) in the pre-requite chain between these builders`,
           );
         }
         remainingCount = newCount;

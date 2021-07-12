@@ -31,7 +31,7 @@ export class V1_RawVariable
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.VARIABLE,
+      CORE_HASH_STRUCTURE.RAW_VARIABLE,
       this.class,
       this.name,
       this.multiplicity,

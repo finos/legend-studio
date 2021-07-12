@@ -415,7 +415,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
         );
       } else {
         this.editorStore.applicationStore.notifyWarning(
-          `Can't mark conflict as resolved. More than one element found in parsed text`,
+          `Can't mark conflict as resolved: more than one element found in parsed text`,
         );
         return;
       }

@@ -17,7 +17,7 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import {
   LAMBDA_START,
-  SOURCR_ID_LABEL,
+  SOURCE_ID_LABEL,
 } from '../../../../models/MetaModelConst';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
@@ -45,6 +45,7 @@ import { Class } from '../../../../models/metamodels/pure/model/packageableEleme
 import { InferableMappingElementIdExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export class FlatDataPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -62,13 +63,13 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
   }
 
   get lambdaId(): string {
-    return `${this.propertyMapping.owner.parent.path}-${
-      SOURCR_ID_LABEL.FLAT_DATA_CLASS_MAPPING
-    }-${this.propertyMapping.owner.id.value}-${
-      this.propertyMapping.property.value.name
-    }-${this.propertyMapping.owner.propertyMappings.indexOf(
-      this.propertyMapping,
-    )}`;
+    return buildSourceInformationSourceId([
+      this.propertyMapping.owner.parent.path,
+      SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
+      this.propertyMapping.owner.id.value,
+      this.propertyMapping.property.value.name,
+      this.uuid, // in case of duplications
+    ]);
   }
 
   convertLambdaGrammarStringToObject = flow(function* (

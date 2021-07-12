@@ -32,7 +32,6 @@ import SplitPane from 'react-split-pane';
 import { observer } from 'mobx-react-lite';
 import { DiagramRenderer } from '../../shared/diagram-viewer/DiagramRenderer';
 import { DiagramEditorState } from '../../../stores/editor-state/element-editor-state/DiagramEditorState';
-import type { DiagramEditorDropTarget } from '../../../stores/shared/DnDUtil';
 import {
   CORE_DND_TYPE,
   ElementDragSource,
@@ -414,7 +413,7 @@ export const DiagramEditor = observer(() => {
 
   // Drag and Drop
   const handleDrop = useCallback(
-    (item: DiagramEditorDropTarget, monitor: DropTargetMonitor): void => {
+    (item: ElementDragSource, monitor: DropTargetMonitor): void => {
       if (!isReadOnly) {
         if (
           canvas.current &&

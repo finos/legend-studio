@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
-import { resolvePackageNameAndElementName } from '../../../../models/MetaModelUtility';
+import { resolvePackageNameAndElementName } from '../../../../models/MetaModelUtils';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import Dialog from '@material-ui/core/Dialog';
 import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
@@ -65,7 +65,9 @@ export const NewServiceModal = observer(
       <Dialog
         open={showModal}
         onClose={close}
-        onEnter={handleEnter}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
         PaperProps={{
           classes: {
             root: 'search-modal__inner-container',

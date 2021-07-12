@@ -61,7 +61,7 @@ const transformSingleExecution = (
   context: V1_GraphTransformerContext,
 ): V1_PureSingleExecution => {
   const execution = new V1_PureSingleExecution();
-  execution.func = element.func.accept_ValueSpecificationVisitor(
+  execution.func = element.func.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   execution.mapping = V1_transformElementReference(element.mapping);
@@ -86,7 +86,7 @@ const transformMultiExecution = (
 ): V1_PureMultiExecution => {
   const execution = new V1_PureMultiExecution();
   execution.executionKey = element.executionKey;
-  execution.func = element.func.accept_ValueSpecificationVisitor(
+  execution.func = element.func.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   execution.executionParameters = element.executionParameters.map((param) =>
@@ -115,7 +115,7 @@ const transformTestContainer = (
   context: V1_GraphTransformerContext,
 ): V1_TestContainer => {
   const container = new V1_TestContainer();
-  container.assert = element.assert.accept_ValueSpecificationVisitor(
+  container.assert = element.assert.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   container.parameterValues = element.parameterValues;

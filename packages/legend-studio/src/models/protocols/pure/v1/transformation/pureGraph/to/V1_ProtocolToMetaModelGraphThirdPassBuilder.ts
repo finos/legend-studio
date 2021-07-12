@@ -21,7 +21,7 @@ import {
   assertErrorThrown,
 } from '@finos/legend-studio-shared';
 import { CORE_ELEMENT_PATH } from '../../../../../../MetaModelConst';
-import { GraphError } from '../../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../../MetaModelUtils';
 import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type {

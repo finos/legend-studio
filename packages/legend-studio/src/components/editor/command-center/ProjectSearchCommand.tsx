@@ -82,7 +82,9 @@ export const ProjectSearchCommand = observer(() => {
     <NonBlockingDialog
       nonModalDialogState={editorStore.searchElementCommandState}
       onClose={closeModal}
-      onEnter={handleEnter}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
       onClickAway={closeModal}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
