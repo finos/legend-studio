@@ -41,12 +41,14 @@ import { V1_RelationalDatabaseConnection } from '../../../model/packageableEleme
 import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
   V1_LocalH2DataSourceSpecification,
+  V1_DeltaLakeDatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
+  V1_DeltaLakeAuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
@@ -121,6 +123,7 @@ enum V1_DatasourceSpecificationType {
   STATIC = 'static',
   H2_EMBEDDED = 'h2Embedded',
   H2_LOCAL = 'h2Local',
+  DELTALAKE = 'deltaLake',
   SNOWFLAKE = 'snowflake',
 }
 
@@ -153,6 +156,15 @@ const localH2DatasourceSpecificationModelSchema = createModelSchema(
   },
 );
 
+const deltaLakeDatasourceSpecificationModelSchema = createModelSchema(
+  V1_DeltaLakeDatasourceSpecification,
+  {
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.DELTALAKE),
+    shard: primitive(),
+    httpPath: primitive(),
+  },
+);
+
 const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
   V1_SnowflakeDatasourceSpecification,
   {
@@ -174,6 +186,8 @@ export const V1_serializeDatasourceSpecification = (
     return serialize(staticDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_EmbeddedH2DatasourceSpecification) {
     return serialize(embeddedH2DatasourceSpecificationModelSchema, protocol);
+  } else if (protocol instanceof V1_DeltaLakeDatasourceSpecification) {
+    return serialize(deltaLakeDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     return serialize(snowflakeDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
@@ -208,6 +222,8 @@ export const V1_deserializeDatasourceSpecification = (
       return deserialize(staticDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.H2_EMBEDDED:
       return deserialize(embeddedH2DatasourceSpecificationModelSchema, json);
+    case V1_DatasourceSpecificationType.DELTALAKE:
+      return deserialize(deltaLakeDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.SNOWFLAKE:
       return deserialize(snowflakeDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.H2_LOCAL:
@@ -239,6 +255,7 @@ export const V1_deserializeDatasourceSpecification = (
 enum V1_AuthenticationStrategyType {
   DELEGATED_KERBEROS = 'delegatedKerberos',
   SNOWFLAKE_PUBLIC = 'snowflakePublic',
+  DELTALAKE = 'deltaLake',
   H2_DEFAULT = 'h2Default',
   TEST = 'test',
   OAUTH = 'oauth',
@@ -262,6 +279,14 @@ const V1_defaultH2AuthenticationStrategyModelSchema = createModelSchema(
 const V1_testDatabaseAuthenticationStrategyModelSchema = createModelSchema(
   V1_TestDatabaseAuthenticationStrategy,
   { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.TEST) },
+);
+
+const V1_deltaLakeAuthenticationStrategyModelSchema = createModelSchema(
+  V1_DeltaLakeAuthenticationStrategy,
+  {
+    _type: usingConstantValueSchema(V1_AuthenticationStrategyType.DELTALAKE),
+    apiToken: primitive(),
+  },
 );
 
 const V1_snowflakePublicAuthenticationStrategyModelSchema = createModelSchema(
@@ -301,6 +326,8 @@ export const V1_serializeAuthenticationStrategy = (
       V1_testDatabaseAuthenticationStrategyModelSchema,
       protocol,
     );
+  } else if (protocol instanceof V1_DeltaLakeAuthenticationStrategy) {
+    return serialize(V1_deltaLakeAuthenticationStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     return serialize(
       V1_snowflakePublicAuthenticationStrategyModelSchema,
@@ -341,6 +368,8 @@ export const V1_deserializeAuthenticationStrategy = (
       );
     case V1_AuthenticationStrategyType.H2_DEFAULT:
       return deserialize(V1_defaultH2AuthenticationStrategyModelSchema, json);
+    case V1_AuthenticationStrategyType.DELTALAKE:
+      return deserialize(V1_deltaLakeAuthenticationStrategyModelSchema, json);
     case V1_AuthenticationStrategyType.SNOWFLAKE_PUBLIC:
       return deserialize(
         V1_snowflakePublicAuthenticationStrategyModelSchema,
