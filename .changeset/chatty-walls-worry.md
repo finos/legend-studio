@@ -3,4 +3,4 @@
 '@finos/legend-studio-manual-tests': patch
 ---
 
-Fixed association mapping source key omission
+Fix the bug where association mappings' source keys are omitted when building the graph (https://github.com/finos/legend-studio/issues/278).
