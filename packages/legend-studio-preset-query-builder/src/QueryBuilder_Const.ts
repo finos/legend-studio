@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+export enum QUERY_BUILDER_SOURCE_ID_LABEL {
+  QUERY_BUILDER = 'query-builder',
+  PROJECTION = 'projection',
+}
+
 export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER = 'query__builder',
   QUERY_BUILDER_SETUP = 'query__builder__setup',
@@ -40,7 +45,6 @@ export enum SUPPORTED_FUNCTIONS {
   TDS_ASC = 'meta::pure::tds::asc',
   TDS_DESC = 'meta::pure::tds::desc',
   TDS_AGG = 'meta::pure::tds::agg',
-  TDS_COL = 'meta::pure::tds::col',
   TDS_DISTINCT = 'meta::pure::tds::distinct',
   TDS_PROJECT = 'meta::pure::tds::project',
   TDS_GROUP_BY = 'meta::pure::tds::groupBy',
@@ -62,7 +66,7 @@ export enum SUPPORTED_FUNCTIONS {
   // aggregation
   AVERAGE = 'meta::pure::functions::math::average',
   COUNT = 'meta::pure::functions::collection::count',
-  CONCAT = 'meta::pure::functions::string::joinStrings',
+  JOIN_STRINGS = 'meta::pure::functions::string::joinStrings',
   DISTINCT = 'meta::pure::functions::collection::distinct',
   DATE_MAX = 'meta::pure::functions::date::max',
   DATE_MIN = 'meta::pure::functions::date::min',

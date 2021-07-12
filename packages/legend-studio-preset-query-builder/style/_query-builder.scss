@@ -233,264 +233,34 @@
         color: var(--color-dark-shade-300);
       }
     }
-  }
-}
 
-.query-builder__setup {
-  height: 13.8rem !important;
+    &__compile-btn {
+      @include flexCenter;
 
-  &__content {
-    padding: 0.5rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
-    overflow: hidden;
-  }
+      background: none;
+      color: var(--color-light-grey-0);
+      cursor: pointer;
+      padding: 0 0.5rem;
 
-  &--collapsed {
-    height: 3.4rem !important;
-  }
+      &[disabled] {
+        color: var(--color-dark-shade-300);
+      }
 
-  &--collapsed &__content {
-    display: none;
-  }
+      &--wiggling svg {
+        animation: hammer-wiggle 0.5s infinite ease;
+        transform-origin: bottom left;
+      }
 
-  &__config__item {
-    @include flexVCenter;
-  }
+      @keyframes hammer-wiggle {
+        from {
+          transform: rotate(-7deg);
+        }
 
-  &__config__item__label {
-    @include flexCenter;
-
-    background: var(--color-dark-grey-100);
-    margin-right: 0.5rem;
-  }
-
-  &__config__item__selector {
-    width: 100%;
-  }
-
-  &__config__item + &__config__item {
-    margin-top: 0.5rem;
-  }
-
-  &__config__item__mapping-option--incompatible {
-    @include flexVCenter;
-
-    cursor: help;
-
-    &__label {
-      color: var(--color-red-100);
-      margin-right: 0.5rem;
+        to {
+          transform: rotate(10deg);
+        }
+      }
     }
-
-    svg {
-      color: var(--color-red-100);
-      stroke-width: 0.4;
-      stroke: var(--color-red-100);
-    }
-  }
-}
-
-.query-builder__explorer {
-  height: calc(100% - 13.8rem) !important;
-
-  &--expanded {
-    height: calc(100% - 3.4rem) !important;
-  }
-
-  &__content {
-    overflow-y: auto;
-    padding: 0.5rem 0;
-  }
-}
-
-.query-builder-tree {
-  &__root {
-    padding: 0.5rem 0;
-  }
-
-  &__node__icon {
-    width: 4rem;
-    min-width: 4rem;
-  }
-
-  &__expand-icon,
-  &__type-icon {
-    @include flexCenter;
-
-    width: 1.7rem;
-    min-width: 1.7rem;
-    height: 1.4rem;
-  }
-
-  &__expand-icon svg {
-    font-size: 1rem;
-  }
-
-  &__node__container:hover {
-    background: var(--color-dark-blue-shade-100);
-  }
-
-  &__node__container--selected-from-context-menu {
-    background: var(--color-dark-blue-shade-100);
-  }
-
-  &__node__label {
-    @include ellipsisTextOverflow;
-
-    height: 2rem;
-    line-height: 2rem;
-    min-width: 0;
-    color: var(--color-light-grey-400);
-    user-select: none;
-  }
-
-  &__node__label--with-action {
-    width: calc(100% - 2rem);
-  }
-
-  &__node__label--with-preview {
-    width: calc(100% - 4rem);
-  }
-
-  &__node__label__derived-property {
-    display: inline-flex;
-    font-weight: 700;
-    font-size: 1.1rem;
-    font-family: 'Roboto Mono', monospace;
-    color: var(--color-light-grey-400);
-    height: 2rem;
-    line-height: 2rem;
-    margin-left: 0.5rem;
-  }
-
-  &__node__label__multiple {
-    display: inline-flex;
-    font-weight: 700;
-    font-size: 1.6rem;
-    font-family: 'Roboto Mono', monospace;
-    height: 2rem;
-    line-height: 2rem;
-    margin-left: 0.5rem;
-    color: var(--color-yellow-200);
-    vertical-align: text-top;
-  }
-
-  &__node__actions {
-    display: flex;
-    height: 2rem;
-    padding-right: 0.5rem;
-  }
-
-  &__node__action {
-    @include flexCenter;
-
-    height: 2rem;
-    width: 2rem;
-
-    svg {
-      font-size: 1.3rem;
-      color: var(--color-light-grey-400);
-    }
-
-    &:hover svg {
-      color: var(--color-light-grey-200);
-    }
-  }
-
-  &__root-node__label {
-    display: flex;
-    height: 2rem;
-    border-radius: 0.2rem;
-    margin: 0;
-    color: var(--color-light-grey-150);
-    background: var(--color-purple-400);
-  }
-
-  &__root-node__label__icon {
-    @include flexCenter;
-
-    width: 2rem;
-    min-width: 2rem;
-    background: var(--color-dark-shade-100);
-    border-radius: 0.2rem 0 0 0.2rem;
-  }
-
-  &__root-node__label__icon .icon {
-    color: var(--color-light-grey-50);
-  }
-
-  &__root-node__label__text {
-    @include flexVCenter;
-
-    padding: 0 1rem;
-    user-select: none;
-  }
-
-  &__context-menu {
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-50);
-    padding: 0.5rem 0;
-  }
-
-  &__context-menu__item {
-    @include flexVCenter;
-
-    cursor: default;
-    color: var(--color-light-grey-400);
-    height: 2.8rem;
-    padding: 0 1rem;
-  }
-
-  &__context-menu__item__label {
-    padding-left: 1rem;
-  }
-
-  &__context-menu__item:hover {
-    background: var(--color-light-blue-450);
-  }
-
-  &__icon {
-    color: var(--color-primitive);
-
-    &__boolean,
-    &__number,
-    &__time {
-      font-size: 1.2rem;
-    }
-  }
-
-  &__node__container--unmapped &__node__label,
-  &__node__container--unmapped &__type-icon .icon,
-  &__node__container--unmapped &__type-icon .icon svg,
-  &__node__container--unmapped &__type-icon &__icon,
-  &__node__container--unmapped &__node__label__derived-property,
-  &__node__container--unmapped &__node__label__multiple {
-    color: var(--color-dark-grey-350);
-  }
-
-  &__node__info {
-    cursor: help;
-  }
-
-  &__drag-preview-layer {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview {
-    @include flexCenter;
-
-    display: inline-flex;
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 1.2rem;
-    background: var(--color-blue-200);
-    border-radius: 0.2rem;
   }
 }
 
@@ -500,7 +270,6 @@
 
     height: 100%;
     padding: 0.5rem;
-    padding-right: 1rem;
   }
 
   &__mode {
@@ -516,157 +285,6 @@
 
   &__mode--selected {
     background: var(--color-blue-200);
-  }
-}
-
-.query-builder__projection {
-  &__columns {
-    padding: 0.5rem 0;
-  }
-
-  &__column {
-    @include flexVCenter;
-    @include flexHSpaceBetween;
-
-    height: 2.8rem;
-    color: var(--color-light-grey-400);
-
-    &--dragged {
-      padding: 0.2rem 0;
-    }
-
-    &__drag-preview-layer {
-      position: fixed;
-      pointer-events: none;
-      z-index: 100;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    &__drag-preview {
-      @include flexCenter;
-
-      display: inline-flex;
-      height: 2rem;
-      padding: 0 0.5rem;
-      font-size: 1.2rem;
-      background: var(--color-blue-200);
-      border-radius: 0.2rem;
-    }
-
-    &:hover {
-      background: var(--color-dark-blue-shade-100);
-    }
-
-    &--no-hover:hover,
-    &--dragged:hover {
-      background: transparent !important;
-    }
-  }
-
-  &__column__value {
-    @include flexVCenter;
-
-    margin-left: 0.8rem;
-    height: 100%;
-    width: calc(100% - 8.9rem);
-
-    &__input {
-      padding: 0.5rem;
-      width: 50%;
-      height: 2.2rem;
-      line-height: 2.2rem;
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      color: var(--color-light-grey-200);
-
-      &:focus {
-        border: 0.1rem solid var(--color-blue-200);
-        outline: none;
-      }
-    }
-
-    &__property {
-      @include flexVCenter;
-
-      margin-left: 0.5rem;
-      width: calc(50% - 0.5rem);
-      height: 2.2rem;
-    }
-  }
-
-  &__column__actions {
-    @include flexVCenter;
-
-    height: 100%;
-    width: 8.4rem;
-    margin-left: 0.5rem;
-  }
-
-  &__column__action {
-    @include flexCenter;
-
-    height: 2.8rem;
-    width: 2.8rem;
-
-    .query-builder__icon,
-    svg {
-      color: var(--color-light-grey-400);
-    }
-
-    &:hover .query-builder__icon,
-    &:hover svg {
-      color: var(--color-light-grey-100);
-    }
-
-    &[disabled] .query-builder__icon,
-    &[disabled] svg {
-      color: var(--color-dark-grey-300);
-    }
-  }
-
-  &__column:hover &__column__action {
-    display: flex;
-  }
-
-  &__modal__body {
-    overflow: auto;
-  }
-
-  &__options {
-    padding: 2rem;
-    width: 100%;
-
-    &__sort {
-      display: flex;
-      width: 100%;
-      margin-bottom: 1rem;
-
-      &__dropdown {
-        max-width: 45rem;
-        width: 100%;
-        margin-right: 0.5rem;
-      }
-
-      &__type-btn {
-        color: var(--color-light-grey-200);
-      }
-
-      &__remove-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 2.8rem 0 0;
-        height: 2.8rem;
-        color: var(--color-light-grey-200);
-        background: var(--color-dark-grey-200);
-        border-radius: 0.2rem;
-        margin-left: 0.5rem;
-        cursor: pointer;
-      }
-    }
   }
 }
 
@@ -727,10 +345,6 @@
 }
 
 .query-builder__icon {
-  &__aggregate {
-    font-size: 1.7rem;
-  }
-
   &__edit {
     font-size: 1.2rem;
   }
@@ -813,8 +427,8 @@
   &__dnd__placeholder {
     @include flexCenter;
 
-    height: 2.2rem;
-    font-size: 1.1rem;
+    height: 2.8rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--color-dark-grey-300);
   }
@@ -823,7 +437,7 @@
     @include flexVCenter;
 
     width: 100%;
-    height: 1.8rem;
+    height: 2.2rem;
     border-radius: 0.2rem;
     color: var(--color-light-grey-0);
 
@@ -844,16 +458,29 @@
     @include ellipsisTextOverflow;
 
     padding: 0 1rem;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 700;
     width: 100%;
+  }
+
+  &__property__info {
+    @include flexCenter;
+
+    height: 2.2rem;
+    width: 2.2rem;
+    margin: 0.3rem;
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-dark-shade-230);
+    }
   }
 
   &__action {
     width: 4.6rem;
     min-width: 4.6rem;
-    height: 1.8rem;
-    line-height: 1.8rem;
+    height: 2.2rem;
+    line-height: 2.2rem;
     font-weight: 700;
     font-size: 1rem;
     font-family: 'Roboto Mono', monospace;
@@ -890,267 +517,6 @@
   width: 100%;
 }
 
-.query-builder-filter-tree {
-  &__root {
-    padding: 0.5rem 0;
-  }
-
-  &__expand-icon {
-    @include flexVCenter;
-
-    justify-content: flex-start;
-    width: 1.5rem;
-    min-width: 1.5rem;
-    margin-right: 0.5rem;
-  }
-
-  &__expand-icon svg {
-    font-size: 1rem;
-  }
-
-  &__node__container {
-    height: 2.8rem;
-  }
-
-  &__node__container:hover {
-    background: var(--color-dark-blue-shade-100);
-  }
-
-  &__node__container--selected,
-  &__node__container--selected:hover {
-    background: var(--color-blue-500);
-  }
-
-  &__node__container--selected-from-context-menu {
-    background: var(--color-dark-blue-shade-100);
-  }
-
-  &__node__container--no-hover:hover {
-    background: transparent !important;
-  }
-
-  &__node__content {
-    @include flexVCenter;
-
-    height: 100%;
-    width: calc(100% - 2.8rem);
-  }
-
-  &__node__actions {
-    @include flexVCenter;
-
-    height: 100%;
-    width: 2.8rem;
-  }
-
-  &__node__action {
-    @include flexCenter;
-
-    height: 100%;
-    width: 2.8rem;
-
-    svg {
-      color: var(--color-light-grey-400);
-    }
-
-    &:hover svg {
-      color: var(--color-light-grey-200);
-    }
-  }
-
-  &__node__label {
-    width: 100%;
-    height: 2.8rem;
-    line-height: 2.8rem;
-    display: flex;
-    min-width: 0;
-    white-space: normal;
-    flex: 0 0 auto;
-    color: var(--color-light-grey-400);
-    user-select: none;
-  }
-
-  &__node__label--expandable {
-    width: calc(100% - 1.5rem);
-  }
-
-  &__node__label__content {
-    @include flexVCenter;
-
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview-layer {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview {
-    @include flexCenter;
-
-    display: inline-flex;
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 1.2rem;
-    background: var(--color-blue-200);
-    border-radius: 0.2rem;
-  }
-
-  &__group-node {
-    @include flexVCenter;
-
-    height: 1.8rem;
-    border-radius: 0.2rem;
-
-    &__label {
-      @include flexVCenter;
-
-      width: 4.5rem;
-      min-width: 4.5rem;
-      font-weight: 700;
-      font-size: 1.2rem;
-      padding-left: 1rem;
-      text-transform: uppercase;
-      color: var(--color-light-grey-50);
-    }
-
-    &__action {
-      @include flexCenter;
-
-      height: 100%;
-      min-width: 2rem;
-      width: 2rem;
-      background: var(--color-dark-shade-200);
-      padding: 0 0.2rem;
-
-      svg {
-        font-size: 1rem;
-        color: var(--color-light-grey-200);
-      }
-
-      &:hover svg {
-        color: var(--color-light-grey-50);
-      }
-    }
-
-    &--and {
-      background: var(--color-dark-grey-280);
-    }
-
-    &--or {
-      background: var(--color-magenta-300);
-    }
-  }
-
-  &__blank-node {
-    @include flexCenter;
-
-    margin: 0.3rem 0;
-    width: 100%;
-    border: 0.2rem dashed var(--color-dark-grey-100);
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--color-dark-grey-300);
-    height: 2.2rem;
-  }
-
-  &__node__container--selected &__blank-node,
-  &__node__container--selected:hover &__blank-node,
-  &__node__container:hover &__blank-node {
-    border: 0.2rem dashed var(--color-dark-grey-300);
-    color: var(--color-dark-grey-400);
-  }
-
-  &__condition-node {
-    @include flexVCenter;
-
-    width: 100%;
-    height: 100%;
-
-    &__property {
-      @include flexVCenter;
-
-      width: calc(50% - 3rem);
-      height: 2.2rem;
-    }
-
-    &__operator {
-      @include flexVCenter;
-
-      margin: 0 0.5rem;
-    }
-
-    &__operator__label {
-      padding: 0 0.5rem;
-      font-weight: 500;
-      background: var(--color-dark-grey-280);
-      height: 1.8rem;
-      color: var(--color-light-grey-100);
-      border-radius: 0.2rem 0 0 0.2rem;
-      font-size: 1.1rem;
-      line-height: 1.8rem;
-      white-space: nowrap;
-    }
-
-    &__operator__dropdown__trigger {
-      @include flexCenter;
-
-      padding: 0 0.3rem;
-      font-weight: 500;
-      background: var(--color-dark-grey-200);
-      height: 1.8rem;
-      color: var(--color-light-grey-100);
-      border-radius: 0 0.2rem 0.2rem 0;
-      font-size: 1.1rem;
-
-      & svg {
-        font-size: 1.2rem;
-      }
-    }
-
-    &__operator__dropdown__option {
-      font-size: 1.1rem;
-      height: 2.2rem;
-      font-family: 'Roboto Mono', monospace;
-    }
-
-    &__value {
-      @include flexCenter;
-
-      flex-grow: 1;
-      height: 2.2rem;
-      border-radius: 0.2rem;
-      font-size: 1.2rem;
-      font-weight: 500;
-
-      ::-webkit-calendar-picker-indicator {
-        filter: invert(0.8);
-      }
-    }
-  }
-
-  &__node__dnd__overlay {
-    @include flexCenter;
-
-    border: 0.2rem dashed var(--color-dark-grey-100);
-    margin: 0.3rem 0;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--color-dark-grey-300);
-    height: 2.2rem;
-    position: absolute;
-    width: 100%;
-    pointer-events: none;
-    background: var(--color-dark-grey-50);
-  }
-}
-
 .query-builder-value-spec-editor {
   @include flexVCenter;
 
@@ -1161,7 +527,7 @@
     @include flexCenter;
 
     width: 100%;
-    height: 1.8rem;
+    height: 2.2rem;
     background: var(--color-dark-grey-280);
     border-radius: 0.2rem;
     font-size: 1.1rem;
@@ -1219,9 +585,9 @@
   &__list-editor__preview {
     @include ellipsisTextOverflow;
 
-    line-height: 1.8rem;
+    line-height: 2.2rem;
     width: calc(100% - 1.8rem);
-    height: 1.8rem;
+    height: 2.2rem;
     font-size: 1.1rem;
     font-family: 'Roboto Mono', monospace;
     background: var(--color-dark-grey-250);
@@ -1233,9 +599,9 @@
   &__list-editor__save-button {
     @include flexCenter;
 
-    height: 2.2rem;
-    width: 2.2rem;
-    min-width: 2.2rem;
+    height: 2.8rem;
+    width: 2.8rem;
+    min-width: 2.8rem;
 
     svg {
       font-size: 1.2rem;
@@ -1245,7 +611,7 @@
   &__list-editor__edit-icon {
     @include flexCenter;
 
-    height: 1.8rem;
+    height: 2.2rem;
     width: 2.7rem;
     min-width: 2.7rem;
     background: var(--color-dark-grey-250);
@@ -1272,23 +638,21 @@
     }
   }
 
-  &__lambda {
-    &-editor {
-      height: 100% !important;
-      background: var(--color-dark-grey-50);
-      padding-top: 1rem;
+  &__lambda-editor {
+    height: 100% !important;
+    background: var(--color-dark-grey-50);
+    padding-top: 1rem;
 
-      .monaco-editor {
-        .margin,
-        .monaco-editor-background {
-          background: var(--color-dark-grey-50) !important;
-        }
+    .monaco-editor {
+      .margin,
+      .monaco-editor-background {
+        background: var(--color-dark-grey-50) !important;
       }
     }
   }
 
   &__modal--has-error {
-    border: 0.1rem solid var(--color-red-280) !important;
+    border: 0.1rem solid var(--color-red-200) !important;
 
     .modal__header {
       background: var(--color-red-200);
@@ -1304,6 +668,24 @@
       padding: 0.5rem;
       font-size: 1.2rem;
       user-select: none;
+    }
+  }
+}
+
+.query-builder__lambda-editor {
+  background: var(--color-dark-grey-50);
+  border: 0.1rem solid var(--color-dark-grey-280);
+
+  &__container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .monaco-editor {
+    .margin,
+    .monaco-editor-background {
+      background: var(--color-dark-grey-50) !important;
     }
   }
 }

@@ -558,14 +558,15 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           }
         />
         {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}
-        {/* <ConnectionEditor_BooleanEditor
+        <ConnectionEditor_BooleanEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.quotedIdentifiersIgnoreCase}
-          propertyName={'cloud type'}
-          update={(value: string | undefined): void =>
-            sourceSpec.setCloudType(value)
+          propertyName={'quoted identifiers ignore case'}
+          description={'Set this when account has this flag set as true'}
+          update={(value: boolean | undefined): void =>
+            sourceSpec.setQuotedIdentifiersIgnoreCase(Boolean(value))
           }
-        /> */}
+        />
       </>
     );
   },
@@ -1281,8 +1282,7 @@ const RelationalConnectionGeneralEditor = observer(
                   isReadOnly={isReadOnly}
                   value={connection.quoteIdentifiers}
                   propertyName="Quote identifiers"
-                  // TODO: change the description
-                  description="Use quote identifiers"
+                  description="Use this to quote SQL identifiers"
                   update={(value?: boolean): void =>
                     connection.setQuoteIdentifiers(Boolean(value))
                   }

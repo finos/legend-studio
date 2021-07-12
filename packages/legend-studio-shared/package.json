@@ -38,9 +38,9 @@
   "dependencies": {
     "@types/lodash-es": "4.17.4",
     "@types/lossless-json": "1.0.0",
-    "@types/object-hash": "2.1.0",
-    "@types/pako": "1.0.1",
-    "@types/seedrandom": "3.0.0",
+    "@types/object-hash": "2.1.1",
+    "@types/pako": "1.0.2",
+    "@types/seedrandom": "3.0.1",
     "@types/uuid": "8.3.1",
     "hash.js": "1.1.7",
     "http-status-codes": "2.1.4",
@@ -58,7 +58,7 @@
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "7.29.0",
+    "eslint": "7.30.0",
     "jest": "27.0.6",
     "lodash": "4.17.21",
     "rimraf": "3.0.2",

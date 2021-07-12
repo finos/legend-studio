@@ -15,7 +15,7 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import { LAMBDA_START, SOURCR_ID_LABEL } from '../../../models/MetaModelConst';
+import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
@@ -25,6 +25,7 @@ import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecifi
 import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { Constraint } from '../../../models/metamodels/pure/model/packageableElements/domain/Constraint';
 import type { DerivedProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
+import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export class DerivedPropertyState extends LambdaEditorState {
   derivedProperty: DerivedProperty;
@@ -44,14 +45,12 @@ export class DerivedPropertyState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
-    return `${this.derivedProperty.owner.path}-${
-      SOURCR_ID_LABEL.DERIVED_PROPERTY
-    }-${
-      this.derivedProperty.name
-    }[${this.derivedProperty.owner.derivedProperties.indexOf(
-      this.derivedProperty,
-    )}]`;
+    return buildSourceInformationSourceId([
+      this.derivedProperty.owner.path,
+      SOURCE_ID_LABEL.DERIVED_PROPERTY,
+      this.derivedProperty.name,
+      this.uuid, // in case of duplications
+    ]);
   }
 
   setBodyAndParameters(lambda: RawLambda): void {
@@ -143,10 +142,12 @@ export class ConstraintState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
-    return `${this.constraint.owner.path}-${SOURCR_ID_LABEL.CONSTRAINT}-${
-      this.constraint.name
-    }[${this.constraint.owner.constraints.indexOf(this.constraint)}]`;
+    return buildSourceInformationSourceId([
+      this.constraint.owner.path,
+      SOURCE_ID_LABEL.CONSTRAINT,
+      this.constraint.name,
+      this.uuid, // in case of duplications
+    ]);
   }
 
   convertLambdaGrammarStringToObject = flow(function* (this: ConstraintState) {

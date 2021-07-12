@@ -15,7 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, BlankPanelContent } from '@finos/legend-studio-components';
+import {
+  clsx,
+  BlankPanelContent,
+  PlusIcon,
+} from '@finos/legend-studio-components';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
@@ -46,8 +50,11 @@ export const QueryBuilderFetchStructurePanel = observer(
     const { queryBuilderState } = props;
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const fetchStructureStateMode = fetchStructureState.fetchStructureMode;
-    const openModal = (): void =>
-      queryBuilderState.resultSetModifierState.setModal(true);
+    const openResultSetModifierEditor = (): void =>
+      queryBuilderState.resultSetModifierState.setShowModal(true);
+    const addNewBlankDerivation = (): void =>
+      fetchStructureState.projectionState.addNewBlankDerivation();
+
     const renderFetchMode = (): React.ReactNode => {
       switch (fetchStructureStateMode) {
         case FETCH_STRUCTURE_MODE.PROJECTION:
@@ -87,6 +94,26 @@ export const QueryBuilderFetchStructurePanel = observer(
             <div className="panel__header__title__label">fetch structure</div>
           </div>
           <div className="panel__header__actions">
+            {fetchStructureStateMode === FETCH_STRUCTURE_MODE.PROJECTION && (
+              <>
+                <button
+                  className="panel__header__action"
+                  onClick={openResultSetModifierEditor}
+                  tabIndex={-1}
+                  title="Configure result set modifiers..."
+                >
+                  <CgOptions className="query-builder__icon query-builder__icon__query-option" />
+                </button>
+                <button
+                  className="panel__header__action"
+                  onClick={addNewBlankDerivation}
+                  tabIndex={-1}
+                  title="Add a new derivation"
+                >
+                  <PlusIcon />
+                </button>
+              </>
+            )}
             <div className="query-builder__fetch__structure__modes">
               {Object.values(FETCH_STRUCTURE_MODE).map((fetchMode) => (
                 <button
@@ -101,17 +128,6 @@ export const QueryBuilderFetchStructurePanel = observer(
                 </button>
               ))}
             </div>
-            <button
-              className="panel__header__action"
-              onClick={openModal}
-              tabIndex={-1}
-              disabled={
-                fetchStructureStateMode !== FETCH_STRUCTURE_MODE.PROJECTION
-              }
-              title="Configure result set modifiers..."
-            >
-              <CgOptions className="query-builder__icon query-builder__icon__query-option" />
-            </button>
           </div>
         </div>
         {renderFetchMode()}

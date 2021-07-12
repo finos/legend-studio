@@ -31,7 +31,7 @@ import {
 } from '../../../../../../utils/MappingResolutionUtil';
 import {
   CORE_HASH_STRUCTURE,
-  SOURCR_ID_LABEL,
+  SOURCE_ID_LABEL,
 } from '../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../model/packageableElements/store//relational/mapping/EmbeddedRelationalInstanceSetImplementation';
@@ -300,13 +300,13 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     // NOTE: ID must be unique across all mapping elements of the same type
     switch (type) {
       case MAPPING_ELEMENT_TYPE.CLASS:
-      case SOURCR_ID_LABEL.OPERATION_CLASS_MAPPING:
-      case SOURCR_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
-      case SOURCR_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
+      case SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
+      case SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
+      case SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
         return this.getClassMappings().find(
           (classMapping) => classMapping.id.value === id,
         );
-      case SOURCR_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
+      case SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
         return (
           this.getClassMappings().find(
             (classMapping) => classMapping.id.value === id,
@@ -320,7 +320,7 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
             )
             .find((me) => me.id.value === id)
         );
-      case SOURCR_ID_LABEL.RELATIONAL_CLASS_MAPPING:
+      case SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
         return (
           this.getClassMappings().find(
             (classMapping) => classMapping.id.value === id,

@@ -50,6 +50,7 @@ import type { V1_AppliedProperty } from './application/V1_AppliedProperty';
 import type { V1_PackageableElementPtr } from './raw/V1_PackageableElementPtr';
 import type { V1_HackedClass } from './raw/V1_HackedClass';
 import type { V1_HackedUnit } from './raw/V1_HackedUnit';
+import type { V1_UnknownValue } from './V1_UnknownValue';
 
 export interface V1_ValueSpecificationVisitor<T> {
   visit_PackageableElementPtr(valueSpecification: V1_PackageableElementPtr): T;
@@ -96,6 +97,8 @@ export interface V1_ValueSpecificationVisitor<T> {
   visit_TDSSortInformation(valueSpecification: V1_TDSSortInformation): T;
   visit_TdsOlapRank(valueSpecification: V1_TdsOlapRank): T;
   visit_TdsOlapAggregation(valueSpecification: V1_TdsOlapAggregation): T;
+
+  visit_UnknownValue(valueSpecification: V1_UnknownValue): T;
 }
 
 export abstract class V1_ValueSpecification {

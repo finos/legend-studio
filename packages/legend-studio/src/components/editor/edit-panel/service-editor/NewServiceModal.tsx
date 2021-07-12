@@ -65,7 +65,9 @@ export const NewServiceModal = observer(
       <Dialog
         open={showModal}
         onClose={close}
-        onEnter={handleEnter}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
         PaperProps={{
           classes: {
             root: 'search-modal__inner-container',

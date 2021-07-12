@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   assertNonNullable,
   assertTrue,
@@ -23,6 +24,7 @@ import {
   isNonNullable,
   isNumber,
   isString,
+  returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -50,13 +52,12 @@ import type {
   ValueSpecification,
   ValueSpecificationVisitor,
   AbstractPropertyExpression,
-  PackageableElementReference,
-  PackageableElement,
+  InstanceValue,
+  UnknownValue,
 } from '@finos/legend-studio';
 import {
+  RawLambda,
   matchFunctionName,
-  PackageableElementExplicitReference,
-  PackageableElementImplicitReference,
   Class,
   CollectionInstanceValue,
   GraphFetchTreeInstanceValue,
@@ -65,10 +66,16 @@ import {
   RootGraphFetchTree,
   SimpleFunctionExpression,
   VariableExpression,
-  InstanceValue,
+  V1_deserializeRawValueSpecification,
+  V1_RawLambda,
 } from '@finos/legend-studio';
-import { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
+import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from './QueryBuilderProjectionState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -130,7 +137,7 @@ const processFilterExpression = (
         guaranteeType(
           filterExpression,
           SimpleFunctionExpression,
-          `Can't process filter group function expression: each child expression must be a function expression`,
+          `Can't process filter group expression: each child expression must be a function expression`,
         ),
         filterState,
         groupNode.id,
@@ -139,9 +146,11 @@ const processFilterExpression = (
     filterState.addNodeFromNode(groupNode, parentNode);
   } else {
     for (const operator of filterState.operators) {
-      const filterConditionState = operator.buildFilterConditionState(
-        filterState,
-        expression,
+      // NOTE: this allow plugin author to either return `undefined` or throw error
+      // if there is a problem with building the lambda. Either case, the plugin is
+      // considered as not supporting the lambda.
+      const filterConditionState = returnUndefOnError(() =>
+        operator.buildFilterConditionState(filterState, expression),
       );
       if (filterConditionState) {
         filterState.addNodeFromNode(
@@ -155,43 +164,107 @@ const processFilterExpression = (
       }
     }
     throw new UnsupportedOperationError(
-      `Can't process filter expression function: no compatible filter operator processer available from plugins`,
+      `Can't process filter expression: no compatible filter operator processer available from plugins`,
     );
   }
 };
 
-const processFilterFunction = (
-  valueSpec: LambdaFunctionInstanceValue,
-  filterQueryState: QueryBuilderFilterState,
+const processFilterLambda = (
+  filterLambda: LambdaFunctionInstanceValue,
+  filterState: QueryBuilderFilterState,
 ): void => {
   const lambdaFunc = guaranteeNonNullable(
-    valueSpec.values[0],
-    `Can't process filter() epxression: filter() lambda is missing`,
+    filterLambda.values[0],
+    `Can't process filter() lambda: filter() lambda function is missing`,
   );
   assertTrue(
     lambdaFunc.expressionSequence.length === 1,
-    `Can't process filter() expression: filter() lambda body should hold an expression`,
+    `Can't process filter() lambda: only support filter() lambda body with 1 expression`,
   );
   const rootExpression = guaranteeType(
     lambdaFunc.expressionSequence[0],
     SimpleFunctionExpression,
-    `Can't process filter() expression: filter() lambda body should hold an expression`,
+    `Can't process filter() lambda: only support filter() lambda body with 1 expression`,
   );
 
   assertTrue(
     lambdaFunc.functionType.parameters.length === 1,
-    `Can't process filter() expression: filter() lambda should have 1 parameter`,
+    `Can't process filter() lambda: only support filter() lambda with 1 parameter`,
   );
-  filterQueryState.setLambdaVariableName(
+  filterState.setLambdaParameterName(
     guaranteeType(
       lambdaFunc.functionType.parameters[0],
       VariableExpression,
-      `Can't process filter() expression: filter() lambda should have 1 parameter`,
+      `Can't process filter() lambda: only support filter() lambda with 1 parameter`,
     ).name,
   );
-  processFilterExpression(rootExpression, filterQueryState, undefined);
+  processFilterExpression(rootExpression, filterState, undefined);
 };
 
+const processAggregateLambda = (
+  aggregateLambda: LambdaFunctionInstanceValue,
+  projectionColumnState: QueryBuilderProjectionColumnState,
+  aggregationState: QueryBuilderAggregationState,
+): void => {
+  const lambdaFunc = guaranteeNonNullable(
+    aggregateLambda.values[0],
+    `Can't process agg() lambda: agg() lambda function is missing`,
+  );
+  assertTrue(
+    lambdaFunc.expressionSequence.length === 1,
+    `Can't process agg() lambda: only support agg() lambda body with 1 expression`,
+  );
+  const expression = guaranteeType(
+    lambdaFunc.expressionSequence[0],
+    SimpleFunctionExpression,
+    `Can't process agg() lambda: only support agg() lambda body with 1 expression`,
+  );
+
+  assertTrue(
+    lambdaFunc.functionType.parameters.length === 1,
+    `Can't process agg() lambda: only support agg() lambda with 1 parameter`,
+  );
+
+  const lambdaParam = guaranteeType(
+    lambdaFunc.functionType.parameters[0],
+    VariableExpression,
+    `Can't process agg() lambda: only support agg() lambda with 1 parameter`,
+  );
+
+  for (const operator of aggregationState.operators) {
+    // NOTE: this allow plugin author to either return `undefined` or throw error
+    // if there is a problem with building the lambda. Either case, the plugin is
+    // considered as not supporting the lambda.
+    const aggregateColumnState = returnUndefOnError(() =>
+      operator.buildAggregateColumnState(
+        expression,
+        lambdaParam,
+        projectionColumnState,
+      ),
+    );
+    if (aggregateColumnState) {
+      aggregationState.addColumn(aggregateColumnState);
+      return;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't process aggregate expression function: no compatible aggregate operator processer available from plugins`,
+  );
+};
+
+/**
+ * This is the expression processor for query builder.
+ * Unlike expression builder which takes care of transforming the value specification
+ * from `protocol` to `metamodel`, and type-inferencing, this takes care
+ * of traversing the expression to populate the query builder UI state.
+ *
+ * NOTE: While traversing the expression, this processor also does a fair amount of
+ * validations and assertsions but just so enough to populate the UI state.
+ *
+ * Validation and assertion should be done by both the builder and processor, but the builder
+ * will do more structural checks to build the proper metamodel. The processor should never
+ * modify the metamodel, just traversing it.
+ */
 export class QueryBuilderLambdaProcessor
   implements ValueSpecificationVisitor<void>
 {
@@ -206,51 +279,103 @@ export class QueryBuilderLambdaProcessor
     this.precedingExpression = precedingExpression;
   }
 
+  visit_UnknownValue(valueSpecification: UnknownValue): void {
+    assertNonNullable(
+      this.precedingExpression,
+      `Can't process unknown value: unknown value preceding expression cannot be retrieved`,
+    );
+    const precedingExpressionName = this.precedingExpression.functionName;
+    if (
+      [
+        SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        SUPPORTED_FUNCTIONS.TDS_AGG,
+      ].some((fn) => matchFunctionName(precedingExpressionName, fn))
+    ) {
+      const projectionState =
+        this.queryBuilderState.fetchStructureState.projectionState;
+      const rawLambdaProtocol = returnUndefOnError(() =>
+        guaranteeType(
+          V1_deserializeRawValueSpecification(
+            valueSpecification.content as PlainObject<V1_RawLambda>,
+          ),
+          V1_RawLambda,
+        ),
+      );
+      assertNonNullable(
+        rawLambdaProtocol,
+        `Can't process unknown value: only support ${precedingExpressionName}() column expression as a lambda`,
+      );
+
+      const columnState = new QueryBuilderDerivationProjectionColumnState(
+        projectionState.editorStore,
+        projectionState,
+        new RawLambda(rawLambdaProtocol.parameters, rawLambdaProtocol.body),
+      );
+      projectionState.addColumn(columnState, { skipSorting: true });
+      return;
+    }
+    throw new UnsupportedOperationError(
+      `Can't process unknown value with preceding expression of function ${this.precedingExpression.functionName}()`,
+    );
+  }
+
   visit_RootGraphFetchTreeInstanceValue(
     valueSpecification: RootGraphFetchTreeInstanceValue,
   ): void {
     throw new UnsupportedOperationError();
   }
+
   visit_PropertyGraphFetchTreeInstanceValue(
     valueSpecification: PropertyGraphFetchTreeInstanceValue,
   ): void {
     throw new UnsupportedOperationError();
   }
+
   visit_AlloySerializationConfigInstanceValue(
     valueSpecification: AlloySerializationConfigInstanceValue,
   ): void {
     throw new UnsupportedOperationError();
   }
+
   visit_PrimitiveInstanceValue(
     valueSpecification: PrimitiveInstanceValue,
   ): void {
     throw new UnsupportedOperationError();
   }
+
   visit_EnumValueInstanceValue(
     valueSpecification: EnumValueInstanceValue,
   ): void {
     throw new UnsupportedOperationError();
   }
+
   visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): void {
     throw new UnsupportedOperationError();
   }
+
   visit_PairInstanceValue(valueSpecification: PairInstanceValue): void {
     throw new UnsupportedOperationError();
   }
+
   visit_MappingInstanceValue(valueSpecification: MappingInstanceValue): void {
     throw new UnsupportedOperationError();
   }
+
   visit_PureListInsanceValue(valueSpecification: PureListInstanceValue): void {
     throw new UnsupportedOperationError();
   }
+
   visit_CollectionInstanceValue(
     valueSpecification: CollectionInstanceValue,
   ): void {
     throw new UnsupportedOperationError();
   }
+
   visit_FunctionExpression(valueSpecification: FunctionExpression): void {
     throw new UnsupportedOperationError();
   }
+
   visit_SimpleFunctionExpression(
     valueSpecification: SimpleFunctionExpression,
   ): void {
@@ -260,26 +385,11 @@ export class QueryBuilderLambdaProcessor
         valueSpecification.parametersValues.length === 1,
         `Can't process getAll() expression: getAll() expects no argument`,
       );
-      const precedingExpression = guaranteeType(
-        valueSpecification.parametersValues[0],
-        InstanceValue,
-        `Can't process getAll() expression: only support getAll() as the first function in the expression`,
-      );
-      assertTrue(
-        precedingExpression.values.length !== 0 &&
-          (precedingExpression.values[0] instanceof
-            PackageableElementExplicitReference ||
-            precedingExpression.values[0] instanceof
-              PackageableElementImplicitReference),
-        `Can't process getAll() expression: getAll() class is missing`,
-      );
-      const _class = guaranteeType(
-        (
-          precedingExpression
-            .values[0] as PackageableElementReference<PackageableElement>
-        ).value,
+      const _class = valueSpecification.genericType?.value.rawType;
+      assertType(
+        _class,
         Class,
-        `Can't process getAll() expression: getAll() must be used with a class`,
+        `Can't process getAll() expression: getAll() return type is missing`,
       );
       this.queryBuilderState.querySetupState.setClass(_class, true);
       this.queryBuilderState.explorerState.refreshTreeData();
@@ -310,15 +420,15 @@ export class QueryBuilderLambdaProcessor
         `Can't process filter() expression: only support filter() immediately following getAll()`,
       );
 
-      const filterExpression = valueSpecification.parametersValues[1];
+      const filterLambda = valueSpecification.parametersValues[1];
       assertType(
-        filterExpression,
+        filterLambda,
         LambdaFunctionInstanceValue,
-        `Can't process filter() expression: second parameter should be a lambda function`,
+        `Can't process filter() expression: filter() expects argument #1 to be a lambda function`,
       );
-      processFilterFunction(filterExpression, filterState);
+      processFilterLambda(filterLambda, filterState);
       /**
-       * NOTE: Since group operations ike and/or do not take more than 2 parameters, if there are
+       * NOTE: Since group operations like and/or do not take more than 2 parameters, if there are
        * more than 2 clauses in each group operations, then these clauses are converted into an
        * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
        * After building the filter state.
@@ -353,51 +463,36 @@ export class QueryBuilderLambdaProcessor
       );
 
       // columns
-      const columnExpressions = params[1];
-      const columnAliases = params[2];
-      let columnNumber = 0;
-      if (columnExpressions instanceof CollectionInstanceValue) {
-        columnNumber = columnExpressions.values.length;
-        columnExpressions.values.map((e) =>
-          e.accept_ValueSpecificationVisitor(
-            new QueryBuilderLambdaProcessor(
-              this.queryBuilderState,
-              valueSpecification,
-            ),
-          ),
-        );
-      } else {
-        columnNumber = 1;
-        columnExpressions.accept_ValueSpecificationVisitor(
+      const columnLambdas = params[1];
+      assertType(
+        columnLambdas,
+        CollectionInstanceValue,
+        `Can't process project() expression: project() expects argument #1 to be a collection`,
+      );
+      columnLambdas.values.map((value) =>
+        value.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(
             this.queryBuilderState,
             valueSpecification,
           ),
-        );
-      }
-
-      // alias
-      let aliases: string[] = [];
-      assertTrue(
-        columnAliases instanceof CollectionInstanceValue ||
-          columnAliases instanceof PrimitiveInstanceValue,
-        `Can't process project() expression: aliases are not properly supplied`,
+        ),
       );
-      if (columnAliases instanceof CollectionInstanceValue) {
-        assertTrue(
-          columnNumber === columnAliases.values.length,
-          `Can't process project() expression: aliases does not match the number of columns`,
-        );
-        aliases = columnAliases.values
-          .map(getNullableStringValueFromValueSpec)
-          .filter(isNonNullable);
-      } else if (columnAliases instanceof PrimitiveInstanceValue) {
-        assertTrue(
-          columnNumber === 1,
-          `Can't process project() expression: aliases does not match the number of columns`,
-        );
-        aliases = [getNullableStringValueFromValueSpec(columnAliases) ?? ''];
-      }
+
+      // aliases
+      const columnAliases = params[2];
+      assertType(
+        columnAliases,
+        CollectionInstanceValue,
+        `Can't process project() expression: project() expects argument #2 to be a collection`,
+      );
+      assertTrue(
+        columnLambdas.values.length === columnAliases.values.length,
+        `Can't process project() expression: number of aliases does not match the number of columns`,
+      );
+      const aliases = columnAliases.values
+        .map(getNullableStringValueFromValueSpec)
+        .filter(isNonNullable);
+
       this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
         (e, idx) => e.setColumnName(aliases[idx]),
       );
@@ -575,7 +670,11 @@ export class QueryBuilderLambdaProcessor
 
       // columns
       const columnExpressions = params[1];
-      assertType(columnExpressions, CollectionInstanceValue, '');
+      assertType(
+        columnExpressions,
+        CollectionInstanceValue,
+        `Can't process groupBy() expression: groupBy() expects argument #1 to be a collection`,
+      );
       columnExpressions.values.map((e) =>
         e.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(
@@ -587,7 +686,11 @@ export class QueryBuilderLambdaProcessor
 
       // aggregations
       const aggregationExpressions = params[2];
-      assertType(aggregationExpressions, CollectionInstanceValue, '');
+      assertType(
+        aggregationExpressions,
+        CollectionInstanceValue,
+        `Can't process groupBy() expression: groupBy() expects argument #2 to be a collection`,
+      );
       aggregationExpressions.values.map((e) =>
         e.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(
@@ -599,7 +702,17 @@ export class QueryBuilderLambdaProcessor
 
       // aliases
       const columnAliases = params[3];
-      assertType(columnAliases, CollectionInstanceValue, '');
+      assertType(
+        columnAliases,
+        CollectionInstanceValue,
+        `Can't process groupBy() expression: groupBy() expects argument #3 to be a collection`,
+      );
+      assertTrue(
+        columnAliases.values.length ===
+          columnExpressions.values.length +
+            aggregationExpressions.values.length,
+        `Can't process groupBy() expression: number of aliases does not match the number of columns`,
+      );
       const aliases = columnAliases.values
         .map(getNullableStringValueFromValueSpec)
         .filter(isNonNullable);
@@ -621,17 +734,38 @@ export class QueryBuilderLambdaProcessor
           this.precedingExpression.functionName,
           SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         ),
-        `Can't process agg() expression: only support agg() used in aggregation`,
+        `Can't process agg() expression: only support agg() in aggregation`,
       );
 
-      // const groupByPrecedingExpression = guaranteeType(
-      //   this.precedingExpression.parametersValues[0],
-      //   SimpleFunctionExpression,
-      //   `Can't process agg() expression: only support agg() immediately following an expression`,
-      // );
+      const columnLambdas = valueSpecification.parametersValues[0];
+      columnLambdas.accept_ValueSpecificationVisitor(
+        new QueryBuilderLambdaProcessor(
+          this.queryBuilderState,
+          valueSpecification,
+        ),
+      );
 
-      // add columns to aggregation
-      // [agg(x | $x.kerberos, y | $y->uniqueValueOnly())],
+      const aggregateLambda = valueSpecification.parametersValues[1];
+      assertType(
+        aggregateLambda,
+        LambdaFunctionInstanceValue,
+        `Can't process agg() expression: agg() expects argument #1 to be a lambda function`,
+      );
+
+      // NOTE: since we process agg() expressions one by one, we know that the current agg()
+      // always correspond to the last column projection state, based on our processing procedure
+      processAggregateLambda(
+        aggregateLambda,
+        guaranteeNonNullable(
+          this.queryBuilderState.fetchStructureState.projectionState.columns[
+            this.queryBuilderState.fetchStructureState.projectionState.columns
+              .length - 1
+          ],
+        ),
+        this.queryBuilderState.fetchStructureState.projectionState
+          .aggregationState,
+      );
+
       return;
     } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.SERIALIZE)) {
       assertTrue(
@@ -668,7 +802,7 @@ export class QueryBuilderLambdaProcessor
       const value = guaranteeType(
         serializeFunc.values[0],
         RootGraphFetchTree,
-        `Can't process serialize(): serialize() graph-fetch tree root is missing`,
+        `Can't process serialize() expression: serialize() graph-fetch tree root is missing`,
       );
       this.queryBuilderState.fetchStructureState.setFetchStructureMode(
         FETCH_STRUCTURE_MODE.GRAPH_FETCH,
@@ -698,7 +832,7 @@ export class QueryBuilderLambdaProcessor
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         SimpleFunctionExpression,
-        `Can't process '${functionName}()' expression: only support '${functionName}()' immediately following an expression`,
+        `Can't process ${functionName}() expression: only support ${functionName}() immediately following an expression`,
       );
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(
@@ -712,7 +846,7 @@ export class QueryBuilderLambdaProcessor
         [SUPPORTED_FUNCTIONS.FILTER, SUPPORTED_FUNCTIONS.GET_ALL].some((fn) =>
           matchFunctionName(precedingExpression.functionName, fn),
         ),
-        `Can't process graph-fetch expression: only support graphFetch() and graphFetchChecked() immediately following either getAll() or filter()`,
+        `Can't process ${functionName}(): only support ${functionName}() immediately following either getAll() or filter()`,
       );
 
       this.queryBuilderState.fetchStructureState.graphFetchTreeState.setChecked(
@@ -738,8 +872,8 @@ export class QueryBuilderLambdaProcessor
   ): void {
     valueSpecification.values
       .map((value) =>
-        value.expressionSequence.map((e) =>
-          e.accept_ValueSpecificationVisitor(
+        value.expressionSequence.map((expression) =>
+          expression.accept_ValueSpecificationVisitor(
             new QueryBuilderLambdaProcessor(
               this.queryBuilderState,
               this.precedingExpression,
@@ -757,50 +891,32 @@ export class QueryBuilderLambdaProcessor
       this.precedingExpression,
       `Can't process property expression: property expression preceding expression cannot be retrieved`,
     );
+    const precedingExpressionName = this.precedingExpression.functionName;
     if (
-      matchFunctionName(
-        this.precedingExpression.functionName,
+      [
         SUPPORTED_FUNCTIONS.TDS_PROJECT,
-      )
-    ) {
-      const projectionState =
-        this.queryBuilderState.fetchStructureState.projectionState;
-      const columnState = new QueryBuilderProjectionColumnState(
-        projectionState.editorStore,
-        projectionState,
-        valueSpecification,
-        true,
-      );
-      projectionState.addColumn(columnState);
-
-      if (
-        valueSpecification.parametersValues[0] instanceof VariableExpression
-      ) {
-        columnState.setLambdaVariableName(
-          valueSpecification.parametersValues[0].name,
-        );
-      }
-      return;
-    } else if (
-      matchFunctionName(
-        this.precedingExpression.functionName,
         SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-      )
+        SUPPORTED_FUNCTIONS.TDS_AGG,
+      ].some((fn) => matchFunctionName(precedingExpressionName, fn))
     ) {
       const projectionState =
         this.queryBuilderState.fetchStructureState.projectionState;
-      const columnState = new QueryBuilderProjectionColumnState(
+      const columnState = new QueryBuilderSimpleProjectionColumnState(
         projectionState.editorStore,
         projectionState,
         valueSpecification,
         true,
       );
-      projectionState.addColumn(columnState);
+      projectionState.addColumn(columnState, { skipSorting: true });
 
       if (
         valueSpecification.parametersValues[0] instanceof VariableExpression
       ) {
-        columnState.setLambdaVariableName(
+        // NOTE: technically we should set the lambda parameter name when we process
+        // the lambda, not when we process the lambda body like this, but that requires
+        // some setup, so it's easier to do it here. The validation of this should have
+        // already been taken care of by the builder.
+        columnState.setLambdaParameterName(
           valueSpecification.parametersValues[0].name,
         );
       }

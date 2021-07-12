@@ -196,7 +196,6 @@ import {
   V1_serializeExecutionPlan,
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
-import { V1_Runtime } from './model/packageableElements/runtime/V1_Runtime';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1559,13 +1558,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this: V1_PureGraphManager,
     lambda: RawLambda,
     graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
   ): GeneratorFn<string> {
     return (yield this.engine.getLambdaReturnType(
       lambda.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
           new V1_GraphTransformerContextBuilder(
             this.pureProtocolProcessorPlugins,
-          ).build(),
+          )
+            .withKeepSourceInformationFlag(
+              Boolean(options?.keepSourceInformation),
+            )
+            .build(),
         ),
       ) as V1_RawLambda,
       this.getFullGraphModelData(graph),

@@ -103,7 +103,7 @@ export class SortColumnState {
 export class QueryResultSetModifierState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
-  modal = false;
+  showModal = false;
   limit?: number;
   distinct = false;
   sortColumns: SortColumnState[] = [];
@@ -112,7 +112,7 @@ export class QueryResultSetModifierState {
     makeAutoObservable(this, {
       editorStore: false,
       queryBuilderState: false,
-      setModal: action,
+      setShowModal: action,
       setLimit: action,
       toggleDistinct: action,
       deleteSortColumn: action,
@@ -124,8 +124,8 @@ export class QueryResultSetModifierState {
     this.queryBuilderState = queryBuilderState;
   }
 
-  setModal(modal: boolean): void {
-    this.modal = modal;
+  setShowModal(val: boolean): void {
+    this.showModal = val;
   }
 
   setLimit(val: number | undefined): void {

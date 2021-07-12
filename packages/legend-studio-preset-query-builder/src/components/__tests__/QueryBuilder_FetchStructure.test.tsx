@@ -48,6 +48,7 @@ import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
@@ -128,16 +129,20 @@ test(
         (e) => e.columnName === FIRST_NAME_ALIAS,
       ),
     );
-    const firstNameProperty =
-      fistNameCol.propertyEditorState.propertyExpression.func;
+    const firstNameProperty = guaranteeType(
+      fistNameCol,
+      QueryBuilderSimpleProjectionColumnState,
+    ).propertyEditorState.propertyExpression.func;
     expect(firstNameProperty).toBe(_personClass.getProperty('firstName'));
     const lastNameCol = guaranteeNonNullable(
       queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === LAST_NAME_ALIAS,
       ),
     );
-    const lastNameProperty =
-      lastNameCol.propertyEditorState.propertyExpression.func;
+    const lastNameProperty = guaranteeType(
+      lastNameCol,
+      QueryBuilderSimpleProjectionColumnState,
+    ).propertyEditorState.propertyExpression.func;
     expect(lastNameProperty).toBe(_personClass.getProperty('lastName'));
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
 
@@ -162,11 +167,14 @@ test(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
-    const legalNameColProperty =
-      legalNameCol.propertyEditorState.propertyExpression.func;
+    const legalNameColProperty = guaranteeType(
+      legalNameCol,
+      QueryBuilderSimpleProjectionColumnState,
+    ).propertyEditorState.propertyExpression.func;
     expect(legalNameColProperty).toBe(_firmClass.getProperty('legalName'));
     const _firmPropertyExpression = guaranteeType(
-      legalNameCol.propertyEditorState.propertyExpression.parametersValues[0],
+      guaranteeType(legalNameCol, QueryBuilderSimpleProjectionColumnState)
+        .propertyEditorState.propertyExpression.parametersValues[0],
       AbstractPropertyExpression,
     );
     expect(_firmPropertyExpression.func).toBe(_personClass.getProperty('firm'));

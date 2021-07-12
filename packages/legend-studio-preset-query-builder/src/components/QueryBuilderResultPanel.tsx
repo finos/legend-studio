@@ -160,7 +160,7 @@ export const QueryBuilderResultPanel = observer(
         <div className="panel__content">
           {!executionResult && (
             <BlankPanelContent>
-              Build or load valid query first
+              Build or load a valid query first
             </BlankPanelContent>
           )}
           {executionResult && (

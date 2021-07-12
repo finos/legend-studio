@@ -173,6 +173,7 @@ export abstract class AbstractPureGraphManager {
   abstract getLambdaReturnType(
     lambda: RawLambda,
     graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
   ): Promise<string>;
 
   // ------------------------------------------- ValueSpecification  -------------------------------------------

@@ -25,6 +25,7 @@ import SplitPane from 'react-split-pane';
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel';
 import { SideBar } from './side-bar/SideBar';
 import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel';
+import type { KeyMap } from 'react-hotkeys';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { GrammarTextEditor } from './edit-panel/GrammarTextEditor';
 import { StatusBar } from './StatusBar';
@@ -34,10 +35,8 @@ import {
   SIDE_BAR_RESIZE_SNAP_THRESHOLD,
   DEFAULT_SIDE_BAR_SIZE,
   AUX_PANEL_RESIZE_SNAP_THRESHOLD,
-  HOTKEY,
-  HOTKEY_MAP,
-  ACTIVITY_MODE,
 } from '../../stores/EditorConfig';
+import type { EditorHotkey } from '../../stores/EditorStore';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import Backdrop from '@material-ui/core/Backdrop';
 import type { EditorRouteParams } from '../../stores/Router';
@@ -50,8 +49,21 @@ import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
-import { flowResult } from 'mobx';
 import { isNonNullable } from '@finos/legend-studio-shared';
+
+const buildHotkeySupport = (
+  hotkeys: EditorHotkey[],
+): [KeyMap, { [key: string]: (keyEvent?: KeyboardEvent) => void }] => {
+  const keyMap: Record<PropertyKey, string[]> = {};
+  hotkeys.forEach((hotkey) => {
+    keyMap[hotkey.name] = hotkey.keyBinds;
+  });
+  const handlers: Record<PropertyKey, (keyEvent?: KeyboardEvent) => void> = {};
+  hotkeys.forEach((hotkey) => {
+    handlers[hotkey.name] = hotkey.handler;
+  });
+  return [keyMap, handlers];
+};
 
 export const EditorInner = observer(() => {
   const params = useParams<EditorRouteParams>();
@@ -114,74 +126,9 @@ export const EditorInner = observer(() => {
   }, [editorStore, ref, height, width]);
 
   // Hotkeys
-  const keyMap = {
-    [HOTKEY.COMPILE]: [HOTKEY_MAP.COMPILE],
-    [HOTKEY.GENERATE]: [HOTKEY_MAP.GENERATE],
-    [HOTKEY.CREATE_ELEMENT]: [HOTKEY_MAP.CREATE_ELEMENT],
-    [HOTKEY.OPEN_ELEMENT]: [HOTKEY_MAP.OPEN_ELEMENT],
-    [HOTKEY.SYNC_WITH_WORKSPACE]: [HOTKEY_MAP.SYNC_WITH_WORKSPACE],
-    [HOTKEY.TOGGLE_TEXT_MODE]: [HOTKEY_MAP.TOGGLE_TEXT_MODE],
-    [HOTKEY.TOGGLE_AUX_PANEL]: [HOTKEY_MAP.TOGGLE_AUX_PANEL],
-    [HOTKEY.TOGGLE_MODEL_LOADER]: [HOTKEY_MAP.TOGGLE_MODEL_LOADER],
-    [HOTKEY.TOGGLE_SIDEBAR_EXPLORER]: [HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
-    [HOTKEY.TOGGLE_SIDEBAR_CHANGES]: [HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
-    [HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW]: [
-      HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
-    ],
-    [HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER]: [
-      HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
-    ],
-  };
-  const handlers = {
-    // actions that need blocking
-    [HOTKEY.COMPILE]: editorStore.createGlobalHotKeyAction(() => {
-      flowResult(editorStore.graphState.globalCompileInFormMode()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
-    }),
-    [HOTKEY.GENERATE]: editorStore.createGlobalHotKeyAction(() => {
-      editorStore.graphState.graphGenerationState
-        .globalGenerate()
-        .catch(applicationStore.alertIllegalUnhandledError);
-    }),
-    [HOTKEY.CREATE_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
-      editorStore.newElementState.openModal(),
-    ),
-    [HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
-      editorStore.searchElementCommandState.open(),
-    ),
-    [HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(() => {
-      editorStore
-        .toggleTextMode()
-        .catch(applicationStore.alertIllegalUnhandledError);
-    }),
-    [HOTKEY.TOGGLE_MODEL_LOADER]: editorStore.createGlobalHotKeyAction(() =>
-      editorStore.openState(editorStore.modelLoaderState),
-    ),
-    [HOTKEY.SYNC_WITH_WORKSPACE]: editorStore.createGlobalHotKeyAction(() => {
-      editorStore.localChangesState
-        .syncWithWorkspace()
-        .catch(applicationStore.alertIllegalUnhandledError);
-    }),
-    // simple actions (no blocking is needed)
-    [HOTKEY.TOGGLE_AUX_PANEL]: editorStore.createGlobalHotKeyAction(() =>
-      editorStore.toggleAuxPanel(),
-    ),
-    [HOTKEY.TOGGLE_SIDEBAR_EXPLORER]: editorStore.createGlobalHotKeyAction(() =>
-      editorStore.setActiveActivity(ACTIVITY_MODE.EXPLORER),
-    ),
-    [HOTKEY.TOGGLE_SIDEBAR_CHANGES]: editorStore.createGlobalHotKeyAction(() =>
-      editorStore.setActiveActivity(ACTIVITY_MODE.CHANGES),
-    ),
-    [HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW]:
-      editorStore.createGlobalHotKeyAction(() =>
-        editorStore.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
-      ),
-    [HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER]:
-      editorStore.createGlobalHotKeyAction(() =>
-        editorStore.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
-      ),
-  };
+  const [hotkeyMapping, hotkeyHandlers] = buildHotkeySupport(
+    editorStore.hotkeys,
+  );
 
   // Cleanup the editor
   useEffect(
@@ -316,7 +263,11 @@ export const EditorInner = observer(() => {
       <div className="app__content">
         <div className="editor">
           {promptComponent}
-          <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
+          <GlobalHotKeys
+            keyMap={hotkeyMapping}
+            handlers={hotkeyHandlers}
+            allowChanges={true}
+          >
             <div className="editor__body">
               <ActivityBar />
               <Backdrop className="backdrop" open={editorStore.backdrop} />
