@@ -78,8 +78,8 @@ export const simpleProjection = {
             },
           ],
           multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
+            lowerBound: 2,
+            upperBound: 2,
           },
         },
         {
@@ -103,8 +103,8 @@ export const simpleProjection = {
             },
           ],
           multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
+            lowerBound: 2,
+            upperBound: 2,
           },
         },
       ],
@@ -370,8 +370,8 @@ export const projectionWithResultSetModifiers = {
                         },
                       ],
                       multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
+                        lowerBound: 3,
+                        upperBound: 3,
                       },
                     },
                     {
@@ -403,8 +403,8 @@ export const projectionWithResultSetModifiers = {
                         },
                       ],
                       multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
+                        lowerBound: 3,
+                        upperBound: 3,
                       },
                     },
                   ],
@@ -782,8 +782,8 @@ export const fullComplexProjectionQuery = {
                     },
                   ],
                   multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
+                    lowerBound: 3,
+                    upperBound: 3,
                   },
                 },
                 {
@@ -815,8 +815,8 @@ export const fullComplexProjectionQuery = {
                     },
                   ],
                   multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
+                    lowerBound: 3,
+                    upperBound: 3,
                   },
                 },
               ],
