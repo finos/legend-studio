@@ -18,6 +18,8 @@ import type {
   ValueSpecification,
   SimpleFunctionExpression,
   VariableExpression,
+  PureModel,
+  AbstractPropertyExpression,
 } from '@finos/legend-studio';
 import { matchFunctionName, PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
@@ -60,25 +62,25 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
   }
 
   buildAggregateExpression(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    propertyExpression: AbstractPropertyExpression | undefined,
+    variableName: string,
+    graph: PureModel,
   ): ValueSpecification {
-    const propertyTypePath =
-      aggregateColumnState.projectionColumnState instanceof
-      QueryBuilderSimpleProjectionColumnState
-        ? aggregateColumnState.projectionColumnState.propertyExpressionState
-            .propertyExpression.func.genericType.value.rawType.path
-        : PRIMITIVE_TYPE.NUMBER; // this decision does not affect the output expression
     return buildAggregateExpression(
-      aggregateColumnState,
       (
         [
           PRIMITIVE_TYPE.DATE,
           PRIMITIVE_TYPE.STRICTDATE,
           PRIMITIVE_TYPE.DATETIME,
         ] as string[]
-      ).includes(propertyTypePath)
+      ).includes(
+        propertyExpression?.func.genericType.value.rawType.path ??
+          PRIMITIVE_TYPE.NUMBER, // this decision does not affect the output expression
+      )
         ? SUPPORTED_FUNCTIONS.DATE_MAX
         : SUPPORTED_FUNCTIONS.MAX,
+      graph,
+      variableName,
     );
   }
 

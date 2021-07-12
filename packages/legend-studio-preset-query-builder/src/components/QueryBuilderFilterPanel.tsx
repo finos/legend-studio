@@ -290,38 +290,24 @@ const QueryBuilderFilterConditionContextMenu = observer(
     };
 
     return (
-      <div ref={ref} className="query-builder-tree__context-menu">
+      <MenuContent ref={ref}>
         {node instanceof QueryBuilderFilterTreeGroupNodeData && (
-          <div
-            className="query-builder-tree__context-menu__item"
-            onClick={createCondition}
-          >
+          <MenuContentItem onClick={createCondition}>
             Add New Condition
-          </div>
+          </MenuContentItem>
         )}
         {node instanceof QueryBuilderFilterTreeGroupNodeData && (
-          <div
-            className="query-builder-tree__context-menu__item"
-            onClick={createGroupCondition}
-          >
+          <MenuContentItem onClick={createGroupCondition}>
             Add New Logical Group
-          </div>
+          </MenuContentItem>
         )}
         {node instanceof QueryBuilderFilterTreeConditionNodeData && (
-          <div
-            className="query-builder-tree__context-menu__item"
-            onClick={newGroupWithCondition}
-          >
+          <MenuContentItem onClick={newGroupWithCondition}>
             Form a New Logical Group
-          </div>
+          </MenuContentItem>
         )}
-        <div
-          className="query-builder-tree__context-menu__item"
-          onClick={removeNode}
-        >
-          Remove
-        </div>
-      </div>
+        <MenuContentItem onClick={removeNode}>Remove</MenuContentItem>
+      </MenuContent>
     );
   },
   { forwardRef: true },

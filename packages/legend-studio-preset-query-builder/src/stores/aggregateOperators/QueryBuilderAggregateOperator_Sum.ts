@@ -18,6 +18,8 @@ import type {
   ValueSpecification,
   SimpleFunctionExpression,
   VariableExpression,
+  AbstractPropertyExpression,
+  PureModel,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
@@ -57,11 +59,14 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
   }
 
   buildAggregateExpression(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    propertyExpression: AbstractPropertyExpression | undefined,
+    variableName: string,
+    graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      aggregateColumnState,
       SUPPORTED_FUNCTIONS.SUM,
+      graph,
+      variableName,
     );
   }
 

@@ -18,6 +18,8 @@ import type {
   ValueSpecification,
   SimpleFunctionExpression,
   VariableExpression,
+  PureModel,
+  AbstractPropertyExpression,
 } from '@finos/legend-studio';
 import { PRIMITIVE_TYPE } from '@finos/legend-studio';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
@@ -62,11 +64,14 @@ export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregat
   }
 
   buildAggregateExpression(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    propertyExpression: AbstractPropertyExpression | undefined,
+    variableName: string,
+    graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      aggregateColumnState,
       SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
+      graph,
+      variableName,
     );
   }
 

@@ -18,13 +18,9 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
-import type {
-  Class,
-  Multiplicity,
-  PureModel,
-  ValueSpecification,
-} from '@finos/legend-studio';
+import type { Class, ValueSpecification } from '@finos/legend-studio';
 import {
+  Multiplicity,
   UnknownValue,
   V1_GraphTransformerContextBuilder,
   V1_serializeRawValueSpecification,
@@ -38,25 +34,23 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   LambdaFunction,
-  LambdaFunctionInstanceValue,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-  VariableExpression,
 } from '@finos/legend-studio';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import { buildFilterExpression } from './QueryBuilderFilterState';
-import { buildAggregateLambda } from './QueryBuilderAggregationState';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState';
+import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
 
-const buildGetAllFunction = (
+export const buildGetAllFunction = (
   _class: Class,
   multiplicity: Multiplicity,
 ): SimpleFunctionExpression => {
@@ -73,30 +67,6 @@ const buildGetAllFunction = (
   return _func;
 };
 
-export const buildSimpleProjectionColumnLambda = (
-  simpleProjectionColumnState: QueryBuilderSimpleProjectionColumnState,
-  graph: PureModel,
-): LambdaFunctionInstanceValue => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const typeAny = graph.getType(CORE_ELEMENT_PATH.ANY);
-  const simpleColLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-  const colLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-  colLambdaFunctionType.parameters.push(
-    new VariableExpression(
-      simpleProjectionColumnState.lambdaParameterName,
-      multiplicityOne,
-    ),
-  );
-  const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-  colLambdaFunction.expressionSequence.push(
-    simpleProjectionColumnState.propertyExpressionState.propertyExpression,
-  );
-  simpleColLambda.values.push(colLambdaFunction);
-  return simpleColLambda;
-};
-
 export const buildLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   options?: {
@@ -110,13 +80,13 @@ export const buildLambdaFunction = (
 ): LambdaFunction => {
   const _class = guaranteeNonNullable(
     queryBuilderState.querySetupState._class,
-    'Class is required to execute query',
+    'Class is required to build query',
   );
   const multiplicityOne =
     queryBuilderState.editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
-  const stringType =
+  const typeString =
     queryBuilderState.editorStore.graphState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
@@ -127,11 +97,11 @@ export const buildLambdaFunction = (
     new FunctionType(typeAny, multiplicityOne),
   );
 
-  // build base `getAll` function
+  // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
   lambdaFunction.expressionSequence[0] = getAllFunction;
 
-  // build filter
+  // build filter()
   const filterFunction = buildFilterExpression(
     queryBuilderState.filterState,
     getAllFunction,
@@ -153,14 +123,33 @@ export const buildLambdaFunction = (
         multiplicityOne,
       );
 
-      const colLambdas = new CollectionInstanceValue(multiplicityOne);
-      const aggregateLambdas = new CollectionInstanceValue(multiplicityOne);
-      const colAliases = new CollectionInstanceValue(multiplicityOne);
+      const colLambdas = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.columns.length -
+            queryBuilderState.fetchStructureState.projectionState
+              .aggregationState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.columns.length -
+            queryBuilderState.fetchStructureState.projectionState
+              .aggregationState.columns.length,
+        ),
+      );
+      const aggregateLambdas = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.length,
+        ),
+      );
+      const colAliases = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+        ),
+      );
       queryBuilderState.fetchStructureState.projectionState.columns.forEach(
         (projectionColumnState) => {
           // column alias
           const colAlias = new PrimitiveInstanceValue(
-            GenericTypeExplicitReference.create(new GenericType(stringType)),
+            GenericTypeExplicitReference.create(new GenericType(typeString)),
             multiplicityOne,
           );
           colAlias.values.push(projectionColumnState.columnName);
@@ -178,25 +167,14 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
-            const simpleColLambda = new LambdaFunctionInstanceValue(
-              multiplicityOne,
+            columnLambda = buildGenericLambdaFunctionInstanceValue(
+              projectionColumnState.lambdaParameterName,
+              [
+                projectionColumnState.propertyExpressionState
+                  .propertyExpression,
+              ],
+              queryBuilderState.editorStore.graphState.graph,
             );
-            const colLambdaFunctionType = new FunctionType(
-              typeAny,
-              multiplicityOne,
-            );
-            colLambdaFunctionType.parameters.push(
-              new VariableExpression(
-                projectionColumnState.lambdaParameterName,
-                multiplicityOne,
-              ),
-            );
-            const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-            colLambdaFunction.expressionSequence.push(
-              projectionColumnState.propertyExpressionState.propertyExpression,
-            );
-            simpleColLambda.values.push(colLambdaFunction);
-            columnLambda = simpleColLambda;
           } else if (
             projectionColumnState instanceof
             QueryBuilderDerivationProjectionColumnState
@@ -229,7 +207,15 @@ export const buildLambdaFunction = (
               extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_AGG),
               multiplicityOne,
             );
-            const aggregateLambda = buildAggregateLambda(aggregateColumnState);
+            const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
+              aggregateColumnState.lambdaParameterName,
+              [
+                aggregateColumnState.operator.buildAggregateExpressionFromState(
+                  aggregateColumnState,
+                ),
+              ],
+              aggregateColumnState.editorStore.graphState.graph,
+            );
             aggregateFunctionExpression.parametersValues = [
               columnLambda,
               aggregateLambda,
@@ -257,13 +243,23 @@ export const buildLambdaFunction = (
         extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_PROJECT),
         multiplicityOne,
       );
-      const colLambdas = new CollectionInstanceValue(multiplicityOne);
-      const colAliases = new CollectionInstanceValue(multiplicityOne);
+      const colLambdas = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+        ),
+      );
+      const colAliases = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+        ),
+      );
       queryBuilderState.fetchStructureState.projectionState.columns.forEach(
         (projectionColumnState) => {
           // column alias
           const colAlias = new PrimitiveInstanceValue(
-            GenericTypeExplicitReference.create(new GenericType(stringType)),
+            GenericTypeExplicitReference.create(new GenericType(typeString)),
             multiplicityOne,
           );
           colAlias.values.push(projectionColumnState.columnName);
@@ -275,8 +271,12 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
-            columnLambda = buildSimpleProjectionColumnLambda(
-              projectionColumnState,
+            columnLambda = buildGenericLambdaFunctionInstanceValue(
+              projectionColumnState.lambdaParameterName,
+              [
+                projectionColumnState.propertyExpressionState
+                  .propertyExpression,
+              ],
               queryBuilderState.editorStore.graphState.graph,
             );
           } else if (

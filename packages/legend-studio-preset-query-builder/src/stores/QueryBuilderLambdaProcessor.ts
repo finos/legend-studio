@@ -909,8 +909,7 @@ export class QueryBuilderLambdaProcessor
       // the property expression state.
       let currentPropertyExpression: ValueSpecification = valueSpecification;
       while (currentPropertyExpression instanceof AbstractPropertyExpression) {
-        const propertyExpression =
-          currentPropertyExpression as AbstractPropertyExpression;
+        const propertyExpression = currentPropertyExpression;
         currentPropertyExpression =
           currentPropertyExpression.parametersValues[0];
         // here we just do a simple check to ensure that if we encounter derived properties

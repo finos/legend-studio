@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-import { DATE_FORMAT, PRIMITIVE_TYPE } from '@finos/legend-studio';
+import type { PureModel, ValueSpecification } from '@finos/legend-studio';
+import {
+  CORE_ELEMENT_PATH,
+  DATE_FORMAT,
+  FunctionType,
+  LambdaFunction,
+  LambdaFunctionInstanceValue,
+  PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
+  VariableExpression,
+} from '@finos/legend-studio';
 import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import format from 'date-fns/format';
 
@@ -40,4 +50,24 @@ export const generateDefaultValueForPrimitiveType = (
         `Can't generate default value for primitive type '${type}'`,
       );
   }
+};
+
+export const buildGenericLambdaFunctionInstanceValue = (
+  lambdaParameterName: string,
+  lambdaBodyExpressions: ValueSpecification[],
+  graph: PureModel,
+): LambdaFunctionInstanceValue => {
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
+  const typeAny = graph.getType(CORE_ELEMENT_PATH.ANY);
+  const aggregateLambda = new LambdaFunctionInstanceValue(multiplicityOne);
+  const colLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
+  colLambdaFunctionType.parameters.push(
+    new VariableExpression(lambdaParameterName, multiplicityOne),
+  );
+  const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
+  colLambdaFunction.expressionSequence = lambdaBodyExpressions;
+  aggregateLambda.values.push(colLambdaFunction);
+  return aggregateLambda;
 };

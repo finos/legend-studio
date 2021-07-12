@@ -32,7 +32,7 @@ import {
   getNonCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderUtils';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
 
 export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

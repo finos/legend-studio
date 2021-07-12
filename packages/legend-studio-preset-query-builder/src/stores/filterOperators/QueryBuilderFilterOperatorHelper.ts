@@ -23,8 +23,6 @@ import type {
 import {
   extractElementNameFromPath,
   matchFunctionName,
-  FunctionType,
-  LambdaFunction,
   LambdaFunctionInstanceValue,
   VariableExpression,
   AbstractPropertyExpression,
@@ -34,7 +32,6 @@ import {
   EnumValueInstanceValue,
   SimpleFunctionExpression,
   PRIMITIVE_TYPE,
-  CORE_ELEMENT_PATH,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 import {
@@ -50,6 +47,7 @@ import type {
 } from '../QueryBuilderFilterState';
 import { FilterConditionState } from '../QueryBuilderFilterState';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { buildGenericLambdaFunctionInstanceValue } from '../QueryBuilderValueSpecificationBuilderHelper';
 
 export const buildPrimitiveInstanceValue = (
   filterConditionState: FilterConditionState,
@@ -156,9 +154,6 @@ const buildFilterConditionExpressionWithExists = (
 
   // 3. Build each property chain into an exists() simple function expression
   const simpleFunctionExpressions: SimpleFunctionExpression[] = [];
-  const typeAny = filterConditionState.editorStore.graphState.graph.getType(
-    CORE_ELEMENT_PATH.ANY,
-  );
   for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
     const simpleFunctionExpression = new SimpleFunctionExpression(
       extractElementNameFromPath(SUPPORTED_FUNCTIONS.EXISTS),
@@ -194,12 +189,11 @@ const buildFilterConditionExpressionWithExists = (
       _existsLambdaVariable instanceof AbstractPropertyExpression
         ? getPropertyExpressionChainVariable(_existsLambdaVariable)
         : guaranteeType(_existsLambdaVariable, VariableExpression);
-    const existsLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-    const existsLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-    existsLambdaFunctionType.parameters.push(existsLambdaVariable);
-    const existsLambdaFunction = new LambdaFunction(existsLambdaFunctionType);
-    existsLambdaFunction.expressionSequence = [childSFE];
-    existsLambda.values.push(existsLambdaFunction);
+    const existsLambda = buildGenericLambdaFunctionInstanceValue(
+      existsLambdaVariable.name,
+      [childSFE],
+      filterConditionState.editorStore.graphState.graph,
+    );
     // add the child SFE lambda to the current SFE parameters
     currentSFE.parametersValues.push(existsLambda);
   }

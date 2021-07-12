@@ -23,6 +23,9 @@ import {
 } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  assertType,
+  UnsupportedOperationError,
+  assertErrorThrown,
   changeEntry,
   guaranteeType,
   uuid,
@@ -42,8 +45,12 @@ import type {
   AbstractPropertyExpression,
   CompilationError,
   EditorStore,
+  ExecutionResult,
 } from '@finos/legend-studio';
 import {
+  TdsExecutionResult,
+  CLIENT_VERSION,
+  PRIMITIVE_TYPE,
   extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
   ParserError,
@@ -66,7 +73,12 @@ import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperator
 import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min';
 import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max';
 import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString';
-import { buildSimpleProjectionColumnLambda } from './QueryBuilderLambdaBuilder';
+import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
+import {
+  buildNonNumericPreviewDataQuery,
+  buildNumericPreviewDataQuery,
+} from './QueryBuilderPreviewDataHelper';
+import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
@@ -367,8 +379,9 @@ export class QueryBuilderProjectionState {
     simpleProjectionColumnState: QueryBuilderSimpleProjectionColumnState,
   ): void {
     // setup new derivation column state
-    const columnColumnLambda = buildSimpleProjectionColumnLambda(
-      simpleProjectionColumnState,
+    const columnColumnLambda = buildGenericLambdaFunctionInstanceValue(
+      simpleProjectionColumnState.lambdaParameterName,
+      [simpleProjectionColumnState.propertyExpressionState.propertyExpression],
       this.editorStore.graphState.graph,
     );
     const derivationColumnState =
@@ -388,9 +401,9 @@ export class QueryBuilderProjectionState {
     this.replaceColumn(simpleProjectionColumnState, derivationColumnState);
 
     // convert to grammar for display
-    derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
-      false,
-    );
+    derivationColumnState.derivationLambdaEditorState
+      .convertLambdaObjectToGrammarString(false)
+      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
   }
 
   replaceColumn(
@@ -583,5 +596,126 @@ export class QueryBuilderProjectionState {
         undefined,
       ),
     );
+  }
+
+  *previewData(
+    node: QueryBuilderExplorerTreePropertyNodeData,
+  ): GeneratorFn<void> {
+    if (
+      !node.mapped ||
+      !this.queryBuilderState.querySetupState._class ||
+      !this.queryBuilderState.querySetupState.mapping
+    ) {
+      return;
+    }
+    if (
+      this.queryBuilderState.explorerState.previewDataState
+        .isGeneratingPreviewData
+    ) {
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't preview data for property '${node.property.name}': another preview request is being executed`,
+      );
+      return;
+    }
+    this.queryBuilderState.explorerState.previewDataState.setPropertyName(
+      node.property.name,
+    );
+    this.queryBuilderState.explorerState.previewDataState.setIsGeneratingPreviewData(
+      true,
+    );
+    const propertyExpression = buildPropertyExpressionFromExplorerTreeNodeData(
+      this.queryBuilderState.explorerState.nonNullableTreeData,
+      node,
+      this.editorStore.graphState.graph,
+    );
+    const propertyType = node.property.genericType.value.rawType;
+    try {
+      switch (propertyType.path) {
+        case PRIMITIVE_TYPE.NUMBER:
+        case PRIMITIVE_TYPE.INTEGER:
+        case PRIMITIVE_TYPE.DECIMAL:
+        case PRIMITIVE_TYPE.FLOAT: {
+          const previewResult =
+            (yield this.editorStore.graphState.graphManager.executeMapping(
+              this.editorStore.graphState.graph,
+              this.queryBuilderState.querySetupState.mapping,
+              this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+                buildNumericPreviewDataQuery(
+                  propertyExpression,
+                  this.queryBuilderState.querySetupState._class,
+                  this.editorStore.graphState.graph,
+                ),
+              ),
+              this.queryBuilderState.querySetupState.runtime,
+              CLIENT_VERSION.VX_X_X,
+              false,
+            )) as ExecutionResult;
+          assertType(
+            previewResult,
+            TdsExecutionResult,
+            `Unexpected preview data format`,
+          );
+          const previewResultData =
+            previewResult.values as QueryBuilderPreviewData;
+          // transpose the result
+          const transposedPreviewResultData = {
+            columns: ['Aggregation', 'Value'],
+            rows: previewResultData.columns.map((column, idx) => ({
+              values: [column, previewResultData.rows[0].values[idx]],
+            })),
+          };
+          this.queryBuilderState.explorerState.previewDataState.setPreviewData(
+            transposedPreviewResultData,
+          );
+          break;
+        }
+        case PRIMITIVE_TYPE.BOOLEAN:
+        case PRIMITIVE_TYPE.STRING:
+        case PRIMITIVE_TYPE.DATE:
+        case PRIMITIVE_TYPE.STRICTDATE:
+        case PRIMITIVE_TYPE.DATETIME: {
+          const previewResult =
+            (yield this.editorStore.graphState.graphManager.executeMapping(
+              this.editorStore.graphState.graph,
+              this.queryBuilderState.querySetupState.mapping,
+              this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+                buildNonNumericPreviewDataQuery(
+                  propertyExpression,
+                  this.queryBuilderState.querySetupState._class,
+                  this.editorStore.graphState.graph,
+                ),
+              ),
+              this.queryBuilderState.querySetupState.runtime,
+              CLIENT_VERSION.VX_X_X,
+              false,
+            )) as ExecutionResult;
+          assertType(
+            previewResult,
+            TdsExecutionResult,
+            `Unexpected preview data format`,
+          );
+          this.queryBuilderState.explorerState.previewDataState.setPreviewData(
+            previewResult.values as QueryBuilderPreviewData,
+          );
+          break;
+        }
+        default:
+          throw new UnsupportedOperationError(
+            `No preview support for property of type '${propertyType.path}'`,
+          );
+      }
+    } catch (e: unknown) {
+      assertErrorThrown(e);
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't preview data for property '${node.property.name}'. Error: ${e.message}`,
+      );
+      this.queryBuilderState.explorerState.previewDataState.setPreviewData(
+        undefined,
+      );
+    } finally {
+      this.queryBuilderState.explorerState.previewDataState.setIsGeneratingPreviewData(
+        false,
+      );
+    }
   }
 }

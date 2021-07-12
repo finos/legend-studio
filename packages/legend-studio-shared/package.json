@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@types/lodash-es": "4.17.4",
-    "@types/lossless-json": "1.0.0",
+    "@types/lossless-json": "1.0.1",
     "@types/object-hash": "2.1.1",
     "@types/pako": "1.0.2",
     "@types/seedrandom": "3.0.1",

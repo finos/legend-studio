@@ -15,13 +15,10 @@
  */
 
 import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   guaranteeNonNullable,
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
-import type { QueryBuilderState } from './QueryBuilderState';
-import { action, makeAutoObservable, observable } from 'mobx';
 import type {
   AbstractProperty,
   EditorStore,
@@ -33,7 +30,6 @@ import type {
 } from '@finos/legend-studio';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
-  PRIMITIVE_TYPE,
   OperationSetImplementation,
   AbstractPropertyExpression,
   Class,
@@ -42,7 +38,10 @@ import {
   Property,
   VariableExpression,
 } from '@finos/legend-studio';
+import type { QueryBuilderState } from './QueryBuilderState';
+import { action, makeAutoObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
+import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -50,7 +49,6 @@ export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ENUM_PROPERTY = 'ENUM_PROPERTY',
   PRIMITIVE_PROPERTY = 'PRIMITIVE_PROPERTY',
 }
-
 export interface QueryBuilderExplorerTreeDragSource {
   node: QueryBuilderExplorerTreePropertyNodeData;
 }
@@ -70,6 +68,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
    * e.g. derived properties, operation class mappings, etc.
    */
   skipMappingCheck: boolean;
+  isPartOfDerivedPropertyBranch: boolean;
   type: Type;
   setImpl?: SetImplementation;
 
@@ -79,6 +78,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     dndText: string,
     mapped: boolean,
     skipMappingCheck: boolean,
+    isPartOfDerivedPropertyBranch: boolean,
     type: Type,
     setImpl: SetImplementation | undefined,
   ) {
@@ -87,6 +87,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     this.dndText = dndText;
     this.mapped = mapped;
     this.skipMappingCheck = skipMappingCheck;
+    this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
     this.type = type;
     this.setImpl = setImpl;
   }
@@ -106,6 +107,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     parentId: string,
     mapped: boolean,
     skipMappingCheck: boolean,
+    isPartOfDerivedPropertyBranch: boolean,
     setImpl: SetImplementation | undefined,
   ) {
     super(
@@ -114,6 +116,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
       dndText,
       mapped,
       skipMappingCheck,
+      isPartOfDerivedPropertyBranch,
       property.genericType.value.rawType,
       setImpl,
     );
@@ -245,6 +248,10 @@ export const getQueryBuilderPropertyNodeData = (
     property,
     parentNode.id,
     mappingData.mapped,
+    property instanceof DerivedProperty ||
+      parentNode.isPartOfDerivedPropertyBranch ||
+      (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+        parentNode.property instanceof DerivedProperty),
     mappingData.skipMappingCheck,
     mappingData.setImpl,
   );
@@ -272,6 +279,7 @@ const getQueryBuilderTreeData = (
     true,
     // NOTE: we will not try to analyze property mappedness for operation class mapping
     rootSetImpl instanceof OperationSetImplementation,
+    false,
     rootClass,
     rootSetImpl,
   );
@@ -300,23 +308,28 @@ const getQueryBuilderTreeData = (
 };
 
 export class QueryBuilderExplorerPreviewDataState {
-  node: QueryBuilderExplorerTreePropertyNodeData;
   isGeneratingPreviewData = false;
-  previewData?: object;
+  propertyName = '(unknown)';
+  previewData?: QueryBuilderPreviewData;
 
-  constructor(node: QueryBuilderExplorerTreePropertyNodeData) {
+  constructor() {
     makeAutoObservable(this, {
-      node: false,
+      previewData: observable.ref,
+      setPropertyName: action,
+      setIsGeneratingPreviewData: action,
+      setPreviewData: action,
     });
+  }
 
-    this.node = node;
+  setPropertyName(val: string): void {
+    this.propertyName = val;
   }
 
   setIsGeneratingPreviewData(val: boolean): void {
     this.isGeneratingPreviewData = val;
   }
 
-  setPreviewData(val: object): void {
+  setPreviewData(val: QueryBuilderPreviewData | undefined): void {
     this.previewData = val;
   }
 }
@@ -324,7 +337,7 @@ export class QueryBuilderExplorerPreviewDataState {
 export class QueryBuilderExplorerState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
-  previewDataState?: QueryBuilderExplorerPreviewDataState;
+  previewDataState = new QueryBuilderExplorerPreviewDataState();
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData>;
   humanizePropertyName = true;
   showUnmappedProperties = false;
@@ -333,6 +346,7 @@ export class QueryBuilderExplorerState {
     makeAutoObservable(this, {
       editorStore: false,
       queryBuilderState: false,
+      previewDataState: false,
       treeData: observable.ref,
       setTreeData: action,
       refreshTree: action,
@@ -380,38 +394,5 @@ export class QueryBuilderExplorerState {
         ? getQueryBuilderTreeData(this.editorStore, _class, _mapping)
         : undefined,
     );
-  }
-
-  *previewData(
-    node: QueryBuilderExplorerTreePropertyNodeData,
-  ): GeneratorFn<void> {
-    if (!node.mapped) {
-      return;
-    }
-    // const simpleProjectionColumnState =
-    //   new QueryBuilderSimpleProjectionColumnState(
-    //     buildSimpleProjectionColumnLambda,
-    //   );
-    const propertyType = node.property.genericType.value.rawType;
-    switch (propertyType.path) {
-      case PRIMITIVE_TYPE.NUMBER:
-      case PRIMITIVE_TYPE.INTEGER:
-      case PRIMITIVE_TYPE.DECIMAL:
-      case PRIMITIVE_TYPE.FLOAT: {
-        // build  `->groupBy([], [count, ...], ['Count', 'Distinct Count', 'Sum', 'Min', 'Max', 'Average', 'Std Dev (Population)', 'Std Dev (Sample)'])`
-        break;
-      }
-      case PRIMITIVE_TYPE.BOOLEAN:
-      case PRIMITIVE_TYPE.STRING:
-      case PRIMITIVE_TYPE.DATE:
-      case PRIMITIVE_TYPE.STRICTDATE:
-      case PRIMITIVE_TYPE.DATETIME: {
-        // build ->groupBy([x|$x.property], [agg(x|$x.property, x|$x.count())], ['Value', 'Count']])->take(10)->sort([desc('Count'), asc('Value')]
-        // do somethingg
-        break;
-      }
-      default:
-      // do something;
-    }
   }
 }

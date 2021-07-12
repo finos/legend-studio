@@ -39,7 +39,7 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
 } from '@finos/legend-studio';
-import { generateDefaultValueForPrimitiveType } from './QueryBuilderUtils';
+import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
