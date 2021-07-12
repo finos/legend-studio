@@ -32,7 +32,7 @@ import {
   usingModelSchema,
 } from '@finos/legend-studio-shared';
 import type { Entity } from '../../../../../sdlc/models/entity/Entity';
-import { GraphDataParserError } from '../../../../../MetaModelUtility';
+import { GraphDataParserError } from '../../../../../MetaModelUtils';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';
 import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement';

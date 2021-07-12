@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { GraphError } from '../../../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../../../MetaModelUtils';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import type { InstanceSetImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';

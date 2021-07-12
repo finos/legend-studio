@@ -116,7 +116,9 @@ export const ClassMappingSelectorModal = observer(
       <Dialog
         open={true}
         onClose={hideClassMappingSelectorModal}
-        onEnter={handleEnterClassMappingSelectorModal}
+        TransitionProps={{
+          onEnter: handleEnterClassMappingSelectorModal,
+        }}
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
@@ -202,7 +204,7 @@ const MappingExecutionQueryEditor = observer(
           ) {
             if (setImplementation instanceof OperationSetImplementation) {
               editorStore.applicationStore.notifyWarning(
-                `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+                `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
               );
             } else {
               executionState.setInputDataStateBasedOnSource(

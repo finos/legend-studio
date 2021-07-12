@@ -20,7 +20,7 @@ import {
   assertType,
   assertNonNullable,
 } from '@finos/legend-studio-shared';
-import { GraphError } from '../../../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../../../MetaModelUtils';
 import { CORE_LOG_EVENT } from '../../../../../../../../utils/Logger';
 import type { Runtime } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import { RuntimePointer } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';

@@ -16,16 +16,7 @@
 
 import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
 import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import type { Hashable } from '@finos/legend-studio-shared';
-import { hashArray } from '@finos/legend-studio-shared';
 
-export abstract class V1_CDate
-  extends V1_ValueSpecification
-  implements Hashable
-{
+export abstract class V1_CDate extends V1_ValueSpecification {
   multiplicity!: V1_Multiplicity;
-
-  get hashCode(): string {
-    return hashArray([this.multiplicity]);
-  }
 }

@@ -15,9 +15,9 @@
  */
 
 import type { Hashable } from '@finos/legend-studio-shared';
-import type { V1_CDate } from '../../../../../../model/valueSpecification/raw/V1_CDate';
+import type { V1_RawInstanceValue } from '../../../../../rawValueSpecification/V1_RawInstanceValue';
 
 export abstract class V1_Milestoning implements Hashable {
-  infinityDate?: V1_CDate;
+  infinityDate?: V1_RawInstanceValue;
   abstract get hashCode(): string;
 }

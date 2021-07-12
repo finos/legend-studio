@@ -14,36 +14,9 @@
  * limitations under the License.
  */
 
-import { assertTrue, ApplicationError } from '@finos/legend-studio-shared';
+import { ApplicationError } from '@finos/legend-studio-shared';
 import { observable, action, makeObservable } from 'mobx';
 import type { SourceInformation } from '../action/SourceInformation';
-
-class ElementCoordinates {
-  elementPath: string;
-  coordinates: string[];
-
-  constructor(elementPath: string, coordinates: string[]) {
-    this.elementPath = elementPath;
-    this.coordinates = coordinates;
-  }
-}
-
-export const getElementCoordinates = (
-  sourceInformation: SourceInformation | undefined,
-): ElementCoordinates | undefined => {
-  if (!sourceInformation) {
-    return undefined;
-  }
-  const elementCoordinateInfo = sourceInformation.sourceId.split('-');
-  assertTrue(
-    Boolean(elementCoordinateInfo.length),
-    'Source ID must be a dash-separated string with the first token being the element path',
-  );
-  return new ElementCoordinates(
-    elementCoordinateInfo[0],
-    elementCoordinateInfo.slice(1),
-  );
-};
 
 export class EngineError extends ApplicationError {
   sourceInformation?: SourceInformation;

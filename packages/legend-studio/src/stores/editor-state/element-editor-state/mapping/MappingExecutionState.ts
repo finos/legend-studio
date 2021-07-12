@@ -101,10 +101,10 @@ import {
 } from '../../../ApplicationStore';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
-  isConvertingLambdaToString = false;
   isInitializingLambda = false;
   query: RawLambda;
 
@@ -113,7 +113,6 @@ export class MappingExecutionQueryState extends LambdaEditorState {
 
     makeObservable(this, {
       query: observable,
-      isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
       convertLambdaObjectToGrammarString: action,
@@ -126,7 +125,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    return this.uuid;
+    return buildSourceInformationSourceId([this.uuid]);
   }
 
   setIsInitializingLambda(val: boolean): void {
@@ -146,7 +145,6 @@ export class MappingExecutionQueryState extends LambdaEditorState {
     pretty?: boolean,
   ) {
     if (!this.query.isStub) {
-      this.isConvertingLambdaToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
@@ -162,13 +160,11 @@ export class MappingExecutionQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-        this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.PARSING_PROBLEM,
           error,
         );
-        this.isConvertingLambdaToString = false;
       }
     } else {
       this.clearErrors();
@@ -178,7 +174,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
   convertLambdaGrammarStringToObject(): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 
@@ -729,7 +725,7 @@ export class MappingExecutionState {
       if (this.inputDataState instanceof MappingExecutionEmptyInputDataState) {
         if (setImplementation instanceof OperationSetImplementation) {
           this.editorStore.applicationStore.notifyWarning(
-            `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead.`,
+            `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
           );
         } else {
           this.setInputDataStateBasedOnSource(

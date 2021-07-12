@@ -25,7 +25,7 @@ export * from './stores/network/Tracer';
 // metamodels
 export * from './models/metamodels/pure/graph/PureGraphExtension';
 export * from './models/metamodels/pure/graph/PureGraphManagerPlugin';
-export * from './models/MetaModelUtility';
+export * from './models/MetaModelUtils';
 export {
   PRIMITIVE_TYPE,
   CLIENT_VERSION,
@@ -39,6 +39,7 @@ export * from './models/metamodels/pure/model/Stubable'; // TODO: to be removed
 export { BasicModel } from './models/metamodels/pure/graph/BasicModel';
 export { PureModel } from './models/metamodels/pure/graph/PureModel';
 export * from './models/metamodels/pure/action/EngineError';
+export * from './models/metamodels/pure/action/SourceInformationHelper';
 export * from './models/metamodels/pure/model/packageableElements/PackageableElement';
 export * from './models/metamodels/pure/model/packageableElements/PackageableElementReference';
 export { Multiplicity } from './models/metamodels/pure/model/packageableElements/domain/Multiplicity';
@@ -58,11 +59,11 @@ export type { AbstractProperty } from './models/metamodels/pure/model/packageabl
 export { DerivedProperty } from './models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
 export { Property } from './models/metamodels/pure/model/packageableElements/domain/Property';
 export { RawLambda } from './models/metamodels/pure/model/rawValueSpecification/RawLambda';
+export { UnknownValue } from './models/metamodels/pure/model/valueSpecification/UnknownValue';
 export { VariableExpression } from './models/metamodels/pure/model/valueSpecification/VariableExpression';
 export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
   FunctionExpression,
 } from './models/metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
 export {
@@ -105,12 +106,17 @@ export * from './models/protocols/pure/v1/model/packageableElements/V1_Packageab
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';
 export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda';
+export { V1_ValueSpecification } from './models/protocols/pure/v1/model/valueSpecification/V1_ValueSpecification';
+export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';
 export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext';
 export {
   V1_initPackageableElement,
   V1_transformElementReference,
 } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper';
-export { V1_RawValueSpecificationTransformer } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
+export {
+  V1_RawValueSpecificationTransformer,
+  V1_transformRawLambda,
+} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 export { V1_rawLambdaModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
@@ -124,6 +130,15 @@ export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrSchema,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
+export { V1_AppliedFunction } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedFunction';
+export { V1_AppliedProperty } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedProperty';
+export { V1_Collection } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Collection';
+export { V1_Lambda } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Lambda';
+export { V1_Variable } from './models/protocols/pure/v1/model/valueSpecification/V1_Variable';
+export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
+export { V1_deserializeRawValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
+export { V1_serializeRawValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
+export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 
 // SDLC
 export { Entity } from './models/sdlc/models/entity/Entity';
@@ -160,7 +175,7 @@ export { LambdaEditor } from './components/shared/LambdaEditor';
 export * from './utils/Logger'; // TODO: to be removed when we move this to @finos/legend-studio-shared
 
 // test
-export { CORE_TEST_ID } from './const';
+export * from './const';
 export {
   getTestApplicationConfig,
   getTestEditorStore,

@@ -50,7 +50,7 @@ import {
 } from '../../../models/metamodels/pure/action/generation/GenerateStoreInput';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
 import type { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { resolvePackageNameAndElementName } from '../../../models/MetaModelUtility';
+import { resolvePackageNameAndElementName } from '../../../models/MetaModelUtils';
 import type { ValidationIssue } from '../../../models/metamodels/pure/action/validator/ValidationResult';
 import { createValidationError } from '../../../models/metamodels/pure/action/validator/ValidationResult';
 import type { StoreRelational_EditorPlugin_Extension } from '../../StoreRelational_EditorPlugin_Extension';
@@ -265,7 +265,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
     }
     throw new UnsupportedOperationError(
-      `Can't classify datasource specification. No compatible classifer available from plugins.`,
+      `Can't classify datasource specification: no compatible classifer available from plugins`,
       spec,
     );
   }
@@ -314,7 +314,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
           }
         }
         throw new UnsupportedOperationError(
-          `Can't create datasource specification of type '${type}'. No compatible creator available from plugins.`,
+          `Can't create datasource specification of type '${type}': no compatible creator available from plugins`,
         );
       }
     }
@@ -348,7 +348,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
     }
     throw new UnsupportedOperationError(
-      `Can't classify authentication strategy. No compatible classifier available from plugins.`,
+      `Can't classify authentication strategy: no compatible classifier available from plugins`,
       auth,
     );
   }
@@ -402,7 +402,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
           }
         }
         throw new UnsupportedOperationError(
-          `Can't create authentication strategy of type '${type}'. No compatible creator available from plugins.`,
+          `Can't create authentication strategy of type '${type}': no compatible creator available from plugins`,
         );
       }
     }

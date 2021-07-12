@@ -151,7 +151,7 @@ export class GrammarTextEditorState {
     }
     if (!typeLabel) {
       throw new UnsupportedOperationError(
-        `Can't construct label for element type in Pure grammar. No compatible labeler available from plugins.`,
+        `Can't construct label for element type in Pure grammar: no compatible labeler available from plugins`,
         element,
       );
     }

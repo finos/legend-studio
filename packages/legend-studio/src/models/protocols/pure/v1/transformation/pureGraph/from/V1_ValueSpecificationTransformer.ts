@@ -79,6 +79,8 @@ import { Class } from '../../../../../../metamodels/pure/model/packageableElemen
 import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
 import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
+import type { UnknownValue } from '../../../../../../metamodels/pure/model/valueSpecification/UnknownValue';
+import { V1_UnknownValue } from '../../../model/valueSpecification/V1_UnknownValue';
 
 export class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -98,6 +100,12 @@ export class V1_ValueSpecificationTransformer
     this.open = open;
     this.isParameter = isParameter;
     this.useAppliedFunction = useAppliedFunction;
+  }
+
+  visit_UnknownValue(valueSpecification: UnknownValue): V1_ValueSpecification {
+    const protocol = new V1_UnknownValue();
+    protocol.content = valueSpecification.content;
+    return protocol;
   }
 
   visit_RootGraphFetchTreeInstanceValue(
@@ -127,7 +135,7 @@ export class V1_ValueSpecificationTransformer
   visit_AlloySerializationConfigInstanceValue(
     valueSpecification: AlloySerializationConfigInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PrimitiveInstanceValue(
@@ -192,7 +200,7 @@ export class V1_ValueSpecificationTransformer
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't transform primtive instance value of unsupported type '${type.name}'`,
+          `Can't transform primtive instance value of type '${type.name}'`,
         );
     }
   }
@@ -229,7 +237,8 @@ export class V1_ValueSpecificationTransformer
       }
     }
     throw new UnsupportedOperationError(
-      `Can't transform unsupported form of instance value.`,
+      `Can't transform instance value`,
+      valueSpecification,
     );
   }
 
@@ -246,25 +255,25 @@ export class V1_ValueSpecificationTransformer
   visit_RuntimeInstanceValue(
     valueSpecification: RuntimeInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PairInstanceValue(
     valueSpecification: PairInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_MappingInstanceValue(
     valueSpecification: MappingInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_PureListInsanceValue(
     valueSpecification: PureListInstanceValue,
   ): V1_ValueSpecification {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 
   visit_CollectionInstanceValue(
@@ -410,8 +419,8 @@ export function V1_transformGraphFetchTree(
     );
     return _propertyGraphTree;
   }
-  throw new Error(
-    `Can't build graph fetch tree node of type ${value.toString()}`,
+  throw new UnsupportedOperationError(
+    `Can't build graph fetch tree node of type '${value.toString()}'`,
   );
 }
 

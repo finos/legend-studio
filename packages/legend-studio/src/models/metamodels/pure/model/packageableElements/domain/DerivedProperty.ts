@@ -22,7 +22,7 @@ import {
   addUniqueEntry,
   changeEntry,
 } from '@finos/legend-studio-shared';
-import { hashLambda } from '../../../../../MetaModelUtility';
+import { hashLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-studio-shared';
 import { Multiplicity } from './Multiplicity';

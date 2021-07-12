@@ -183,7 +183,9 @@ const CreateProjectModal = observer(() => {
     <Dialog
       open={setupStore.showCreateProjectModal}
       onClose={closeModal}
-      onEnter={handleEnter}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
@@ -524,7 +526,9 @@ const CreateWorkspaceModal = observer(() => {
     <Dialog
       open={showCreateWorkspaceModal}
       onClose={closeModal}
-      onEnter={handleEnter}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >

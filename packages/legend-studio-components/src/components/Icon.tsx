@@ -28,6 +28,7 @@ export {
   FaSquare as SquareIcon,
   FaCheckSquare as CheckSquareIcon,
   FaHashtag as HashtagIcon,
+  FaHammer as HammerIcon,
   FaHashtag as NumberTypeIcon,
   FaClock as DateTypeIcon,
   FaToggleOn as BooleanTypeIcon,
@@ -37,6 +38,7 @@ export {
   FaMap as MapIcon,
   FaFlask as FlaskIcon,
   FaPlay as PlayIcon,
+  FaGripVertical as GripVerticalIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

@@ -24,6 +24,7 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
   getNullableFirstElement,
+  assertTrue,
 } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import { Version } from '../../../../models/sdlc/models/version/Version';
@@ -233,13 +234,12 @@ export class ServiceRegistrationState {
   });
 
   validateServiceForRegistration(): void {
-    if (!this.serviceEditorState.service.owners.length) {
-      throw new Error(
-        `Service needs to have an owner in order to be registered.`,
-      );
-    }
+    assertTrue(
+      this.serviceEditorState.service.owners.length !== 0,
+      `Service needs to have an owner in order to be registered`,
+    );
     this.serviceEditorState.service.owners.forEach((owner) =>
-      assertNonEmptyString(owner, `Service can't have an empty owner name.`),
+      assertNonEmptyString(owner, `Service can't have an empty owner name`),
     );
     guaranteeNonNullable(
       this.serviceEnv,

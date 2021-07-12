@@ -22,21 +22,7 @@ import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 import type { Function } from '../../model/packageableElements/domain/Function';
 import type { AbstractProperty } from '../../model/packageableElements/domain/AbstractProperty';
-
-export enum SUPPORTED_FUNCTIONS {
-  FILTER = 'filter',
-  PROJECT = 'project',
-  GET_ALL = 'getAll',
-  COL = 'col',
-  TAKE = 'take',
-  DISTINCT = 'distinct',
-  SORT_FUNC = 'sort',
-  SERIALIZE = 'serialize',
-  GRAPH_FETCH = 'graphFetch',
-  GRAPH_FETCH_CHECKED = 'graphFetchChecked',
-  EXISTS = 'exists',
-  NOT = 'not',
-}
+import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 
 export class Expression extends ValueSpecification {
   classifierGenericType?: GenericTypeReference;
@@ -44,7 +30,7 @@ export class Expression extends ValueSpecification {
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 

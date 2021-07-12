@@ -53,6 +53,7 @@ import {
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -126,14 +127,12 @@ export abstract class ServiceExecutionState {
 class ServicePureExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
   execution: PureExecution;
-  isConvertingLambdaToString = false;
   isInitializingLambda = false;
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', LAMBDA_START);
     makeObservable(this, {
       execution: observable,
-      isConvertingLambdaToString: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
       setLambda: action,
@@ -147,7 +146,10 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
   }
 
   get lambdaId(): string {
-    return `${this.execution.owner.path}-execution`;
+    return buildSourceInformationSourceId([
+      this.execution.owner.path,
+      'execution',
+    ]);
   }
 
   get query(): RawLambda {
@@ -175,7 +177,6 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     pretty?: boolean,
   ) {
     if (this.execution.func.body) {
-      this.isConvertingLambdaToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(
@@ -197,13 +198,11 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-        this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.PARSING_PROBLEM,
           error,
         );
-        this.isConvertingLambdaToString = false;
       }
     } else {
       this.clearErrors();
@@ -213,7 +212,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
   convertLambdaGrammarStringToObject(): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 

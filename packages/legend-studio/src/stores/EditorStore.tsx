@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { action, flow, makeAutoObservable } from 'mobx';
+import { action, flow, flowResult, makeAutoObservable } from 'mobx';
 import type {
   ApplicationStore,
   ActionAlertInfo,
@@ -39,6 +39,8 @@ import {
   EDITOR_MODE,
   MONOSPACED_FONT_FAMILY,
   TAB_SIZE,
+  HOTKEY,
+  HOTKEY_MAP,
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
@@ -120,6 +122,22 @@ export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 
+export class EditorHotkey {
+  name: HOTKEY;
+  keyBinds: string[];
+  handler: (event: KeyboardEvent | undefined) => void;
+
+  constructor(
+    name: HOTKEY,
+    keyBinds: string[],
+    handler: (event: KeyboardEvent | undefined) => void,
+  ) {
+    this.name = name;
+    this.keyBinds = keyBinds;
+    this.handler = handler;
+  }
+}
+
 export class EditorStore {
   applicationStore: ApplicationStore;
   explorerTreeState: ExplorerTreeState;
@@ -151,6 +169,10 @@ export class EditorStore {
   activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.EXPLORER;
   sideBarSize = DEFAULT_SIDE_BAR_SIZE;
   sideBarSizeBeforeHidden = DEFAULT_SIDE_BAR_SIZE;
+  // Hot keys
+  blockGlobalHotkeys = false;
+  defaultHotkeys: EditorHotkey[] = [];
+  hotkeys: EditorHotkey[] = [];
   // Tabs
   currentEditorState?: EditorState;
   openedEditorStates: EditorState[] = [];
@@ -164,7 +186,6 @@ export class EditorStore {
   isInExpandedMode = true;
   backdrop = false;
   ignoreNavigationBlocking = false;
-  blockGlobalHotkeys = false;
   isDevToolEnabled = true;
 
   constructor(applicationStore: ApplicationStore) {
@@ -172,6 +193,8 @@ export class EditorStore {
       applicationStore: false,
       setMode: action,
       setDevTool: action,
+      setHotkeys: action,
+      resetHotkeys: action,
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
       setBackdrop: action,
@@ -239,6 +262,101 @@ export class EditorStore {
       )
       .map((creator) => creator(this))
       .filter(isNonNullable);
+
+    // hotkeys
+    this.defaultHotkeys = [
+      // actions that need blocking
+      new EditorHotkey(
+        HOTKEY.COMPILE,
+        [HOTKEY_MAP.COMPILE],
+        this.createGlobalHotKeyAction(() => {
+          flowResult(this.graphState.globalCompileInFormMode()).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
+        }),
+      ),
+      new EditorHotkey(
+        HOTKEY.GENERATE,
+        [HOTKEY_MAP.GENERATE],
+        this.createGlobalHotKeyAction(() => {
+          this.graphState.graphGenerationState
+            .globalGenerate()
+            .catch(applicationStore.alertIllegalUnhandledError);
+        }),
+      ),
+      new EditorHotkey(
+        HOTKEY.CREATE_ELEMENT,
+        [HOTKEY_MAP.CREATE_ELEMENT],
+        this.createGlobalHotKeyAction(() => this.newElementState.openModal()),
+      ),
+      new EditorHotkey(
+        HOTKEY.OPEN_ELEMENT,
+        [HOTKEY_MAP.OPEN_ELEMENT],
+        this.createGlobalHotKeyAction(() =>
+          this.searchElementCommandState.open(),
+        ),
+      ),
+      new EditorHotkey(
+        HOTKEY.TOGGLE_TEXT_MODE,
+        [HOTKEY_MAP.TOGGLE_TEXT_MODE],
+        this.createGlobalHotKeyAction(() => {
+          this.toggleTextMode().catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
+        }),
+      ),
+      new EditorHotkey(
+        HOTKEY.TOGGLE_MODEL_LOADER,
+        [HOTKEY_MAP.TOGGLE_MODEL_LOADER],
+        this.createGlobalHotKeyAction(() =>
+          this.openState(this.modelLoaderState),
+        ),
+      ),
+      new EditorHotkey(
+        HOTKEY.SYNC_WITH_WORKSPACE,
+        [HOTKEY_MAP.SYNC_WITH_WORKSPACE],
+        this.createGlobalHotKeyAction(() => {
+          this.localChangesState
+            .syncWithWorkspace()
+            .catch(applicationStore.alertIllegalUnhandledError);
+        }),
+      ),
+      // simple actions (no blocking is needed)
+      new EditorHotkey(
+        HOTKEY.TOGGLE_AUX_PANEL,
+        [HOTKEY_MAP.TOGGLE_AUX_PANEL],
+        this.createGlobalHotKeyAction(() => this.toggleAuxPanel()),
+      ),
+      new EditorHotkey(
+        HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
+        [HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
+        this.createGlobalHotKeyAction(() =>
+          this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
+        ),
+      ),
+      new EditorHotkey(
+        HOTKEY.TOGGLE_SIDEBAR_CHANGES,
+        [HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
+        this.createGlobalHotKeyAction(() =>
+          this.setActiveActivity(ACTIVITY_MODE.CHANGES),
+        ),
+      ),
+      new EditorHotkey(
+        HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+        [HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
+        this.createGlobalHotKeyAction(() =>
+          this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
+        ),
+      ),
+      new EditorHotkey(
+        HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+        [HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
+        this.createGlobalHotKeyAction(() =>
+          this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
+        ),
+      ),
+    ];
+    this.hotkeys = this.defaultHotkeys;
   }
 
   get isInViewerMode(): boolean {
@@ -276,6 +394,12 @@ export class EditorStore {
   }
   setDevTool(val: boolean): void {
     this.isDevToolEnabled = val;
+  }
+  setHotkeys(val: EditorHotkey[]): void {
+    this.hotkeys = val;
+  }
+  resetHotkeys(): void {
+    this.hotkeys = this.defaultHotkeys;
   }
   setBlockGlobalHotkeys(val: boolean): void {
     this.blockGlobalHotkeys = val;
@@ -674,7 +798,7 @@ export class EditorStore {
       this.editorExtensionStates.find(
         (extenionState): extenionState is T => extenionState instanceof clazz,
       ),
-      `Can't find extension editor state of the specified type. No built extension editor state available from plugins.`,
+      `Can't find extension editor state of the specified type: no built extension editor state available from plugins`,
     );
   }
 
@@ -910,7 +1034,7 @@ export class EditorStore {
       }
     }
     throw new UnsupportedOperationError(
-      `Can't create editor state for element. No compatible editor state creator available from plugins.`,
+      `Can't create editor state for element: no compatible editor state creator available from plugins`,
       element,
     );
   }
@@ -968,7 +1092,7 @@ export class EditorStore {
     this.explorerTreeState.reprocess();
     // re-compile after deletion
     yield this.graphState.globalCompileInFormMode({
-      message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging.`,
+      message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
     });
   });
 
@@ -1062,7 +1186,7 @@ export class EditorStore {
       } catch (error: unknown) {
         assertErrorThrown(error);
         this.applicationStore.notifyWarning(
-          `Can't enter text mode. Transformation to grammar text failed: ${error.message}`,
+          `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
         );
         this.setBlockingAlert(undefined);
         return;

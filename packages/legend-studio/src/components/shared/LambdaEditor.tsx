@@ -32,8 +32,7 @@ import {
   EDITOR_LANGUAGE,
 } from '../../stores/EditorConfig';
 import { clsx } from '@finos/legend-studio-components';
-import { MdMoreVert } from 'react-icons/md';
-import { FaLongArrowAltUp } from 'react-icons/fa';
+import { FaLongArrowAltDown, FaLongArrowAltUp } from 'react-icons/fa';
 import type { LambdaEditorState } from '../../stores/editor-state/element-editor-state/LambdaEditorState';
 import type { DebouncedFunc } from '@finos/legend-studio-shared';
 import { debounce } from '@finos/legend-studio-shared';
@@ -67,9 +66,6 @@ const LambdaErrorFeedback: React.FC<{
           >
             Discard Changes
           </button>
-          <div className="lambda-editor__error-feedback__parsing-error__message">
-            fix error or discard changes to leave
-          </div>
         </div>
       )}
     </div>
@@ -415,9 +411,9 @@ const LambdaEditorInner = observer(
               onClick={toggleExpandedMode}
               disabled={Boolean(parserError)}
               tabIndex={-1}
-              title={'Expand/Collapse'}
+              title="Toggle Expand"
             >
-              {isExpanded ? <FaLongArrowAltUp /> : <MdMoreVert />}
+              {isExpanded ? <FaLongArrowAltUp /> : <FaLongArrowAltDown />}
             </button>
           )}
         </div>

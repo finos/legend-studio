@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-studio-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
 import { V1_CDate } from './V1_CDate';
 
@@ -24,9 +22,5 @@ export class V1_CLatestDate extends V1_CDate {
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_CLatestDate(this);
-  }
-
-  override get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.CLATEST_DATE, super.hashCode]);
   }
 }
