@@ -1,5 +1,14 @@
 # @finos/legend-studio-preset-dsl-text
 
+## 0.0.35
+
+### Patch Changes
+
+- Updated dependencies [[`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2), [`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2), [`65966ef`](https://github.com/finos/legend-studio/commit/65966ef8e6fa8152fcc5c39501fda9c62646aecc)]:
+  - @finos/legend-studio@0.1.17
+  - @finos/legend-studio-components@0.0.23
+  - @finos/legend-studio-shared@0.0.19
+
 ## 0.0.34
 
 ### Patch Changes
