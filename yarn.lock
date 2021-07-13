@@ -2198,7 +2198,6 @@ __metadata:
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-preset-dsl-text": "workspace:*"
-    "@finos/legend-studio-preset-dummy": "workspace:*"
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*"
     "@finos/legend-studio-preset-query-builder": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
@@ -2403,17 +2402,6 @@ __metadata:
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-preset-dummy@workspace:*, @finos/legend-studio-preset-dummy@workspace:packages/legend-studio-preset-dummy":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-preset-dummy@workspace:packages/legend-studio-preset-dummy"
-  dependencies:
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    rimraf: 3.0.2
-    typescript: 4.3.5
   languageName: unknown
   linkType: soft
 
