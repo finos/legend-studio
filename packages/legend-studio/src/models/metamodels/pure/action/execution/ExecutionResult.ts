@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { uuid } from '@finos/legend-studio-shared';
+
 // Core
 export enum BuilderType {
   CLASS_BUILDER = 'classBuilder',
@@ -100,6 +102,7 @@ export class TabularDataSet {
 }
 
 export class TdsExecutionResult extends ExecutionResult {
+  uuid = uuid();
   override builder = new TdsBuilder();
   override activities: RelationalExecutionActivity[] = [];
   result = new TabularDataSet();
