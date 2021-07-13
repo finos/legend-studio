@@ -115,12 +115,7 @@ const setupUILibrary = async (pluginManager: PluginManager): Promise<void> => {
   await Promise.all(
     pluginManager
       .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_EditorPlugin_Extension
-          ).getExtraEditorPluginSetups?.() ?? [],
-      )
+      .flatMap((plugin) => plugin.getExtraEditorPluginSetups?.() ?? [])
       .map((setup) => setup(pluginManager)),
   );
 };
