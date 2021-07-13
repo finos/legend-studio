@@ -1155,9 +1155,10 @@ export class EditorStore {
         this.isInConflictResolutionMode &&
         !this.conflictResolutionState.hasResolvedAllConflicts;
       if (
-        this.isInitialized &&
-        !isResolvingConflicts &&
-        !this.blockGlobalHotkeys
+        (this.isInitialized &&
+          !isResolvingConflicts &&
+          !this.blockGlobalHotkeys) ||
+        this.isInViewerMode
       ) {
         handler();
       }

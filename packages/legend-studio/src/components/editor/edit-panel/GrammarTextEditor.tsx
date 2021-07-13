@@ -190,6 +190,8 @@ export const GrammarTextEditor = observer(() => {
         monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
       }
     }
+    // Disable editing if user is in viewer mode
+    editor.updateOptions({ readOnly: editorStore.isInViewerMode });
   }
 
   /**
