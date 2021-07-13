@@ -132,7 +132,7 @@ const generateColumnTreeNodeId = (
       : `${parentNode.id}.${column.name}`
     : `${generateDatabasePointerText(relation.schema.owner.path)}${
         relation.schema.name
-      }.${relation.name}`;
+      }.${relation.name}.${column.name}`;
 
 const getColumnTreeNodeData = (
   column: Column,
