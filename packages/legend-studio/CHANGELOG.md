@@ -1,5 +1,18 @@
 # @finos/legend-studio
 
+## 0.1.17
+
+### Patch Changes
+
+- [#332](https://github.com/finos/legend-studio/pull/332) [`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where `relational mapping` source tree does not display root nodes correctly (only the last column is shown) due to faulty node ID generator.
+
+* [#312](https://github.com/finos/legend-studio/pull/312) [`65966ef`](https://github.com/finos/legend-studio/commit/65966ef8e6fa8152fcc5c39501fda9c62646aecc) Thanks [@umarphaarook](https://github.com/umarphaarook)! - Allow users to use text-mode while viewing project in read-only mode.
+
+* Updated dependencies [[`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2)]:
+  - @finos/legend-studio-components@0.0.23
+  - @finos/legend-studio-network@0.0.21
+  - @finos/legend-studio-shared@0.0.19
+
 ## 0.1.16
 
 ### Patch Changes
