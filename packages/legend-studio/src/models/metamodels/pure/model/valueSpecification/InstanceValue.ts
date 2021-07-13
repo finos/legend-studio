@@ -15,12 +15,7 @@
  */
 
 import { observable, makeObservable, action } from 'mobx';
-import {
-  deleteEntry,
-  addUniqueEntry,
-  hashArray,
-  isString,
-} from '@finos/legend-studio-shared';
+import { deleteEntry, addUniqueEntry } from '@finos/legend-studio-shared';
 import type { Pair } from '@finos/legend-studio-shared';
 import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
@@ -30,11 +25,13 @@ import type { EnumValueReference } from '../../model/packageableElements/domain/
 import type { PackageableElementReference } from '../../model/packageableElements/PackageableElementReference';
 import type { EngineRuntime } from '../../model/packageableElements/runtime/Runtime';
 import type { Mapping } from '../../model/packageableElements/mapping/Mapping';
-import {
-  CORE_HASH_STRUCTURE,
-  PRIMITIVE_TYPE,
-} from '../../../../MetaModelConst';
 
+/**
+ * NOTE: {@link InstanceValue} is the only metamodel available in Pure.
+ * Its subtypes are created in Studio so that we can narrow down the types of `values`.
+ * Also, right now, we haven't done the full build/transform flow for value specification
+ * we use the subtypes to make it easier to transform metamodel back into protocol.
+ */
 export class InstanceValue extends ValueSpecification {
   values: unknown[] = [];
 
@@ -61,21 +58,6 @@ export class InstanceValue extends ValueSpecification {
   }
 }
 
-const getHashStructure = (val: string): string => {
-  switch (val) {
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return CORE_HASH_STRUCTURE.CSTRICT_DATE;
-    case PRIMITIVE_TYPE.LATESTDATE:
-      return CORE_HASH_STRUCTURE.CLATEST_DATE;
-    case PRIMITIVE_TYPE.DATETIME:
-      return CORE_HASH_STRUCTURE.CDATE_TIME;
-    case PRIMITIVE_TYPE.STRICTTIME:
-      return CORE_HASH_STRUCTURE.CSTRICT_TIME;
-    default:
-      return val;
-  }
-};
-
 export class PrimitiveInstanceValue extends InstanceValue {
   override genericType: GenericTypeReference;
 
@@ -97,16 +79,6 @@ export class PrimitiveInstanceValue extends InstanceValue {
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_PrimitiveInstanceValue(this);
-  }
-
-  get hashCode(): string {
-    const values =
-      this.values.length && isString(this.values[0]) ? this.values : [];
-    return hashArray([
-      getHashStructure(this.genericType.value.rawType.path),
-      this.multiplicity,
-      hashArray(values as string[]),
-    ]);
   }
 }
 

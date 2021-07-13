@@ -142,7 +142,7 @@ export const V1_buildDatasourceSpecification = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build datasource specification. No compatible builder available from plugins.`,
+    `Can't build datasource specification: no compatible builder available from plugins`,
     protocol,
   );
 };

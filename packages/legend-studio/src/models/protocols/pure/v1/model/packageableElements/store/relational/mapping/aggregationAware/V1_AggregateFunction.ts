@@ -18,7 +18,7 @@ import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification
 import type { Hashable } from '@finos/legend-studio-shared';
 import { hashArray } from '@finos/legend-studio-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import { hashLambda } from '../../../../../../../../../MetaModelUtility';
+import { hashLambda } from '../../../../../../../../../MetaModelUtils';
 
 export class V1_AggregateFunction implements Hashable {
   mapFn!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda

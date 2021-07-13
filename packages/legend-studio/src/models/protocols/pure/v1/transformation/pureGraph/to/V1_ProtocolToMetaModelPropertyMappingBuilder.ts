@@ -23,7 +23,7 @@ import {
   returnUndefOnError,
 } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../../../../../utils/Logger';
-import { GraphError } from '../../../../../../MetaModelUtility';
+import { GraphError } from '../../../../../../MetaModelUtils';
 import type { PropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import { PurePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 import { RelationalPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';

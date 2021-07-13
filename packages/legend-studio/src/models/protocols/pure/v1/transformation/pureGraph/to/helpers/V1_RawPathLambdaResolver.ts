@@ -22,7 +22,7 @@ import { CORE_LOG_EVENT } from '../../../../../../../../utils/Logger';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { RawLambda } from '../../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
-import { isValidFullPath } from '../../../../../../../MetaModelUtility';
+import { isValidFullPath } from '../../../../../../../MetaModelUtils';
 import { V1_RawLambda } from '../../../../model/rawValueSpecification/V1_RawLambda';
 import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction';
 import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty';
@@ -59,6 +59,7 @@ import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1
 import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation';
 import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance';
 import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType';
+import type { V1_UnknownValue } from '../../../../model/valueSpecification/V1_UnknownValue';
 import type {
   V1_ValueSpecification,
   V1_ValueSpecificationVisitor,
@@ -81,6 +82,10 @@ class V1_ValueSpecificationPathResolver
   hasModifiedLambda = false;
   constructor(context: V1_GraphBuilderContext) {
     this.context = context;
+  }
+
+  visit_UnknownValue(spec: V1_UnknownValue): V1_ValueSpecification {
+    return spec;
   }
 
   visit_PackageableElementPtr(

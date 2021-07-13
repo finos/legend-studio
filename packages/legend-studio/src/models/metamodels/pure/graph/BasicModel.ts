@@ -294,7 +294,7 @@ export abstract class BasicModel {
     );
     if (extensions.length === 0) {
       throw new UnsupportedOperationError(
-        `Can't find graph extension for the specified element class. No compatible graph extensions available from plugins.`,
+        `Can't find graph extension for the specified element class: no compatible graph extensions available from plugins`,
       );
     } else if (extensions.length > 1) {
       throw new IllegalStateError(

@@ -79,14 +79,14 @@ export class RawVariableExpression
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.VARIABLE,
+      CORE_HASH_STRUCTURE.RAW_VARIABLE,
       this.type.valueForSerialization,
       this.name,
       this.multiplicity,
     ]);
   }
 
-  accept_ValueSpecificationVisitor<T>(
+  accept_RawValueSpecificationVisitor<T>(
     visitor: RawValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_RawVariable(this);

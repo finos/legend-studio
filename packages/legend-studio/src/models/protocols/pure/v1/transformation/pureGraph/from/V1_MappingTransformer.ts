@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   isNonNullable,
   recursiveOmit,
@@ -299,7 +300,7 @@ const transformMappingTest = (
   test.assert = transformTestAssert(element.assert);
   test.inputData = element.inputData.map(transformMappingTestInputData);
   test.name = element.name;
-  test.query = element.query.accept_ValueSpecificationVisitor(
+  test.query = element.query.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   return test;
@@ -374,7 +375,7 @@ const transformSimpleFlatDataPropertyMapping = (
   );
   if (!element.transform.isStub) {
     flatDataPropertyMapping.transform =
-      element.transform.accept_ValueSpecificationVisitor(
+      element.transform.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawLambda;
   }
@@ -428,7 +429,7 @@ const transformPurePropertyMapping = (
   );
   if (!element.transform.isStub) {
     purePropertyMapping.transform =
-      element.transform.accept_ValueSpecificationVisitor(
+      element.transform.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawLambda;
   }
@@ -605,7 +606,7 @@ const transformXStorePropertyMapping = (
   );
   if (!element.crossExpression.isStub) {
     xstore.crossExpression =
-      element.crossExpression.accept_ValueSpecificationVisitor(
+      element.crossExpression.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawLambda;
   }
@@ -763,7 +764,7 @@ const transformPureInstanceSetImplementation = (
   const classMapping = new V1_PureInstanceClassMapping();
   classMapping.class = V1_transformElementReference(element.class);
   if (element.filter) {
-    classMapping.filter = element.filter.accept_ValueSpecificationVisitor(
+    classMapping.filter = element.filter.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
   }
@@ -791,7 +792,7 @@ const transformFlatDataInstanceSetImpl = (
   const classMapping = new V1_RootFlatDataClassMapping();
   classMapping.class = V1_transformElementReference(element.class);
   if (element.filter) {
-    classMapping.filter = element.filter.accept_ValueSpecificationVisitor(
+    classMapping.filter = element.filter.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
   }
@@ -887,12 +888,12 @@ const transformAggregationFunctionSpecification = (
 ): V1_AggregateFunction => {
   const func = new V1_AggregateFunction();
   if (!element.mapFn.isStub) {
-    func.mapFn = element.mapFn.accept_ValueSpecificationVisitor(
+    func.mapFn = element.mapFn.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
   }
   if (!element.aggregateFn.isStub) {
-    func.aggregateFn = element.aggregateFn.accept_ValueSpecificationVisitor(
+    func.aggregateFn = element.aggregateFn.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
   }
@@ -905,7 +906,7 @@ const transformGroupByFunctionSpec = (
 ): V1_GroupByFunction => {
   const func = new V1_GroupByFunction();
   if (!element.groupByFn.isStub) {
-    func.groupByFn = element.groupByFn.accept_ValueSpecificationVisitor(
+    func.groupByFn = element.groupByFn.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
   }

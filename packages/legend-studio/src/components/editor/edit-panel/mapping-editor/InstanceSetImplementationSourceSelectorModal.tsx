@@ -155,7 +155,9 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
       <Dialog
         open={true}
         onClose={closeModal}
-        onEnter={handleEnter}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
         classes={{
           container: 'search-modal__container',
         }}

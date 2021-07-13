@@ -1,0 +1,294 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use './mixins' as *;
+
+.query-builder__projection {
+  &__columns {
+    padding: 0.5rem 0;
+  }
+
+  &__column {
+    @include flexHCenter;
+
+    align-items: flex-start;
+    min-width: 3.4rem;
+    color: var(--color-light-grey-400);
+
+    &--dragged {
+      padding: 0.2rem 0;
+    }
+
+    &__drag-preview-layer {
+      position: fixed;
+      pointer-events: none;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    &__drag-preview {
+      @include flexCenter;
+
+      display: inline-flex;
+      height: 2rem;
+      padding: 0 0.5rem;
+      font-size: 1.2rem;
+      background: var(--color-blue-200);
+      border-radius: 0.2rem;
+    }
+
+    &:hover {
+      background: var(--color-dark-blue-shade-100);
+    }
+
+    &--no-hover:hover,
+    &--dragged:hover {
+      background: transparent !important;
+    }
+  }
+
+  &__column__dnd__placeholder {
+    height: 2.8rem !important;
+    &__container {
+      height: 3.4rem;
+      width: 100%;
+      padding: 0 0.5rem;
+    }
+  }
+
+  &__column__dnd__indicator {
+    @include flexCenter;
+
+    height: 3.4rem;
+
+    &__handler {
+      @include flexCenter;
+
+      background: var(--color-dark-grey-85);
+      height: 2.4rem;
+      width: 1.6rem;
+      min-width: 1.6rem;
+      margin-left: 0.5rem;
+
+      svg {
+        color: var(--color-dark-grey-300);
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  &__column__derivation {
+    height: 100%;
+    width: 100%;
+    margin: 0.3rem 0.5rem 0 0.5rem;
+
+    .lambda-editor__error-feedback {
+      background: var(--color-red-200);
+    }
+  }
+
+  &__column__name {
+    @include flexVCenter;
+
+    margin-left: 0.5rem;
+    height: 3.4rem;
+
+    &__input {
+      padding: 0.5rem;
+      width: 20rem;
+      height: 2.8rem;
+      line-height: 2.8rem;
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
+      color: var(--color-light-grey-200);
+
+      &:focus {
+        border: 0.1rem solid var(--color-blue-200);
+        outline: none;
+      }
+    }
+
+    &__property {
+      @include flexVCenter;
+
+      margin: 0 0.5rem;
+      width: calc(100% - 20.5rem);
+      height: 2.8rem;
+    }
+  }
+
+  &__column__value {
+    @include flexVCenter;
+
+    height: 100%;
+    width: 100%;
+  }
+
+  &__column__value__property {
+    @include flexVCenter;
+
+    height: 3.4rem;
+    width: 100%;
+    margin: 0 0.5rem;
+  }
+
+  &__column__aggregate {
+    @include flexVCenter;
+
+    height: 3.4rem;
+
+    &__operator {
+      @include flexVCenter;
+
+      height: 2.8rem;
+    }
+
+    &__operator__label {
+      @include flexCenter;
+
+      height: 100%;
+      padding: 0 1rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-280);
+      color: var(--color-light-grey-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+      white-space: nowrap;
+    }
+
+    &__operator__dropdown {
+      @include flexVCenter;
+
+      height: 100%;
+    }
+
+    &__operator__dropdown__option {
+      font-size: 1.1rem;
+      height: 2.8rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__operator__dropdown__trigger {
+      @include flexCenter;
+
+      height: 100%;
+      width: 1.8rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0 0.2rem 0.2rem 0;
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-light-grey-100);
+      }
+    }
+
+    &__operator__badge {
+      @include flexCenter;
+
+      height: 100%;
+      width: 2.8rem;
+      background: var(--color-dark-grey-280);
+      color: var(--color-light-grey-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+
+      svg {
+        font-size: 1.8rem;
+      }
+    }
+
+    &__operator__badge--activated {
+      border-radius: 0;
+      background: var(--color-yellow-200);
+
+      svg {
+        color: var(--color-dark-grey-280);
+      }
+    }
+  }
+
+  &__column__actions {
+    @include flexVCenter;
+
+    height: 100%;
+    width: 3.4rem;
+  }
+
+  &__column__action {
+    @include flexCenter;
+
+    height: 3.4rem;
+    width: 3.4rem;
+
+    .query-builder__icon,
+    svg {
+      color: var(--color-light-grey-400);
+    }
+
+    &:hover .query-builder__icon,
+    &:hover svg {
+      color: var(--color-light-grey-100);
+    }
+
+    &[disabled] .query-builder__icon,
+    &[disabled] svg {
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__column:hover &__column__action {
+    display: flex;
+  }
+
+  &__modal__body {
+    overflow: auto;
+  }
+
+  &__options {
+    padding: 2rem;
+    width: 100%;
+
+    &__sort {
+      display: flex;
+      width: 100%;
+      margin-bottom: 1rem;
+
+      &__dropdown {
+        max-width: 45rem;
+        width: 100%;
+        margin-right: 0.5rem;
+      }
+
+      &__type-btn {
+        color: var(--color-light-grey-200);
+      }
+
+      &__remove-btn {
+        @include flexCenter;
+
+        flex: 2.8rem 0 0;
+        height: 2.8rem;
+        color: var(--color-light-grey-200);
+        background: var(--color-dark-grey-200);
+        border-radius: 0.2rem;
+        margin-left: 0.5rem;
+        cursor: pointer;
+      }
+    }
+  }
+}

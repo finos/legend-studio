@@ -17,7 +17,7 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import {
   LAMBDA_START,
-  SOURCR_ID_LABEL,
+  SOURCE_ID_LABEL,
 } from '../../../../models/MetaModelConst';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
@@ -30,6 +30,8 @@ import { ParserError } from '../../../../models/metamodels/pure/action/EngineErr
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 import type { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
+import { isNonNullable } from '@finos/legend-studio-shared';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -47,18 +49,16 @@ export class PurePropertyMappingState extends PropertyMappingState {
   }
 
   get lambdaId(): string {
-    // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
-    return `${this.propertyMapping.owner.parent.path}-${
-      SOURCR_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING
-    }-${this.propertyMapping.owner.id.value}-${
-      this.propertyMapping.property.value.name
-    }-${
-      this.propertyMapping.targetSetImplementation
-        ? `-${this.propertyMapping.targetSetImplementation.id.value}`
-        : ''
-    }-${this.propertyMapping.owner.propertyMappings.indexOf(
-      this.propertyMapping,
-    )}`;
+    return buildSourceInformationSourceId(
+      [
+        this.propertyMapping.owner.parent.path,
+        SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
+        this.propertyMapping.owner.id.value,
+        this.propertyMapping.property.value.name,
+        this.propertyMapping.targetSetImplementation?.id.value,
+        this.uuid, // in case of duplications
+      ].filter(isNonNullable),
+    );
   }
 
   convertLambdaGrammarStringToObject = flow(function* (

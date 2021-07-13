@@ -24,6 +24,11 @@ import type { PureModel } from '../../metamodels/pure/graph/PureModel';
 import type { Mapping } from '../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext';
+import type { V1_ValueSpecification } from './v1/model/valueSpecification/V1_ValueSpecification';
+import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext';
+import type { V1_ProcessingContext } from './v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';
+import type { SimpleFunctionExpression } from '../../metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
+import type { ValueSpecification } from '../../metamodels/pure/model/valueSpecification/ValueSpecification';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -41,6 +46,14 @@ export type V1_ElementProtocolSerializer = (
 export type V1_ElementProtocolDeserializer = (
   protocol: PlainObject<V1_PackageableElement>,
 ) => V1_PackageableElement | undefined;
+
+export type V1_FunctionExpressionBuilder = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+) => [SimpleFunctionExpression, ValueSpecification[]] | undefined;
 
 export type V1_ExecutionInputGetter = (
   graph: PureModel,
@@ -65,6 +78,8 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   V1_getExtraElementTransformers?(): V1_ElementTransformer[];
 
   V1_getExtraSourceInformationKeys?(): string[];
+
+  V1_getExtraFunctionExpressionBuilders?(): V1_FunctionExpressionBuilder[];
 
   /**
    * Used to specify any additional packageable elements added to the graph that is

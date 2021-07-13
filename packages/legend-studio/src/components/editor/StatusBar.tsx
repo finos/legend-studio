@@ -21,12 +21,11 @@ import {
   FaRegWindowMaximize,
   FaTerminal,
   FaUserSecret,
-  FaHammer,
   FaBrush,
 } from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
 import { useEditorStore } from '../../stores/EditorStore';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx, HammerIcon } from '@finos/legend-studio-components';
 import { GoSync } from 'react-icons/go';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
@@ -285,9 +284,9 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           }
           onClick={compile}
           tabIndex={-1}
-          title={'Compile (F9)'}
+          title="Compile (F9)"
         >
-          <FaHammer />
+          <HammerIcon />
         </button>
         <button
           className={clsx(

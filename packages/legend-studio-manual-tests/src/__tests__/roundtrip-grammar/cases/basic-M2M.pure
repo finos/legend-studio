@@ -39,7 +39,7 @@ Mapping model::mapping
   *model::target::_Firm: Pure
   {
     ~src model::Firm
-    employees[model_target__Person, x]: $src.employees,
+    employees[model_target__Person]: $src.employees,
     type: EnumerationMapping model_target_IncType: $src.type
   }
 

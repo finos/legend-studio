@@ -14,46 +14,18 @@
  * limitations under the License.
  */
 
-import type {
-  V1_RawRootGraphFetchTree,
-  V1_RawPropertyGraphFetchTree,
-} from '../../model/rawValueSpecification/V1_RawGraphFetchTree';
 import type { V1_RawVariable } from '../../model/rawValueSpecification/V1_RawVariable';
 import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda';
+import type { V1_RawInstanceValue } from './V1_RawInstanceValue';
 
 export interface V1_RawValueSpecificationVisitor<T> {
   visit_Lambda(valueSpecification: V1_RawLambda): T;
   visit_Variable(valueSpecification: V1_RawVariable): T;
-  visit_RootGraphFetchTree(valueSpecification: V1_RawRootGraphFetchTree): T;
-  visit_PropertyGraphFetchTree(
-    valueSpecification: V1_RawPropertyGraphFetchTree,
-  ): T;
+  visit_InstanceValue(valueSpecification: V1_RawInstanceValue): T;
 }
 
 export abstract class V1_RawValueSpecification {
   abstract accept_RawValueSpecificationVisitor<T>(
     visitor: V1_RawValueSpecificationVisitor<T>,
   ): T;
-}
-
-// TODO: when we start poking into value specification, these can go away
-export interface V1_RawFunctionValueSpecification
-  extends V1_RawValueSpecification {
-  function: string;
-  parameters: object[];
-}
-
-export interface V1_RawClassValueSpecification
-  extends V1_RawValueSpecification {
-  fullPath: string;
-}
-
-export interface V1_RawGraphFetchValueSpecification
-  extends V1_RawValueSpecification {
-  class: string;
-}
-
-export interface V1_RawStringValueSpecification
-  extends V1_RawValueSpecification {
-  values: string[];
 }

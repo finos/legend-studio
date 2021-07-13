@@ -15,12 +15,12 @@
  */
 
 import type { Hashable } from '@finos/legend-studio-shared';
-import type { PrimitiveInstanceValue } from '../../../../../../model/valueSpecification/InstanceValue';
+import type { RawInstanceValue } from '../../../../../rawValueSpecification/RawInstanceValue';
 
 export abstract class Milestoning implements Hashable {
   abstract get hashCode(): string;
 }
 
 export abstract class TemporalMilestoning extends Milestoning {
-  infinityDate?: PrimitiveInstanceValue;
+  infinityDate?: RawInstanceValue;
 }

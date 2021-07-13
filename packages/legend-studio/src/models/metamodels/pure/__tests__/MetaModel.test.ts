@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashLambda } from '../../../MetaModelUtility';
+import { hashLambda } from '../../../MetaModelUtils';
 import {
   losslessParse,
   losslessStringify,

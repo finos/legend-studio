@@ -23,7 +23,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
-import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtility';
+import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtils';
 import { Type } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Type';
 import type { Mapping } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import { EnumerationMapping } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/EnumerationMapping';

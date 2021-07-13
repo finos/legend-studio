@@ -51,6 +51,7 @@ import type {
   RelationalPropertyMappingState,
   RootRelationalInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
+import { useApplicationStore } from '../../../../stores/ApplicationStore';
 
 export const PropertyMappingsEditor = observer(
   (props: {
@@ -60,6 +61,7 @@ export const PropertyMappingsEditor = observer(
   }) => {
     const { instanceSetImplementationState, property, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const propertyRawType = property.genericType.value.rawType;
@@ -84,7 +86,10 @@ export const PropertyMappingsEditor = observer(
       ),
     );
     // Walker
-    const visit = (): void => {
+    // TODO: revisit this behavior now that we have more types of property mapping to support
+    // e.g. embedded, target set implementation, etc.
+    // See https://github.com/finos/legend-studio/issues/310
+    const visitOrCreateMappingElement = (): void => {
       if (propertyRawType instanceof Class) {
         if (
           instanceSetImplementationState.mappingElement instanceof
@@ -133,6 +138,10 @@ export const PropertyMappingsEditor = observer(
               );
             mappingEditorState.openMappingElement(embedded, true);
           }
+        } else {
+          applicationStore.notifyWarning(
+            `Can't visit mapping element for type '${propertyRawType.name}'`,
+          );
         }
       }
     };
@@ -172,7 +181,7 @@ export const PropertyMappingsEditor = observer(
               {propertyBasicType === CLASS_PROPERTY_TYPE.CLASS && (
                 <button
                   className="property-mapping-editor__type__visit-btn"
-                  onClick={visit}
+                  onClick={visitOrCreateMappingElement}
                   tabIndex={-1}
                   title={'Visit mapping element'}
                 >
@@ -255,7 +264,7 @@ export const PropertyMappingsEditor = observer(
                     Click
                     <button
                       className="property-mapping-editor__entry--empty__visit-btn"
-                      onClick={visit}
+                      onClick={visitOrCreateMappingElement}
                       tabIndex={-1}
                       title={'Create mapping element'}
                     >
@@ -269,7 +278,7 @@ export const PropertyMappingsEditor = observer(
                     No set implementation found. Click
                     <button
                       className="property-mapping-editor__entry--empty__visit-btn"
-                      onClick={visit}
+                      onClick={visitOrCreateMappingElement}
                       tabIndex={-1}
                       title={'Create mapping element'}
                     >
