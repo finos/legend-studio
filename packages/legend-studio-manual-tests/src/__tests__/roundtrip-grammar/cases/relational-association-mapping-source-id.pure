@@ -17,6 +17,7 @@ Database model::Test
   Join FirmPerson(PersonTable.firm_id = FirmTable.id)
 )
 
+
 ###Pure
 Class model::Firm
 {
