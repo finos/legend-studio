@@ -391,6 +391,15 @@ export class DiagramRenderer {
                   new GenericType(targetClassView.class.value),
                 ),
               );
+            }
+            // only add an inheritance relationship view if the start class
+            // has already had the target class as its supertype
+            if (
+              startClassView.class.value.generalizations.find(
+                (generalization) =>
+                  generalization.value.rawType === targetClassView.class.value,
+              )
+            ) {
               const gview = new GeneralizationView(
                 this.diagram,
                 startClassView,
