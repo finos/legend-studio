@@ -35,12 +35,14 @@ import {
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
+  DeltaLakeAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
 } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
+  DeltaLakeDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   StaticDatasourceSpecification,
 } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
@@ -76,6 +78,7 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   STATIC = 'STATIC',
   H2_LOCAL = 'H2_LOCAL',
   H2_EMBEDDED = 'H2_EMBEDDED',
+  DELTALAKE = 'DELTALAKE',
   SNOWFLAKE = 'SNOWFLAKE',
 }
 
@@ -83,6 +86,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   DELEGATED_KERBEROS = 'DELEGATED_KERBEROS',
   H2_DEFAULT = 'H2_DEFAULT',
   SNOWFLAKE_PUBLIC = 'SNOWFLAKE_PUBLIC',
+  DELTALAKE = 'DELTALAKE',
   TEST = 'TEST',
   OAUTH = 'OAUTH',
 }
@@ -244,6 +248,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.STATIC;
     } else if (spec instanceof EmbeddedH2DatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.H2_EMBEDDED;
+    } else if (spec instanceof DeltaLakeDatasourceSpecification) {
+      return CORE_DATASOURCE_SPEC_TYPE.DELTALAKE;
     } else if (spec instanceof SnowflakeDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE;
     } else if (spec instanceof LocalH2DatasourceSpecification) {
@@ -290,6 +296,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
+      case CORE_DATASOURCE_SPEC_TYPE.DELTALAKE: {
+        this.connection.setDatasourceSpecification(
+          new DeltaLakeDatasourceSpecification('', ''),
+        );
+        return;
+      }
       case CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE: {
         this.connection.setDatasourceSpecification(
           new SnowflakeDatasourceSpecification('', '', '', ''),
@@ -329,6 +341,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT;
     } else if (auth instanceof OAuthAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH;
+    } else if (auth instanceof DeltaLakeAuthenticationStrategy) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.DELTALAKE;
     } else if (auth instanceof SnowflakePublicAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
     }
@@ -358,6 +372,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS: {
         this.connection.setAuthenticationStrategy(
           new DelegatedKerberosAuthenticationStrategy(),
+        );
+        return;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.DELTALAKE: {
+        this.connection.setAuthenticationStrategy(
+          new DeltaLakeAuthenticationStrategy(''),
         );
         return;
       }

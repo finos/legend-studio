@@ -23,6 +23,7 @@ export enum V1_DatasourceSpecificationType {
   H2_EMBEDDED = 'h2Embedded',
   SNOWFLAKE = 'snowflake',
   H2_LOCAL = 'h2Local',
+  DELTALAKE = 'deltaLake',
 }
 
 export abstract class V1_DatasourceSpecification implements Hashable {
@@ -63,6 +64,22 @@ export class V1_EmbeddedH2DatasourceSpecification
       this.databaseName,
       this.directory,
       this.autoServerMode.toString(),
+    ]);
+  }
+}
+
+export class V1_DeltaLakeDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  shard!: string;
+  httpPath!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DELTALAKE_DATASOURCE_SPECIFICATION,
+      this.shard,
+      this.httpPath,
     ]);
   }
 }
