@@ -1,7 +1,9 @@
 name: Changeset
 
-# NOTE: changeset validation only makes sense in PR pipeline
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - '**'
