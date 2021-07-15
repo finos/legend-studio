@@ -32,6 +32,7 @@ import type { AuthenticationStrategy } from '../../../../../../metamodels/pure/m
 import {
   DefaultH2AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  GCPApplicationDefaultCredentialsAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   OAuthAuthenticationStrategy,
@@ -42,6 +43,7 @@ import {
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  BigQueryDatasourceSpecification,
 } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { ModelChainConnection } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import {
@@ -54,12 +56,14 @@ import {
   V1_LocalH2DataSourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
+  V1_BigQueryDatasourceSpecification,
   V1_StaticDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
   V1_DefaultH2AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
+  V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -109,6 +113,15 @@ const transformSnowflakeDatasourceSpecification = (
   return source;
 };
 
+const transformBigQueryDatasourceSpecification = (
+  metamodel: BigQueryDatasourceSpecification,
+): V1_BigQueryDatasourceSpecification => {
+  const source = new V1_BigQueryDatasourceSpecification();
+  source.projectId = metamodel.projectId;
+  source.defaultDataset = metamodel.defaultDataset;
+  return source;
+};
+
 const transformDatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: V1_GraphTransformerContext,
@@ -119,6 +132,8 @@ const transformDatasourceSpecification = (
     return transformEmbeddedH2DatasourceSpecification(metamodel);
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof BigQueryDatasourceSpecification) {
+    return transformBigQueryDatasourceSpecification(metamodel);
   } else if (metamodel instanceof LocalH2DatasourceSpecification) {
     const protocol = new V1_LocalH2DataSourceSpecification();
     protocol.testDataSetupCsv = metamodel.testDataSetupCsv;
@@ -172,6 +187,12 @@ const transformAuthenticationStrategy = (
     auth.privateKeyVaultReference = metamodel.privateKeyVaultReference;
     auth.passPhraseVaultReference = metamodel.passPhraseVaultReference;
     auth.publicUserName = metamodel.publicUserName;
+    return auth;
+  } else if (
+    metamodel instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
+  ) {
+    const auth =
+      new V1_GCPApplicationDefaultCredentialsAuthenticationStrategy();
     return auth;
   }
   const extraConnectionAuthenticationStrategyTransformers =

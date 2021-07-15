@@ -34,6 +34,7 @@ export enum V1_DatabaseType {
   SqlServer = 'SqlServer',
   Hive = 'Hive',
   Snowflake = 'Snowflake',
+  BigQuery = 'BigQuery',
   Presto = 'Presto',
 }
 

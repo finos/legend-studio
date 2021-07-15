@@ -48,12 +48,14 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  GCPApplicationDefaultCredentialsAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  BigQueryDatasourceSpecification,
   StaticDatasourceSpecification,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { runInAction } from 'mobx';
@@ -541,6 +543,35 @@ const SnowflakeDatasourceSpecificationEditor = observer(
   },
 );
 
+const BigQueryDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: BigQueryDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.projectId}
+          propertyName={'project id'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setProjectId(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.defaultDataset}
+          propertyName={'default dataset'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setDefaultDataset(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 // auth strategy
 
 const DelegatedKerberosAuthenticationStrategyEditor = observer(
@@ -603,6 +634,13 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
       </>
     );
   },
+);
+
+const GCPApplicationDefaultCredentialsAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: GCPApplicationDefaultCredentialsAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => <></>,
 );
 
 const TestDatabaseAuthenticationStrategyEditor = observer(
@@ -1036,6 +1074,13 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec instanceof BigQueryDatasourceSpecification) {
+    return (
+      <BigQueryDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else if (sourceSpec instanceof LocalH2DatasourceSpecification) {
     return (
       <LocalH2DatasourceSpecificationEditor
@@ -1077,6 +1122,15 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof SnowflakePublicAuthenticationStrategy) {
     return (
       <SnowflakePublicAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (
+    authSpec instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
+  ) {
+    return (
+      <GCPApplicationDefaultCredentialsAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

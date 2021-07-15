@@ -36,12 +36,14 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  GCPApplicationDefaultCredentialsAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
 } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  BigQueryDatasourceSpecification,
   StaticDatasourceSpecification,
 } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import {
@@ -77,12 +79,14 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   H2_LOCAL = 'H2_LOCAL',
   H2_EMBEDDED = 'H2_EMBEDDED',
   SNOWFLAKE = 'SNOWFLAKE',
+  BIGQUERY = 'BIGQUERY',
 }
 
 export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   DELEGATED_KERBEROS = 'DELEGATED_KERBEROS',
   H2_DEFAULT = 'H2_DEFAULT',
   SNOWFLAKE_PUBLIC = 'SNOWFLAKE_PUBLIC',
+  GCP_APPLICATION_DEFAULT_CREDENTIALS = 'GCP_APPLICATION_DEFAULT_CREDENTIALS',
   TEST = 'TEST',
   OAUTH = 'OAUTH',
 }
@@ -246,6 +250,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.H2_EMBEDDED;
     } else if (spec instanceof SnowflakeDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE;
+    } else if (spec instanceof BigQueryDatasourceSpecification) {
+      return CORE_DATASOURCE_SPEC_TYPE.BIGQUERY;
     } else if (spec instanceof LocalH2DatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL;
     }
@@ -296,6 +302,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
+      case CORE_DATASOURCE_SPEC_TYPE.BIGQUERY: {
+        this.connection.setDatasourceSpecification(
+          new BigQueryDatasourceSpecification('', ''),
+        );
+        return;
+      }
       default: {
         const extraDatasourceSpecificationCreators =
           this.editorStore.applicationStore.pluginManager
@@ -331,7 +343,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH;
     } else if (auth instanceof SnowflakePublicAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
+    } else if (
+      auth instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
+    ) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS;
     }
+
     const extraAuthenticationStrategyTypeGetters =
       this.editorStore.applicationStore.pluginManager
         .getEditorPlugins()
@@ -364,6 +381,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC: {
         this.connection.setAuthenticationStrategy(
           new SnowflakePublicAuthenticationStrategy('', '', ''),
+        );
+        return;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS: {
+        this.connection.setAuthenticationStrategy(
+          new GCPApplicationDefaultCredentialsAuthenticationStrategy(),
         );
         return;
       }
