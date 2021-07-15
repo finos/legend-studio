@@ -345,11 +345,9 @@ export const DiagramRendererHotkeyInfosModal = observer(
 );
 
 const DiagramEditorToolPanel = observer(
-  (props: {
-    diagramEditorState: DiagramEditorState;
-    diagramRenderer: DiagramRenderer | undefined;
-  }) => {
-    const { diagramEditorState, diagramRenderer } = props;
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const diagramRenderer = diagramEditorState.diagramRenderer;
     const applicationStore = useApplicationStore();
     const isReadOnly = diagramEditorState.isReadOnly;
     const showDiagramRendererHokeysModal = (): void =>
@@ -501,7 +499,8 @@ export const DiagramEditor = observer(() => {
     editorStore.getCurrentEditorState(DiagramEditorState);
   const diagram = diagramEditorState.diagram;
   const isReadOnly = diagramEditorState.isReadOnly;
-  const [diagramRenderer, setDiagramRenderer] = useState<DiagramRenderer>();
+  // const [diagramRenderer, setDiagramRenderer] = useState<DiagramRenderer>();
+  const canvasRef = useRef<HTMLDivElement>(null);
   const [selectedClassEditor, setSelectedClassEditor] = useState<
     ClassEditorState | undefined
   >();
@@ -512,7 +511,6 @@ export const DiagramEditor = observer(() => {
     useState<DIAGRAM_EDITOR_CLASS_PANEL_MODE>(
       DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE,
     );
-  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Resize
   const { width, height } = useResizeDetector<HTMLDivElement>({
@@ -546,44 +544,46 @@ export const DiagramEditor = observer(() => {
     }
   }, [classPanelSize]);
   const redrawOnClassChange = useCallback((): void => {
-    diagramRenderer?.start();
-  }, [diagramRenderer]);
+    diagramEditorState.diagramRenderer.start();
+  }, [diagramEditorState]);
   const onCreateClassSubmit = (
     _class: Class,
     position: Point | undefined,
   ): void => {
-    if (diagramRenderer) {
-      diagramRenderer.addClassView(_class, position);
-      // close the create new class panel and show the property panel
-      setCreateNewClassEvent(undefined);
-      const classEditorState =
-        editorStore.openedEditorStates.find(
-          (elementState): elementState is ClassEditorState =>
-            elementState instanceof ClassEditorState &&
-            elementState.element === _class,
-        ) ?? editorStore.createElementState(_class);
-      setSelectedClassEditor(guaranteeType(classEditorState, ClassEditorState));
-      setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS);
-    }
+    diagramEditorState.diagramRenderer.addClassView(_class, position);
+    // close the create new class panel and show the property panel
+    setCreateNewClassEvent(undefined);
+    const classEditorState =
+      editorStore.openedEditorStates.find(
+        (elementState): elementState is ClassEditorState =>
+          elementState instanceof ClassEditorState &&
+          elementState.element === _class,
+      ) ?? editorStore.createElementState(_class);
+    setSelectedClassEditor(guaranteeType(classEditorState, ClassEditorState));
+    setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS);
   };
 
   useEffect(() => {
-    diagramRenderer?.refresh();
-  }, [diagramRenderer, width, height]);
+    if (diagramEditorState.isDiagramRendererInitialized) {
+      diagramEditorState.diagramRenderer.refresh();
+    }
+  }, [diagramEditorState, width, height]);
 
   // Update the diagram viewer when diagram changes
   useEffect(() => {
     if (canvasRef.current) {
       const renderer = new DiagramRenderer(canvasRef.current, diagram);
       renderer.isReadOnly = isReadOnly;
-      setDiagramRenderer(renderer);
+      diagramEditorState.setDiagramRenderer(renderer);
       renderer.start();
       renderer.autoRecenter();
     }
-  }, [diagram, isReadOnly]);
+  }, [diagramEditorState, diagram, isReadOnly]);
 
-  if (diagramRenderer) {
-    diagramRenderer.onClassViewDoubleClick = (cv: ClassView): void => {
+  if (diagramEditorState.isDiagramRendererInitialized) {
+    diagramEditorState.diagramRenderer.onClassViewDoubleClick = (
+      cv: ClassView,
+    ): void => {
       setCreateNewClassEvent(undefined);
       const classEditorState =
         editorStore.openedEditorStates.find(
@@ -602,9 +602,10 @@ export const DiagramEditor = observer(() => {
         showClassPanel();
       }
     };
-    diagramRenderer.onBackgroundDoubleClick = createNewClassView;
-    diagramRenderer.onAddClassViewClick = createNewClassView;
-    diagramRenderer.onAddClassPropertyForSelectedClass = (
+    diagramEditorState.diagramRenderer.onBackgroundDoubleClick =
+      createNewClassView;
+    diagramEditorState.diagramRenderer.onAddClassViewClick = createNewClassView;
+    diagramEditorState.diagramRenderer.onAddClassPropertyForSelectedClass = (
       cv: ClassView,
     ): void => {
       if (selectedClassEditor) {
@@ -656,14 +657,10 @@ export const DiagramEditor = observer(() => {
   const handleDrop = useCallback(
     (item: ElementDragSource, monitor: DropTargetMonitor): void => {
       if (!isReadOnly) {
-        if (
-          canvasRef.current &&
-          diagramRenderer &&
-          item instanceof ElementDragSource
-        ) {
+        if (item instanceof ElementDragSource) {
           if (item.data.packageableElement instanceof Class) {
             const dropPosition = monitor.getSourceClientOffset();
-            diagramRenderer.addClassView(
+            diagramEditorState.diagramRenderer.addClassView(
               item.data.packageableElement,
               dropPosition
                 ? new Point(dropPosition.x, dropPosition.y)
@@ -673,7 +670,7 @@ export const DiagramEditor = observer(() => {
         }
       }
     },
-    [diagramRenderer, isReadOnly],
+    [diagramEditorState, isReadOnly],
   );
   const [, dropConnector] = useDrop(
     () => ({
@@ -696,16 +693,18 @@ export const DiagramEditor = observer(() => {
       maxSize={-300}
     >
       <div className="diagram-editor">
-        <DiagramEditorToolPanel
-          diagramEditorState={diagramEditorState}
-          diagramRenderer={diagramRenderer}
-        />
+        {diagramEditorState.isDiagramRendererInitialized && (
+          <DiagramEditorToolPanel diagramEditorState={diagramEditorState} />
+        )}
         <div
           ref={canvasRef}
           className={clsx('diagram-canvas diagram-editor__canvas', {
             'diagram-editor__canvas--with-cursor--crosshair':
-              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP ||
-              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
+              diagramEditorState.isDiagramRendererInitialized &&
+              (diagramEditorState.diagramRenderer.editMode ===
+                DIAGRAM_EDIT_MODE.RELATIONSHIP ||
+                diagramEditorState.diagramRenderer.editMode ===
+                  DIAGRAM_EDIT_MODE.ADD_CLASS),
           })}
           tabIndex={0}
           onContextMenu={(event): void => event.preventDefault()}
