@@ -104,15 +104,13 @@ export const OperationSetImplementationEditor = observer(
           );
         }
       };
-    const supportsParameters =
-      setImplementation.operation !== OperationType.INHERITANCE;
     // Drag and Drop
     const handleDrop = useCallback(
       (item: OperationSetImplementationDropTarget): void => {
         const mappingElement = item.data;
         if (
           mappingElement instanceof SetImplementation &&
-          supportsParameters &&
+          setImplementation.operation !== OperationType.INHERITANCE &&
           mappingElement.class.value === setImplementation.class.value &&
           !setImplementation.parameters.find(
             (param) => param.setImplementation.value === mappingElement,
@@ -126,7 +124,7 @@ export const OperationSetImplementationEditor = observer(
           );
         }
       },
-      [setImplementation, supportsParameters],
+      [setImplementation],
     );
     const [{ isDragOver }, dropRef] = useDrop(
       () => ({
@@ -171,7 +169,10 @@ export const OperationSetImplementationEditor = observer(
             <div className="panel__header__actions">
               <button
                 className="panel__header__action"
-                disabled={isReadOnly || !supportsParameters}
+                disabled={
+                  isReadOnly ||
+                  setImplementation.operation === OperationType.INHERITANCE
+                }
                 onClick={addParameter}
                 tabIndex={-1}
                 title={'Add parameter'}
