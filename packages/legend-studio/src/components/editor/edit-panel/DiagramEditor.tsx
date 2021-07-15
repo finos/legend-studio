@@ -622,8 +622,9 @@ export const DiagramEditor = observer(() => {
           <button
             className={clsx('diagram-editor__tool', {
               'diagram-editor__tool--active':
-                diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
-                diagramRenderer?.relationshipMode ===
+                diagramRenderer &&
+                diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+                diagramRenderer.relationshipMode ===
                   DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
             })}
             tabIndex={-1}
@@ -635,8 +636,9 @@ export const DiagramEditor = observer(() => {
           <button
             className={clsx('diagram-editor__tool', {
               'diagram-editor__tool--active':
-                diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
-                diagramRenderer?.relationshipMode ===
+                diagramRenderer &&
+                diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+                diagramRenderer.relationshipMode ===
                   DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
             })}
             tabIndex={-1}
@@ -681,7 +683,11 @@ export const DiagramEditor = observer(() => {
         </div>
         <div
           ref={canvasRef}
-          className="diagram-canvas diagram-editor__canvas"
+          className={clsx('diagram-canvas diagram-editor__canvas', {
+            'diagram-editor__canvas--with-cursor--crosshair':
+              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP ||
+              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
+          })}
           tabIndex={0}
           onContextMenu={(event): void => event.preventDefault()}
         />

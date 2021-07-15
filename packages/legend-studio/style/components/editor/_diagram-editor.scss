@@ -104,6 +104,12 @@
     width: calc(100% - 4.4rem);
   }
 
+  &__canvas--with-cursor {
+    &--crosshair {
+      cursor: crosshair;
+    }
+  }
+
   &__class-panel {
     border-left: 0.1rem solid var(--color-light-grey-400);
 
