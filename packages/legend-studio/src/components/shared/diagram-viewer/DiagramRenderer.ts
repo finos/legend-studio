@@ -179,7 +179,7 @@ export class DiagramRenderer {
   addRelationshipToDiagramFn?: (
     start: ClassView,
     target: ClassView,
-  ) => RelationshipView;
+  ) => RelationshipView | undefined;
 
   mouseOverProperty?: AbstractProperty;
   mouseOverClassView?: ClassView;
@@ -373,25 +373,33 @@ export class DiagramRenderer {
           this.addRelationshipToDiagramFn = (
             startClassView: ClassView,
             targetClassView: ClassView,
-          ): RelationshipView => {
+          ): RelationshipView | undefined => {
             if (
-              startClassView.class.value.generalizations.filter(
-                (g) => g.value.rawType === targetClassView.class.value,
-              ).length === 0
+              // Do not allow creating self-inheritance
+              startClassView.class.value !== targetClassView.class.value &&
+              // Avoid creating inhertance that already existed
+              !startClassView.class.value.allSuperClasses.includes(
+                targetClassView.class.value,
+              ) &&
+              // Avoid loop (might be expensive)
+              !targetClassView.class.value.allSuperClasses.includes(
+                startClassView.class.value,
+              )
             ) {
               startClassView.class.value.addSuperType(
                 GenericTypeExplicitReference.create(
                   new GenericType(targetClassView.class.value),
                 ),
               );
+              const gview = new GeneralizationView(
+                this.diagram,
+                startClassView,
+                targetClassView,
+              );
+              this.diagram.addGeneralizationView(gview);
+              return gview;
             }
-            const gview = new GeneralizationView(
-              this.diagram,
-              startClassView,
-              targetClassView,
-            );
-            this.diagram.addGeneralizationView(gview);
-            return gview;
+            return undefined;
           };
           break;
         }
@@ -1949,34 +1957,36 @@ export class DiagramRenderer {
                   this.diagram.classViews[i],
                 );
 
-                gview.from.setOffsetX(
-                  -(
-                    this.startClassView.position.x +
-                    this.startClassView.rectangle.width / 2 -
-                    this.selectionStart.x
-                  ),
-                );
-                gview.from.setOffsetY(
-                  -(
-                    this.startClassView.position.y +
-                    this.startClassView.rectangle.height / 2 -
-                    this.selectionStart.y
-                  ),
-                );
-                gview.to.setOffsetX(
-                  -(
-                    targetClassView.position.x +
-                    targetClassView.rectangle.width / 2 -
-                    shiftedX
-                  ),
-                );
-                gview.to.setOffsetY(
-                  -(
-                    targetClassView.position.y +
-                    targetClassView.rectangle.height / 2 -
-                    shiftedY
-                  ),
-                );
+                if (gview) {
+                  gview.from.setOffsetX(
+                    -(
+                      this.startClassView.position.x +
+                      this.startClassView.rectangle.width / 2 -
+                      this.selectionStart.x
+                    ),
+                  );
+                  gview.from.setOffsetY(
+                    -(
+                      this.startClassView.position.y +
+                      this.startClassView.rectangle.height / 2 -
+                      this.selectionStart.y
+                    ),
+                  );
+                  gview.to.setOffsetX(
+                    -(
+                      targetClassView.position.x +
+                      targetClassView.rectangle.width / 2 -
+                      shiftedX
+                    ),
+                  );
+                  gview.to.setOffsetY(
+                    -(
+                      targetClassView.position.y +
+                      targetClassView.rectangle.height / 2 -
+                      shiftedY
+                    ),
+                  );
+                }
               }
             }
             this.changeMode(

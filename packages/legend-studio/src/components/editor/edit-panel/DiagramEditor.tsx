@@ -475,7 +475,7 @@ export const DiagramEditor = observer(() => {
       if (selectedClassEditor) {
         selectedClassEditor.class.addProperty(
           new Property(
-            '',
+            `newProperty_${selectedClassEditor.class.properties.length}`,
             defaultMultiplicity,
             GenericTypeExplicitReference.create(
               new GenericType(cv.class.value),
