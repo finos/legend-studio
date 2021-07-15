@@ -63,6 +63,7 @@ export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
 
 export class DiagramRenderer {
   diagram: Diagram;
+
   isReadOnly: boolean;
 
   div: HTMLDivElement;
@@ -199,9 +200,11 @@ export class DiagramRenderer {
 
   constructor(div: HTMLDivElement, diagram: Diagram) {
     makeObservable(this, {
+      isReadOnly: observable,
       editMode: observable,
       relationshipMode: observable,
       changeMode: action,
+      setIsReadOnly: action,
     });
 
     this.diagram = diagram;
@@ -334,6 +337,10 @@ export class DiagramRenderer {
   refresh(): void {
     this.refreshCanvas();
     this.redraw();
+  }
+
+  setIsReadOnly(val: boolean): void {
+    this.isReadOnly = val;
   }
 
   changeMode(

@@ -15,13 +15,12 @@
  */
 
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { TYPICAL_MULTIPLICITY_TYPE } from '../../../models/MetaModelConst';
-import { ClassEditorState } from '../../../stores/editor-state/element-editor-state/ClassEditorState';
-import { ClassFormEditor } from './uml-editor/ClassEditor';
+import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState';
+import { ClassFormEditor } from '../uml-editor/ClassEditor';
 import { useResizeDetector } from 'react-resize-detector';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { useEditorStore } from '../../../stores/EditorStore';
+import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   FaTimes,
   FaChevronDown,
@@ -35,36 +34,31 @@ import {
   DiagramRenderer,
   DIAGRAM_EDIT_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
-} from '../../shared/diagram-viewer/DiagramRenderer';
-import { DiagramEditorState } from '../../../stores/editor-state/element-editor-state/DiagramEditorState';
+} from '../../../shared/diagram-viewer/DiagramRenderer';
+import {
+  DiagramEditorClassEditorSidePanelState,
+  DiagramEditorNewClassSidePanelState,
+  DiagramEditorState,
+} from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
   CORE_DND_TYPE,
   ElementDragSource,
-} from '../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil';
 import { clsx, TreeView } from '@finos/legend-studio-components';
 import { isNonNullable, guaranteeType } from '@finos/legend-studio-shared';
 import {
-  getPackableElementTreeData,
   getPackableElementTreeNodeData,
-  openNode,
   getSelectedPackageTreeNodePackage,
-} from '../../../stores/shared/PackageTreeUtil';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-} from '@finos/legend-studio-components';
-import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Point } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
-import type { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
-import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Property } from '../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { GenericType } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
-import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
+} from '../../../../stores/shared/PackageTreeUtil';
+import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
+import type { PackageTreeNodeData } from '../../../../stores/shared/TreeUtil';
+import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
+import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
+import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
+import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { FiMinus, FiMove, FiPlusCircle, FiTriangle } from 'react-icons/fi';
 import { IoResize } from 'react-icons/io5';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
+import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { Dialog } from '@material-ui/core';
 
 const PackageTreeNodeContainer: React.FC<
@@ -115,26 +109,27 @@ const PackageTreeNodeContainer: React.FC<
   );
 };
 
-export const DiagramEditorClassCreator = observer(
+const DiagramEditorClassCreator = observer(
   (props: {
-    onSubmit: (_class: Class, position: Point) => void;
-    createNewClassEvent: MouseEvent;
-    packageTree: TreeData<PackageTreeNodeData>;
+    newClassEditorState: DiagramEditorNewClassSidePanelState;
+    // onSubmit: (_class: Class, position: Point) => void;
+    // createNewClassEvent: MouseEvent;
+    // packageTree: TreeData<PackageTreeNodeData>;
   }) => {
-    const { onSubmit, createNewClassEvent, packageTree } = props;
+    const { newClassEditorState } = props;
     const editorStore = useEditorStore();
+    const diagramEditorState = newClassEditorState.diagramEditorState;
     // Name
     const [name, setName] = useState('');
     const handleNameChange: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => setName(event.target.value);
+    const treeData = newClassEditorState.packageTreeData;
     const elementNameInputRef = useRef<HTMLInputElement>(null);
     // Package
-    const [treeData, setTreeData] =
-      useState<TreeData<PackageTreeNodeData>>(packageTree);
     const [selectedTreeNode, setSelectedTreeNode] = useState<
       PackageTreeNodeData | undefined
-    >(Array.from(packageTree.nodes.values()).find((node) => node.isSelected));
+    >(Array.from(treeData.nodes.values()).find((node) => node.isSelected));
     const selectedPackage =
       getSelectedPackageTreeNodePackage(selectedTreeNode) ??
       editorStore.graphState.graph.root;
@@ -166,7 +161,7 @@ export const DiagramEditorClassCreator = observer(
             });
         }
       }
-      setTreeData({ ...treeData });
+      newClassEditorState.setPackageTreeData({ ...treeData });
     };
 
     const getChildNodes = (
@@ -209,27 +204,45 @@ export const DiagramEditorClassCreator = observer(
         selectedPackage.addElement(_class);
         editorStore.graphState.graph.addElement(_class);
         editorStore.explorerTreeState.reprocess();
-        onSubmit(
+        diagramEditorState.diagramRenderer.addClassView(
           _class,
-          new Point(createNewClassEvent.x, createNewClassEvent.y),
+          new Point(
+            newClassEditorState.creationMouseEvent.x,
+            newClassEditorState.creationMouseEvent.y,
+          ),
+        );
+        const classEditorState = guaranteeType(
+          editorStore.openedEditorStates.find(
+            (elementState): elementState is ClassEditorState =>
+              elementState instanceof ClassEditorState &&
+              elementState.element === _class,
+          ) ?? editorStore.createElementState(_class),
+          ClassEditorState,
+        );
+        diagramEditorState.setSidePanelState(
+          new DiagramEditorClassEditorSidePanelState(
+            editorStore,
+            diagramEditorState,
+            classEditorState,
+          ),
         );
       }
     };
 
     return (
-      <div className="diagram-editor__class-panel__create-new">
-        <div className="diagram-editor__class-panel__create-new__title">
+      <div className="diagram-editor__side-panel__create-new">
+        <div className="diagram-editor__side-panel__create-new__title">
           Create new class
         </div>
         <input
-          className="input diagram-editor__class-panel__create-new__name"
+          className="input diagram-editor__side-panel__create-new__name"
           ref={elementNameInputRef}
           spellCheck={false}
           value={name}
           onChange={handleNameChange}
           placeholder="Class name"
         />
-        <div className="diagram-editor__class-panel__create-new__package-tree">
+        <div className="diagram-editor__side-panel__create-new__package-tree">
           <TreeView
             components={{
               TreeNodeContainer: PackageTreeNodeContainer,
@@ -243,7 +256,7 @@ export const DiagramEditorClassCreator = observer(
           />
         </div>
         <button
-          className="btn btn--primary diagram-editor__class-panel__create-new__submit-btn"
+          className="btn btn--primary diagram-editor__side-panel__create-new__submit-btn"
           disabled={
             !name ||
             Boolean(elementToOverride) ||
@@ -314,14 +327,6 @@ export const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Reset diagram to center
-                </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">c</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
                   Separate the property being hovered on
                 </div>
                 <div className="diagram-editor__hotkey__keys">
@@ -334,6 +339,14 @@ export const DiagramRendererHotkeyInfosModal = observer(
                 </div>
                 <div className="diagram-editor__hotkey__keys">
                   <div className="hotkey__key">p</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Recenter
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">c</div>
                 </div>
               </div>
             </div>
@@ -484,33 +497,13 @@ const DiagramEditorToolPanel = observer(
   },
 );
 
-enum DIAGRAM_EDITOR_CLASS_PANEL_MODE {
-  CREATE_NEW_CLASS = 'CREATE_NEW_CLASS',
-  EDIT_CLASS = 'EDIT_CLASS',
-  NONE = 'NONE',
-}
-
 export const DiagramEditor = observer(() => {
   const editorStore = useEditorStore();
-  const multiplicityOne = editorStore.graphState.graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
   const diagramEditorState =
     editorStore.getCurrentEditorState(DiagramEditorState);
-  const diagram = diagramEditorState.diagram;
   const isReadOnly = diagramEditorState.isReadOnly;
-  // const [diagramRenderer, setDiagramRenderer] = useState<DiagramRenderer>();
+  const sidePanelState = diagramEditorState.sidePanelState;
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [selectedClassEditor, setSelectedClassEditor] = useState<
-    ClassEditorState | undefined
-  >();
-  const [createNewClassEvent, setCreateNewClassEvent] = useState<
-    MouseEvent | undefined
-  >();
-  const [classViewerMode, setClassViewerMode] =
-    useState<DIAGRAM_EDITOR_CLASS_PANEL_MODE>(
-      DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE,
-    );
 
   // Resize
   const { width, height } = useResizeDetector<HTMLDivElement>({
@@ -519,49 +512,45 @@ export const DiagramEditor = observer(() => {
     targetRef: canvasRef,
   });
 
-  // Class Panel
-  const [classPanelSize, setClassPanelSize] = useState(0);
+  // Side Panel Size
+  const [sidePanelSize, setSidePanelSize] = useState(0);
   const resizeClassPanel = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
-      setClassPanelSize(
+      setSidePanelSize(
         newSize < CLASS_PANEL_SIZE_SNAP_THRESHOLD
-          ? classPanelSize > 0
+          ? sidePanelSize > 0
             ? 0
             : DEFAULT_CLASS_PANEL_SIZE
           : newSize,
       );
     }
   };
-  const closeClassPanel = (): void => {
-    setClassPanelSize(0);
-    setCreateNewClassEvent(undefined);
-    setSelectedClassEditor(undefined);
-    setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE);
+  const closeSidePanel = (): void => {
+    setSidePanelSize(0);
+    diagramEditorState.setSidePanelState(undefined);
   };
-  const showClassPanel = useCallback(() => {
-    if (!classPanelSize) {
-      setClassPanelSize(DEFAULT_CLASS_PANEL_SIZE);
+  const showSidePanel = useCallback(() => {
+    if (!sidePanelSize) {
+      setSidePanelSize(DEFAULT_CLASS_PANEL_SIZE);
     }
-  }, [classPanelSize]);
+  }, [sidePanelSize]);
+
   const redrawOnClassChange = useCallback((): void => {
     diagramEditorState.diagramRenderer.start();
   }, [diagramEditorState]);
-  const onCreateClassSubmit = (
-    _class: Class,
-    position: Point | undefined,
-  ): void => {
-    diagramEditorState.diagramRenderer.addClassView(_class, position);
-    // close the create new class panel and show the property panel
-    setCreateNewClassEvent(undefined);
-    const classEditorState =
-      editorStore.openedEditorStates.find(
-        (elementState): elementState is ClassEditorState =>
-          elementState instanceof ClassEditorState &&
-          elementState.element === _class,
-      ) ?? editorStore.createElementState(_class);
-    setSelectedClassEditor(guaranteeType(classEditorState, ClassEditorState));
-    setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS);
-  };
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      const renderer = new DiagramRenderer(
+        canvasRef.current,
+        diagramEditorState.diagram,
+      );
+      diagramEditorState.setDiagramRenderer(renderer);
+      diagramEditorState.setupDiagramRenderer();
+      renderer.start();
+      renderer.autoRecenter();
+    }
+  }, [diagramEditorState]);
 
   useEffect(() => {
     if (diagramEditorState.isDiagramRendererInitialized) {
@@ -569,89 +558,11 @@ export const DiagramEditor = observer(() => {
     }
   }, [diagramEditorState, width, height]);
 
-  // Update the diagram viewer when diagram changes
   useEffect(() => {
-    if (canvasRef.current) {
-      const renderer = new DiagramRenderer(canvasRef.current, diagram);
-      renderer.isReadOnly = isReadOnly;
-      diagramEditorState.setDiagramRenderer(renderer);
-      renderer.start();
-      renderer.autoRecenter();
+    if (diagramEditorState.isDiagramRendererInitialized) {
+      diagramEditorState.diagramRenderer.setIsReadOnly(isReadOnly);
     }
-  }, [diagramEditorState, diagram, isReadOnly]);
-
-  if (diagramEditorState.isDiagramRendererInitialized) {
-    diagramEditorState.diagramRenderer.onClassViewDoubleClick = (
-      cv: ClassView,
-    ): void => {
-      setCreateNewClassEvent(undefined);
-      const classEditorState =
-        editorStore.openedEditorStates.find(
-          (elementState): elementState is ClassEditorState =>
-            elementState instanceof ClassEditorState &&
-            elementState.element === cv.class.value,
-        ) ?? editorStore.createElementState(cv.class.value);
-      setSelectedClassEditor(guaranteeType(classEditorState, ClassEditorState));
-      setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS);
-      showClassPanel();
-    };
-    const createNewClassView = (event: MouseEvent): void => {
-      if (!isReadOnly) {
-        setCreateNewClassEvent(event);
-        setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.CREATE_NEW_CLASS);
-        showClassPanel();
-      }
-    };
-    diagramEditorState.diagramRenderer.onBackgroundDoubleClick =
-      createNewClassView;
-    diagramEditorState.diagramRenderer.onAddClassViewClick = createNewClassView;
-    diagramEditorState.diagramRenderer.onAddClassPropertyForSelectedClass = (
-      cv: ClassView,
-    ): void => {
-      if (selectedClassEditor) {
-        selectedClassEditor.class.addProperty(
-          new Property(
-            `newProperty_${selectedClassEditor.class.properties.length}`,
-            multiplicityOne,
-            GenericTypeExplicitReference.create(
-              new GenericType(cv.class.value),
-            ),
-            selectedClassEditor.class,
-          ),
-        );
-      }
-    };
-  }
-
-  const renderNewClassPanel = (event: MouseEvent): React.ReactElement => {
-    const treeData = getPackableElementTreeData(
-      editorStore,
-      editorStore.graphState.graph.root,
-      '',
-      (childElement: PackageableElement) => childElement instanceof Package,
-    );
-    const selectedPackageTreeNodePackage = getSelectedPackageTreeNodePackage(
-      editorStore.explorerTreeState.selectedNode,
-    );
-    if (selectedPackageTreeNodePackage) {
-      const openingNode = openNode(
-        editorStore,
-        selectedPackageTreeNodePackage,
-        treeData,
-        (childElement: PackageableElement) => childElement instanceof Package,
-      );
-      if (openingNode) {
-        openingNode.isSelected = true;
-      }
-    }
-    return (
-      <DiagramEditorClassCreator
-        createNewClassEvent={event}
-        onSubmit={onCreateClassSubmit}
-        packageTree={treeData}
-      />
-    );
-  };
+  }, [diagramEditorState, isReadOnly]);
 
   // Drag and Drop
   const handleDrop = useCallback(
@@ -685,7 +596,7 @@ export const DiagramEditor = observer(() => {
   return (
     <SplitPane
       split="vertical"
-      size={classPanelSize}
+      size={sidePanelSize}
       primary="second"
       onDragFinished={resizeClassPanel}
       defaultSize={0}
@@ -710,35 +621,45 @@ export const DiagramEditor = observer(() => {
           onContextMenu={(event): void => event.preventDefault()}
         />
       </div>
-      <div className="panel diagram-editor__class-panel">
-        <div className="panel__header diagram-editor__class-panel__header">
+      <div className="panel diagram-editor__side-panel">
+        <div className="panel__header diagram-editor__side-panel__header">
           <button
-            className="diagram-editor__class-panel__close-btn"
-            onClick={closeClassPanel}
+            className="diagram-editor__side-panel__close-btn"
+            onClick={closeSidePanel}
             tabIndex={-1}
-            title={'Close'}
+            title="Close"
           >
             <FaTimes />
           </button>
         </div>
-        <div className="panel__content diagram-editor__class-panel__content">
-          {classViewerMode ===
+        <div className="panel__content diagram-editor__side-panel__content">
+          {sidePanelState instanceof DiagramEditorNewClassSidePanelState && (
+            <DiagramEditorClassCreator newClassEditorState={sidePanelState} />
+          )}
+          {sidePanelState instanceof DiagramEditorClassEditorSidePanelState && (
+            <ClassFormEditor
+              _class={sidePanelState.classEditorState.class}
+              editorState={sidePanelState.classEditorState}
+              onHashChange={redrawOnClassChange}
+            />
+          )}
+          {/* {classViewerMode ===
             DIAGRAM_EDITOR_CLASS_PANEL_MODE.CREATE_NEW_CLASS &&
             createNewClassEvent &&
-            renderNewClassPanel(createNewClassEvent)}
-          {classViewerMode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS &&
+            renderNewClassPanel(createNewClassEvent)} */}
+          {/* {classViewerMode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS &&
             selectedClassEditor && (
               <ClassFormEditor
                 _class={selectedClassEditor.class}
                 editorState={selectedClassEditor}
                 onHashChange={redrawOnClassChange}
               />
-            )}
-          {classViewerMode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE && (
-            <div className="diagram-editor__class-panel__content__editor--empty">
+            )} */}
+          {/* {classViewerMode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE && (
+            <div className="diagram-editor__side-panel__content__editor--empty">
               Double click on a class on diagram to show it here
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </SplitPane>

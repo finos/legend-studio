@@ -110,7 +110,7 @@
     }
   }
 
-  &__class-panel {
+  &__side-panel {
     border-left: 0.1rem solid var(--color-light-grey-400);
 
     &__header {
@@ -121,16 +121,6 @@
 
     &__content {
       position: relative;
-    }
-
-    &__content__editor--empty {
-      @include flexCenter;
-
-      height: 100%;
-      width: 100%;
-      color: var(--color-dark-grey-300);
-      padding: 2rem;
-      text-align: center;
     }
 
     &__close-btn {
@@ -177,7 +167,7 @@
   }
 }
 
-.diagram-editor__class-panel__create-new {
+.diagram-editor__side-panel__create-new {
   height: 100%;
   display: flex;
   flex-direction: column;
