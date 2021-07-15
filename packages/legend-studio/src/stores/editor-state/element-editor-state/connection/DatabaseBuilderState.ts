@@ -223,7 +223,7 @@ export class DatabaseBuilderState {
       const databaseBuilderInput = this.buildNonEnrichedDbBuilderInput();
       const database = (yield this.buildDatabaseFromInput(
         databaseBuilderInput,
-      )) as unknown as Database;
+      )) as Database;
       const rootIds: string[] = [];
       const nodes = new Map<string, DatabaseBuilderTreeNodeData>();
       database.schemas.forEach((dbSchema) => {
@@ -267,7 +267,7 @@ export class DatabaseBuilderState {
       );
       const database = (yield this.buildDatabaseFromInput(
         databaseBuilderInput,
-      )) as unknown as Database;
+      )) as Database;
       const tables = database.getSchema(schema.name).tables;
       const childrenIds = schemaNode.childrenIds ?? [];
       schema.tables = tables;
@@ -324,7 +324,7 @@ export class DatabaseBuilderState {
       config.patterns = [new DatabasePattern(table.schema.name, table.name)];
       const database = (yield this.buildDatabaseFromInput(
         databaseBuilderInput,
-      )) as unknown as Database;
+      )) as Database;
       const enrichedTable = database.schemas
         .find((s) => table.schema.name === s.name)
         ?.tables.find((t) => t.name === table.name);
@@ -444,11 +444,11 @@ export class DatabaseBuilderState {
         const entities =
           (yield this.editorStore.graphState.graphManager.buildDatabase(
             databaseBuilderInput,
-          )) as unknown as Entity[];
+          )) as Entity[];
         const dbGrammar =
           (yield this.editorStore.graphState.graphManager.entitiesToPureCode(
             entities,
-          )) as unknown as string;
+          )) as string;
         this.setDatabaseGrammarCode(dbGrammar);
       }
     } catch (error: unknown) {
