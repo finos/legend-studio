@@ -35,6 +35,7 @@
 @forward 'editor/service-editor';
 @forward 'editor/runtime-editor';
 @forward 'editor/connection-editor';
+@forward 'editor/database-builder';
 @forward 'editor/file-generation-editor';
 @forward 'editor/unsupported-element-editor';
 @forward 'editor/generation-spec-editor';

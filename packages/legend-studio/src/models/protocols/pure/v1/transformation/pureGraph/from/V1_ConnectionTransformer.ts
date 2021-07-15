@@ -214,7 +214,7 @@ const transformAuthenticationStrategy = (
   );
 };
 
-const transformRelationalDatabaseConnection = (
+export const V1_transformRelationalDatabaseConnection = (
   metamodel: RelationalDatabaseConnection,
   context: V1_GraphTransformerContext,
 ): V1_RelationalDatabaseConnection => {
@@ -317,7 +317,7 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): V1_Connection {
-    return transformRelationalDatabaseConnection(connection, this.context);
+    return V1_transformRelationalDatabaseConnection(connection, this.context);
   }
 }
 

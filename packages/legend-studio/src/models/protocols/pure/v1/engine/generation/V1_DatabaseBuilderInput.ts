@@ -25,20 +25,20 @@ import {
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
-import type { V1_Connection } from '../../model/packageableElements/connection/V1_Connection';
 import {
   V1_serializeConnectionValue,
   V1_deserializeConnectionValue,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper';
+import type { V1_RelationalDatabaseConnection } from '../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 
-export class V1_StorePattern {
+export class V1_DatabasePattern {
   schemaPattern!: string;
   tablePattern!: string;
   escapeSchemaPattern?: boolean;
   escapeTablePattern?: boolean;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_StorePattern, {
+    createModelSchema(V1_DatabasePattern, {
       schemaPattern: primitive(),
       tablePattern: primitive(),
       escapeSchemaPattern: optional(primitive()),
@@ -47,31 +47,49 @@ export class V1_StorePattern {
   );
 }
 
-export class V1_GenerateStoreInput {
-  clientVersion = 'v1_16_0'; // FIXME: maybe not hard code it like this?
-  connection!: V1_Connection;
-  targetPackage!: string;
-  targetName!: string;
+export class V1_DatabaseBuilderConfig {
   maxTables?: number;
   enrichTables?: boolean;
   enrichPrimaryKeys?: boolean;
   enrichColumns?: boolean;
-  patterns: V1_StorePattern[] = [];
+  patterns: V1_DatabasePattern[] = [];
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_GenerateStoreInput, {
-      clientVersion: primitive(),
+    createModelSchema(V1_DatabaseBuilderConfig, {
+      maxTables: primitive(),
+      enrichTables: primitive(),
+      enrichPrimaryKeys: primitive(),
+      enrichColumns: primitive(),
+      patterns: list(usingModelSchema(V1_DatabasePattern.serialization.schema)),
+    }),
+  );
+}
+
+export class V1_TargetDatabase {
+  package!: string;
+  name!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_TargetDatabase, {
+      name: primitive(),
+      package: primitive(),
+    }),
+  );
+}
+
+export class V1_DatabaseBuilderInput {
+  connection!: V1_RelationalDatabaseConnection;
+  config!: V1_DatabaseBuilderConfig;
+  targetDatabase!: V1_TargetDatabase;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DatabaseBuilderInput, {
+      config: usingModelSchema(V1_DatabaseBuilderConfig.serialization.schema),
       connection: custom(
         (val) => V1_serializeConnectionValue(val, false),
         (val) => V1_deserializeConnectionValue(val, false),
       ),
-      targetPackage: primitive(),
-      targetName: primitive(),
-      maxTables: optional(primitive()),
-      enrichTables: optional(primitive()),
-      enrichPrimaryKeys: optional(primitive()),
-      enrichColumns: optional(primitive()),
-      patterns: list(usingModelSchema(V1_StorePattern.serialization.schema)),
+      targetDatabase: usingModelSchema(V1_TargetDatabase.serialization.schema),
     }),
   );
 }
