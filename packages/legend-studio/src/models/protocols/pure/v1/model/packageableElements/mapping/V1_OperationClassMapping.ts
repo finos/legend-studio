@@ -23,7 +23,7 @@ import { V1_ClassMapping } from './V1_ClassMapping';
 export enum V1_MappingOperationType {
   STORE_UNION = 'STORE_UNION',
   ROUTER_UNION = 'ROUTER_UNION',
-  // INHERITANCE = 'INHERITANCE',
+  INHERITANCE = 'INHERITANCE',
   // MERGE = 'MERGE',
 }
 
