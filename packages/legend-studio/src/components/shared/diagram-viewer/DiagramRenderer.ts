@@ -46,13 +46,15 @@ import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/mo
 import { GenericType } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
 import { Property } from '../../../models/metamodels/pure/model/packageableElements/domain/Property';
 import { Multiplicity } from '../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
+import { action, makeObservable, observable } from 'mobx';
 
 export enum DIAGRAM_EDIT_MODE {
   LAYOUT,
   RELATIONSHIP,
+  ADD_CLASS,
 }
 
-export enum DIAGRAM_RELATIONSHIP_MODE {
+export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
   // ASSOCIATION,
   PROPERTY,
   INHERITANCE,
@@ -62,8 +64,6 @@ export enum DIAGRAM_RELATIONSHIP_MODE {
 export class DiagramRenderer {
   diagram: Diagram;
   isReadOnly: boolean;
-
-  editMode: DIAGRAM_EDIT_MODE;
 
   div: HTMLDivElement;
   canvas: HTMLCanvasElement;
@@ -92,6 +92,12 @@ export class DiagramRenderer {
    */
   screenOffset: Point;
   zoom: number;
+
+  // edit modes
+  // NOTE: we keep the edit mode separated like this
+  // becase we anticipate more complex interaction in the future
+  editMode: DIAGRAM_EDIT_MODE;
+  relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE;
 
   // UML specific shapes
   triangle: Point[];
@@ -186,11 +192,18 @@ export class DiagramRenderer {
   positionBeforeLastMove: Point;
 
   // functions to interact with diagram editor
-  onClassViewClick: (classView: ClassView) => void = noop();
+  onAddClassViewClick: (event: MouseEvent) => void = noop();
+  onClassViewDoubleClick: (classView: ClassView) => void = noop();
   onBackgroundDoubleClick: (event: MouseEvent) => void = noop();
   onAddClassPropertyForSelectedClass: (classView: ClassView) => void = noop();
 
   constructor(div: HTMLDivElement, diagram: Diagram) {
+    makeObservable(this, {
+      editMode: observable,
+      relationshipMode: observable,
+      changeMode: action,
+    });
+
     this.diagram = diagram;
 
     // Container and canvas
@@ -285,6 +298,7 @@ export class DiagramRenderer {
 
     // Preferences
     this.editMode = DIAGRAM_EDIT_MODE.LAYOUT;
+    this.relationshipMode = DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE;
     this.isReadOnly = false;
     this.screenPadding = 20;
     this.classViewSpaceX = 10;
@@ -324,19 +338,20 @@ export class DiagramRenderer {
 
   changeMode(
     editMode: DIAGRAM_EDIT_MODE,
-    relationshipMode: DIAGRAM_RELATIONSHIP_MODE,
+    relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE,
   ): void {
     switch (editMode) {
-      case DIAGRAM_EDIT_MODE.LAYOUT: {
-        if (relationshipMode !== DIAGRAM_RELATIONSHIP_MODE.NONE) {
+      case DIAGRAM_EDIT_MODE.LAYOUT:
+      case DIAGRAM_EDIT_MODE.ADD_CLASS: {
+        if (relationshipMode !== DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE) {
           throw new IllegalStateError(
-            `Can't change to layout mode: relationship mode should not be specified in layout mode`,
+            `Can't change to '${editMode}' mode: relationship mode should not be specified in layout mode`,
           );
         }
         break;
       }
       case DIAGRAM_EDIT_MODE.RELATIONSHIP: {
-        if (relationshipMode === DIAGRAM_RELATIONSHIP_MODE.NONE) {
+        if (relationshipMode === DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE) {
           throw new IllegalStateError(
             `Can't switch to relationship mode: relationship is missing`,
           );
@@ -350,10 +365,11 @@ export class DiagramRenderer {
     }
 
     this.editMode = editMode;
+    this.relationshipMode = relationshipMode;
 
     if (editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP) {
       switch (relationshipMode) {
-        case DIAGRAM_RELATIONSHIP_MODE.INHERITANCE: {
+        case DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE: {
           this.addRelationshipToDiagramFn = (
             startClassView: ClassView,
             targetClassView: ClassView,
@@ -379,7 +395,7 @@ export class DiagramRenderer {
           };
           break;
         }
-        case DIAGRAM_RELATIONSHIP_MODE.PROPERTY: {
+        case DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY: {
           this.addRelationshipToDiagramFn = (
             startClassView: ClassView,
             targetClassView: ClassView,
@@ -605,10 +621,18 @@ export class DiagramRenderer {
       );
       newClassView.setPosition(
         this.toModelCoordinate(
-          new Point(
-            absolutePosition ? absolutePosition.x - this.divPosition.x : 0,
-            absolutePosition ? absolutePosition.y - this.divPosition.y : 0,
-          ),
+          absolutePosition
+            ? new Point(
+                absolutePosition.x - this.divPosition.x,
+                absolutePosition.y - this.divPosition.y,
+              )
+            : // TODO: make sure this is the true center?
+              new Point(
+                this.virtualScreen.position.x +
+                  this.virtualScreen.rectangle.width / 2,
+                this.virtualScreen.position.y +
+                  this.virtualScreen.rectangle.height / 2,
+              ),
         ),
       );
       this.diagram.addClassView(newClassView);
@@ -1848,7 +1872,7 @@ export class DiagramRenderer {
       }
     }
 
-    // Add type view
+    // Separate the property currently being hovered on
     if (e.key === 'a') {
       if (this.mouseOverProperty) {
         if (this.mouseOverProperty.genericType.value.rawType instanceof Class) {
@@ -1882,6 +1906,14 @@ export class DiagramRenderer {
           );
           this.diagram.propertyViews.forEach((propertyView) =>
             propertyView.possiblyFlattenPath(),
+          );
+          break;
+        }
+        case DIAGRAM_EDIT_MODE.ADD_CLASS: {
+          this.onAddClassViewClick(e);
+          this.changeMode(
+            DIAGRAM_EDIT_MODE.LAYOUT,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           );
           break;
         }
@@ -1949,7 +1981,7 @@ export class DiagramRenderer {
             }
             this.changeMode(
               DIAGRAM_EDIT_MODE.LAYOUT,
-              DIAGRAM_RELATIONSHIP_MODE.NONE,
+              DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
             );
           }
           break;
@@ -2012,7 +2044,7 @@ export class DiagramRenderer {
     );
     // Click on a class view
     if (selectedClass) {
-      this.onClassViewClick(selectedClass);
+      this.onClassViewDoubleClick(selectedClass);
     }
     // Click outside of a classview
     if (!selectedClass) {
@@ -2184,7 +2216,7 @@ export class DiagramRenderer {
           if (!this.startClassView) {
             this.changeMode(
               DIAGRAM_EDIT_MODE.LAYOUT,
-              DIAGRAM_RELATIONSHIP_MODE.NONE,
+              DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
             );
           }
           break;

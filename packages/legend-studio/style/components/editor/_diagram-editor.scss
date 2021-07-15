@@ -18,7 +18,91 @@
 
 .diagram-editor {
   height: 100%;
+  width: 100%;
+  display: flex;
   position: relative;
+
+  &__tools {
+    @include flexVCenter;
+
+    flex-direction: column;
+    width: 4.4rem;
+    height: 100%;
+    background: var(--color-dark-grey-200);
+    padding: 0.5rem;
+    border-left: 0.1rem solid var(--color-dark-grey-85);
+
+    &__divider {
+      width: 100%;
+      border-radius: 0.1rem;
+      height: 0.2rem;
+      background: var(--color-dark-grey-300);
+      margin: 0.5rem 0;
+    }
+  }
+
+  &__tool {
+    @include flexCenter;
+
+    height: 3.4rem;
+    width: 3.4rem;
+    border-radius: 0.2rem;
+
+    &--active {
+      border-radius: 0.2rem;
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-blue-200);
+    }
+
+    &:hover {
+      svg {
+        color: var(--color-light-grey-100);
+      }
+    }
+
+    &:hover[disabled],
+    &[disabled] {
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    svg {
+      color: var(--color-light-grey-300);
+    }
+  }
+
+  &__icon {
+    &--layout {
+      font-size: 1.8rem;
+    }
+
+    &--add-class {
+      font-size: 1.8rem;
+    }
+
+    &--property {
+      font-size: 2.2rem;
+      transform: rotate(135deg);
+    }
+
+    &--association {
+      font-size: 2.2rem;
+    }
+
+    &--inheritance {
+      font-size: 1.8rem;
+      transform: rotate(90deg);
+    }
+
+    &--hotkey-info {
+      font-size: 2.2rem;
+    }
+  }
+
+  &__canvas {
+    width: calc(100% - 4.4rem);
+  }
 
   &__class-panel {
     border-left: 0.1rem solid var(--color-light-grey-400);
@@ -43,6 +127,44 @@
 
     &__close-btn {
       cursor: pointer;
+    }
+  }
+
+  &__hotkeys__dialog .modal__body {
+    padding: 3rem;
+  }
+
+  &__hotkey__groups {
+    height: 100%;
+    width: 100%;
+  }
+
+  &__hotkey__group {
+    @include flexVCenter;
+
+    padding: 0.5rem 0;
+  }
+
+  &__hotkey__annotation {
+    display: flex;
+    align-content: center;
+    justify-content: flex-end;
+    padding-right: 2rem;
+    width: 40rem;
+    color: var(--color-dark-grey-500);
+    font-weight: 500;
+  }
+
+  &__hotkey__keys {
+    .hotkey {
+      &__key {
+        color: var(--color-light-grey-400);
+        background: var(--color-dark-grey-200);
+      }
+
+      &__plus svg {
+        color: var(--color-light-grey-400);
+      }
     }
   }
 }
