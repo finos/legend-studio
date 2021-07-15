@@ -260,11 +260,6 @@ export const DiagramEditorClassCreator = observer(
 
 const DEFAULT_CLASS_PANEL_SIZE = 500;
 const CLASS_PANEL_SIZE_SNAP_THRESHOLD = 100;
-enum DIAGRAM_EDITOR_CLASS_PANEL_MODE {
-  CREATE_NEW_CLASS = 'CREATE_NEW_CLASS',
-  EDIT_CLASS = 'EDIT_CLASS',
-  NONE = 'NONE',
-}
 
 export const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -349,23 +344,163 @@ export const DiagramRendererHotkeyInfosModal = observer(
   },
 );
 
+const DiagramEditorToolPanel = observer(
+  (props: {
+    diagramEditorState: DiagramEditorState;
+    diagramRenderer: DiagramRenderer | undefined;
+  }) => {
+    const { diagramEditorState, diagramRenderer } = props;
+    const applicationStore = useApplicationStore();
+    const isReadOnly = diagramEditorState.isReadOnly;
+    const showDiagramRendererHokeysModal = (): void =>
+      diagramEditorState.setShowHotkeyInfosModal(true);
+    const hideDiagramRendererHokeysModal = (): void =>
+      diagramEditorState.setShowHotkeyInfosModal(false);
+
+    const switchToLayoutMode = (): void => {
+      if (diagramRenderer && !isReadOnly) {
+        diagramRenderer.changeMode(
+          DIAGRAM_EDIT_MODE.LAYOUT,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+        );
+      }
+    };
+
+    const switchToRelationshipPropertyMode = (): void => {
+      if (diagramRenderer && !isReadOnly) {
+        diagramRenderer.changeMode(
+          DIAGRAM_EDIT_MODE.RELATIONSHIP,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+        );
+      }
+    };
+
+    const switchToRelationshipAssociationMode = (): void => {
+      if (diagramRenderer && !isReadOnly) {
+        applicationStore.notifyUnsupportedFeature(`Create association`);
+        // diagramRenderer.changeMode(
+        //   DIAGRAM_EDIT_MODE.RELATIONSHIP,
+        //   DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
+        // );
+      }
+    };
+
+    const switchToRelationshipInheritanceMode = (): void => {
+      if (diagramRenderer && !isReadOnly) {
+        diagramRenderer.changeMode(
+          DIAGRAM_EDIT_MODE.RELATIONSHIP,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+        );
+      }
+    };
+
+    const addNewClassView = (): void => {
+      if (diagramRenderer && !isReadOnly) {
+        diagramRenderer.changeMode(
+          DIAGRAM_EDIT_MODE.ADD_CLASS,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+        );
+      }
+    };
+
+    return (
+      <div className="diagram-editor__tools">
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.LAYOUT,
+          })}
+          tabIndex={-1}
+          onClick={switchToLayoutMode}
+          title="View Tool"
+        >
+          <FiMove className="diagram-editor__icon--layout" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              diagramRenderer &&
+              diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+              diagramRenderer.relationshipMode ===
+                DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+          })}
+          tabIndex={-1}
+          title="Property Tool"
+          onClick={switchToRelationshipPropertyMode}
+        >
+          <FiMinus className="diagram-editor__icon--property" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              diagramRenderer &&
+              diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+              diagramRenderer.relationshipMode ===
+                DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+          })}
+          tabIndex={-1}
+          title="Inheritance Tool"
+          onClick={switchToRelationshipInheritanceMode}
+        >
+          <FiTriangle className="diagram-editor__icon--inheritance" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            // 'diagram-editor__tool--active':
+            //   diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+            //   diagramRenderer?.relationshipMode ===
+            //     DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
+          })}
+          tabIndex={-1}
+          title="Association Tool"
+          onClick={switchToRelationshipAssociationMode}
+        >
+          <IoResize className="diagram-editor__icon--association" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
+          })}
+          tabIndex={-1}
+          title="New Class..."
+          onClick={addNewClassView}
+        >
+          <FiPlusCircle className="diagram-editor__icon--add-class" />
+        </button>
+        <div className="diagram-editor__tools__divider" />
+        <button
+          className="diagram-editor__tool"
+          tabIndex={-1}
+          title="Show Hotkeys"
+          onClick={showDiagramRendererHokeysModal}
+        >
+          <FaRegKeyboard className="diagram-editor__icon--hotkey-info" />
+        </button>
+        <DiagramRendererHotkeyInfosModal
+          open={diagramEditorState.showHotkeyInfosModal}
+          onClose={hideDiagramRendererHokeysModal}
+        />
+      </div>
+    );
+  },
+);
+
+enum DIAGRAM_EDITOR_CLASS_PANEL_MODE {
+  CREATE_NEW_CLASS = 'CREATE_NEW_CLASS',
+  EDIT_CLASS = 'EDIT_CLASS',
+  NONE = 'NONE',
+}
+
 export const DiagramEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const defaultMultiplicity =
-    editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+  const multiplicityOne = editorStore.graphState.graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
   const diagramEditorState =
     editorStore.getCurrentEditorState(DiagramEditorState);
   const diagram = diagramEditorState.diagram;
   const isReadOnly = diagramEditorState.isReadOnly;
-  const [openDiagramRendererHokeysModal, setOpenDiagramRendererHokeysModal] =
-    useState(false);
-  const showDiagramRendererHokeysModal = (): void =>
-    setOpenDiagramRendererHokeysModal(true);
-  const hideDiagramRendererHokeysModal = (): void =>
-    setOpenDiagramRendererHokeysModal(false);
   const [diagramRenderer, setDiagramRenderer] = useState<DiagramRenderer>();
   const [selectedClassEditor, setSelectedClassEditor] = useState<
     ClassEditorState | undefined
@@ -476,7 +611,7 @@ export const DiagramEditor = observer(() => {
         selectedClassEditor.class.addProperty(
           new Property(
             `newProperty_${selectedClassEditor.class.properties.length}`,
-            defaultMultiplicity,
+            multiplicityOne,
             GenericTypeExplicitReference.create(
               new GenericType(cv.class.value),
             ),
@@ -515,52 +650,6 @@ export const DiagramEditor = observer(() => {
         packageTree={treeData}
       />
     );
-  };
-
-  const switchToLayoutMode = (): void => {
-    if (diagramRenderer && !isReadOnly) {
-      diagramRenderer.changeMode(
-        DIAGRAM_EDIT_MODE.LAYOUT,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    }
-  };
-
-  const switchToRelationshipPropertyMode = (): void => {
-    if (diagramRenderer && !isReadOnly) {
-      diagramRenderer.changeMode(
-        DIAGRAM_EDIT_MODE.RELATIONSHIP,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
-      );
-    }
-  };
-
-  const switchToRelationshipAssociationMode = (): void => {
-    if (diagramRenderer && !isReadOnly) {
-      applicationStore.notifyUnsupportedFeature(`Create association`);
-      // diagramRenderer.changeMode(
-      //   DIAGRAM_EDIT_MODE.RELATIONSHIP,
-      //   DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
-      // );
-    }
-  };
-
-  const switchToRelationshipInheritanceMode = (): void => {
-    if (diagramRenderer && !isReadOnly) {
-      diagramRenderer.changeMode(
-        DIAGRAM_EDIT_MODE.RELATIONSHIP,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
-      );
-    }
-  };
-
-  const addNewClassView = (): void => {
-    if (diagramRenderer && !isReadOnly) {
-      diagramRenderer.changeMode(
-        DIAGRAM_EDIT_MODE.ADD_CLASS,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    }
   };
 
   // Drag and Drop
@@ -607,80 +696,10 @@ export const DiagramEditor = observer(() => {
       maxSize={-300}
     >
       <div className="diagram-editor">
-        <div className="diagram-editor__tools">
-          <button
-            className={clsx('diagram-editor__tool', {
-              'diagram-editor__tool--active':
-                diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.LAYOUT,
-            })}
-            tabIndex={-1}
-            onClick={switchToLayoutMode}
-            title="View Tool"
-          >
-            <FiMove className="diagram-editor__icon--layout" />
-          </button>
-          <button
-            className={clsx('diagram-editor__tool', {
-              'diagram-editor__tool--active':
-                diagramRenderer &&
-                diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
-                diagramRenderer.relationshipMode ===
-                  DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
-            })}
-            tabIndex={-1}
-            title="Property Tool"
-            onClick={switchToRelationshipPropertyMode}
-          >
-            <FiMinus className="diagram-editor__icon--property" />
-          </button>
-          <button
-            className={clsx('diagram-editor__tool', {
-              'diagram-editor__tool--active':
-                diagramRenderer &&
-                diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
-                diagramRenderer.relationshipMode ===
-                  DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
-            })}
-            tabIndex={-1}
-            title="Inheritance Tool"
-            onClick={switchToRelationshipInheritanceMode}
-          >
-            <FiTriangle className="diagram-editor__icon--inheritance" />
-          </button>
-          <button
-            className={clsx('diagram-editor__tool', {
-              // 'diagram-editor__tool--active':
-              //   diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
-              //   diagramRenderer?.relationshipMode ===
-              //     DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
-            })}
-            tabIndex={-1}
-            title="Association Tool"
-            onClick={switchToRelationshipAssociationMode}
-          >
-            <IoResize className="diagram-editor__icon--association" />
-          </button>
-          <button
-            className={clsx('diagram-editor__tool', {
-              'diagram-editor__tool--active':
-                diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
-            })}
-            tabIndex={-1}
-            title="New Class..."
-            onClick={addNewClassView}
-          >
-            <FiPlusCircle className="diagram-editor__icon--add-class" />
-          </button>
-          <div className="diagram-editor__tools__divider" />
-          <button
-            className="diagram-editor__tool"
-            tabIndex={-1}
-            title="Show Hotkeys"
-            onClick={showDiagramRendererHokeysModal}
-          >
-            <FaRegKeyboard className="diagram-editor__icon--hotkey-info" />
-          </button>
-        </div>
+        <DiagramEditorToolPanel
+          diagramEditorState={diagramEditorState}
+          diagramRenderer={diagramRenderer}
+        />
         <div
           ref={canvasRef}
           className={clsx('diagram-canvas diagram-editor__canvas', {
@@ -690,10 +709,6 @@ export const DiagramEditor = observer(() => {
           })}
           tabIndex={0}
           onContextMenu={(event): void => event.preventDefault()}
-        />
-        <DiagramRendererHotkeyInfosModal
-          open={openDiagramRendererHokeysModal}
-          onClose={hideDiagramRendererHokeysModal}
         />
       </div>
       <div className="panel diagram-editor__class-panel">

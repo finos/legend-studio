@@ -14,19 +14,32 @@
  * limitations under the License.
  */
 
-import { computed, action, makeObservable } from 'mobx';
+import { computed, action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
+import type { DiagramRenderer } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 
 export class DiagramEditorState extends ElementEditorState {
+  _diagramRenderer?: DiagramRenderer;
+  showHotkeyInfosModal = false;
+
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
+      _diagramRenderer: observable,
+      showHotkeyInfosModal: observable,
+      diagramRenderer: computed,
       diagram: computed,
+      isDiagramRendererInitialized: computed,
+      setShowHotkeyInfosModal: action,
+      setDiagramRenderer: action,
       reprocess: action,
     });
   }
@@ -37,6 +50,25 @@ export class DiagramEditorState extends ElementEditorState {
       Diagram,
       'Element inside diagram editor state must be a diagram',
     );
+  }
+
+  get diagramRenderer(): DiagramRenderer {
+    return guaranteeNonNullable(
+      this._diagramRenderer,
+      `Diagram renderer must be initialized (this is likely caused by calling this method at the wrong place)`,
+    );
+  }
+
+  get isDiagramRendererInitialized(): boolean {
+    return Boolean(this._diagramRenderer);
+  }
+
+  setDiagramRenderer(val: DiagramRenderer): void {
+    this._diagramRenderer = val;
+  }
+
+  setShowHotkeyInfosModal(val: boolean): void {
+    this.showHotkeyInfosModal = val;
   }
 
   reprocess(
