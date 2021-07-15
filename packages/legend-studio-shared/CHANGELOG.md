@@ -1,5 +1,11 @@
 # @finos/legend-studio-shared
 
+## 0.0.20
+
+### Patch Changes
+
+- [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! -
+
 ## 0.0.19
 
 ## 0.0.18

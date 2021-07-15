@@ -1,5 +1,24 @@
 # @finos/legend-studio
 
+## 0.1.18
+
+### Patch Changes
+
+- [#346](https://github.com/finos/legend-studio/pull/346) [`d545580`](https://github.com/finos/legend-studio/commit/d5455804b7895947dc167834c87300267e1cdde0) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add text support for `INHERITANCE` operation class mapping.
+
+* [#290](https://github.com/finos/legend-studio/pull/290) [`cb0ff2b`](https://github.com/finos/legend-studio/commit/cb0ff2b7aecfaf2a89d4ddc98e04854c25624ce8) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add database builder in the relational connection editor to support generating a database from a connection specification.
+
+- [#340](https://github.com/finos/legend-studio/pull/340) [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb) Thanks [@akphi](https://github.com/akphi)! - Improve diagram editor modelling capabilities (related to https://github.com/finos/legend-studio/issues/300). In diagram editor, users now have can see all supported hotkeys and have the tools to create new classes, properties, inheritance relationships, etc. All of this is made possible thanks to @pierredebelen for contributing to the core diagram renderer in https://github.com/finos/legend-studio/pull/338.
+
+* [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! -
+
+- [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! - Add support for `BigQuery` connection.
+
+- Updated dependencies [[`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb), [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb)]:
+  - @finos/legend-studio-components@0.0.24
+  - @finos/legend-studio-network@0.0.22
+  - @finos/legend-studio-shared@0.0.20
+
 ## 0.1.17
 
 ### Patch Changes
