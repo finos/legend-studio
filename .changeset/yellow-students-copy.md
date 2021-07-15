@@ -8,7 +8,7 @@
 '@finos/legend-studio-manual-tests': patch
 '@finos/legend-studio-network': patch
 '@finos/legend-studio-plugin-management': patch
-'@finos/legend-studio-plugin-query-builder': patch
+'@finos/legend-studio-preset-query-builder': patch
 '@finos/legend-studio-plugin-tracer-zipkin': patch
 '@finos/legend-studio-preset-dsl-text': patch
 '@finos/legend-studio-preset-dummy': patch
