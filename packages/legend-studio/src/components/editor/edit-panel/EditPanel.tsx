@@ -53,7 +53,7 @@ import { ElementNativeView } from './element-generation-editor/ElementNativeView
 import { ServiceEditor } from './service-editor/ServiceEditor';
 import { PackageableRuntimeEditor } from './RuntimeEditor';
 import { PackageableRuntimeEditorState } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
-import { PackageableConnectionEditorState } from '../../../stores/editor-state/element-editor-state/ConnectionEditorState';
+import { PackageableConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { PackageableConnectionEditor } from './connection-editor/ConnectionEditor';
 import { FileGenerationEditorState } from '../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
 import { FileGenerationEditor } from './element-generation-editor/FileGenerationEditor';

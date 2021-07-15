@@ -23,6 +23,8 @@ import {
   FaShapes,
   FaFileCode,
   FaDatabase,
+  FaServer,
+  FaTable,
   FaCheck,
 } from 'react-icons/fa';
 import { MdSettingsEthernet, MdLink } from 'react-icons/md';
@@ -84,6 +86,19 @@ export const DatabaseIcon: React.FC = () => (
     <FaDatabase />
   </div>
 );
+
+export const SchemaIcon: React.FC = () => (
+  <div className="icon icon--schema color--schema">
+    <FaServer />
+  </div>
+);
+
+export const TableIcon: React.FC = () => (
+  <div className="icon icon--table color--table">
+    <FaTable />
+  </div>
+);
+
 export const TableJoinIcon: React.FC = () => (
   <div className="icon icon--table-join color--primitive">@</div>
 );
