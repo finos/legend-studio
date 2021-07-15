@@ -127,10 +127,7 @@ const QueryBuilderExplorerPreviewDataModal = observer(
             )}
           </div>
           <div className="modal__footer">
-            <button
-              className="btn execution-plan-viewer__close-btn"
-              onClick={close}
-            >
+            <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
           </div>

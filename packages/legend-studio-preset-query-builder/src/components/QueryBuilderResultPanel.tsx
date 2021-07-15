@@ -197,7 +197,7 @@ export const QueryBuilderResultPanel = observer(
             </div>
             <div className="modal__footer">
               <button
-                className="btn execution-plan-viewer__close-btn"
+                className="btn modal__footer__close-btn"
                 onClick={(): void => resultState.setExecutionPlan(undefined)}
               >
                 Close

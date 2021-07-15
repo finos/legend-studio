@@ -112,7 +112,7 @@ export const QueryBuilderPropertyExpressionEditor = observer(
           </div>
           <div className="modal__footer">
             <button
-              className="btn execution-plan-viewer__close-btn"
+              className="btn modal__footer__close-btn"
               onClick={handleClose}
             >
               Done

@@ -44,19 +44,16 @@ import { capitalize, prettyCONSTName } from '@finos/legend-studio-shared';
 import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { DatabaseType } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import {
-  DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
-  GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  TestDatabaseAuthenticationStrategy,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
-  BigQueryDatasourceSpecification,
   StaticDatasourceSpecification,
+  BigQueryDatasourceSpecification,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { runInAction } from 'mobx';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
@@ -595,10 +592,6 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
   },
 );
 
-const DefaultH2AuthenticationStrategyEditor = observer(
-  (props: { authSpec: DefaultH2AuthenticationStrategy }) => null,
-);
-
 const SnowflakePublicAuthenticationStrategyEditor = observer(
   (props: {
     authSpec: SnowflakePublicAuthenticationStrategy;
@@ -634,17 +627,6 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
       </>
     );
   },
-);
-
-const GCPApplicationDefaultCredentialsAuthenticationStrategyEditor = observer(
-  (props: {
-    authSpec: GCPApplicationDefaultCredentialsAuthenticationStrategy;
-    isReadOnly: boolean;
-  }) => <></>,
-);
-
-const TestDatabaseAuthenticationStrategyEditor = observer(
-  (props: { authSpec: TestDatabaseAuthenticationStrategy }) => null,
 );
 
 const OAuthAuthenticationStrategyEditor = observer(
@@ -1126,19 +1108,6 @@ const renderAuthenticationStrategyEditor = (
         isReadOnly={isReadOnly}
       />
     );
-  } else if (
-    authSpec instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
-  ) {
-    return (
-      <GCPApplicationDefaultCredentialsAuthenticationStrategyEditor
-        authSpec={authSpec}
-        isReadOnly={isReadOnly}
-      />
-    );
-  } else if (authSpec instanceof TestDatabaseAuthenticationStrategy) {
-    return <TestDatabaseAuthenticationStrategyEditor authSpec={authSpec} />;
-  } else if (authSpec instanceof DefaultH2AuthenticationStrategy) {
-    return <DefaultH2AuthenticationStrategyEditor authSpec={authSpec} />;
   } else if (authSpec instanceof OAuthAuthenticationStrategy) {
     return (
       <OAuthAuthenticationStrategyEditor
