@@ -69,9 +69,7 @@ export abstract class PropertyReference
     return [
       CORE_HASH_STRUCTURE.PROPERTY_POINTER,
       this.value.name,
-      this.value.owner instanceof Association
-        ? ''
-        : this.ownerReference.valueForSerialization,
+      this.ownerReference.valueForSerialization,
     ]
       .map(hashString)
       .join(',');
@@ -81,18 +79,22 @@ export abstract class PropertyReference
 export class PropertyExplicitReference extends PropertyReference {
   override readonly ownerReference: PackageableElementExplicitReference<Class>;
 
-  private constructor(value: AbstractProperty) {
+  private constructor(value: AbstractProperty, shouldInferPath?: boolean) {
     const ownerReference = PackageableElementExplicitReference.create(
       value.owner instanceof Association
         ? value.owner.getPropertyAssociatedClass(value)
         : value.owner,
+      shouldInferPath,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;
   }
 
-  static create(property: AbstractProperty): PropertyExplicitReference {
-    return new PropertyExplicitReference(property);
+  static create(
+    property: AbstractProperty,
+    shouldInferPath = true,
+  ): PropertyExplicitReference {
+    return new PropertyExplicitReference(property, shouldInferPath);
   }
 }
 

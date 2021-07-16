@@ -45,22 +45,25 @@ export abstract class PackageableElementReference<
 export class PackageableElementExplicitReference<
   T extends PackageableElement,
 > extends PackageableElementReference<T> {
-  private constructor(value: T) {
+  shouldInferPath?: boolean;
+  private constructor(value: T, shouldInferPath?: boolean) {
     super(value);
 
     makeObservable(this, {
       valueForSerialization: computed,
     });
+    this.shouldInferPath = shouldInferPath;
   }
 
   static create<V extends PackageableElement>(
     value: V,
+    shouldInferPath = true,
   ): PackageableElementExplicitReference<V> {
-    return new PackageableElementExplicitReference(value);
+    return new PackageableElementExplicitReference(value, shouldInferPath);
   }
 
   get valueForSerialization(): string {
-    return this.value.path;
+    return this.shouldInferPath ? this.value.path : '';
   }
 }
 

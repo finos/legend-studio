@@ -82,6 +82,7 @@ import {
 } from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
 import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext';
+import { RelationalAssociationImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/RelationalAssociationImplementation';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -451,7 +452,14 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             ),
             property,
           )
-        : PropertyExplicitReference.create(property),
+        : PropertyExplicitReference.create(
+            property,
+            // Don't infer path for associationMappings inside Mappings (they don't have classes)
+            !(
+              this.immediateParent instanceof
+              RelationalAssociationImplementation
+            ),
+          ),
       sourceSetImplementation,
       targetSetImplementation,
     );
