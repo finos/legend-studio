@@ -298,7 +298,7 @@ export const DiagramRendererHotkeyInfosModal = observer(
             <div className="diagram-editor__hotkey__groups">
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Remove selected element
+                  Remove selected element(s)
                 </div>
                 <div className="diagram-editor__hotkey__keys">
                   <div className="hotkey__key">Delete</div>
@@ -306,7 +306,7 @@ export const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for properties
+                  Toggle display for properties of selected element(s)
                 </div>
                 <div className="diagram-editor__hotkey__keys">
                   <div className="hotkey__key">h</div>
@@ -314,7 +314,7 @@ export const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for stereotypes
+                  Toggle display for stereotypes of selected element(s)
                 </div>
                 <div className="diagram-editor__hotkey__keys">
                   <div className="hotkey__key">s</div>
@@ -322,7 +322,7 @@ export const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for tagged values
+                  Toggle display for tagged values of selected element(s)
                 </div>
                 <div className="diagram-editor__hotkey__keys">
                   <div className="hotkey__key">t</div>
