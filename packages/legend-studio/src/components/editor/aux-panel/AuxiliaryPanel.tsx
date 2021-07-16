@@ -30,8 +30,9 @@ export const AuxiliaryPanel = observer(() => {
     (mode: AUX_PANEL_MODE): (() => void) =>
     (): void =>
       editorStore.setActiveAuxPanelMode(mode);
-  const closePanel = (): void => editorStore.toggleAuxPanel();
-  const toggleExpandAuxPanel = (): void => editorStore.toggleExpandAuxPanel();
+  const closePanel = (): void => editorStore.auxPanelDisplayState.toggle();
+  const toggleExpandAuxPanel = (): void =>
+    editorStore.auxPanelDisplayState.toggleMaximize();
 
   const auxTabMap: {
     [key in AUX_PANEL_MODE]: {
@@ -102,7 +103,7 @@ export const AuxiliaryPanel = observer(() => {
             tabIndex={-1}
             title={'Toggle expand/collapse'}
           >
-            {editorStore.isAuxPanelMaximized ? (
+            {editorStore.auxPanelDisplayState.isMaximized ? (
               <GoChevronDown />
             ) : (
               <GoChevronUp />

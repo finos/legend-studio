@@ -16,6 +16,7 @@
 
 export * from './utils/ComponentUtils';
 export * from './utils/StubTransition';
+export * from './utils/PanelDisplayState';
 
 export * from './components/Icon';
 export * from './components/LegendLogo';

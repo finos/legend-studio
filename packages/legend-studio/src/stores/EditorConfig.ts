@@ -23,12 +23,6 @@ export enum EDITOR_MODE {
 
 export const TAB_SIZE = 2;
 
-export const SIDE_BAR_RESIZE_SNAP_THRESHOLD = 150;
-export const DEFAULT_SIDE_BAR_SIZE = 300;
-
-export const AUX_PANEL_RESIZE_SNAP_THRESHOLD = 50;
-export const DEFAULT_AUX_PANEL_SIZE = 300;
-
 export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
 
 export enum HOTKEY {

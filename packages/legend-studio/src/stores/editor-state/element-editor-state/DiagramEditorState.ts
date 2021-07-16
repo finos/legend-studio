@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  computed,
-  action,
-  makeObservable,
-  observable,
-  makeAutoObservable,
-} from 'mobx';
+import { computed, action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import {
   guaranteeNonNullable,
@@ -40,6 +34,7 @@ import {
 import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
 import type { PackageTreeNodeData } from '../../shared/TreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';
+import { PanelDisplayState } from '@finos/legend-studio-components';
 import type { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
 import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
 import { TYPICAL_MULTIPLICITY_TYPE } from '../../../models/MetaModelConst';
@@ -115,66 +110,6 @@ export class DiagramEditorNewClassSidePanelState extends DiagramEditorSidePanelS
 
   setPackageTreeData(val: TreeData<PackageTreeNodeData>): void {
     this.packageTreeData = val;
-  }
-}
-
-class PanelDisplayState {
-  size: number;
-  sizeBeforeHidden: number;
-  defaultSize: number;
-  snapSize?: number;
-
-  constructor(size: {
-    initial: number;
-    default: number;
-    snap: number | undefined;
-  }) {
-    this.size = size.initial;
-    this.sizeBeforeHidden = size.default;
-    this.defaultSize = size.default;
-    this.snapSize = size.snap;
-
-    makeAutoObservable(this, {
-      isOpen: computed,
-      setSize: action,
-      toggle: action,
-      open: action,
-      close: action,
-    });
-  }
-
-  get isOpen(): boolean {
-    return this.size !== 0;
-  }
-
-  setSize(val: number): void {
-    if (this.snapSize !== undefined) {
-      this.size =
-        val < this.snapSize ? (this.size > 0 ? 0 : this.defaultSize) : val;
-    } else {
-      this.size = val;
-    }
-  }
-
-  open(): void {
-    if (this.size === 0) {
-      this.size = this.sizeBeforeHidden;
-    }
-  }
-
-  close(): void {
-    if (this.size !== 0) {
-      this.sizeBeforeHidden = this.size || this.defaultSize;
-      this.size = 0;
-    }
-  }
-
-  toggle(): void {
-    if (this.size === 0) {
-      this.open();
-    } else {
-      this.close();
-    }
   }
 }
 
