@@ -22,13 +22,11 @@ import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import {
-  FaTimes,
   FaChevronDown,
   FaChevronRight,
   FaFolder,
   FaRegKeyboard,
 } from 'react-icons/fa';
-import SplitPane from 'react-split-pane';
 import { observer } from 'mobx-react-lite';
 import {
   DiagramRenderer,
@@ -56,10 +54,18 @@ import { Class } from '../../../../models/metamodels/pure/model/packageableEleme
 import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
 import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { FiMinus, FiMove, FiPlusCircle, FiTriangle } from 'react-icons/fi';
+import {
+  FiMinus,
+  FiMove,
+  FiPlusCircle,
+  FiSidebar,
+  FiTriangle,
+} from 'react-icons/fi';
 import { IoResize } from 'react-icons/io5';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { Dialog } from '@material-ui/core';
+import type { HandlerProps } from 'react-reflex';
+import { ReflexContainer, ReflexSplitter, ReflexElement } from 'react-reflex';
 
 const PackageTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -270,9 +276,6 @@ const DiagramEditorClassCreator = observer(
     );
   },
 );
-
-const DEFAULT_CLASS_PANEL_SIZE = 500;
-const CLASS_PANEL_SIZE_SNAP_THRESHOLD = 100;
 
 export const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -497,171 +500,181 @@ const DiagramEditorToolPanel = observer(
   },
 );
 
-export const DiagramEditor = observer(() => {
+const DiagramEditorOverlay = observer(() => {
   const editorStore = useEditorStore();
   const diagramEditorState =
     editorStore.getCurrentEditorState(DiagramEditorState);
-  const isReadOnly = diagramEditorState.isReadOnly;
   const sidePanelState = diagramEditorState.sidePanelState;
-  const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Resize
-  const { width, height } = useResizeDetector<HTMLDivElement>({
-    refreshMode: 'debounce',
-    refreshRate: 50,
-    targetRef: canvasRef,
-  });
-
-  // Side Panel Size
-  const [sidePanelSize, setSidePanelSize] = useState(0);
-  const resizeClassPanel = (newSize: number | undefined): void => {
-    if (newSize !== undefined) {
-      setSidePanelSize(
-        newSize < CLASS_PANEL_SIZE_SNAP_THRESHOLD
-          ? sidePanelSize > 0
-            ? 0
-            : DEFAULT_CLASS_PANEL_SIZE
-          : newSize,
-      );
-    }
-  };
-  const closeSidePanel = (): void => {
-    setSidePanelSize(0);
-    diagramEditorState.setSidePanelState(undefined);
-  };
-  const showSidePanel = useCallback(() => {
-    if (!sidePanelSize) {
-      setSidePanelSize(DEFAULT_CLASS_PANEL_SIZE);
-    }
-  }, [sidePanelSize]);
+  const resizeSidePanel = (handleProps: HandlerProps): void =>
+    diagramEditorState.sidePanelDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
+    );
 
   const redrawOnClassChange = useCallback((): void => {
     diagramEditorState.diagramRenderer.start();
   }, [diagramEditorState]);
 
-  useEffect(() => {
-    if (canvasRef.current) {
-      const renderer = new DiagramRenderer(
-        canvasRef.current,
-        diagramEditorState.diagram,
-      );
-      diagramEditorState.setDiagramRenderer(renderer);
-      diagramEditorState.setupDiagramRenderer();
-      renderer.start();
-      renderer.autoRecenter();
-    }
-  }, [diagramEditorState]);
-
-  useEffect(() => {
-    if (diagramEditorState.isDiagramRendererInitialized) {
-      diagramEditorState.diagramRenderer.refresh();
-    }
-  }, [diagramEditorState, width, height]);
-
-  useEffect(() => {
-    if (diagramEditorState.isDiagramRendererInitialized) {
-      diagramEditorState.diagramRenderer.setIsReadOnly(isReadOnly);
-    }
-  }, [diagramEditorState, isReadOnly]);
-
-  // Drag and Drop
-  const handleDrop = useCallback(
-    (item: ElementDragSource, monitor: DropTargetMonitor): void => {
-      if (!isReadOnly) {
-        if (item instanceof ElementDragSource) {
-          if (item.data.packageableElement instanceof Class) {
-            const dropPosition = monitor.getSourceClientOffset();
-            diagramEditorState.diagramRenderer.addClassView(
-              item.data.packageableElement,
-              dropPosition
-                ? new Point(dropPosition.x, dropPosition.y)
-                : undefined,
-            );
-          }
-        }
-      }
-    },
-    [diagramEditorState, isReadOnly],
-  );
-  const [, dropConnector] = useDrop(
-    () => ({
-      accept: CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-      drop: (item: ElementDragSource, monitor): void =>
-        handleDrop(item, monitor),
-    }),
-    [handleDrop],
-  );
-  dropConnector(canvasRef);
-
   return (
-    <SplitPane
-      split="vertical"
-      size={sidePanelSize}
-      primary="second"
-      onDragFinished={resizeClassPanel}
-      defaultSize={0}
-      minSize={0}
-      maxSize={-300}
-    >
-      <div className="diagram-editor">
-        {diagramEditorState.isDiagramRendererInitialized && (
-          <DiagramEditorToolPanel diagramEditorState={diagramEditorState} />
-        )}
-        <div
-          ref={canvasRef}
-          className={clsx('diagram-canvas diagram-editor__canvas', {
-            'diagram-editor__canvas--with-cursor--crosshair':
-              diagramEditorState.isDiagramRendererInitialized &&
-              (diagramEditorState.diagramRenderer.editMode ===
-                DIAGRAM_EDIT_MODE.RELATIONSHIP ||
-                diagramEditorState.diagramRenderer.editMode ===
-                  DIAGRAM_EDIT_MODE.ADD_CLASS),
-          })}
-          tabIndex={0}
-          onContextMenu={(event): void => event.preventDefault()}
-        />
-      </div>
-      <div className="panel diagram-editor__side-panel">
-        <div className="panel__header diagram-editor__side-panel__header">
-          <button
-            className="diagram-editor__side-panel__close-btn"
-            onClick={closeSidePanel}
-            tabIndex={-1}
-            title="Close"
-          >
-            <FaTimes />
-          </button>
-        </div>
-        <div className="panel__content diagram-editor__side-panel__content">
-          {sidePanelState instanceof DiagramEditorNewClassSidePanelState && (
-            <DiagramEditorClassCreator newClassEditorState={sidePanelState} />
-          )}
-          {sidePanelState instanceof DiagramEditorClassEditorSidePanelState && (
-            <ClassFormEditor
-              _class={sidePanelState.classEditorState.class}
-              editorState={sidePanelState.classEditorState}
-              onHashChange={redrawOnClassChange}
-            />
-          )}
-          {/* {classViewerMode ===
-            DIAGRAM_EDITOR_CLASS_PANEL_MODE.CREATE_NEW_CLASS &&
-            createNewClassEvent &&
-            renderNewClassPanel(createNewClassEvent)} */}
-          {/* {classViewerMode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS &&
-            selectedClassEditor && (
+    <ReflexContainer className="diagram-editor__overlay" orientation="vertical">
+      <ReflexElement direction={1}>
+        <div className="diagram-editor__view-finder" />
+      </ReflexElement>
+      <ReflexSplitter className="diagram-editor__overlay__panel-resizer" />
+      <ReflexElement
+        className="diagram-editor__overlay__panel"
+        flex={0}
+        size={diagramEditorState.sidePanelDisplayState.size}
+        direction={-1}
+        onStopResize={resizeSidePanel}
+      >
+        <div className="panel diagram-editor__side-panel">
+          <div className="panel__header diagram-editor__side-panel__header"></div>
+          <div className="panel__content diagram-editor__side-panel__content">
+            {sidePanelState instanceof DiagramEditorNewClassSidePanelState && (
+              <DiagramEditorClassCreator newClassEditorState={sidePanelState} />
+            )}
+            {sidePanelState instanceof
+              DiagramEditorClassEditorSidePanelState && (
               <ClassFormEditor
-                _class={selectedClassEditor.class}
-                editorState={selectedClassEditor}
+                _class={sidePanelState.classEditorState.class}
+                editorState={sidePanelState.classEditorState}
                 onHashChange={redrawOnClassChange}
               />
-            )} */}
-          {/* {classViewerMode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE && (
-            <div className="diagram-editor__side-panel__content__editor--empty">
-              Double click on a class on diagram to show it here
-            </div>
-          )} */}
+            )}
+          </div>
+        </div>
+      </ReflexElement>
+    </ReflexContainer>
+  );
+});
+
+export const DiagramEditorDiagramCanvas = observer(
+  (
+    props: {
+      diagramEditorState: DiagramEditorState;
+    },
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const { diagramEditorState } = props;
+    const diagramCanvasRef = ref as React.MutableRefObject<HTMLDivElement>;
+    const isReadOnly = diagramEditorState.isReadOnly;
+
+    const { width, height } = useResizeDetector<HTMLDivElement>({
+      refreshMode: 'debounce',
+      refreshRate: 50,
+      targetRef: diagramCanvasRef,
+    });
+
+    useEffect(() => {
+      if (diagramCanvasRef.current) {
+        const renderer = new DiagramRenderer(
+          diagramCanvasRef.current,
+          diagramEditorState.diagram,
+        );
+        diagramEditorState.setDiagramRenderer(renderer);
+        diagramEditorState.setupDiagramRenderer();
+        renderer.start();
+        renderer.autoRecenter();
+      }
+    }, [diagramCanvasRef, diagramEditorState]);
+
+    useEffect(() => {
+      if (diagramEditorState.isDiagramRendererInitialized) {
+        diagramEditorState.diagramRenderer.refresh();
+      }
+    }, [diagramEditorState, width, height]);
+
+    // Drag and Drop
+    const handleDrop = useCallback(
+      (item: ElementDragSource, monitor: DropTargetMonitor): void => {
+        if (!isReadOnly) {
+          if (item instanceof ElementDragSource) {
+            if (item.data.packageableElement instanceof Class) {
+              const dropPosition = monitor.getSourceClientOffset();
+              diagramEditorState.diagramRenderer.addClassView(
+                item.data.packageableElement,
+                dropPosition
+                  ? new Point(dropPosition.x, dropPosition.y)
+                  : undefined,
+              );
+            }
+          }
+        }
+      },
+      [diagramEditorState, isReadOnly],
+    );
+    const [, dropConnector] = useDrop(
+      () => ({
+        accept: CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
+        drop: (item: ElementDragSource, monitor): void =>
+          handleDrop(item, monitor),
+      }),
+      [handleDrop],
+    );
+    dropConnector(diagramCanvasRef);
+
+    return (
+      <div
+        ref={diagramCanvasRef}
+        // TODO: do something better with cursor, this is very rudimentary
+        className={clsx('diagram-canvas diagram-editor__canvas', {
+          'diagram-editor__canvas--with-cursor--crosshair':
+            diagramEditorState.isDiagramRendererInitialized &&
+            (diagramEditorState.diagramRenderer.editMode ===
+              DIAGRAM_EDIT_MODE.RELATIONSHIP ||
+              diagramEditorState.diagramRenderer.editMode ===
+                DIAGRAM_EDIT_MODE.ADD_CLASS),
+        })}
+        tabIndex={0}
+        onContextMenu={(event): void => event.preventDefault()}
+      />
+    );
+  },
+  { forwardRef: true },
+);
+
+export const DiagramEditor = observer(() => {
+  const editorStore = useEditorStore();
+  const diagramEditorState =
+    editorStore.getCurrentEditorState(DiagramEditorState);
+  const diagramCanvasRef = useRef<HTMLDivElement>(null);
+
+  const toggleSidePanel = (): void =>
+    diagramEditorState.sidePanelDisplayState.toggle();
+
+  return (
+    <div className="diagram-editor">
+      <div className="diagram-editor__header">
+        {diagramEditorState.isDiagramRendererInitialized && (
+          <div className="diagram-editor__header__actions">
+            <button
+              className={clsx('diagram-editor__header__action', {
+                'diagram-editor__header__action--active':
+                  diagramEditorState.sidePanelDisplayState.isOpen,
+              })}
+              tabIndex={-1}
+              onClick={toggleSidePanel}
+            >
+              <FiSidebar className="diagram-editor__icon--sidebar" />
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="diagram-editor__content">
+        {diagramEditorState.isDiagramRendererInitialized && (
+          <DiagramEditorOverlay />
+        )}
+        <div className="diagram-editor__stage">
+          {diagramEditorState.isDiagramRendererInitialized && (
+            <DiagramEditorToolPanel diagramEditorState={diagramEditorState} />
+          )}
+          <DiagramEditorDiagramCanvas
+            diagramEditorState={diagramEditorState}
+            ref={diagramCanvasRef}
+          />
         </div>
       </div>
-    </SplitPane>
+    </div>
   );
 });

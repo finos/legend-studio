@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { computed, action, makeObservable, observable } from 'mobx';
+import {
+  computed,
+  action,
+  makeObservable,
+  observable,
+  makeAutoObservable,
+} from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import {
   guaranteeNonNullable,
@@ -112,9 +118,74 @@ export class DiagramEditorNewClassSidePanelState extends DiagramEditorSidePanelS
   }
 }
 
+class PanelDisplayState {
+  size: number;
+  sizeBeforeHidden: number;
+  defaultSize: number;
+  snapSize?: number;
+
+  constructor(size: {
+    initial: number;
+    default: number;
+    snap: number | undefined;
+  }) {
+    this.size = size.initial;
+    this.sizeBeforeHidden = size.default;
+    this.defaultSize = size.default;
+    this.snapSize = size.snap;
+
+    makeAutoObservable(this, {
+      isOpen: computed,
+      setSize: action,
+      toggle: action,
+      open: action,
+      close: action,
+    });
+  }
+
+  get isOpen(): boolean {
+    return this.size !== 0;
+  }
+
+  setSize(val: number): void {
+    if (this.snapSize !== undefined) {
+      this.size =
+        val < this.snapSize ? (this.size > 0 ? 0 : this.defaultSize) : val;
+    } else {
+      this.size = val;
+    }
+  }
+
+  open(): void {
+    if (this.size === 0) {
+      this.size = this.sizeBeforeHidden;
+    }
+  }
+
+  close(): void {
+    if (this.size !== 0) {
+      this.sizeBeforeHidden = this.size || this.defaultSize;
+      this.size = 0;
+    }
+  }
+
+  toggle(): void {
+    if (this.size === 0) {
+      this.open();
+    } else {
+      this.close();
+    }
+  }
+}
+
 export class DiagramEditorState extends ElementEditorState {
   _diagramRenderer?: DiagramRenderer;
   showHotkeyInfosModal = false;
+  sidePanelDisplayState = new PanelDisplayState({
+    initial: 0,
+    default: 500,
+    snap: 100,
+  });
   sidePanelState?: DiagramEditorSidePanelState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -123,6 +194,7 @@ export class DiagramEditorState extends ElementEditorState {
     makeObservable(this, {
       _diagramRenderer: observable,
       showHotkeyInfosModal: observable,
+      sidePanelDisplayState: observable,
       sidePanelState: observable,
       diagramRenderer: computed,
       diagram: computed,
@@ -184,7 +256,7 @@ export class DiagramEditorState extends ElementEditorState {
           ),
         ),
       );
-      // showSidePanel();
+      this.sidePanelDisplayState.open();
     };
     const createNewClassView = (event: MouseEvent): void => {
       if (!this.isReadOnly) {
@@ -195,7 +267,7 @@ export class DiagramEditorState extends ElementEditorState {
             event,
           ),
         );
-        // showSidePanel();
+        this.sidePanelDisplayState.open();
       }
     };
     this.diagramRenderer.onBackgroundDoubleClick = createNewClassView;

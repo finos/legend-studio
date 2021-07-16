@@ -164,9 +164,10 @@ export class EditorStore {
   activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
   maxAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
   auxPanelSize = 0;
-  previousAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
-  // Side Bar
+  auxPanelSizeBeforeHidden = DEFAULT_AUX_PANEL_SIZE;
+  // Activity Bar
   activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.EXPLORER;
+  // Side Bar
   sideBarSize = DEFAULT_SIDE_BAR_SIZE;
   sideBarSizeBeforeHidden = DEFAULT_SIDE_BAR_SIZE;
   // Hot keys
@@ -819,9 +820,10 @@ export class EditorStore {
 
   toggleAuxPanel(): void {
     if (this.auxPanelSize === 0) {
-      this.auxPanelSize = this.previousAuxPanelSize;
+      this.auxPanelSize = this.auxPanelSizeBeforeHidden;
     } else {
-      this.previousAuxPanelSize = this.auxPanelSize || DEFAULT_AUX_PANEL_SIZE;
+      this.auxPanelSizeBeforeHidden =
+        this.auxPanelSize || DEFAULT_AUX_PANEL_SIZE;
       this.auxPanelSize = 0;
     }
   }
@@ -829,19 +831,19 @@ export class EditorStore {
   toggleExpandAuxPanel(): void {
     if (this.auxPanelSize === this.maxAuxPanelSize) {
       this.auxPanelSize =
-        this.previousAuxPanelSize === this.maxAuxPanelSize
+        this.auxPanelSizeBeforeHidden === this.maxAuxPanelSize
           ? DEFAULT_AUX_PANEL_SIZE
-          : this.previousAuxPanelSize;
+          : this.auxPanelSizeBeforeHidden;
     } else {
-      this.previousAuxPanelSize = this.auxPanelSize;
+      this.auxPanelSizeBeforeHidden = this.auxPanelSize;
       this.auxPanelSize = this.maxAuxPanelSize;
     }
   }
 
   setMaxAuxPanelSize(val: number): void {
     if (this.isMaxAuxPanelSizeSet) {
-      if (this.previousAuxPanelSize === this.maxAuxPanelSize) {
-        this.previousAuxPanelSize = val;
+      if (this.auxPanelSizeBeforeHidden === this.maxAuxPanelSize) {
+        this.auxPanelSizeBeforeHidden = val;
       }
       if (this.auxPanelSize === this.maxAuxPanelSize) {
         this.auxPanelSize = val;
