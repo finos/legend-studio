@@ -173,9 +173,25 @@
     width: calc(100% - 4.4rem);
   }
 
-  &__canvas--with-cursor {
+  &__cursor {
     &--crosshair {
       cursor: crosshair;
+    }
+
+    &--text {
+      cursor: text;
+    }
+
+    &--pointer {
+      cursor: pointer;
+    }
+
+    &--resize {
+      cursor: nwse-resize;
+    }
+
+    &--add {
+      cursor: cell;
     }
   }
 

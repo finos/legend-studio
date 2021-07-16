@@ -25,6 +25,7 @@ import { ElementEditorState } from './ElementEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 import type { DiagramRenderer } from '../../../components/shared/diagram-viewer/DiagramRenderer';
+import { DIAGRAM_EDIT_MODE } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { ClassEditorState } from './ClassEditorState';
 import {
   getPackableElementTreeData,
@@ -185,6 +186,47 @@ export class DiagramEditorState extends ElementEditorState {
 
   get isDiagramRendererInitialized(): boolean {
     return Boolean(this._diagramRenderer);
+  }
+
+  // NOTE: we have tried to use React to control the cursor and
+  // could not overcome the jank/lag problem, so we settle with CSS-based approach
+  // See https://css-tricks.com/using-css-cursors/
+  // See https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+  get diagramCursorClass(): string {
+    if (this.isReadOnly || !this.isDiagramRendererInitialized) {
+      return '';
+    }
+    switch (this.diagramRenderer.editMode) {
+      case DIAGRAM_EDIT_MODE.ADD_CLASS: {
+        return 'diagram-editor__cursor--add';
+      }
+      case DIAGRAM_EDIT_MODE.RELATIONSHIP: {
+        if (
+          this.diagramRenderer.mouseOverClassView &&
+          this.diagramRenderer.selectionStart
+        ) {
+          return 'diagram-editor__cursor--add';
+        }
+        return 'diagram-editor__cursor--crosshair';
+      }
+      case DIAGRAM_EDIT_MODE.LAYOUT: {
+        if (this.diagramRenderer.selectionStart) {
+          return 'diagram-editor__cursor--crosshair';
+        } else if (
+          this.diagramRenderer.mouseOverClassCorner ||
+          this.diagramRenderer.selectedClassCorner
+        ) {
+          return 'diagram-editor__cursor--resize';
+        } else if (this.diagramRenderer.mouseOverProperty) {
+          return 'diagram-editor__cursor--text';
+        } else if (this.diagramRenderer.mouseOverClassView) {
+          return 'diagram-editor__cursor--pointer';
+        }
+        return '';
+      }
+      default:
+        return '';
+    }
   }
 
   setDiagramRenderer(val: DiagramRenderer): void {

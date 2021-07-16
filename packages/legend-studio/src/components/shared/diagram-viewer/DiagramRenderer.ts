@@ -20,6 +20,7 @@ import {
   getNullableFirstElement,
   UnsupportedOperationError,
   IllegalStateError,
+  guaranteeNonNullable,
 } from '@finos/legend-studio-shared';
 import { PositionedRectangle } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/PositionedRectangle';
 import { Point } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
@@ -187,8 +188,9 @@ export class DiagramRenderer {
     target: ClassView,
   ) => RelationshipView | undefined;
 
-  mouseOverProperty?: AbstractProperty;
+  mouseOverClassCorner?: ClassView;
   mouseOverClassView?: ClassView;
+  mouseOverProperty?: AbstractProperty;
   cursorPosition: Point;
 
   leftClick: boolean;
@@ -212,8 +214,18 @@ export class DiagramRenderer {
       isReadOnly: observable,
       editMode: observable,
       relationshipMode: observable,
+      mouseOverClassCorner: observable,
+      mouseOverClassView: observable,
+      mouseOverProperty: observable,
+      selectionStart: observable,
+      selectedClassCorner: observable,
       changeMode: action,
       setIsReadOnly: action,
+      setMouseOverClassCorner: action,
+      setMouseOverClassView: action,
+      setMouseOverProperty: action,
+      setSelectionStart: action,
+      setSelectedClassCorner: action,
     });
 
     this.diagram = diagram;
@@ -336,6 +348,30 @@ export class DiagramRenderer {
     this.div.onmousemove = this.mousemove.bind(this);
   }
 
+  setIsReadOnly(val: boolean): void {
+    this.isReadOnly = val;
+  }
+
+  setMouseOverClassCorner(val: ClassView | undefined): void {
+    this.mouseOverClassCorner = val;
+  }
+
+  setMouseOverClassView(val: ClassView | undefined): void {
+    this.mouseOverClassView = val;
+  }
+
+  setMouseOverProperty(val: AbstractProperty | undefined): void {
+    this.mouseOverProperty = val;
+  }
+
+  setSelectionStart(val: Point | undefined): void {
+    this.selectionStart = val;
+  }
+
+  setSelectedClassCorner(val: ClassView | undefined): void {
+    this.selectedClassCorner = val;
+  }
+
   start(): void {
     this.diagram.classViews.forEach((classView) =>
       this.computeClassViewMinDimensions(classView),
@@ -346,10 +382,6 @@ export class DiagramRenderer {
   refresh(): void {
     this.refreshCanvas();
     this.redraw();
-  }
-
-  setIsReadOnly(val: boolean): void {
-    this.isReadOnly = val;
   }
 
   changeMode(
@@ -2056,7 +2088,9 @@ export class DiagramRenderer {
     }
     this.leftClick = false;
     this.rightClick = false;
-    this.selectionStart = undefined;
+
+    this.setSelectedClassCorner(undefined);
+    this.setSelectionStart(undefined);
     this.redraw();
   }
 
@@ -2126,9 +2160,9 @@ export class DiagramRenderer {
   }
 
   mousedown(e: MouseEvent): void {
-    this.selectionStart = undefined;
+    this.setSelectionStart(undefined);
+    this.setSelectedClassCorner(undefined);
     this.selection = undefined;
-    this.selectedClassCorner = undefined;
     this.selectedClassProperty = undefined;
     this.selectedPoint = undefined;
     this.selectedPropertyOrAssociation = undefined;
@@ -2159,12 +2193,12 @@ export class DiagramRenderer {
                 .contains(x, y)
             ) {
               this.selectedClasses = [];
-              this.selectedClassCorner = this.diagram.classViews[i];
+              this.setSelectedClassCorner(this.diagram.classViews[i]);
               if (!this.isReadOnly) {
                 // Bring the class view to front
                 this.diagram.setClassViews(
                   this.reorderDiagramDomain(
-                    this.selectedClassCorner,
+                    guaranteeNonNullable(this.selectedClassCorner),
                     this.diagram,
                   ),
                 );
@@ -2285,7 +2319,7 @@ export class DiagramRenderer {
 
                 // if the selected point is not identified then it is consider the start of a selection
                 if (!this.selectedPoint) {
-                  this.selectionStart = new Point(x, y);
+                  this.setSelectionStart(new Point(x, y));
                 }
               }
             }
@@ -2293,7 +2327,7 @@ export class DiagramRenderer {
           break;
         }
         case DIAGRAM_EDIT_MODE.RELATIONSHIP: {
-          this.selectionStart = new Point(x, y);
+          this.setSelectionStart(new Point(x, y));
           this.startClassView = undefined;
           for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
             if (this.diagram.classViews[i].contains(x, y)) {
@@ -2535,11 +2569,15 @@ export class DiagramRenderer {
         (correctedX - this.canvasCenter.x) / this.zoom + this.canvasCenter.x;
       const cY =
         (correctedY - this.canvasCenter.y) / this.zoom + this.canvasCenter.y;
-      this.mouseOverClassView = undefined;
-      this.mouseOverProperty = undefined;
+
+      // Check for hovering state
+      this.setMouseOverClassView(undefined);
+      this.setMouseOverProperty(undefined);
+      this.setMouseOverClassCorner(undefined);
+
       for (const classView of this.diagram.classViews.slice().reverse()) {
         if (classView.contains(cX, cY)) {
-          this.mouseOverClassView = classView;
+          this.setMouseOverClassView(classView);
           const sX = correctedX + this.screenOffset.x * this.zoom;
           const sY = correctedY + this.screenOffset.y * this.zoom;
 
@@ -2559,6 +2597,12 @@ export class DiagramRenderer {
               ? 0
               : _class.taggedValues.length * this.fontSize);
 
+          // Check hover class corner
+          if (classView.buildBottomRightCornerBox().contains(cX, cY)) {
+            this.setMouseOverClassCorner(classView);
+          }
+
+          // Check hover class property
           for (const property of _class.getAllOwnedProperties()) {
             if (!this.hasPropertyView(classView, property)) {
               const propX =
@@ -2591,7 +2635,7 @@ export class DiagramRenderer {
                   ),
                 ).contains(sX, sY)
               ) {
-                this.mouseOverProperty = property;
+                this.setMouseOverProperty(property);
               }
               cursorY = cursorY + this.fontSize;
             }

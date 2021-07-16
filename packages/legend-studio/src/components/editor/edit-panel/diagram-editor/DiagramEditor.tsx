@@ -823,15 +823,10 @@ const DiagramEditorDiagramCanvas = observer(
     return (
       <div
         ref={diagramCanvasRef}
-        // TODO: do something better with cursor, this is very rudimentary
-        className={clsx('diagram-canvas diagram-editor__canvas', {
-          'diagram-editor__canvas--with-cursor--crosshair':
-            diagramEditorState.isDiagramRendererInitialized &&
-            (diagramEditorState.diagramRenderer.editMode ===
-              DIAGRAM_EDIT_MODE.RELATIONSHIP ||
-              diagramEditorState.diagramRenderer.editMode ===
-                DIAGRAM_EDIT_MODE.ADD_CLASS),
-        })}
+        className={clsx(
+          'diagram-canvas diagram-editor__canvas',
+          diagramEditorState.diagramCursorClass,
+        )}
         tabIndex={0}
         onContextMenu={(event): void => event.preventDefault()}
       />
