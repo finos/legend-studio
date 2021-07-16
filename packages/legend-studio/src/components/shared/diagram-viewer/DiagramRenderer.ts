@@ -2150,12 +2150,8 @@ export class DiagramRenderer {
     // Click on a class view
     if (selectedClass) {
       this.editClass(selectedClass);
-      return;
-    }
-    // Click outside of a classview
-    if (!selectedClass) {
+    } else {
       this.onBackgroundDoubleClick(e);
-      return;
     }
   }
 

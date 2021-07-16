@@ -152,6 +152,20 @@ export class V1_GraphBuilderContext {
     }
   }
 
+  // TODO: create small enum flag for the outcome instead of putting boolean (....), make this function private as well?
+  createImplicitPackageableElementReference = <T extends PackageableElement>(
+    path: string,
+    resolverFn: (path: string) => T,
+  ): PackageableElementImplicitReference<T> => {
+    const resolutionResult = this.resolve(path, resolverFn);
+    return PackageableElementImplicitReference.create(
+      resolutionResult[0],
+      path,
+      this.section,
+      resolutionResult[1],
+    );
+  };
+
   resolveStereotype = (
     stereotypePtr: V1_StereotypePtr,
   ): StereotypeImplicitReference => {
@@ -290,19 +304,6 @@ export class V1_GraphBuilderContext {
     return EnumValueImplicitReference.create(
       parent,
       parent.value.getValue(value),
-    );
-  };
-
-  createImplicitPackageableElementReference = <T extends PackageableElement>(
-    path: string,
-    resolverFn: (path: string) => T,
-  ): PackageableElementImplicitReference<T> => {
-    const resolutionResult = this.resolve(path, resolverFn);
-    return PackageableElementImplicitReference.create(
-      resolutionResult[0],
-      path,
-      this.section,
-      resolutionResult[1],
     );
   };
 

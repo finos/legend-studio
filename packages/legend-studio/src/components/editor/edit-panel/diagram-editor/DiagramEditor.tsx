@@ -398,7 +398,7 @@ const DiagramEditorToolPanel = observer(
       diagramEditorState.setShowHotkeyInfosModal(false);
 
     const switchToLayoutMode = (): void => {
-      if (diagramRenderer && !isReadOnly) {
+      if (!isReadOnly) {
         diagramRenderer.changeMode(
           DIAGRAM_EDIT_MODE.LAYOUT,
           DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
@@ -407,7 +407,7 @@ const DiagramEditorToolPanel = observer(
     };
 
     const switchToRelationshipPropertyMode = (): void => {
-      if (diagramRenderer && !isReadOnly) {
+      if (!isReadOnly) {
         diagramRenderer.changeMode(
           DIAGRAM_EDIT_MODE.RELATIONSHIP,
           DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
@@ -416,7 +416,7 @@ const DiagramEditorToolPanel = observer(
     };
 
     const switchToRelationshipAssociationMode = (): void => {
-      if (diagramRenderer && !isReadOnly) {
+      if (!isReadOnly) {
         applicationStore.notifyUnsupportedFeature(`Create association`);
         // diagramRenderer.changeMode(
         //   DIAGRAM_EDIT_MODE.RELATIONSHIP,
@@ -426,7 +426,7 @@ const DiagramEditorToolPanel = observer(
     };
 
     const switchToRelationshipInheritanceMode = (): void => {
-      if (diagramRenderer && !isReadOnly) {
+      if (!isReadOnly) {
         diagramRenderer.changeMode(
           DIAGRAM_EDIT_MODE.RELATIONSHIP,
           DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
@@ -435,7 +435,7 @@ const DiagramEditorToolPanel = observer(
     };
 
     const addNewClassView = (): void => {
-      if (diagramRenderer && !isReadOnly) {
+      if (!isReadOnly) {
         diagramRenderer.changeMode(
           DIAGRAM_EDIT_MODE.ADD_CLASS,
           DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
@@ -448,7 +448,7 @@ const DiagramEditorToolPanel = observer(
         <button
           className={clsx('diagram-editor__tool', {
             'diagram-editor__tool--active':
-              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.LAYOUT,
+              diagramRenderer.editMode === DIAGRAM_EDIT_MODE.LAYOUT,
           })}
           tabIndex={-1}
           onClick={switchToLayoutMode}
@@ -459,7 +459,6 @@ const DiagramEditorToolPanel = observer(
         <button
           className={clsx('diagram-editor__tool', {
             'diagram-editor__tool--active':
-              diagramRenderer &&
               diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
               diagramRenderer.relationshipMode ===
                 DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
@@ -473,7 +472,6 @@ const DiagramEditorToolPanel = observer(
         <button
           className={clsx('diagram-editor__tool', {
             'diagram-editor__tool--active':
-              diagramRenderer &&
               diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
               diagramRenderer.relationshipMode ===
                 DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
@@ -487,8 +485,8 @@ const DiagramEditorToolPanel = observer(
         <button
           className={clsx('diagram-editor__tool', {
             // 'diagram-editor__tool--active':
-            //   diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
-            //   diagramRenderer?.relationshipMode ===
+            //   diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+            //   diagramRenderer.relationshipMode ===
             //     DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
           })}
           tabIndex={-1}
@@ -500,7 +498,7 @@ const DiagramEditorToolPanel = observer(
         <button
           className={clsx('diagram-editor__tool', {
             'diagram-editor__tool--active':
-              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
+              diagramRenderer.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
           })}
           tabIndex={-1}
           title="New Class..."
@@ -673,9 +671,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     };
 
     useEffect(() => {
-      if (inlinePropertyEditorState) {
-        propertyNameInputRef.current?.focus();
-      }
+      propertyNameInputRef.current?.focus();
     }, [inlinePropertyEditorState]);
 
     return (
@@ -763,7 +759,8 @@ const DiagramEditorDiagramCanvas = observer(
     ref: React.Ref<HTMLDivElement>,
   ) => {
     const { diagramEditorState } = props;
-    const diagramCanvasRef = ref as React.MutableRefObject<HTMLDivElement>;
+    const diagramCanvasRef =
+      ref as React.MutableRefObject<HTMLDivElement | null>;
     const isReadOnly = diagramEditorState.isReadOnly;
 
     const { width, height } = useResizeDetector<HTMLDivElement>({
