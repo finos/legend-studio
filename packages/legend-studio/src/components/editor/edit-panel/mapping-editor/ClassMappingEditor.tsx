@@ -53,8 +53,9 @@ export const OperatorSelector = observer(
       val: { label: string; value: OperationType } | null,
     ): void => {
       const value = val?.value ? OperationType[val.value] : undefined;
-      if (value) {
+      if (value && setImplementation.operation !== value) {
         setImplementation.setOperation(value);
+        setImplementation.setParameters([]);
       }
     };
     return (

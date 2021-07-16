@@ -41,7 +41,7 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyEditorState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
     return (
       [

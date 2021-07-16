@@ -27,10 +27,15 @@ import {
   FaChevronDown,
   FaChevronRight,
   FaFolder,
+  FaRegKeyboard,
 } from 'react-icons/fa';
 import SplitPane from 'react-split-pane';
 import { observer } from 'mobx-react-lite';
-import { DiagramRenderer } from '../../shared/diagram-viewer/DiagramRenderer';
+import {
+  DiagramRenderer,
+  DIAGRAM_EDIT_MODE,
+  DIAGRAM_RELATIONSHIP_EDIT_MODE,
+} from '../../shared/diagram-viewer/DiagramRenderer';
 import { DiagramEditorState } from '../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
   CORE_DND_TYPE,
@@ -57,6 +62,10 @@ import type { PackageableElement } from '../../../models/metamodels/pure/model/p
 import { Property } from '../../../models/metamodels/pure/model/packageableElements/domain/Property';
 import { GenericType } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
 import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
+import { FiMinus, FiMove, FiPlusCircle, FiTriangle } from 'react-icons/fi';
+import { IoResize } from 'react-icons/io5';
+import { useApplicationStore } from '../../../stores/ApplicationStore';
+import { Dialog } from '@material-ui/core';
 
 const PackageTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -218,7 +227,7 @@ export const DiagramEditorClassCreator = observer(
           spellCheck={false}
           value={name}
           onChange={handleNameChange}
-          placeholder={`Class name`}
+          placeholder="Class name"
         />
         <div className="diagram-editor__class-panel__create-new__package-tree">
           <TreeView
@@ -257,8 +266,92 @@ enum DIAGRAM_EDITOR_CLASS_PANEL_MODE {
   NONE = 'NONE',
 }
 
+export const DiagramRendererHotkeyInfosModal = observer(
+  (props: { open: boolean; onClose: () => void }) => {
+    const { open, onClose } = props;
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <div className="modal modal--dark diagram-editor__hotkeys__dialog">
+          <div className="modal__header">
+            <div className="modal__title">Diagram Hotkeys</div>
+          </div>
+          <div className="modal__body">
+            <div className="diagram-editor__hotkey__groups">
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Remove selected element
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Delete</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Toggle display for properties
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">h</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Toggle display for stereotypes
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">s</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Toggle display for tagged values
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">t</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Reset diagram to center
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">c</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Separate the property being hovered on
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">a</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Add the selected class as property of the opened class
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">p</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    );
+  },
+);
+
 export const DiagramEditor = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const defaultMultiplicity =
     editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
@@ -267,6 +360,12 @@ export const DiagramEditor = observer(() => {
     editorStore.getCurrentEditorState(DiagramEditorState);
   const diagram = diagramEditorState.diagram;
   const isReadOnly = diagramEditorState.isReadOnly;
+  const [openDiagramRendererHokeysModal, setOpenDiagramRendererHokeysModal] =
+    useState(false);
+  const showDiagramRendererHokeysModal = (): void =>
+    setOpenDiagramRendererHokeysModal(true);
+  const hideDiagramRendererHokeysModal = (): void =>
+    setOpenDiagramRendererHokeysModal(false);
   const [diagramRenderer, setDiagramRenderer] = useState<DiagramRenderer>();
   const [selectedClassEditor, setSelectedClassEditor] = useState<
     ClassEditorState | undefined
@@ -274,15 +373,17 @@ export const DiagramEditor = observer(() => {
   const [createNewClassEvent, setCreateNewClassEvent] = useState<
     MouseEvent | undefined
   >();
-  const [mode, setMode] = useState<DIAGRAM_EDITOR_CLASS_PANEL_MODE>(
-    DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE,
-  );
-  const canvas = useRef<HTMLDivElement>(null);
+  const [classViewerMode, setClassViewerMode] =
+    useState<DIAGRAM_EDITOR_CLASS_PANEL_MODE>(
+      DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE,
+    );
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Resize
-  const { ref, width, height } = useResizeDetector<HTMLDivElement>({
+  const { width, height } = useResizeDetector<HTMLDivElement>({
     refreshMode: 'debounce',
     refreshRate: 50,
+    targetRef: canvasRef,
   });
 
   // Class Panel
@@ -302,7 +403,7 @@ export const DiagramEditor = observer(() => {
     setClassPanelSize(0);
     setCreateNewClassEvent(undefined);
     setSelectedClassEditor(undefined);
-    setMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE);
+    setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE);
   };
   const showClassPanel = useCallback(() => {
     if (!classPanelSize) {
@@ -312,7 +413,10 @@ export const DiagramEditor = observer(() => {
   const redrawOnClassChange = useCallback((): void => {
     diagramRenderer?.start();
   }, [diagramRenderer]);
-  const onCreateClassSubmit = (_class: Class, position: Point): void => {
+  const onCreateClassSubmit = (
+    _class: Class,
+    position: Point | undefined,
+  ): void => {
     if (diagramRenderer) {
       diagramRenderer.addClassView(_class, position);
       // close the create new class panel and show the property panel
@@ -324,7 +428,7 @@ export const DiagramEditor = observer(() => {
             elementState.element === _class,
         ) ?? editorStore.createElementState(_class);
       setSelectedClassEditor(guaranteeType(classEditorState, ClassEditorState));
-      setMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS);
+      setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS);
     }
   };
 
@@ -334,8 +438,8 @@ export const DiagramEditor = observer(() => {
 
   // Update the diagram viewer when diagram changes
   useEffect(() => {
-    if (canvas.current) {
-      const renderer = new DiagramRenderer(canvas.current, diagram);
+    if (canvasRef.current) {
+      const renderer = new DiagramRenderer(canvasRef.current, diagram);
       renderer.isReadOnly = isReadOnly;
       setDiagramRenderer(renderer);
       renderer.start();
@@ -344,7 +448,7 @@ export const DiagramEditor = observer(() => {
   }, [diagram, isReadOnly]);
 
   if (diagramRenderer) {
-    diagramRenderer.onClassViewClick = (cv: ClassView): void => {
+    diagramRenderer.onClassViewDoubleClick = (cv: ClassView): void => {
       setCreateNewClassEvent(undefined);
       const classEditorState =
         editorStore.openedEditorStates.find(
@@ -353,23 +457,25 @@ export const DiagramEditor = observer(() => {
             elementState.element === cv.class.value,
         ) ?? editorStore.createElementState(cv.class.value);
       setSelectedClassEditor(guaranteeType(classEditorState, ClassEditorState));
-      setMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS);
+      setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS);
       showClassPanel();
     };
-    diagramRenderer.onBackgroundDoubleClick = (event: MouseEvent): void => {
+    const createNewClassView = (event: MouseEvent): void => {
       if (!isReadOnly) {
         setCreateNewClassEvent(event);
-        setMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.CREATE_NEW_CLASS);
+        setClassViewerMode(DIAGRAM_EDITOR_CLASS_PANEL_MODE.CREATE_NEW_CLASS);
         showClassPanel();
       }
     };
+    diagramRenderer.onBackgroundDoubleClick = createNewClassView;
+    diagramRenderer.onAddClassViewClick = createNewClassView;
     diagramRenderer.onAddClassPropertyForSelectedClass = (
       cv: ClassView,
     ): void => {
       if (selectedClassEditor) {
         selectedClassEditor.class.addProperty(
           new Property(
-            '',
+            `newProperty_${selectedClassEditor.class.properties.length}`,
             defaultMultiplicity,
             GenericTypeExplicitReference.create(
               new GenericType(cv.class.value),
@@ -411,12 +517,58 @@ export const DiagramEditor = observer(() => {
     );
   };
 
+  const switchToLayoutMode = (): void => {
+    if (diagramRenderer && !isReadOnly) {
+      diagramRenderer.changeMode(
+        DIAGRAM_EDIT_MODE.LAYOUT,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+  };
+
+  const switchToRelationshipPropertyMode = (): void => {
+    if (diagramRenderer && !isReadOnly) {
+      diagramRenderer.changeMode(
+        DIAGRAM_EDIT_MODE.RELATIONSHIP,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+      );
+    }
+  };
+
+  const switchToRelationshipAssociationMode = (): void => {
+    if (diagramRenderer && !isReadOnly) {
+      applicationStore.notifyUnsupportedFeature(`Create association`);
+      // diagramRenderer.changeMode(
+      //   DIAGRAM_EDIT_MODE.RELATIONSHIP,
+      //   DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
+      // );
+    }
+  };
+
+  const switchToRelationshipInheritanceMode = (): void => {
+    if (diagramRenderer && !isReadOnly) {
+      diagramRenderer.changeMode(
+        DIAGRAM_EDIT_MODE.RELATIONSHIP,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+      );
+    }
+  };
+
+  const addNewClassView = (): void => {
+    if (diagramRenderer && !isReadOnly) {
+      diagramRenderer.changeMode(
+        DIAGRAM_EDIT_MODE.ADD_CLASS,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+  };
+
   // Drag and Drop
   const handleDrop = useCallback(
     (item: ElementDragSource, monitor: DropTargetMonitor): void => {
       if (!isReadOnly) {
         if (
-          canvas.current &&
+          canvasRef.current &&
           diagramRenderer &&
           item instanceof ElementDragSource
         ) {
@@ -442,7 +594,7 @@ export const DiagramEditor = observer(() => {
     }),
     [handleDrop],
   );
-  dropConnector(ref);
+  dropConnector(canvasRef);
 
   return (
     <SplitPane
@@ -454,12 +606,94 @@ export const DiagramEditor = observer(() => {
       minSize={0}
       maxSize={-300}
     >
-      <div ref={ref} className="diagram-editor">
+      <div className="diagram-editor">
+        <div className="diagram-editor__tools">
+          <button
+            className={clsx('diagram-editor__tool', {
+              'diagram-editor__tool--active':
+                diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.LAYOUT,
+            })}
+            tabIndex={-1}
+            onClick={switchToLayoutMode}
+            title="View Tool"
+          >
+            <FiMove className="diagram-editor__icon--layout" />
+          </button>
+          <button
+            className={clsx('diagram-editor__tool', {
+              'diagram-editor__tool--active':
+                diagramRenderer &&
+                diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+                diagramRenderer.relationshipMode ===
+                  DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+            })}
+            tabIndex={-1}
+            title="Property Tool"
+            onClick={switchToRelationshipPropertyMode}
+          >
+            <FiMinus className="diagram-editor__icon--property" />
+          </button>
+          <button
+            className={clsx('diagram-editor__tool', {
+              'diagram-editor__tool--active':
+                diagramRenderer &&
+                diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+                diagramRenderer.relationshipMode ===
+                  DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+            })}
+            tabIndex={-1}
+            title="Inheritance Tool"
+            onClick={switchToRelationshipInheritanceMode}
+          >
+            <FiTriangle className="diagram-editor__icon--inheritance" />
+          </button>
+          <button
+            className={clsx('diagram-editor__tool', {
+              // 'diagram-editor__tool--active':
+              //   diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
+              //   diagramRenderer?.relationshipMode ===
+              //     DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
+            })}
+            tabIndex={-1}
+            title="Association Tool"
+            onClick={switchToRelationshipAssociationMode}
+          >
+            <IoResize className="diagram-editor__icon--association" />
+          </button>
+          <button
+            className={clsx('diagram-editor__tool', {
+              'diagram-editor__tool--active':
+                diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
+            })}
+            tabIndex={-1}
+            title="New Class..."
+            onClick={addNewClassView}
+          >
+            <FiPlusCircle className="diagram-editor__icon--add-class" />
+          </button>
+          <div className="diagram-editor__tools__divider" />
+          <button
+            className="diagram-editor__tool"
+            tabIndex={-1}
+            title="Show Hotkeys"
+            onClick={showDiagramRendererHokeysModal}
+          >
+            <FaRegKeyboard className="diagram-editor__icon--hotkey-info" />
+          </button>
+        </div>
         <div
-          ref={canvas}
-          className="diagram-canvas"
+          ref={canvasRef}
+          className={clsx('diagram-canvas diagram-editor__canvas', {
+            'diagram-editor__canvas--with-cursor--crosshair':
+              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP ||
+              diagramRenderer?.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
+          })}
           tabIndex={0}
           onContextMenu={(event): void => event.preventDefault()}
+        />
+        <DiagramRendererHotkeyInfosModal
+          open={openDiagramRendererHokeysModal}
+          onClose={hideDiagramRendererHokeysModal}
         />
       </div>
       <div className="panel diagram-editor__class-panel">
@@ -474,10 +708,11 @@ export const DiagramEditor = observer(() => {
           </button>
         </div>
         <div className="panel__content diagram-editor__class-panel__content">
-          {mode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.CREATE_NEW_CLASS &&
+          {classViewerMode ===
+            DIAGRAM_EDITOR_CLASS_PANEL_MODE.CREATE_NEW_CLASS &&
             createNewClassEvent &&
             renderNewClassPanel(createNewClassEvent)}
-          {mode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS &&
+          {classViewerMode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.EDIT_CLASS &&
             selectedClassEditor && (
               <ClassFormEditor
                 _class={selectedClassEditor.class}
@@ -485,7 +720,7 @@ export const DiagramEditor = observer(() => {
                 onHashChange={redrawOnClassChange}
               />
             )}
-          {mode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE && (
+          {classViewerMode === DIAGRAM_EDITOR_CLASS_PANEL_MODE.NONE && (
             <div className="diagram-editor__class-panel__content__editor--empty">
               Double click on a class on diagram to show it here
             </div>

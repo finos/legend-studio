@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio",
-  "version": "0.1.14",
+  "version": "0.1.18",
   "description": "Legend Studio core",
   "keywords": [
     "legend",
@@ -37,9 +37,6 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "25.3.0",
-    "@ag-grid-community/core": "25.3.0",
-    "@ag-grid-community/react": "25.3.0",
     "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-network": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
@@ -53,7 +50,7 @@
     "history": "5.0.0",
     "mobx": "6.3.2",
     "mobx-react-lite": "3.2.0",
-    "monaco-editor": "0.25.2",
+    "monaco-editor": "0.26.0",
     "node-diff3": "3.0.0",
     "react": "17.0.2",
     "react-dnd": "14.0.2",
@@ -61,7 +58,7 @@
     "react-dom": "17.0.2",
     "react-hotkeys": "2.0.0",
     "react-icons": "4.2.0",
-    "react-reflex": "4.0.1",
+    "react-reflex": "4.0.2",
     "react-resize-detector": "6.7.4",
     "react-router": "5.2.0",
     "react-router-dom": "5.2.0",

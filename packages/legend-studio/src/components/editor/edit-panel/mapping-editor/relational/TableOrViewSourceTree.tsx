@@ -26,45 +26,22 @@ import {
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
-  StringTypeIcon,
-  BooleanTypeIcon,
-  NumberTypeIcon,
-  DateTypeIcon,
-  BinaryTypeIcon,
-  UnknownTypeIcon,
 } from '@finos/legend-studio-components';
 import {
   addUniqueEntry,
   assertTrue,
   guaranteeType,
   isNonNullable,
-  UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { Type } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import type { Table } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { Column } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Column';
-import {
-  Real,
-  Binary,
-  Bit,
-  Other,
-  Date,
-  Timestamp,
-  Numeric,
-  Decimal,
-  VarBinary,
-  Char,
-  VarChar,
-  Double,
-  Float,
-  Integer,
-  TinyInt,
-  SmallInt,
-  BigInt,
-} from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
-import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import type { Join } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Join';
 import type { View } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
+import {
+  generateColumnTypeLabel,
+  renderColumnTypeIcon,
+} from '../../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper';
 
 export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
 
@@ -132,7 +109,7 @@ const generateColumnTreeNodeId = (
       : `${parentNode.id}.${column.name}`
     : `${generateDatabasePointerText(relation.schema.owner.path)}${
         relation.schema.name
-      }.${relation.name}`;
+      }.${relation.name}.${column.name}`;
 
 const getColumnTreeNodeData = (
   column: Column,
@@ -268,87 +245,6 @@ const getRelationTreeData = (
       nodes.set(joinNode.id, joinNode);
     });
   return { rootIds, nodes };
-};
-
-const generateColumnTypeLabel = (type: DataType): string => {
-  if (type instanceof VarChar) {
-    return `VARCHAR(${type.size})`;
-  } else if (type instanceof Char) {
-    return `CHAR(${type.size})`;
-  } else if (type instanceof VarBinary) {
-    return `VARBINARY(${type.size})`;
-  } else if (type instanceof Binary) {
-    return `BINARY(${type.size})`;
-  } else if (type instanceof Bit) {
-    return `BIT`;
-  } else if (type instanceof Numeric) {
-    return `NUMERIC(${type.precision},${type.scale})`;
-  } else if (type instanceof Decimal) {
-    return `DECIMAL(${type.precision},${type.scale})`;
-  } else if (type instanceof Double) {
-    return `DOUBLE`;
-  } else if (type instanceof Float) {
-    return `FLOAT`;
-  } else if (type instanceof Real) {
-    return `REAL`;
-  } else if (type instanceof Integer) {
-    return `INT`;
-  } else if (type instanceof BigInt) {
-    return `BIGINT`;
-  } else if (type instanceof SmallInt) {
-    return `SMALLINT`;
-  } else if (type instanceof TinyInt) {
-    return `TINYINT`;
-  } else if (type instanceof Date) {
-    return `DATE`;
-  } else if (type instanceof Timestamp) {
-    return `TIMESTAMP`;
-  } else if (type instanceof Other) {
-    return `OTHER`;
-  }
-  throw new UnsupportedOperationError(
-    `Can't generate label for unsupported column data type`,
-    type,
-  );
-};
-
-const renderColumnTypeIcon = (type: DataType): React.ReactNode => {
-  if (type instanceof VarChar || type instanceof Char) {
-    return (
-      <StringTypeIcon className="relation-source-tree__icon relation-source-tree__icon__string" />
-    );
-  } else if (type instanceof VarBinary || type instanceof Binary) {
-    return (
-      <BinaryTypeIcon className="relation-source-tree__icon relation-source-tree__icon__binary" />
-    );
-  } else if (type instanceof Bit) {
-    return (
-      <BooleanTypeIcon className="relation-source-tree__icon relation-source-tree__icon__boolean" />
-    );
-  } else if (
-    type instanceof Numeric ||
-    type instanceof Decimal ||
-    type instanceof Double ||
-    type instanceof Float ||
-    type instanceof Real ||
-    type instanceof Integer ||
-    type instanceof BigInt ||
-    type instanceof SmallInt ||
-    type instanceof TinyInt
-  ) {
-    return (
-      <NumberTypeIcon className="relation-source-tree__icon relation-source-tree__icon__number" />
-    );
-  } else if (type instanceof Date || type instanceof Timestamp) {
-    return (
-      <DateTypeIcon className="relation-source-tree__icon relation-source-tree__icon__time" />
-    );
-  } else if (type instanceof Other) {
-    return (
-      <UnknownTypeIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
-    );
-  }
-  throw new UnsupportedOperationError(`Can't render column data type`, type);
 };
 
 const RelationalOperationElementTreeNodeContainer: React.FC<

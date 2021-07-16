@@ -17,6 +17,7 @@
 import { resolve } from 'path';
 import chalk from 'chalk';
 import { getChangedPackagesSinceRef } from '@changesets/git';
+import readChangesets from '@changesets/read';
 import getReleasePlan from '@changesets/get-release-plan';
 import { error, warn, info, log } from '@changesets/logger';
 import { getPackages } from '@manypkg/get-packages';
@@ -62,11 +63,47 @@ export async function validateChangesets(cwd, sinceRef) {
     })
   ).map((pkg) => pkg.packageJson.name);
 
+  // Check for packages listeded in changeset(s) but no longer exists
+  // This is useful in case the current PR deletes some packages
+  // making some changesets invalid and can potentially break the release
+  const knownPackages = packages.packages.map((pkg) => pkg.packageJson.name);
+  const unknownPackagesMap = new Map();
+  const allExistingChangesets = await readChangesets.default(cwd);
+  allExistingChangesets.forEach((changeset) => {
+    const unknownPackages = new Set();
+    changeset.releases.forEach((release) => {
+      if (!knownPackages.includes(release.name)) {
+        unknownPackages.add(release.name);
+      }
+    });
+    if (unknownPackages.size) {
+      unknownPackagesMap.set(changeset.id, unknownPackages);
+    }
+  });
+
+  if (unknownPackagesMap.size) {
+    unknownPackagesMap.forEach((unknownPackages, changesetId) => {
+      error(
+        `Found ${
+          unknownPackages.size
+        } package(s) specified in changeset '${changesetId}' but do not exist in the project:\n${Array.from(
+          unknownPackages.values(),
+        )
+          .map((pkg) => `\u2A2F ${pkg}`)
+          .join('\n')}`,
+      );
+    });
+    error(
+      `Your changeset(s) are probably outdated: please update them and remove the missing packages. To generate changesets properly, please make sure to keep your fork up-to-date.`,
+    );
+    process.exit(1);
+  }
+
   // Check for packages that have been modified but does not have a changeset entry
   const packagesWithoutChangeset = new Set();
-  changedPackageNames.forEach((pkg) => {
-    if (!changesetPackageNames.includes(pkg)) {
-      packagesWithoutChangeset.add(pkg);
+  changedPackageNames.forEach((pkgName) => {
+    if (!changesetPackageNames.includes(pkgName)) {
+      packagesWithoutChangeset.add(pkgName);
     }
   });
   if (packagesWithoutChangeset.size) {

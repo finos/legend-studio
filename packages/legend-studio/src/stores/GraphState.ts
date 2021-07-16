@@ -186,6 +186,14 @@ export class GraphState {
     );
   }
 
+  createEmptyGraph(): PureModel {
+    return new PureModel(
+      this.coreModel,
+      this.systemModel,
+      this.getPureGraphExtensionElementClasses(),
+    );
+  }
+
   checkIfApplicationUpdateOperationIsRunning(): boolean {
     if (this.isRunningGlobalGenerate) {
       this.editorStore.applicationStore.notifyWarning(
@@ -259,11 +267,7 @@ export class GraphState {
       );
       // reset
       this.editorStore.changeDetectionState.stop();
-      this.graph = new PureModel(
-        this.coreModel,
-        this.systemModel,
-        this.getPureGraphExtensionElementClasses(),
-      );
+      this.graph = this.createEmptyGraph();
       // build compile context
       this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(
@@ -316,11 +320,7 @@ export class GraphState {
       this.isInitializingGraph = true;
       const startTime = Date.now();
       // reset
-      this.graph = new PureModel(
-        this.coreModel,
-        this.systemModel,
-        this.getPureGraphExtensionElementClasses(),
-      );
+      this.graph = this.createEmptyGraph();
       // build compile context
       const dependencyManager = new DependencyManager(
         this.getPureGraphExtensionElementClasses(),
@@ -787,12 +787,7 @@ export class GraphState {
     this.isUpdatingApplication = true;
     this.isUpdatingGraph = true;
     try {
-      const newGraph = new PureModel(
-        this.coreModel,
-        this.systemModel,
-        this.getPureGraphExtensionElementClasses(),
-      );
-
+      const newGraph = this.createEmptyGraph();
       /* @MARKER: MEMORY-SENSITIVE */
       // NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
       // e.g. sub-classes analytics on the immutable class, etc.

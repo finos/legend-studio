@@ -104,13 +104,13 @@ export class QueryBuilderResultState {
           false,
         )) as ExecutionResult;
       this.setExecutionResult(result);
-      this.isExecutingQuery = false;
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.EXECUTION_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
+    } finally {
       this.isExecutingQuery = false;
     }
   }

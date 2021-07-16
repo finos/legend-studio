@@ -42,8 +42,7 @@ import type { RawValueSpecification } from '../model/rawValueSpecification/RawVa
 import type { ServiceExecutionMode } from '../action/service/ServiceExecutionMode';
 import type { AbstractEngineConfig } from '../action/AbstractEngineConfiguration';
 import type { PluginManager } from '../../../../application/PluginManager';
-import type { GenerateStoreInput } from '../action/generation/GenerateStoreInput';
-import type { Store } from '../model/packageableElements/store/Store';
+import type { DatabaseBuilderInput } from '../action/generation/DatabaseBuilderInput';
 import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import type { ServerClientConfig } from '@finos/legend-studio-network';
@@ -182,8 +181,11 @@ export abstract class AbstractPureGraphManager {
     valueSpecificationJson: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification;
+  abstract serializeValueSpecification(
+    valueSpecification: ValueSpecification,
+  ): Record<PropertyKey, unknown>;
   abstract buildRawValueSpecification(
-    compiledValueSpecification: ValueSpecification,
+    valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification;
   abstract serializeRawValueSpecification(
@@ -259,18 +261,17 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): ExecutionPlan;
 
-  abstract transformExecutionPlan(
+  abstract serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): RawExecutionPlan;
 
-  abstract getExecutionNodeProtocolJson(executionNode: ExecutionNode): object;
+  abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
-  // ------------------------------------------- Store -------------------------------------------
+  // ------------------------------------------- Database -------------------------------------------
 
-  abstract generateStore(
-    generateStoreInput: GenerateStoreInput,
-  ): Promise<string>;
-  abstract saveStore(store: string, graph: PureModel): Promise<Store>;
+  abstract buildDatabase(
+    databaseBuilderInput: DatabaseBuilderInput,
+  ): Promise<Entity[]>;
 
   // ------------------------------------------- Service -------------------------------------------
 

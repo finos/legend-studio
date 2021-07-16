@@ -426,7 +426,13 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
     return (
       <EnumValueInstanceValueEditor valueSpecification={valueSpecification} />
     );
-  } else if (valueSpecification instanceof CollectionInstanceValue) {
+  } else if (
+    valueSpecification instanceof CollectionInstanceValue &&
+    valueSpecification.genericType
+  ) {
+    // NOTE: since when we fill in the arguments, `[]` (or `nullish` value in Pure)
+    // is used for parameters we don't handle, we should not attempt to support empty collection
+    // without generic type here as that  is equivalent to `[]`
     return (
       <CollectionValueInstanceValueEditor
         valueSpecification={valueSpecification}

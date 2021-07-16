@@ -14,46 +14,39 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, makeObservable, flow } from 'mobx';
-import type { EditorStore } from '../../EditorStore';
+import { computed, observable, action, makeObservable } from 'mobx';
+import type { EditorStore } from '../../../EditorStore';
 import {
-  addUniqueEntry,
-  deleteEntry,
-  assertNonEmptyString,
   guaranteeType,
   uuid,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
-import { ElementEditorState } from './ElementEditorState';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PackageableConnection } from '../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import type { Connection } from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import { JsonModelConnection } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { FlatDataConnection } from '../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import { RelationalDatabaseConnection } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import { ElementEditorState } from './../ElementEditorState';
+import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { PackageableConnection } from '../../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
+import type { Connection } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
+import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
+import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
+import { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import {
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  GCPApplicationDefaultCredentialsAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
-} from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
+} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  BigQueryDatasourceSpecification,
   StaticDatasourceSpecification,
-} from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import {
-  GenerateStoreInput,
-  StorePattern,
-} from '../../../models/metamodels/pure/action/generation/GenerateStoreInput';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
-import type { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { resolvePackageNameAndElementName } from '../../../models/MetaModelUtils';
-import type { ValidationIssue } from '../../../models/metamodels/pure/action/validator/ValidationResult';
-import { createValidationError } from '../../../models/metamodels/pure/action/validator/ValidationResult';
-import type { StoreRelational_EditorPlugin_Extension } from '../../StoreRelational_EditorPlugin_Extension';
+} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
+import type { ValidationIssue } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
+import { createValidationError } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
+import type { StoreRelational_EditorPlugin_Extension } from '../../../StoreRelational_EditorPlugin_Extension';
+import { DatabaseBuilderState } from './DatabaseBuilderState';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -77,138 +70,22 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   H2_LOCAL = 'H2_LOCAL',
   H2_EMBEDDED = 'H2_EMBEDDED',
   SNOWFLAKE = 'SNOWFLAKE',
+  BIGQUERY = 'BIGQUERY',
 }
 
 export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   DELEGATED_KERBEROS = 'DELEGATED_KERBEROS',
   H2_DEFAULT = 'H2_DEFAULT',
   SNOWFLAKE_PUBLIC = 'SNOWFLAKE_PUBLIC',
+  GCP_APPLICATION_DEFAULT_CREDENTIALS = 'GCP_APPLICATION_DEFAULT_CREDENTIALS',
   TEST = 'TEST',
   OAUTH = 'OAUTH',
-}
-
-export class GenerateStoreState {
-  editorStore: EditorStore;
-  connection: RelationalDatabaseConnection;
-  modal = false;
-  storeGrammar = '';
-  isGeneratingStore = false;
-  isSavingStore = false;
-  targetStorePath = '';
-  patterns: StorePattern[];
-
-  constructor(
-    editorStore: EditorStore,
-    connection: RelationalDatabaseConnection,
-  ) {
-    makeObservable(this, {
-      modal: observable,
-      targetStorePath: observable,
-      setTargetStorePath: action,
-      setModal: action,
-      setStoreGrammar: action,
-      addPattern: action,
-      deletePattern: action,
-      isGeneratingStore: observable,
-      storeGrammar: observable,
-      isSavingStore: observable,
-      patterns: observable,
-    });
-
-    this.connection = connection;
-    this.editorStore = editorStore;
-    const initStorePattern = new StorePattern();
-    initStorePattern.schemaPattern = 'SchemaName';
-    initStorePattern.tablePattern = 'TableName';
-    this.patterns = [initStorePattern];
-  }
-
-  setModal(val: boolean): void {
-    this.modal = val;
-  }
-
-  setStoreGrammar(val: string): void {
-    this.storeGrammar = val;
-  }
-
-  setTargetStorePath(val: string): void {
-    this.targetStorePath = val;
-  }
-
-  addPattern(pattern: StorePattern): void {
-    addUniqueEntry(this.patterns, pattern);
-  }
-  deletePattern(pattern: StorePattern): void {
-    deleteEntry(this.patterns, pattern);
-  }
-
-  generateStore = flow(function* (this: GenerateStoreState) {
-    try {
-      const [packageName, storeName] = resolvePackageNameAndElementName(
-        this.targetStorePath,
-        this.targetStorePath,
-      );
-
-      this.isGeneratingStore = true;
-      assertNonEmptyString(
-        packageName,
-        'Target package required to generate store',
-      );
-      assertNonEmptyString(storeName, 'Target name required to generate store');
-      // default generate store input
-      const generateStoreInput = new GenerateStoreInput(this.connection);
-      generateStoreInput.targetPackage = packageName;
-      generateStoreInput.targetName = storeName;
-      generateStoreInput.enrichTables = true;
-      generateStoreInput.enrichPrimaryKeys = true;
-      generateStoreInput.enrichColumns = true;
-      generateStoreInput.patterns = this.patterns;
-      const storeGrammar =
-        (yield this.editorStore.graphState.graphManager.generateStore(
-          generateStoreInput,
-        )) as unknown as string;
-      this.setStoreGrammar(storeGrammar);
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
-        error,
-      );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
-    } finally {
-      this.isGeneratingStore = false;
-    }
-  });
-
-  saveStore = flow(function* (this: GenerateStoreState) {
-    try {
-      this.isSavingStore = true;
-      assertNonEmptyString(this.storeGrammar, 'Store Grammar cannot be empty');
-      const store = (yield this.editorStore.graphState.graphManager.saveStore(
-        this.storeGrammar,
-        this.editorStore.graphState.graph,
-      )) as unknown as Store;
-      this.editorStore.applicationStore.notifySuccess(
-        `Store ${store.path} saved`,
-      );
-      // reset
-      this.setModal(false);
-      this.editorStore.openElement(store);
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
-        error,
-      );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
-    } finally {
-      this.isSavingStore = false;
-    }
-  });
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
-  generateStoreState: GenerateStoreState;
+  databaseBuilderState: DatabaseBuilderState;
 
   constructor(
     editorStore: EditorStore,
@@ -217,11 +94,14 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     super(editorStore, connection);
     makeObservable(this, {
       setSelectedTab: action,
-      generateStoreState: observable,
+      databaseBuilderState: observable,
       selectedTab: observable,
     });
     this.connection = connection;
-    this.generateStoreState = new GenerateStoreState(editorStore, connection);
+    this.databaseBuilderState = new DatabaseBuilderState(
+      editorStore,
+      connection,
+    );
   }
 
   get storeValidationResult(): ValidationIssue | undefined {
@@ -246,6 +126,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.H2_EMBEDDED;
     } else if (spec instanceof SnowflakeDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE;
+    } else if (spec instanceof BigQueryDatasourceSpecification) {
+      return CORE_DATASOURCE_SPEC_TYPE.BIGQUERY;
     } else if (spec instanceof LocalH2DatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL;
     }
@@ -296,6 +178,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
+      case CORE_DATASOURCE_SPEC_TYPE.BIGQUERY: {
+        this.connection.setDatasourceSpecification(
+          new BigQueryDatasourceSpecification('', ''),
+        );
+        return;
+      }
       default: {
         const extraDatasourceSpecificationCreators =
           this.editorStore.applicationStore.pluginManager
@@ -331,7 +219,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH;
     } else if (auth instanceof SnowflakePublicAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
+    } else if (
+      auth instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
+    ) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS;
     }
+
     const extraAuthenticationStrategyTypeGetters =
       this.editorStore.applicationStore.pluginManager
         .getEditorPlugins()
@@ -364,6 +257,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC: {
         this.connection.setAuthenticationStrategy(
           new SnowflakePublicAuthenticationStrategy('', '', ''),
+        );
+        return;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS: {
+        this.connection.setAuthenticationStrategy(
+          new GCPApplicationDefaultCredentialsAuthenticationStrategy(),
         );
         return;
       }
