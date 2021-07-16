@@ -20,9 +20,15 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import SplitPane from 'react-split-pane';
-import { FaList, FaCodeBranch, FaRegWindowMaximize } from 'react-icons/fa';
+import {
+  FaList,
+  FaCodeBranch,
+  FaRegWindowMaximize,
+  FaUserSecret,
+} from 'react-icons/fa';
 import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
+import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
 import { CORE_TEST_ID } from '../../const';
 import {
@@ -70,6 +76,9 @@ const ViewerStatusBar = observer(() => {
   }`;
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
+  const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
+    editorStore.toggleTextMode(),
+  );
 
   return (
     <div
@@ -116,6 +125,20 @@ const ViewerStatusBar = observer(() => {
           title={'Maximize/Minimize'}
         >
           <FaRegWindowMaximize />
+        </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__action__toggler',
+            {
+              'editor__status-bar__action editor__status-bar__action__toggler--active':
+                editorStore.isInGrammarTextMode,
+            },
+          )}
+          onClick={handleTextModeClick}
+          tabIndex={-1}
+          title={'Toggle text mode (F8)'}
+        >
+          <FaUserSecret />
         </button>
       </div>
     </div>
@@ -173,11 +196,17 @@ export const ViewerInner = observer(() => {
   // Hotkeys
   const keyMap = {
     [HOTKEY.OPEN_ELEMENT]: [HOTKEY_MAP.OPEN_ELEMENT],
+    [HOTKEY.TOGGLE_TEXT_MODE]: [HOTKEY_MAP.TOGGLE_TEXT_MODE],
   };
   const handlers = {
     [HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
       editorStore.searchElementCommandState.open(),
     ),
+    [HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(() => {
+      editorStore
+        .toggleTextMode()
+        .catch(applicationStore.alertIllegalUnhandledError);
+    }),
   };
 
   useEffect(() => {
@@ -222,7 +251,8 @@ export const ViewerInner = observer(() => {
                     maxSize={-600}
                   >
                     <SideBar />
-                    <EditPanel />
+                    {editorStore.isInFormMode && <EditPanel />}
+                    {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
                     <div />
                     <div />
                   </SplitPane>

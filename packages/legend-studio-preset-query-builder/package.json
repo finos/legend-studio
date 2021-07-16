@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-preset-query-builder",
-  "version": "0.0.17",
+  "version": "0.0.21",
   "description": "Legend Studio preset for query builder",
   "keywords": [
     "legend",
@@ -38,6 +38,9 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@ag-grid-community/client-side-row-model": "25.3.0",
+    "@ag-grid-community/core": "25.3.0",
+    "@ag-grid-community/react": "25.3.0",
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
@@ -49,7 +52,7 @@
     "date-fns": "2.22.1",
     "mobx": "6.3.2",
     "mobx-react-lite": "3.2.0",
-    "monaco-editor": "0.25.2",
+    "monaco-editor": "0.26.0",
     "papaparse": "5.3.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",

@@ -720,8 +720,13 @@ const transformOperationType = (
       return V1_MappingOperationType.ROUTER_UNION;
     case OperationType.STORE_UNION:
       return V1_MappingOperationType.STORE_UNION;
+    case OperationType.INHERITANCE:
+      return V1_MappingOperationType.INHERITANCE;
     default:
-      return V1_MappingOperationType.ROUTER_UNION;
+      throw new UnsupportedOperationError(
+        `Can't transform operation type`,
+        value,
+      );
   }
 };
 

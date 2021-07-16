@@ -58,8 +58,8 @@ import type {
 } from '../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import type { PackageableElement } from '../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type {
-  CoreModel,
   SystemModel,
+  CoreModel,
 } from '../../../metamodels/pure/graph/PureModel';
 import { PureModel } from '../../../metamodels/pure/graph/PureModel';
 import type { BasicModel } from '../../../metamodels/pure/graph/BasicModel';
@@ -95,7 +95,6 @@ import {
   V1_serializePureModelContext,
   V1_deserializePureModelContextData,
   V1_setupPureModelContextDataSerialization,
-  V1_PureModelContextType,
 } from './transformation/pureProtocol/V1_PureProtocolSerialization';
 import type { V1_ServiceConfigurationInfo } from './engine/service/V1_ServiceConfiguration';
 import { V1_PureModelContextData } from './model/context/V1_PureModelContextData';
@@ -154,20 +153,21 @@ import { V1_Protocol } from './model/V1_Protocol';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
 import type { PluginManager } from '../../../../application/PluginManager';
 import { V1_ServiceStorage } from './engine/service/V1_ServiceStorage';
-import type { Store } from '../../../metamodels/pure/model/packageableElements/store/Store';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
 import { V1_GraphBuilderExtensions } from './transformation/pureGraph/to/V1_GraphBuilderExtensions';
 import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from '../../../metamodels/pure/graph/PureGraphManagerPlugin';
 import type {
-  GenerateStoreInput,
-  StorePattern,
-} from '../../../metamodels/pure/action/generation/GenerateStoreInput';
+  DatabaseBuilderInput,
+  DatabasePattern,
+} from '../../../metamodels/pure/action/generation/DatabaseBuilderInput';
 import {
-  V1_GenerateStoreInput,
-  V1_StorePattern,
-} from './engine/generation/V1_GenerateStoreInput';
-import { V1_transformConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
+  V1_DatabaseBuilderConfig,
+  V1_DatabaseBuilderInput,
+  V1_DatabasePattern,
+  V1_TargetDatabase,
+} from './engine/generation/V1_DatabaseBuilderInput';
+import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database';
 import { V1_ServiceStore } from './model/packageableElements/store/relational/V1_ServiceStore';
@@ -1652,23 +1652,27 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  serializeValueSpecification(
+    valueSpecification: ValueSpecification,
+  ): Record<PropertyKey, unknown> {
+    return V1_serializeValueSpecification(
+      valueSpecification.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationTransformer(
+          [],
+          new Map<string, unknown[]>(),
+          true,
+          false,
+        ),
+      ),
+    ) as Record<PropertyKey, unknown>;
+  }
+
   buildRawValueSpecification(
-    protocol: ValueSpecification,
+    valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification {
     // converts value spec to json
-    const _valueSpecification = protocol.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationTransformer(
-        [],
-        new Map<string, unknown[]>(),
-        true,
-        false,
-      ),
-    );
-    const json = V1_serializeValueSpecification(_valueSpecification) as Record<
-      PropertyKey,
-      unknown
-    >;
+    const json = this.serializeValueSpecification(valueSpecification);
     // deserialize json and builds metamodal raw value spec
     const rawValueSpecification = V1_deserializeRawValueSpecification(json);
     return rawValueSpecification.accept_RawValueSpecificationVisitor(
@@ -1903,7 +1907,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  transformExecutionPlan(
+  serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): PlainObject<V1_ExecutionPlan> {
     return V1_serializeExecutionPlan(
@@ -1916,7 +1920,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  getExecutionNodeProtocolJson(
+  serializeExecutionNode(
     executionNode: ExecutionNode,
   ): PlainObject<V1_ExecutionNode> {
     return V1_serializeExecutionNode(
@@ -1931,62 +1935,42 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- V1_Store ---------------------------------------------
 
-  generateStore = flow(function* (
+  buildDatabase = flow(function* (
     this: V1_PureGraphManager,
-    input: GenerateStoreInput,
-  ): GeneratorFn<string> {
-    const generateStoreInput = new V1_GenerateStoreInput();
-    generateStoreInput.connection = V1_transformConnection(
+    input: DatabaseBuilderInput,
+  ): GeneratorFn<Entity[]> {
+    const dbBuilderInput = new V1_DatabaseBuilderInput();
+    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
       input.connection,
-      false,
       new V1_GraphTransformerContextBuilder(
         this.pureProtocolProcessorPlugins,
       ).build(),
     );
-    generateStoreInput.targetPackage = input.targetPackage;
-    generateStoreInput.targetName = input.targetName;
-    generateStoreInput.maxTables = input.maxTables;
-    generateStoreInput.enrichTables = input.enrichTables;
-    generateStoreInput.enrichPrimaryKeys = input.enrichPrimaryKeys;
-    generateStoreInput.enrichColumns = input.enrichColumns;
-    generateStoreInput.patterns = input.patterns.map(
-      (storePattern: StorePattern): V1_StorePattern => {
-        const generateStore = new V1_StorePattern();
-        generateStore.schemaPattern = storePattern.schemaPattern;
-        generateStore.tablePattern = storePattern.tablePattern;
-        generateStore.escapeSchemaPattern = storePattern.escapeSchemaPattern;
-        generateStore.escapeTablePattern = storePattern.escapeTablePattern;
-        return generateStore;
+    const targetDatabase = new V1_TargetDatabase();
+    targetDatabase.package = input.targetDatabase.package;
+    targetDatabase.name = input.targetDatabase.name;
+    dbBuilderInput.targetDatabase = targetDatabase;
+    const config = new V1_DatabaseBuilderConfig();
+    config.maxTables = input.config.maxTables;
+    config.enrichTables = input.config.enrichTables;
+    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
+    config.enrichColumns = input.config.enrichColumns;
+    config.patterns = input.config.patterns.map(
+      (storePattern: DatabasePattern): V1_DatabasePattern => {
+        const pattern = new V1_DatabasePattern();
+        pattern.schemaPattern = storePattern.schemaPattern;
+        pattern.tablePattern = storePattern.tablePattern;
+        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
+        pattern.escapeTablePattern = storePattern.escapeTablePattern;
+        return pattern;
       },
     );
-    const store = (yield this.engine.engineServerClient.generateStore(
-      V1_GenerateStoreInput.serialization.toJson(generateStoreInput),
-    )) as PlainObject<V1_Store>;
-    return (yield this.engine.pureModelContextDataToPureCode(
-      V1_deserializePureModelContextData({
-        _type: V1_PureModelContextType.DATA,
-        elements: [store],
-      }),
-    )) as string;
-  });
-
-  saveStore = flow(function* (
-    this: V1_PureGraphManager,
-    store: string,
-    graph: PureModel,
-  ): GeneratorFn<Store> {
-    const data = (yield this.engine.pureCodeToPureModelContextData(
-      store,
-    )) as V1_PureModelContextData;
-    const v1Store = data.elements.find((e) => e instanceof V1_Store);
-    const graphBuilderInput: V1_GraphBuilderInput[] = [
-      { model: graph, data: indexPureModelContextData(data, this.extensions) },
-    ];
-    yield this.initializeAndIndexElements(graph, graphBuilderInput);
-    yield this.buildStores(graph, graphBuilderInput);
-    return graph.getStore(
-      guaranteeNonNullable(v1Store, 'No generated store found in text').path,
-    );
+    dbBuilderInput.config = config;
+    const jsonGraph = (yield this.engine.engineServerClient.buildDatabase(
+      V1_DatabaseBuilderInput.serialization.toJson(dbBuilderInput),
+    )) as PlainObject<V1_PureModelContextData>;
+    const graph = V1_deserializePureModelContextData(jsonGraph);
+    return this.pureModelContextDataToEntities(graph);
   });
 
   // --------------------------------------------- V1_Service ---------------------------------------------

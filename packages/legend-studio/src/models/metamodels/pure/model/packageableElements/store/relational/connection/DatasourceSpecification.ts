@@ -137,6 +137,7 @@ export class LocalH2DatasourceSpecification
       testDataSetupCsv: observable,
       testDataSetupSqls: observable,
       setTestDataSetupCsv: action,
+      setTestDataSetupSqls: action,
       hashCode: computed,
     });
   }
@@ -232,6 +233,43 @@ export class SnowflakeDatasourceSpecification
       this.databaseName,
       this.cloudType ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
+    ]);
+  }
+}
+
+export class BigQueryDatasourceSpecification
+  extends DatasourceSpecification
+  implements Hashable
+{
+  projectId: string;
+  defaultDataset: string;
+
+  constructor(projectId: string, defaultDataset: string) {
+    super();
+
+    makeObservable(this, {
+      projectId: observable,
+      defaultDataset: observable,
+      hashCode: computed,
+      setProjectId: action,
+      setDefaultDataset: action,
+    });
+    this.projectId = projectId;
+    this.defaultDataset = defaultDataset;
+  }
+
+  setProjectId(val: string): void {
+    this.projectId = val;
+  }
+  setDefaultDataset(val: string): void {
+    this.defaultDataset = val;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
+      this.projectId,
+      this.defaultDataset,
     ]);
   }
 }

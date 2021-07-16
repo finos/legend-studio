@@ -76,7 +76,7 @@ import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/Ent
 import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState';
 import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState';
 import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState';
-import { PackageableConnectionEditorState } from './editor-state/element-editor-state/ConnectionEditorState';
+import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
@@ -1155,9 +1155,10 @@ export class EditorStore {
         this.isInConflictResolutionMode &&
         !this.conflictResolutionState.hasResolvedAllConflicts;
       if (
-        this.isInitialized &&
-        !isResolvingConflicts &&
-        !this.blockGlobalHotkeys
+        (this.isInitialized &&
+          !isResolvingConflicts &&
+          !this.blockGlobalHotkeys) ||
+        this.isInViewerMode
       ) {
         handler();
       }

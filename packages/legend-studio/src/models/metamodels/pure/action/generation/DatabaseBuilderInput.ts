@@ -15,17 +15,17 @@
  */
 
 import { makeObservable, observable, action } from 'mobx';
-import type { Connection } from '../../model/packageableElements/connection/Connection';
 import { uuid } from '@finos/legend-studio-shared';
+import type { RelationalDatabaseConnection } from '../../model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 
-export class StorePattern {
+export class DatabasePattern {
   uuid = uuid();
   schemaPattern = '';
   tablePattern = '';
   escapeSchemaPattern?: boolean;
   escapeTablePattern?: boolean;
 
-  constructor() {
+  constructor(schemaPattern: string, tablePattern: string) {
     makeObservable(this, {
       schemaPattern: observable,
       tablePattern: observable,
@@ -34,6 +34,8 @@ export class StorePattern {
       setTablePattern: action,
       setSchemaPattern: action,
     });
+    this.schemaPattern = schemaPattern;
+    this.tablePattern = tablePattern;
   }
 
   setSchemaPattern(val: string): void {
@@ -45,26 +47,50 @@ export class StorePattern {
   }
 }
 
-export class GenerateStoreInput {
-  targetPackage = '';
-  targetName = '';
+export class DatabaseBuilderConfig {
   maxTables?: number = 100000;
-  enrichTables?: boolean = true;
-  enrichPrimaryKeys?: boolean;
-  enrichColumns?: boolean;
-  connection: Connection;
-  patterns: StorePattern[] = [];
+  enrichTables = false;
+  enrichPrimaryKeys = false;
+  enrichColumns = false;
+  patterns: DatabasePattern[] = [];
 
-  constructor(connection: Connection) {
+  constructor() {
     makeObservable(this, {
-      targetPackage: observable,
-      targetName: observable,
       maxTables: observable,
       enrichTables: observable,
       enrichPrimaryKeys: observable,
       enrichColumns: observable,
       patterns: observable,
     });
+  }
+}
+
+export class TargetDatabase {
+  name: string;
+  package: string;
+  constructor(_package: string, name: string) {
+    makeObservable(this, {
+      name: observable,
+      package: observable,
+    });
+    this.package = _package;
+    this.name = name;
+  }
+}
+
+export class DatabaseBuilderInput {
+  targetDatabase: TargetDatabase;
+  config: DatabaseBuilderConfig;
+  connection: RelationalDatabaseConnection;
+
+  constructor(connection: RelationalDatabaseConnection) {
+    makeObservable(this, {
+      targetDatabase: observable,
+      config: observable,
+      connection: observable,
+    });
     this.connection = connection;
+    this.targetDatabase = new TargetDatabase('', '');
+    this.config = new DatabaseBuilderConfig();
   }
 }

@@ -14,9 +14,28 @@
  * limitations under the License.
  */
 
-.execution-plan-viewer {
-  &__close-btn {
-    border-color: var(--color-blue-200);
-    background: var(--color-blue-300);
+.table {
+  th,
+  td {
+    padding: 1rem;
+    text-align: center;
+    vertical-align: middle;
+    border: 0.1rem solid var(--color-dark-grey-250);
+  }
+
+  thead {
+    background: var(--color-dark-grey-100);
+  }
+
+  th {
+    font-weight: 500;
+  }
+
+  tr {
+    height: 3.4rem;
+  }
+
+  &__cell--left {
+    text-align: left !important;
   }
 }

@@ -110,6 +110,7 @@ export const OperationSetImplementationEditor = observer(
         const mappingElement = item.data;
         if (
           mappingElement instanceof SetImplementation &&
+          setImplementation.operation !== OperationType.INHERITANCE &&
           mappingElement.class.value === setImplementation.class.value &&
           !setImplementation.parameters.find(
             (param) => param.setImplementation.value === mappingElement,
@@ -168,7 +169,10 @@ export const OperationSetImplementationEditor = observer(
             <div className="panel__header__actions">
               <button
                 className="panel__header__action"
-                disabled={isReadOnly}
+                disabled={
+                  isReadOnly ||
+                  setImplementation.operation === OperationType.INHERITANCE
+                }
                 onClick={addParameter}
                 tabIndex={-1}
                 title={'Add parameter'}

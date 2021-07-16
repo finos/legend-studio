@@ -20,8 +20,8 @@ import { clsx, InfoCircleIcon } from '@finos/legend-studio-components';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import type {
-  DerivedPropertyExpressionEditorState,
-  QueryBuilderPropertyEditorState,
+  QueryBuilderDerivedPropertyExpressionState,
+  QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState';
 import { getPropertyPath } from '../stores/QueryBuilderPropertyEditorState';
 import type { DropTargetMonitor } from 'react-dnd';
@@ -36,7 +36,7 @@ import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoToolt
 
 const DerivedPropertyExpressionEditor = observer(
   (props: {
-    derivedPropertyExpressionState: DerivedPropertyExpressionEditorState;
+    derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
   }) => {
     const { derivedPropertyExpressionState } = props;
     const parameterValues = derivedPropertyExpressionState.parameterValues;
@@ -79,14 +79,16 @@ const DerivedPropertyExpressionEditor = observer(
 );
 
 export const QueryBuilderPropertyExpressionEditor = observer(
-  (props: { propertyEditorState: QueryBuilderPropertyEditorState }) => {
-    const { propertyEditorState } = props;
+  (props: { propertyExpressionState: QueryBuilderPropertyExpressionState }) => {
+    const { propertyExpressionState } = props;
     const handleClose = (): void =>
-      propertyEditorState.setIsEditingDerivedProperty(false);
+      propertyExpressionState.setIsEditingDerivedProperty(false);
 
     return (
       <Dialog
-        open={Boolean(propertyEditorState.isEditingDerivedProperty)}
+        open={Boolean(
+          propertyExpressionState.isEditingDerivedPropertyExpression,
+        )}
         onClose={handleClose}
         classes={{
           root: 'editor-modal__root-container',
@@ -99,16 +101,18 @@ export const QueryBuilderPropertyExpressionEditor = observer(
             <div className="modal__title">Derived Property</div>
           </div>
           <div className="modal__body query-builder-property-editor__content">
-            {propertyEditorState.propertyExpressionStates.map((pe) => (
-              <DerivedPropertyExpressionEditor
-                key={pe.path}
-                derivedPropertyExpressionState={pe}
-              />
-            ))}
+            {propertyExpressionState.derivedPropertyExpressionStates.map(
+              (pe) => (
+                <DerivedPropertyExpressionEditor
+                  key={pe.path}
+                  derivedPropertyExpressionState={pe}
+                />
+              ),
+            )}
           </div>
           <div className="modal__footer">
             <button
-              className="btn execution-plan-viewer__close-btn"
+              className="btn modal__footer__close-btn"
               onClick={handleClose}
             >
               Done
@@ -122,20 +126,21 @@ export const QueryBuilderPropertyExpressionEditor = observer(
 
 export const QueryBuilderPropertyExpressionBadge = observer(
   (props: {
-    propertyEditorState: QueryBuilderPropertyEditorState;
+    propertyExpressionState: QueryBuilderPropertyExpressionState;
     onPropertyExpressionChange: (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ) => void;
   }) => {
-    const { propertyEditorState, onPropertyExpressionChange } = props;
+    const { propertyExpressionState, onPropertyExpressionChange } = props;
     const type =
-      propertyEditorState.propertyExpression.func.genericType.value.rawType;
-    const derivedPropertyInChain =
-      propertyEditorState.hasDerivedPropertyInChain;
-    const isValid = propertyEditorState.isValid;
+      propertyExpressionState.propertyExpression.func.genericType.value.rawType;
+    const hasDerivedPropertyInExpression = Boolean(
+      propertyExpressionState.derivedPropertyExpressionStates.length,
+    );
+    const isValid = propertyExpressionState.isValid;
     const setDerivedPropertyArguments = (): void => {
-      if (derivedPropertyInChain) {
-        propertyEditorState.setIsEditingDerivedProperty(true);
+      if (hasDerivedPropertyInExpression) {
+        propertyExpressionState.setIsEditingDerivedProperty(true);
       }
     };
     const handleDrop = useCallback(
@@ -190,11 +195,11 @@ export const QueryBuilderPropertyExpressionBadge = observer(
           >
             <div
               className="query-builder-property-expression-badge__property"
-              title={`${propertyEditorState.title} - ${propertyEditorState.path}`}
+              title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
             >
-              {propertyEditorState.title}
+              {propertyExpressionState.title}
             </div>
-            {derivedPropertyInChain && (
+            {hasDerivedPropertyInExpression && (
               <button
                 className={clsx(
                   'query-builder-property-expression-badge__action',
@@ -211,11 +216,11 @@ export const QueryBuilderPropertyExpressionBadge = observer(
               </button>
             )}
             <QueryBuilderPropertyExpressionEditor
-              propertyEditorState={propertyEditorState}
+              propertyExpressionState={propertyExpressionState}
             />
             <QueryBuilderPropertyInfoTooltip
-              property={propertyEditorState.propertyExpression.func}
-              path={getPropertyPath(propertyEditorState.propertyExpression)}
+              property={propertyExpressionState.propertyExpression.func}
+              path={getPropertyPath(propertyExpressionState.propertyExpression)}
               isMapped={true}
               placement="bottom-end"
             >

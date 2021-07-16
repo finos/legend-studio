@@ -21,11 +21,8 @@ import type {
   ValueSpecification,
 } from '@finos/legend-studio';
 import {
-  DATE_FORMAT,
   extractElementNameFromPath,
   matchFunctionName,
-  FunctionType,
-  LambdaFunction,
   LambdaFunctionInstanceValue,
   VariableExpression,
   AbstractPropertyExpression,
@@ -35,12 +32,10 @@ import {
   EnumValueInstanceValue,
   SimpleFunctionExpression,
   PRIMITIVE_TYPE,
-  CORE_ELEMENT_PATH,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
 import {
   guaranteeType,
-  UnsupportedOperationError,
   guaranteeNonNullable,
   assertTrue,
   generateEnumerableNameFromToken,
@@ -51,32 +46,8 @@ import type {
   QueryBuilderFilterOperator,
 } from '../QueryBuilderFilterState';
 import { FilterConditionState } from '../QueryBuilderFilterState';
-import format from 'date-fns/format';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-
-export const getDefaultPrimitiveInstanceValueForType = (
-  type: PRIMITIVE_TYPE,
-): unknown => {
-  switch (type) {
-    case PRIMITIVE_TYPE.STRING:
-      return '';
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return false;
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRIMITIVE_TYPE.INTEGER:
-      return 0;
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return format(new Date(Date.now()), DATE_FORMAT);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't get default value for primitive instance of type '${type}'`,
-      );
-  }
-};
+import { buildGenericLambdaFunctionInstanceValue } from '../QueryBuilderValueSpecificationBuilderHelper';
 
 export const buildPrimitiveInstanceValue = (
   filterConditionState: FilterConditionState,
@@ -119,12 +90,14 @@ const buildFilterConditionExpressionWithExists = (
     filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
-  assertTrue(filterConditionState.propertyEditorState.requiresExistsHandling);
+  assertTrue(
+    filterConditionState.propertyExpressionState.requiresExistsHandling,
+  );
 
   // 1. Decompose property expression
   const pes: AbstractPropertyExpression[] = [];
   let currentPe: ValueSpecification =
-    filterConditionState.propertyEditorState.propertyExpression;
+    filterConditionState.propertyExpressionState.propertyExpression;
   while (currentPe instanceof AbstractPropertyExpression) {
     const pe = new AbstractPropertyExpression('', multiplicityOne);
     pe.func = currentPe.func;
@@ -181,9 +154,6 @@ const buildFilterConditionExpressionWithExists = (
 
   // 3. Build each property chain into an exists() simple function expression
   const simpleFunctionExpressions: SimpleFunctionExpression[] = [];
-  const typeAny = filterConditionState.editorStore.graphState.graph.getType(
-    CORE_ELEMENT_PATH.ANY,
-  );
   for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
     const simpleFunctionExpression = new SimpleFunctionExpression(
       extractElementNameFromPath(SUPPORTED_FUNCTIONS.EXISTS),
@@ -219,12 +189,11 @@ const buildFilterConditionExpressionWithExists = (
       _existsLambdaVariable instanceof AbstractPropertyExpression
         ? getPropertyExpressionChainVariable(_existsLambdaVariable)
         : guaranteeType(_existsLambdaVariable, VariableExpression);
-    const existsLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-    const existsLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-    existsLambdaFunctionType.parameters.push(existsLambdaVariable);
-    const existsLambdaFunction = new LambdaFunction(existsLambdaFunctionType);
-    existsLambdaFunction.expressionSequence = [childSFE];
-    existsLambda.values.push(existsLambdaFunction);
+    const existsLambda = buildGenericLambdaFunctionInstanceValue(
+      existsLambdaVariable.name,
+      [childSFE],
+      filterConditionState.editorStore.graphState.graph,
+    );
     // add the child SFE lambda to the current SFE parameters
     currentSFE.parametersValues.push(existsLambda);
   }
@@ -240,7 +209,7 @@ export const buildFilterConditionExpression = (
     filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
-  if (filterConditionState.propertyEditorState.requiresExistsHandling) {
+  if (filterConditionState.propertyExpressionState.requiresExistsHandling) {
     return buildFilterConditionExpressionWithExists(
       filterConditionState,
       operatorFunctionFullPath,
@@ -251,7 +220,7 @@ export const buildFilterConditionExpression = (
     multiplicityOne,
   );
   expression.parametersValues.push(
-    filterConditionState.propertyEditorState.propertyExpression,
+    filterConditionState.propertyExpressionState.propertyExpression,
   );
   // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
   if (filterConditionState.value) {

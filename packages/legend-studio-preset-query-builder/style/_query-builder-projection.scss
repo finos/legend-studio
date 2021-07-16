@@ -63,6 +63,16 @@
     }
   }
 
+  &__column__context-menu {
+    display: flex;
+    height: 100%;
+    width: 100%;
+  }
+
+  &__column--selected-from-context-menu {
+    background: var(--color-dark-blue-shade-100);
+  }
+
   &__column__dnd__placeholder {
     height: 2.8rem !important;
     &__container {

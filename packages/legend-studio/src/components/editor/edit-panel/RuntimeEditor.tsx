@@ -69,7 +69,7 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
-import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/ConnectionEditorState';
+import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { Dialog } from '@material-ui/core';
 import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import {

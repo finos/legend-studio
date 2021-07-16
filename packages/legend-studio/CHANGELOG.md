@@ -1,5 +1,65 @@
 # @finos/legend-studio
 
+## 0.1.18
+
+### Patch Changes
+
+- [#346](https://github.com/finos/legend-studio/pull/346) [`d545580`](https://github.com/finos/legend-studio/commit/d5455804b7895947dc167834c87300267e1cdde0) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add text support for `INHERITANCE` operation class mapping.
+
+* [#290](https://github.com/finos/legend-studio/pull/290) [`cb0ff2b`](https://github.com/finos/legend-studio/commit/cb0ff2b7aecfaf2a89d4ddc98e04854c25624ce8) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add database builder in the relational connection editor to support generating a database from a connection specification.
+
+- [#340](https://github.com/finos/legend-studio/pull/340) [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb) Thanks [@akphi](https://github.com/akphi)! - Improve diagram editor modelling capabilities (related to https://github.com/finos/legend-studio/issues/300). In diagram editor, users now have can see all supported hotkeys and have the tools to create new classes, properties, inheritance relationships, etc. All of this is made possible thanks to @pierredebelen for contributing to the core diagram renderer in https://github.com/finos/legend-studio/pull/338.
+
+* [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! -
+
+- [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! - Add support for `BigQuery` connection.
+
+- Updated dependencies [[`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb), [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb)]:
+  - @finos/legend-studio-components@0.0.24
+  - @finos/legend-studio-network@0.0.22
+  - @finos/legend-studio-shared@0.0.20
+
+## 0.1.17
+
+### Patch Changes
+
+- [#332](https://github.com/finos/legend-studio/pull/332) [`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where `relational mapping` source tree does not display root nodes correctly (only the last column is shown) due to faulty node ID generator.
+
+* [#312](https://github.com/finos/legend-studio/pull/312) [`65966ef`](https://github.com/finos/legend-studio/commit/65966ef8e6fa8152fcc5c39501fda9c62646aecc) Thanks [@umarphaarook](https://github.com/umarphaarook)! - Allow users to use text-mode while viewing project in read-only mode.
+
+* Updated dependencies [[`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2)]:
+  - @finos/legend-studio-components@0.0.23
+  - @finos/legend-studio-network@0.0.21
+  - @finos/legend-studio-shared@0.0.19
+
+## 0.1.16
+
+### Patch Changes
+
+- Updated dependencies [[`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371), [`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371)]:
+  - @finos/legend-studio-components@0.0.22
+  - @finos/legend-studio-shared@0.0.18
+  - @finos/legend-studio-network@0.0.20
+
+## 0.1.15
+
+### Patch Changes
+
+- [#311](https://github.com/finos/legend-studio/pull/311) [`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** Function expression builder will no-longer support building any function unless their expression builders are specified in plugins. This is adjusted to match the behavior of function handler in engine. _Also, by design, core Studio should not handle function matching at all._
+
+* [#293](https://github.com/finos/legend-studio/pull/293) [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502) Thanks [@akphi](https://github.com/akphi)! - Avoid printing out Javascript class name as these will get obfuscated and modified due to minification in production build. As such, unsupported operation error messages are resructured to print out the unsupported objects instead of their classes' names.
+
+- [#313](https://github.com/finos/legend-studio/pull/313) [`547089b`](https://github.com/finos/legend-studio/commit/547089b71ec534be6d2362369748d08d63cd8243) Thanks [@hardikmaheshwari](https://github.com/hardikmaheshwari)! - Add support for configuring Snowflake datasource specification `quotedIdentifiersIgnoreCase` flag in form mode.
+
+* [#293](https://github.com/finos/legend-studio/pull/293) [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE** Element builder for DSL now requires `elementClassName` to better print error message when loading plugins.
+
+- [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) Thanks [@akphi](https://github.com/akphi)! - Allow DnD from project explorer panel to grammar text editor to quickly add the path of the element.
+
+- Updated dependencies [[`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502)]:
+  - @finos/legend-studio-components@0.0.21
+  - @finos/legend-studio-network@0.0.19
+  - @finos/legend-studio-shared@0.0.17
+
 ## 0.1.14
 
 ### Patch Changes

@@ -158,7 +158,7 @@ export const V1_findRelation = (
 ): Relation | undefined => {
   const relations: Relation[] = [];
   getAllIncludedDbs(database).forEach((db) => {
-    const schema = db.schemas.find((schema) => schema.name === schemaName);
+    const schema = db.schemas.find((_schema) => _schema.name === schemaName);
     if (schema) {
       let relation: Relation | undefined = schema.tables.find(
         (table) => table.name === tableName,

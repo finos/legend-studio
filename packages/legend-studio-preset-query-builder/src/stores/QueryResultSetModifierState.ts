@@ -53,7 +53,6 @@ export class SortColumnState {
   ) {
     makeAutoObservable(this, {
       editorStore: false,
-      columnState: false,
       setColumnState: action,
       setSortType: action,
     });
@@ -75,7 +74,7 @@ export class SortColumnState {
       this.editorStore.graphState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
-    const func = new SimpleFunctionExpression(
+    const sortColumnFunction = new SimpleFunctionExpression(
       extractElementNameFromPath(
         this.sortType === COLUMN_SORT_TYPE.ASC
           ? SUPPORTED_FUNCTIONS.TDS_ASC
@@ -83,20 +82,19 @@ export class SortColumnState {
       ),
       multiplicityOne,
     );
-    const stringGenericTypeRef = GenericTypeExplicitReference.create(
-      new GenericType(
-        this.editorStore.graphState.graph.getPrimitiveType(
-          PRIMITIVE_TYPE.STRING,
+    const sortColumnName = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          this.editorStore.graphState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.STRING,
+          ),
         ),
       ),
-    );
-    const stringValue = new PrimitiveInstanceValue(
-      stringGenericTypeRef,
       multiplicityOne,
     );
-    stringValue.values = [this.columnState.columnName];
-    func.parametersValues[0] = stringValue;
-    return func;
+    sortColumnName.values = [this.columnState.columnName];
+    sortColumnFunction.parametersValues[0] = sortColumnName;
+    return sortColumnFunction;
   }
 }
 
@@ -169,22 +167,27 @@ export class QueryResultSetModifierState {
       const func = lambda.expressionSequence[0];
       if (func instanceof SimpleFunctionExpression) {
         if (
-          matchFunctionName(func.functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
+          matchFunctionName(
+            func.functionName,
+            SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          ) ||
+          matchFunctionName(func.functionName, SUPPORTED_FUNCTIONS.TDS_GROUP_BY)
         ) {
           let currentExpression = func;
-          // distinct
+
+          // build distinct()
           if (this.distinct) {
-            const val = new SimpleFunctionExpression(
+            const distinctFunction = new SimpleFunctionExpression(
               extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_DISTINCT),
               multiplicityOne,
             );
-            val.parametersValues[0] = currentExpression;
-            currentExpression = val;
+            distinctFunction.parametersValues[0] = currentExpression;
+            currentExpression = distinctFunction;
           }
 
-          // sort
+          // build sort()
           if (this.sortColumns.length) {
-            const val = new SimpleFunctionExpression(
+            const sortFunction = new SimpleFunctionExpression(
               extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_SORT),
               multiplicityOne,
             );
@@ -196,41 +199,40 @@ export class QueryResultSetModifierState {
               multiplicity,
               undefined,
             );
-            collection.values = this.sortColumns.map((e) =>
-              e.buildFunctionExpression(),
+            collection.values = this.sortColumns.map((sortColumm) =>
+              sortColumm.buildFunctionExpression(),
             );
-            val.parametersValues[0] = currentExpression;
-            val.parametersValues[1] = collection;
-            currentExpression = val;
+            sortFunction.parametersValues[0] = currentExpression;
+            sortFunction.parametersValues[1] = collection;
+            currentExpression = sortFunction;
           }
 
-          // take
+          // build take()
           if (this.limit || options?.overridingLimit) {
-            const integerGenericTypeRef = GenericTypeExplicitReference.create(
-              new GenericType(
-                this.editorStore.graphState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.INTEGER,
+            const limit = new PrimitiveInstanceValue(
+              GenericTypeExplicitReference.create(
+                new GenericType(
+                  this.editorStore.graphState.graph.getPrimitiveType(
+                    PRIMITIVE_TYPE.INTEGER,
+                  ),
                 ),
               ),
-            );
-            const limitColumnValue = new PrimitiveInstanceValue(
-              integerGenericTypeRef,
               multiplicityOne,
             );
-            limitColumnValue.values = [
+            limit.values = [
               Math.min(
                 this.limit ?? Number.MAX_SAFE_INTEGER,
                 options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
               ),
             ];
-            const limitColFuncs = new SimpleFunctionExpression(
+            const takeFunction = new SimpleFunctionExpression(
               extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_TAKE),
               multiplicityOne,
             );
 
-            limitColFuncs.parametersValues[0] = currentExpression;
-            limitColFuncs.parametersValues[1] = limitColumnValue;
-            currentExpression = limitColFuncs;
+            takeFunction.parametersValues[0] = currentExpression;
+            takeFunction.parametersValues[1] = limit;
+            currentExpression = takeFunction;
           }
 
           lambda.expressionSequence[0] = currentExpression;
@@ -245,19 +247,18 @@ export class QueryResultSetModifierState {
           // we won't support using `take()` as result set modifier operations for graph-fetch.
           // Result set modifier should only be used for projection for now.
           if (options?.overridingLimit) {
-            const integerGenericTypeRef = GenericTypeExplicitReference.create(
-              new GenericType(
-                this.editorStore.graphState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.INTEGER,
+            const limit = new PrimitiveInstanceValue(
+              GenericTypeExplicitReference.create(
+                new GenericType(
+                  this.editorStore.graphState.graph.getPrimitiveType(
+                    PRIMITIVE_TYPE.INTEGER,
+                  ),
                 ),
               ),
-            );
-            const limitColumnValue = new PrimitiveInstanceValue(
-              integerGenericTypeRef,
               multiplicityOne,
             );
-            limitColumnValue.values = [options.overridingLimit];
-            const limitColFuncs = new SimpleFunctionExpression(
+            limit.values = [options.overridingLimit];
+            const takeFunction = new SimpleFunctionExpression(
               extractElementNameFromPath(SUPPORTED_FUNCTIONS.TAKE),
               multiplicityOne,
             );
@@ -270,10 +271,10 @@ export class QueryResultSetModifierState {
               SimpleFunctionExpression,
             );
             const getAllFunc = graphFetchFunc.parametersValues[0];
-            limitColFuncs.parametersValues[0] = getAllFunc;
-            limitColFuncs.parametersValues[1] = limitColumnValue;
+            takeFunction.parametersValues[0] = getAllFunc;
+            takeFunction.parametersValues[1] = limit;
             graphFetchFunc.parametersValues = [
-              limitColFuncs,
+              takeFunction,
               graphFetchFunc.parametersValues[1],
             ];
             return lambda;

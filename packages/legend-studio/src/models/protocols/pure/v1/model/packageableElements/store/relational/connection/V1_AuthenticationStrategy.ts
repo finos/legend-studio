@@ -90,3 +90,14 @@ export class V1_SnowflakePublicAuthenticationStrategy
     ]);
   }
 }
+
+export class V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY,
+    ]);
+  }
+}

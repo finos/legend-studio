@@ -38,7 +38,7 @@ import type { InferableMappingElementRoot } from './InferableMappingElementRoot'
 export enum OperationType {
   STORE_UNION = 'STORE_UNION',
   ROUTER_UNION = 'ROUTER_UNION',
-  // INHERITANCE = 'INHERITANCE',
+  INHERITANCE = 'INHERITANCE',
   // MERGE = 'MERGE',
 }
 

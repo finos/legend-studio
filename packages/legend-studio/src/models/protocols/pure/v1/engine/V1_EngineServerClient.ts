@@ -36,7 +36,6 @@ import type { V1_GenerationConfigurationDescription } from './generation/V1_Gene
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
 import type { V1_ExecuteInput } from './execution/V1_ExecuteInput';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
-import type { V1_Store } from '../model/packageableElements/store/V1_Store';
 import type {
   ServerClientConfig,
   TraceData,
@@ -100,8 +99,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
   });
 
   _pure = (): string => `${this.networkClient.baseUrl}/pure/${this.version}`;
-
-  _store = (): string => `${this.networkClient.baseUrl}/store/${this.version}`;
 
   // ------------------------------------------- Server -------------------------------------------
 
@@ -278,14 +275,17 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  // ------------------------------------------- Store -------------------------------------------
+  // ------------------------------------------- Utilities -------------------------------------------
 
-  generateStore = (
+  _utilities = (): string => `${this._pure()}/utilities`;
+  _databaseUtilities = (): string => `${this._utilities()}/database`;
+
+  buildDatabase = (
     input: PlainObject<V1_ExecuteInput>,
-  ): Promise<PlainObject<V1_Store>> =>
+  ): Promise<PlainObject<V1_PureModelContextData>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_EXECUTION_PLAN),
-      `${this._store()}/store`,
+      `${this._databaseUtilities()}/schemaExploration`,
       input,
     );
 
