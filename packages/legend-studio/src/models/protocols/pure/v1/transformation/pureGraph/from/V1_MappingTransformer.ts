@@ -343,7 +343,7 @@ const transformClassMappingPropertyMappings = (
   values: PropertyMapping[],
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
-  renderSourceId: boolean,
+  isTransformingSourceId: boolean,
 ): V1_PropertyMapping[] =>
   values
     .filter((value) => !value.isStub)
@@ -352,7 +352,7 @@ const transformClassMappingPropertyMappings = (
         value,
         isTransformingEmbeddedPropertyMapping,
         context,
-        renderSourceId,
+        isTransformingSourceId,
       ),
     );
 
@@ -446,7 +446,7 @@ const transformRelationalPropertyMapping = (
   element: RelationalPropertyMapping,
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
-  renderSourceId: boolean,
+  isTransformingSourceId: boolean,
 ): V1_RelationalPropertyMapping => {
   const propertyMapping = new V1_RelationalPropertyMapping();
   propertyMapping.enumMappingId = transformOptionalPropertyMappingTransformer(
@@ -468,9 +468,9 @@ const transformRelationalPropertyMapping = (
           [SOURCE_INFORMATION_KEY],
         ),
   ) as V1_RawRelationalOperationElement;
-  // Note: renderSourceId is required to have the source information persisted in case of relationalPropertyMappings
+  // Note: isTransformingSourceId is required to have the source information persisted in case of relationalPropertyMappings
   // source key needs to be interpeted here for consistency between engine protcol and studio protcol
-  propertyMapping.source = renderSourceId
+  propertyMapping.source = isTransformingSourceId
     ? transformPropertyMappingSource(element.sourceSetImplementation)
     : undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   propertyMapping.target = transformPropertyMappingTarget(
@@ -648,18 +648,18 @@ class PropertyMappingTransformer
   implements PropertyMappingVisitor<V1_PropertyMapping>
 {
   isTransformingEmbeddedPropertyMapping = false;
-  renderSourceId = false;
+  isTransformingSourceId = false;
   context: V1_GraphTransformerContext;
 
   constructor(
     isTransformingEmbeddedPropertyMapping: boolean,
     context: V1_GraphTransformerContext,
-    renderSourceId: boolean,
+    isTransformingSourceId: boolean,
   ) {
     this.isTransformingEmbeddedPropertyMapping =
       isTransformingEmbeddedPropertyMapping;
     this.context = context;
-    this.renderSourceId = renderSourceId;
+    this.isTransformingSourceId = isTransformingSourceId;
   }
 
   visit_PurePropertyMapping(
@@ -690,7 +690,7 @@ class PropertyMappingTransformer
       propertyMapping,
       this.isTransformingEmbeddedPropertyMapping,
       this.context,
-      this.renderSourceId,
+      this.isTransformingSourceId,
     );
   }
   visit_EmbeddedRelationalPropertyMapping(
@@ -999,13 +999,13 @@ function transformProperyMapping(
   propertyMapping: PropertyMapping,
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
-  renderSourceId: boolean,
+  isTransformingSourceId: boolean,
 ): V1_PropertyMapping {
   return propertyMapping.accept_PropertyMappingVisitor(
     new PropertyMappingTransformer(
       isTransformingEmbeddedPropertyMapping,
       context,
-      renderSourceId,
+      isTransformingSourceId,
     ),
   );
 }
