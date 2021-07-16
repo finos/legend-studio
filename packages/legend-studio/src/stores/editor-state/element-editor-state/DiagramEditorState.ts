@@ -174,9 +174,7 @@ export class DiagramEditorState extends ElementEditorState {
 
   setupDiagramRenderer(): void {
     this.diagramRenderer.setIsReadOnly(this.isReadOnly);
-    this.diagramRenderer.onClassViewDoubleClick = (
-      classView: ClassView,
-    ): void => {
+    this.diagramRenderer.editClass = (classView: ClassView): void => {
       this.setSidePanelState(
         new DiagramEditorClassEditorSidePanelState(
           this.editorStore,
@@ -207,7 +205,7 @@ export class DiagramEditorState extends ElementEditorState {
     };
     this.diagramRenderer.onBackgroundDoubleClick = createNewClassView;
     this.diagramRenderer.onAddClassViewClick = createNewClassView;
-    this.diagramRenderer.onAddClassPropertyForSelectedClass = (
+    this.diagramRenderer.addClassPropertyForSelectedClass = (
       classView: ClassView,
     ): void => {
       if (

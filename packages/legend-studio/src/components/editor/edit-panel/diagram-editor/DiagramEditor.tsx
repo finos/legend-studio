@@ -330,7 +330,15 @@ export const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Separate the property being hovered on
+                  Edit the selected element
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">e</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Eject the property
                 </div>
                 <div className="diagram-editor__hotkey__keys">
                   <div className="hotkey__key">a</div>
@@ -640,8 +648,12 @@ export const DiagramEditor = observer(() => {
     editorStore.getCurrentEditorState(DiagramEditorState);
   const diagramCanvasRef = useRef<HTMLDivElement>(null);
 
-  const toggleSidePanel = (): void =>
+  const toggleSidePanel = (): void => {
     diagramEditorState.sidePanelDisplayState.toggle();
+    if (!diagramEditorState.sidePanelDisplayState.isOpen) {
+      diagramEditorState.setSidePanelState(undefined);
+    }
+  };
 
   return (
     <div className="diagram-editor">
