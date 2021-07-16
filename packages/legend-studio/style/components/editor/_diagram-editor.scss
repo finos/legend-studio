@@ -236,6 +236,56 @@
   }
 }
 
+.diagram-editor__inline-property-editor {
+  @include flexVCenter;
+
+  height: 2.8rem;
+  width: 23.9rem;
+  padding: 0.3rem;
+
+  &__name {
+    @include flexConstantDimension;
+
+    width: 15rem;
+    height: 2.2rem;
+    border: 0.1rem solid var(--color-dark-grey-300);
+  }
+
+  &__multiplicity-editor {
+    @include flexVCenter;
+    @include flexConstantDimension;
+
+    width: 8rem;
+    margin-left: 0.3rem;
+
+    &__bound {
+      @include flexConstantDimension;
+
+      width: 3rem;
+      padding: 0 0.5rem;
+      height: 2.2rem;
+      border: 0.1rem solid var(--color-dark-grey-300);
+    }
+
+    &__range {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      width: 2rem;
+      padding: 0 0.3rem;
+      font-size: 2rem;
+      font-weight: bold;
+      height: 2.2rem;
+      color: var(--color-dark-grey-400);
+      cursor: default;
+    }
+  }
+
+  &__close-btn {
+    display: none;
+  }
+}
+
 .diagram-editor__side-panel__create-new {
   height: 100%;
   display: flex;

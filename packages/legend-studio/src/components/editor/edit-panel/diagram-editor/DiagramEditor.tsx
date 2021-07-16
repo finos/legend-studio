@@ -33,6 +33,7 @@ import {
   DIAGRAM_EDIT_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
 } from '../../../shared/diagram-viewer/DiagramRenderer';
+import type { DiagramEditorInlinePropertyEditorState } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
   DiagramEditorClassEditorSidePanelState,
   DiagramEditorNewClassSidePanelState,
@@ -42,7 +43,12 @@ import {
   CORE_DND_TYPE,
   ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { clsx, TreeView } from '@finos/legend-studio-components';
+import {
+  BaseMenu,
+  clsx,
+  TimesIcon,
+  TreeView,
+} from '@finos/legend-studio-components';
 import { isNonNullable, guaranteeType } from '@finos/legend-studio-shared';
 import {
   getPackableElementTreeNodeData,
@@ -66,6 +72,10 @@ import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { Dialog } from '@material-ui/core';
 import type { HandlerProps } from 'react-reflex';
 import { ReflexContainer, ReflexSplitter, ReflexElement } from 'react-reflex';
+import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
+import { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
+import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
+import { MULTIPLICITY_INFINITE } from '../../../../models/MetaModelConst';
 
 const PackageTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -277,7 +287,7 @@ const DiagramEditorClassCreator = observer(
   },
 );
 
-export const DiagramRendererHotkeyInfosModal = observer(
+const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
     const { open, onClose } = props;
     return (
@@ -334,6 +344,14 @@ export const DiagramRendererHotkeyInfosModal = observer(
                 </div>
                 <div className="diagram-editor__hotkey__keys">
                   <div className="hotkey__key">e</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Add simple property to selected class
+                </div>
+                <div className="diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">b</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
@@ -557,7 +575,187 @@ const DiagramEditorOverlay = observer(() => {
   );
 });
 
-export const DiagramEditorDiagramCanvas = observer(
+const DiagramEditorInlinePropertyMultiplicityEditor = observer(
+  (props: {
+    value: Multiplicity;
+    updateValue: (val: Multiplicity) => void;
+    isReadOnly: boolean;
+  }) => {
+    const { value, updateValue, isReadOnly } = props;
+    const [lowerBound, setLowerBound] = useState<string | number>(
+      value.lowerBound,
+    );
+    const [upperBound, setUpperBound] = useState<string | number>(
+      value.upperBound ?? MULTIPLICITY_INFINITE,
+    );
+    const updateMultiplicity = (
+      lower: number | string,
+      upper: number | string,
+    ): void => {
+      const lBound = typeof lower === 'number' ? lower : parseInt(lower, 10);
+      const uBound =
+        upper === MULTIPLICITY_INFINITE
+          ? undefined
+          : typeof upper === 'number'
+          ? upper
+          : parseInt(upper, 10);
+      if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
+        updateValue(new Multiplicity(lBound, uBound));
+      }
+    };
+    const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setLowerBound(event.target.value);
+      updateMultiplicity(event.target.value, upperBound);
+    };
+    const changeUpperBound: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setUpperBound(event.target.value);
+      updateMultiplicity(lowerBound, event.target.value);
+    };
+
+    return (
+      <div className="diagram-editor__inline-property-editor__multiplicity-editor">
+        <input
+          className="diagram-editor__inline-property-editor__multiplicity-editor__bound input--dark"
+          disabled={isReadOnly}
+          spellCheck={false}
+          value={lowerBound}
+          onChange={changeLowerBound}
+        />
+        <div className="diagram-editor__inline-property-editor__multiplicity-editor__range">
+          ..
+        </div>
+        <input
+          className="diagram-editor__inline-property-editor__multiplicity-editor__bound input--dark"
+          disabled={isReadOnly}
+          spellCheck={false}
+          value={upperBound}
+          onChange={changeUpperBound}
+        />
+      </div>
+    );
+  },
+);
+
+const DiagramEditorInlinePropertyEditorInner = observer(
+  (props: {
+    inlinePropertyEditorState: DiagramEditorInlinePropertyEditorState;
+  }) => {
+    const { inlinePropertyEditorState } = props;
+    const diagramEditorState = inlinePropertyEditorState.diagramEditorState;
+    const isReadOnly = diagramEditorState.isReadOnly;
+    const propertyNameInputRef = useRef<HTMLInputElement>(null);
+    const property = inlinePropertyEditorState.property.value;
+    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+      event.preventDefault();
+      diagramEditorState.setInlinePropertyEditorState(undefined);
+    };
+
+    const changePropertyName: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      if (property instanceof DerivedProperty || property instanceof Property) {
+        property.setName(event.target.value);
+        // redraw diagram
+        diagramEditorState.diagramRenderer.start();
+      }
+    };
+
+    const changeMultiplicity = (val: Multiplicity): void => {
+      if (property instanceof DerivedProperty || property instanceof Property) {
+        property.setMultiplicity(val);
+        // redraw diagram
+        diagramEditorState.diagramRenderer.start();
+      }
+    };
+
+    useEffect(() => {
+      if (inlinePropertyEditorState) {
+        propertyNameInputRef.current?.focus();
+      }
+    }, [inlinePropertyEditorState]);
+
+    return (
+      <form className="diagram-editor__inline-property-editor">
+        <input
+          className="diagram-editor__inline-property-editor__name input--dark"
+          ref={propertyNameInputRef}
+          disabled={isReadOnly}
+          value={property.name}
+          onChange={changePropertyName}
+        />
+        <DiagramEditorInlinePropertyMultiplicityEditor
+          isReadOnly={isReadOnly}
+          value={property.multiplicity}
+          updateValue={changeMultiplicity}
+        />
+        <button
+          type="submit"
+          className="diagram-editor__inline-property-editor__close-btn"
+          onClick={close}
+        >
+          <TimesIcon />
+        </button>
+      </form>
+    );
+  },
+);
+
+const INLINE_PROPERTY_EDITOR_HEIGHT = 38;
+const INLINE_PROPERTY_EDITOR_WIDTH = 200;
+
+const DiagramEditorInlinePropertyEditor = observer(
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const closeEditor = (): void => {
+      diagramEditorState.setInlinePropertyEditorState(undefined);
+    };
+    const inlinePropertyEditorState =
+      diagramEditorState.inlinePropertyEditorState;
+    const anchorPositionPoint = inlinePropertyEditorState
+      ? diagramEditorState.diagramRenderer.toCanvasCoordinate(
+          inlinePropertyEditorState.point,
+        )
+      : new Point(0, 0);
+
+    return (
+      <BaseMenu
+        onClose={closeEditor}
+        anchorPosition={{
+          left:
+            diagramEditorState.diagramRenderer.divPosition.x +
+            anchorPositionPoint.x -
+            INLINE_PROPERTY_EDITOR_WIDTH / 2,
+          top:
+            diagramEditorState.diagramRenderer.divPosition.y +
+            anchorPositionPoint.y -
+            INLINE_PROPERTY_EDITOR_HEIGHT / 2,
+        }}
+        anchorReference="anchorPosition"
+        open={Boolean(inlinePropertyEditorState)}
+        BackdropProps={{
+          invisible: true,
+        }}
+        elevation={0}
+        marginThreshold={0}
+        disableRestoreFocus={true}
+      >
+        <div className="diagram-editor__inline-property-editor__container">
+          {inlinePropertyEditorState && (
+            <DiagramEditorInlinePropertyEditorInner
+              inlinePropertyEditorState={inlinePropertyEditorState}
+            />
+          )}
+        </div>
+      </BaseMenu>
+    );
+  },
+);
+
+const DiagramEditorDiagramCanvas = observer(
   (
     props: {
       diagramEditorState: DiagramEditorState;
@@ -685,6 +883,11 @@ export const DiagramEditor = observer(() => {
             diagramEditorState={diagramEditorState}
             ref={diagramCanvasRef}
           />
+          {diagramEditorState.isDiagramRendererInitialized && (
+            <DiagramEditorInlinePropertyEditor
+              diagramEditorState={diagramEditorState}
+            />
+          )}
         </div>
       </div>
     </div>

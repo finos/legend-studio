@@ -198,12 +198,14 @@ export class DiagramRenderer {
   positionBeforeLastMove: Point;
 
   // functions to interact with diagram editor
-  onAddClassViewClick: (event: MouseEvent) => void = noop();
-  onBackgroundDoubleClick: (event: MouseEvent) => void = noop();
+  onAddClassViewClick: (mouseEvent: MouseEvent) => void = noop();
+  onBackgroundDoubleClick: (mouseEvent: MouseEvent) => void = noop();
   editClass: (classView: ClassView) => void = noop();
   editProperty: (property: AbstractProperty, point: Point) => void = noop();
   editPropertyView: (propertyView: PropertyHolderView) => void = noop();
-  addClassPropertyForSelectedClass: (classView: ClassView) => void = noop();
+  addSimpleProperty: (classView: ClassView) => void = noop();
+  addSelectedClassAsPropertyOfOpenedClass: (classView: ClassView) => void =
+    noop();
 
   constructor(div: HTMLDivElement, diagram: Diagram) {
     makeObservable(this, {
@@ -1920,25 +1922,36 @@ export class DiagramRenderer {
         this.selectedClassProperty = undefined;
       }
     }
+    // Add a new simple property to selected class
+    else if (e.key === 'b') {
+      if (this.selectedClasses.length === 1) {
+        this.addSimpleProperty(this.selectedClasses[0]);
+      }
+    }
     // Add currently selected class as property to the currently opened class
     else if (e.key === 'p') {
       if (this.selectedClasses.length !== 0) {
         this.selectedClasses.forEach((classView) =>
-          this.addClassPropertyForSelectedClass(classView),
+          this.addSelectedClassAsPropertyOfOpenedClass(classView),
         );
       }
     }
     // Edit selected view
+    // NOTE: since the current behavior when editing property is to immediately
+    // focus on the property name input when the inline editor pops up
+    // we need to call `preventDefault` to avoid typing `e` in the property name input
     else if (e.key === 'e') {
       if (this.selectedClassProperty) {
         this.editProperty(
           this.selectedClassProperty.property,
           this.selectedClassProperty.selectionPoint,
         );
-      } else if (this.selectedClasses.length === 1) {
-        this.editClass(this.selectedClasses[0]);
+        e.preventDefault();
       } else if (this.selectedPropertyOrAssociation) {
         this.editPropertyView(this.selectedPropertyOrAssociation);
+        e.preventDefault();
+      } else if (this.selectedClasses.length === 1) {
+        this.editClass(this.selectedClasses[0]);
       }
     }
   }

@@ -22,6 +22,7 @@ export * from './components/Icon';
 export * from './components/LegendLogo';
 export * from './components/TreeView';
 export * from './components/CustomSelectorInput';
+export * from './components/BaseMuiComponents';
 
 export * from './components/dialog/NonBlockingDialog';
 
