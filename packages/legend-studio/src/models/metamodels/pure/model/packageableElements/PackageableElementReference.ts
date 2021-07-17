@@ -239,6 +239,10 @@ export class OptionalPackageableElementImplicitReference<
     );
   }
 
+  /**
+   * Use this creator method when the reference is created by
+   * resolving imports using section majorly when building the graph.
+   */
   static resolveFromSection<V extends PackageableElement>(
     value: V | undefined,
     input: string,
@@ -283,13 +287,13 @@ export const toOptionalPackageableElementReference = <
   assertType(reference, PackageableElementImplicitReference);
   if (reference.skipSectionCheck) {
     return OptionalPackageableElementImplicitReference.create(
-      reference?.value,
-      reference?.input,
+      reference.value,
+      reference.input,
     );
   }
   return OptionalPackageableElementImplicitReference.resolveFromSection(
-    reference?.value,
-    reference?.input,
-    reference?.parentSection,
+    reference.value,
+    reference.input,
+    reference.parentSection,
   );
 };
