@@ -275,8 +275,6 @@ export const V1_classSchema = createModelSchema(V1_Class, {
       ),
   ),
   name: primitive(),
-  // NOTE: we don't process milestoning at the moment so this is added to ensure
-  // consistency between the protocol in Studio and Engine only.
   originalMilestonedProperties: custom(
     (values) => serializeArray([], () => SKIP, true),
     (values) => deserializeArray([], () => SKIP, false),
@@ -352,8 +350,6 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
   name: primitive(),
   package: primitive(),
   properties: list(usingModelSchema(V1_propertySchema)),
-  // NOTE: we don't process milestoning at the moment so this is added to ensure
-  // consistency between the protocol in Studio and Engine only.
   originalMilestonedProperties: custom(
     (values) => serializeArray([], () => SKIP, true),
     (values) => deserializeArray([], () => SKIP, false),
