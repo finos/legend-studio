@@ -32,11 +32,13 @@ export abstract class PropertyReference
   extends ReferenceWithOwner
   implements Stubable
 {
-  override readonly ownerReference: PackageableElementReference<Class>;
+  override readonly ownerReference: PackageableElementReference<
+    Class | Association
+  >;
   value: AbstractProperty;
 
   protected constructor(
-    ownerReference: PackageableElementReference<Class>,
+    ownerReference: PackageableElementReference<Class | Association>,
     value: AbstractProperty,
   ) {
     super(ownerReference);
@@ -69,9 +71,7 @@ export abstract class PropertyReference
     return [
       CORE_HASH_STRUCTURE.PROPERTY_POINTER,
       this.value.name,
-      this.value.owner instanceof Association
-        ? ''
-        : this.ownerReference.valueForSerialization,
+      this.ownerReference.valueForSerialization,
     ]
       .map(hashString)
       .join(',');
@@ -97,10 +97,12 @@ export class PropertyExplicitReference extends PropertyReference {
 }
 
 export class PropertyImplicitReference extends PropertyReference {
-  override readonly ownerReference: PackageableElementImplicitReference<Class>;
+  override readonly ownerReference: PackageableElementImplicitReference<
+    Class | Association
+  >;
 
   private constructor(
-    ownerReference: PackageableElementImplicitReference<Class>,
+    ownerReference: PackageableElementImplicitReference<Class | Association>,
     value: AbstractProperty,
   ) {
     super(ownerReference, value);
@@ -108,7 +110,7 @@ export class PropertyImplicitReference extends PropertyReference {
   }
 
   static create(
-    ownerReference: PackageableElementImplicitReference<Class>,
+    ownerReference: PackageableElementImplicitReference<Class | Association>,
     value: AbstractProperty,
   ): PropertyImplicitReference {
     return new PropertyImplicitReference(ownerReference, value);
