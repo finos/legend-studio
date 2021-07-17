@@ -61,7 +61,6 @@ import { RootFlatDataRecordTypeImplicitReference } from '../../../../../../metam
 import type { ViewImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/ViewReference';
 import type { TableImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/TableReference';
 import { createImplicitRelationReference } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationReference';
-import type { EnumValueReference } from '../../../../../../metamodels/pure/model/packageableElements/domain/EnumValueReference';
 import { EnumValueImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/domain/EnumValueReference';
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
@@ -78,7 +77,7 @@ import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graph/AbstractPureGraphManager';
 import { DataType } from '../../../../../../metamodels/pure/model/packageableElements/domain/DataType';
 
-type ResolutionResult<T> = [T, boolean | undefined];
+type ResolutionResult<T> = [T, boolean];
 
 export class V1_GraphBuilderContext {
   readonly logger: Logger;
@@ -106,11 +105,11 @@ export class V1_GraphBuilderContext {
     // Try the find from special types (not user-defined top level types)
     const SPECIAL_TYPES: string[] = Object.values(PRIMITIVE_TYPE).concat([]);
     if (SPECIAL_TYPES.includes(path)) {
-      return [resolverFn(path), undefined];
+      return [resolverFn(path), true];
     }
     // if the path is a path with package, no resolution from import is needed
     if (path.includes(ELEMENT_PATH_DELIMITER)) {
-      return [resolverFn(path), undefined];
+      return [resolverFn(path), true];
     }
     // NOTE: here we make the assumption that we have populated the indices properly so the same element
     // is not referred using 2 different paths in the same element index
@@ -139,7 +138,7 @@ export class V1_GraphBuilderContext {
        * here we count on the `resolver` to do the validation of the type of element instead
        */
       case 0:
-        return [resolverFn(path), undefined];
+        return [resolverFn(path), true];
       case 1:
         return Array.from(results.values())[0];
       default:
@@ -151,6 +150,34 @@ export class V1_GraphBuilderContext {
         );
     }
   }
+
+  /**
+   * This method and this class in general demonstrates the difference
+   * between explicit and implicit reference.
+   * See {@link PackageableElementImplicitReference} for more details.
+   *
+   * Notice that every method in the resolver ends up creating an implicit reference.
+   * It does not matter whether the full path is specified or not (i.e. so almost
+   * no inference was done), the resulting reference must be implicit, as we took the
+   * input into account when creating this reference.
+   */
+  createImplicitPackageableElementReference = <T extends PackageableElement>(
+    path: string,
+    resolverFn: (path: string) => T,
+  ): PackageableElementImplicitReference<T> => {
+    const [element, skippedSectionImportResolution] = this.resolve(
+      path,
+      resolverFn,
+    );
+    if (skippedSectionImportResolution) {
+      return PackageableElementImplicitReference.create(element, path);
+    }
+    return PackageableElementImplicitReference.resolveFromSection(
+      element,
+      path,
+      this.section,
+    );
+  };
 
   resolveStereotype = (
     stereotypePtr: V1_StereotypePtr,
@@ -164,28 +191,22 @@ export class V1_GraphBuilderContext {
       'Steoreotype pointer value is missing',
     );
     const ownerReference = this.resolveProfile(stereotypePtr.profile);
-    return StereotypeImplicitReference.create(
-      ownerReference,
-      ownerReference.value.getStereotype(stereotypePtr.value),
-    );
+    const value = ownerReference.value.getStereotype(stereotypePtr.value);
+    return StereotypeImplicitReference.create(ownerReference, value);
   };
 
   resolveTag = (tagPtr: V1_TagPtr): TagImplicitReference => {
     assertNonEmptyString(tagPtr.profile, 'Tag pointer profile is missing');
     assertNonEmptyString(tagPtr.value, 'Tag pointer value is missing');
     const ownerReference = this.resolveProfile(tagPtr.profile);
-    return TagImplicitReference.create(
-      ownerReference,
-      ownerReference.value.getTag(tagPtr.value),
-    );
+    const value = ownerReference.value.getTag(tagPtr.value);
+    return TagImplicitReference.create(ownerReference, value);
   };
 
   resolveGenericType = (path: string): GenericTypeImplicitReference => {
     const ownerReference = this.resolveType(path);
-    return GenericTypeImplicitReference.create(
-      ownerReference,
-      new GenericType(ownerReference.value),
-    );
+    const value = new GenericType(ownerReference.value);
+    return GenericTypeImplicitReference.create(ownerReference, value);
   };
 
   resolveOwnedProperty = (
@@ -200,10 +221,8 @@ export class V1_GraphBuilderContext {
       'Property pointer name is missing',
     );
     const ownerReference = this.resolveClass(propertyPtr.class);
-    return PropertyImplicitReference.create(
-      ownerReference,
-      ownerReference.value.getOwnedProperty(propertyPtr.property),
-    );
+    const value = ownerReference.value.getOwnedProperty(propertyPtr.property);
+    return PropertyImplicitReference.create(ownerReference, value);
   };
 
   resolveProperty = (
@@ -218,10 +237,8 @@ export class V1_GraphBuilderContext {
       'Property pointer name is missing',
     );
     const ownerReference = this.resolveClass(propertyPtr.class);
-    return PropertyImplicitReference.create(
-      ownerReference,
-      ownerReference.value.getProperty(propertyPtr.property),
-    );
+    const value = ownerReference.value.getProperty(propertyPtr.property);
+    return PropertyImplicitReference.create(ownerReference, value);
   };
 
   resolveRootFlatDataRecordType = (
@@ -236,31 +253,12 @@ export class V1_GraphBuilderContext {
       'Flat-data class mapping source flat-data section is missing',
     );
     const ownerReference = this.resolveFlatDataStore(classMapping.flatData);
+    const value = ownerReference.value
+      .findSection(classMapping.sectionName)
+      .getRecordType();
     return RootFlatDataRecordTypeImplicitReference.create(
       ownerReference,
-      ownerReference.value
-        .findSection(classMapping.sectionName)
-        .getRecordType(),
-    );
-  };
-
-  resolveJoin = (joinPtr: V1_JoinPointer): JoinImplicitReference => {
-    assertNonEmptyString(joinPtr.db, 'Join pointer database is missing');
-    assertNonEmptyString(joinPtr.name, 'Join pointer name is missing');
-    const ownerReference = this.resolveDatabase(joinPtr.db);
-    return JoinImplicitReference.create(
-      ownerReference,
-      ownerReference.value.getJoin(joinPtr.name),
-    );
-  };
-
-  resolveFilter = (filterPtr: V1_FilterPointer): FilterImplicitReference => {
-    assertNonEmptyString(filterPtr.db, 'Filter pointer database is missing');
-    assertNonEmptyString(filterPtr.name, 'Filter pointer name is missing');
-    const ownerReference = this.resolveDatabase(filterPtr.db);
-    return FilterImplicitReference.create(
-      ownerReference,
-      ownerReference.value.getJoin(filterPtr.name),
+      value,
     );
   };
 
@@ -274,36 +272,37 @@ export class V1_GraphBuilderContext {
     assertNonEmptyString(tablePtr.schema, 'Table pointer schema is missing');
     assertNonEmptyString(tablePtr.table, 'Table pointer table is missing');
     const ownerReference = this.resolveDatabase(tablePtr.database);
-    const relation = V1_getRelation(
+    const value = V1_getRelation(
       ownerReference.value,
       tablePtr.schema,
       tablePtr.table,
     );
-    return createImplicitRelationReference(ownerReference, relation);
+    return createImplicitRelationReference(ownerReference, value);
+  };
+
+  resolveJoin = (joinPtr: V1_JoinPointer): JoinImplicitReference => {
+    assertNonEmptyString(joinPtr.db, 'Join pointer database is missing');
+    assertNonEmptyString(joinPtr.name, 'Join pointer name is missing');
+    const ownerReference = this.resolveDatabase(joinPtr.db);
+    const value = ownerReference.value.getJoin(joinPtr.name);
+    return JoinImplicitReference.create(ownerReference, value);
+  };
+
+  resolveFilter = (filterPtr: V1_FilterPointer): FilterImplicitReference => {
+    assertNonEmptyString(filterPtr.db, 'Filter pointer database is missing');
+    assertNonEmptyString(filterPtr.name, 'Filter pointer name is missing');
+    const ownerReference = this.resolveDatabase(filterPtr.db);
+    const value = ownerReference.value.getFilter(filterPtr.name);
+    return FilterImplicitReference.create(ownerReference, value);
   };
 
   resolveEnumValue = (
     enumeration: string,
-    value: string,
-  ): EnumValueReference => {
-    const parent = this.resolveEnumeration(enumeration);
-    return EnumValueImplicitReference.create(
-      parent,
-      parent.value.getValue(value),
-    );
-  };
-
-  createImplicitPackageableElementReference = <T extends PackageableElement>(
-    path: string,
-    resolverFn: (path: string) => T,
-  ): PackageableElementImplicitReference<T> => {
-    const resolutionResult = this.resolve(path, resolverFn);
-    return PackageableElementImplicitReference.create(
-      resolutionResult[0],
-      path,
-      this.section,
-      resolutionResult[1],
-    );
+    enumValue: string,
+  ): EnumValueImplicitReference => {
+    const ownerReference = this.resolveEnumeration(enumeration);
+    const value = ownerReference.value.getValue(enumValue);
+    return EnumValueImplicitReference.create(ownerReference, value);
   };
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
