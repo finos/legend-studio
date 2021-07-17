@@ -31,13 +31,7 @@ import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
 import { CORE_TEST_ID } from '../../const';
-import {
-  ACTIVITY_MODE,
-  HOTKEY,
-  HOTKEY_MAP,
-  SIDE_BAR_RESIZE_SNAP_THRESHOLD,
-  DEFAULT_SIDE_BAR_SIZE,
-} from '../../stores/EditorConfig';
+import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx } from '@finos/legend-studio-components';
 import { NotificationSnackbar } from '../shared/NotificationSnackbar';
@@ -180,15 +174,9 @@ export const ViewerInner = observer(() => {
     editorStore.sdlcState.currentProject &&
     !editorStore.graphState.graph.failedToBuild &&
     editorStore.graphState.graph.isBuilt;
-  const snapSideBar = (newSize: number | undefined): void => {
+  const resizeSideBar = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
-      editorStore.setSideBarSize(
-        newSize < SIDE_BAR_RESIZE_SNAP_THRESHOLD
-          ? editorStore.sideBarSize > 0
-            ? 0
-            : DEFAULT_SIDE_BAR_SIZE
-          : newSize,
-      );
+      editorStore.sideBarDisplayState.setSize(newSize);
     }
   };
   // Resize
@@ -211,7 +199,7 @@ export const ViewerInner = observer(() => {
 
   useEffect(() => {
     if (ref.current) {
-      editorStore.setMaxAuxPanelSize(ref.current.offsetHeight);
+      editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
     }
   }, [ref, editorStore, width, height]);
 
@@ -245,8 +233,8 @@ export const ViewerInner = observer(() => {
                 >
                   <SplitPane
                     split="vertical"
-                    onDragFinished={snapSideBar}
-                    size={editorStore.sideBarSize}
+                    onDragFinished={resizeSideBar}
+                    size={editorStore.sideBarDisplayState.size}
                     minSize={0}
                     maxSize={-600}
                   >

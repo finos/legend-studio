@@ -1843,7 +1843,7 @@ __metadata:
     react: 17.0.2
     rimraf: 3.0.2
     typescript: 4.3.5
-    webpack: 5.44.0
+    webpack: 5.45.1
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.7.2
     webpack-dev-server: 4.0.0-beta.3
@@ -1915,8 +1915,8 @@ __metadata:
     jsonc-parser: 3.0.0
     micromatch: 4.0.4
     mini-css-extract-plugin: 2.1.0
-    monaco-editor: 0.26.0
-    monaco-editor-webpack-plugin: 4.1.0
+    monaco-editor: 0.26.1
+    monaco-editor-webpack-plugin: 4.1.1
     postcss: 8.3.5
     postcss-loader: 6.1.1
     react-refresh: 0.10.0
@@ -1927,7 +1927,7 @@ __metadata:
     strip-ansi: 7.0.0
     text-table: 0.2.0
     typescript: 4.3.5
-    webpack: 5.44.0
+    webpack: 5.45.1
     wrap-ansi: 8.0.0
   languageName: unknown
   linkType: soft
@@ -2027,7 +2027,7 @@ __metadata:
     jest: 27.0.6
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
-    monaco-editor: 0.26.0
+    monaco-editor: 0.26.1
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2079,7 +2079,7 @@ __metadata:
     jest: 27.0.6
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
-    monaco-editor: 0.26.0
+    monaco-editor: 0.26.1
     npm-run-all: 4.1.5
     papaparse: 5.3.1
     react: 17.0.2
@@ -2150,7 +2150,7 @@ __metadata:
     jest-extended: 0.11.5
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
-    monaco-editor: 0.26.0
+    monaco-editor: 0.26.1
     node-diff3: 3.0.0
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -3030,10 +3030,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:16.3.2":
+"@types/node@npm:*":
   version: 16.3.2
   resolution: "@types/node@npm:16.3.2"
   checksum: 242d23b6f9f93afa49eecac179444762000e99667a742c8b1de18c7875c7c952436ab319ea4fe3dca3e66bacb9e4f0ed69a25df9a155c6cedfc8cdaf52cb3453
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:16.3.3":
+  version: 16.3.3
+  resolution: "@types/node@npm:16.3.3"
+  checksum: fa885b835e57a4a2fd15571e5cbfe361d4ac48278196416aa2690ebdfb118a116249dd81475078c61fbf2d95920324f8f3a66ae7f19fac424ae74ab87a41c1e4
   languageName: node
   linkType: hard
 
@@ -9404,7 +9411,7 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 26.0.24
-    "@types/node": 16.3.2
+    "@types/node": 16.3.3
     chalk: 4.1.1
     cross-env: 7.0.3
     eslint: 7.30.0
@@ -10250,22 +10257,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor-webpack-plugin@npm:4.1.0":
-  version: 4.1.0
-  resolution: "monaco-editor-webpack-plugin@npm:4.1.0"
+"monaco-editor-webpack-plugin@npm:4.1.1":
+  version: 4.1.1
+  resolution: "monaco-editor-webpack-plugin@npm:4.1.1"
   dependencies:
     loader-utils: ^2.0.0
   peerDependencies:
-    monaco-editor: "*"
+    monaco-editor: 0.25.x || 0.26.x
     webpack: ^4.5.0 || 5.x
-  checksum: 0a4430b22b6aba95073208b1c89b978f14ac53a841ee3d93515d7ebc94ed407511ae90018e3fb379371fc7d5ad77999aff470cb5efa830a882d6860de2f54739
+  checksum: 869edbd9b726a87facd39714e70a32957a880e63069b342fe0f931115c0ef2ae644d6c8dcbe92a3f1b1b0d24b3b096a5c50f06f5f0bff648462f1d553f4cc5f7
   languageName: node
   linkType: hard
 
-"monaco-editor@npm:0.26.0":
-  version: 0.26.0
-  resolution: "monaco-editor@npm:0.26.0"
-  checksum: d59bfd7b4f04a7560dfb5d0a6fd580b67a9ee63a70fde92f33c6d42b0275501b645b99d321d600dd2d76a8bcb9949c23f8947a38c28bf759564b5ec82727033d
+"monaco-editor@npm:0.26.1":
+  version: 0.26.1
+  resolution: "monaco-editor@npm:0.26.1"
+  checksum: 2d531aa1245c891330e398c6ddb63fa9489a3cb4c668e304aa1ead6d5e3a14ee30e601fb94d265f7f00bfb1abe197e6dfcdfbebc1e307ea8efa99b3ecb069278
   languageName: node
   linkType: hard
 
@@ -12864,7 +12871,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"schema-utils@npm:^3.0.0":
+"schema-utils@npm:^3.0.0, schema-utils@npm:^3.1.0":
   version: 3.1.0
   resolution: "schema-utils@npm:3.1.0"
   dependencies:
@@ -14880,9 +14887,9 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.44.0":
-  version: 5.44.0
-  resolution: "webpack@npm:5.44.0"
+"webpack@npm:5.45.1":
+  version: 5.45.1
+  resolution: "webpack@npm:5.45.1"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -14902,7 +14909,7 @@ typescript@4.3.5:
     loader-runner: ^4.2.0
     mime-types: ^2.1.27
     neo-async: ^2.6.2
-    schema-utils: ^3.0.0
+    schema-utils: ^3.1.0
     tapable: ^2.1.1
     terser-webpack-plugin: ^5.1.3
     watchpack: ^2.2.0
@@ -14912,7 +14919,7 @@ typescript@4.3.5:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: a173d875045267b5cb8ead959c1b47dc06ca191ee7cdbf6a094d5947261f1e4e167addc20eb65945078500247b74497e65270f4dbca1bcaf17327b462800c0ef
+  checksum: 7aca5a40bf95d83c89b30b7c58da70e6aba672fc97b8f8ddea18516ce026706982b3b6b5c9509a6295b87de889df64f9a08e125ba9a36a128cb84cbce742225c
   languageName: node
   linkType: hard
 
