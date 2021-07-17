@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { assertType } from '@finos/legend-studio-shared';
 import { observable, action, computed, makeObservable } from 'mobx';
 import type { PackageableElement } from '../../model/packageableElements/PackageableElement';
 import type { Section } from '../../model/packageableElements/section/Section';
@@ -64,19 +65,39 @@ export class PackageableElementExplicitReference<
   }
 }
 
+/**
+ * Explicit references should only be created when the value stored in the reference
+ * is not obtained through resolution, usually this happens when the user
+ * direclty modifies the graph and creates these references in the process.
+ * Implicit references are used when we build the metamodel graph from protocols.
+ * In other words, they are references whose values are obtained through resolution process.
+ * An implicit reference comprises the resolved value and the
+ * original input value in the protocol model(s). This way when we
+ * transform the metamodel graph back to protocol, we keep the input as is.
+ * This is needed to maintain hash-computation and round-trip stability.
+ */
 export class PackageableElementImplicitReference<
   T extends PackageableElement,
 > extends PackageableElementReference<T> {
   readonly initialResolvedPath: string;
   readonly input: string;
+  /**
+   * Parent section information is only needed when the reference is resolved
+   * by scanning the section imports.
+   */
   readonly parentSection?: Section;
-  readonly isInferred?: boolean;
+  /**
+   * This flag is set to `true` when section check is not needed when resolving the reference
+   * For example: when the element is implied in context, when the element is imported
+   * via auto imports, etc.
+   */
+  readonly skipSectionCheck?: boolean;
 
   private constructor(
     value: T,
     input: string,
     parentSection: Section | undefined,
-    isInferred: boolean | undefined,
+    skipSectionCheck: boolean | undefined,
   ) {
     super(value);
 
@@ -87,26 +108,37 @@ export class PackageableElementImplicitReference<
     this.initialResolvedPath = value.path;
     this.input = input;
     this.parentSection = parentSection;
-    this.isInferred = isInferred;
+    this.skipSectionCheck = skipSectionCheck;
   }
 
   static create<V extends PackageableElement>(
     value: V,
     input: string,
+  ): PackageableElementImplicitReference<V> {
+    return new PackageableElementImplicitReference(
+      value,
+      input,
+      undefined,
+      true,
+    );
+  }
+
+  static resolveFromSection<V extends PackageableElement>(
+    value: V,
+    input: string,
     parentSection: Section | undefined,
-    isResolvedFromAutoImports: boolean | undefined,
   ): PackageableElementImplicitReference<V> {
     return new PackageableElementImplicitReference(
       value,
       input,
       parentSection,
-      isResolvedFromAutoImports,
+      false,
     );
   }
 
   get valueForSerialization(): string {
     const currentElementPath = this.value.path;
-    if (this.isInferred) {
+    if (this.skipSectionCheck) {
       return this.input;
     }
     // when the parent section does not exist or has been deleted
@@ -175,13 +207,13 @@ export class OptionalPackageableElementImplicitReference<
   readonly initialResolvedPath?: string;
   readonly input?: string;
   readonly parentSection?: Section;
-  readonly isResolvedFromAutoImports?: boolean;
+  readonly skipSectionCheck?: boolean;
 
   private constructor(
     value: T | undefined,
     input: string | undefined,
     parentSection: Section | undefined,
-    isInferred: boolean | undefined,
+    skipSectionCheck: boolean | undefined,
   ) {
     super(value);
 
@@ -192,26 +224,37 @@ export class OptionalPackageableElementImplicitReference<
     this.initialResolvedPath = value?.path;
     this.input = input;
     this.parentSection = parentSection;
-    this.isResolvedFromAutoImports = isInferred;
+    this.skipSectionCheck = skipSectionCheck;
   }
 
   static create<V extends PackageableElement>(
     value: V | undefined,
     input: string | undefined,
+  ): OptionalPackageableElementImplicitReference<V> {
+    return new OptionalPackageableElementImplicitReference(
+      value,
+      input,
+      undefined,
+      true,
+    );
+  }
+
+  static resolveFromSection<V extends PackageableElement>(
+    value: V | undefined,
+    input: string,
     parentSection: Section | undefined,
-    isInferred: boolean | undefined,
   ): OptionalPackageableElementImplicitReference<V> {
     return new OptionalPackageableElementImplicitReference(
       value,
       input,
       parentSection,
-      isInferred,
+      false,
     );
   }
 
   get valueForSerialization(): string | undefined {
     const currentElementPath = this.value?.path;
-    if (this.isResolvedFromAutoImports) {
+    if (this.skipSectionCheck) {
       return this.input;
     }
     // when the parent section does not exist or has been deleted
@@ -228,3 +271,25 @@ export class OptionalPackageableElementImplicitReference<
     return currentElementPath;
   }
 }
+
+export const toOptionalPackageableElementReference = <
+  V extends PackageableElement,
+>(
+  reference: PackageableElementReference<V> | undefined,
+): OptionalPackageableElementReference<V> => {
+  if (!reference || reference instanceof PackageableElementExplicitReference) {
+    return OptionalPackageableElementExplicitReference.create(reference?.value);
+  }
+  assertType(reference, PackageableElementImplicitReference);
+  if (reference.skipSectionCheck) {
+    return OptionalPackageableElementImplicitReference.create(
+      reference?.value,
+      reference?.input,
+    );
+  }
+  return OptionalPackageableElementImplicitReference.resolveFromSection(
+    reference?.value,
+    reference?.input,
+    reference?.parentSection,
+  );
+};

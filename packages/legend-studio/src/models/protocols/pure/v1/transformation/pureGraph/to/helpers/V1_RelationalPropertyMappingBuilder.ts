@@ -73,8 +73,6 @@ export const V1_buildEmbeddedRelationalMappingProperty = (
     _class = PackageableElementImplicitReference.create(
       complexClass,
       propertyMapping.classMapping.class ?? '',
-      context.section,
-      true,
     );
   }
   const id =

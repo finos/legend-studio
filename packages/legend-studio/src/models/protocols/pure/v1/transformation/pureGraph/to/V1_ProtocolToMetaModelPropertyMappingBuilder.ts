@@ -446,8 +446,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             PackageableElementImplicitReference.create(
               propertyOwner,
               protocol.property.class ?? '',
-              this.context.section,
-              true,
             ),
             property,
           )
@@ -545,8 +543,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         PackageableElementImplicitReference.create(
           propertyOwnerClass,
           protocol.property.class ?? '',
-          this.context.section,
-          true,
         ),
         property,
       ),
@@ -584,8 +580,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         PackageableElementImplicitReference.create(
           property.propertyOwnerClass,
           protocol.property.class ?? '',
-          this.context.section,
-          true,
         ),
         property.property,
       ),
@@ -641,8 +635,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           PackageableElementImplicitReference.create(
             property.propertyOwnerClass,
             protocol.property.class ?? '',
-            this.context.section,
-            true,
           ),
           property.property,
         ),

@@ -28,7 +28,6 @@ import {
 import { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { OptionalPackageableElementImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { InferableMappingElementRootExplicitValue } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InferableMappingElementRoot';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_ClassMappingVisitor } from '../../../model/packageableElements/mapping/V1_ClassMapping';
@@ -44,6 +43,7 @@ import type { InstanceSetImplementation } from '../../../../../../metamodels/pur
 import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper';
 import { V1_resolvePathsInRawLambda } from './helpers/V1_RawPathLambdaResolver';
 import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
+import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   implements V1_ClassMappingVisitor<SetImplementation>
@@ -101,12 +101,7 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
       this.parent,
       targetClass,
       InferableMappingElementRootExplicitValue.create(classMapping.root),
-      OptionalPackageableElementImplicitReference.create(
-        srcClassReference?.value,
-        classMapping.srcClass,
-        this.context.section,
-        srcClassReference?.isInferred,
-      ),
+      toOptionalPackageableElementReference(srcClassReference),
     );
     pureInstanceSetImplementation.filter = classMapping.filter
       ? V1_resolvePathsInRawLambda(this.context, [], classMapping.filter.body)
