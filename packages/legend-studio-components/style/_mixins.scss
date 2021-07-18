@@ -49,3 +49,8 @@
   display: flex;
   justify-content: space-between;
 }
+
+@mixin flexConstantDimension {
+  flex-grow: 0;
+  flex-shrink: 0;
+}

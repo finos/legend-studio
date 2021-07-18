@@ -338,13 +338,10 @@ export const getWebAppBaseWebpackConfig = (
     },
     resolve: {
       ...baseConfig.resolve,
-      // Ignore usage of Node module `os` in `zipkin`
-      // See https://github.com/openzipkin/zipkin-js/issues/465
       fallback: {
+        // Ignore usage of Node module `os` in `zipkin`
+        // See https://github.com/openzipkin/zipkin-js/issues/465
         os: false,
-        // NOTE: do not support resolving `path`. This happens in `monaco-editor@0.26.0`
-        // See https://github.com/microsoft/monaco-editor/issues/2578
-        path: false,
       },
       alias: {
         ...baseConfig.resolve.alias,

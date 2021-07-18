@@ -20,7 +20,69 @@
   height: 100%;
   width: 100%;
   display: flex;
-  position: relative;
+  flex-direction: column;
+  overflow: hidden;
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    height: 2.8rem;
+    background: var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-dark-grey-85);
+  }
+
+  &__header__actions {
+    @include flexVCenter;
+
+    height: 100%;
+  }
+
+  &__header__action {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    height: 2.8rem;
+    width: 2.8rem;
+
+    svg {
+      color: var(--color-dark-grey-400);
+    }
+
+    &--active {
+      svg {
+        color: var(--color-light-grey-300);
+      }
+    }
+  }
+
+  &__content {
+    height: calc(100% - 2.8rem);
+    width: 100%;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__stage {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    position: relative;
+  }
+
+  &__overlay {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  &__overlay__panel-resizer,
+  &__overlay__panel {
+    pointer-events: auto;
+  }
 
   &__tools {
     @include flexVCenter;
@@ -33,6 +95,8 @@
     border-left: 0.1rem solid var(--color-dark-grey-85);
 
     &__divider {
+      @include flexConstantDimension;
+
       width: 100%;
       border-radius: 0.1rem;
       height: 0.2rem;
@@ -43,6 +107,7 @@
 
   &__tool {
     @include flexCenter;
+    @include flexConstantDimension;
 
     height: 3.4rem;
     width: 3.4rem;
@@ -98,19 +163,39 @@
     &--hotkey-info {
       font-size: 2.2rem;
     }
+
+    &--sidebar {
+      font-size: 1.8rem;
+    }
   }
 
   &__canvas {
     width: calc(100% - 4.4rem);
   }
 
-  &__canvas--with-cursor {
+  &__cursor {
     &--crosshair {
       cursor: crosshair;
     }
+
+    &--text {
+      cursor: text;
+    }
+
+    &--pointer {
+      cursor: pointer;
+    }
+
+    &--resize {
+      cursor: nwse-resize;
+    }
+
+    &--add {
+      cursor: cell;
+    }
   }
 
-  &__class-panel {
+  &__side-panel {
     border-left: 0.1rem solid var(--color-light-grey-400);
 
     &__header {
@@ -121,14 +206,6 @@
 
     &__content {
       position: relative;
-    }
-
-    &__content__editor--empty {
-      @include flexCenter;
-
-      height: 100%;
-      width: 100%;
-      color: var(--color-dark-grey-300);
     }
 
     &__close-btn {
@@ -175,7 +252,57 @@
   }
 }
 
-.diagram-editor__class-panel__create-new {
+.diagram-editor__inline-property-editor {
+  @include flexVCenter;
+
+  height: 2.8rem;
+  width: 23.9rem;
+  padding: 0.3rem;
+
+  &__name {
+    @include flexConstantDimension;
+
+    width: 15rem;
+    height: 2.2rem;
+    border: 0.1rem solid var(--color-dark-grey-300);
+  }
+
+  &__multiplicity-editor {
+    @include flexVCenter;
+    @include flexConstantDimension;
+
+    width: 8rem;
+    margin-left: 0.3rem;
+
+    &__bound {
+      @include flexConstantDimension;
+
+      width: 3rem;
+      padding: 0 0.5rem;
+      height: 2.2rem;
+      border: 0.1rem solid var(--color-dark-grey-300);
+    }
+
+    &__range {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      width: 2rem;
+      padding: 0 0.3rem;
+      font-size: 2rem;
+      font-weight: bold;
+      height: 2.2rem;
+      color: var(--color-dark-grey-400);
+      cursor: default;
+    }
+  }
+
+  &__close-btn {
+    display: none;
+  }
+}
+
+.diagram-editor__side-panel__create-new {
   height: 100%;
   display: flex;
   flex-direction: column;

@@ -142,7 +142,7 @@ describe(unitTest('Flat-data import resolution roundtrip'), () => {
 describe(unitTest('Relational import resolution roundtrip'), () => {
   test.each([
     // TODO: import resolution for included stores?
-    ['Simple database', testDatabaseRoundtrip],
+    ['Complex database with includes', testDatabaseRoundtrip],
     ['Database with self join', testDatabaseWithSelfJoin],
     // testRelationalInputData
     // targetSetImplementationThroughAssociation
