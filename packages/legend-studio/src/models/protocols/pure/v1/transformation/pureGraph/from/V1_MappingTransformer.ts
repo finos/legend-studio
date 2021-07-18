@@ -468,8 +468,7 @@ const transformRelationalPropertyMapping = (
           [SOURCE_INFORMATION_KEY],
         ),
   ) as V1_RawRelationalOperationElement;
-  // Note: isTransformingSourceId is required to have the source information persisted in case of relationalPropertyMappings
-  // source key needs to be interpeted here for consistency between engine protcol and studio protcol
+  // NOTE: isTransformingSourceId is needed for the roundtrip of association relational property mapping
   propertyMapping.source = isTransformingSourceId
     ? transformPropertyMappingSource(element.sourceSetImplementation)
     : undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
