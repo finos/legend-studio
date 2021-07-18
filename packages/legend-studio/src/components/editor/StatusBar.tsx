@@ -101,7 +101,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       : 'all conflicts resolved';
 
   // Other actions
-  const toggleAuxPanel = (): void => editorStore.toggleAuxPanel();
+  const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
   const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
@@ -306,9 +306,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           className={clsx(
             'editor__status-bar__action editor__status-bar__action__toggler',
             {
-              'editor__status-bar__action__toggler--active': Boolean(
-                editorStore.auxPanelSize,
-              ),
+              'editor__status-bar__action__toggler--active':
+                editorStore.auxPanelDisplayState.isOpen,
             },
           )}
           onClick={toggleAuxPanel}

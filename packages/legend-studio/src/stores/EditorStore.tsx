@@ -32,10 +32,8 @@ import { editor as monacoEditorAPI } from 'monaco-editor';
 import { ExplorerTreeState } from './ExplorerTreeState';
 import {
   ACTIVITY_MODE,
-  DEFAULT_SIDE_BAR_SIZE,
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
-  DEFAULT_AUX_PANEL_SIZE,
   EDITOR_MODE,
   MONOSPACED_FONT_FAMILY,
   TAB_SIZE,
@@ -90,7 +88,10 @@ import type { GenerationFile } from './shared/FileGenerationTreeUtil';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState';
 import { DevToolState } from './aux-panel-state/DevToolState';
 import { generateSetupRoute, generateViewProjectRoute } from './Router';
-import { NonBlockingDialogState } from '@finos/legend-studio-components';
+import {
+  NonBlockingDialogState,
+  PanelDisplayState,
+} from '@finos/legend-studio-components';
 import type {
   PackageableElement,
   PackageableElementSelectOption,
@@ -160,15 +161,19 @@ export class EditorStore {
   mode = EDITOR_MODE.STANDARD;
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
   // Aux Panel
-  isMaxAuxPanelSizeSet = false;
   activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
-  maxAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
-  auxPanelSize = 0;
-  previousAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
+  auxPanelDisplayState = new PanelDisplayState({
+    initial: 0,
+    default: 300,
+    snap: 100,
+  });
   // Side Bar
   activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.EXPLORER;
-  sideBarSize = DEFAULT_SIDE_BAR_SIZE;
-  sideBarSizeBeforeHidden = DEFAULT_SIDE_BAR_SIZE;
+  sideBarDisplayState = new PanelDisplayState({
+    initial: 300,
+    default: 300,
+    snap: 150,
+  });
   // Hot keys
   blockGlobalHotkeys = false;
   defaultHotkeys: EditorHotkey[] = [];
@@ -199,19 +204,13 @@ export class EditorStore {
       setCurrentEditorState: action,
       setBackdrop: action,
       setExpandedMode: action,
-      setAuxPanelSize: action,
       setActiveAuxPanelMode: action,
-      setSideBarSize: action,
       setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
       setBlockingAlert: action,
       setActionAltertInfo: action,
       cleanUp: action,
       reset: action,
-      openAuxPanel: action,
-      toggleAuxPanel: action,
-      toggleExpandAuxPanel: action,
-      setMaxAuxPanelSize: action,
       setGraphEditMode: action,
       setActiveActivity: action,
       closeState: action,
@@ -325,7 +324,7 @@ export class EditorStore {
       new EditorHotkey(
         HOTKEY.TOGGLE_AUX_PANEL,
         [HOTKEY_MAP.TOGGLE_AUX_PANEL],
-        this.createGlobalHotKeyAction(() => this.toggleAuxPanel()),
+        this.createGlobalHotKeyAction(() => this.auxPanelDisplayState.toggle()),
       ),
       new EditorHotkey(
         HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
@@ -380,9 +379,6 @@ export class EditorStore {
   get isInFormMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.FORM;
   }
-  get isAuxPanelMaximized(): boolean {
-    return this.auxPanelSize === this.maxAuxPanelSize;
-  }
   get hasUnsyncedChanges(): boolean {
     return Boolean(
       this.changeDetectionState.workspaceLatestRevisionState.changes.length,
@@ -413,14 +409,8 @@ export class EditorStore {
   setExpandedMode(val: boolean): void {
     this.isInExpandedMode = val;
   }
-  setAuxPanelSize(val: number): void {
-    this.auxPanelSize = val;
-  }
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
     this.activeAuxPanelMode = val;
-  }
-  setSideBarSize(val: number): void {
-    this.sideBarSize = val;
   }
   setIgnoreNavigationBlocking(val: boolean): void {
     this.ignoreNavigationBlocking = val;
@@ -802,55 +792,6 @@ export class EditorStore {
     );
   }
 
-  openAuxPanel(
-    auxPanelMode: AUX_PANEL_MODE,
-    resetHeightIfTooSmall: boolean,
-  ): void {
-    this.activeAuxPanelMode = auxPanelMode;
-    if (this.auxPanelSize === 0) {
-      this.toggleAuxPanel();
-    } else if (
-      this.auxPanelSize < DEFAULT_AUX_PANEL_SIZE &&
-      resetHeightIfTooSmall
-    ) {
-      this.auxPanelSize = DEFAULT_AUX_PANEL_SIZE;
-    }
-  }
-
-  toggleAuxPanel(): void {
-    if (this.auxPanelSize === 0) {
-      this.auxPanelSize = this.previousAuxPanelSize;
-    } else {
-      this.previousAuxPanelSize = this.auxPanelSize || DEFAULT_AUX_PANEL_SIZE;
-      this.auxPanelSize = 0;
-    }
-  }
-
-  toggleExpandAuxPanel(): void {
-    if (this.auxPanelSize === this.maxAuxPanelSize) {
-      this.auxPanelSize =
-        this.previousAuxPanelSize === this.maxAuxPanelSize
-          ? DEFAULT_AUX_PANEL_SIZE
-          : this.previousAuxPanelSize;
-    } else {
-      this.previousAuxPanelSize = this.auxPanelSize;
-      this.auxPanelSize = this.maxAuxPanelSize;
-    }
-  }
-
-  setMaxAuxPanelSize(val: number): void {
-    if (this.isMaxAuxPanelSizeSet) {
-      if (this.previousAuxPanelSize === this.maxAuxPanelSize) {
-        this.previousAuxPanelSize = val;
-      }
-      if (this.auxPanelSize === this.maxAuxPanelSize) {
-        this.auxPanelSize = val;
-      }
-    }
-    this.maxAuxPanelSize = val;
-    this.isMaxAuxPanelSizeSet = true;
-  }
-
   setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
     this.graphEditMode = graphEditor;
     this.graphState.clearCompilationError();
@@ -860,14 +801,13 @@ export class EditorStore {
     activity: ACTIVITY_MODE,
     options?: { keepShowingIfMatchedCurrent?: boolean },
   ): void {
-    if (this.sideBarSize === 0) {
-      this.sideBarSize = this.sideBarSizeBeforeHidden;
+    if (!this.sideBarDisplayState.isOpen) {
+      this.sideBarDisplayState.open();
     } else if (
       activity === this.activeActivity &&
       !options?.keepShowingIfMatchedCurrent
     ) {
-      this.sideBarSizeBeforeHidden = this.sideBarSize || DEFAULT_SIDE_BAR_SIZE;
-      this.sideBarSize = 0;
+      this.sideBarDisplayState.close();
     }
     this.activeActivity = activity;
   }
