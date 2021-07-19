@@ -205,6 +205,7 @@ export class DiagramRenderer {
   cursorPosition: Point;
 
   leftClick: boolean;
+  middleClick: boolean;
   rightClick: boolean;
   clickX: number;
   clickY: number;
@@ -234,6 +235,8 @@ export class DiagramRenderer {
       selectedClasses: observable,
       selectedPropertyOrAssociation: observable,
       selectedInheritance: observable,
+      rightClick: observable,
+      middleClick: observable,
       changeMode: action,
       setIsReadOnly: action,
       setMouseOverClassCorner: action,
@@ -244,6 +247,8 @@ export class DiagramRenderer {
       setSelectedClasses: action,
       setSelectedPropertyOrAssociation: action,
       setSelectedInheritance: action,
+      setRightClick: action,
+      setMiddleClick: action,
       setZoomLevel: action,
     });
 
@@ -355,6 +360,7 @@ export class DiagramRenderer {
     this._selectedClassesInitialPositions = [];
     this.cursorPosition = new Point(0, 0);
     this.leftClick = false;
+    this.middleClick = false;
     this.rightClick = false;
     this.clickX = 0;
     this.clickY = 0;
@@ -401,6 +407,14 @@ export class DiagramRenderer {
 
   setSelectedInheritance(val: GeneralizationView | undefined): void {
     this.selectedInheritance = val;
+  }
+
+  setRightClick(val: boolean): void {
+    this.rightClick = val;
+  }
+
+  setMiddleClick(val: boolean): void {
+    this.middleClick = val;
   }
 
   setZoomLevel(val: number): void {
@@ -2228,7 +2242,8 @@ export class DiagramRenderer {
       }
     }
     this.leftClick = false;
-    this.rightClick = false;
+    this.setMiddleClick(false);
+    this.setRightClick(false);
 
     this.setSelectedClassCorner(undefined);
     this.setSelectionStart(undefined);
@@ -2496,10 +2511,17 @@ export class DiagramRenderer {
           break;
       }
     }
+    // middle click
+    else if (e.button === 1) {
+      e.returnValue = false;
+      this.setMiddleClick(true);
+      this.positionBeforeLastMove = new Point(e.x, e.y);
+      return;
+    }
     // right click
     else if (e.button === 2) {
       e.returnValue = false;
-      this.rightClick = true;
+      this.setRightClick(true);
       this.positionBeforeLastMove = new Point(e.x, e.y);
       return;
     }
@@ -2516,7 +2538,7 @@ export class DiagramRenderer {
 
   mousemove(e: MouseEvent): void {
     this.cursorPosition = new Point(e.x, e.y);
-    if (this.rightClick) {
+    if (this.rightClick || this.middleClick) {
       this.screenOffset = new Point(
         this.screenOffset.x + (e.x - this.positionBeforeLastMove.x) / this.zoom,
         this.screenOffset.y + (e.y - this.positionBeforeLastMove.y) / this.zoom,

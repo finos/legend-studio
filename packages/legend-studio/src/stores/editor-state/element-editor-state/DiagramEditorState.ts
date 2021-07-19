@@ -196,6 +196,9 @@ export class DiagramEditorState extends ElementEditorState {
     if (this.isReadOnly || !this.isDiagramRendererInitialized) {
       return '';
     }
+    if (this.renderer.middleClick || this.renderer.rightClick) {
+      return 'diagram-editor__cursor--grabbing';
+    }
     switch (this.renderer.interactionMode) {
       case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
         return 'diagram-editor__cursor--add';

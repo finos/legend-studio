@@ -245,6 +245,10 @@
     &--zoom-out {
       cursor: zoom-out;
     }
+
+    &--grabbing {
+      cursor: grabbing;
+    }
   }
 
   &__side-panel {
