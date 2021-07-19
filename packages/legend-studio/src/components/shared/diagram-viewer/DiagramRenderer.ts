@@ -231,6 +231,9 @@ export class DiagramRenderer {
       mouseOverProperty: observable,
       selectionStart: observable,
       selectedClassCorner: observable,
+      selectedClasses: observable,
+      selectedPropertyOrAssociation: observable,
+      selectedInheritance: observable,
       changeMode: action,
       setIsReadOnly: action,
       setMouseOverClassCorner: action,
@@ -238,6 +241,9 @@ export class DiagramRenderer {
       setMouseOverProperty: action,
       setSelectionStart: action,
       setSelectedClassCorner: action,
+      setSelectedClasses: action,
+      setSelectedPropertyOrAssociation: action,
+      setSelectedInheritance: action,
       setZoomLevel: action,
     });
 
@@ -383,6 +389,18 @@ export class DiagramRenderer {
 
   setSelectedClassCorner(val: ClassView | undefined): void {
     this.selectedClassCorner = val;
+  }
+
+  setSelectedClasses(val: ClassView[]): void {
+    this.selectedClasses = val;
+  }
+
+  setSelectedPropertyOrAssociation(val: PropertyHolderView | undefined): void {
+    this.selectedPropertyOrAssociation = val;
+  }
+
+  setSelectedInheritance(val: GeneralizationView | undefined): void {
+    this.selectedInheritance = val;
   }
 
   setZoomLevel(val: number): void {
@@ -2287,11 +2305,11 @@ export class DiagramRenderer {
   mousedown(e: MouseEvent): void {
     this.setSelectionStart(undefined);
     this.setSelectedClassCorner(undefined);
+    this.setSelectedPropertyOrAssociation(undefined);
+    this.setSelectedInheritance(undefined);
     this.selection = undefined;
     this.selectedClassProperty = undefined;
     this.selectedPoint = undefined;
-    this.selectedPropertyOrAssociation = undefined;
-    this.selectedInheritance = undefined;
     this.startClassView = undefined;
 
     // left click
@@ -2315,7 +2333,7 @@ export class DiagramRenderer {
                   eventPointInModelCoordinate.y,
                 )
             ) {
-              this.selectedClasses = [];
+              this.setSelectedClasses([]);
               this.setSelectedClassCorner(this.diagram.classViews[i]);
               if (!this.isReadOnly) {
                 // Bring the class view to front
@@ -2337,7 +2355,7 @@ export class DiagramRenderer {
                 property: this.mouseOverProperty,
                 selectionPoint: eventPointInModelCoordinate,
               };
-              this.selectedClasses = [];
+              this.setSelectedClasses([]);
             } else {
               // Check for selection of class view(s)
 
@@ -2355,7 +2373,7 @@ export class DiagramRenderer {
                     this.selectedClasses.indexOf(this.diagram.classViews[i]) ===
                       -1
                   ) {
-                    this.selectedClasses = [this.diagram.classViews[i]];
+                    this.setSelectedClasses([this.diagram.classViews[i]]);
                   }
                   if (!this.isReadOnly) {
                     // Bring the class view to front
@@ -2385,7 +2403,7 @@ export class DiagramRenderer {
                 }
               }
               if (!anyClassesSelected) {
-                this.selectedClasses = [];
+                this.setSelectedClasses([]);
               }
 
               if (!this.selectedClasses.length) {
@@ -2405,7 +2423,7 @@ export class DiagramRenderer {
                   );
                   if (val) {
                     this.selectedPoint = val;
-                    this.selectedInheritance = generalizationView;
+                    this.setSelectedInheritance(generalizationView);
                     break;
                   }
                 }
@@ -2421,7 +2439,7 @@ export class DiagramRenderer {
                     );
                     if (val) {
                       this.selectedPoint = val;
-                      this.selectedPropertyOrAssociation = associationView;
+                      this.setSelectedPropertyOrAssociation(associationView);
                       break;
                     }
                   }
@@ -2438,7 +2456,7 @@ export class DiagramRenderer {
                     );
                     if (val) {
                       this.selectedPoint = val;
-                      this.selectedPropertyOrAssociation = propertyView;
+                      this.setSelectedPropertyOrAssociation(propertyView);
                       break;
                     }
                   }
@@ -2642,13 +2660,13 @@ export class DiagramRenderer {
                 Math.abs(selectionBoxHeight),
               ),
             );
-            this.selectedClasses = [];
+            this.setSelectedClasses([]);
             for (const classView of this.diagram.classViews) {
               if (
                 this.selection.boxContains(classView) ||
                 classView.boxContains(this.selection)
               ) {
-                this.selectedClasses = [...this.selectedClasses, classView];
+                this.setSelectedClasses([...this.selectedClasses, classView]);
               }
             }
           }
