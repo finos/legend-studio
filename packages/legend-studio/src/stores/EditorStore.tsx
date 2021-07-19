@@ -1029,6 +1029,9 @@ export class EditorStore {
       this.graphState.graph.generationModel.removeElement(el),
     );
     this.graphState.graph.removeElement(element);
+    if (this.currentEditorState instanceof DiagramEditorState) {
+      this.currentEditorState.diagramRenderer.start();
+    }
     this.explorerTreeState.reprocess();
     // re-compile after deletion
     yield this.graphState.globalCompileInFormMode({
