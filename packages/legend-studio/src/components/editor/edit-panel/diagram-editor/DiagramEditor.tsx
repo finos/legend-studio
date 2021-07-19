@@ -43,7 +43,7 @@ import {
   ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
 import {
-  BaseMenu,
+  BasePopover,
   BlankPanelContent,
   CaretDownIcon,
   CheckSquareIcon,
@@ -81,7 +81,6 @@ import {
   CgAlignTop,
 } from 'react-icons/cg';
 import { IoResize } from 'react-icons/io5';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { Dialog } from '@material-ui/core';
 import type { HandlerProps } from 'react-reflex';
 import { ReflexContainer, ReflexSplitter, ReflexElement } from 'react-reflex';
@@ -203,7 +202,6 @@ const DiagramEditorToolPanel = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
     const renderer = diagramEditorState.renderer;
-    const applicationStore = useApplicationStore();
     const isReadOnly = diagramEditorState.isReadOnly;
     const showDiagramRendererHokeysModal = (): void =>
       diagramEditorState.setShowHotkeyInfosModal(true);
@@ -308,9 +306,7 @@ const DiagramEditorToolPanel = observer(
           })}
           tabIndex={-1}
           title="Association Tool"
-          onClick={(): void =>
-            applicationStore.notifyUnsupportedFeature('Add association')
-          }
+          disabled={true}
           // onClick={changeMode(
           //   DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
           //   DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
@@ -519,13 +515,26 @@ const DiagramEditorInlineClassCreatorInner = observer(
           : ''
       }Class_${editorStore.graphState.graph.classes.length + 1}`,
     );
-    const isValidPath =
-      isValidFullPath(path) &&
-      path.includes(ELEMENT_PATH_DELIMITER) && // do not allow creating top-level element
+    const isClassPathNonEmpty = path !== '';
+    const isNotTopLevelClass = path.includes(ELEMENT_PATH_DELIMITER);
+    const isValidPath = isValidFullPath(path);
+    const isClassUnique =
       !editorStore.graphState.graph.getNullableElement(path);
+    const classCreationValidationErrorMessage = !isClassPathNonEmpty
+      ? `Class path cannot be empty`
+      : !isNotTopLevelClass
+      ? `Creating top level class is not allowed`
+      : !isValidPath
+      ? `Class path is not valid`
+      : !isClassUnique
+      ? `Class already existed`
+      : undefined;
+    const canCreateClass =
+      isClassPathNonEmpty && isNotTopLevelClass && isValidPath && isClassUnique;
+
     const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
       event.preventDefault();
-      if (isValidPath) {
+      if (canCreateClass) {
         diagramEditorState.setInlinePropertyEditorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
@@ -569,14 +578,21 @@ const DiagramEditorInlineClassCreatorInner = observer(
 
     return (
       <form className="diagram-editor__inline-class-creator">
-        <input
-          className="diagram-editor__inline-class-creator__path input--dark"
-          ref={pathInputRef}
-          disabled={isReadOnly}
-          value={path}
-          placeholder="Enter class path"
-          onChange={changePath}
-        />
+        <div className="input-group">
+          <input
+            className="diagram-editor__inline-class-creator__path input-group__input input--dark"
+            ref={pathInputRef}
+            disabled={isReadOnly}
+            value={path}
+            placeholder="Enter class path"
+            onChange={changePath}
+          />
+          {classCreationValidationErrorMessage && (
+            <div className="input-group__error-message">
+              {classCreationValidationErrorMessage}
+            </div>
+          )}
+        </div>
         <button
           type="submit"
           className="diagram-editor__inline-class-creator__close-btn"
@@ -605,7 +621,7 @@ const DiagramEditorInlineClassCreator = observer(
       : new Point(0, 0);
 
     return (
-      <BaseMenu
+      <BasePopover
         onClose={closeEditor}
         anchorPosition={{
           left: anchorPositionPoint.x,
@@ -627,7 +643,7 @@ const DiagramEditorInlineClassCreator = observer(
             />
           )}
         </div>
-      </BaseMenu>
+      </BasePopover>
     );
   },
 );
@@ -796,9 +812,6 @@ const DiagramEditorInlinePropertyEditorInner = observer(
   },
 );
 
-const INLINE_PROPERTY_EDITOR_HEIGHT = 38;
-const INLINE_PROPERTY_EDITOR_WIDTH = 392;
-
 const DiagramEditorInlinePropertyEditor = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
@@ -816,11 +829,11 @@ const DiagramEditorInlinePropertyEditor = observer(
       : new Point(0, 0);
 
     return (
-      <BaseMenu
+      <BasePopover
         onClose={closeEditor}
         anchorPosition={{
-          left: anchorPositionPoint.x - INLINE_PROPERTY_EDITOR_WIDTH / 2,
-          top: anchorPositionPoint.y - INLINE_PROPERTY_EDITOR_HEIGHT / 2,
+          left: anchorPositionPoint.x,
+          top: anchorPositionPoint.y,
         }}
         anchorReference="anchorPosition"
         open={Boolean(inlinePropertyEditorState)}
@@ -838,7 +851,7 @@ const DiagramEditorInlinePropertyEditor = observer(
             />
           )}
         </div>
-      </BaseMenu>
+      </BasePopover>
     );
   },
 );
