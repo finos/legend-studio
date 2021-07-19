@@ -21,6 +21,7 @@ import {
   UnsupportedOperationError,
   IllegalStateError,
   guaranteeNonNullable,
+  findLast,
 } from '@finos/legend-studio-shared';
 import { PositionedRectangle } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/PositionedRectangle';
 import { Point } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
@@ -49,10 +50,12 @@ import { Property } from '../../../models/metamodels/pure/model/packageableEleme
 import { Multiplicity } from '../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
 import { action, makeObservable, observable } from 'mobx';
 
-export enum DIAGRAM_EDIT_MODE {
+export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
-  RELATIONSHIP,
+  ADD_RELATIONSHIP,
   ADD_CLASS,
+  ZOOM_IN,
+  ZOOM_OUT,
 }
 
 export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
@@ -61,6 +64,12 @@ export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
   INHERITANCE,
   NONE,
 }
+
+const MIN_ZOOM_LEVEL = 0.05; // 5%
+const FIT_ZOOM_PADDING = 10;
+export const DIAGRAM_ZOOM_LEVELS = [
+  50, 75, 90, 100, 110, 125, 150, 200, 250, 300, 400,
+];
 
 export class DiagramRenderer {
   diagram: Diagram;
@@ -81,11 +90,13 @@ export class DiagramRenderer {
    */
   virtualScreen: PositionedRectangle;
   /**
-   * This is the offset of the virtual screen with respect to the canvas. To understand this better, please read on.
-   * (to make it clear, we have 2 types of coordinate: `stored` (in the JSON protocol) and `rendering`)
-   * There are 2 important facts about all the stored coordinates in the protocol (e.g. position of classview, line points):
-   * 1. Zoom is not taken into account (rendering coordinates change as we zoom)
+   * This refers the offset of the virtual screen with respect to the canvas. We have 2 types of coordinate:
+   * `stored` (in the JSON protocol of class and relationship views) vs. `rendering`.
+   *
+   * There are 2 important facts about stored coordinates:
+   * 1. Zoom is not taken into account (unlike rendering coordinates which change as we zoom)
    * 2. They are with respect to the canvas, not the screen (because the screen is virtual - see above)
+   *
    * As such, when we debug, let's say we have a position (x,y), if we want to find that coordinate in the coordiante system of the canvas, we have to
    * add the offset, so the coordinate of (x, y) is (x + screenOffset.x, y + screenOffset.y) when we refer to the canvas coordinate system
    * So if we turn on debug mode and try to move the top left corner of the screen to the `offset crosshair` the screen coordinate system should align
@@ -97,8 +108,8 @@ export class DiagramRenderer {
 
   // edit modes
   // NOTE: we keep the edit mode separated like this
-  // becase we anticipate more complex interaction in the future
-  editMode: DIAGRAM_EDIT_MODE;
+  // becase we anticipate more complex interactions in the future
+  interactionMode: DIAGRAM_INTERACTION_MODE;
   relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE;
 
   // UML specific shapes
@@ -212,8 +223,9 @@ export class DiagramRenderer {
   constructor(div: HTMLDivElement, diagram: Diagram) {
     makeObservable(this, {
       isReadOnly: observable,
-      editMode: observable,
+      interactionMode: observable,
       relationshipMode: observable,
+      zoom: observable,
       mouseOverClassCorner: observable,
       mouseOverClassView: observable,
       mouseOverProperty: observable,
@@ -226,6 +238,7 @@ export class DiagramRenderer {
       setMouseOverProperty: action,
       setSelectionStart: action,
       setSelectedClassCorner: action,
+      setZoomLevel: action,
     });
 
     this.diagram = diagram;
@@ -321,7 +334,7 @@ export class DiagramRenderer {
     this.selectionBoxBorderColor = 'rgba(0,0,0, 0.02)';
 
     // Preferences
-    this.editMode = DIAGRAM_EDIT_MODE.LAYOUT;
+    this.interactionMode = DIAGRAM_INTERACTION_MODE.LAYOUT;
     this.relationshipMode = DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE;
     this.isReadOnly = false;
     this.screenPadding = 20;
@@ -372,6 +385,10 @@ export class DiagramRenderer {
     this.selectedClassCorner = val;
   }
 
+  setZoomLevel(val: number): void {
+    this.zoom = val;
+  }
+
   start(): void {
     this.diagram.classViews.forEach((classView) =>
       this.computeClassViewMinDimensions(classView),
@@ -385,12 +402,14 @@ export class DiagramRenderer {
   }
 
   changeMode(
-    editMode: DIAGRAM_EDIT_MODE,
+    editMode: DIAGRAM_INTERACTION_MODE,
     relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE,
   ): void {
     switch (editMode) {
-      case DIAGRAM_EDIT_MODE.LAYOUT:
-      case DIAGRAM_EDIT_MODE.ADD_CLASS: {
+      case DIAGRAM_INTERACTION_MODE.LAYOUT:
+      case DIAGRAM_INTERACTION_MODE.ZOOM_IN:
+      case DIAGRAM_INTERACTION_MODE.ZOOM_OUT:
+      case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
         if (relationshipMode !== DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE) {
           throw new IllegalStateError(
             `Can't change to '${editMode}' mode: relationship mode should not be specified in layout mode`,
@@ -398,7 +417,7 @@ export class DiagramRenderer {
         }
         break;
       }
-      case DIAGRAM_EDIT_MODE.RELATIONSHIP: {
+      case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
         if (relationshipMode === DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE) {
           throw new IllegalStateError(
             `Can't switch to relationship mode: relationship is missing`,
@@ -412,10 +431,10 @@ export class DiagramRenderer {
         );
     }
 
-    this.editMode = editMode;
+    this.interactionMode = editMode;
     this.relationshipMode = relationshipMode;
 
-    if (editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP) {
+    if (editMode === DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP) {
       switch (relationshipMode) {
         case DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE: {
           this.addRelationshipToDiagramFn = (
@@ -547,10 +566,7 @@ export class DiagramRenderer {
       : val;
   }
 
-  /**
-   * Convert from canvas coordinate to model coordinate
-   */
-  toModelCoordinate(point: Point): Point {
+  canvasCoordinateToModelCoordinate(point: Point): Point {
     return new Point(
       (point.x - this.canvasCenter.x) / this.zoom -
         this.screenOffset.x +
@@ -561,15 +577,26 @@ export class DiagramRenderer {
     );
   }
 
-  /**
-   * Convert from model coordinate to canvas coordinate
-   */
-  toCanvasCoordinate(point: Point): Point {
+  modelCoordinateToCanvasCoordinate(point: Point): Point {
     return new Point(
       (point.x - this.canvasCenter.x + this.screenOffset.x) * this.zoom +
         this.canvasCenter.x,
       (point.y - this.canvasCenter.y + this.screenOffset.y) * this.zoom +
         this.canvasCenter.y,
+    );
+  }
+
+  eventCoordinateToCanvasCoordinate(point: Point): Point {
+    return new Point(
+      point.x - this.divPosition.x + this.div.scrollLeft,
+      point.y - this.divPosition.y + this.div.scrollTop,
+    );
+  }
+
+  canvasCoordinateToEventCoordinate(point: Point): Point {
+    return new Point(
+      point.x - this.div.scrollLeft + this.divPosition.x,
+      point.y - this.div.scrollTop + this.divPosition.y,
     );
   }
 
@@ -648,7 +675,7 @@ export class DiagramRenderer {
         new Rectangle(maxX - minX, maxY - minY),
       );
     } else {
-      this.zoom = 1;
+      this.setZoomLevel(1);
       this.screenOffset = new Point(0, 0);
       this.virtualScreen = new PositionedRectangle(
         new Point(
@@ -661,12 +688,73 @@ export class DiagramRenderer {
   }
 
   /**
+   * Here we zoom with respect to the point the mouse is currently pointing at.
+   * The idea is fairly simple. We convert the coordinate of the zoom point
+   * to the model coordinate and find a way to alter `screenOffset` in response
+   * to change in zoom level to ensure the model coordinate stays constant.
+   */
+  private executeZoom(newZoomLevel: number, point: Point): void {
+    // NOTE: we cap the minimum zoom level to avoid negative zoom
+    newZoomLevel = Math.max(newZoomLevel, MIN_ZOOM_LEVEL);
+
+    const canvasZoomCenterPosition = this.canvasCoordinateToModelCoordinate(
+      this.eventCoordinateToCanvasCoordinate(point),
+    );
+    const currentZoomLevel = this.zoom;
+    this.setZoomLevel(newZoomLevel);
+
+    this.screenOffset = new Point(
+      ((canvasZoomCenterPosition.x - this.canvasCenter.x) *
+        (currentZoomLevel - newZoomLevel) +
+        this.screenOffset.x * currentZoomLevel) /
+        newZoomLevel,
+      ((canvasZoomCenterPosition.y - this.canvasCenter.y) *
+        (currentZoomLevel - newZoomLevel) +
+        this.screenOffset.y * currentZoomLevel) /
+        newZoomLevel,
+    );
+
+    this.clearScreen();
+    this.drawAll();
+  }
+
+  zoomPoint(zoomLevel: number, zoomPoint: Point): void {
+    this.executeZoom(zoomLevel, zoomPoint);
+  }
+
+  zoomCenter(zoomLevel: number): void {
+    // NOTE: we cap the minimum zoom level to avoid negative zoom
+    this.setZoomLevel(Math.max(zoomLevel, MIN_ZOOM_LEVEL));
+    this.clearScreen();
+    this.drawAll();
+  }
+
+  zoomToFit(): void {
+    this.autoRecenter();
+    this.zoomCenter(
+      Math.max(
+        Math.min(
+          this.canvas.width /
+            (this.virtualScreen.rectangle.width +
+              this.screenPadding * 2 +
+              FIT_ZOOM_PADDING * 2),
+          this.canvas.height /
+            (this.virtualScreen.rectangle.height +
+              this.screenPadding * 2 +
+              FIT_ZOOM_PADDING * 2),
+        ),
+        MIN_ZOOM_LEVEL,
+      ),
+    );
+  }
+
+  /**
    * Add a classview to current diagram and draw it.
    * This function is intended to be used with drag and drop, hence the position paramter, which must be relative to the screen/window
    */
   addClassView(
     addedClass: Class,
-    absolutePosition?: Point,
+    addEventPosition?: Point,
   ): ClassView | undefined {
     if (!this.isReadOnly) {
       // NOTE: Using `uuid` might be overkill since the `id` is only required to be unique
@@ -685,14 +773,10 @@ export class DiagramRenderer {
         PackageableElementExplicitReference.create(addedClass),
       );
       newClassView.setPosition(
-        this.toModelCoordinate(
-          absolutePosition
-            ? new Point(
-                absolutePosition.x - this.divPosition.x,
-                absolutePosition.y - this.divPosition.y,
-              )
-            : // TODO: make sure this is the true center?
-              new Point(
+        this.canvasCoordinateToModelCoordinate(
+          addEventPosition
+            ? this.eventCoordinateToCanvasCoordinate(addEventPosition)
+            : new Point(
                 this.virtualScreen.position.x +
                   this.virtualScreen.rectangle.width / 2,
                 this.virtualScreen.position.y +
@@ -1287,7 +1371,7 @@ export class DiagramRenderer {
     this.ctx.fillStyle = this.classViewFillColor;
 
     // Draw the Box
-    const position = this.toCanvasCoordinate(classView.position);
+    const position = this.modelCoordinateToCanvasCoordinate(classView.position);
     this.ctx.fillRect(
       position.x,
       position.y,
@@ -1476,13 +1560,13 @@ export class DiagramRenderer {
     this.ctx.font = `${this.fontSize * this.zoom}px ${this.fontFamily}`;
     const posX = textPositionX(textSize);
     const posY = textPositionY(textSize);
-    const propertyPosition = this.toCanvasCoordinate(
+    const propertyPosition = this.modelCoordinateToCanvasCoordinate(
       new Point(textPositionX(textSize), textPositionY(textSize)),
     );
     this.ctx.fillText(propertyName, propertyPosition.x, propertyPosition.y);
     const mulPosX = multiplicityPositionX(mulSize);
     const mulPosY = multiplicityPositionY(mulSize);
-    const multiplicityPosition = this.toCanvasCoordinate(
+    const multiplicityPosition = this.modelCoordinateToCanvasCoordinate(
       new Point(multiplicityPositionX(mulSize), multiplicityPositionY(mulSize)),
     );
     this.ctx.fillText(
@@ -1633,7 +1717,7 @@ export class DiagramRenderer {
     this.ctx.lineWidth =
       propertyView === this.selectedPropertyOrAssociation ? 2 : 1;
     fullPath.forEach((point, idx) => {
-      const position = this.toCanvasCoordinate(point);
+      const position = this.modelCoordinateToCanvasCoordinate(point);
       if (idx === 0) {
         this.ctx.moveTo(position.x, position.y);
       } else {
@@ -1781,7 +1865,7 @@ export class DiagramRenderer {
     this.ctx.beginPath();
     this.ctx.lineWidth = inheritance === this.selectedInheritance ? 2 : 1;
     fullPath.forEach((point, idx) => {
-      const position = this.toCanvasCoordinate(point);
+      const position = this.modelCoordinateToCanvasCoordinate(point);
       if (idx === 0) {
         this.ctx.moveTo(position.x, position.y);
       } else {
@@ -1990,8 +2074,8 @@ export class DiagramRenderer {
 
   mouseup(e: MouseEvent): void {
     if (!this.isReadOnly) {
-      switch (this.editMode) {
-        case DIAGRAM_EDIT_MODE.LAYOUT: {
+      switch (this.interactionMode) {
+        case DIAGRAM_INTERACTION_MODE.LAYOUT: {
           this.diagram.generalizationViews.forEach((generalizationView) =>
             generalizationView.possiblyFlattenPath(),
           );
@@ -2003,15 +2087,61 @@ export class DiagramRenderer {
           );
           break;
         }
-        case DIAGRAM_EDIT_MODE.ADD_CLASS: {
+        case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
           this.onAddClassViewClick(e);
           this.changeMode(
-            DIAGRAM_EDIT_MODE.LAYOUT,
+            DIAGRAM_INTERACTION_MODE.LAYOUT,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           );
           break;
         }
-        case DIAGRAM_EDIT_MODE.RELATIONSHIP: {
+        case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
+          // Rounding up the current zoom level to make sure floating point precision
+          // does not come into play when comparing with recommended zoom levels:
+          // e.g. in Javascript, 110 === 110.000000000000001
+          const currentZoomLevel = Math.round(this.zoom * 100);
+          let nextZoomLevel: number;
+          // NOTE: below the smallest recommended zoom level, we will start decrement by 10
+          // and increment by 100 beyond the largest recommended zoom level.
+          if (currentZoomLevel <= DIAGRAM_ZOOM_LEVELS[0] - 10) {
+            nextZoomLevel = Math.floor(currentZoomLevel / 10) * 10 + 10;
+          } else if (
+            currentZoomLevel >=
+            DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1]
+          ) {
+            nextZoomLevel = Math.floor(currentZoomLevel / 100) * 100 + 100;
+          } else {
+            nextZoomLevel = guaranteeNonNullable(
+              DIAGRAM_ZOOM_LEVELS.find(
+                (zoomLevel) => zoomLevel > currentZoomLevel,
+              ),
+            );
+          }
+          this.zoomPoint(nextZoomLevel / 100, new Point(e.x, e.y));
+          break;
+        }
+        case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
+          const currentZoomLevel = Math.round(this.zoom * 100);
+          let nextZoomLevel: number;
+          if (currentZoomLevel <= DIAGRAM_ZOOM_LEVELS[0]) {
+            nextZoomLevel = Math.ceil(currentZoomLevel / 10) * 10 - 10;
+          } else if (
+            currentZoomLevel >=
+            DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] + 100
+          ) {
+            nextZoomLevel = Math.ceil(currentZoomLevel / 100) * 100 - 100;
+          } else {
+            nextZoomLevel = guaranteeNonNullable(
+              findLast(
+                DIAGRAM_ZOOM_LEVELS,
+                (zoomLevel) => zoomLevel < currentZoomLevel,
+              ),
+            );
+          }
+          this.zoomPoint(nextZoomLevel / 100, new Point(e.x, e.y));
+          break;
+        }
+        case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
           if (
             this.startClassView &&
             this.selectionStart &&
@@ -2076,7 +2206,7 @@ export class DiagramRenderer {
               }
             }
             this.changeMode(
-              DIAGRAM_EDIT_MODE.LAYOUT,
+              DIAGRAM_INTERACTION_MODE.LAYOUT,
               DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
             );
           }
@@ -2129,6 +2259,16 @@ export class DiagramRenderer {
   }
 
   mousedblclick(e: MouseEvent): void {
+    if (
+      [
+        DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+        DIAGRAM_INTERACTION_MODE.ADD_CLASS,
+        DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+        DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+      ].includes(this.interactionMode)
+    ) {
+      return;
+    }
     const divPos = this.divPosition;
     const correctedX =
       e.x - divPos.x + this.div.scrollLeft - this.screenOffset.x * this.zoom;
@@ -2178,8 +2318,8 @@ export class DiagramRenderer {
       const y =
         (correctedY - this.canvasCenter.y) / this.zoom + this.canvasCenter.y;
 
-      switch (this.editMode) {
-        case DIAGRAM_EDIT_MODE.LAYOUT: {
+      switch (this.interactionMode) {
+        case DIAGRAM_INTERACTION_MODE.LAYOUT: {
           // Check if the selection lies within the bottom right corner box of a box (so we can do resize of box here)
           // NOTE: Traverse backwards the class views to preserve z-index buffer
           for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
@@ -2322,7 +2462,7 @@ export class DiagramRenderer {
           }
           break;
         }
-        case DIAGRAM_EDIT_MODE.RELATIONSHIP: {
+        case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
           this.setSelectionStart(new Point(x, y));
           this.startClassView = undefined;
           for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
@@ -2332,7 +2472,7 @@ export class DiagramRenderer {
           }
           if (!this.startClassView) {
             this.changeMode(
-              DIAGRAM_EDIT_MODE.LAYOUT,
+              DIAGRAM_INTERACTION_MODE.LAYOUT,
               DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
             );
           }
@@ -2354,10 +2494,9 @@ export class DiagramRenderer {
   }
 
   mousewheel(e: WheelEvent): void {
-    // NOTE: scroll down to zoom in and up to zoom out
-    this.zoom = this.zoom - (e.deltaY / 120) * 0.05;
-    this.clearScreen();
-    this.drawAll();
+    // scroll down to zoom in and up to zoom out
+    const newZoomLevel = this.zoom - (e.deltaY / 120) * 0.05;
+    this.executeZoom(newZoomLevel, new Point(e.x, e.y));
     e.returnValue = false;
   }
 
@@ -2378,8 +2517,8 @@ export class DiagramRenderer {
       const correctedY =
         e.y - divPos.y + this.div.scrollTop - this.screenOffset.y * this.zoom;
 
-      switch (this.editMode) {
-        case DIAGRAM_EDIT_MODE.LAYOUT: {
+      switch (this.interactionMode) {
+        case DIAGRAM_INTERACTION_MODE.LAYOUT: {
           // Resize class view
           if (this.selectedClassCorner) {
             const newMovingX =
@@ -2527,7 +2666,7 @@ export class DiagramRenderer {
           }
           break;
         }
-        case DIAGRAM_EDIT_MODE.RELATIONSHIP: {
+        case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
           if (this.selectionStart && this.startClassView) {
             this.clearScreen();
             this.drawBoundingBox();
@@ -2561,11 +2700,16 @@ export class DiagramRenderer {
       this.clearScreen();
       this.drawAll();
 
-      const divPos = this.divPosition;
       const correctedX =
-        e.x - divPos.x + this.div.scrollLeft - this.screenOffset.x * this.zoom;
+        e.x -
+        this.divPosition.x +
+        this.div.scrollLeft -
+        this.screenOffset.x * this.zoom;
       const correctedY =
-        e.y - divPos.y + this.div.scrollTop - this.screenOffset.y * this.zoom;
+        e.y -
+        this.divPosition.y +
+        this.div.scrollTop -
+        this.screenOffset.y * this.zoom;
 
       const cX =
         (correctedX - this.canvasCenter.x) / this.zoom + this.canvasCenter.x;

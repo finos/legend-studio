@@ -30,8 +30,9 @@ import {
 import { observer } from 'mobx-react-lite';
 import {
   DiagramRenderer,
-  DIAGRAM_EDIT_MODE,
+  DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
+  DIAGRAM_ZOOM_LEVELS,
 } from '../../../shared/diagram-viewer/DiagramRenderer';
 import type { DiagramEditorInlinePropertyEditorState } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
@@ -45,7 +46,12 @@ import {
 } from '../../../../stores/shared/DnDUtil';
 import {
   BaseMenu,
+  CaretDownIcon,
   clsx,
+  DropdownMenu,
+  MenuContent,
+  MenuContentDivider,
+  MenuContentItem,
   TimesIcon,
   TreeView,
 } from '@finos/legend-studio-components';
@@ -66,6 +72,8 @@ import {
   FiPlusCircle,
   FiSidebar,
   FiTriangle,
+  FiZoomIn,
+  FiZoomOut,
 } from 'react-icons/fi';
 import { IoResize } from 'react-icons/io5';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
@@ -126,12 +134,7 @@ const PackageTreeNodeContainer: React.FC<
 };
 
 const DiagramEditorClassCreator = observer(
-  (props: {
-    newClassEditorState: DiagramEditorNewClassSidePanelState;
-    // onSubmit: (_class: Class, position: Point) => void;
-    // createNewClassEvent: MouseEvent;
-    // packageTree: TreeData<PackageTreeNodeData>;
-  }) => {
+  (props: { newClassEditorState: DiagramEditorNewClassSidePanelState }) => {
     const { newClassEditorState } = props;
     const editorStore = useEditorStore();
     const diagramEditorState = newClassEditorState.diagramEditorState;
@@ -220,7 +223,7 @@ const DiagramEditorClassCreator = observer(
         selectedPackage.addElement(_class);
         editorStore.graphState.graph.addElement(_class);
         editorStore.explorerTreeState.reprocess();
-        diagramEditorState.diagramRenderer.addClassView(
+        diagramEditorState.renderer.addClassView(
           _class,
           new Point(
             newClassEditorState.creationMouseEvent.x,
@@ -389,7 +392,7 @@ const DiagramRendererHotkeyInfosModal = observer(
 const DiagramEditorToolPanel = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
-    const diagramRenderer = diagramEditorState.diagramRenderer;
+    const renderer = diagramEditorState.renderer;
     const applicationStore = useApplicationStore();
     const isReadOnly = diagramEditorState.isReadOnly;
     const showDiagramRendererHokeysModal = (): void =>
@@ -397,25 +400,25 @@ const DiagramEditorToolPanel = observer(
     const hideDiagramRendererHokeysModal = (): void =>
       diagramEditorState.setShowHotkeyInfosModal(false);
 
-    const switchToLayoutMode = (): void => {
+    const useViewTool = (): void => {
       if (!isReadOnly) {
-        diagramRenderer.changeMode(
-          DIAGRAM_EDIT_MODE.LAYOUT,
+        renderer.changeMode(
+          DIAGRAM_INTERACTION_MODE.LAYOUT,
           DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
         );
       }
     };
 
-    const switchToRelationshipPropertyMode = (): void => {
+    const usePropertyTool = (): void => {
       if (!isReadOnly) {
-        diagramRenderer.changeMode(
-          DIAGRAM_EDIT_MODE.RELATIONSHIP,
+        renderer.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
           DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
         );
       }
     };
 
-    const switchToRelationshipAssociationMode = (): void => {
+    const useAssociationTool = (): void => {
       if (!isReadOnly) {
         applicationStore.notifyUnsupportedFeature(`Create association`);
         // diagramRenderer.changeMode(
@@ -425,19 +428,33 @@ const DiagramEditorToolPanel = observer(
       }
     };
 
-    const switchToRelationshipInheritanceMode = (): void => {
+    const useInheritanceTool = (): void => {
       if (!isReadOnly) {
-        diagramRenderer.changeMode(
-          DIAGRAM_EDIT_MODE.RELATIONSHIP,
+        renderer.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
           DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
         );
       }
     };
 
+    const zoomIn = (): void => {
+      renderer.changeMode(
+        DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    };
+
+    const zoomOut = (): void => {
+      renderer.changeMode(
+        DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    };
+
     const addNewClassView = (): void => {
       if (!isReadOnly) {
-        diagramRenderer.changeMode(
-          DIAGRAM_EDIT_MODE.ADD_CLASS,
+        renderer.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_CLASS,
           DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
         );
       }
@@ -448,10 +465,10 @@ const DiagramEditorToolPanel = observer(
         <button
           className={clsx('diagram-editor__tool', {
             'diagram-editor__tool--active':
-              diagramRenderer.editMode === DIAGRAM_EDIT_MODE.LAYOUT,
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.LAYOUT,
           })}
           tabIndex={-1}
-          onClick={switchToLayoutMode}
+          onClick={useViewTool}
           title="View Tool"
         >
           <FiMove className="diagram-editor__icon--layout" />
@@ -459,26 +476,51 @@ const DiagramEditorToolPanel = observer(
         <button
           className={clsx('diagram-editor__tool', {
             'diagram-editor__tool--active':
-              diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
-              diagramRenderer.relationshipMode ===
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+          })}
+          tabIndex={-1}
+          title="Zoom In"
+          onClick={zoomIn}
+        >
+          <FiZoomIn className="diagram-editor__icon--zoom-in" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+          })}
+          tabIndex={-1}
+          title="Zoom Out"
+          onClick={zoomOut}
+        >
+          <FiZoomOut className="diagram-editor__icon--zoom-out" />
+        </button>
+        <div className="diagram-editor__tools__divider" />
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              renderer.interactionMode ===
+                DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP &&
+              renderer.relationshipMode ===
                 DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
           })}
           tabIndex={-1}
           title="Property Tool"
-          onClick={switchToRelationshipPropertyMode}
+          onClick={usePropertyTool}
         >
           <FiMinus className="diagram-editor__icon--property" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
             'diagram-editor__tool--active':
-              diagramRenderer.editMode === DIAGRAM_EDIT_MODE.RELATIONSHIP &&
-              diagramRenderer.relationshipMode ===
+              renderer.interactionMode ===
+                DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP &&
+              renderer.relationshipMode ===
                 DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
           })}
           tabIndex={-1}
           title="Inheritance Tool"
-          onClick={switchToRelationshipInheritanceMode}
+          onClick={useInheritanceTool}
         >
           <FiTriangle className="diagram-editor__icon--inheritance" />
         </button>
@@ -491,14 +533,14 @@ const DiagramEditorToolPanel = observer(
           })}
           tabIndex={-1}
           title="Association Tool"
-          onClick={switchToRelationshipAssociationMode}
+          onClick={useAssociationTool}
         >
           <IoResize className="diagram-editor__icon--association" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
             'diagram-editor__tool--active':
-              diagramRenderer.editMode === DIAGRAM_EDIT_MODE.ADD_CLASS,
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ADD_CLASS,
           })}
           tabIndex={-1}
           title="New Class..."
@@ -539,7 +581,7 @@ const DiagramEditorOverlay = observer(() => {
     diagramEditorState.diagram.deadReferencesCleanUp(
       editorStore.graphState.graph,
     );
-    diagramEditorState.diagramRenderer.start();
+    diagramEditorState.renderer.start();
   }, [diagramEditorState, editorStore]);
 
   return (
@@ -661,7 +703,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
       if (property instanceof DerivedProperty || property instanceof Property) {
         property.setName(event.target.value);
         // redraw diagram
-        diagramEditorState.diagramRenderer.start();
+        diagramEditorState.renderer.start();
       }
     };
 
@@ -669,7 +711,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
       if (property instanceof DerivedProperty || property instanceof Property) {
         property.setMultiplicity(val);
         // redraw diagram
-        diagramEditorState.diagramRenderer.start();
+        diagramEditorState.renderer.start();
       }
     };
 
@@ -715,8 +757,10 @@ const DiagramEditorInlinePropertyEditor = observer(
     const inlinePropertyEditorState =
       diagramEditorState.inlinePropertyEditorState;
     const anchorPositionPoint = inlinePropertyEditorState
-      ? diagramEditorState.diagramRenderer.toCanvasCoordinate(
-          inlinePropertyEditorState.point,
+      ? diagramEditorState.renderer.canvasCoordinateToEventCoordinate(
+          diagramEditorState.renderer.modelCoordinateToCanvasCoordinate(
+            inlinePropertyEditorState.point,
+          ),
         )
       : new Point(0, 0);
 
@@ -724,14 +768,8 @@ const DiagramEditorInlinePropertyEditor = observer(
       <BaseMenu
         onClose={closeEditor}
         anchorPosition={{
-          left:
-            diagramEditorState.diagramRenderer.divPosition.x +
-            anchorPositionPoint.x -
-            INLINE_PROPERTY_EDITOR_WIDTH / 2,
-          top:
-            diagramEditorState.diagramRenderer.divPosition.y +
-            anchorPositionPoint.y -
-            INLINE_PROPERTY_EDITOR_HEIGHT / 2,
+          left: anchorPositionPoint.x - INLINE_PROPERTY_EDITOR_WIDTH / 2,
+          top: anchorPositionPoint.y - INLINE_PROPERTY_EDITOR_HEIGHT / 2,
         }}
         anchorReference="anchorPosition"
         open={Boolean(inlinePropertyEditorState)}
@@ -778,7 +816,7 @@ const DiagramEditorDiagramCanvas = observer(
           diagramCanvasRef.current,
           diagramEditorState.diagram,
         );
-        diagramEditorState.setDiagramRenderer(renderer);
+        diagramEditorState.setRenderer(renderer);
         diagramEditorState.setupDiagramRenderer();
         renderer.start();
         renderer.autoRecenter();
@@ -787,7 +825,7 @@ const DiagramEditorDiagramCanvas = observer(
 
     useEffect(() => {
       if (diagramEditorState.isDiagramRendererInitialized) {
-        diagramEditorState.diagramRenderer.refresh();
+        diagramEditorState.renderer.refresh();
       }
     }, [diagramEditorState, width, height]);
 
@@ -798,7 +836,7 @@ const DiagramEditorDiagramCanvas = observer(
           if (item instanceof ElementDragSource) {
             if (item.data.packageableElement instanceof Class) {
               const dropPosition = monitor.getSourceClientOffset();
-              diagramEditorState.diagramRenderer.addClassView(
+              diagramEditorState.renderer.addClassView(
                 item.data.packageableElement,
                 dropPosition
                   ? new Point(dropPosition.x, dropPosition.y)
@@ -835,35 +873,94 @@ const DiagramEditorDiagramCanvas = observer(
   { forwardRef: true },
 );
 
+const DiagramEditorHeader = observer(
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const createCenterZoomer =
+      (zoomLevel: number): (() => void) =>
+      (): void => {
+        diagramEditorState.renderer.zoomCenter(zoomLevel / 100);
+      };
+    const zoomToFit = (): void => diagramEditorState.renderer.zoomToFit();
+
+    const toggleSidePanel = (): void => {
+      diagramEditorState.sidePanelDisplayState.toggle();
+      if (!diagramEditorState.sidePanelDisplayState.isOpen) {
+        diagramEditorState.setSidePanelState(undefined);
+      }
+    };
+
+    return (
+      <>
+        <div className="diagram-editor__header__zoomer">
+          <DropdownMenu
+            className="diagram-editor__header__zoomer__dropdown"
+            content={
+              <MenuContent>
+                <MenuContentItem
+                  className="diagram-editor__header__zoomer__dropdown__menu__item"
+                  onClick={zoomToFit}
+                >
+                  Fit
+                </MenuContentItem>
+                <MenuContentDivider />
+                {DIAGRAM_ZOOM_LEVELS.map((zoomLevel) => (
+                  <MenuContentItem
+                    key={zoomLevel}
+                    className="diagram-editor__header__zoomer__dropdown__menu__item"
+                    onClick={createCenterZoomer(zoomLevel)}
+                  >
+                    {zoomLevel}%
+                  </MenuContentItem>
+                ))}
+              </MenuContent>
+            }
+            menuProps={{
+              anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+              transformOrigin: { vertical: 'top', horizontal: 'right' },
+              elevation: 7,
+            }}
+          >
+            <button
+              className="diagram-editor__header__zoomer__dropdown__label"
+              tabIndex={-1}
+              title="Zoom..."
+            >
+              {Math.round(diagramEditorState.renderer.zoom * 100)}%
+            </button>
+            <div className="diagram-editor__header__zoomer__dropdown__trigger">
+              <CaretDownIcon />
+            </div>
+          </DropdownMenu>
+        </div>
+        <div className="diagram-editor__header__actions">
+          <button
+            className={clsx('diagram-editor__header__action', {
+              'diagram-editor__header__action--active':
+                diagramEditorState.sidePanelDisplayState.isOpen,
+            })}
+            tabIndex={-1}
+            onClick={toggleSidePanel}
+          >
+            <FiSidebar className="diagram-editor__icon--sidebar" />
+          </button>
+        </div>
+      </>
+    );
+  },
+);
+
 export const DiagramEditor = observer(() => {
   const editorStore = useEditorStore();
   const diagramEditorState =
     editorStore.getCurrentEditorState(DiagramEditorState);
   const diagramCanvasRef = useRef<HTMLDivElement>(null);
 
-  const toggleSidePanel = (): void => {
-    diagramEditorState.sidePanelDisplayState.toggle();
-    if (!diagramEditorState.sidePanelDisplayState.isOpen) {
-      diagramEditorState.setSidePanelState(undefined);
-    }
-  };
-
   return (
     <div className="diagram-editor">
       <div className="diagram-editor__header">
         {diagramEditorState.isDiagramRendererInitialized && (
-          <div className="diagram-editor__header__actions">
-            <button
-              className={clsx('diagram-editor__header__action', {
-                'diagram-editor__header__action--active':
-                  diagramEditorState.sidePanelDisplayState.isOpen,
-              })}
-              tabIndex={-1}
-              onClick={toggleSidePanel}
-            >
-              <FiSidebar className="diagram-editor__icon--sidebar" />
-            </button>
-          </div>
+          <DiagramEditorHeader diagramEditorState={diagramEditorState} />
         )}
       </div>
       <div className="diagram-editor__content">

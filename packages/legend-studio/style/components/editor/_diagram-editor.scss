@@ -56,6 +56,45 @@
     }
   }
 
+  &__header__zoomer {
+    &__dropdown {
+      @include flexVCenter;
+
+      height: 1.8rem;
+      border: 0.1rem solid var(--color-dark-grey-300);
+    }
+
+    &__dropdown__label {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      width: 5rem;
+      color: var(--color-dark-grey-500);
+      font-weight: 500;
+      font-size: 1.2rem;
+    }
+
+    &__dropdown__trigger {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      width: 2rem;
+      cursor: pointer;
+
+      svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+
+    &__dropdown__menu__item {
+      @include flexCenter;
+
+      width: 7rem;
+    }
+  }
+
   &__content {
     height: calc(100% - 2.8rem);
     width: 100%;
@@ -167,6 +206,11 @@
     &--sidebar {
       font-size: 1.8rem;
     }
+
+    &--zoom-in,
+    &--zoom-out {
+      font-size: 1.8rem;
+    }
   }
 
   &__canvas {
@@ -192,6 +236,14 @@
 
     &--add {
       cursor: cell;
+    }
+
+    &--zoom-in {
+      cursor: zoom-in;
+    }
+
+    &--zoom-out {
+      cursor: zoom-out;
     }
   }
 
