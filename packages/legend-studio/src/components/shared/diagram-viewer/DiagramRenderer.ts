@@ -2502,12 +2502,18 @@ export class DiagramRenderer {
               s_correctedX - startX,
               s_correctedY - startY,
             );
+            const width = (s_correctedX - startX) / this.zoom;
+            const height = (s_correctedY - startY) / this.zoom;
             this.selection = new PositionedRectangle(
-              new Point(this.selectionStart.x, this.selectionStart.y),
-              new Rectangle(
-                (s_correctedX - startX) / this.zoom,
-                (s_correctedY - startY) / this.zoom,
+              new Point(
+                width > 0
+                  ? this.selectionStart.x
+                  : this.selectionStart.x + width,
+                height > 0
+                  ? this.selectionStart.y
+                  : this.selectionStart.y + height,
               ),
+              new Rectangle(Math.abs(width), Math.abs(height)),
             );
             this.selectedClasses = [];
             for (const classView of this.diagram.classViews) {
