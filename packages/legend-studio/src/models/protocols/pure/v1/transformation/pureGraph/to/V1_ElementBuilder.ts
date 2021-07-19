@@ -113,7 +113,7 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
     );
     const element = this.firstPass(elementProtocol, context);
     context.currentSubGraph
-      .getOrCreatePackageWithPackageName(elementProtocol.package)
+      .getOrCreatePackage(elementProtocol.package)
       .addElement(element);
     return element;
   }

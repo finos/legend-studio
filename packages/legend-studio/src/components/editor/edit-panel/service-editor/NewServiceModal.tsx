@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
-import { resolvePackageNameAndElementName } from '../../../../models/MetaModelUtils';
+import { resolvePackagePathAndElementName } from '../../../../models/MetaModelUtils';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import Dialog from '@material-ui/core/Dialog';
 import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
@@ -31,7 +31,7 @@ export const NewServiceModal = observer(
     close: () => void;
     showModal: boolean;
     promoteToService: (
-      packageName: string,
+      packagePath: string,
       serviceName: string,
     ) => Promise<void>;
     isReadOnly?: boolean;
@@ -43,15 +43,15 @@ export const NewServiceModal = observer(
     const nameRef = useRef<HTMLInputElement>(null);
     const defaultServiceName = `${mapping.path}Service`;
     const [servicePath, setServicePath] = useState<string>(defaultServiceName);
-    const [packageName, serviceName] = resolvePackageNameAndElementName(
-      mappingPackage.path,
+    const [packagePath, serviceName] = resolvePackagePathAndElementName(
       servicePath,
+      mappingPackage.path,
     );
     const handleEnter = (): void => nameRef.current?.focus();
     const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
       event.preventDefault();
       if (servicePath && !isReadOnly) {
-        promoteToService(packageName, serviceName)
+        promoteToService(packagePath, serviceName)
           .then(() => close())
           .catch(applicationStore.alertIllegalUnhandledError);
       }
@@ -60,7 +60,7 @@ export const NewServiceModal = observer(
       setServicePath(event.target.value);
     const elementAlreadyExists = editorStore.graphState.graph.allElements
       .map((s) => s.path)
-      .includes(packageName + ELEMENT_PATH_DELIMITER + serviceName);
+      .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
     return (
       <Dialog
         open={showModal}

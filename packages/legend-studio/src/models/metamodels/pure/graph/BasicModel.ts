@@ -478,12 +478,10 @@ export abstract class BasicModel {
       'Name is required',
     )}`;
 
-  getOrCreatePackageWithPackageName = (
-    packageName: string | undefined,
-  ): Package =>
+  getOrCreatePackage = (packagePath: string | undefined): Package =>
     Package.getOrCreatePackage(
       this.root,
-      guaranteeNonNullable(packageName, 'Package name is required'),
+      guaranteeNonNullable(packagePath, 'Package path is required'),
       true,
     );
 

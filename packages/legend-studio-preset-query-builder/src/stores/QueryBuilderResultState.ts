@@ -145,7 +145,7 @@ export class QueryBuilderResultState {
   }
 
   *promoteToService(
-    packageName: string,
+    packagePath: string,
     serviceName: string,
   ): GeneratorFn<void> {
     try {
@@ -166,9 +166,7 @@ export class QueryBuilderResultState {
         ),
       );
       const servicePackage =
-        this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-          packageName,
-        );
+        this.editorStore.graphState.graph.getOrCreatePackage(packagePath);
       servicePackage.addElement(service);
       this.editorStore.graphState.graph.addElement(service);
       this.editorStore.openElement(service);

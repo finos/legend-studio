@@ -576,7 +576,7 @@ export class MappingExecutionState {
 
   promoteToService = flow(function* (
     this: MappingExecutionState,
-    packageName: string,
+    packagePath: string,
     serviceName: string,
   ) {
     try {
@@ -612,9 +612,7 @@ export class MappingExecutionState {
           );
           singleExecutionTest.asserts.push(testContainer);
           const servicePackage =
-            this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-              packageName,
-            );
+            this.editorStore.graphState.graph.getOrCreatePackage(packagePath);
           service.test = singleExecutionTest;
           servicePackage.addElement(service);
           this.editorStore.graphState.graph.addElement(service);

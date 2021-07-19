@@ -88,11 +88,11 @@ export class Package extends PackageableElement implements Hashable {
    */
   static getOrCreatePackage(
     parent: Package,
-    packageName: string,
+    packagePath: string,
     insert: boolean,
   ): Package {
-    const index = packageName.indexOf(ELEMENT_PATH_DELIMITER);
-    const str = index === -1 ? packageName : packageName.substring(0, index);
+    const index = packagePath.indexOf(ELEMENT_PATH_DELIMITER);
+    const str = index === -1 ? packagePath : packagePath.substring(0, index);
     let node: Package | undefined;
     node = parent.children.find(
       (child: PackageableElement): child is Package =>
@@ -101,7 +101,7 @@ export class Package extends PackageableElement implements Hashable {
     if (!node) {
       if (!insert) {
         throw new GraphError(
-          `Can't find packageable element '${str}' in package '${packageName}'`,
+          `Can't find packageable element '${str}' in package '${packagePath}'`,
         );
       }
       // create the node if it is not in parent package
@@ -111,7 +111,7 @@ export class Package extends PackageableElement implements Hashable {
     if (index !== -1) {
       return Package.getOrCreatePackage(
         node,
-        packageName.substring(index + 2),
+        packagePath.substring(index + 2),
         insert,
       );
     }
