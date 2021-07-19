@@ -33,6 +33,7 @@ import type {
   DiagramEditorInlinePropertyEditorState,
 } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
+  DiagramEditorClassViewEditorSidePanelState,
   DiagramEditorClassEditorSidePanelState,
   DiagramEditorState,
 } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
@@ -42,7 +43,9 @@ import {
 } from '../../../../stores/shared/DnDUtil';
 import {
   BaseMenu,
+  BlankPanelContent,
   CaretDownIcon,
+  CheckSquareIcon,
   clsx,
   createFilter,
   CustomSelectorInput,
@@ -50,6 +53,7 @@ import {
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
+  SquareIcon,
   TimesIcon,
 } from '@finos/legend-studio-components';
 import { guaranteeType } from '@finos/legend-studio-shared';
@@ -361,40 +365,136 @@ const DiagramEditorToolPanel = observer(
   },
 );
 
-const DiagramEditorOverlay = observer(() => {
-  const editorStore = useEditorStore();
-  const diagramEditorState =
-    editorStore.getCurrentEditorState(DiagramEditorState);
-  const sidePanelState = diagramEditorState.sidePanelState;
+const DiagramEditorClassViewEditor = observer(
+  (props: {
+    classViewEditorState: DiagramEditorClassViewEditorSidePanelState;
+  }) => {
+    const { classViewEditorState } = props;
+    const classView = classViewEditorState.classView;
+    const diagramEditorState = classViewEditorState.diagramEditorState;
+    const toggleHideProperties = (): void => {
+      classView.setHideProperties(!classView.hideProperties);
+      diagramEditorState.renderer.render();
+    };
+    const toggleHideTaggedValues = (): void => {
+      classView.setHideTaggedValues(!classView.hideTaggedValues);
+      diagramEditorState.renderer.render();
+    };
+    const toggleHideStereotypes = (): void => {
+      classView.setHideStereotypes(!classView.hideStereotypes);
+      diagramEditorState.renderer.render();
+    };
 
-  const resizeSidePanel = (handleProps: HandlerProps): void =>
-    diagramEditorState.sidePanelDisplayState.setSize(
-      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
+    return (
+      <div className="diagram-editor__class-view-editor">
+        <div className="panel__content__form">
+          <div className="panel__content__form__section">
+            {/* Hide properties */}
+            <div
+              className={clsx('panel__content__form__section__toggler')}
+              onClick={toggleHideProperties}
+            >
+              <button
+                className={clsx('panel__content__form__section__toggler__btn', {
+                  'panel__content__form__section__toggler__btn--toggled':
+                    classView.hideProperties,
+                })}
+              >
+                {classView.hideProperties ? (
+                  <CheckSquareIcon />
+                ) : (
+                  <SquareIcon />
+                )}
+              </button>
+              <div className="panel__content__form__section__toggler__prompt">
+                Specifies if properties should be hidden
+              </div>
+            </div>
+            {/* Hide tagged-values */}
+            <div
+              className={clsx('panel__content__form__section__toggler')}
+              onClick={toggleHideTaggedValues}
+            >
+              <button
+                className={clsx('panel__content__form__section__toggler__btn', {
+                  'panel__content__form__section__toggler__btn--toggled':
+                    classView.hideTaggedValues,
+                })}
+              >
+                {classView.hideTaggedValues ? (
+                  <CheckSquareIcon />
+                ) : (
+                  <SquareIcon />
+                )}
+              </button>
+              <div className="panel__content__form__section__toggler__prompt">
+                Specifies if tagged values should be hidden
+              </div>
+            </div>
+            {/* Hide stereotypes */}
+            <div
+              className={clsx('panel__content__form__section__toggler')}
+              onClick={toggleHideStereotypes}
+            >
+              <button
+                className={clsx('panel__content__form__section__toggler__btn', {
+                  'panel__content__form__section__toggler__btn--toggled':
+                    classView.hideStereotypes,
+                })}
+              >
+                {classView.hideStereotypes ? (
+                  <CheckSquareIcon />
+                ) : (
+                  <SquareIcon />
+                )}
+              </button>
+              <div className="panel__content__form__section__toggler__prompt">
+                Specifies if stereotypes should be hidden
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
+  },
+);
 
-  const redrawOnClassChange = useCallback((): void => {
-    diagramEditorState.diagram.deadReferencesCleanUp(
-      editorStore.graphState.graph,
-    );
-    diagramEditorState.renderer.start();
-  }, [diagramEditorState, editorStore]);
+const DiagramEditorOverlay = observer(
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const editorStore = useEditorStore();
+    const sidePanelState = diagramEditorState.sidePanelState;
 
-  return (
-    <ReflexContainer className="diagram-editor__overlay" orientation="vertical">
-      <ReflexElement direction={1}>
-        <div className="diagram-editor__view-finder" />
-      </ReflexElement>
-      <ReflexSplitter className="diagram-editor__overlay__panel-resizer" />
-      <ReflexElement
-        className="diagram-editor__overlay__panel"
-        flex={0}
-        size={diagramEditorState.sidePanelDisplayState.size}
-        direction={-1}
-        onStopResize={resizeSidePanel}
+    const resizeSidePanel = (handleProps: HandlerProps): void =>
+      diagramEditorState.sidePanelDisplayState.setSize(
+        (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
+          .width,
+      );
+
+    const redrawOnClassChange = useCallback((): void => {
+      diagramEditorState.diagram.deadReferencesCleanUp(
+        editorStore.graphState.graph,
+      );
+      diagramEditorState.renderer.render();
+    }, [diagramEditorState, editorStore]);
+
+    return (
+      <ReflexContainer
+        className="diagram-editor__overlay"
+        orientation="vertical"
       >
-        <div className="panel diagram-editor__side-panel">
-          <div className="panel__header diagram-editor__side-panel__header"></div>
-          <div className="panel__content diagram-editor__side-panel__content">
+        <ReflexElement direction={1}>
+          <div className="diagram-editor__view-finder" />
+        </ReflexElement>
+        <ReflexSplitter className="diagram-editor__overlay__panel-resizer" />
+        <ReflexElement
+          className="diagram-editor__overlay__panel"
+          flex={0}
+          size={diagramEditorState.sidePanelDisplayState.size}
+          direction={-1}
+          onStopResize={resizeSidePanel}
+        >
+          <div className="panel diagram-editor__side-panel">
             {sidePanelState instanceof
               DiagramEditorClassEditorSidePanelState && (
               <ClassFormEditor
@@ -403,13 +503,21 @@ const DiagramEditorOverlay = observer(() => {
                 onHashChange={redrawOnClassChange}
               />
             )}
-            {/* TODO: handle cases where we select views */}
+            {sidePanelState instanceof
+              DiagramEditorClassViewEditorSidePanelState && (
+              <DiagramEditorClassViewEditor
+                classViewEditorState={sidePanelState}
+              />
+            )}
+            {!sidePanelState && (
+              <BlankPanelContent>No element selected</BlankPanelContent>
+            )}
           </div>
-        </div>
-      </ReflexElement>
-    </ReflexContainer>
-  );
-});
+        </ReflexElement>
+      </ReflexContainer>
+    );
+  },
+);
 
 const DiagramEditorInlineClassCreatorInner = observer(
   (props: {
@@ -624,16 +732,14 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     ) => {
       if (property instanceof DerivedProperty || property instanceof Property) {
         property.setName(event.target.value);
-        // redraw diagram
-        diagramEditorState.renderer.start();
+        diagramEditorState.renderer.render();
       }
     };
 
     const changeMultiplicity = (val: Multiplicity): void => {
       if (property instanceof DerivedProperty || property instanceof Property) {
         property.setMultiplicity(val);
-        // redraw diagram
-        diagramEditorState.renderer.start();
+        diagramEditorState.renderer.render();
       }
     };
 
@@ -778,7 +884,7 @@ const DiagramEditorDiagramCanvas = observer(
         );
         diagramEditorState.setRenderer(renderer);
         diagramEditorState.setupDiagramRenderer();
-        renderer.start();
+        renderer.render();
         renderer.autoRecenter();
       }
     }, [diagramCanvasRef, diagramEditorState]);
@@ -925,7 +1031,7 @@ export const DiagramEditor = observer(() => {
       </div>
       <div className="diagram-editor__content">
         {diagramEditorState.isDiagramRendererInitialized && (
-          <DiagramEditorOverlay />
+          <DiagramEditorOverlay diagramEditorState={diagramEditorState} />
         )}
         <div className="diagram-editor__stage">
           {diagramEditorState.isDiagramRendererInitialized && (

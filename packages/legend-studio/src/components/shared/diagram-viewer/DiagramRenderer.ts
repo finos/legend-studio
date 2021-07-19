@@ -65,11 +65,23 @@ export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
   NONE,
 }
 
+export enum DIAGRAM_ALIGN_MODE {
+  TOP,
+  MIDDLE,
+  BOTTOM,
+  LEFT,
+  CENTER,
+  RIGHT,
+}
+
 const MIN_ZOOM_LEVEL = 0.05; // 5%
 const FIT_ZOOM_PADDING = 10;
 export const DIAGRAM_ZOOM_LEVELS = [
   50, 75, 90, 100, 110, 125, 150, 200, 250, 300, 400,
 ];
+
+const getPropertyDisplayName = (property: AbstractProperty): string =>
+  (property instanceof DerivedProperty ? '/ ' : '') + property.name;
 
 export class DiagramRenderer {
   diagram: Diagram;
@@ -211,9 +223,16 @@ export class DiagramRenderer {
   clickY: number;
   positionBeforeLastMove: Point;
 
-  // functions to interact with diagram editor
+  // interactions
   onAddClassViewClick: (point: Point) => void = noop();
   onBackgroundDoubleClick: (point: Point) => void = noop();
+  onSelectedClassChange: (classView: ClassView | undefined) => void = noop();
+  onSelectedPropertyOrAssociationChange: (
+    propertyHolderView: PropertyHolderView | undefined,
+  ) => void = noop();
+  onSelectedInheritanceChange: (
+    generalizationView: GeneralizationView | undefined,
+  ) => void = noop();
   editClass: (classView: ClassView) => void = noop();
   editProperty: (property: AbstractProperty, point: Point) => void = noop();
   editPropertyView: (propertyView: PropertyHolderView) => void = noop();
@@ -399,14 +418,22 @@ export class DiagramRenderer {
 
   setSelectedClasses(val: ClassView[]): void {
     this.selectedClasses = val;
+    this.onSelectedClassChange(undefined);
+  }
+
+  setSelectedClass(val: ClassView): void {
+    this.setSelectedClasses([val]);
+    this.onSelectedClassChange(val);
   }
 
   setSelectedPropertyOrAssociation(val: PropertyHolderView | undefined): void {
     this.selectedPropertyOrAssociation = val;
+    this.onSelectedPropertyOrAssociationChange(val);
   }
 
   setSelectedInheritance(val: GeneralizationView | undefined): void {
     this.selectedInheritance = val;
+    this.onSelectedInheritanceChange(val);
   }
 
   setRightClick(val: boolean): void {
@@ -421,16 +448,45 @@ export class DiagramRenderer {
     this.zoom = val;
   }
 
-  start(): void {
+  render(): void {
     this.diagram.classViews.forEach((classView) =>
-      this.computeClassViewMinDimensions(classView),
+      this.ensureClassViewMeetMinDimensions(classView),
     );
     this.refresh();
   }
 
   refresh(): void {
     this.refreshCanvas();
-    this.redraw();
+    this.drawScreen();
+  }
+
+  refreshCanvas(): void {
+    this.canvasDimension = new Rectangle(
+      this.div.offsetWidth,
+      this.div.offsetHeight,
+    );
+    this.canvasCenter = new Point(
+      this.canvasDimension.width / 2,
+      this.canvasDimension.height / 2,
+    );
+    this.canvas.width = this.canvasDimension.width;
+    this.canvas.height = this.canvasDimension.height;
+  }
+
+  clearScreen(): void {
+    this.ctx.fillStyle = this.canvasColor;
+    this.ctx.fillRect(
+      0,
+      0,
+      this.canvasDimension.width,
+      this.canvasDimension.height,
+    );
+  }
+
+  private drawScreen(): void {
+    this.manageVirtualScreen();
+    this.clearScreen();
+    this.drawAll();
   }
 
   changeMode(
@@ -542,35 +598,6 @@ export class DiagramRenderer {
           );
       }
     }
-  }
-
-  refreshCanvas(): void {
-    this.canvasDimension = new Rectangle(
-      this.div.offsetWidth,
-      this.div.offsetHeight,
-    );
-    this.canvasCenter = new Point(
-      this.canvasDimension.width / 2,
-      this.canvasDimension.height / 2,
-    );
-    this.canvas.width = this.canvasDimension.width;
-    this.canvas.height = this.canvasDimension.height;
-  }
-
-  clearScreen(): void {
-    this.ctx.fillStyle = this.canvasColor;
-    this.ctx.fillRect(
-      0,
-      0,
-      this.canvasDimension.width,
-      this.canvasDimension.height,
-    );
-  }
-
-  redraw(): void {
-    this.manageVirtualScreen();
-    this.clearScreen();
-    this.drawAll();
   }
 
   autoRecenter(): void {
@@ -869,7 +896,7 @@ export class DiagramRenderer {
           });
         });
       this.drawClassView(newClassView);
-      this.redraw();
+      this.drawScreen();
       return newClassView;
     }
     return undefined;
@@ -1279,7 +1306,7 @@ export class DiagramRenderer {
         : `${measureOnly ? 'bold' : ''} ${
             (this.fontSize - 1) * (measureOnly ? 1 : this.zoom)
           }px ${this.fontFamily}`;
-    const propertyName = this.propertyName(property);
+    const propertyName = getPropertyDisplayName(property);
     let txtMeasure = this.ctx.measureText(`${propertyName} : `).width;
     if (!measureOnly) {
       this.ctx.fillText(`${propertyName} : `, propX, propY);
@@ -1321,16 +1348,19 @@ export class DiagramRenderer {
     return txtMeasure;
   }
 
-  computeClassViewMinDimensions(classView: ClassView): number {
+  private computeClassNameWidth(classView: ClassView): number {
     this.ctx.font = `bold ${this.fontSize}px ${this.fontFamily}`;
     this.ctx.textBaseline = 'top'; // Compute min dimensions
 
     // Calculate the box for the class name header
-    const classNameText = this.truncateTextWithEllipsis(
-      classView.class.value.name,
-    );
-    const classNameWidth = this.ctx.measureText(classNameText).width;
-    let classMinWidth = classNameWidth;
+    return this.ctx.measureText(
+      this.truncateTextWithEllipsis(classView.class.value.name),
+    ).width;
+  }
+
+  ensureClassViewMeetMinDimensions(classView: ClassView): void {
+    // Calculate the box for the class name header
+    let classMinWidth = this.computeClassNameWidth(classView);
     let classMinHeight = this.lineHeight + this.classViewSpaceY * 2; // padding top and bottom fo the header
 
     // Calculate box for Stereotypes
@@ -1395,11 +1425,11 @@ export class DiagramRenderer {
           : classMinHeight;
       classView.setRectangle(new Rectangle(width, height));
     }
-    return classNameWidth;
   }
 
   drawClassView(classView: ClassView): void {
-    const classMinWidth = this.computeClassViewMinDimensions(classView);
+    const classMinWidth = this.computeClassNameWidth(classView);
+    this.ensureClassViewMeetMinDimensions(classView);
     this.ctx.fillStyle = this.classViewFillColor;
 
     // Draw the Box
@@ -1574,10 +1604,6 @@ export class DiagramRenderer {
     classView.forceRefreshHash();
   }
 
-  private propertyName(prop: AbstractProperty): string {
-    return (prop instanceof DerivedProperty ? '/ ' : '') + prop.name;
-  }
-
   drawLinePropertyAndMultiplicityText(
     property: AbstractProperty,
     textPositionX: (n: number) => number,
@@ -1586,7 +1612,7 @@ export class DiagramRenderer {
     multiplicityPositionY: (n: number) => number,
   ): PositionedRectangle {
     this.ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-    const propertyName = this.propertyName(property);
+    const propertyName = getPropertyDisplayName(property);
     const textSize = this.ctx.measureText(propertyName).width;
     const mulSize = this.ctx.measureText(property.multiplicity.str).width;
     this.ctx.font = `${this.fontSize * this.zoom}px ${this.fontFamily}`;
@@ -1989,7 +2015,7 @@ export class DiagramRenderer {
             this.diagram.deleteGeneralizationView(this.selectedInheritance);
           }
         }
-        this.redraw();
+        this.drawScreen();
       }
     }
     // Hide/show properties for selected element(s)
@@ -2250,7 +2276,7 @@ export class DiagramRenderer {
 
     this.setSelectedClassCorner(undefined);
     this.setSelectionStart(undefined);
-    this.redraw();
+    this.drawScreen();
   }
 
   /**
@@ -2391,7 +2417,7 @@ export class DiagramRenderer {
                     this.selectedClasses.indexOf(this.diagram.classViews[i]) ===
                       -1
                   ) {
-                    this.setSelectedClasses([this.diagram.classViews[i]]);
+                    this.setSelectedClass(this.diagram.classViews[i]);
                   }
                   if (!this.isReadOnly) {
                     // Bring the class view to front
@@ -2571,7 +2597,7 @@ export class DiagramRenderer {
             // Refresh hash since ClassView rectangle is not observable
             this.selectedClassCorner.forceRefreshHash();
             this.drawClassView(this.selectedClassCorner);
-            this.redraw();
+            this.drawScreen();
           }
 
           // Move class view
@@ -2619,7 +2645,7 @@ export class DiagramRenderer {
                 newMovingDeltaX,
                 newMovingDeltaY,
               );
-              this.redraw();
+              this.drawScreen();
             }
           }
 
@@ -2637,7 +2663,7 @@ export class DiagramRenderer {
               );
             }
             this.selectedPoint = eventPointInModelCoordinate;
-            this.redraw();
+            this.drawScreen();
           }
 
           // Draw selection box

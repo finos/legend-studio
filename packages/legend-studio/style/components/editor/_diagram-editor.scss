@@ -252,21 +252,7 @@
   }
 
   &__side-panel {
-    border-left: 0.1rem solid var(--color-light-grey-400);
-
-    &__header {
-      display: flex;
-      justify-content: flex-end;
-      padding: 0 1rem;
-    }
-
-    &__content {
-      position: relative;
-    }
-
-    &__close-btn {
-      cursor: pointer;
-    }
+    background: var(--color-dark-grey-85);
   }
 
   &__hotkeys__dialog .modal__body {
@@ -306,6 +292,13 @@
       }
     }
   }
+}
+
+.diagram-editor__class-view-editor {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  padding: 1rem;
 }
 
 .diagram-editor__inline-property-editor {

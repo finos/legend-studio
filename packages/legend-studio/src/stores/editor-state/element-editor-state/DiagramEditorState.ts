@@ -27,14 +27,6 @@ import { Diagram } from '../../../models/metamodels/pure/model/packageableElemen
 import type { DiagramRenderer } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { DIAGRAM_INTERACTION_MODE } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { ClassEditorState } from './ClassEditorState';
-import {
-  getPackableElementTreeData,
-  getSelectedPackageTreeNodePackage,
-  openNode,
-} from '../../shared/PackageTreeUtil';
-import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
-import type { PackageTreeNodeData } from '../../shared/TreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
 import { PanelDisplayState } from '@finos/legend-studio-components';
 import type { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
 import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
@@ -77,48 +69,16 @@ export class DiagramEditorClassEditorSidePanelState extends DiagramEditorSidePan
   }
 }
 
-export class DiagramEditorNewClassSidePanelState extends DiagramEditorSidePanelState {
-  creationMouseEvent: MouseEvent;
-  packageTreeData: TreeData<PackageTreeNodeData>;
+export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSidePanelState {
+  classView: ClassView;
 
   constructor(
     editorStore: EditorStore,
     diagramEditorState: DiagramEditorState,
-    creationMouseEvent: MouseEvent,
+    classView: ClassView,
   ) {
     super(editorStore, diagramEditorState);
-
-    makeObservable(this, {
-      packageTreeData: observable,
-      setPackageTreeData: action,
-    });
-
-    this.creationMouseEvent = creationMouseEvent;
-    const treeData = getPackableElementTreeData(
-      editorStore,
-      editorStore.graphState.graph.root,
-      '',
-      (childElement: PackageableElement) => childElement instanceof Package,
-    );
-    const selectedPackageTreeNodePackage = getSelectedPackageTreeNodePackage(
-      editorStore.explorerTreeState.selectedNode,
-    );
-    if (selectedPackageTreeNodePackage) {
-      const openingNode = openNode(
-        editorStore,
-        selectedPackageTreeNodePackage,
-        treeData,
-        (childElement: PackageableElement) => childElement instanceof Package,
-      );
-      if (openingNode) {
-        openingNode.isSelected = true;
-      }
-    }
-    this.packageTreeData = treeData;
-  }
-
-  setPackageTreeData(val: TreeData<PackageTreeNodeData>): void {
-    this.packageTreeData = val;
+    this.classView = classView;
   }
 }
 
@@ -301,6 +261,24 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
+    this.renderer.onSelectedClassChange = (
+      classView: ClassView | undefined,
+    ): void => {
+      if (classView) {
+        this.setSidePanelState(
+          new DiagramEditorClassViewEditorSidePanelState(
+            this.editorStore,
+            this,
+            classView,
+          ),
+        );
+      } else if (
+        this.sidePanelState instanceof
+        DiagramEditorClassViewEditorSidePanelState
+      ) {
+        this.setSidePanelState(undefined);
+      }
+    };
     this.renderer.onBackgroundDoubleClick = createNewClassView;
     this.renderer.onAddClassViewClick = createNewClassView;
     this.renderer.addSelectedClassAsPropertyOfOpenedClass = (
@@ -372,7 +350,7 @@ export class DiagramEditorState extends ElementEditorState {
           _class,
         ),
       );
-      this.renderer.start();
+      this.renderer.render();
     };
   }
 
