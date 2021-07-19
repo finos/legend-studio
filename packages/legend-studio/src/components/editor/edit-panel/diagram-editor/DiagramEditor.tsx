@@ -48,6 +48,8 @@ import {
   BaseMenu,
   CaretDownIcon,
   clsx,
+  createFilter,
+  CustomSelectorInput,
   DropdownMenu,
   MenuContent,
   MenuContentDivider,
@@ -65,7 +67,10 @@ import type { PackageTreeNodeData } from '../../../../stores/shared/TreeUtil';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
 import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type {
+  PackageableElement,
+  PackageableElementSelectOption,
+} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import {
   FiMinus,
   FiMove,
@@ -84,6 +89,8 @@ import { DerivedProperty } from '../../../../models/metamodels/pure/model/packag
 import { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
 import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
 import { MULTIPLICITY_INFINITE } from '../../../../models/MetaModelConst';
+import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
+import { GenericType } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
 
 const PackageTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -688,6 +695,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     inlinePropertyEditorState: DiagramEditorInlinePropertyEditorState;
   }) => {
     const { inlinePropertyEditorState } = props;
+    const editorStore = useEditorStore();
     const diagramEditorState = inlinePropertyEditorState.diagramEditorState;
     const isReadOnly = diagramEditorState.isReadOnly;
     const propertyNameInputRef = useRef<HTMLInputElement>(null);
@@ -715,6 +723,34 @@ const DiagramEditorInlinePropertyEditorInner = observer(
       }
     };
 
+    // Type
+    const currentPropertyType = property.genericType.value.rawType;
+    const propertyTypeOptions =
+      editorStore.classPropertyGenericTypeOptions.filter(
+        (option) =>
+          // Do not allow to pick other class if we're editing a property view
+          !inlinePropertyEditorState.isEditingPropertyView ||
+          !(option.value instanceof Class) ||
+          option.value === currentPropertyType,
+      );
+    const propertyTypeFilterOption = createFilter({
+      ignoreCase: true,
+      ignoreAccents: false,
+      stringify: (option: PackageableElementSelectOption<Type>): string =>
+        option.value.path,
+    });
+    const selectedPropertyType = {
+      value: currentPropertyType,
+      label: currentPropertyType.name,
+    };
+    const changePropertyType = (
+      val: PackageableElementSelectOption<Type>,
+    ): void => {
+      if (property instanceof Property || property instanceof DerivedProperty) {
+        property.setGenericType(new GenericType(val.value));
+      }
+    };
+
     useEffect(() => {
       propertyNameInputRef.current?.focus();
     }, [inlinePropertyEditorState]);
@@ -727,6 +763,16 @@ const DiagramEditorInlinePropertyEditorInner = observer(
           disabled={isReadOnly}
           value={property.name}
           onChange={changePropertyName}
+        />
+        <CustomSelectorInput
+          className="diagram-editor__inline-property-editor__type"
+          disabled={isReadOnly}
+          options={propertyTypeOptions}
+          onChange={changePropertyType}
+          value={selectedPropertyType}
+          placeholder="Choose a data type or enumeration"
+          darkMode={true}
+          filterOption={propertyTypeFilterOption}
         />
         <DiagramEditorInlinePropertyMultiplicityEditor
           isReadOnly={isReadOnly}
@@ -746,7 +792,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
 );
 
 const INLINE_PROPERTY_EDITOR_HEIGHT = 38;
-const INLINE_PROPERTY_EDITOR_WIDTH = 200;
+const INLINE_PROPERTY_EDITOR_WIDTH = 392;
 
 const DiagramEditorInlinePropertyEditor = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {

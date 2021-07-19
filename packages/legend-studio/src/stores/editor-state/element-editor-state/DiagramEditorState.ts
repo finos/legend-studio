@@ -126,15 +126,18 @@ export class DiagramEditorInlinePropertyEditorState {
   diagramEditorState: DiagramEditorState;
   property: PropertyReference;
   point: Point;
+  isEditingPropertyView: boolean;
 
   constructor(
     diagramEditorState: DiagramEditorState,
     property: AbstractProperty,
     point: Point,
+    isEditingPropertyView: boolean,
   ) {
     this.diagramEditorState = diagramEditorState;
     this.property = PropertyExplicitReference.create(property);
     this.point = point;
+    this.isEditingPropertyView = isEditingPropertyView;
   }
 }
 
@@ -315,7 +318,12 @@ export class DiagramEditorState extends ElementEditorState {
       point: Point,
     ): void => {
       this.setInlinePropertyEditorState(
-        new DiagramEditorInlinePropertyEditorState(this, property, point),
+        new DiagramEditorInlinePropertyEditorState(
+          this,
+          property,
+          point,
+          false,
+        ),
       );
     };
     this.renderer.editPropertyView = (
@@ -328,6 +336,7 @@ export class DiagramEditorState extends ElementEditorState {
           propertyHolderView.path.length
             ? propertyHolderView.path[0]
             : propertyHolderView.from.classView.value.center(),
+          true,
         ),
       );
     };

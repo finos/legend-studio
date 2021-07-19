@@ -312,7 +312,7 @@
   @include flexVCenter;
 
   height: 2.8rem;
-  width: 23.9rem;
+  width: 39.2rem;
   padding: 0.3rem;
 
   &__name {
@@ -323,12 +323,18 @@
     border: 0.1rem solid var(--color-dark-grey-300);
   }
 
+  &__type {
+    @include flexConstantDimension;
+
+    width: 15rem;
+    margin: 0 0.3rem;
+  }
+
   &__multiplicity-editor {
     @include flexVCenter;
     @include flexConstantDimension;
 
     width: 8rem;
-    margin-left: 0.3rem;
 
     &__bound {
       @include flexConstantDimension;
