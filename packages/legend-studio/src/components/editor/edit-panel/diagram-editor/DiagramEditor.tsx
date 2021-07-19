@@ -536,8 +536,11 @@ const DiagramEditorOverlay = observer(() => {
     );
 
   const redrawOnClassChange = useCallback((): void => {
+    diagramEditorState.diagram.deadReferencesCleanUp(
+      editorStore.graphState.graph,
+    );
     diagramEditorState.diagramRenderer.start();
-  }, [diagramEditorState]);
+  }, [diagramEditorState, editorStore]);
 
   return (
     <ReflexContainer className="diagram-editor__overlay" orientation="vertical">
