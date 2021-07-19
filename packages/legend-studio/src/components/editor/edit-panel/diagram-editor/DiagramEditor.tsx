@@ -24,6 +24,7 @@ import { FaRegKeyboard } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
   DiagramRenderer,
+  DIAGRAM_ALIGN_MODE,
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
@@ -53,6 +54,8 @@ import {
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
+  MenuContentItemIcon,
+  MenuContentItemLabel,
   SquareIcon,
   TimesIcon,
 } from '@finos/legend-studio-components';
@@ -69,6 +72,14 @@ import {
   FiZoomIn,
   FiZoomOut,
 } from 'react-icons/fi';
+import {
+  CgAlignBottom,
+  CgAlignCenter,
+  CgAlignLeft,
+  CgAlignMiddle,
+  CgAlignRight,
+  CgAlignTop,
+} from 'react-icons/cg';
 import { IoResize } from 'react-icons/io5';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { Dialog } from '@material-ui/core';
@@ -198,66 +209,16 @@ const DiagramEditorToolPanel = observer(
       diagramEditorState.setShowHotkeyInfosModal(true);
     const hideDiagramRendererHokeysModal = (): void =>
       diagramEditorState.setShowHotkeyInfosModal(false);
-
-    const useViewTool = (): void => {
-      if (!isReadOnly) {
-        renderer.changeMode(
-          DIAGRAM_INTERACTION_MODE.LAYOUT,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-        );
-      }
-    };
-
-    const usePropertyTool = (): void => {
-      if (!isReadOnly) {
-        renderer.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
-        );
-      }
-    };
-
-    const useAssociationTool = (): void => {
-      if (!isReadOnly) {
-        applicationStore.notifyUnsupportedFeature(`Create association`);
-        // diagramRenderer.changeMode(
-        //   DIAGRAM_EDIT_MODE.RELATIONSHIP,
-        //   DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
-        // );
-      }
-    };
-
-    const useInheritanceTool = (): void => {
-      if (!isReadOnly) {
-        renderer.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
-        );
-      }
-    };
-
-    const zoomIn = (): void => {
-      renderer.changeMode(
-        DIAGRAM_INTERACTION_MODE.ZOOM_IN,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    };
-
-    const zoomOut = (): void => {
-      renderer.changeMode(
-        DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    };
-
-    const addNewClassView = (): void => {
-      if (!isReadOnly) {
-        renderer.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_CLASS,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-        );
-      }
-    };
+    const createModeSwitcher =
+      (
+        editMode: DIAGRAM_INTERACTION_MODE,
+        relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE,
+      ): (() => void) =>
+      (): void => {
+        if (!isReadOnly) {
+          renderer.changeMode(editMode, relationshipMode);
+        }
+      };
 
     return (
       <div className="diagram-editor__tools">
@@ -267,7 +228,10 @@ const DiagramEditorToolPanel = observer(
               renderer.interactionMode === DIAGRAM_INTERACTION_MODE.LAYOUT,
           })}
           tabIndex={-1}
-          onClick={useViewTool}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.LAYOUT,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
           title="View Tool"
         >
           <FiMove className="diagram-editor__icon--layout" />
@@ -279,7 +243,10 @@ const DiagramEditorToolPanel = observer(
           })}
           tabIndex={-1}
           title="Zoom In"
-          onClick={zoomIn}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
         >
           <FiZoomIn className="diagram-editor__icon--zoom-in" />
         </button>
@@ -290,7 +257,10 @@ const DiagramEditorToolPanel = observer(
           })}
           tabIndex={-1}
           title="Zoom Out"
-          onClick={zoomOut}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
         >
           <FiZoomOut className="diagram-editor__icon--zoom-out" />
         </button>
@@ -305,7 +275,10 @@ const DiagramEditorToolPanel = observer(
           })}
           tabIndex={-1}
           title="Property Tool"
-          onClick={usePropertyTool}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+          )}
         >
           <FiMinus className="diagram-editor__icon--property" />
         </button>
@@ -319,7 +292,10 @@ const DiagramEditorToolPanel = observer(
           })}
           tabIndex={-1}
           title="Inheritance Tool"
-          onClick={useInheritanceTool}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+          )}
         >
           <FiTriangle className="diagram-editor__icon--inheritance" />
         </button>
@@ -332,7 +308,13 @@ const DiagramEditorToolPanel = observer(
           })}
           tabIndex={-1}
           title="Association Tool"
-          onClick={useAssociationTool}
+          onClick={(): void =>
+            applicationStore.notifyUnsupportedFeature('Add association')
+          }
+          // onClick={changeMode(
+          //   DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+          //   DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
+          // )}
         >
           <IoResize className="diagram-editor__icon--association" />
         </button>
@@ -343,7 +325,10 @@ const DiagramEditorToolPanel = observer(
           })}
           tabIndex={-1}
           title="New Class..."
-          onClick={addNewClassView}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.ADD_CLASS,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
         >
           <FiPlusCircle className="diagram-editor__icon--add-class" />
         </button>
@@ -942,6 +927,7 @@ const DiagramEditorDiagramCanvas = observer(
 const DiagramEditorHeader = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
+    const isReadOnly = diagramEditorState.isReadOnly;
     const createCenterZoomer =
       (zoomLevel: number): (() => void) =>
       (): void => {
@@ -956,49 +942,133 @@ const DiagramEditorHeader = observer(
       }
     };
 
+    const createAligner =
+      (alignMode: DIAGRAM_ALIGN_MODE): (() => void) =>
+      (): void => {
+        if (!isReadOnly) {
+          diagramEditorState.renderer.alignSelectedClassViews(alignMode);
+        }
+      };
+
     return (
       <>
-        <div className="diagram-editor__header__zoomer">
-          <DropdownMenu
-            className="diagram-editor__header__zoomer__dropdown"
-            content={
-              <MenuContent>
-                <MenuContentItem
-                  className="diagram-editor__header__zoomer__dropdown__menu__item"
-                  onClick={zoomToFit}
-                >
-                  Fit
-                </MenuContentItem>
-                <MenuContentDivider />
-                {DIAGRAM_ZOOM_LEVELS.map((zoomLevel) => (
-                  <MenuContentItem
-                    key={zoomLevel}
-                    className="diagram-editor__header__zoomer__dropdown__menu__item"
-                    onClick={createCenterZoomer(zoomLevel)}
-                  >
-                    {zoomLevel}%
-                  </MenuContentItem>
-                ))}
-              </MenuContent>
-            }
-            menuProps={{
-              anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-              transformOrigin: { vertical: 'top', horizontal: 'right' },
-              elevation: 7,
-            }}
+        <DropdownMenu
+          className="diagram-editor__header__dropdown"
+          content={
+            <MenuContent>
+              <MenuContentItem
+                className="diagram-editor__header__aligner__dropdown__menu__item"
+                onClick={createAligner(DIAGRAM_ALIGN_MODE.LEFT)}
+              >
+                <MenuContentItemIcon>
+                  <CgAlignLeft className="diagram-editor__icon--aligner" />
+                </MenuContentItemIcon>
+                <MenuContentItemLabel>Left</MenuContentItemLabel>
+              </MenuContentItem>
+              <MenuContentItem
+                className="diagram-editor__header__aligner__dropdown__menu__item"
+                onClick={createAligner(DIAGRAM_ALIGN_MODE.CENTER)}
+              >
+                <MenuContentItemIcon>
+                  <CgAlignCenter className="diagram-editor__icon--aligner" />
+                </MenuContentItemIcon>
+                <MenuContentItemLabel>Center</MenuContentItemLabel>
+              </MenuContentItem>
+              <MenuContentItem
+                className="diagram-editor__header__aligner__dropdown__menu__item"
+                onClick={createAligner(DIAGRAM_ALIGN_MODE.RIGHT)}
+              >
+                <MenuContentItemIcon>
+                  <CgAlignRight className="diagram-editor__icon--aligner" />
+                </MenuContentItemIcon>
+                <MenuContentItemLabel>Right</MenuContentItemLabel>
+              </MenuContentItem>
+              <MenuContentDivider />
+              <MenuContentItem
+                className="diagram-editor__header__aligner__dropdown__menu__item"
+                onClick={createAligner(DIAGRAM_ALIGN_MODE.TOP)}
+              >
+                <MenuContentItemIcon>
+                  <CgAlignTop className="diagram-editor__icon--aligner" />
+                </MenuContentItemIcon>
+                <MenuContentItemLabel>Top</MenuContentItemLabel>
+              </MenuContentItem>
+              <MenuContentItem
+                className="diagram-editor__header__aligner__dropdown__menu__item"
+                onClick={createAligner(DIAGRAM_ALIGN_MODE.MIDDLE)}
+              >
+                <MenuContentItemIcon>
+                  <CgAlignMiddle className="diagram-editor__icon--aligner" />
+                </MenuContentItemIcon>
+                <MenuContentItemLabel>Middle</MenuContentItemLabel>
+              </MenuContentItem>
+              <MenuContentItem
+                className="diagram-editor__header__aligner__dropdown__menu__item"
+                onClick={createAligner(DIAGRAM_ALIGN_MODE.BOTTOM)}
+              >
+                <MenuContentItemIcon>
+                  <CgAlignBottom className="diagram-editor__icon--aligner" />
+                </MenuContentItemIcon>
+                <MenuContentItemLabel>Bottom</MenuContentItemLabel>
+              </MenuContentItem>
+            </MenuContent>
+          }
+          menuProps={{
+            anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+            transformOrigin: { vertical: 'top', horizontal: 'right' },
+            elevation: 7,
+          }}
+        >
+          <button
+            className="diagram-editor__header__dropdown__label diagram-editor__header__aligner__dropdown__label"
+            tabIndex={-1}
+            title="Align..."
           >
-            <button
-              className="diagram-editor__header__zoomer__dropdown__label"
-              tabIndex={-1}
-              title="Zoom..."
-            >
-              {Math.round(diagramEditorState.renderer.zoom * 100)}%
-            </button>
-            <div className="diagram-editor__header__zoomer__dropdown__trigger">
-              <CaretDownIcon />
-            </div>
-          </DropdownMenu>
-        </div>
+            <CgAlignLeft className="diagram-editor__icon--aligner" /> Align
+          </button>
+          <div className="diagram-editor__header__dropdown__trigger diagram-editor__header__aligner__dropdown__trigger">
+            <CaretDownIcon />
+          </div>
+        </DropdownMenu>
+        <DropdownMenu
+          className="diagram-editor__header__dropdown"
+          content={
+            <MenuContent>
+              <MenuContentItem
+                className="diagram-editor__header__zoomer__dropdown__menu__item"
+                onClick={zoomToFit}
+              >
+                Fit
+              </MenuContentItem>
+              <MenuContentDivider />
+              {DIAGRAM_ZOOM_LEVELS.map((zoomLevel) => (
+                <MenuContentItem
+                  key={zoomLevel}
+                  className="diagram-editor__header__zoomer__dropdown__menu__item"
+                  onClick={createCenterZoomer(zoomLevel)}
+                >
+                  {zoomLevel}%
+                </MenuContentItem>
+              ))}
+            </MenuContent>
+          }
+          menuProps={{
+            anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+            transformOrigin: { vertical: 'top', horizontal: 'right' },
+            elevation: 7,
+          }}
+        >
+          <button
+            className="diagram-editor__header__dropdown__label diagram-editor__header__zoomer__dropdown__label"
+            tabIndex={-1}
+            title="Zoom..."
+          >
+            {Math.round(diagramEditorState.renderer.zoom * 100)}%
+          </button>
+          <div className="diagram-editor__header__dropdown__trigger diagram-editor__header__zoomer__dropdown__trigger">
+            <CaretDownIcon />
+          </div>
+        </DropdownMenu>
         <div className="diagram-editor__header__actions">
           <button
             className={clsx('diagram-editor__header__action', {

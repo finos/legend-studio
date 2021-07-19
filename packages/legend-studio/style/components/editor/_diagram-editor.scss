@@ -49,6 +49,7 @@
       color: var(--color-dark-grey-400);
     }
 
+    &:hover,
     &--active {
       svg {
         color: var(--color-light-grey-300);
@@ -56,39 +57,68 @@
     }
   }
 
-  &__header__zoomer {
-    &__dropdown {
-      @include flexVCenter;
+  &__header__dropdown {
+    @include flexVCenter;
 
-      height: 1.8rem;
-      border: 0.1rem solid var(--color-dark-grey-300);
-    }
+    margin-left: 0.3rem;
+    height: 1.8rem;
+    border: 0.1rem solid var(--color-dark-grey-300);
 
-    &__dropdown__label {
+    &__label {
       @include flexCenter;
       @include flexConstantDimension;
 
       height: 100%;
-      width: 5rem;
       color: var(--color-dark-grey-500);
       font-weight: 500;
       font-size: 1.2rem;
     }
 
-    &__dropdown__trigger {
+    &__trigger {
       @include flexCenter;
       @include flexConstantDimension;
 
       height: 100%;
-      width: 2rem;
       cursor: pointer;
 
       svg {
         color: var(--color-dark-grey-500);
       }
     }
+  }
 
-    &__dropdown__menu__item {
+  &__header__aligner__dropdown {
+    &__label {
+      width: 7rem;
+    }
+
+    &__trigger {
+      width: 2rem;
+    }
+
+    &__menu__item {
+      @include flexCenter;
+
+      width: 9rem;
+      padding: 0.5rem;
+      justify-content: left;
+
+      .menu__item__label {
+        margin-left: 0.5rem;
+      }
+    }
+  }
+
+  &__header__zoomer__dropdown {
+    &__label {
+      width: 5rem;
+    }
+
+    &__trigger {
+      width: 2rem;
+    }
+
+    &__menu__item {
       @include flexCenter;
 
       width: 7rem;
@@ -209,6 +239,10 @@
 
     &--zoom-in,
     &--zoom-out {
+      font-size: 1.8rem;
+    }
+
+    &--aligner {
       font-size: 1.8rem;
     }
   }
