@@ -24,7 +24,6 @@ import { FaRegKeyboard } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
   DiagramRenderer,
-  DIAGRAM_ALIGN_MODE,
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
@@ -54,8 +53,6 @@ import {
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
-  MenuContentItemIcon,
-  MenuContentItemLabel,
   SquareIcon,
   TimesIcon,
 } from '@finos/legend-studio-components';
@@ -72,14 +69,6 @@ import {
   FiZoomIn,
   FiZoomOut,
 } from 'react-icons/fi';
-import {
-  CgAlignBottom,
-  CgAlignCenter,
-  CgAlignLeft,
-  CgAlignMiddle,
-  CgAlignRight,
-  CgAlignTop,
-} from 'react-icons/cg';
 import { IoResize } from 'react-icons/io5';
 import { Dialog } from '@material-ui/core';
 import type { HandlerProps } from 'react-reflex';
@@ -940,7 +929,6 @@ const DiagramEditorDiagramCanvas = observer(
 const DiagramEditorHeader = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
-    const isReadOnly = diagramEditorState.isReadOnly;
     const createCenterZoomer =
       (zoomLevel: number): (() => void) =>
       (): void => {
@@ -955,94 +943,8 @@ const DiagramEditorHeader = observer(
       }
     };
 
-    const createAligner =
-      (alignMode: DIAGRAM_ALIGN_MODE): (() => void) =>
-      (): void => {
-        if (!isReadOnly) {
-          diagramEditorState.renderer.alignSelectedClassViews(alignMode);
-        }
-      };
-
     return (
       <>
-        <DropdownMenu
-          className="diagram-editor__header__dropdown"
-          content={
-            <MenuContent>
-              <MenuContentItem
-                className="diagram-editor__header__aligner__dropdown__menu__item"
-                onClick={createAligner(DIAGRAM_ALIGN_MODE.LEFT)}
-              >
-                <MenuContentItemIcon>
-                  <CgAlignLeft className="diagram-editor__icon--aligner" />
-                </MenuContentItemIcon>
-                <MenuContentItemLabel>Left</MenuContentItemLabel>
-              </MenuContentItem>
-              <MenuContentItem
-                className="diagram-editor__header__aligner__dropdown__menu__item"
-                onClick={createAligner(DIAGRAM_ALIGN_MODE.CENTER)}
-              >
-                <MenuContentItemIcon>
-                  <CgAlignCenter className="diagram-editor__icon--aligner" />
-                </MenuContentItemIcon>
-                <MenuContentItemLabel>Center</MenuContentItemLabel>
-              </MenuContentItem>
-              <MenuContentItem
-                className="diagram-editor__header__aligner__dropdown__menu__item"
-                onClick={createAligner(DIAGRAM_ALIGN_MODE.RIGHT)}
-              >
-                <MenuContentItemIcon>
-                  <CgAlignRight className="diagram-editor__icon--aligner" />
-                </MenuContentItemIcon>
-                <MenuContentItemLabel>Right</MenuContentItemLabel>
-              </MenuContentItem>
-              <MenuContentDivider />
-              <MenuContentItem
-                className="diagram-editor__header__aligner__dropdown__menu__item"
-                onClick={createAligner(DIAGRAM_ALIGN_MODE.TOP)}
-              >
-                <MenuContentItemIcon>
-                  <CgAlignTop className="diagram-editor__icon--aligner" />
-                </MenuContentItemIcon>
-                <MenuContentItemLabel>Top</MenuContentItemLabel>
-              </MenuContentItem>
-              <MenuContentItem
-                className="diagram-editor__header__aligner__dropdown__menu__item"
-                onClick={createAligner(DIAGRAM_ALIGN_MODE.MIDDLE)}
-              >
-                <MenuContentItemIcon>
-                  <CgAlignMiddle className="diagram-editor__icon--aligner" />
-                </MenuContentItemIcon>
-                <MenuContentItemLabel>Middle</MenuContentItemLabel>
-              </MenuContentItem>
-              <MenuContentItem
-                className="diagram-editor__header__aligner__dropdown__menu__item"
-                onClick={createAligner(DIAGRAM_ALIGN_MODE.BOTTOM)}
-              >
-                <MenuContentItemIcon>
-                  <CgAlignBottom className="diagram-editor__icon--aligner" />
-                </MenuContentItemIcon>
-                <MenuContentItemLabel>Bottom</MenuContentItemLabel>
-              </MenuContentItem>
-            </MenuContent>
-          }
-          menuProps={{
-            anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-            transformOrigin: { vertical: 'top', horizontal: 'right' },
-            elevation: 7,
-          }}
-        >
-          <button
-            className="diagram-editor__header__dropdown__label diagram-editor__header__aligner__dropdown__label"
-            tabIndex={-1}
-            title="Align..."
-          >
-            <CgAlignLeft className="diagram-editor__icon--aligner" /> Align
-          </button>
-          <div className="diagram-editor__header__dropdown__trigger diagram-editor__header__aligner__dropdown__trigger">
-            <CaretDownIcon />
-          </div>
-        </DropdownMenu>
         <DropdownMenu
           className="diagram-editor__header__dropdown"
           content={

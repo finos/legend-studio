@@ -87,28 +87,6 @@
     }
   }
 
-  &__header__aligner__dropdown {
-    &__label {
-      width: 7rem;
-    }
-
-    &__trigger {
-      width: 2rem;
-    }
-
-    &__menu__item {
-      @include flexCenter;
-
-      width: 9rem;
-      padding: 0.5rem;
-      justify-content: left;
-
-      .menu__item__label {
-        margin-left: 0.5rem;
-      }
-    }
-  }
-
   &__header__zoomer__dropdown {
     &__label {
       width: 5rem;
@@ -239,10 +217,6 @@
 
     &--zoom-in,
     &--zoom-out {
-      font-size: 1.8rem;
-    }
-
-    &--aligner {
       font-size: 1.8rem;
     }
   }

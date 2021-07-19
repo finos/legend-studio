@@ -65,15 +65,6 @@ export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
   NONE,
 }
 
-export enum DIAGRAM_ALIGN_MODE {
-  TOP,
-  MIDDLE,
-  BOTTOM,
-  LEFT,
-  CENTER,
-  RIGHT,
-}
-
 const MIN_ZOOM_LEVEL = 0.05; // 5%
 const FIT_ZOOM_PADDING = 10;
 export const DIAGRAM_ZOOM_LEVELS = [
@@ -613,110 +604,6 @@ export class DiagramRenderer {
         default:
           throw new UnsupportedOperationError(
             `Can't switch to relationship mode '${relationshipMode}': unsupported mode`,
-          );
-      }
-    }
-  }
-
-  alignSelectedClassViews(alignMode: DIAGRAM_ALIGN_MODE): void {
-    if (!this.isReadOnly && this.selectedClasses.length > 1) {
-      switch (alignMode) {
-        case DIAGRAM_ALIGN_MODE.LEFT: {
-          let minX = Number.MAX_VALUE;
-          this.selectedClasses.forEach((classView) => {
-            minX = Math.min(minX, classView.position.x);
-          });
-          this.selectedClasses.forEach((classView) => {
-            classView.setPosition(new Point(minX, classView.position.y));
-          });
-          return;
-        }
-        case DIAGRAM_ALIGN_MODE.CENTER: {
-          let minX = Number.MAX_VALUE;
-          let maxX = Number.MIN_VALUE;
-          this.selectedClasses.forEach((classView) => {
-            minX = Math.min(minX, classView.position.x);
-            maxX = Math.max(
-              maxX,
-              classView.position.x + classView.rectangle.width,
-            );
-          });
-          this.selectedClasses.forEach((classView) => {
-            classView.setPosition(
-              new Point(
-                (minX + maxX - classView.rectangle.width) / 2,
-                classView.position.y,
-              ),
-            );
-          });
-          return;
-        }
-        case DIAGRAM_ALIGN_MODE.RIGHT: {
-          let maxX = Number.MIN_VALUE;
-          this.selectedClasses.forEach((classView) => {
-            maxX = Math.max(
-              maxX,
-              classView.position.x + classView.rectangle.width,
-            );
-          });
-          this.selectedClasses.forEach((classView) => {
-            classView.setPosition(
-              new Point(maxX - classView.rectangle.width, classView.position.y),
-            );
-          });
-          return;
-        }
-        case DIAGRAM_ALIGN_MODE.TOP: {
-          let minY = Number.MAX_VALUE;
-          this.selectedClasses.forEach((classView) => {
-            minY = Math.min(minY, classView.position.y);
-          });
-          this.selectedClasses.forEach((classView) => {
-            classView.setPosition(new Point(classView.position.x, minY));
-          });
-          return;
-        }
-        case DIAGRAM_ALIGN_MODE.MIDDLE: {
-          let minY = Number.MAX_VALUE;
-          let maxY = Number.MIN_VALUE;
-          this.selectedClasses.forEach((classView) => {
-            minY = Math.min(minY, classView.position.y);
-            maxY = Math.max(
-              maxY,
-              classView.position.y + classView.rectangle.height,
-            );
-          });
-          this.selectedClasses.forEach((classView) => {
-            classView.setPosition(
-              new Point(
-                classView.position.x,
-                (minY + maxY - classView.rectangle.height) / 2,
-              ),
-            );
-          });
-          return;
-        }
-        case DIAGRAM_ALIGN_MODE.BOTTOM: {
-          let maxY = Number.MIN_VALUE;
-          this.selectedClasses.forEach((classView) => {
-            maxY = Math.max(
-              maxY,
-              classView.position.y + classView.rectangle.height,
-            );
-          });
-          this.selectedClasses.forEach((classView) => {
-            classView.setPosition(
-              new Point(
-                classView.position.x,
-                maxY - classView.rectangle.height,
-              ),
-            );
-          });
-          return;
-        }
-        default:
-          throw new UnsupportedOperationError(
-            `Can't align class view(s) with mode '${alignMode}': unsupported mode`,
           );
       }
     }
