@@ -1030,7 +1030,7 @@ export class EditorStore {
     );
     this.graphState.graph.removeElement(element);
     if (this.currentEditorState instanceof DiagramEditorState) {
-      this.currentEditorState.diagramRenderer.start();
+      this.currentEditorState.renderer.render();
     }
     this.explorerTreeState.reprocess();
     // re-compile after deletion

@@ -571,7 +571,7 @@ export abstract class BasicModel {
       );
       extension.removeElement(element.path);
     }
-    this.deadReferencesCleanUp();
+    this.cleanUpDeadReferences();
   }
 
   setIsBuilt(built: boolean): void {
@@ -590,7 +590,7 @@ export abstract class BasicModel {
     this.elementSectionMap = new Map<string, Section>();
   }
 
-  deadReferencesCleanUp(): void {
-    this.diagrams.forEach((diagram) => diagram.deadReferencesCleanUp(this));
+  cleanUpDeadReferences(): void {
+    this.diagrams.forEach((diagram) => diagram.cleanUpDeadReferences(this));
   }
 }

@@ -442,7 +442,7 @@ const DiagramEditorOverlay = observer(
       );
 
     const redrawOnClassChange = useCallback((): void => {
-      diagramEditorState.diagram.deadReferencesCleanUp(
+      diagramEditorState.diagram.cleanUpDeadReferences(
         editorStore.graphState.graph,
       );
       diagramEditorState.renderer.render();
