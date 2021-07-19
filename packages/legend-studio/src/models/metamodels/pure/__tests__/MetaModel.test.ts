@@ -114,19 +114,18 @@ test(unitTest('JSON Object input data should be minified'), () => {
 });
 
 test(unitTest('Resolve package path and element name'), () => {
-  expect(resolvePackagePathAndElementName('something::somethingElse')).toBe([
+  expect(resolvePackagePathAndElementName('something::somethingElse')).toEqual([
     'something',
     'somethingElse',
   ]);
-  expect(resolvePackagePathAndElementName('something::a::somethingElse')).toBe([
-    'something::a',
-    'somethingElse',
-  ]);
-  expect(resolvePackagePathAndElementName('b')).toBe(['', 'b']);
+  expect(
+    resolvePackagePathAndElementName('something::a::somethingElse'),
+  ).toEqual(['something::a', 'somethingElse']);
+  expect(resolvePackagePathAndElementName('b')).toEqual(['', 'b']);
   expect(
     resolvePackagePathAndElementName('something::b', 'somethingElse'),
-  ).toBe(['something', 'b']);
-  expect(resolvePackagePathAndElementName('b', 'somethingElse')).toBe([
+  ).toEqual(['something', 'b']);
+  expect(resolvePackagePathAndElementName('b', 'somethingElse')).toEqual([
     'somethingElse',
     'b',
   ]);
