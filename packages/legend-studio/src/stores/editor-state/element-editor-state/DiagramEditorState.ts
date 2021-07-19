@@ -122,6 +122,16 @@ export class DiagramEditorNewClassSidePanelState extends DiagramEditorSidePanelS
   }
 }
 
+export class DiagramEditorInlineClassCreatorState {
+  diagramEditorState: DiagramEditorState;
+  point: Point;
+
+  constructor(diagramEditorState: DiagramEditorState, point: Point) {
+    this.diagramEditorState = diagramEditorState;
+    this.point = point;
+  }
+}
+
 export class DiagramEditorInlinePropertyEditorState {
   diagramEditorState: DiagramEditorState;
   property: PropertyReference;
@@ -151,6 +161,7 @@ export class DiagramEditorState extends ElementEditorState {
   });
   sidePanelState?: DiagramEditorSidePanelState;
   inlinePropertyEditorState?: DiagramEditorInlinePropertyEditorState;
+  inlineClassCreatorState?: DiagramEditorInlineClassCreatorState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -161,6 +172,7 @@ export class DiagramEditorState extends ElementEditorState {
       sidePanelDisplayState: observable,
       sidePanelState: observable,
       inlinePropertyEditorState: observable,
+      inlineClassCreatorState: observable,
       renderer: computed,
       diagram: computed,
       isDiagramRendererInitialized: computed,
@@ -168,6 +180,7 @@ export class DiagramEditorState extends ElementEditorState {
       setRenderer: action,
       setSidePanelState: action,
       setInlinePropertyEditorState: action,
+      setInlineClassCreatorState: action,
       reprocess: action,
     });
   }
@@ -256,6 +269,12 @@ export class DiagramEditorState extends ElementEditorState {
     this.inlinePropertyEditorState = val;
   }
 
+  setInlineClassCreatorState(
+    val: DiagramEditorInlineClassCreatorState | undefined,
+  ): void {
+    this.inlineClassCreatorState = val;
+  }
+
   setupDiagramRenderer(): void {
     this.renderer.setIsReadOnly(this.isReadOnly);
     this.renderer.editClass = (classView: ClassView): void => {
@@ -275,16 +294,11 @@ export class DiagramEditorState extends ElementEditorState {
       );
       this.sidePanelDisplayState.open();
     };
-    const createNewClassView = (mouseEvent: MouseEvent): void => {
+    const createNewClassView = (point: Point): void => {
       if (!this.isReadOnly) {
-        this.setSidePanelState(
-          new DiagramEditorNewClassSidePanelState(
-            this.editorStore,
-            this,
-            mouseEvent,
-          ),
+        this.setInlineClassCreatorState(
+          new DiagramEditorInlineClassCreatorState(this, point),
         );
-        this.sidePanelDisplayState.open();
       }
     };
     this.renderer.onBackgroundDoubleClick = createNewClassView;
@@ -298,7 +312,7 @@ export class DiagramEditorState extends ElementEditorState {
         const _class = this.sidePanelState.classEditorState.class;
         _class.addProperty(
           new Property(
-            `newProperty_${_class.properties.length}`,
+            `property_${_class.properties.length + 1}`,
             this.editorStore.graphState.graph.getTypicalMultiplicity(
               TYPICAL_MULTIPLICITY_TYPE.ONE,
             ),
@@ -344,7 +358,7 @@ export class DiagramEditorState extends ElementEditorState {
       const _class = classView.class.value;
       _class.addProperty(
         new Property(
-          `newProperty_${_class.properties.length}`,
+          `property_${_class.properties.length + 1}`,
           this.editorStore.graphState.graph.getTypicalMultiplicity(
             TYPICAL_MULTIPLICITY_TYPE.ONE,
           ),

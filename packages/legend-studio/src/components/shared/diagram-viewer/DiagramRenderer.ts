@@ -212,8 +212,8 @@ export class DiagramRenderer {
   positionBeforeLastMove: Point;
 
   // functions to interact with diagram editor
-  onAddClassViewClick: (mouseEvent: MouseEvent) => void = noop();
-  onBackgroundDoubleClick: (mouseEvent: MouseEvent) => void = noop();
+  onAddClassViewClick: (point: Point) => void = noop();
+  onBackgroundDoubleClick: (point: Point) => void = noop();
   editClass: (classView: ClassView) => void = noop();
   editProperty: (property: AbstractProperty, point: Point) => void = noop();
   editPropertyView: (propertyView: PropertyHolderView) => void = noop();
@@ -517,7 +517,7 @@ export class DiagramRenderer {
             targetClassView: ClassView,
           ): PropertyView => {
             const property = new Property(
-              `newProperty_${startClassView.class.value.properties.length}`,
+              `property_${startClassView.class.value.properties.length + 1}`,
               new Multiplicity(1, 1),
               GenericTypeExplicitReference.create(
                 new GenericType(targetClassView.class.value),
@@ -786,7 +786,7 @@ export class DiagramRenderer {
    */
   addClassView(
     addedClass: Class,
-    addEventPosition?: Point,
+    classViewModelCoordinate?: Point,
   ): ClassView | undefined {
     if (!this.isReadOnly) {
       // NOTE: Using `uuid` might be overkill since the `id` is only required to be unique
@@ -805,16 +805,15 @@ export class DiagramRenderer {
         PackageableElementExplicitReference.create(addedClass),
       );
       newClassView.setPosition(
-        this.canvasCoordinateToModelCoordinate(
-          addEventPosition
-            ? this.eventCoordinateToCanvasCoordinate(addEventPosition)
-            : new Point(
-                this.virtualScreen.position.x +
-                  this.virtualScreen.rectangle.width / 2,
-                this.virtualScreen.position.y +
-                  this.virtualScreen.rectangle.height / 2,
-              ),
-        ),
+        classViewModelCoordinate ??
+          this.canvasCoordinateToModelCoordinate(
+            new Point(
+              this.virtualScreen.position.x +
+                this.virtualScreen.rectangle.width / 2,
+              this.virtualScreen.position.y +
+                this.virtualScreen.rectangle.height / 2,
+            ),
+          ),
       );
       this.diagram.addClassView(newClassView);
       // Refresh hash since ClassView position is not observable
@@ -2121,7 +2120,11 @@ export class DiagramRenderer {
           break;
         }
         case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
-          this.onAddClassViewClick(e);
+          const eventPointInModelCoordinate =
+            this.canvasCoordinateToModelCoordinate(
+              this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y)),
+            );
+          this.onAddClassViewClick(eventPointInModelCoordinate);
           this.changeMode(
             DIAGRAM_INTERACTION_MODE.LAYOUT,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
@@ -2313,7 +2316,7 @@ export class DiagramRenderer {
     if (selectedClass) {
       this.editClass(selectedClass);
     } else {
-      this.onBackgroundDoubleClick(e);
+      this.onBackgroundDoubleClick(eventPointInModelCoordinate);
     }
   }
 
