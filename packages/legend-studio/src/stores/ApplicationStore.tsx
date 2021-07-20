@@ -16,7 +16,6 @@
 
 import { createContext, useContext } from 'react';
 import type {
-  GeneratorFn,
   PlainObject,
   SuperGenericFunction,
 } from '@finos/legend-studio-shared';
@@ -111,7 +110,7 @@ export class Notification {
 export class NetworkClientManager {
   coreClient!: NetworkClient;
   sdlcClient!: SDLCServerClient;
-  metadataClient: MetadataServerClient;
+  metadataClient!: MetadataServerClient;
 
   constructor(config: ApplicationConfig) {
     this.coreClient = new NetworkClient();
@@ -134,12 +133,13 @@ export class ApplicationStore {
   historyApiClient: History;
   notification?: Notification;
   logger: Logger;
-  isSDLCAuthorized = false;
-  SDLCServerTermsOfServicesUrlsToView: string[] = [];
   blockingAlertInfo?: BlockingAlertInfo;
   actionAlertInfo?: ActionAlertInfo;
   config: ApplicationConfig;
   initState = createObservableActionState();
+
+  isSDLCAuthorized = false;
+  SDLCServerTermsOfServicesUrlsToView: string[] = [];
   currentSDLCUser = new User(UNKNOWN_USER_ID, UNKNOWN_USER_ID);
 
   constructor(
@@ -334,7 +334,25 @@ export class ApplicationStore {
 
   checkSDLCAuthorization = flow(function* (this: ApplicationStore) {
     try {
-      this.isSDLCAuthorized = (yield this.areModesAuthorized()) as boolean;
+      this.isSDLCAuthorized = (
+        (yield Promise.all(
+          Object.values(SdlcMode).map((mode) =>
+            this.networkClientManager.sdlcClient
+              .isAuthorized(mode)
+              .catch((error) => {
+                if (mode !== SdlcMode.PROD) {
+                  // if there is an issue with an endpoint in a non prod env, we return authorized as true
+                  // but notify the user of the error
+                  this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+                  this.notifyError(error);
+                  return true;
+                }
+                throw error;
+              }),
+          ),
+        )) as boolean[]
+      ).every(Boolean);
+
       if (!this.isSDLCAuthorized) {
         window.location.href = SDLCServerClient.authorizeCallbackUrl(
           this.config.sdlcServerUrl,
@@ -346,9 +364,8 @@ export class ApplicationStore {
           (yield this.networkClientManager.sdlcClient.hasAcceptedTermsOfService()) as string[];
         if (this.SDLCServerTermsOfServicesUrlsToView.length) {
           this.setActionAltertInfo({
-            message:
-              "Please read and accept the SDLC servers' terms of service",
-            prompt: 'Click "Done" when you have accepted all the terms',
+            message: `Please read and accept the SDLC servers' terms of service`,
+            prompt: `Click 'Done' when you have accepted all the terms`,
             type: ActionAlertType.CAUTION,
             actions: [
               {
@@ -384,29 +401,6 @@ export class ApplicationStore {
     );
     this.telemetryService.setUserId(this.currentSDLCUser.userId);
   }
-
-  areModesAuthorized = flow(function* (
-    this: ApplicationStore,
-  ): GeneratorFn<boolean> {
-    const modesAuthorized = (yield Promise.all(
-      Object.values(SdlcMode).map((mode) =>
-        this.networkClientManager.sdlcClient
-          .isAuthorized(mode)
-          .then((bool) => bool)
-          .catch((error) => {
-            if (mode !== SdlcMode.PROD) {
-              // if there is an issue with an endpoint in a non prod env, we return authorized as true
-              // but notify the user of the error
-              this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
-              this.notifyError(error);
-              return true;
-            }
-            throw error;
-          }),
-      ),
-    )) as boolean[];
-    return modesAuthorized.every((b) => b);
-  });
 
   /**
    * This function creates a more user-friendly way to throw error in the UI. Rather than crashing the whole app, we will

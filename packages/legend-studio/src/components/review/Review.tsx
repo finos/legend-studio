@@ -33,7 +33,7 @@ import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
-import type { ReviewRouteParams } from '../../stores/Router';
+import type { ReviewPathParams } from '../../stores/Router';
 import {
   generateViewProjectRoute,
   generateEditorRoute,
@@ -163,7 +163,7 @@ const ReviewExplorer = observer(() => {
 });
 
 const ReviewInner = observer(() => {
-  const params = useParams<ReviewRouteParams>();
+  const params = useParams<ReviewPathParams>();
   const projectId = params.projectId;
   const reviewId = params.reviewId;
   const reviewStore = useReviewStore();

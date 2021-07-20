@@ -17,7 +17,7 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator } from '@finos/legend-studio-components';
-import { getQueryParams } from '@finos/legend-studio-shared';
+import { getQueryParameters } from '@finos/legend-studio-shared';
 import { useParams } from 'react-router-dom';
 import {
   useApplicationStore,
@@ -32,7 +32,7 @@ enum SPECIAL_REDIRECT_ALIAS {
   HOME = '@home',
 }
 
-interface RedirectRouteParams {
+interface RedirectPathParams {
   [PATH_PARAM_TOKEN_REDIRECT_URL]: string;
 }
 
@@ -46,16 +46,16 @@ interface RedirectRouteParams {
 export const URLRedirector = observer(() => {
   const applicationStore = useApplicationStore();
   const isApplicationLoadConcluded = applicationStore.initState.hasConcluded;
-  const params = useParams<RedirectRouteParams>();
+  const params = useParams<RedirectPathParams>();
 
   useEffect(() => {
     if (isApplicationLoadConcluded) {
       if (applicationStore.initState.hasFailed) {
         applicationStore.setupTelemetryService();
       }
-      const queryParams = getQueryParams(
-        applicationStore.historyApiClient.location.search,
-      );
+      const queryParams = getQueryParameters<{
+        marketingId?: string;
+      }>(applicationStore.historyApiClient.location.search);
       let redirectUrl = params[PATH_PARAM_TOKEN_REDIRECT_URL];
       switch (redirectUrl) {
         case SPECIAL_REDIRECT_ALIAS.HOME:

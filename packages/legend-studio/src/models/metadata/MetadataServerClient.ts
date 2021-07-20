@@ -16,6 +16,8 @@
 
 import { AbstractServerClient } from '@finos/legend-studio-network';
 import type { PlainObject } from '@finos/legend-studio-shared';
+import type { Entity } from '../../models/sdlc/models/entity/Entity';
+import type { ProjectMetadata } from './models/ProjectMetadata';
 import type {
   ProjectVersion,
   ProjectVersionEntities,
@@ -32,7 +34,30 @@ export class MetadataServerClient extends AbstractServerClient {
     });
   }
 
+  // ------------------------------------------- Project -------------------------------------------
+
   private _projects = (): string => `${this.networkClient.baseUrl}/projects`;
+  private _project = (projectId: string): string =>
+    `${this._projects()}/${encodeURIComponent(projectId)}`;
+
+  // TODO: use Metadata model
+  getProjects = (): Promise<PlainObject<ProjectMetadata>[]> =>
+    this.get(this._projects());
+
+  // ------------------------------------------- Version -------------------------------------------
+
+  private _versions = (projectId: string): string =>
+    `${this._project(projectId)}/versions`;
+  private _version = (projectId: string, versionId: string): string =>
+    `${this._project(projectId)}/versions/${encodeURIComponent(versionId)}`;
+
+  getVersionEntities = (
+    projectId: string,
+    versionId: string,
+  ): Promise<PlainObject<Entity>[]> =>
+    this.get(this._version(projectId, versionId));
+
+  // ------------------------------------------- Dependencies -------------------------------------------
 
   getDependencyEntities = (
     /**

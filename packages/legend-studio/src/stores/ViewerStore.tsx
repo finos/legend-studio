@@ -34,7 +34,7 @@ import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { GraphError } from '../models/MetaModelUtils';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
-import type { ViewerRouteParams } from './Router';
+import type { ViewerPathParams } from './Router';
 import {
   generateViewVersionRoute,
   generateVieweRevisionRoute,
@@ -80,7 +80,7 @@ export class ViewerStore {
    *  2. if the elemnt is not found
    * in either case, the most suitable behavior at the moment is to internalize/swallow up the entity path param
    */
-  internalizeEntityPath(params: ViewerRouteParams): void {
+  internalizeEntityPath(params: ViewerPathParams): void {
     if (params.entityPath) {
       this.elementPath = params.entityPath;
       this.editorStore.applicationStore.historyApiClient.replace(
