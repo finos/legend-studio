@@ -970,11 +970,15 @@ const DiagramEditorDiagramCanvas = observer(
         if (!isReadOnly) {
           if (item instanceof ElementDragSource) {
             if (item.data.packageableElement instanceof Class) {
-              const dropPosition = monitor.getSourceClientOffset();
+              const dropPosition = monitor.getClientOffset();
               diagramEditorState.renderer.addClassView(
                 item.data.packageableElement,
                 dropPosition
-                  ? new Point(dropPosition.x, dropPosition.y)
+                  ? diagramEditorState.renderer.canvasCoordinateToModelCoordinate(
+                      diagramEditorState.renderer.eventCoordinateToCanvasCoordinate(
+                        new Point(dropPosition.x, dropPosition.y),
+                      ),
+                    )
                   : undefined,
               );
             }

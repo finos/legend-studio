@@ -2181,7 +2181,11 @@ export class DiagramRenderer {
           ) {
             this.addClassView(
               this.mouseOverProperty.genericType.value.rawType,
-              new Point(this.cursorPosition.x, this.cursorPosition.y),
+              this.canvasCoordinateToModelCoordinate(
+                this.eventCoordinateToCanvasCoordinate(
+                  new Point(this.cursorPosition.x, this.cursorPosition.y),
+                ),
+              ),
             );
           }
         } else if (this.selectedClassProperty) {
