@@ -2006,6 +2006,7 @@ export class DiagramRenderer {
             this.diagram.deleteGeneralizationView(this.selectedInheritance);
           }
         }
+        this.selectedClasses = [];
         this.drawScreen();
       }
     }
@@ -2169,6 +2170,18 @@ export class DiagramRenderer {
           this.addSelectedClassAsPropertyOfOpenedClass(classView),
         );
       }
+    } else if (e.key === 'ArrowUp') {
+      this.selectedClasses.forEach((cv) => {
+        const views = this.getSuperTypeLevels([cv], this.diagram, 0, 1);
+        const res = this.layoutTaxonomy(views, this.diagram, false);
+        res[0].forEach((cv) => this.diagram.addClassView(cv));
+        res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
+      });
+
+      this.clearScreen(); // draw the first time so that the virtualscreen has the right size
+      this.drawAll();
+      this.manageVirtualScreen();
+      this.drawAll();
     }
   }
 
@@ -2877,5 +2890,125 @@ export class DiagramRenderer {
         }
       }
     }
+  }
+
+  //---------------------
+  // Inheritance helpers
+  //---------------------
+
+  getSuperTypeLevels(
+    classViews: ClassView[],
+    diagram: Diagram,
+    currentDepth: number,
+    recurseMaxDepth: number,
+  ): ClassView[][] {
+    if (classViews.length) {
+      classViews.forEach((classView) =>
+        this.ensureClassViewMeetMinDimensions(classView),
+      );
+      const res = classViews.flatMap((classView) =>
+        classView.class.value.generalizations.map(
+          (generation) =>
+            new ClassView(
+              diagram,
+              '',
+              PackageableElementExplicitReference.create(
+                generation.value.getRawType(Class),
+              ),
+            ),
+        ),
+      );
+      if (recurseMaxDepth === -1 || currentDepth < recurseMaxDepth) {
+        const rec = this.getSuperTypeLevels(
+          res,
+          diagram,
+          currentDepth + 1,
+          recurseMaxDepth,
+        );
+        rec.push(classViews);
+        return rec;
+      } else {
+        return [classViews];
+      }
+    }
+    return [];
+  }
+
+  layoutTaxonomy(
+    classViewLevels: ClassView[][],
+    diagram: Diagram,
+    positionInitialClass: boolean,
+  ): [ClassView[], GeneralizationView[]] {
+    //Offsets
+    const spaceY = 30;
+    const spaceX = 10;
+
+    classViewLevels = classViewLevels.reverse();
+
+    const classViews = classViewLevels.flatMap((level, i) => {
+      // Get the bounding box of the precedent level
+      const precedentY = i === 0 ? 0 : classViewLevels[i - 1][0].position.y;
+
+      const precedentX = i === 0 ? 0 : classViewLevels[i - 1][0].position.x;
+
+      const precedentTotalWidth =
+        i === 0
+          ? 0
+          : classViewLevels[i - 1]
+              .map((classView) => classView.rectangle.width)
+              .reduce((a, b) => a + b + spaceX);
+
+      // Get the bounding box of current Level
+      const maxHeight = Math.max(
+        ...level.map((classView) => classView.rectangle.height),
+      );
+
+      const totalWidth = level
+        .map((classView) => classView.rectangle.width)
+        .reduce((a, b) => a + b + spaceX);
+
+      // Get the starting position
+      const startX = precedentX + precedentTotalWidth / 2 - totalWidth / 2;
+      const currentLevelY = precedentY - maxHeight - spaceY;
+
+      // Set layout of current level
+      if (positionInitialClass || i > 0) {
+        level[0].setPosition(new Point(startX, currentLevelY));
+      }
+      return level.flatMap((view, index) => {
+        if (index > 0) {
+          const precedent = level[index - 1];
+          view.setPosition(
+            new Point(
+              precedent.position.x + precedent.rectangle.width + spaceX,
+              currentLevelY,
+            ),
+          );
+        }
+        return view;
+      });
+    });
+
+    const generalizationViews = classViewLevels
+      .slice(0, classViewLevels.length - 1)
+      .flatMap((level, i) =>
+        level.flatMap((fromClassView) =>
+          classViewLevels[i + 1].flatMap((toClassView) => {
+            if (
+              fromClassView.class.value.generalizations
+                .map((g) => g.value.rawType)
+                .includes(toClassView.class.value)
+            ) {
+              return new GeneralizationView(
+                diagram,
+                fromClassView,
+                toClassView,
+              );
+            }
+            return [];
+          }),
+        ),
+      );
+    return [classViews, generalizationViews];
   }
 }
