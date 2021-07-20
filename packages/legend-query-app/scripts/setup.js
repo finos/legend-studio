@@ -57,7 +57,7 @@ writeFileSync(
         url: 'http://localhost:6060/api',
       },
       metadata: {
-        url: 'http://localhost:8080/api',
+        url: 'http://localhost:9090/api',
       },
       documentation: {
         url: 'https://legend.finos.org',
