@@ -2118,7 +2118,7 @@ export class DiagramRenderer {
     }
 
     // Add a new simple property to selected class
-    else if (e.key === '/') {
+    else if (e.altKey && e.key === 'ArrowDown') {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.addSimpleProperty(this.selectedClasses[0]);
       }

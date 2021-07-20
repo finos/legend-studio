@@ -219,7 +219,11 @@ const DiagramRendererHotkeyInfosModal = observer(
                   Add simple property to selected class
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">/</div>
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
+                  <div className="hotkey__key">&darr;</div>
                 </div>
               </div>
 
