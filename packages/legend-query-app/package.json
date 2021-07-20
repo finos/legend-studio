@@ -1,0 +1,60 @@
+{
+  "name": "@finos/legend-query-app",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Legend Query web application",
+  "keywords": [
+    "legend",
+    "legend-query",
+    "query",
+    "app",
+    "webapp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-query-app"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "yarn clean && yarn build:tsc && yarn build:webpack && node ./scripts/setup.js ./dist/studio",
+    "build:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
+    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
+    "check:docker": "./scripts/dry-build-docker-image.sh",
+    "clean": "rimraf \"dist\" \"build\"",
+    "dev": "npm-run-all --parallel dev:tsc dev:webpack",
+    "dev:advanced": "cross-env NODE_ENV=development DEVELOPMENT_MODE=advanced webpack serve --mode development",
+    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "dev:webpack": "cross-env NODE_ENV=development webpack serve --mode development",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:docker": "echo 'Building webapp content...' && yarn build && ./scripts/publish-docker.sh",
+    "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /studio",
+    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-studio": "workspace:*",
+    "@finos/legend-studio-preset-dsl-text": "workspace:*",
+    "@finos/legend-studio-preset-query-builder": "workspace:*",
+    "@types/react": "17.0.14",
+    "react": "17.0.2"
+  },
+  "devDependencies": {
+    "@finos/legend-studio-dev-utils": "workspace:*",
+    "@finos/legend-studio-shared": "workspace:*",
+    "copy-webpack-plugin": "9.0.1",
+    "cross-env": "7.0.3",
+    "eslint": "7.31.0",
+    "jest": "27.0.6",
+    "npm-run-all": "4.1.5",
+    "rimraf": "3.0.2",
+    "typescript": "4.3.5",
+    "webpack": "5.45.1",
+    "webpack-bundle-analyzer": "4.4.2",
+    "webpack-cli": "4.7.2",
+    "webpack-dev-server": "4.0.0-rc.0"
+  }
+}
