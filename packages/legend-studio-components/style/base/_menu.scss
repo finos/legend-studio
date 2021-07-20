@@ -59,4 +59,13 @@
   &__item:not([disabled]):hover {
     background: var(--color-light-blue-450);
   }
+
+  &__divider {
+    @include flexConstantDimension;
+
+    border-radius: 0.1rem;
+    height: 0.2rem;
+    background: var(--color-dark-grey-300);
+    margin: 0.5rem;
+  }
 }

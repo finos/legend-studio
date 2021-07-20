@@ -80,7 +80,7 @@ import {
 } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import {
   isValidFullPath,
-  resolvePackageNameAndElementName,
+  resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
 
 export const FileGenerationTreeNodeContainer: React.FC<
@@ -688,7 +688,7 @@ const GenerationEnumPropertyEditor = observer(
     const { property, fileGeneration, isReadOnly, update } = props;
     const getEnumLabel = (_enum: string): string =>
       isValidFullPath(_enum)
-        ? resolvePackageNameAndElementName('', _enum)[1]
+        ? resolvePackagePathAndElementName(_enum)[1]
         : _enum;
     const options = guaranteeNonNullable(
       property.items,

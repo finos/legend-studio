@@ -478,12 +478,10 @@ export abstract class BasicModel {
       'Name is required',
     )}`;
 
-  getOrCreatePackageWithPackageName = (
-    packageName: string | undefined,
-  ): Package =>
+  getOrCreatePackage = (packagePath: string | undefined): Package =>
     Package.getOrCreatePackage(
       this.root,
-      guaranteeNonNullable(packageName, 'Package name is required'),
+      guaranteeNonNullable(packagePath, 'Package path is required'),
       true,
     );
 
@@ -573,6 +571,7 @@ export abstract class BasicModel {
       );
       extension.removeElement(element.path);
     }
+    this.cleanUpDeadReferences();
   }
 
   setIsBuilt(built: boolean): void {
@@ -589,5 +588,9 @@ export abstract class BasicModel {
     // as such `this.sectionIndicesIndex.delete(sectionIndex.path)` won't work because the path is without the package
     this.sectionIndicesIndex = new Map<string, SectionIndex>();
     this.elementSectionMap = new Map<string, Section>();
+  }
+
+  cleanUpDeadReferences(): void {
+    this.diagrams.forEach((diagram) => diagram.cleanUpDeadReferences(this));
   }
 }

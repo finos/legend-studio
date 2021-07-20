@@ -20,7 +20,7 @@ import {
 } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../../../../../../utils/Logger';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
-import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { RawLambda } from '../../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import { isValidFullPath } from '../../../../../../../MetaModelUtils';
 import { V1_RawLambda } from '../../../../model/rawValueSpecification/V1_RawLambda';
@@ -316,7 +316,7 @@ function V1_resolveElementPath(
   path: string,
   resolverFunc: (
     path: string,
-  ) => PackageableElementImplicitReference<PackageableElement>,
+  ) => PackageableElementReference<PackageableElement>,
   resolver: V1_ValueSpecificationPathResolver,
 ): string {
   const resolvedPath = resolverFunc(path).value.path;

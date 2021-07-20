@@ -87,7 +87,7 @@ export const resolvePackageAndElementName = (
     index === -1 ? name : name.substring(index + 2, name.length);
   const additionalPackageName = index === -1 ? '' : name.substring(0, index);
   const selectedPackageName = isPackageRoot ? '' : _package.path;
-  const packageName =
+  const packagePath =
     !selectedPackageName && !additionalPackageName
       ? ''
       : selectedPackageName
@@ -97,7 +97,7 @@ export const resolvePackageAndElementName = (
             : ''
         }`
       : additionalPackageName;
-  return [packageName, elementName];
+  return [packagePath, elementName];
 };
 
 export abstract class NewElementDriver<T extends PackageableElement> {
@@ -527,10 +527,10 @@ export class NewElementState {
 
   save(): void {
     if (this.name && this.isValid) {
-      const [packageName, elementName] = this.elementAndPackageName;
+      const [packagePath, elementName] = this.elementAndPackageName;
       if (
         this.editorStore.graphState.graph.isRoot(
-          this.editorStore.graphState.graph.getNullablePackage(packageName),
+          this.editorStore.graphState.graph.getNullablePackage(packagePath),
         ) &&
         this.type !== PACKAGEABLE_ELEMENT_TYPE.PACKAGE
       ) {
@@ -539,10 +539,8 @@ export class NewElementState {
         );
       } else {
         const element = this.createElement(elementName);
-        (packageName
-          ? this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-              packageName,
-            )
+        (packagePath
+          ? this.editorStore.graphState.graph.getOrCreatePackage(packagePath)
           : this.editorStore.graphState.graph.root
         ).addElement(element);
         this.editorStore.graphState.graph.addElement(element);

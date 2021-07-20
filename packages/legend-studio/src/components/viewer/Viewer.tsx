@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -31,15 +31,10 @@ import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
 import { CORE_TEST_ID } from '../../const';
-import {
-  ACTIVITY_MODE,
-  HOTKEY,
-  HOTKEY_MAP,
-  SIDE_BAR_RESIZE_SNAP_THRESHOLD,
-  DEFAULT_SIDE_BAR_SIZE,
-} from '../../stores/EditorConfig';
+import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx } from '@finos/legend-studio-components';
+import { isNonNullable } from '@finos/legend-studio-shared';
 import { NotificationSnackbar } from '../shared/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from '../../stores/ViewerStore';
@@ -180,17 +175,24 @@ export const ViewerInner = observer(() => {
     editorStore.sdlcState.currentProject &&
     !editorStore.graphState.graph.failedToBuild &&
     editorStore.graphState.graph.isBuilt;
-  const snapSideBar = (newSize: number | undefined): void => {
+  const resizeSideBar = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
-      editorStore.setSideBarSize(
-        newSize < SIDE_BAR_RESIZE_SNAP_THRESHOLD
-          ? editorStore.sideBarSize > 0
-            ? 0
-            : DEFAULT_SIDE_BAR_SIZE
-          : newSize,
-      );
+      editorStore.sideBarDisplayState.setSize(newSize);
     }
   };
+  // Extensions
+  const extraEditorExtensionComponents =
+    editorStore.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
+          [],
+      )
+      .filter(isNonNullable)
+      .map((config) => (
+        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+      ));
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys
@@ -211,7 +213,7 @@ export const ViewerInner = observer(() => {
 
   useEffect(() => {
     if (ref.current) {
-      editorStore.setMaxAuxPanelSize(ref.current.offsetHeight);
+      editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
     }
   }, [ref, editorStore, width, height]);
 
@@ -245,8 +247,8 @@ export const ViewerInner = observer(() => {
                 >
                   <SplitPane
                     split="vertical"
-                    onDragFinished={snapSideBar}
-                    size={editorStore.sideBarSize}
+                    onDragFinished={resizeSideBar}
+                    size={editorStore.sideBarDisplayState.size}
                     minSize={0}
                     maxSize={-600}
                   >
@@ -260,6 +262,7 @@ export const ViewerInner = observer(() => {
               </div>
             </div>
             <ViewerStatusBar />
+            {extraEditorExtensionComponents}
             {allowOpeningElement && <ProjectSearchCommand />}
           </GlobalHotKeys>
         </div>

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { hashLambda } from '../../../MetaModelUtils';
+import {
+  hashLambda,
+  resolvePackagePathAndElementName,
+} from '../../../MetaModelUtils';
 import {
   losslessParse,
   losslessStringify,
@@ -31,8 +34,8 @@ import { PackageableElementExplicitReference } from '../model/packageableElement
 
 test(unitTest('Create valid and invalid packages on a root package'), () => {
   const _root = new Package(ROOT_PACKAGE_NAME.MAIN);
-  const createPackage = (packageName: string): void => {
-    Package.getOrCreatePackage(_root, packageName, true);
+  const createPackage = (packagePath: string): void => {
+    Package.getOrCreatePackage(_root, packagePath, true);
   };
   const validPackage = 'model::myPackage';
   createPackage(validPackage);
@@ -108,4 +111,22 @@ test(unitTest('JSON Object input data should be minified'), () => {
   expect(test1.data === losslessStringify(losslessParse(test1.data)));
   expect(test2.data === losslessStringify(losslessParse(test2.data)));
   expect(test3.data === losslessStringify(losslessParse(test3.data)));
+});
+
+test(unitTest('Resolve package path and element name'), () => {
+  expect(resolvePackagePathAndElementName('something::somethingElse')).toEqual([
+    'something',
+    'somethingElse',
+  ]);
+  expect(
+    resolvePackagePathAndElementName('something::a::somethingElse'),
+  ).toEqual(['something::a', 'somethingElse']);
+  expect(resolvePackagePathAndElementName('b')).toEqual(['', 'b']);
+  expect(
+    resolvePackagePathAndElementName('something::b', 'somethingElse'),
+  ).toEqual(['something', 'b']);
+  expect(resolvePackagePathAndElementName('b', 'somethingElse')).toEqual([
+    'somethingElse',
+    'b',
+  ]);
 });

@@ -28,11 +28,7 @@ import {
   FaRegWindowMaximize,
 } from 'react-icons/fa';
 import { NotificationSnackbar } from '../shared/NotificationSnackbar';
-import {
-  ACTIVITY_MODE,
-  SIDE_BAR_RESIZE_SNAP_THRESHOLD,
-  DEFAULT_SIDE_BAR_SIZE,
-} from '../../stores/EditorConfig';
+import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
@@ -139,15 +135,9 @@ const ReviewExplorer = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const snapSideBar = (newSize: number | undefined): void => {
+  const resizeSideBar = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
-      editorStore.setSideBarSize(
-        newSize < SIDE_BAR_RESIZE_SNAP_THRESHOLD
-          ? editorStore.sideBarSize > 0
-            ? 0
-            : DEFAULT_SIDE_BAR_SIZE
-          : newSize,
-      );
+      editorStore.sideBarDisplayState.setSize(newSize);
     }
   };
 
@@ -161,8 +151,8 @@ const ReviewExplorer = observer(() => {
     <SplitPane
       className="review-explorer__content"
       split="vertical"
-      onDragFinished={snapSideBar}
-      size={editorStore.sideBarSize}
+      onDragFinished={resizeSideBar}
+      size={editorStore.sideBarDisplayState.size}
       minSize={0}
       maxSize={-600}
     >

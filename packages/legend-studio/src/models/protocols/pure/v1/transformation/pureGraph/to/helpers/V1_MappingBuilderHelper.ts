@@ -42,8 +42,8 @@ import { FlatDataInputData } from '../../../../../../../metamodels/pure/model/pa
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import type { Class } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
-import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
-import { OptionalPackageableElementImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import { toOptionalPackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { EnumValueExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/EnumValueReference';
 import { MappingInclude } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/MappingInclude';
 import { SubstituteStore } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/SubstituteStore';
@@ -79,7 +79,7 @@ export const V1_getInferredClassMappingId = (
 
 const buildEnumValueMapping = (
   srcEnumValueMapping: V1_EnumValueMapping,
-  enumeration: PackageableElementImplicitReference<Enumeration>,
+  enumeration: PackageableElementReference<Enumeration>,
   sourceType?: Type,
 ): EnumValueMapping => {
   assertNonNullable(
@@ -160,12 +160,7 @@ export const V1_buildEnumerationMapping = (
     ),
     targetEnumeration,
     parentMapping,
-    OptionalPackageableElementImplicitReference.create(
-      sourceTypeReference?.value,
-      sourceTypeInput,
-      context.section,
-      sourceTypeReference?.isInferred,
-    ),
+    toOptionalPackageableElementReference(sourceTypeReference),
   );
   enumerationMapping.enumValueMappings =
     srcEnumerationMapping.enumValueMappings.map((enumValueMapping) =>
