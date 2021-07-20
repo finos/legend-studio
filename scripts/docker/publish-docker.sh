@@ -13,13 +13,11 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No color
 
-PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-
 # ----------------------------------------- MAIN ------------------------------------------------
 
-DOCKER_IMAGE_VERSION=$(cat $PWD/../package.json | jq .version | jq -r)
-DOCKER_IMAGE_NAME="finos/legend-query"
+DOCKER_IMAGE_VERSION=$(cat ./package.json | jq .version | jq -r)
+DOCKER_IMAGE_NAME="$1"
+echo "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION" # to be removed
 
 ALREADY_PUBLISHED=true
 
@@ -41,7 +39,7 @@ fi
 
 # Build Docker image
 echo -e "${LIGHT_BLUE}Building image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION ...${NC}"
-docker build --quiet --tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION $PWD/../
+docker build --quiet --tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION .
 
 # Push Docker image
 echo -e "${LIGHT_BLUE}Pushing image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION to Docker Hub...${NC}"
