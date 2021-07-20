@@ -267,9 +267,13 @@
     padding: 3rem;
   }
 
-  &__hotkey__groups {
-    height: 100%;
+  &__hotkey__groups__divider {
+    @include flexConstantDimension;
+
     width: 100%;
+    height: 0.1rem;
+    background: var(--color-dark-grey-100);
+    margin: 0.7rem 0;
   }
 
   &__hotkey__group {

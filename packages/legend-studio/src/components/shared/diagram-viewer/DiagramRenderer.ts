@@ -2009,8 +2009,86 @@ export class DiagramRenderer {
         this.drawScreen();
       }
     }
+    // Edit selected view
+    // NOTE: since the current behavior when editing property is to immediately
+    // focus on the property name input when the inline editor pops up
+    // we need to call `preventDefault` to avoid typing `e` in the property name input
+    else if (e.key === 'e') {
+      if (!this.isReadOnly && this.selectedClassProperty) {
+        this.editProperty(
+          this.selectedClassProperty.property,
+          this.selectedClassProperty.selectionPoint,
+        );
+        e.preventDefault();
+      } else if (this.selectedPropertyOrAssociation) {
+        this.editPropertyView(this.selectedPropertyOrAssociation);
+        e.preventDefault();
+      } else if (this.selectedClasses.length === 1) {
+        this.editClass(this.selectedClasses[0]);
+      }
+    }
+
+    // Recenter
+    else if (e.key === 'r') {
+      if (this.selectedClasses.length !== 0) {
+        const firstClass = getNullableFirstElement(this.selectedClasses);
+        if (firstClass) {
+          this.recenter(
+            firstClass.position.x + firstClass.rectangle.width / 2,
+            firstClass.position.y + firstClass.rectangle.height / 2,
+          );
+        }
+      } else {
+        this.autoRecenter();
+      }
+    }
+    // Zoom
+    else if (e.key === 'z') {
+      this.changeMode(
+        this.interactionMode !== DIAGRAM_INTERACTION_MODE.ZOOM_IN
+          ? DIAGRAM_INTERACTION_MODE.ZOOM_IN
+          : DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+
+    // Use Layout Tool
+    else if (e.key === 'l') {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.LAYOUT,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+    // Use Property Tool
+    else if (e.key === 'p') {
+      if (!this.isReadOnly) {
+        this.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+        );
+      }
+    }
+    // Use Inheritance Tool
+    else if (e.key === 'i') {
+      if (!this.isReadOnly) {
+        this.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+        );
+      }
+    }
+    // Add Class
+    else if (e.key === '+') {
+      if (!this.isReadOnly) {
+        this.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_CLASS,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+        );
+      }
+    }
+
     // Hide/show properties for selected element(s)
-    else if (e.key === 'h') {
+    else if (e.altKey && e.code === 'KeyP') {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2024,7 +2102,7 @@ export class DiagramRenderer {
       }
     }
     // Hide/show stereotypes for selected element(s)
-    else if (e.key === 's') {
+    else if (e.altKey && e.code === 'KeyS') {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2038,7 +2116,7 @@ export class DiagramRenderer {
       }
     }
     // Hide/show tagged values for selected element(s)
-    else if (e.key === 't') {
+    else if (e.altKey && e.code === 'KeyT') {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2051,72 +2129,45 @@ export class DiagramRenderer {
         }
       }
     }
-    // Recenter
-    else if (e.key === 'c') {
-      if (this.selectedClasses.length !== 0) {
-        const firstClass = getNullableFirstElement(this.selectedClasses);
-        if (firstClass) {
-          this.recenter(
-            firstClass.position.x + firstClass.rectangle.width / 2,
-            firstClass.position.y + firstClass.rectangle.height / 2,
-          );
-        }
-      } else {
-        this.autoRecenter();
-      }
-    }
-    // Eject the property
-    else if (e.key === 'a') {
-      if (this.mouseOverProperty) {
-        if (this.mouseOverProperty.genericType.value.rawType instanceof Class) {
-          this.addClassView(
-            this.mouseOverProperty.genericType.value.rawType,
-            new Point(this.cursorPosition.x, this.cursorPosition.y),
-          );
-        }
-      } else if (this.selectedClassProperty) {
-        if (
-          this.selectedClassProperty.property.genericType.value
-            .rawType instanceof Class
-        ) {
-          this.addClassView(
-            this.selectedClassProperty.property.genericType.value.rawType,
-            this.selectedClassProperty.selectionPoint,
-          );
-        }
-        this.selectedClassProperty = undefined;
-      }
-    }
+
     // Add a new simple property to selected class
-    else if (e.key === 'b') {
-      if (this.selectedClasses.length === 1) {
+    else if (e.key === 'ArrowDown') {
+      if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.addSimpleProperty(this.selectedClasses[0]);
       }
     }
+    // Eject the property
+    else if (e.key === 'ArrowRight') {
+      if (!this.isReadOnly) {
+        if (this.mouseOverProperty) {
+          if (
+            this.mouseOverProperty.genericType.value.rawType instanceof Class
+          ) {
+            this.addClassView(
+              this.mouseOverProperty.genericType.value.rawType,
+              new Point(this.cursorPosition.x, this.cursorPosition.y),
+            );
+          }
+        } else if (this.selectedClassProperty) {
+          if (
+            this.selectedClassProperty.property.genericType.value
+              .rawType instanceof Class
+          ) {
+            this.addClassView(
+              this.selectedClassProperty.property.genericType.value.rawType,
+              this.selectedClassProperty.selectionPoint,
+            );
+          }
+          this.selectedClassProperty = undefined;
+        }
+      }
+    }
     // Add currently selected class as property to the currently opened class
-    else if (e.key === 'p') {
-      if (this.selectedClasses.length !== 0) {
+    else if (e.key === 'ArrowLeft') {
+      if (!this.isReadOnly && this.selectedClasses.length !== 0) {
         this.selectedClasses.forEach((classView) =>
           this.addSelectedClassAsPropertyOfOpenedClass(classView),
         );
-      }
-    }
-    // Edit selected view
-    // NOTE: since the current behavior when editing property is to immediately
-    // focus on the property name input when the inline editor pops up
-    // we need to call `preventDefault` to avoid typing `e` in the property name input
-    else if (e.key === 'e') {
-      if (this.selectedClassProperty) {
-        this.editProperty(
-          this.selectedClassProperty.property,
-          this.selectedClassProperty.selectionPoint,
-        );
-        e.preventDefault();
-      } else if (this.selectedPropertyOrAssociation) {
-        this.editPropertyView(this.selectedPropertyOrAssociation);
-        e.preventDefault();
-      } else if (this.selectedClasses.length === 1) {
-        this.editClass(this.selectedClasses[0]);
       }
     }
   }

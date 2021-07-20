@@ -53,6 +53,7 @@ import {
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
+  PlusIcon,
   SquareIcon,
   TimesIcon,
 } from '@finos/legend-studio-components';
@@ -98,10 +99,10 @@ const DiagramRendererHotkeyInfosModal = observer(
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
-          paper: 'editor-modal__content',
+          paper: 'editor-modal__content--scrollable',
         }}
       >
-        <div className="modal modal--dark diagram-editor__hotkeys__dialog">
+        <div className="modal modal--dark modal--scrollable diagram-editor__hotkeys__dialog">
           <div className="modal__header">
             <div className="modal__title">Diagram Hotkeys</div>
           </div>
@@ -111,72 +112,130 @@ const DiagramRendererHotkeyInfosModal = observer(
                 <div className="diagram-editor__hotkey__annotation">
                   Remove selected element(s)
                 </div>
-                <div className="diagram-editor__hotkey__keys">
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">Delete</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for properties of selected element(s)
-                </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">h</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for stereotypes of selected element(s)
-                </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">s</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for tagged values of selected element(s)
-                </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">t</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
                   Edit the selected element
                 </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">e</div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">E</div>
+                </div>
+              </div>
+
+              <div className="diagram-editor__hotkey__groups__divider" />
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Recenter
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">R</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">Zoom</div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Z</div>
+                </div>
+              </div>
+
+              <div className="diagram-editor__hotkey__groups__divider" />
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Use layout tool
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">L</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
+                  Use property tool
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">P</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Use inheritance tool
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">I</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Add class
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">+</div>
+                </div>
+              </div>
+
+              <div className="diagram-editor__hotkey__groups__divider" />
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Toggle display for properties of selected element(s)
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
+                  <div className="hotkey__key">P</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Toggle display for tagged values of selected element(s)
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
+                  <div className="hotkey__key">T</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Toggle display for stereotypes of selected element(s)
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
+                  <div className="hotkey__key">S</div>
+                </div>
+              </div>
+
+              <div className="diagram-editor__hotkey__groups__divider" />
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
                   Add simple property to selected class
                 </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">b</div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">&darr;</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
                   Eject the property
                 </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">a</div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">&rarr;</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
                   Add the selected class as property of the opened class
                 </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">p</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Recenter
-                </div>
-                <div className="diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">c</div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">&larr;</div>
                 </div>
               </div>
             </div>
@@ -219,7 +278,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_INTERACTION_MODE.LAYOUT,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
-          title="View Tool"
+          title="View Tool (L)"
         >
           <FiMove className="diagram-editor__icon--layout" />
         </button>
@@ -229,7 +288,7 @@ const DiagramEditorToolPanel = observer(
               renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ZOOM_IN,
           })}
           tabIndex={-1}
-          title="Zoom In"
+          title="Zoom In (Z)"
           onClick={createModeSwitcher(
             DIAGRAM_INTERACTION_MODE.ZOOM_IN,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
@@ -243,7 +302,7 @@ const DiagramEditorToolPanel = observer(
               renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
           })}
           tabIndex={-1}
-          title="Zoom Out"
+          title="Zoom Out (Z)"
           onClick={createModeSwitcher(
             DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
@@ -261,7 +320,8 @@ const DiagramEditorToolPanel = observer(
                 DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
           })}
           tabIndex={-1}
-          title="Property Tool"
+          title="Property Tool (P)"
+          disabled={isReadOnly}
           onClick={createModeSwitcher(
             DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
@@ -278,7 +338,8 @@ const DiagramEditorToolPanel = observer(
                 DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
           })}
           tabIndex={-1}
-          title="Inheritance Tool"
+          title="Inheritance Tool (I)"
+          disabled={isReadOnly}
           onClick={createModeSwitcher(
             DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
@@ -309,7 +370,8 @@ const DiagramEditorToolPanel = observer(
               renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ADD_CLASS,
           })}
           tabIndex={-1}
-          title="New Class..."
+          title="New Class... (+)"
+          disabled={isReadOnly}
           onClick={createModeSwitcher(
             DIAGRAM_INTERACTION_MODE.ADD_CLASS,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
