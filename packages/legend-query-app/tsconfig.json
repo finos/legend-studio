@@ -1,0 +1,21 @@
+{
+  "extends": "../../scripts/typescript/tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "build/dev.tsbuildinfo",
+    "noEmit": true,
+    "jsx": "react-jsxdev",
+    "allowJs": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json",
+    "studio.config.js"
+  ],
+  "references": [
+    { "path": "../legend-studio" },
+    { "path": "../legend-studio-shared" },
+    { "path": "../legend-studio-preset-dsl-text" },
+    { "path": "../legend-studio-preset-query-builder" }
+  ]
+}
