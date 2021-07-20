@@ -33,8 +33,8 @@ import type {
   DiagramEditorInlinePropertyEditorState,
 } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
+  DIAGRAM_EDITOR_SIDE_PANEL_TAB,
   DiagramEditorClassViewEditorSidePanelState,
-  DiagramEditorClassEditorSidePanelState,
   DiagramEditorState,
 } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
@@ -57,7 +57,6 @@ import {
   SquareIcon,
   TimesIcon,
 } from '@finos/legend-studio-components';
-import { guaranteeType } from '@finos/legend-studio-shared';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
@@ -87,7 +86,7 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
-import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState';
+import { prettyCONSTName } from '@finos/legend-studio-shared';
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -422,8 +421,29 @@ const DiagramEditorClassViewEditor = observer(
     classViewEditorState: DiagramEditorClassViewEditorSidePanelState;
   }) => {
     const { classViewEditorState } = props;
+    const editorStore = useEditorStore();
     const classView = classViewEditorState.classView;
     const diagramEditorState = classViewEditorState.diagramEditorState;
+
+    // Tabs
+    const selectedTab = classViewEditorState.selectedTab;
+    const tabs = [
+      DIAGRAM_EDITOR_SIDE_PANEL_TAB.ELEMENT,
+      DIAGRAM_EDITOR_SIDE_PANEL_TAB.VIEW,
+    ];
+    const changeTab =
+      (tab: DIAGRAM_EDITOR_SIDE_PANEL_TAB): (() => void) =>
+      (): void => {
+        classViewEditorState.setSelectedTab(tab);
+      };
+
+    const redrawOnClassChange = useCallback((): void => {
+      diagramEditorState.diagram.cleanUpDeadReferences(
+        editorStore.graphState.graph,
+      );
+      diagramEditorState.renderer.render();
+    }, [diagramEditorState, editorStore]);
+
     const toggleHideProperties = (): void => {
       classView.setHideProperties(!classView.hideProperties);
       diagramEditorState.renderer.render();
@@ -439,72 +459,111 @@ const DiagramEditorClassViewEditor = observer(
 
     return (
       <div className="diagram-editor__class-view-editor">
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            {/* Hide properties */}
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleHideProperties}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    classView.hideProperties,
-                })}
-              >
-                {classView.hideProperties ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
+        <div className="diagram-editor__class-view-editor__header">
+          <div className="diagram-editor__class-view-editor__header__tabs">
+            {tabs.map((tab) => (
+              <div
+                key={tab}
+                onClick={changeTab(tab)}
+                className={clsx(
+                  'diagram-editor__class-view-editor__header__tab',
+                  {
+                    'diagram-editor__class-view-editor__header__tab--active':
+                      tab === selectedTab,
+                  },
                 )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Specifies if properties should be hidden
-              </div>
-            </div>
-            {/* Hide tagged-values */}
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleHideTaggedValues}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    classView.hideTaggedValues,
-                })}
               >
-                {classView.hideTaggedValues ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Specifies if tagged values should be hidden
+                {prettyCONSTName(tab)}
               </div>
-            </div>
-            {/* Hide stereotypes */}
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleHideStereotypes}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    classView.hideStereotypes,
-                })}
-              >
-                {classView.hideStereotypes ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Specifies if stereotypes should be hidden
-              </div>
-            </div>
+            ))}
           </div>
+        </div>
+        <div className="diagram-editor__class-view-editor__content">
+          {DIAGRAM_EDITOR_SIDE_PANEL_TAB.ELEMENT === selectedTab && (
+            <ClassFormEditor
+              _class={classViewEditorState.classEditorState.class}
+              editorState={classViewEditorState.classEditorState}
+              onHashChange={redrawOnClassChange}
+            />
+          )}
+          {DIAGRAM_EDITOR_SIDE_PANEL_TAB.VIEW === selectedTab && (
+            <div className="panel__content__form diagram-editor__class-view-editor__content__form">
+              <div className="panel__content__form__section">
+                {/* Hide properties */}
+                <div
+                  className={clsx('panel__content__form__section__toggler')}
+                  onClick={toggleHideProperties}
+                >
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          classView.hideProperties,
+                      },
+                    )}
+                  >
+                    {classView.hideProperties ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="panel__content__form__section__toggler__prompt">
+                    Specifies if properties should be hidden
+                  </div>
+                </div>
+                {/* Hide tagged-values */}
+                <div
+                  className={clsx('panel__content__form__section__toggler')}
+                  onClick={toggleHideTaggedValues}
+                >
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          classView.hideTaggedValues,
+                      },
+                    )}
+                  >
+                    {classView.hideTaggedValues ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="panel__content__form__section__toggler__prompt">
+                    Specifies if tagged values should be hidden
+                  </div>
+                </div>
+                {/* Hide stereotypes */}
+                <div
+                  className={clsx('panel__content__form__section__toggler')}
+                  onClick={toggleHideStereotypes}
+                >
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          classView.hideStereotypes,
+                      },
+                    )}
+                  >
+                    {classView.hideStereotypes ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="panel__content__form__section__toggler__prompt">
+                    Specifies if stereotypes should be hidden
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -514,7 +573,6 @@ const DiagramEditorClassViewEditor = observer(
 const DiagramEditorOverlay = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
-    const editorStore = useEditorStore();
     const sidePanelState = diagramEditorState.sidePanelState;
 
     const resizeSidePanel = (handleProps: HandlerProps): void =>
@@ -522,13 +580,6 @@ const DiagramEditorOverlay = observer(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
-
-    const redrawOnClassChange = useCallback((): void => {
-      diagramEditorState.diagram.cleanUpDeadReferences(
-        editorStore.graphState.graph,
-      );
-      diagramEditorState.renderer.render();
-    }, [diagramEditorState, editorStore]);
 
     return (
       <ReflexContainer
@@ -547,14 +598,6 @@ const DiagramEditorOverlay = observer(
           onStopResize={resizeSidePanel}
         >
           <div className="panel diagram-editor__side-panel">
-            {sidePanelState instanceof
-              DiagramEditorClassEditorSidePanelState && (
-              <ClassFormEditor
-                _class={sidePanelState.classEditorState.class}
-                editorState={sidePanelState.classEditorState}
-                onHashChange={redrawOnClassChange}
-              />
-            )}
             {sidePanelState instanceof
               DiagramEditorClassViewEditorSidePanelState && (
               <DiagramEditorClassViewEditor
@@ -617,24 +660,6 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.renderer.addClassView(
           _class,
           inlineClassCreatorState.point,
-        );
-        // Close inline editor
-        diagramEditorState.setInlineClassCreatorState(undefined);
-        // Open the class to the side after adding it
-        const classEditorState = guaranteeType(
-          editorStore.openedEditorStates.find(
-            (elementState): elementState is ClassEditorState =>
-              elementState instanceof ClassEditorState &&
-              elementState.element === _class,
-          ) ?? editorStore.createElementState(_class),
-          ClassEditorState,
-        );
-        diagramEditorState.setSidePanelState(
-          new DiagramEditorClassEditorSidePanelState(
-            editorStore,
-            diagramEditorState,
-            classEditorState,
-          ),
         );
       }
     };

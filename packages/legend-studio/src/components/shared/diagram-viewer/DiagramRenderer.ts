@@ -218,14 +218,7 @@ export class DiagramRenderer {
   // interactions
   onAddClassViewClick: (point: Point) => void = noop();
   onBackgroundDoubleClick: (point: Point) => void = noop();
-  onSelectedClassChange: (classView: ClassView | undefined) => void = noop();
-  onSelectedPropertyOrAssociationChange: (
-    propertyHolderView: PropertyHolderView | undefined,
-  ) => void = noop();
-  onSelectedInheritanceChange: (
-    generalizationView: GeneralizationView | undefined,
-  ) => void = noop();
-  editClass: (classView: ClassView) => void = noop();
+  editClassView: (classView: ClassView) => void = noop();
   editProperty: (property: AbstractProperty, point: Point) => void = noop();
   editPropertyView: (propertyView: PropertyHolderView) => void = noop();
   addSimpleProperty: (classView: ClassView) => void = noop();
@@ -410,22 +403,14 @@ export class DiagramRenderer {
 
   setSelectedClasses(val: ClassView[]): void {
     this.selectedClasses = val;
-    this.onSelectedClassChange(undefined);
-  }
-
-  setSelectedClass(val: ClassView): void {
-    this.setSelectedClasses([val]);
-    this.onSelectedClassChange(val);
   }
 
   setSelectedPropertyOrAssociation(val: PropertyHolderView | undefined): void {
     this.selectedPropertyOrAssociation = val;
-    this.onSelectedPropertyOrAssociationChange(val);
   }
 
   setSelectedInheritance(val: GeneralizationView | undefined): void {
     this.selectedInheritance = val;
-    this.onSelectedInheritanceChange(val);
   }
 
   setRightClick(val: boolean): void {
@@ -2026,7 +2011,7 @@ export class DiagramRenderer {
         this.editPropertyView(this.selectedPropertyOrAssociation);
         e.preventDefault();
       } else if (this.selectedClasses.length === 1) {
-        this.editClass(this.selectedClasses[0]);
+        this.editClassView(this.selectedClasses[0]);
       }
     }
 
@@ -2437,7 +2422,7 @@ export class DiagramRenderer {
     );
     // Click on a class view
     if (selectedClass) {
-      this.editClass(selectedClass);
+      this.editClassView(selectedClass);
     } else {
       this.onBackgroundDoubleClick(eventPointInModelCoordinate);
     }
@@ -2514,7 +2499,7 @@ export class DiagramRenderer {
                     this.selectedClasses.indexOf(this.diagram.classViews[i]) ===
                       -1
                   ) {
-                    this.setSelectedClass(this.diagram.classViews[i]);
+                    this.setSelectedClasses([this.diagram.classViews[i]]);
                   }
                   if (!this.isReadOnly) {
                     // Bring the class view to front
@@ -2637,7 +2622,11 @@ export class DiagramRenderer {
           break;
       }
     }
-    // middle click
+
+    // NOTE: right now, in any mode, we allow to use middle click and
+    // right click to move the diagram. However, if we support context menu
+    // using right click in the future, we need to adjust to only allow
+    // middle click to move here.
     else if (e.button === 1) {
       e.returnValue = false;
       this.setMiddleClick(true);

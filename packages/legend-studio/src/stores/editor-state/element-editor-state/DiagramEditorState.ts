@@ -56,21 +56,15 @@ export abstract class DiagramEditorSidePanelState {
   }
 }
 
-export class DiagramEditorClassEditorSidePanelState extends DiagramEditorSidePanelState {
-  classEditorState: ClassEditorState;
-
-  constructor(
-    editorStore: EditorStore,
-    diagramEditorState: DiagramEditorState,
-    classEditorState: ClassEditorState,
-  ) {
-    super(editorStore, diagramEditorState);
-    this.classEditorState = classEditorState;
-  }
+export enum DIAGRAM_EDITOR_SIDE_PANEL_TAB {
+  ELEMENT = 'ELEMENT',
+  VIEW = 'VIEW',
 }
 
 export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSidePanelState {
+  classEditorState: ClassEditorState;
   classView: ClassView;
+  selectedTab = DIAGRAM_EDITOR_SIDE_PANEL_TAB.ELEMENT;
 
   constructor(
     editorStore: EditorStore,
@@ -78,7 +72,25 @@ export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSid
     classView: ClassView,
   ) {
     super(editorStore, diagramEditorState);
+
+    makeObservable(this, {
+      selectedTab: observable,
+      setSelectedTab: action,
+    });
+
     this.classView = classView;
+    this.classEditorState = guaranteeType(
+      this.editorStore.openedEditorStates.find(
+        (elementState): elementState is ClassEditorState =>
+          elementState instanceof ClassEditorState &&
+          elementState.element === classView.class.value,
+      ) ?? this.editorStore.createElementState(classView.class.value),
+      ClassEditorState,
+    );
+  }
+
+  setSelectedTab(val: DIAGRAM_EDITOR_SIDE_PANEL_TAB): void {
+    this.selectedTab = val;
   }
 }
 
@@ -237,19 +249,12 @@ export class DiagramEditorState extends ElementEditorState {
 
   setupDiagramRenderer(): void {
     this.renderer.setIsReadOnly(this.isReadOnly);
-    this.renderer.editClass = (classView: ClassView): void => {
+    this.renderer.editClassView = (classView: ClassView): void => {
       this.setSidePanelState(
-        new DiagramEditorClassEditorSidePanelState(
+        new DiagramEditorClassViewEditorSidePanelState(
           this.editorStore,
           this,
-          guaranteeType(
-            this.editorStore.openedEditorStates.find(
-              (elementState): elementState is ClassEditorState =>
-                elementState instanceof ClassEditorState &&
-                elementState.element === classView.class.value,
-            ) ?? this.editorStore.createElementState(classView.class.value),
-            ClassEditorState,
-          ),
+          classView,
         ),
       );
       this.sidePanelDisplayState.open();
@@ -261,31 +266,14 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
-    this.renderer.onSelectedClassChange = (
-      classView: ClassView | undefined,
-    ): void => {
-      if (classView) {
-        this.setSidePanelState(
-          new DiagramEditorClassViewEditorSidePanelState(
-            this.editorStore,
-            this,
-            classView,
-          ),
-        );
-      } else if (
-        this.sidePanelState instanceof
-        DiagramEditorClassViewEditorSidePanelState
-      ) {
-        this.setSidePanelState(undefined);
-      }
-    };
     this.renderer.onBackgroundDoubleClick = createNewClassView;
     this.renderer.onAddClassViewClick = createNewClassView;
     this.renderer.addSelectedClassAsPropertyOfOpenedClass = (
       classView: ClassView,
     ): void => {
       if (
-        this.sidePanelState instanceof DiagramEditorClassEditorSidePanelState
+        this.sidePanelState instanceof
+        DiagramEditorClassViewEditorSidePanelState
       ) {
         const _class = this.sidePanelState.classEditorState.class;
         _class.addProperty(

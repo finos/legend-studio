@@ -261,6 +261,7 @@
 
   &__side-panel {
     background: var(--color-dark-grey-85);
+    border-left: 0.1rem solid var(--color-dark-grey-85);
   }
 
   &__hotkeys__dialog .modal__body {
@@ -309,8 +310,54 @@
 .diagram-editor__class-view-editor {
   height: 100%;
   width: 100%;
-  position: relative;
-  padding: 1rem;
+
+  &__header {
+    height: 2.8rem;
+    width: 100%;
+
+    &__tabs {
+      height: 2.8rem;
+      z-index: 1;
+      display: flex;
+      overflow-x: overlay;
+      overflow-y: hidden;
+    }
+
+    &__tab {
+      height: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 1rem;
+      border-right: 0.1rem solid var(--color-dark-grey-280);
+      color: var(--color-light-grey-250);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    &__tab--active {
+      position: relative;
+    }
+
+    &__tab--active::after {
+      content: '';
+      height: 0.4rem;
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      background: var(--color-yellow-200);
+    }
+  }
+
+  &__content {
+    position: relative;
+    height: calc(100% - 2.8rem);
+    width: 100%;
+  }
+
+  &__content__form {
+    padding: 1rem;
+  }
 }
 
 .diagram-editor__inline-property-editor {
