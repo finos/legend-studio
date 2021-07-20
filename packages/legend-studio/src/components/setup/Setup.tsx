@@ -33,7 +33,7 @@ import type { ProjectSelectOption } from '../../models/sdlc/models/project/Proje
 import { ProjectType } from '../../models/sdlc/models/project/Project';
 import { isNumber, ACTION_STATE } from '@finos/legend-studio-shared';
 import { MdModeEdit } from 'react-icons/md';
-import type { SetupRouteParams } from '../../stores/Router';
+import type { SetupPathParams } from '../../stores/Router';
 import {
   generateEditorRoute,
   generateViewProjectRoute,
@@ -702,7 +702,7 @@ const SetupSelection = observer(() => {
 });
 
 export const SetupInner = observer(() => {
-  const params = useParams<SetupRouteParams>();
+  const params = useParams<SetupPathParams>();
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore();
 

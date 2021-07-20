@@ -29,14 +29,14 @@ import { clsx, HammerIcon } from '@finos/legend-studio-components';
 import { GoSync } from 'react-icons/go';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import type { EditorRouteParams } from '../../stores/Router';
+import type { EditorPathParams } from '../../stores/Router';
 import { generateSetupRoute } from '../../stores/Router';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
-  const params = useParams<EditorRouteParams>();
+  const params = useParams<EditorPathParams>();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const isInConflictResolutionMode = editorStore.isInConflictResolutionMode;

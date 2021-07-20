@@ -131,28 +131,28 @@ export const generateViewEntityRoute = (
     entityPath,
   });
 
-export interface SDLCServerKeyRouteParams {
+export interface SDLCServerKeyPathParams {
   [PATH_PARAM_TOKEN.SDLC_SERVER_KEY]: string;
 }
 
-export interface ReviewRouteParams {
+export interface ReviewPathParams {
   [PATH_PARAM_TOKEN.PROJECT_ID]: string;
   [PATH_PARAM_TOKEN.REVIEW_ID]: string;
 }
 
-export interface ViewerRouteParams {
+export interface ViewerPathParams {
   [PATH_PARAM_TOKEN.PROJECT_ID]: string;
   [PATH_PARAM_TOKEN.VERSION_ID]?: string;
   [PATH_PARAM_TOKEN.REVISION_ID]?: string;
   [PATH_PARAM_TOKEN.ENTITY_PATH]?: string;
 }
 
-export interface EditorRouteParams {
+export interface EditorPathParams {
   [PATH_PARAM_TOKEN.PROJECT_ID]: string;
   [PATH_PARAM_TOKEN.WORKSPACE_ID]: string;
 }
 
-export interface SetupRouteParams {
+export interface SetupPathParams {
   [PATH_PARAM_TOKEN.PROJECT_ID]?: string;
   [PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
 }

@@ -21,6 +21,7 @@ export * from './application/PluginManager';
 // network
 export * from './stores/network/Telemetry';
 export * from './stores/network/Tracer';
+export { PATH_PARAM_TOKEN } from './stores/Router';
 
 // metamodels
 export * from './models/metamodels/pure/graph/PureGraphExtension';
@@ -145,6 +146,11 @@ export { Entity } from './models/sdlc/models/entity/Entity';
 export { EntityChangeType } from './models/sdlc/models/entity/EntityChange';
 export { Build, BuildStatus } from './models/sdlc/models/build/Build';
 export { Project, ProjectType } from './models/sdlc/models/project/Project';
+export { Version } from './models/sdlc/models/version/Version';
+export { SDLCServerClient } from './models/sdlc/SDLCServerClient';
+
+// Metadata
+export { ProjectMetadata } from './models/metadata/models/ProjectMetadata';
 
 // stores
 export * from './stores/EditorPlugin';

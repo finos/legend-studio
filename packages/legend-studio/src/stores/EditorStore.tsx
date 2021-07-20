@@ -365,6 +365,14 @@ export class EditorStore {
     this.hotkeys = this.defaultHotkeys;
   }
 
+  // NOTE: once we clear up the editor store to make modes more separated
+  // we should remove these sets of functions. They are basically hacks to
+  // ensure hiding parts of the UI based on the editing mode.
+  // Instead, perhaps, we should think of separating the modes out and if
+  // it is needed that they share `EditorStore`, we should make them pass in
+  // a set of config for the feature of the store instead of using
+  // flags like this
+  // See https://github.com/finos/legend-studio/issues/317
   get isInViewerMode(): boolean {
     return this.mode === EDITOR_MODE.VIEWER;
   }

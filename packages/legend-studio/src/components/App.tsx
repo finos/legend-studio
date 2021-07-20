@@ -37,7 +37,7 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
 } from '@finos/legend-studio-components';
-import type { SDLCServerKeyRouteParams } from '../stores/Router';
+import type { SDLCServerKeyPathParams } from '../stores/Router';
 import {
   generateSetupRoute,
   ROUTE_PATTERN,
@@ -265,7 +265,7 @@ export const App = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
     const { config, pluginManager } = props;
     const history = useHistory() as unknown as History<State>;
-    const routeMatch = useRouteMatch<SDLCServerKeyRouteParams>(
+    const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
       generateRoutePatternWithSDLCServerKey('/'),
     );
     const sdlcServerKey = config.sdlcServerOptions.find(
