@@ -101,6 +101,7 @@ const ExplorerContextMenu = observer(
           </Fragment>
         ));
     const projectId = editorStore.sdlcState.currentProjectId;
+    const isNotInViewerMode = !editorStore.isInViewerMode;
     const _package = node
       ? node.packageableElement instanceof Package
         ? node.packageableElement
@@ -161,7 +162,7 @@ const ExplorerContextMenu = observer(
           type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
       );
 
-    if (_package) {
+    if (_package && isNotInViewerMode) {
       return (
         <MenuContent data-testid={CORE_TEST_ID.EXPLORER_CONTEXT_MENU}>
           {elementTypes.map((type) => (
@@ -190,14 +191,14 @@ const ExplorerContextMenu = observer(
     return (
       <MenuContent data-testid={CORE_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {extraExplorerContextMenuItems}
-        <MenuContentItem>Rename (WIP)</MenuContentItem>
-        {node && (
-          <MenuContentItem onClick={deleteElement}>Delete</MenuContentItem>
-        )}
-        {node && (
-          <MenuContentItem onClick={openElementInViewerMode}>
-            View in Project
-          </MenuContentItem>
+        {isNotInViewerMode && <MenuContentItem>Rename (WIP)</MenuContentItem>}
+        {isNotInViewerMode && node && (
+          <>
+            <MenuContentItem onClick={deleteElement}>Delete</MenuContentItem>
+            <MenuContentItem onClick={openElementInViewerMode}>
+              View in Project
+            </MenuContentItem>
+          </>
         )}
         {node && (
           <MenuContentItem onClick={getElementLinkInViewerMode}>
@@ -384,7 +385,7 @@ const ExplorerDropdownMenu = observer(
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
   const config = editorStore.applicationStore.config;
-  const isInGrammarMode = editorStore.isInGrammarTextMode;
+  const { isInGrammarTextMode, isInViewerMode } = editorStore;
   const openModelLoader = (): void =>
     editorStore.openSingletonEditorState(editorStore.modelLoaderState);
   const graph = editorStore.graphState.graph;
@@ -465,7 +466,7 @@ const ExplorerTrees = observer(() => {
   return (
     <ContextMenu
       className="explorer__content"
-      disabled={isInGrammarMode || editorStore.isInViewerMode}
+      disabled={isInGrammarTextMode || isInViewerMode}
       content={<ExplorerContextMenu />}
       menuProps={{ elevation: 7 }}
     >
@@ -481,8 +482,7 @@ const ExplorerTrees = observer(() => {
               onNodeSelect={onNodeSelect}
               getChildNodes={getChildNodes}
               innerProps={{
-                disableContextMenu:
-                  isInGrammarMode || editorStore.isInViewerMode,
+                disableContextMenu: isInGrammarTextMode,
               }}
             />
             {!config.options.TEMPORARY__disableSDLCProjectStructureSupport && (
