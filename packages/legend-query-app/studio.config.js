@@ -35,6 +35,6 @@ export default {
    */
   devServerOptions: {
     host: 'localhost',
-    port: 3001,
+    port: 8081,
   },
 };
