@@ -478,12 +478,10 @@ export abstract class BasicModel {
       'Name is required',
     )}`;
 
-  getOrCreatePackageWithPackageName = (
-    packageName: string | undefined,
-  ): Package =>
+  getOrCreatePackage = (packagePath: string | undefined): Package =>
     Package.getOrCreatePackage(
       this.root,
-      guaranteeNonNullable(packageName, 'Package name is required'),
+      guaranteeNonNullable(packagePath, 'Package path is required'),
       true,
     );
 
@@ -573,7 +571,7 @@ export abstract class BasicModel {
       );
       extension.removeElement(element.path);
     }
-    this.deadReferencesCleanUp();
+    this.cleanUpDeadReferences();
   }
 
   setIsBuilt(built: boolean): void {
@@ -592,7 +590,7 @@ export abstract class BasicModel {
     this.elementSectionMap = new Map<string, Section>();
   }
 
-  deadReferencesCleanUp(): void {
-    this.diagrams.forEach((diagram) => diagram.deadReferencesCleanUp(this));
+  cleanUpDeadReferences(): void {
+    this.diagrams.forEach((diagram) => diagram.cleanUpDeadReferences(this));
   }
 }

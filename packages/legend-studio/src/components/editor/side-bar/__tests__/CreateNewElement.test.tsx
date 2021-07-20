@@ -30,7 +30,7 @@ import { CORE_TEST_ID } from '../../../../const';
 import type { EditorStore } from '../../../../stores/EditorStore';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 
-const addRootPackage = (packageName: string, result: RenderResult): void => {
+const addRootPackage = (packagePath: string, result: RenderResult): void => {
   fireEvent.click(result.getByTitle('New Element...', { exact: false }));
   const contextMenu = result.getByRole('menu');
   fireEvent.click(getByText(contextMenu, 'New Package...'));
@@ -38,7 +38,7 @@ const addRootPackage = (packageName: string, result: RenderResult): void => {
   const packageInput = getByPlaceholderText(modal, 'Enter a name', {
     exact: false,
   });
-  fireEvent.change(packageInput, { target: { value: packageName } });
+  fireEvent.change(packageInput, { target: { value: packagePath } });
   fireEvent.click(getByText(modal, 'Create'));
 };
 

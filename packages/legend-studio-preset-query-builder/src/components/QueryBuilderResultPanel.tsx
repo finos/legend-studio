@@ -212,9 +212,9 @@ export const QueryBuilderResultPanel = observer(
             showModal={resultState.showServicePathModal}
             promoteToService={(
               name: string,
-              packageName: string,
+              packagePath: string,
             ): Promise<void> =>
-              flowResult(resultState.promoteToService(name, packageName))
+              flowResult(resultState.promoteToService(name, packagePath))
             }
           />
         )}

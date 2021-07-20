@@ -47,6 +47,13 @@ export const MenuContentItem: React.FC<{
   );
 };
 
+export const MenuContentDivider: React.FC<{
+  className?: string;
+}> = (props) => {
+  const { className, ...otherProps } = props;
+  return <div className={clsx('menu__divider', className)} {...otherProps} />;
+};
+
 export const MenuContentItemIcon: React.FC<{
   className?: string;
 }> = (props) => {

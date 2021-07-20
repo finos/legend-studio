@@ -1760,9 +1760,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/eslintrc@npm:^0.4.2":
-  version: 0.4.2
-  resolution: "@eslint/eslintrc@npm:0.4.2"
+"@eslint/eslintrc@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "@eslint/eslintrc@npm:0.4.3"
   dependencies:
     ajv: ^6.12.4
     debug: ^4.1.1
@@ -1773,7 +1773,7 @@ __metadata:
     js-yaml: ^3.13.1
     minimatch: ^3.0.4
     strip-json-comments: ^3.1.1
-  checksum: 17f90cf07988dd2a5e4f510687c81334141977b8e0fa1b63ef0318b0578466e368fc988c101ddc7df55b6124dff8ecd1be67292c27901265761758ad22608e12
+  checksum: 03a7704150b868c318aab6a94d87a33d30dc2ec579d27374575014f06237ba1370ae11178db772f985ef680d469dc237e7b16a1c5d8edaaeb8c3733e7a95a6d3
   languageName: node
   linkType: hard
 
@@ -1791,7 +1791,7 @@ __metadata:
     "@babel/preset-typescript": 7.14.5
     "@babel/runtime": 7.14.6
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     react-refresh: 0.10.0
     rimraf: 3.0.2
     typescript: 4.3.5
@@ -1809,7 +1809,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": 4.28.3
     "@typescript-eslint/parser": 4.28.3
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     eslint-config-prettier: 8.3.0
     eslint-plugin-import: 2.23.4
     eslint-plugin-prettier: 3.4.0
@@ -1837,7 +1837,7 @@ __metadata:
     "@types/react": 17.0.14
     copy-webpack-plugin: 9.0.1
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -1862,7 +1862,7 @@ __metadata:
     "@types/react-window": 1.8.4
     clsx: 1.1.1
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
@@ -1903,9 +1903,9 @@ __metadata:
     clean-webpack-plugin: 3.0.0
     cosmiconfig: 7.0.0
     cross-env: 7.0.3
-    css-loader: 6.0.0
+    css-loader: 6.1.0
     cssnano: 5.0.6
-    eslint: 7.30.0
+    eslint: 7.31.0
     fork-ts-checker-webpack-plugin: 6.2.12
     html-webpack-plugin: 5.3.2
     isbinaryfile: 4.0.8
@@ -1942,7 +1942,7 @@ __metadata:
     "@types/react": 17.0.14
     axios: 0.21.1
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -1958,7 +1958,7 @@ __metadata:
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     rimraf: 3.0.2
     typescript: 4.3.5
@@ -1976,7 +1976,7 @@ __metadata:
     "@types/react": 17.0.14
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
@@ -2002,7 +2002,7 @@ __metadata:
     "@finos/legend-studio-shared": "workspace:*"
     "@types/zipkin-javascript-opentracing": 1.6.0
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     opentracing: 0.14.5
     rimraf: 3.0.2
@@ -2023,7 +2023,7 @@ __metadata:
     "@finos/legend-studio-shared": "workspace:*"
     "@types/react": 17.0.14
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
@@ -2047,7 +2047,7 @@ __metadata:
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     npm-run-all: 4.1.5
     rimraf: 3.0.2
@@ -2075,7 +2075,7 @@ __metadata:
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
     date-fns: 2.22.1
-    eslint: 7.30.0
+    eslint: 7.31.0
     jest: 27.0.6
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
@@ -2106,7 +2106,7 @@ __metadata:
     "@types/seedrandom": 3.0.1
     "@types/uuid": 8.3.1
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     hash.js: 1.1.7
     http-status-codes: 2.1.4
     jest: 27.0.6
@@ -2143,7 +2143,7 @@ __metadata:
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
     date-fns: 2.22.1
-    eslint: 7.30.0
+    eslint: 7.31.0
     history: 5.0.0
     jest: 27.0.6
     jest-canvas-mock: 2.3.1
@@ -2178,12 +2178,12 @@ __metadata:
   resolution: "@finos/stylelint-config-legend-studio@workspace:packages/stylelint-config"
   dependencies:
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     rimraf: 3.0.2
     stylelint: 13.13.1
     stylelint-config-prettier: 8.0.2
     stylelint-config-standard: 22.0.0
-    stylelint-scss: 3.19.0
+    stylelint-scss: 3.20.0
   peerDependencies:
     stylelint: ^13.0.0
   languageName: unknown
@@ -5210,9 +5210,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:6.0.0":
-  version: 6.0.0
-  resolution: "css-loader@npm:6.0.0"
+"css-loader@npm:6.1.0":
+  version: 6.1.0
+  resolution: "css-loader@npm:6.1.0"
   dependencies:
     icss-utils: ^5.1.0
     postcss: ^8.2.15
@@ -5224,7 +5224,7 @@ __metadata:
     semver: ^7.3.5
   peerDependencies:
     webpack: ^5.0.0
-  checksum: d0d0ec6f13b0df5591d8d881297adf7756889b91defb6bb0ce3b5a407f69a8163695063a4f7ec644e14a274058c75b5ac1d21565c770f3d896d941c78662b34a
+  checksum: 5ebc5e41281625d8c20466fc5bacd56eab763173f63dcbe82a56619dd10a12d2e67dc2a08582ce4c8994516ed6440c2f6edb61d693044a82cfefd23eb3b5f784
   languageName: node
   linkType: hard
 
@@ -6272,12 +6272,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:7.30.0":
-  version: 7.30.0
-  resolution: "eslint@npm:7.30.0"
+"eslint@npm:7.31.0":
+  version: 7.31.0
+  resolution: "eslint@npm:7.31.0"
   dependencies:
     "@babel/code-frame": 7.12.11
-    "@eslint/eslintrc": ^0.4.2
+    "@eslint/eslintrc": ^0.4.3
     "@humanwhocodes/config-array": ^0.5.0
     ajv: ^6.10.0
     chalk: ^4.0.0
@@ -6318,7 +6318,7 @@ __metadata:
     v8-compile-cache: ^2.0.3
   bin:
     eslint: bin/eslint.js
-  checksum: 872f90844b164dd61ec1bb949d2e33e7fbd189e0652fabe2cbbd0bdce1e4cd7ed08e72fa213795a453ae39fe24460771800608e765febb9e778deb28b9db3cc1
+  checksum: fd73d07ce0b73e5ea950b295a6eaf8d45914b4e56cba4ef49e55a36dc7e965a4865f63f618c0a096a01d089752d9e44180b80ba8657039b8e631dd40e0af1663
   languageName: node
   linkType: hard
 
@@ -9414,7 +9414,7 @@ __metadata:
     "@types/node": 16.3.3
     chalk: 4.1.1
     cross-env: 7.0.3
-    eslint: 7.30.0
+    eslint: 7.31.0
     fs-extra: 10.0.0
     husky: 7.0.1
     jest: 27.0.6
@@ -13789,9 +13789,9 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"stylelint-scss@npm:3.19.0":
-  version: 3.19.0
-  resolution: "stylelint-scss@npm:3.19.0"
+"stylelint-scss@npm:3.20.0":
+  version: 3.20.0
+  resolution: "stylelint-scss@npm:3.20.0"
   dependencies:
     lodash: ^4.17.15
     postcss-media-query-parser: ^0.2.3
@@ -13800,7 +13800,7 @@ resolve@^2.0.0-next.3:
     postcss-value-parser: ^4.1.0
   peerDependencies:
     stylelint: ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0
-  checksum: 5ce72106f5a99800ce463715d9ff7c59eb2169c8c046b5f5ff0dcf8cdfadc7c6f67a02a2a9f2c2be376cebdae5dcfc467f07c7a71a2a919444226705cea9fc44
+  checksum: 61b7448fd110b166edb8b4cfa1a42624dd94e35154ab5db5ef51b6c578c00c4f3ff9d1be1cee8a16f19aef81e755289fb3e013c4316ee4718001beaf2cdf05cd
   languageName: node
   linkType: hard
 

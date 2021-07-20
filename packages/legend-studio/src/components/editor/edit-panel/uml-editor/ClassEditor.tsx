@@ -1365,7 +1365,7 @@ export const ClassEditor = observer((props: { _class: Class }) => {
         setDiagramRenderer(newRender);
         currentRenderer = newRender;
       }
-      currentRenderer.start();
+      currentRenderer.render();
       currentRenderer.autoRecenter();
     }
   }, [diagramRenderer, _class]);
@@ -1373,7 +1373,7 @@ export const ClassEditor = observer((props: { _class: Class }) => {
   useEffect(() => {
     if (diagramRenderer) {
       diagramRenderer.loadClass(_class);
-      diagramRenderer.start();
+      diagramRenderer.render();
       diagramRenderer.autoRecenter();
     }
   }, [_class, classHash, diagramRenderer]);
