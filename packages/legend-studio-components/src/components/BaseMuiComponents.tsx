@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { MenuProps } from '@material-ui/core';
-import { makeStyles, Menu } from '@material-ui/core';
+import type { MenuProps, PopoverProps } from '@material-ui/core';
+import { makeStyles, Menu, Popover } from '@material-ui/core';
 
 const useBaseMenuStyles = makeStyles({
   listPadding: {
@@ -46,6 +46,33 @@ export const BaseMenu: React.FC<MenuProps> = (props: MenuProps) => {
     >
       {props.children}
     </Menu>
+  );
+};
+
+const useBasePopoverStyles = makeStyles({
+  paper: {
+    background: 'var(--color-dark-grey-100)',
+    // NOTE: this is needed in order to have elements display go beyond
+    // the boundary of the popover, e.g. elements shown with `display: relative`
+    // such as validation error for inputs
+    overflow: 'unset',
+  },
+});
+
+export const BasePopover: React.FC<PopoverProps> = (props: PopoverProps) => {
+  const classes = useBasePopoverStyles();
+  const { children, ...otherProps } = props;
+
+  return (
+    <Popover
+      classes={{
+        paper: classes.paper,
+      }}
+      transitionDuration={0}
+      {...otherProps}
+    >
+      {props.children}
+    </Popover>
   );
 };
 

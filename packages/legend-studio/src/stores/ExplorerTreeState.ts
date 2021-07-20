@@ -341,14 +341,14 @@ export class ExplorerTreeState {
         element,
       );
     }
-    const packageName = element.getRoot().path;
+    const packagePath = element.getRoot().path;
     let opened = false;
-    if (packageName === ROOT_PACKAGE_NAME.MAIN && this.treeData) {
+    if (packagePath === ROOT_PACKAGE_NAME.MAIN && this.treeData) {
       const openingNode = openNode(this.editorStore, element, this.treeData);
       this.setSelectedNode(openingNode);
       opened = true;
     } else if (
-      packageName === ROOT_PACKAGE_NAME.MODEL_GENERATION &&
+      packagePath === ROOT_PACKAGE_NAME.MODEL_GENERATION &&
       this.generationTreeData
     ) {
       const openingNode = openNode(
@@ -359,7 +359,7 @@ export class ExplorerTreeState {
       this.setSelectedNode(openingNode);
       opened = true;
     } else if (
-      packageName === ROOT_PACKAGE_NAME.SYSTEM &&
+      packagePath === ROOT_PACKAGE_NAME.SYSTEM &&
       this.systemTreeData
     ) {
       const openingNode = openNode(
@@ -370,7 +370,7 @@ export class ExplorerTreeState {
       this.setSelectedNode(openingNode);
       opened = true;
     } else if (
-      packageName === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT &&
+      packagePath === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT &&
       this.dependencyTreeData
     ) {
       const openingNode = openNode(
@@ -384,7 +384,7 @@ export class ExplorerTreeState {
     if (!opened) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.PACKAGE_TREE_PROBLEM,
-        `Can't open package tree node for element '${element.path}' with package root '${packageName}'`,
+        `Can't open package tree node for element '${element.path}' with package root '${packagePath}'`,
       );
     }
   }

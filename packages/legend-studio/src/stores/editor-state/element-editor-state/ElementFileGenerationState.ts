@@ -51,11 +51,9 @@ export class ElementFileGenerationState {
     this.showNewFileGenerationModal = show;
   }
 
-  promoteToFileGeneration(packageName: string, name: string): void {
+  promoteToFileGeneration(packagePath: string, name: string): void {
     const fileGenerationPackage =
-      this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-        packageName,
-      );
+      this.editorStore.graphState.graph.getOrCreatePackage(packagePath);
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
     fileGenerationPackage.addElement(fileGeneration);

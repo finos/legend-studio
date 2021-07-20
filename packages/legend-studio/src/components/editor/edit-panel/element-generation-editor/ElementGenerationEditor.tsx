@@ -20,7 +20,7 @@ import SplitPane from 'react-split-pane';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
-import { resolvePackageNameAndElementName } from '../../../../models/MetaModelUtils';
+import { resolvePackagePathAndElementName } from '../../../../models/MetaModelUtils';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
 import { guaranteeType } from '@finos/legend-studio-shared';
@@ -47,9 +47,9 @@ const NewFileGenerationModal = observer(
     const [servicePath, setServicePath] = useState<string>(
       defaultFileGenerationName,
     );
-    const [packageName, serviceName] = resolvePackageNameAndElementName(
-      mappingPackage.path,
+    const [packagePath, serviceName] = resolvePackagePathAndElementName(
       servicePath,
+      mappingPackage.path,
     );
     const close = (): void =>
       elementGenerationState.setShowNewFileGenerationModal(false);
@@ -57,7 +57,7 @@ const NewFileGenerationModal = observer(
     const handleSubmit = (): void => {
       if (servicePath && !isReadOnly) {
         elementGenerationState.promoteToFileGeneration(
-          packageName,
+          packagePath,
           serviceName,
         );
         close();
@@ -71,7 +71,7 @@ const NewFileGenerationModal = observer(
       setServicePath(event.target.value);
     const elementAlreadyExists = editorStore.graphState.graph.allElements
       .map((el) => el.path)
-      .includes(packageName + ELEMENT_PATH_DELIMITER + serviceName);
+      .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
 
     return (
       <Dialog

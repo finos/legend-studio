@@ -44,7 +44,7 @@ export class InheritanceDiagramRenderer extends DiagramRenderer {
   buildLevels(classViews: ClassView[]): ClassView[][] {
     if (classViews.length) {
       classViews.forEach((classView) =>
-        this.computeClassViewMinDimensions(classView),
+        this.ensureClassViewMeetMinDimensions(classView),
       );
       const res = classViews.flatMap((classView) =>
         classView.class.value.generalizations.map(

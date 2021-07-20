@@ -38,7 +38,7 @@ import type { Schema } from '../../../../models/metamodels/pure/model/packageabl
 import type { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import {
   isValidFullPath,
-  resolvePackageNameAndElementName,
+  resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
@@ -204,9 +204,9 @@ export class DatabaseBuilderState {
     schema?: string,
   ): DatabaseBuilderInput {
     const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
-    const [packageName, databaseName] = this.getDatabasePackageAndName();
+    const [packagePath, databaseName] = this.getDatabasePackageAndName();
     databaseBuilderInput.targetDatabase = new TargetDatabase(
-      packageName,
+      packagePath,
       databaseName,
     );
     databaseBuilderInput.config.maxTables = undefined;
@@ -307,12 +307,11 @@ export class DatabaseBuilderState {
   ): GeneratorFn<void> {
     try {
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
-      const [packageName, databaseName] = resolvePackageNameAndElementName(
-        this.targetDatabasePath,
+      const [packagePath, databaseName] = resolvePackagePathAndElementName(
         this.targetDatabasePath,
       );
       databaseBuilderInput.targetDatabase = new TargetDatabase(
-        packageName,
+        packagePath,
         databaseName,
       );
       const config = databaseBuilderInput.config;
@@ -391,7 +390,7 @@ export class DatabaseBuilderState {
       isValidFullPath(this.targetDatabasePath),
       'Invalid database path',
     );
-    return resolvePackageNameAndElementName(
+    return resolvePackagePathAndElementName(
       this.targetDatabasePath,
       this.targetDatabasePath,
     );
@@ -403,9 +402,9 @@ export class DatabaseBuilderState {
         const dbTreeData = this.treeData;
         this.isBuildingDatabase = true;
         const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
-        const [packageName, databaseName] = this.getDatabasePackageAndName();
+        const [packagePath, databaseName] = this.getDatabasePackageAndName();
         databaseBuilderInput.targetDatabase = new TargetDatabase(
-          packageName,
+          packagePath,
           databaseName,
         );
         const config = databaseBuilderInput.config;
@@ -520,7 +519,7 @@ export class DatabaseBuilderState {
       this.isSavingDatabase = true;
       assertNonEmptyString(
         this.databaseGrammarCode,
-        'Database Grammar cannot be empty',
+        'Database grammar is empty',
       );
       const database = (yield this.buildDatabaseGrammar(
         this.databaseGrammarCode,
@@ -532,14 +531,12 @@ export class DatabaseBuilderState {
         this.connection.setStore(
           PackageableElementExplicitReference.create(newDatabase),
         );
-        const packageName = guaranteeNonNullable(
+        const PackagePath = guaranteeNonNullable(
           database.package?.name,
-          'database must have package defined',
+          'Database package is missing',
         );
         const databasePackage =
-          this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-            packageName,
-          );
+          this.editorStore.graphState.graph.getOrCreatePackage(PackagePath);
         databasePackage.addElement(newDatabase);
         this.editorStore.graphState.graph.addElement(newDatabase);
         currentDatabase = newDatabase;

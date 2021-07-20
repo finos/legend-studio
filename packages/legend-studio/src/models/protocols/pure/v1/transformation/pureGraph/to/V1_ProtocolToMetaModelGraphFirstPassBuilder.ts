@@ -105,7 +105,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(profile);
     this.context.currentSubGraph.setProfile(path, profile);
     return profile;
@@ -124,7 +124,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(pureEnumeration);
     this.context.currentSubGraph.setType(path, pureEnumeration);
     return pureEnumeration;
@@ -143,7 +143,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(pureMeasure);
     this.context.currentSubGraph.setType(path, pureMeasure);
     return pureMeasure;
@@ -162,7 +162,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(_class);
     this.context.currentSubGraph.setType(path, _class);
     return _class;
@@ -181,7 +181,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(association);
     this.context.currentSubGraph.setAssociation(path, association);
     return association;
@@ -210,7 +210,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(func);
     this.context.currentSubGraph.setFunction(path, func);
     return func;
@@ -229,7 +229,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(flatData);
     this.context.currentSubGraph.setStore(path, flatData);
     return flatData;
@@ -248,7 +248,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(database);
     this.context.currentSubGraph.setStore(path, database);
     return database;
@@ -267,7 +267,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(serviceStore);
     this.context.currentSubGraph.setStore(path, serviceStore);
     return serviceStore;
@@ -286,7 +286,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(pureMapping);
     this.context.currentSubGraph.setMapping(path, pureMapping);
     return pureMapping;
@@ -305,7 +305,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(service);
     this.context.currentSubGraph.setService(path, service);
     return service;
@@ -324,7 +324,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(diagram);
     this.context.currentSubGraph.setDiagram(path, diagram);
     return diagram;
@@ -351,7 +351,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(fileGeneration);
     this.context.currentSubGraph.setFileGeneration(path, fileGeneration);
     return fileGeneration;
@@ -379,7 +379,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(generationSpec);
     this.context.currentSubGraph.setGenerationSpecification(
       path,
@@ -401,7 +401,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(runtime);
     this.context.currentSubGraph.setRuntime(path, runtime);
     return runtime;
@@ -422,7 +422,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
-      .getOrCreatePackageWithPackageName(element.package)
+      .getOrCreatePackage(element.package)
       .addElement(connection);
     this.context.currentSubGraph.setConnection(path, connection);
     return connection;

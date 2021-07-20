@@ -25,16 +25,8 @@ import { ElementEditorState } from './ElementEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 import type { DiagramRenderer } from '../../../components/shared/diagram-viewer/DiagramRenderer';
-import { DIAGRAM_EDIT_MODE } from '../../../components/shared/diagram-viewer/DiagramRenderer';
+import { DIAGRAM_INTERACTION_MODE } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { ClassEditorState } from './ClassEditorState';
-import {
-  getPackableElementTreeData,
-  getSelectedPackageTreeNodePackage,
-  openNode,
-} from '../../shared/PackageTreeUtil';
-import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
-import type { PackageTreeNodeData } from '../../shared/TreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
 import { PanelDisplayState } from '@finos/legend-studio-components';
 import type { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
 import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
@@ -77,48 +69,26 @@ export class DiagramEditorClassEditorSidePanelState extends DiagramEditorSidePan
   }
 }
 
-export class DiagramEditorNewClassSidePanelState extends DiagramEditorSidePanelState {
-  creationMouseEvent: MouseEvent;
-  packageTreeData: TreeData<PackageTreeNodeData>;
+export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSidePanelState {
+  classView: ClassView;
 
   constructor(
     editorStore: EditorStore,
     diagramEditorState: DiagramEditorState,
-    creationMouseEvent: MouseEvent,
+    classView: ClassView,
   ) {
     super(editorStore, diagramEditorState);
-
-    makeObservable(this, {
-      packageTreeData: observable,
-      setPackageTreeData: action,
-    });
-
-    this.creationMouseEvent = creationMouseEvent;
-    const treeData = getPackableElementTreeData(
-      editorStore,
-      editorStore.graphState.graph.root,
-      '',
-      (childElement: PackageableElement) => childElement instanceof Package,
-    );
-    const selectedPackageTreeNodePackage = getSelectedPackageTreeNodePackage(
-      editorStore.explorerTreeState.selectedNode,
-    );
-    if (selectedPackageTreeNodePackage) {
-      const openingNode = openNode(
-        editorStore,
-        selectedPackageTreeNodePackage,
-        treeData,
-        (childElement: PackageableElement) => childElement instanceof Package,
-      );
-      if (openingNode) {
-        openingNode.isSelected = true;
-      }
-    }
-    this.packageTreeData = treeData;
+    this.classView = classView;
   }
+}
 
-  setPackageTreeData(val: TreeData<PackageTreeNodeData>): void {
-    this.packageTreeData = val;
+export class DiagramEditorInlineClassCreatorState {
+  diagramEditorState: DiagramEditorState;
+  point: Point;
+
+  constructor(diagramEditorState: DiagramEditorState, point: Point) {
+    this.diagramEditorState = diagramEditorState;
+    this.point = point;
   }
 }
 
@@ -126,20 +96,23 @@ export class DiagramEditorInlinePropertyEditorState {
   diagramEditorState: DiagramEditorState;
   property: PropertyReference;
   point: Point;
+  isEditingPropertyView: boolean;
 
   constructor(
     diagramEditorState: DiagramEditorState,
     property: AbstractProperty,
     point: Point,
+    isEditingPropertyView: boolean,
   ) {
     this.diagramEditorState = diagramEditorState;
     this.property = PropertyExplicitReference.create(property);
     this.point = point;
+    this.isEditingPropertyView = isEditingPropertyView;
   }
 }
 
 export class DiagramEditorState extends ElementEditorState {
-  _diagramRenderer?: DiagramRenderer;
+  _renderer?: DiagramRenderer;
   showHotkeyInfosModal = false;
   sidePanelDisplayState = new PanelDisplayState({
     initial: 0,
@@ -148,23 +121,26 @@ export class DiagramEditorState extends ElementEditorState {
   });
   sidePanelState?: DiagramEditorSidePanelState;
   inlinePropertyEditorState?: DiagramEditorInlinePropertyEditorState;
+  inlineClassCreatorState?: DiagramEditorInlineClassCreatorState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
-      _diagramRenderer: observable,
+      _renderer: observable,
       showHotkeyInfosModal: observable,
       sidePanelDisplayState: observable,
       sidePanelState: observable,
       inlinePropertyEditorState: observable,
-      diagramRenderer: computed,
+      inlineClassCreatorState: observable,
+      renderer: computed,
       diagram: computed,
       isDiagramRendererInitialized: computed,
       setShowHotkeyInfosModal: action,
-      setDiagramRenderer: action,
+      setRenderer: action,
       setSidePanelState: action,
       setInlinePropertyEditorState: action,
+      setInlineClassCreatorState: action,
       reprocess: action,
     });
   }
@@ -177,15 +153,15 @@ export class DiagramEditorState extends ElementEditorState {
     );
   }
 
-  get diagramRenderer(): DiagramRenderer {
+  get renderer(): DiagramRenderer {
     return guaranteeNonNullable(
-      this._diagramRenderer,
+      this._renderer,
       `Diagram renderer must be initialized (this is likely caused by calling this method at the wrong place)`,
     );
   }
 
   get isDiagramRendererInitialized(): boolean {
-    return Boolean(this._diagramRenderer);
+    return Boolean(this._renderer);
   }
 
   // NOTE: we have tried to use React to control the cursor and
@@ -196,30 +172,36 @@ export class DiagramEditorState extends ElementEditorState {
     if (this.isReadOnly || !this.isDiagramRendererInitialized) {
       return '';
     }
-    switch (this.diagramRenderer.editMode) {
-      case DIAGRAM_EDIT_MODE.ADD_CLASS: {
+    if (this.renderer.middleClick || this.renderer.rightClick) {
+      return 'diagram-editor__cursor--grabbing';
+    }
+    switch (this.renderer.interactionMode) {
+      case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
         return 'diagram-editor__cursor--add';
       }
-      case DIAGRAM_EDIT_MODE.RELATIONSHIP: {
-        if (
-          this.diagramRenderer.mouseOverClassView &&
-          this.diagramRenderer.selectionStart
-        ) {
+      case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
+        return 'diagram-editor__cursor--zoom-in';
+      }
+      case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
+        return 'diagram-editor__cursor--zoom-out';
+      }
+      case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
+        if (this.renderer.mouseOverClassView && this.renderer.selectionStart) {
           return 'diagram-editor__cursor--add';
         }
         return 'diagram-editor__cursor--crosshair';
       }
-      case DIAGRAM_EDIT_MODE.LAYOUT: {
-        if (this.diagramRenderer.selectionStart) {
+      case DIAGRAM_INTERACTION_MODE.LAYOUT: {
+        if (this.renderer.selectionStart) {
           return 'diagram-editor__cursor--crosshair';
         } else if (
-          this.diagramRenderer.mouseOverClassCorner ||
-          this.diagramRenderer.selectedClassCorner
+          this.renderer.mouseOverClassCorner ||
+          this.renderer.selectedClassCorner
         ) {
           return 'diagram-editor__cursor--resize';
-        } else if (this.diagramRenderer.mouseOverProperty) {
+        } else if (this.renderer.mouseOverProperty) {
           return 'diagram-editor__cursor--text';
-        } else if (this.diagramRenderer.mouseOverClassView) {
+        } else if (this.renderer.mouseOverClassView) {
           return 'diagram-editor__cursor--pointer';
         }
         return '';
@@ -229,8 +211,8 @@ export class DiagramEditorState extends ElementEditorState {
     }
   }
 
-  setDiagramRenderer(val: DiagramRenderer): void {
-    this._diagramRenderer = val;
+  setRenderer(val: DiagramRenderer): void {
+    this._renderer = val;
   }
 
   setShowHotkeyInfosModal(val: boolean): void {
@@ -247,9 +229,15 @@ export class DiagramEditorState extends ElementEditorState {
     this.inlinePropertyEditorState = val;
   }
 
+  setInlineClassCreatorState(
+    val: DiagramEditorInlineClassCreatorState | undefined,
+  ): void {
+    this.inlineClassCreatorState = val;
+  }
+
   setupDiagramRenderer(): void {
-    this.diagramRenderer.setIsReadOnly(this.isReadOnly);
-    this.diagramRenderer.editClass = (classView: ClassView): void => {
+    this.renderer.setIsReadOnly(this.isReadOnly);
+    this.renderer.editClass = (classView: ClassView): void => {
       this.setSidePanelState(
         new DiagramEditorClassEditorSidePanelState(
           this.editorStore,
@@ -266,21 +254,34 @@ export class DiagramEditorState extends ElementEditorState {
       );
       this.sidePanelDisplayState.open();
     };
-    const createNewClassView = (mouseEvent: MouseEvent): void => {
+    const createNewClassView = (point: Point): void => {
       if (!this.isReadOnly) {
-        this.setSidePanelState(
-          new DiagramEditorNewClassSidePanelState(
-            this.editorStore,
-            this,
-            mouseEvent,
-          ),
+        this.setInlineClassCreatorState(
+          new DiagramEditorInlineClassCreatorState(this, point),
         );
-        this.sidePanelDisplayState.open();
       }
     };
-    this.diagramRenderer.onBackgroundDoubleClick = createNewClassView;
-    this.diagramRenderer.onAddClassViewClick = createNewClassView;
-    this.diagramRenderer.addSelectedClassAsPropertyOfOpenedClass = (
+    this.renderer.onSelectedClassChange = (
+      classView: ClassView | undefined,
+    ): void => {
+      if (classView) {
+        this.setSidePanelState(
+          new DiagramEditorClassViewEditorSidePanelState(
+            this.editorStore,
+            this,
+            classView,
+          ),
+        );
+      } else if (
+        this.sidePanelState instanceof
+        DiagramEditorClassViewEditorSidePanelState
+      ) {
+        this.setSidePanelState(undefined);
+      }
+    };
+    this.renderer.onBackgroundDoubleClick = createNewClassView;
+    this.renderer.onAddClassViewClick = createNewClassView;
+    this.renderer.addSelectedClassAsPropertyOfOpenedClass = (
       classView: ClassView,
     ): void => {
       if (
@@ -289,7 +290,7 @@ export class DiagramEditorState extends ElementEditorState {
         const _class = this.sidePanelState.classEditorState.class;
         _class.addProperty(
           new Property(
-            `newProperty_${_class.properties.length}`,
+            `property_${_class.properties.length + 1}`,
             this.editorStore.graphState.graph.getTypicalMultiplicity(
               TYPICAL_MULTIPLICITY_TYPE.ONE,
             ),
@@ -304,15 +305,20 @@ export class DiagramEditorState extends ElementEditorState {
         // the class view selected or all class view(s) for the class of the selected class view
       }
     };
-    this.diagramRenderer.editProperty = (
+    this.renderer.editProperty = (
       property: AbstractProperty,
       point: Point,
     ): void => {
       this.setInlinePropertyEditorState(
-        new DiagramEditorInlinePropertyEditorState(this, property, point),
+        new DiagramEditorInlinePropertyEditorState(
+          this,
+          property,
+          point,
+          false,
+        ),
       );
     };
-    this.diagramRenderer.editPropertyView = (
+    this.renderer.editPropertyView = (
       propertyHolderView: PropertyHolderView,
     ): void => {
       this.setInlinePropertyEditorState(
@@ -322,14 +328,15 @@ export class DiagramEditorState extends ElementEditorState {
           propertyHolderView.path.length
             ? propertyHolderView.path[0]
             : propertyHolderView.from.classView.value.center(),
+          true,
         ),
       );
     };
-    this.diagramRenderer.addSimpleProperty = (classView: ClassView): void => {
+    this.renderer.addSimpleProperty = (classView: ClassView): void => {
       const _class = classView.class.value;
       _class.addProperty(
         new Property(
-          `newProperty_${_class.properties.length}`,
+          `property_${_class.properties.length + 1}`,
           this.editorStore.graphState.graph.getTypicalMultiplicity(
             TYPICAL_MULTIPLICITY_TYPE.ONE,
           ),
@@ -343,7 +350,7 @@ export class DiagramEditorState extends ElementEditorState {
           _class,
         ),
       );
-      this.diagramRenderer.start();
+      this.renderer.render();
     };
   }
 

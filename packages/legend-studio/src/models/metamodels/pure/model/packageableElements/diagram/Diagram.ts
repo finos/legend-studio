@@ -59,7 +59,7 @@ export class Diagram extends PackageableElement implements Hashable {
     });
   }
 
-  deadReferencesCleanUp(pureModel: BasicModel): void {
+  cleanUpDeadReferences(graph: BasicModel): void {
     // Delete orphan property views
     const propertyViewsToRemove = this.propertyViews.filter(
       (p) =>
@@ -71,7 +71,7 @@ export class Diagram extends PackageableElement implements Hashable {
       this.deletePropertyView(propertyView),
     );
 
-    const classesSet = new Set(pureModel.classes);
+    const classesSet = new Set(graph.classes);
 
     // Fix orphan class views
     const classViewsRoRemove = this.classViews.filter(
