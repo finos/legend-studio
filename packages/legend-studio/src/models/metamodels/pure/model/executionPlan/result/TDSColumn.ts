@@ -15,10 +15,7 @@
  */
 
 import type { DataType } from '../../packageableElements/domain/DataType';
-import type {
-  PackageableElementImplicitReference,
-  PackageableElementReference,
-} from '../../packageableElements/PackageableElementReference';
+import type { PackageableElementImplicitReference } from '../../packageableElements/PackageableElementReference';
 
 export class TDSColumn {
   name!: string;
