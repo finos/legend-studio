@@ -22,7 +22,7 @@
     "build:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "build:tsc": "tsc --project ./tsconfig.build.json",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
-    "check:docker": "./scripts/dry-build-docker-image.sh",
+    "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-studio ./dist/studio",
     "clean": "rimraf \"dist\" \"build\"",
     "dev": "npm-run-all --parallel dev:tsc dev:webpack",
     "dev:advanced": "cross-env NODE_ENV=development DEVELOPMENT_MODE=advanced webpack serve --mode development",

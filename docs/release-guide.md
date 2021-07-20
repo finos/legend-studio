@@ -46,8 +46,8 @@ git push --follow-tags
 # 1. Swap out the `workspace:*` in `package.json` to point
 # at fixed versions.
 
-# 2. Check Docker image
-yarn workspace @finos/legend-studio-app check:docker
+# 2. Try to dry-build Docker image
+yarn workspace @finos/legend-studio-app build-dry:docker
 
 # 3. Login to Docker
 docker login

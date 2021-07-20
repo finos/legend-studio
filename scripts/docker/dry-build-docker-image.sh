@@ -10,19 +10,17 @@
 GREEN='\033[0;32m'
 NC='\033[0m' # No color
 
-PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
 
 # ----------------------------------------- MAIN ------------------------------------------------
 
-DOCKER_IMAGE_NAME="local/legend-studio" # make this different from the name of the actual image to publish to prevent accidental push
+DOCKER_IMAGE_NAME="local/$1" # make this different from the name of the actual image to publish to prevent accidental push
 
-mkdir -p ./dist/studio # since we are checking Docker image, we don't need to generate webapp content
+mkdir -p $2 # since we are checking Docker image, we don't need to generate webapp content
 
-if [[ -z "$1" ]]; then
+if [[ -z "$3" ]]; then
   DOCKER_IMAGE_TAG=latest
 else
-  DOCKER_IMAGE_TAG=$1
+  DOCKER_IMAGE_TAG=$3
 fi
-docker build --quiet --tag $DOCKER_IMAGE_NAME:${DOCKER_IMAGE_TAG} $PWD/../
+docker build --quiet --tag $DOCKER_IMAGE_NAME:${DOCKER_IMAGE_TAG} .
 echo -e "${GREEN}Successfully dry-built image ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}.${NC}"
