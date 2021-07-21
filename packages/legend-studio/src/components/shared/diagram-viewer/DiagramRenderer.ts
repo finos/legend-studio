@@ -22,6 +22,7 @@ import {
   IllegalStateError,
   guaranteeNonNullable,
   findLast,
+  uniqBy,
 } from '@finos/legend-studio-shared';
 import { PositionedRectangle } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/PositionedRectangle';
 import { Point } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
@@ -2171,12 +2172,15 @@ export class DiagramRenderer {
         );
       }
     } else if (e.key === 'ArrowUp') {
-      this.selectedClasses.forEach((cv) => {
-        const views = this.getSuperTypeLevels([cv], this.diagram, 0, 1);
-        const res = this.layoutTaxonomy(views, this.diagram, false);
-        res[0].forEach((cv) => this.diagram.addClassView(cv));
-        res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
-      });
+      const views = this.getSuperTypeLevels(
+        this.selectedClasses,
+        this.diagram,
+        0,
+        1,
+      );
+      const res = this.layoutTaxonomy(views, this.diagram, false);
+      res[0].forEach((cv) => this.diagram.addClassView(cv));
+      res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
 
       this.clearScreen(); // draw the first time so that the virtualscreen has the right size
       this.drawAll();
@@ -2906,17 +2910,20 @@ export class DiagramRenderer {
       classViews.forEach((classView) =>
         this.ensureClassViewMeetMinDimensions(classView),
       );
-      const res = classViews.flatMap((classView) =>
-        classView.class.value.generalizations.map(
-          (generation) =>
-            new ClassView(
-              diagram,
-              '',
-              PackageableElementExplicitReference.create(
-                generation.value.getRawType(Class),
+      const res = uniqBy(
+        classViews.flatMap((classView) =>
+          classView.class.value.generalizations.map(
+            (generation) =>
+              new ClassView(
+                diagram,
+                uuid(),
+                PackageableElementExplicitReference.create(
+                  generation.value.getRawType(Class),
+                ),
               ),
-            ),
+          ),
         ),
+        (a: ClassView) => a.class.value,
       );
       if (recurseMaxDepth === -1 || currentDepth < recurseMaxDepth) {
         const rec = this.getSuperTypeLevels(
@@ -2947,16 +2954,22 @@ export class DiagramRenderer {
 
     const classViews = classViewLevels.flatMap((level, i) => {
       // Get the bounding box of the precedent level
-      const precedentY = i === 0 ? 0 : classViewLevels[i - 1][0].position.y;
-
-      const precedentX = i === 0 ? 0 : classViewLevels[i - 1][0].position.x;
-
-      const precedentTotalWidth =
-        i === 0
-          ? 0
-          : classViewLevels[i - 1]
-              .map((classView) => classView.rectangle.width)
-              .reduce((a, b) => a + b + spaceX);
+      let precedentTotalWidth = 0;
+      let precedentX = 0;
+      let precedentY = 0;
+      if (i > 0) {
+        const precedentByX = [...classViewLevels[i - 1]].sort(
+          (a, b) => a.position.x - b.position.x,
+        );
+        precedentX = precedentByX[0].position.x;
+        precedentTotalWidth =
+          precedentByX[precedentByX.length - 1].position.x +
+          precedentByX[precedentByX.length - 1].rectangle.width -
+          precedentByX[0].position.x;
+        precedentY = Math.min(
+          ...classViewLevels[i - 1].map((cv) => cv.position.y),
+        );
+      }
 
       // Get the bounding box of current Level
       const maxHeight = Math.max(
@@ -2974,19 +2987,19 @@ export class DiagramRenderer {
       // Set layout of current level
       if (positionInitialClass || i > 0) {
         level[0].setPosition(new Point(startX, currentLevelY));
+        level.forEach((view, index) => {
+          if (index > 0) {
+            const precedent = level[index - 1];
+            view.setPosition(
+              new Point(
+                precedent.position.x + precedent.rectangle.width + spaceX,
+                currentLevelY,
+              ),
+            );
+          }
+        });
       }
-      return level.flatMap((view, index) => {
-        if (index > 0) {
-          const precedent = level[index - 1];
-          view.setPosition(
-            new Point(
-              precedent.position.x + precedent.rectangle.width + spaceX,
-              currentLevelY,
-            ),
-          );
-        }
-        return view;
-      });
+      return level;
     });
 
     const generalizationViews = classViewLevels
