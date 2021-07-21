@@ -88,6 +88,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
       _isDisposed: observable,
       _isImmutable: observable,
       name: observable,
+      package: observable,
       isReadOnly: computed,
       isDeleted: computed,
       selectOption: computed,
@@ -96,6 +97,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
       // We need to enable `keepAlive` to facillitate precomutation of element hash code
       hashCode: computed({ keepAlive: true }),
       setName: action,
+      setPackage: action,
       setIsDeleted: action,
       deleteElementFromGraph: action,
       dispose: action,
@@ -108,15 +110,23 @@ export abstract class PackageableElement implements Hashable, Stubable {
   get isReadOnly(): boolean {
     return this._isImmutable;
   }
+
   get isDeleted(): boolean {
     return this._isDeleted;
   }
+
   setName(value: string): void {
     this.name = value;
   }
+
+  setPackage(val: Package | undefined): void {
+    this.package = val;
+  }
+
   setIsDeleted(value: boolean): void {
     this._isDeleted = value;
   }
+
   deleteElementFromGraph(): void {
     if (this.package) {
       this.package.deleteElement(this);
@@ -128,8 +138,9 @@ export abstract class PackageableElement implements Hashable, Stubable {
    * Get root element. In the ideal case, this method is important for finding the root package, but
    * if we do something like `this instanceof Package` that would case circular dependency.
    */
-  getRoot = (): PackageableElement =>
-    !this.package ? this : this.package.getRoot();
+  getRoot(): PackageableElement {
+    return !this.package ? this : this.package.getRoot();
+  }
 
   get selectOption(): PackageableElementSelectOption<PackageableElement> {
     return { label: this.name, value: this };

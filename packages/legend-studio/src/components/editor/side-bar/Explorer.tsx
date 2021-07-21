@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useState } from 'react';
+import React, { Fragment, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../stores/EditorStore';
 import {
@@ -56,7 +56,10 @@ import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtil';
 import { CORE_TEST_ID } from '../../../const';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
-import { ROOT_PACKAGE_NAME } from '../../../models/MetaModelConst';
+import {
+  ELEMENT_PATH_DELIMITER,
+  ROOT_PACKAGE_NAME,
+} from '../../../models/MetaModelConst';
 import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
 import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerationTreeUtil';
@@ -67,6 +70,10 @@ import { generateViewEntityRoute } from '../../../stores/Router';
 import { isNonNullable, toTitleCase } from '@finos/legend-studio-shared';
 import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { Dialog } from '@material-ui/core';
+import { isValidFullPath, isValidPath } from '../../../models/MetaModelUtils';
+import { flowResult } from 'mobx';
+import { useEffect } from 'react';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;
@@ -75,6 +82,96 @@ const isSystemPackageTreeNode = (node: PackageTreeNodeData): boolean =>
 const isDependencyTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path ===
   ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
+
+const ElementRenamer = observer(() => {
+  const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
+  const explorerTreeState = editorStore.explorerTreeState;
+  const element = explorerTreeState.elementToRename;
+  const [path, setPath] = useState(element?.path ?? '');
+  const pathInputRef = useRef<HTMLInputElement>(null);
+  const changePath: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ): void => setPath(event.target.value);
+
+  const isElementPathNonEmpty = path !== '';
+  const isNotTopLevelElement =
+    element instanceof Package || path.includes(ELEMENT_PATH_DELIMITER);
+  const isValidElementPath =
+    (element instanceof Package && isValidPath(path)) || isValidFullPath(path);
+  const existingElement = editorStore.graphState.graph.getNullableElement(
+    path,
+    true,
+  );
+  const isElementUnique = !existingElement || existingElement === element;
+  const elementRenameValidationErrorMessage = !isElementPathNonEmpty
+    ? `Element path cannot be empty`
+    : !isNotTopLevelElement
+    ? `Creating top level element is not allowed`
+    : !isValidElementPath
+    ? `Element path is not valid`
+    : !isElementUnique
+    ? `Element of the same path already existed`
+    : undefined;
+  const canRenameElement =
+    isElementPathNonEmpty &&
+    isNotTopLevelElement &&
+    isValidElementPath &&
+    isElementUnique;
+
+  const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    event.preventDefault();
+    if (element && canRenameElement) {
+      explorerTreeState.setElementToRename(undefined);
+      flowResult(editorStore.renameElement(element, path)).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }
+  };
+
+  const abort = (): void => explorerTreeState.setElementToRename(undefined);
+  const onEnter = (): void => pathInputRef.current?.focus();
+
+  useEffect(() => {
+    if (element) {
+      setPath(element.path);
+    }
+  }, [element]);
+
+  return (
+    <Dialog
+      open={Boolean(element)}
+      onClose={abort}
+      TransitionProps={{
+        onEnter: onEnter,
+      }}
+      classes={{ container: 'search-modal__container' }}
+      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+    >
+      <form className="modal modal--dark search-modal explorer__element-renamer">
+        <div className="input-group">
+          <input
+            className="input-group__input input--dark explorer__element-renamer__input"
+            ref={pathInputRef}
+            value={path}
+            placeholder="Enter class path"
+            onChange={changePath}
+          />
+          {elementRenameValidationErrorMessage && (
+            <div className="input-group__error-message">
+              {elementRenameValidationErrorMessage}
+            </div>
+          )}
+        </div>
+        <button
+          type="submit"
+          className="explorer__element-renamer__close-btn"
+          onClick={close}
+        />
+      </form>
+    </Dialog>
+  );
+});
 
 const ExplorerContextMenu = observer(
   (
@@ -113,6 +210,13 @@ const ExplorerContextMenu = observer(
         editorStore
           .deleteElement(node.packageableElement)
           .catch(applicationStore.alertIllegalUnhandledError);
+      }
+    };
+    const renameElement = (): void => {
+      if (node) {
+        editorStore.explorerTreeState.setElementToRename(
+          node.packageableElement,
+        );
       }
     };
     const openElementInViewerMode = (): void => {
@@ -176,9 +280,9 @@ const ExplorerContextMenu = observer(
               </MenuContentItemLabel>
             </MenuContentItem>
           ))}
-          <MenuContentItem>
+          <MenuContentItem onClick={renameElement}>
             <MenuContentItemBlankIcon />
-            <MenuContentItemLabel>Rename (WIP)</MenuContentItemLabel>
+            <MenuContentItemLabel>Rename</MenuContentItemLabel>
           </MenuContentItem>
           {node && (
             <MenuContentItem onClick={deleteElement}>
@@ -194,7 +298,7 @@ const ExplorerContextMenu = observer(
         {extraExplorerContextMenuItems}
         {!isReadOnly && node && (
           <>
-            <MenuContentItem>Rename (WIP)</MenuContentItem>
+            <MenuContentItem onClick={renameElement}>Rename</MenuContentItem>
             <MenuContentItem onClick={deleteElement}>Delete</MenuContentItem>
           </>
         )}
@@ -493,6 +597,7 @@ const ExplorerTrees = observer(() => {
                 disableContextMenu: isInGrammarTextMode,
               }}
             />
+            <ElementRenamer />
             {!config.options.TEMPORARY__disableSDLCProjectStructureSupport && (
               <ProjectConfig />
             )}

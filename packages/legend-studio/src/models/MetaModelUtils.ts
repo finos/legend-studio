@@ -78,8 +78,11 @@ export const resolvePackagePathAndElementName = (
   ];
 };
 
+// TODO: we might need to support quoted identifier in the future
 export const isValidFullPath = (fullPath: string): boolean =>
-  fullPath.split(ELEMENT_PATH_DELIMITER).filter(Boolean).length > 1;
+  Boolean(fullPath.match(/^(?:\w[\w$_-]*)(?:::\w[\w$_-]*)+$/));
+export const isValidPath = (path: string): boolean =>
+  Boolean(path.match(/^(?:\w[\w$_-]*)(?:::\w[\w$_-]*)*$/));
 
 // TODO: this is over-simplification as there could be other fields used for source information
 export const hashObjectWithoutSourceInformation = (val: object): string =>

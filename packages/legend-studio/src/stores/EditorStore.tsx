@@ -54,7 +54,11 @@ import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
-import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
+import type {
+  Clazz,
+  GeneratorFn,
+  PlainObject,
+} from '@finos/legend-studio-shared';
 import {
   addUniqueEntry,
   isNonNullable,
@@ -119,6 +123,7 @@ import { PRIMITIVE_TYPE } from '../models/MetaModelConst';
 import type { Type } from '../models/metamodels/pure/model/packageableElements/domain/Type';
 import type { Store } from '../models/metamodels/pure/model/packageableElements/store/Store';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -1043,18 +1048,47 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphState.graph.generationModel.removeElement(el),
+      this.graphState.graph.generationModel.deleteElement(el),
     );
-    this.graphState.graph.removeElement(element);
+    this.graphState.graph.deleteElement(element);
+    // rerender currently opened diagram
     if (this.currentEditorState instanceof DiagramEditorState) {
       this.currentEditorState.renderer.render();
     }
+    // reprocess project explorer tree
     this.explorerTreeState.reprocess();
-    // re-compile after deletion
+    // recompile
     yield this.graphState.globalCompileInFormMode({
       message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
     });
   });
+
+  *renameElement(
+    element: PackageableElement,
+    newPath: string,
+  ): GeneratorFn<void> {
+    if (element.isReadOnly) {
+      return;
+    }
+    this.graphState.graph.renameElement(element, newPath);
+    // rerender currently opened diagram
+    if (this.currentEditorState instanceof DiagramEditorState) {
+      this.currentEditorState.renderer.render();
+    }
+    // reprocess project explorer tree
+    this.explorerTreeState.reprocess();
+    if (element instanceof Package) {
+      this.explorerTreeState.openNode(element);
+    } else if (element.package) {
+      this.explorerTreeState.openNode(element.package);
+    }
+    // recompile
+    yield flowResult(
+      this.graphState.globalCompileInFormMode({
+        message: `Can't compile graph after renaming and error cannot be located in form mode. Redirected to text mode for debugging`,
+      }),
+    );
+  }
 
   // FIXME: to be removed when we process editor states properly
   reprocessElementEditorState = (
