@@ -2140,40 +2140,6 @@ export class DiagramRenderer {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.addSimpleProperty(this.selectedClasses[0]);
       }
-    } else if (e.key === 'ArrowDown') {
-      const views = uniqBy(
-        this.selectedClasses.flatMap((x) =>
-          x.class.value._subClasses.flatMap(
-            (c) =>
-              new ClassView(
-                this.diagram,
-                uuid(),
-                PackageableElementExplicitReference.create(c),
-              ),
-          ),
-        ),
-        (cv) => cv.class.value,
-      );
-
-      if (views.length > 0) {
-        views.forEach((classView) =>
-          this.ensureClassViewMeetMinDimensions(classView),
-        );
-
-        const res = this.layoutTaxonomy(
-          [views, this.selectedClasses],
-          this.diagram,
-          false,
-          false,
-        );
-        res[0].forEach((cv) => this.diagram.addClassView(cv));
-        res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
-      }
-
-      this.clearScreen(); // draw the first time so that the virtualscreen has the right size
-      this.drawAll();
-      this.manageVirtualScreen();
-      this.drawAll();
     }
 
     // Eject the property
@@ -2219,10 +2185,41 @@ export class DiagramRenderer {
       res[0].forEach((cv) => this.diagram.addClassView(cv));
       res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
 
-      this.clearScreen(); // draw the first time so that the virtualscreen has the right size
-      this.drawAll();
-      this.manageVirtualScreen();
-      this.drawAll();
+      this.drawScreen();
+    }
+
+    // Add subtypes of selected classes to the diagram
+    else if (e.key === 'ArrowDown') {
+      const views = uniqBy(
+        this.selectedClasses.flatMap((x) =>
+          x.class.value._subClasses.flatMap(
+            (c) =>
+              new ClassView(
+                this.diagram,
+                uuid(),
+                PackageableElementExplicitReference.create(c),
+              ),
+          ),
+        ),
+        (cv) => cv.class.value,
+      );
+
+      if (views.length > 0) {
+        views.forEach((classView) =>
+          this.ensureClassViewMeetMinDimensions(classView),
+        );
+
+        const res = this.layoutTaxonomy(
+          [views, this.selectedClasses],
+          this.diagram,
+          false,
+          false,
+        );
+        res[0].forEach((cv) => this.diagram.addClassView(cv));
+        res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
+      }
+
+      this.drawScreen();
     }
   }
 
@@ -2441,9 +2438,10 @@ export class DiagramRenderer {
     // Click on a class view
     if (selectedClass) {
       this.editClassView(selectedClass);
-    } else {
-      this.onBackgroundDoubleClick(eventPointInModelCoordinate);
+      return;
     }
+    this.onBackgroundDoubleClick(eventPointInModelCoordinate);
+    return;
   }
 
   mousedown(e: MouseEvent): void {

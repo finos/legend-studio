@@ -253,6 +253,10 @@
     &--grabbing {
       cursor: grabbing;
     }
+
+    &--not-allowed {
+      cursor: not-allowed;
+    }
   }
 
   &__side-panel {

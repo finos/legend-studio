@@ -261,15 +261,16 @@ export class DiagramEditorState extends ElementEditorState {
           this.renderer.selectedClassCorner
         ) {
           return 'diagram-editor__cursor--resize';
-        } else if (
-          (this.renderer.mouseOverProperty &&
-            !this.isReadOnly &&
-            !this.renderer.mouseOverProperty.owner.isReadOnly) ||
-          (this.renderer.mouseOverClassName &&
-            !this.isReadOnly &&
-            !this.renderer.mouseOverClassName.class.value.isReadOnly)
-        ) {
-          return 'diagram-editor__cursor--text';
+        } else if (this.renderer.mouseOverProperty) {
+          return this.isReadOnly ||
+            this.renderer.mouseOverProperty.owner.isReadOnly
+            ? 'diagram-editor__cursor--not-allowed'
+            : 'diagram-editor__cursor--text';
+        } else if (this.renderer.mouseOverClassName) {
+          return this.isReadOnly ||
+            this.renderer.mouseOverClassName.class.value.isReadOnly
+            ? 'diagram-editor__cursor--not-allowed'
+            : 'diagram-editor__cursor--text';
         } else if (this.renderer.mouseOverClassView) {
           return 'diagram-editor__cursor--pointer';
         }
