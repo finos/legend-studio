@@ -223,7 +223,7 @@ export class DiagramEditorState extends ElementEditorState {
   // See https://css-tricks.com/using-css-cursors/
   // See https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
   get diagramCursorClass(): string {
-    if (this.isReadOnly || !this.isDiagramRendererInitialized) {
+    if (!this.isDiagramRendererInitialized) {
       return '';
     }
     if (this.renderer.middleClick || this.renderer.rightClick) {
@@ -231,7 +231,7 @@ export class DiagramEditorState extends ElementEditorState {
     }
     switch (this.renderer.interactionMode) {
       case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
-        return 'diagram-editor__cursor--add';
+        return !this.isReadOnly ? 'diagram-editor__cursor--add' : '';
       }
       case DIAGRAM_INTERACTION_MODE.PAN: {
         return this.renderer.leftClick
@@ -245,6 +245,9 @@ export class DiagramEditorState extends ElementEditorState {
         return 'diagram-editor__cursor--zoom-out';
       }
       case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
+        if (this.isReadOnly) {
+          return '';
+        }
         if (this.renderer.mouseOverClassView && this.renderer.selectionStart) {
           return 'diagram-editor__cursor--add';
         }

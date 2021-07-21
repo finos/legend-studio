@@ -137,7 +137,6 @@ test(unitTest('Resolve package path and element name'), () => {
 test(unitTest('Check valid path and path identifier'), () => {
   expect(isValidPathIdentifier('')).toBe(false);
   expect(isValidPathIdentifier('$')).toBe(false);
-  expect(isValidPathIdentifier('_')).toBe(false);
   expect(isValidPathIdentifier('asd')).toBe(true);
   expect(isValidPathIdentifier('asd$')).toBe(true);
 
