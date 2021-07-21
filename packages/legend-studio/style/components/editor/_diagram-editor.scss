@@ -185,11 +185,12 @@
   }
 
   &__icon {
-    &--layout {
-      font-size: 1.8rem;
-    }
-
-    &--add-class {
+    &--layout,
+    &--pan,
+    &--add-class,
+    &--sidebar,
+    &--zoom-in,
+    &--zoom-out {
       font-size: 1.8rem;
     }
 
@@ -209,15 +210,6 @@
 
     &--hotkey-info {
       font-size: 2.2rem;
-    }
-
-    &--sidebar {
-      font-size: 1.8rem;
-    }
-
-    &--zoom-in,
-    &--zoom-out {
-      font-size: 1.8rem;
     }
   }
 
@@ -252,6 +244,10 @@
 
     &--zoom-out {
       cursor: zoom-out;
+    }
+
+    &--grab {
+      cursor: grab;
     }
 
     &--grabbing {

@@ -191,6 +191,11 @@ export class DiagramEditorState extends ElementEditorState {
       case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
         return 'diagram-editor__cursor--add';
       }
+      case DIAGRAM_INTERACTION_MODE.PAN: {
+        return this.renderer.leftClick
+          ? 'diagram-editor__cursor--grabbing'
+          : 'diagram-editor__cursor--grab';
+      }
       case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
         return 'diagram-editor__cursor--zoom-in';
       }

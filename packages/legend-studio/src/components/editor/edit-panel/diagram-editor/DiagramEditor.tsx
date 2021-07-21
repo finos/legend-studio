@@ -62,6 +62,7 @@ import { Point } from '../../../../models/metamodels/pure/model/packageableEleme
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import {
   FiMinus,
+  FiMousePointer,
   FiMove,
   FiPlusCircle,
   FiSidebar,
@@ -143,10 +144,18 @@ const DiagramRendererHotkeyInfosModal = observer(
               <div className="diagram-editor__hotkey__groups__divider" />
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Use layout tool
+                  Use view tool
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">L</div>
+                  <div className="hotkey__key">V</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Use pan tool
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">M</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
@@ -301,9 +310,23 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_INTERACTION_MODE.LAYOUT,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
-          title="View Tool (L)"
+          title="View Tool (V)"
         >
-          <FiMove className="diagram-editor__icon--layout" />
+          <FiMousePointer className="diagram-editor__icon--layout" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.PAN,
+          })}
+          tabIndex={-1}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.PAN,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
+          title="Pan Tool (M)"
+        >
+          <FiMove className="diagram-editor__icon--pan" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {

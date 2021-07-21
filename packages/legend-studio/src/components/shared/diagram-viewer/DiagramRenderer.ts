@@ -53,10 +53,11 @@ import { action, makeObservable, observable } from 'mobx';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
-  ADD_RELATIONSHIP,
-  ADD_CLASS,
+  PAN,
   ZOOM_IN,
   ZOOM_OUT,
+  ADD_RELATIONSHIP,
+  ADD_CLASS,
 }
 
 export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
@@ -239,8 +240,9 @@ export class DiagramRenderer {
       selectedClasses: observable,
       selectedPropertyOrAssociation: observable,
       selectedInheritance: observable,
-      rightClick: observable,
+      leftClick: observable,
       middleClick: observable,
+      rightClick: observable,
       changeMode: action,
       setIsReadOnly: action,
       setMouseOverClassCorner: action,
@@ -251,8 +253,9 @@ export class DiagramRenderer {
       setSelectedClasses: action,
       setSelectedPropertyOrAssociation: action,
       setSelectedInheritance: action,
-      setRightClick: action,
+      setLeftClick: action,
       setMiddleClick: action,
+      setRightClick: action,
       setZoomLevel: action,
     });
 
@@ -413,12 +416,16 @@ export class DiagramRenderer {
     this.selectedInheritance = val;
   }
 
-  setRightClick(val: boolean): void {
-    this.rightClick = val;
+  setLeftClick(val: boolean): void {
+    this.leftClick = val;
   }
 
   setMiddleClick(val: boolean): void {
     this.middleClick = val;
+  }
+
+  setRightClick(val: boolean): void {
+    this.rightClick = val;
   }
 
   setZoomLevel(val: number): void {
@@ -490,6 +497,7 @@ export class DiagramRenderer {
   ): void {
     switch (editMode) {
       case DIAGRAM_INTERACTION_MODE.LAYOUT:
+      case DIAGRAM_INTERACTION_MODE.PAN:
       case DIAGRAM_INTERACTION_MODE.ZOOM_IN:
       case DIAGRAM_INTERACTION_MODE.ZOOM_OUT:
       case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
@@ -2039,10 +2047,17 @@ export class DiagramRenderer {
       );
     }
 
-    // Use Layout Tool
-    else if (e.key === 'l') {
+    // Use View Tool
+    else if (e.key === 'v') {
       this.changeMode(
         DIAGRAM_INTERACTION_MODE.LAYOUT,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+    // Use Pan Tool
+    else if (e.key === 'm') {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.PAN,
         DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
       );
     }
@@ -2352,7 +2367,7 @@ export class DiagramRenderer {
           break;
       }
     }
-    this.leftClick = false;
+    this.setLeftClick(false);
     this.setMiddleClick(false);
     this.setRightClick(false);
 
@@ -2440,13 +2455,18 @@ export class DiagramRenderer {
 
     // left click
     if (e.button === 0) {
-      this.leftClick = true;
+      this.setLeftClick(true);
       const eventPointInCanvasCoordinate =
         this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y));
       const eventPointInModelCoordinate =
         this.canvasCoordinateToModelCoordinate(eventPointInCanvasCoordinate);
 
       switch (this.interactionMode) {
+        case DIAGRAM_INTERACTION_MODE.PAN: {
+          e.returnValue = false;
+          this.positionBeforeLastMove = new Point(e.x, e.y);
+          return;
+        }
         case DIAGRAM_INTERACTION_MODE.LAYOUT: {
           // Check if the selection lies within the bottom right corner box of a box (so we can do resize of box here)
           // NOTE: Traverse backwards the class views to preserve z-index buffer
@@ -2653,7 +2673,13 @@ export class DiagramRenderer {
 
   mousemove(e: MouseEvent): void {
     this.cursorPosition = new Point(e.x, e.y);
-    if (this.rightClick || this.middleClick) {
+
+    // Pan/Move
+    if (
+      this.rightClick ||
+      this.middleClick ||
+      (this.leftClick && this.interactionMode === DIAGRAM_INTERACTION_MODE.PAN)
+    ) {
       this.screenOffset = new Point(
         this.screenOffset.x + (e.x - this.positionBeforeLastMove.x) / this.zoom,
         this.screenOffset.y + (e.y - this.positionBeforeLastMove.y) / this.zoom,
