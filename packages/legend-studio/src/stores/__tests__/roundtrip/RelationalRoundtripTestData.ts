@@ -3982,6 +3982,49 @@ export const testRelationalDatabaseConnectionRoundtrip = [
     },
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
+  {
+    path: 'simple::BigQueryConnectionWithDefaultDataset',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'gcpApplicationDefaultCredentials',
+        },
+        datasourceSpecification: {
+          _type: 'bigQuery',
+          projectId: 'project1',
+          defaultDataset: 'dataset1',
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'BigQuery',
+      },
+      name: 'BigQueryConnectionWithDefaultDataset',
+      package: 'simple',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
+    path: 'simple::BigQueryConnectionWithoutDefaultDataset',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'gcpApplicationDefaultCredentials',
+        },
+        datasourceSpecification: {
+          _type: 'bigQuery',
+          projectId: 'project1',
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'BigQuery',
+      },
+      name: 'BigQueryConnectionWithoutDefaultDataset',
+      package: 'simple',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
 ];
 
 export const testRelationalInputData = [

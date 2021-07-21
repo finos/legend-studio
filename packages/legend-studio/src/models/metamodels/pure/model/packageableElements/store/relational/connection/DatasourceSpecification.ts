@@ -266,10 +266,17 @@ export class BigQueryDatasourceSpecification
   }
 
   get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
-      this.projectId,
-      this.defaultDataset,
-    ]);
+    if (this.defaultDataset === undefined || this.defaultDataset === null) {
+      return hashArray([
+        CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
+        this.projectId,
+      ]);
+    } else {
+      return hashArray([
+        CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
+        this.projectId,
+        this.defaultDataset,
+      ]);
+    }
   }
 }
