@@ -30,11 +30,12 @@ import {
 } from '../../../shared/diagram-viewer/DiagramRenderer';
 import type {
   DiagramEditorInlineClassCreatorState,
+  DiagramEditorInlineClassRenamerState,
   DiagramEditorInlinePropertyEditorState,
 } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
+  DIAGRAM_EDITOR_SIDE_PANEL_TAB,
   DiagramEditorClassViewEditorSidePanelState,
-  DiagramEditorClassEditorSidePanelState,
   DiagramEditorState,
 } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
@@ -55,14 +56,13 @@ import {
   MenuContentItem,
   PlusIcon,
   SquareIcon,
-  TimesIcon,
 } from '@finos/legend-studio-components';
-import { guaranteeType } from '@finos/legend-studio-shared';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import {
   FiMinus,
+  FiMousePointer,
   FiMove,
   FiPlusCircle,
   FiSidebar,
@@ -84,10 +84,14 @@ import {
 import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { GenericType } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
 import {
+  createPath,
   isValidFullPath,
+  isValidPathIdentifier,
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
-import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState';
+import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -144,10 +148,18 @@ const DiagramRendererHotkeyInfosModal = observer(
               <div className="diagram-editor__hotkey__groups__divider" />
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Use layout tool
+                  Use view tool
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">L</div>
+                  <div className="hotkey__key">V</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Use pan tool
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">M</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
@@ -171,14 +183,14 @@ const DiagramRendererHotkeyInfosModal = observer(
                   Add class
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">+</div>
+                  <div className="hotkey__key">C</div>
                 </div>
               </div>
 
               <div className="diagram-editor__hotkey__groups__divider" />
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for properties of selected element(s)
+                  Toggle display for properties of selected classes
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">Alt</div>
@@ -190,7 +202,7 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for tagged values of selected element(s)
+                  Toggle display for tagged values of selected classes
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">Alt</div>
@@ -202,7 +214,7 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for stereotypes of selected element(s)
+                  Toggle display for stereotypes of selected classes
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">Alt</div>
@@ -214,13 +226,28 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
 
               <div className="diagram-editor__hotkey__groups__divider" />
-
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
                   Add simple property to selected class
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">/</div>
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
+                  <div className="hotkey__key">&darr;</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Eject the property
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
+                  <div className="hotkey__key">&rarr;</div>
                 </div>
               </div>
 
@@ -240,22 +267,6 @@ const DiagramRendererHotkeyInfosModal = observer(
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">&uarr;</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Eject the property
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">&rarr;</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Add the selected class as property of the opened class
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">&larr;</div>
                 </div>
               </div>
             </div>
@@ -298,9 +309,23 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_INTERACTION_MODE.LAYOUT,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
-          title="View Tool (L)"
+          title="View Tool (V)"
         >
-          <FiMove className="diagram-editor__icon--layout" />
+          <FiMousePointer className="diagram-editor__icon--layout" />
+        </button>
+        <button
+          className={clsx('diagram-editor__tool', {
+            'diagram-editor__tool--active':
+              renderer.interactionMode === DIAGRAM_INTERACTION_MODE.PAN,
+          })}
+          tabIndex={-1}
+          onClick={createModeSwitcher(
+            DIAGRAM_INTERACTION_MODE.PAN,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          )}
+          title="Pan Tool (M)"
+        >
+          <FiMove className="diagram-editor__icon--pan" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -390,7 +415,7 @@ const DiagramEditorToolPanel = observer(
               renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ADD_CLASS,
           })}
           tabIndex={-1}
-          title="New Class... (+)"
+          title="Add class tool (C)"
           disabled={isReadOnly}
           onClick={createModeSwitcher(
             DIAGRAM_INTERACTION_MODE.ADD_CLASS,
@@ -422,89 +447,162 @@ const DiagramEditorClassViewEditor = observer(
     classViewEditorState: DiagramEditorClassViewEditorSidePanelState;
   }) => {
     const { classViewEditorState } = props;
+    const editorStore = useEditorStore();
     const classView = classViewEditorState.classView;
     const diagramEditorState = classViewEditorState.diagramEditorState;
+    const isReadOnly = diagramEditorState.isReadOnly;
+
+    // Tabs
+    const selectedTab = classViewEditorState.selectedTab;
+    const tabs = [
+      DIAGRAM_EDITOR_SIDE_PANEL_TAB.ELEMENT,
+      DIAGRAM_EDITOR_SIDE_PANEL_TAB.VIEW,
+    ];
+    const changeTab =
+      (tab: DIAGRAM_EDITOR_SIDE_PANEL_TAB): (() => void) =>
+      (): void => {
+        classViewEditorState.setSelectedTab(tab);
+      };
+
+    const redrawOnClassChange = useCallback((): void => {
+      diagramEditorState.diagram.cleanUpDeadReferences(
+        editorStore.graphState.graph,
+      );
+      diagramEditorState.renderer.render();
+    }, [diagramEditorState, editorStore]);
+
     const toggleHideProperties = (): void => {
+      if (isReadOnly) {
+        return;
+      }
       classView.setHideProperties(!classView.hideProperties);
       diagramEditorState.renderer.render();
     };
     const toggleHideTaggedValues = (): void => {
+      if (isReadOnly) {
+        return;
+      }
       classView.setHideTaggedValues(!classView.hideTaggedValues);
       diagramEditorState.renderer.render();
     };
     const toggleHideStereotypes = (): void => {
+      if (isReadOnly) {
+        return;
+      }
       classView.setHideStereotypes(!classView.hideStereotypes);
       diagramEditorState.renderer.render();
     };
 
     return (
       <div className="diagram-editor__class-view-editor">
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            {/* Hide properties */}
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleHideProperties}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    classView.hideProperties,
-                })}
-              >
-                {classView.hideProperties ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
+        <div className="diagram-editor__class-view-editor__header">
+          <div className="diagram-editor__class-view-editor__header__tabs">
+            {tabs.map((tab) => (
+              <div
+                key={tab}
+                onClick={changeTab(tab)}
+                className={clsx(
+                  'diagram-editor__class-view-editor__header__tab',
+                  {
+                    'diagram-editor__class-view-editor__header__tab--active':
+                      tab === selectedTab,
+                  },
                 )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Specifies if properties should be hidden
-              </div>
-            </div>
-            {/* Hide tagged-values */}
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleHideTaggedValues}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    classView.hideTaggedValues,
-                })}
               >
-                {classView.hideTaggedValues ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Specifies if tagged values should be hidden
+                {prettyCONSTName(tab)}
               </div>
-            </div>
-            {/* Hide stereotypes */}
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleHideStereotypes}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    classView.hideStereotypes,
-                })}
-              >
-                {classView.hideStereotypes ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Specifies if stereotypes should be hidden
-              </div>
-            </div>
+            ))}
           </div>
+        </div>
+        <div className="diagram-editor__class-view-editor__content">
+          {DIAGRAM_EDITOR_SIDE_PANEL_TAB.ELEMENT === selectedTab && (
+            <ClassFormEditor
+              _class={classViewEditorState.classEditorState.class}
+              editorState={classViewEditorState.classEditorState}
+              onHashChange={redrawOnClassChange}
+            />
+          )}
+          {DIAGRAM_EDITOR_SIDE_PANEL_TAB.VIEW === selectedTab && (
+            <div className="panel__content__form diagram-editor__class-view-editor__content__form">
+              <div className="panel__content__form__section">
+                {/* Hide properties */}
+                <div
+                  className={clsx('panel__content__form__section__toggler')}
+                  onClick={toggleHideProperties}
+                >
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          classView.hideProperties,
+                      },
+                    )}
+                    disabled={isReadOnly}
+                  >
+                    {classView.hideProperties ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="panel__content__form__section__toggler__prompt">
+                    Specifies if properties should be hidden
+                  </div>
+                </div>
+                {/* Hide tagged-values */}
+                <div
+                  className={clsx('panel__content__form__section__toggler')}
+                  onClick={toggleHideTaggedValues}
+                >
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          classView.hideTaggedValues,
+                      },
+                    )}
+                    disabled={isReadOnly}
+                  >
+                    {classView.hideTaggedValues ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="panel__content__form__section__toggler__prompt">
+                    Specifies if tagged values should be hidden
+                  </div>
+                </div>
+                {/* Hide stereotypes */}
+                <div
+                  className={clsx('panel__content__form__section__toggler')}
+                  onClick={toggleHideStereotypes}
+                >
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          classView.hideStereotypes,
+                      },
+                    )}
+                    disabled={isReadOnly}
+                  >
+                    {classView.hideStereotypes ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="panel__content__form__section__toggler__prompt">
+                    Specifies if stereotypes should be hidden
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -514,7 +612,6 @@ const DiagramEditorClassViewEditor = observer(
 const DiagramEditorOverlay = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
-    const editorStore = useEditorStore();
     const sidePanelState = diagramEditorState.sidePanelState;
 
     const resizeSidePanel = (handleProps: HandlerProps): void =>
@@ -522,13 +619,6 @@ const DiagramEditorOverlay = observer(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
-
-    const redrawOnClassChange = useCallback((): void => {
-      diagramEditorState.diagram.cleanUpDeadReferences(
-        editorStore.graphState.graph,
-      );
-      diagramEditorState.renderer.render();
-    }, [diagramEditorState, editorStore]);
 
     return (
       <ReflexContainer
@@ -548,14 +638,6 @@ const DiagramEditorOverlay = observer(
         >
           <div className="panel diagram-editor__side-panel">
             {sidePanelState instanceof
-              DiagramEditorClassEditorSidePanelState && (
-              <ClassFormEditor
-                _class={sidePanelState.classEditorState.class}
-                editorState={sidePanelState.classEditorState}
-                onHashChange={redrawOnClassChange}
-              />
-            )}
-            {sidePanelState instanceof
               DiagramEditorClassViewEditorSidePanelState && (
               <DiagramEditorClassViewEditor
                 classViewEditorState={sidePanelState}
@@ -567,6 +649,123 @@ const DiagramEditorOverlay = observer(
           </div>
         </ReflexElement>
       </ReflexContainer>
+    );
+  },
+);
+
+const DiagramEditorInlineClassRenamerInner = observer(
+  (props: {
+    inlineClassRenamerState: DiagramEditorInlineClassRenamerState;
+  }) => {
+    const { inlineClassRenamerState } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const diagramEditorState = inlineClassRenamerState.diagramEditorState;
+    const _class = inlineClassRenamerState.classView.class.value;
+    const isReadOnly = diagramEditorState.isReadOnly;
+    const [name, setName] = useState(_class.name);
+    const [packagePath] = resolvePackagePathAndElementName(_class.path);
+    const newClassPath = createPath(packagePath, name);
+    const isClassNameNonEmpty = name !== '';
+    const isClassNameValid = isValidPathIdentifier(name);
+    const existingElement =
+      editorStore.graphState.graph.getNullableElement(newClassPath);
+    const isClassNameUnique = !existingElement || existingElement === _class;
+    // const class
+    const classCreationValidationErrorMessage = !isClassNameNonEmpty
+      ? `Class name cannot be empty`
+      : !isClassNameValid
+      ? `Class name is not valid`
+      : !isClassNameUnique
+      ? `Element of the same name already existed`
+      : undefined;
+    const canRenameClass =
+      isClassNameNonEmpty && isClassNameValid && isClassNameUnique;
+
+    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+      event.preventDefault();
+      if (canRenameClass) {
+        diagramEditorState.setInlineClassRenamerState(undefined);
+        flowResult(editorStore.renameElement(_class, newClassPath)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
+    const pathInputRef = useRef<HTMLInputElement>(null);
+
+    const changePath: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+      setName(event.target.value);
+
+    useEffect(() => {
+      pathInputRef.current?.focus();
+    }, [inlineClassRenamerState]);
+
+    return (
+      <form className="diagram-editor__inline-class-creator">
+        <div className="input-group">
+          <input
+            className="diagram-editor__inline-class-creator__path input-group__input input--dark"
+            ref={pathInputRef}
+            disabled={isReadOnly}
+            value={name}
+            placeholder="Enter class name"
+            onChange={changePath}
+          />
+          {classCreationValidationErrorMessage && (
+            <div className="input-group__error-message">
+              {classCreationValidationErrorMessage}
+            </div>
+          )}
+        </div>
+        <button
+          type="submit"
+          className="diagram-editor__inline-class-creator__close-btn"
+          onClick={close}
+        />
+      </form>
+    );
+  },
+);
+
+const DiagramEditorInlineClassRenamer = observer(
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const closeEditor = (): void => {
+      diagramEditorState.setInlineClassRenamerState(undefined);
+    };
+    const inlineClassRenamerState = diagramEditorState.inlineClassRenamerState;
+    const anchorPositionPoint = inlineClassRenamerState
+      ? diagramEditorState.renderer.canvasCoordinateToEventCoordinate(
+          diagramEditorState.renderer.modelCoordinateToCanvasCoordinate(
+            inlineClassRenamerState.point,
+          ),
+        )
+      : new Point(0, 0);
+
+    return (
+      <BasePopover
+        onClose={closeEditor}
+        anchorPosition={{
+          left: anchorPositionPoint.x,
+          top: anchorPositionPoint.y,
+        }}
+        anchorReference="anchorPosition"
+        open={Boolean(inlineClassRenamerState)}
+        BackdropProps={{
+          invisible: true,
+        }}
+        elevation={0}
+        marginThreshold={0}
+        disableRestoreFocus={true}
+      >
+        <div className="diagram-editor__inline-class-creator__container">
+          {inlineClassRenamerState && (
+            <DiagramEditorInlineClassRenamerInner
+              inlineClassRenamerState={inlineClassRenamerState}
+            />
+          )}
+        </div>
+      </BasePopover>
     );
   },
 );
@@ -606,7 +805,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
     const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
       event.preventDefault();
       if (canCreateClass) {
-        diagramEditorState.setInlinePropertyEditorState(undefined);
+        diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
         editorStore.graphState.graph
@@ -617,24 +816,6 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.renderer.addClassView(
           _class,
           inlineClassCreatorState.point,
-        );
-        // Close inline editor
-        diagramEditorState.setInlineClassCreatorState(undefined);
-        // Open the class to the side after adding it
-        const classEditorState = guaranteeType(
-          editorStore.openedEditorStates.find(
-            (elementState): elementState is ClassEditorState =>
-              elementState instanceof ClassEditorState &&
-              elementState.element === _class,
-          ) ?? editorStore.createElementState(_class),
-          ClassEditorState,
-        );
-        diagramEditorState.setSidePanelState(
-          new DiagramEditorClassEditorSidePanelState(
-            editorStore,
-            diagramEditorState,
-            classEditorState,
-          ),
         );
       }
     };
@@ -668,9 +849,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
           type="submit"
           className="diagram-editor__inline-class-creator__close-btn"
           onClick={close}
-        >
-          <TimesIcon />
-        </button>
+        />
       </form>
     );
   },
@@ -875,9 +1054,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
           type="submit"
           className="diagram-editor__inline-property-editor__close-btn"
           onClick={close}
-        >
-          <TimesIcon />
-        </button>
+        />
       </form>
     );
   },
@@ -952,10 +1129,11 @@ const DiagramEditorDiagramCanvas = observer(
           diagramEditorState.diagram,
         );
         diagramEditorState.setRenderer(renderer);
-        diagramEditorState.setupDiagramRenderer();
+        diagramEditorState.setupRenderer();
         renderer.render();
         renderer.autoRecenter();
       }
+      return diagramEditorState.cleanUp();
     }, [diagramCanvasRef, diagramEditorState]);
 
     useEffect(() => {
@@ -970,11 +1148,15 @@ const DiagramEditorDiagramCanvas = observer(
         if (!isReadOnly) {
           if (item instanceof ElementDragSource) {
             if (item.data.packageableElement instanceof Class) {
-              const dropPosition = monitor.getSourceClientOffset();
+              const dropPosition = monitor.getClientOffset();
               diagramEditorState.renderer.addClassView(
                 item.data.packageableElement,
                 dropPosition
-                  ? new Point(dropPosition.x, dropPosition.y)
+                  ? diagramEditorState.renderer.canvasCoordinateToModelCoordinate(
+                      diagramEditorState.renderer.eventCoordinateToCanvasCoordinate(
+                        new Point(dropPosition.x, dropPosition.y),
+                      ),
+                    )
                   : undefined,
               );
             }
@@ -1114,6 +1296,9 @@ export const DiagramEditor = observer(() => {
                 diagramEditorState={diagramEditorState}
               />
               <DiagramEditorInlineClassCreator
+                diagramEditorState={diagramEditorState}
+              />
+              <DiagramEditorInlineClassRenamer
                 diagramEditorState={diagramEditorState}
               />
             </>

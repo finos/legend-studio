@@ -27,7 +27,7 @@ export class PureGraphExtension<T extends PackageableElement> {
       index: observable,
       elements: computed,
       setElement: action,
-      removeElement: action,
+      deleteElement: action,
     });
     this._class = _class;
   }
@@ -48,7 +48,15 @@ export class PureGraphExtension<T extends PackageableElement> {
     this.index.set(path, val);
   }
 
-  removeElement(path: string): void {
+  deleteElement(path: string): void {
     this.index.delete(path);
+  }
+
+  renameElement(oldPath: string, newPath: string): void {
+    const element = this.getElement(oldPath);
+    if (element) {
+      this.deleteElement(oldPath);
+      this.setElement(newPath, element);
+    }
   }
 }

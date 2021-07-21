@@ -39,7 +39,6 @@ export class Package extends PackageableElement implements Hashable {
 
     makeObservable(this, {
       children: observable,
-      setPackage: action,
       addChild: action,
       addElement: action,
       hashCode: override,
@@ -56,16 +55,13 @@ export class Package extends PackageableElement implements Hashable {
     return newPackage;
   }
 
-  setPackage(value: Package): void {
-    this.package = value;
-  }
   addChild(value: PackageableElement): void {
     addUniqueEntry(this.children, value);
   }
 
   addElement(element: PackageableElement): void {
     this.addChild(element);
-    element.package = this;
+    element.setPackage(this);
   }
 
   get fullPath(): string {
@@ -79,7 +75,9 @@ export class Package extends PackageableElement implements Hashable {
   }
 
   deleteElement(packageableElement: PackageableElement): void {
-    this.children = this.children.filter((c) => c !== packageableElement);
+    this.children = this.children.filter(
+      (child) => child !== packageableElement,
+    );
   }
 
   /**

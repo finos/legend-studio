@@ -147,4 +147,16 @@
   &__floating-item {
     padding-left: 1rem;
   }
+
+  &__element-renamer {
+    border: 0.1rem solid var(--color-dark-grey-85) !important;
+
+    &__input {
+      height: 2.8rem;
+    }
+
+    &__close-btn {
+      display: none;
+    }
+  }
 }

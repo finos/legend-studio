@@ -56,6 +56,7 @@ export class ExplorerTreeState {
   dependencyTreeData?: TreeData<PackageTreeNodeData>;
   selectedNode?: PackageTreeNodeData;
   fileGenerationTreeData?: TreeData<GenerationTreeNodeData>;
+  elementToRename?: PackageableElement;
   isBuilt = false;
 
   constructor(editorStore: EditorStore) {
@@ -68,6 +69,7 @@ export class ExplorerTreeState {
       selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
       isBuilt: observable,
+      elementToRename: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -75,6 +77,7 @@ export class ExplorerTreeState {
       setDependencyTreeData: action,
       setFileGenerationTreeData: action,
       setSelectedNode: action,
+      setElementToRename: action,
       build: action,
       buildImmutableModelTrees: action,
       reprocess: action,
@@ -141,6 +144,9 @@ export class ExplorerTreeState {
   }
   setFileGenerationTreeData(data: TreeData<GenerationTreeNodeData>): void {
     this.fileGenerationTreeData = data;
+  }
+  setElementToRename(val: PackageableElement | undefined): void {
+    this.elementToRename = val;
   }
 
   setSelectedNode(node: PackageTreeNodeData | undefined): void {
