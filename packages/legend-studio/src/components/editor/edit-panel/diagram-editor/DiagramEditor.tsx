@@ -262,14 +262,6 @@ const DiagramRendererHotkeyInfosModal = observer(
                   <div className="hotkey__key">&rarr;</div>
                 </div>
               </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Add the selected class as property of the opened class
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">&larr;</div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

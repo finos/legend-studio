@@ -223,8 +223,6 @@ export class DiagramRenderer {
   editProperty: (property: AbstractProperty, point: Point) => void = noop();
   editPropertyView: (propertyView: PropertyHolderView) => void = noop();
   addSimpleProperty: (classView: ClassView) => void = noop();
-  addSelectedClassAsPropertyOfOpenedClass: (classView: ClassView) => void =
-    noop();
 
   constructor(div: HTMLDivElement, diagram: Diagram) {
     makeObservable(this, {
@@ -2172,6 +2170,7 @@ export class DiagramRenderer {
       this.manageVirtualScreen();
       this.drawAll();
     }
+
     // Eject the property
     else if (e.key === 'ArrowRight') {
       if (!this.isReadOnly) {
@@ -2202,14 +2201,9 @@ export class DiagramRenderer {
         }
       }
     }
-    // Add currently selected class as property to the currently opened class
-    else if (e.key === 'ArrowLeft') {
-      if (!this.isReadOnly && this.selectedClasses.length !== 0) {
-        this.selectedClasses.forEach((classView) =>
-          this.addSelectedClassAsPropertyOfOpenedClass(classView),
-        );
-      }
-    } else if (e.key === 'ArrowUp') {
+
+    // Add supertypes of selected classes to the diagram
+    else if (e.key === 'ArrowUp') {
       const views = this.getSuperTypeLevels(
         this.selectedClasses,
         this.diagram,

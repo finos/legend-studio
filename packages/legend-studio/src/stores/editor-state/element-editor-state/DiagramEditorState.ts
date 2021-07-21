@@ -273,31 +273,6 @@ export class DiagramEditorState extends ElementEditorState {
     };
     this.renderer.onBackgroundDoubleClick = createNewClassView;
     this.renderer.onAddClassViewClick = createNewClassView;
-    this.renderer.addSelectedClassAsPropertyOfOpenedClass = (
-      classView: ClassView,
-    ): void => {
-      if (
-        this.sidePanelState instanceof
-        DiagramEditorClassViewEditorSidePanelState
-      ) {
-        const _class = this.sidePanelState.classEditorState.class;
-        _class.addProperty(
-          new Property(
-            `property_${_class.properties.length + 1}`,
-            this.editorStore.graphState.graph.getTypicalMultiplicity(
-              TYPICAL_MULTIPLICITY_TYPE.ONE,
-            ),
-            GenericTypeExplicitReference.create(
-              new GenericType(classView.class.value),
-            ),
-            _class,
-          ),
-        );
-        // TODO?: should we also try to add property views between these 2 classes?
-        // we would need to scan all possible source class view(s) and potentially link them to
-        // the class view selected or all class view(s) for the class of the selected class view
-      }
-    };
     this.renderer.editProperty = (
       property: AbstractProperty,
       point: Point,
