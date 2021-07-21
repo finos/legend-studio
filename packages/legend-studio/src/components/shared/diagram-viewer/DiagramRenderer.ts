@@ -572,7 +572,7 @@ export class DiagramRenderer {
           this.addRelationshipToDiagramFn = (
             startClassView: ClassView,
             targetClassView: ClassView,
-          ): PropertyView => {
+          ): PropertyView | undefined => {
             const property = new Property(
               `property_${startClassView.class.value.properties.length + 1}`,
               new Multiplicity(1, 1),
@@ -581,15 +581,21 @@ export class DiagramRenderer {
               ),
               startClassView.class.value,
             );
-            const pView = new PropertyView(
-              this.diagram,
-              PropertyExplicitReference.create(property),
-              startClassView,
-              targetClassView,
-            );
             startClassView.class.value.addProperty(property);
-            this.diagram.addPropertyView(pView);
-            return pView;
+            // only create property view if the classviews are different
+            // else we end up with a weird rendering where the property view
+            // is not targetable
+            if (startClassView !== targetClassView) {
+              const pView = new PropertyView(
+                this.diagram,
+                PropertyExplicitReference.create(property),
+                startClassView,
+                targetClassView,
+              );
+              this.diagram.addPropertyView(pView);
+              return pView;
+            }
+            return undefined;
           };
           break;
         }
@@ -2847,9 +2853,7 @@ export class DiagramRenderer {
           break;
       }
     } else {
-      this.manageVirtualScreen();
-      this.clearScreen();
-      this.drawAll();
+      this.drawScreen();
 
       const eventPointInCanvasCoordinate =
         this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y));
