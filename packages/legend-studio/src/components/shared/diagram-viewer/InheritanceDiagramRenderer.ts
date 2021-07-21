@@ -19,6 +19,7 @@ import type { Class } from '../../../models/metamodels/pure/model/packageableEle
 import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 import { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import { uuid } from '@finos/legend-studio-shared';
 
 export class InheritanceDiagramRenderer extends DiagramRenderer {
   constructor(div: HTMLDivElement, _class: Class) {
@@ -32,7 +33,7 @@ export class InheritanceDiagramRenderer extends DiagramRenderer {
         [
           new ClassView(
             this.diagram,
-            '',
+            uuid(),
             PackageableElementExplicitReference.create(_class),
           ),
         ],
@@ -41,6 +42,7 @@ export class InheritanceDiagramRenderer extends DiagramRenderer {
         -1,
       ),
       this.diagram,
+      true,
       true,
     );
     this.diagram.classViews = result[0];
