@@ -343,6 +343,7 @@ const transformClassMappingPropertyMappings = (
   values: PropertyMapping[],
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
+  isTransformingSourceId: boolean,
 ): V1_PropertyMapping[] =>
   values
     .filter((value) => !value.isStub)
@@ -351,6 +352,7 @@ const transformClassMappingPropertyMappings = (
         value,
         isTransformingEmbeddedPropertyMapping,
         context,
+        isTransformingSourceId,
       ),
     );
 
@@ -398,6 +400,7 @@ const transformEmbeddedFlatDataPropertyMapping = (
     element.propertyMappings,
     false, // TODO: we might ned to turn this on in the future once we start working on the gramar roundtrip for flat-data
     context,
+    false,
   );
   embedded.root = false;
   embedded.source = transformPropertyMappingSource(
@@ -443,6 +446,7 @@ const transformRelationalPropertyMapping = (
   element: RelationalPropertyMapping,
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
+  isTransformingSourceId: boolean,
 ): V1_RelationalPropertyMapping => {
   const propertyMapping = new V1_RelationalPropertyMapping();
   propertyMapping.enumMappingId = transformOptionalPropertyMappingTransformer(
@@ -464,7 +468,10 @@ const transformRelationalPropertyMapping = (
           [SOURCE_INFORMATION_KEY],
         ),
   ) as V1_RawRelationalOperationElement;
-  propertyMapping.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  // NOTE: isTransformingSourceId is needed for the roundtrip of association relational property mapping
+  propertyMapping.source = isTransformingSourceId
+    ? transformPropertyMappingSource(element.sourceSetImplementation)
+    : undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -498,6 +505,7 @@ const transformEmbeddedRelationalPropertyMapping = (
     element.propertyMappings,
     true,
     context,
+    false,
   );
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
@@ -561,6 +569,7 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     element.propertyMappings,
     true,
     context,
+    false,
   );
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
@@ -572,6 +581,7 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     element.otherwisePropertyMapping,
     true,
     context,
+    false,
   ) as V1_RelationalPropertyMapping;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
@@ -583,10 +593,14 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
 
 const transformXStorePropertyMapping = (
   element: XStorePropertyMapping,
+  isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
 ): V1_XStorePropertyMapping => {
   const xstore = new V1_XStorePropertyMapping();
-  xstore.property = V1_transformPropertyReference(element.property, false);
+  xstore.property = V1_transformPropertyReference(
+    element.property,
+    isTransformingEmbeddedPropertyMapping,
+  );
   xstore.source = transformPropertyMappingSource(
     element.sourceSetImplementation,
   );
@@ -633,15 +647,18 @@ class PropertyMappingTransformer
   implements PropertyMappingVisitor<V1_PropertyMapping>
 {
   isTransformingEmbeddedPropertyMapping = false;
+  isTransformingSourceId = false;
   context: V1_GraphTransformerContext;
 
   constructor(
     isTransformingEmbeddedPropertyMapping: boolean,
     context: V1_GraphTransformerContext,
+    isTransformingSourceId: boolean,
   ) {
     this.isTransformingEmbeddedPropertyMapping =
       isTransformingEmbeddedPropertyMapping;
     this.context = context;
+    this.isTransformingSourceId = isTransformingSourceId;
   }
 
   visit_PurePropertyMapping(
@@ -672,6 +689,7 @@ class PropertyMappingTransformer
       propertyMapping,
       this.isTransformingEmbeddedPropertyMapping,
       this.context,
+      this.isTransformingSourceId,
     );
   }
   visit_EmbeddedRelationalPropertyMapping(
@@ -703,7 +721,11 @@ class PropertyMappingTransformer
   visit_XStorePropertyMapping(
     propertyMapping: XStorePropertyMapping,
   ): V1_PropertyMapping {
-    return transformXStorePropertyMapping(propertyMapping, this.context);
+    return transformXStorePropertyMapping(
+      propertyMapping,
+      this.isTransformingEmbeddedPropertyMapping,
+      this.context,
+    );
   }
   visit_AggregationAwarePropertyMapping(
     propertyMapping: AggregationAwarePropertyMapping,
@@ -763,6 +785,7 @@ const transformPureInstanceSetImplementation = (
     element.propertyMappings,
     true,
     context,
+    false,
   );
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
@@ -792,6 +815,7 @@ const transformFlatDataInstanceSetImpl = (
     element.propertyMappings,
     true,
     context,
+    false,
   );
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
@@ -839,6 +863,7 @@ const transformRootRelationalSetImpl = (
     element.propertyMappings,
     false,
     context,
+    false,
   );
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
@@ -859,6 +884,7 @@ const transformRelationalInstanceSetImpl = (
     element.propertyMappings,
     true,
     context,
+    false,
   );
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
@@ -958,6 +984,7 @@ const transformAggregationAwareSetImplementation = (
     element.propertyMappings,
     false,
     context,
+    false,
   );
   classMapping.aggregateSetImplementations =
     element.aggregateSetImplementations.map((aggregateSetImpl) =>
@@ -971,11 +998,13 @@ function transformProperyMapping(
   propertyMapping: PropertyMapping,
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
+  isTransformingSourceId: boolean,
 ): V1_PropertyMapping {
   return propertyMapping.accept_PropertyMappingVisitor(
     new PropertyMappingTransformer(
       isTransformingEmbeddedPropertyMapping,
       context,
+      isTransformingSourceId,
     ),
   );
 }
@@ -1057,8 +1086,9 @@ const transformRelationalAssociationImplementation = (
   );
   relationalMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
-    false,
+    true,
     context,
+    true,
   );
   relationalMapping.id = mappingElementIdSerializer(element.id);
   return relationalMapping;
@@ -1075,6 +1105,7 @@ const transformXStorelAssociationImplementation = (
     element.propertyMappings,
     false,
     context,
+    false,
   );
   xStoreMapping.id = mappingElementIdSerializer(element.id);
   return xStoreMapping;

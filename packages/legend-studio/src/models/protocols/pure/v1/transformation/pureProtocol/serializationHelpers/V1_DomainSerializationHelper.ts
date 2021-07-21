@@ -275,8 +275,6 @@ export const V1_classSchema = createModelSchema(V1_Class, {
       ),
   ),
   name: primitive(),
-  // NOTE: we don't process milestoning at the moment so this is added to ensure
-  // consistency between the protocol in Studio and Engine only.
   originalMilestonedProperties: custom(
     (values) => serializeArray([], () => SKIP, true),
     (values) => deserializeArray([], () => SKIP, false),
@@ -352,6 +350,10 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
   name: primitive(),
   package: primitive(),
   properties: list(usingModelSchema(V1_propertySchema)),
+  originalMilestonedProperties: custom(
+    (values) => serializeArray([], () => SKIP, true),
+    (values) => deserializeArray([], () => SKIP, false),
+  ), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
     custom(
