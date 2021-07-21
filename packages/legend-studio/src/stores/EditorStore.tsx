@@ -56,6 +56,7 @@ import { DiagramEditorState } from './editor-state/element-editor-state/DiagramE
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
 import {
+  addUniqueEntry,
   isNonNullable,
   assertErrorThrown,
   guaranteeType,
@@ -124,14 +125,14 @@ export abstract class EditorExtensionState {
 }
 
 export class EditorHotkey {
-  name: HOTKEY;
+  name: string;
   keyBinds: string[];
-  handler: (event: KeyboardEvent | undefined) => void;
+  handler: (event?: KeyboardEvent) => void;
 
   constructor(
-    name: HOTKEY,
+    name: string,
     keyBinds: string[],
-    handler: (event: KeyboardEvent | undefined) => void,
+    handler: (event?: KeyboardEvent) => void,
   ) {
     this.name = name;
     this.keyBinds = keyBinds;
@@ -199,6 +200,7 @@ export class EditorStore {
       setMode: action,
       setDevTool: action,
       setHotkeys: action,
+      addHotKey: action,
       resetHotkeys: action,
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
@@ -388,38 +390,53 @@ export class EditorStore {
   setMode(val: EDITOR_MODE): void {
     this.mode = val;
   }
+
   setDevTool(val: boolean): void {
     this.isDevToolEnabled = val;
   }
+
   setHotkeys(val: EditorHotkey[]): void {
     this.hotkeys = val;
   }
+
+  addHotKey(val: EditorHotkey): void {
+    addUniqueEntry(this.hotkeys, val);
+  }
+
   resetHotkeys(): void {
     this.hotkeys = this.defaultHotkeys;
   }
+
   setBlockGlobalHotkeys(val: boolean): void {
     this.blockGlobalHotkeys = val;
   }
+
   setCurrentEditorState(val: EditorState | undefined): void {
     this.currentEditorState = val;
   }
+
   setBackdrop(val: boolean): void {
     this.backdrop = val;
   }
+
   setExpandedMode(val: boolean): void {
     this.isInExpandedMode = val;
   }
+
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
     this.activeAuxPanelMode = val;
   }
+
   setIgnoreNavigationBlocking(val: boolean): void {
     this.ignoreNavigationBlocking = val;
   }
+
   refreshCurrentEntityDiffEditorState(): void {
     if (this.currentEditorState instanceof EntityDiffEditorState) {
       this.currentEditorState.refresh();
     }
   }
+
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
     if (this._isDisposed) {
       return;
@@ -1090,9 +1107,14 @@ export class EditorStore {
   }
 
   createGlobalHotKeyAction =
-    (handler: () => void): ((event: KeyboardEvent | undefined) => void) =>
-    (event: KeyboardEvent | undefined): void => {
-      event?.preventDefault();
+    (
+      handler: (event?: KeyboardEvent) => void,
+      preventDefault = true,
+    ): ((event?: KeyboardEvent) => void) =>
+    (event?: KeyboardEvent): void => {
+      if (preventDefault) {
+        event?.preventDefault();
+      }
       // FIXME: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
       const isResolvingConflicts =
         this.isInConflictResolutionMode &&
@@ -1103,7 +1125,7 @@ export class EditorStore {
           !this.blockGlobalHotkeys) ||
         this.isInViewerMode
       ) {
-        handler();
+        handler(event);
       }
     };
 

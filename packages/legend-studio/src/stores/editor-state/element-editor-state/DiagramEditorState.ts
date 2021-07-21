@@ -16,6 +16,7 @@
 
 import { computed, action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
+import { EditorHotkey } from '../../EditorStore';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -41,6 +42,28 @@ import type { Point } from '../../../models/metamodels/pure/model/packageableEle
 import type { PropertyHolderView } from '../../../models/metamodels/pure/model/packageableElements/diagram/PropertyHolderView';
 import type { PropertyReference } from '../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 import { PropertyExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
+
+enum DIAGRAM_EDITOR_HOTKEY {
+  RECENTER = 'RECENTER',
+  USE_ZOOM_TOOL = 'USE_ZOOM_TOOL',
+  USE_VIEW_TOOL = 'USE_VIEW_TOOL',
+  USE_PAN_TOOL = 'USE_PAN_TOOL',
+  USE_PROPERTY_TOOL = 'USE_PROPERTY_TOOL',
+  USE_INHERITANCE_TOOL = 'USE_INHERITANCE_TOOL',
+  ADD_CLASS = 'ADD_CLASS',
+  EJECT_PROPERTY = 'EJECT_PROPERTY',
+}
+
+const DIAGRAM_EDITOR_HOTKEY_MAP = Object.freeze({
+  [DIAGRAM_EDITOR_HOTKEY.RECENTER]: 'r',
+  [DIAGRAM_EDITOR_HOTKEY.USE_ZOOM_TOOL]: 'z',
+  [DIAGRAM_EDITOR_HOTKEY.USE_VIEW_TOOL]: 'v',
+  [DIAGRAM_EDITOR_HOTKEY.USE_PAN_TOOL]: 'm',
+  [DIAGRAM_EDITOR_HOTKEY.USE_PROPERTY_TOOL]: 'p',
+  [DIAGRAM_EDITOR_HOTKEY.USE_INHERITANCE_TOOL]: 'i',
+  [DIAGRAM_EDITOR_HOTKEY.ADD_CLASS]: '+',
+  [DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY]: 'ArrowRight',
+});
 
 export abstract class DiagramEditorSidePanelState {
   uuid = uuid();
@@ -252,7 +275,7 @@ export class DiagramEditorState extends ElementEditorState {
     this.inlineClassCreatorState = val;
   }
 
-  setupDiagramRenderer(): void {
+  setupRenderer(): void {
     this.renderer.setIsReadOnly(this.isReadOnly);
     this.renderer.editClassView = (classView: ClassView): void => {
       this.setSidePanelState(
@@ -320,7 +343,68 @@ export class DiagramEditorState extends ElementEditorState {
       );
       this.renderer.render();
     };
+
+    /**
+     * NOTE: although our renderer handles hotkeys, it only does so
+     * when it is in focus. This does not happen when the user just
+     * open the diagram editor, or click out of it. As such, here we create
+     * some global hotkeys that will call the renderer's hotkey handler method.
+     *
+     * We use {@link createDiagramHotKeyAction} to ensure global hotkeys are appropriately
+     * called and especially not called twice when the diagram is in focus. In such case,
+     * its native hotkey handlers will take precedence
+     */
+    [
+      DIAGRAM_EDITOR_HOTKEY.RECENTER,
+      DIAGRAM_EDITOR_HOTKEY.USE_ZOOM_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.USE_VIEW_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.USE_PAN_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.USE_PROPERTY_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.USE_INHERITANCE_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.ADD_CLASS,
+      DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY,
+    ].forEach((key) => {
+      this.editorStore.addHotKey(
+        new EditorHotkey(
+          key,
+          [DIAGRAM_EDITOR_HOTKEY_MAP[key]],
+          this.createDiagramHotKeyAction((event?: KeyboardEvent) => {
+            if (event) {
+              this.renderer.keydown(event);
+            }
+          }),
+        ),
+      );
+    });
   }
+
+  cleanUp(): void {
+    this.editorStore.resetHotkeys();
+  }
+
+  private createDiagramHotKeyAction = (
+    handler: (event?: KeyboardEvent) => void,
+  ): ((event?: KeyboardEvent) => void) =>
+    this.editorStore.createGlobalHotKeyAction((event?: KeyboardEvent): void => {
+      if (
+        // make sure the current active editor is this diagram editor
+        this.editorStore.currentEditorState === this &&
+        // make sure the renderer is initialized
+        this.isDiagramRendererInitialized &&
+        // make sure the renderer canvas is currently not being in focused
+        // so we don't end up triggering a hotkey twice, because natively the renderer
+        // listens to keydown event as well
+        this.renderer.div !== document.activeElement &&
+        // since we use hotkeys that can be easily in text input
+        // we would need to do this check to make sure we don't accidentally
+        // trigger hotkeys when the user is typing
+        !['input', 'textarea', 'select'].includes(
+          document.activeElement?.tagName.toLowerCase() ?? '',
+        )
+      ) {
+        handler(event);
+      }
+    }, false);
 
   reprocess(
     newElement: PackageableElement,

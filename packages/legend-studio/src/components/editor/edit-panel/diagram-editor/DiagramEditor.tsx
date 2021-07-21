@@ -996,10 +996,11 @@ const DiagramEditorDiagramCanvas = observer(
           diagramEditorState.diagram,
         );
         diagramEditorState.setRenderer(renderer);
-        diagramEditorState.setupDiagramRenderer();
+        diagramEditorState.setupRenderer();
         renderer.render();
         renderer.autoRecenter();
       }
+      return diagramEditorState.cleanUp();
     }, [diagramCanvasRef, diagramEditorState]);
 
     useEffect(() => {
