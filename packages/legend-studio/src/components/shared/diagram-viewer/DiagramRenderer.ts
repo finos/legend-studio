@@ -2094,10 +2094,7 @@ export class DiagramRenderer {
           this.selectedClasses.forEach((classView) => {
             classView.setHideProperties(!classView.hideProperties);
           });
-          this.clearScreen(); // draw the first time so that the virtualscreen has the right size
-          this.drawAll();
-          this.manageVirtualScreen();
-          this.drawAll();
+          this.drawScreen();
         }
       }
     }
@@ -2108,10 +2105,7 @@ export class DiagramRenderer {
           this.selectedClasses.forEach((classView) => {
             classView.setHideStereotypes(!classView.hideStereotypes);
           });
-          this.clearScreen(); // draw the first time so that the virtualscreen has the right size
-          this.drawAll();
-          this.manageVirtualScreen();
-          this.drawAll();
+          this.drawScreen();
         }
       }
     }
@@ -2122,10 +2116,7 @@ export class DiagramRenderer {
           this.selectedClasses.forEach((classView) => {
             classView.setHideTaggedValues(!classView.hideTaggedValues);
           });
-          this.clearScreen(); // draw the first time so that the virtualscreen has the right size
-          this.drawAll();
-          this.manageVirtualScreen();
-          this.drawAll();
+          this.drawScreen();
         }
       }
     }
@@ -2382,7 +2373,7 @@ export class DiagramRenderer {
     return newClasses;
   }
 
-  // DOC ???
+  // TODO: add doc
   potentiallyShiftRelationships(
     assoViews: RelationshipView[],
     selectedClasses: ClassView[],
