@@ -28,19 +28,16 @@ export class InheritanceDiagramRenderer extends DiagramRenderer {
   }
 
   loadClass(_class: Class): void {
+    const cv = new ClassView(
+      this.diagram,
+      uuid(),
+      PackageableElementExplicitReference.create(_class),
+    );
+
+    this.ensureClassViewMeetMinDimensions(cv);
+
     const result = this.layoutTaxonomy(
-      this.getSuperTypeLevels(
-        [
-          new ClassView(
-            this.diagram,
-            uuid(),
-            PackageableElementExplicitReference.create(_class),
-          ),
-        ],
-        this.diagram,
-        0,
-        -1,
-      ),
+      this.getSuperTypeLevels([cv], this.diagram, 0, -1),
       this.diagram,
       true,
       true,
