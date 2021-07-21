@@ -55,7 +55,6 @@ import {
   MenuContentItem,
   PlusIcon,
   SquareIcon,
-  TimesIcon,
 } from '@finos/legend-studio-components';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
@@ -734,9 +733,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
           type="submit"
           className="diagram-editor__inline-class-creator__close-btn"
           onClick={close}
-        >
-          <TimesIcon />
-        </button>
+        />
       </form>
     );
   },
@@ -941,9 +938,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
           type="submit"
           className="diagram-editor__inline-property-editor__close-btn"
           onClick={close}
-        >
-          <TimesIcon />
-        </button>
+        />
       </form>
     );
   },
