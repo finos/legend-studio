@@ -576,7 +576,6 @@ export abstract class BasicModel {
       );
       extension.deleteElement(element.path);
     }
-    this.cleanUpDeadReferences();
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
@@ -736,9 +735,5 @@ export abstract class BasicModel {
     // as such `this.sectionIndicesIndex.delete(sectionIndex.path)` won't work because the path is without the package
     this.sectionIndicesIndex = new Map<string, SectionIndex>();
     this.elementSectionMap = new Map<string, Section>();
-  }
-
-  cleanUpDeadReferences(): void {
-    this.diagrams.forEach((diagram) => diagram.cleanUpDeadReferences(this));
   }
 }
