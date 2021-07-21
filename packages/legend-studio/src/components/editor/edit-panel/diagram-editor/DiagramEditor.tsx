@@ -179,7 +179,7 @@ const DiagramRendererHotkeyInfosModal = observer(
                   Add class
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">+</div>
+                  <div className="hotkey__key">C</div>
                 </div>
               </div>
 
@@ -259,7 +259,29 @@ const DiagramRendererHotkeyInfosModal = observer(
                   Eject the property
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
                   <div className="hotkey__key">&rarr;</div>
+                </div>
+              </div>
+
+              <div className="diagram-editor__hotkey__groups__divider" />
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Populate immediate supertypes of selected class
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">&uarr;</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Populate immediate subtypes of selected class
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">&darr;</div>
                 </div>
               </div>
             </div>
@@ -408,7 +430,7 @@ const DiagramEditorToolPanel = observer(
               renderer.interactionMode === DIAGRAM_INTERACTION_MODE.ADD_CLASS,
           })}
           tabIndex={-1}
-          title="New Class... (+)"
+          title="Add class tool (C)"
           disabled={isReadOnly}
           onClick={createModeSwitcher(
             DIAGRAM_INTERACTION_MODE.ADD_CLASS,
@@ -668,7 +690,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
     const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
       event.preventDefault();
       if (canCreateClass) {
-        diagramEditorState.setInlinePropertyEditorState(undefined);
+        diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
         editorStore.graphState.graph

@@ -1949,7 +1949,7 @@ export class DiagramRenderer {
 
   keydown(e: KeyboardEvent): void {
     // Remove selected view(s)
-    if (e.key === 'Delete') {
+    if ('Delete' === e.key) {
       if (!this.isReadOnly) {
         this.selectedClasses.forEach((classView) => {
           this.diagram.deleteClassView(classView);
@@ -2006,7 +2006,7 @@ export class DiagramRenderer {
     // NOTE: since the current behavior when editing property is to immediately
     // focus on the property name input when the inline editor pops up
     // we need to call `preventDefault` to avoid typing `e` in the property name input
-    else if (e.key === 'e') {
+    else if ('e' === e.key) {
       if (!this.isReadOnly && this.selectedClassProperty) {
         this.editProperty(
           this.selectedClassProperty.property,
@@ -2022,7 +2022,7 @@ export class DiagramRenderer {
     }
 
     // Recenter
-    else if (e.key === 'r') {
+    else if ('r' === e.key) {
       if (this.selectedClasses.length !== 0) {
         const firstClass = getNullableFirstElement(this.selectedClasses);
         if (firstClass) {
@@ -2036,7 +2036,7 @@ export class DiagramRenderer {
       }
     }
     // Zoom
-    else if (e.key === 'z') {
+    else if ('z' === e.key) {
       this.changeMode(
         this.interactionMode !== DIAGRAM_INTERACTION_MODE.ZOOM_IN
           ? DIAGRAM_INTERACTION_MODE.ZOOM_IN
@@ -2046,21 +2046,21 @@ export class DiagramRenderer {
     }
 
     // Use View Tool
-    else if (e.key === 'v') {
+    else if ('v' === e.key) {
       this.changeMode(
         DIAGRAM_INTERACTION_MODE.LAYOUT,
         DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
       );
     }
     // Use Pan Tool
-    else if (e.key === 'm') {
+    else if ('m' === e.key) {
       this.changeMode(
         DIAGRAM_INTERACTION_MODE.PAN,
         DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
       );
     }
     // Use Property Tool
-    else if (e.key === 'p') {
+    else if ('p' === e.key) {
       if (!this.isReadOnly) {
         this.changeMode(
           DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
@@ -2069,7 +2069,7 @@ export class DiagramRenderer {
       }
     }
     // Use Inheritance Tool
-    else if (e.key === 'i') {
+    else if ('i' === e.key) {
       if (!this.isReadOnly) {
         this.changeMode(
           DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
@@ -2078,7 +2078,7 @@ export class DiagramRenderer {
       }
     }
     // Add Class
-    else if (e.key === '+') {
+    else if ('c' === e.key) {
       if (!this.isReadOnly) {
         this.changeMode(
           DIAGRAM_INTERACTION_MODE.ADD_CLASS,
@@ -2088,7 +2088,7 @@ export class DiagramRenderer {
     }
 
     // Hide/show properties for selected element(s)
-    else if (e.altKey && e.code === 'KeyP') {
+    else if (e.altKey && 'KeyP' === e.code) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2099,7 +2099,7 @@ export class DiagramRenderer {
       }
     }
     // Hide/show stereotypes for selected element(s)
-    else if (e.altKey && e.code === 'KeyS') {
+    else if (e.altKey && 'KeyS' === e.code) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2110,7 +2110,7 @@ export class DiagramRenderer {
       }
     }
     // Hide/show tagged values for selected element(s)
-    else if (e.altKey && e.code === 'KeyT') {
+    else if (e.altKey && 'KeyT' === e.code) {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
@@ -2122,7 +2122,7 @@ export class DiagramRenderer {
     }
 
     // Add a new simple property to selected class
-    else if (e.altKey && e.key === 'ArrowDown') {
+    else if (e.altKey && 'ArrowDown' === e.key) {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.addSimpleProperty(this.selectedClasses[0]);
       }
@@ -2163,7 +2163,7 @@ export class DiagramRenderer {
     }
 
     // Eject the property
-    else if (e.key === 'ArrowRight') {
+    else if (e.altKey && 'ArrowRight' === e.key) {
       if (!this.isReadOnly) {
         if (this.mouseOverProperty) {
           if (

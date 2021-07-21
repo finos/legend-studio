@@ -61,8 +61,8 @@ const DIAGRAM_EDITOR_HOTKEY_MAP = Object.freeze({
   [DIAGRAM_EDITOR_HOTKEY.USE_PAN_TOOL]: 'm',
   [DIAGRAM_EDITOR_HOTKEY.USE_PROPERTY_TOOL]: 'p',
   [DIAGRAM_EDITOR_HOTKEY.USE_INHERITANCE_TOOL]: 'i',
-  [DIAGRAM_EDITOR_HOTKEY.ADD_CLASS]: '+',
-  [DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY]: 'ArrowRight',
+  [DIAGRAM_EDITOR_HOTKEY.ADD_CLASS]: 'c',
+  [DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY]: 'alt+ArrowRight',
 });
 
 export abstract class DiagramEditorSidePanelState {
@@ -398,9 +398,10 @@ export class DiagramEditorState extends ElementEditorState {
         // since we use hotkeys that can be easily in text input
         // we would need to do this check to make sure we don't accidentally
         // trigger hotkeys when the user is typing
-        !['input', 'textarea', 'select'].includes(
-          document.activeElement?.tagName.toLowerCase() ?? '',
-        )
+        (!document.activeElement ||
+          !['input', 'textarea', 'select'].includes(
+            document.activeElement.tagName.toLowerCase() ?? '',
+          ))
       ) {
         handler(event);
       }
