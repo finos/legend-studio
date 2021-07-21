@@ -226,7 +226,6 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
 
               <div className="diagram-editor__hotkey__groups__divider" />
-
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
                   Add simple property to selected class
@@ -237,6 +236,18 @@ const DiagramRendererHotkeyInfosModal = observer(
                     <PlusIcon />
                   </div>
                   <div className="hotkey__key">&darr;</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Eject the property
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
+                  <div className="hotkey__key">&rarr;</div>
                 </div>
               </div>
 
@@ -256,36 +267,6 @@ const DiagramRendererHotkeyInfosModal = observer(
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">&uarr;</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Eject the property
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">Alt</div>
-                  <div className="hotkey__plus">
-                    <PlusIcon />
-                  </div>
-                  <div className="hotkey__key">&rarr;</div>
-                </div>
-              </div>
-
-              <div className="diagram-editor__hotkey__groups__divider" />
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Populate immediate supertypes of selected classes
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">&uarr;</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Populate immediate subtypes of selected classes
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">&darr;</div>
                 </div>
               </div>
             </div>
