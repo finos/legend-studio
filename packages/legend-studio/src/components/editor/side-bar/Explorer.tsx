@@ -80,10 +80,11 @@ const ExplorerContextMenu = observer(
   (
     props: {
       node?: PackageTreeNodeData;
+      nodeIsImmutable?: boolean;
     },
     ref: React.Ref<HTMLDivElement>,
   ) => {
-    const { node } = props;
+    const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const extraExplorerContextMenuItems =
@@ -101,7 +102,7 @@ const ExplorerContextMenu = observer(
           </Fragment>
         ));
     const projectId = editorStore.sdlcState.currentProjectId;
-    const isNotInViewerMode = !editorStore.isInViewerMode;
+    const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const _package = node
       ? node.packageableElement instanceof Package
         ? node.packageableElement
@@ -162,7 +163,7 @@ const ExplorerContextMenu = observer(
           type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
       );
 
-    if (_package && isNotInViewerMode) {
+    if (_package && !isReadOnly) {
       return (
         <MenuContent data-testid={CORE_TEST_ID.EXPLORER_CONTEXT_MENU}>
           {elementTypes.map((type) => (
@@ -191,19 +192,21 @@ const ExplorerContextMenu = observer(
     return (
       <MenuContent data-testid={CORE_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {extraExplorerContextMenuItems}
-        {isNotInViewerMode && <MenuContentItem>Rename (WIP)</MenuContentItem>}
-        {isNotInViewerMode && node && (
+        {!isReadOnly && node && (
           <>
+            <MenuContentItem>Rename (WIP)</MenuContentItem>
             <MenuContentItem onClick={deleteElement}>Delete</MenuContentItem>
-            <MenuContentItem onClick={openElementInViewerMode}>
-              View in Project
-            </MenuContentItem>
           </>
         )}
         {node && (
-          <MenuContentItem onClick={getElementLinkInViewerMode}>
-            Copy Link
-          </MenuContentItem>
+          <>
+            <MenuContentItem onClick={openElementInViewerMode}>
+              View in Project
+            </MenuContentItem>
+            <MenuContentItem onClick={getElementLinkInViewerMode}>
+              Copy Link
+            </MenuContentItem>
+          </>
         )}
       </MenuContent>
     );
@@ -249,7 +252,7 @@ const ProjectConfig = observer(() => {
 
 type PackageTreeNodeContainerProps = TreeNodeContainerProps<
   PackageTreeNodeData,
-  { disableContextMenu: boolean }
+  { disableContextMenu: boolean; isContextImmutable?: boolean }
 >;
 
 const PackageTreeNodeContainer = observer(
@@ -258,7 +261,7 @@ const PackageTreeNodeContainer = observer(
     const editorStore = useEditorStore();
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const { disableContextMenu } = innerProps;
+    const { disableContextMenu, isContextImmutable } = innerProps;
     const [, dragRef] = useDrag(
       () => ({
         type: node.dndType,
@@ -300,7 +303,12 @@ const PackageTreeNodeContainer = observer(
 
     return (
       <ContextMenu
-        content={<ExplorerContextMenu node={node} />}
+        content={
+          <ExplorerContextMenu
+            node={node}
+            nodeIsImmutable={isContextImmutable}
+          />
+        }
         disabled={disableContextMenu}
         menuProps={{ elevation: 7 }}
         onOpen={onContextMenuOpen}
@@ -513,7 +521,8 @@ const ExplorerTrees = observer(() => {
                   onNodeSelect={onDependencyTreeSelect}
                   getChildNodes={getDependencyTreeChildNodes}
                   innerProps={{
-                    disableContextMenu: true,
+                    disableContextMenu: isInGrammarTextMode,
+                    isContextImmutable: true,
                   }}
                 />
               )}
@@ -527,7 +536,8 @@ const ExplorerTrees = observer(() => {
                 onNodeSelect={onGenerationTreeNodeSelect}
                 getChildNodes={getGenerationTreeChildNodes}
                 innerProps={{
-                  disableContextMenu: true,
+                  disableContextMenu: isInGrammarTextMode,
+                  isContextImmutable: true,
                 }}
               />
             )}
