@@ -127,6 +127,22 @@ export class DiagramEditorInlineClassCreatorState {
   }
 }
 
+export class DiagramEditorInlineClassRenamerState {
+  diagramEditorState: DiagramEditorState;
+  classView: ClassView;
+  point: Point;
+
+  constructor(
+    diagramEditorState: DiagramEditorState,
+    classView: ClassView,
+    point: Point,
+  ) {
+    this.diagramEditorState = diagramEditorState;
+    this.classView = classView;
+    this.point = point;
+  }
+}
+
 export class DiagramEditorInlinePropertyEditorState {
   diagramEditorState: DiagramEditorState;
   property: PropertyReference;
@@ -157,6 +173,7 @@ export class DiagramEditorState extends ElementEditorState {
   sidePanelState?: DiagramEditorSidePanelState;
   inlinePropertyEditorState?: DiagramEditorInlinePropertyEditorState;
   inlineClassCreatorState?: DiagramEditorInlineClassCreatorState;
+  inlineClassRenamerState?: DiagramEditorInlineClassRenamerState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -168,6 +185,7 @@ export class DiagramEditorState extends ElementEditorState {
       sidePanelState: observable,
       inlinePropertyEditorState: observable,
       inlineClassCreatorState: observable,
+      inlineClassRenamerState: observable,
       renderer: computed,
       diagram: computed,
       isDiagramRendererInitialized: computed,
@@ -176,6 +194,7 @@ export class DiagramEditorState extends ElementEditorState {
       setSidePanelState: action,
       setInlinePropertyEditorState: action,
       setInlineClassCreatorState: action,
+      setInlineClassRenamerState: action,
       reprocess: action,
     });
   }
@@ -239,7 +258,14 @@ export class DiagramEditorState extends ElementEditorState {
           this.renderer.selectedClassCorner
         ) {
           return 'diagram-editor__cursor--resize';
-        } else if (this.renderer.mouseOverProperty) {
+        } else if (
+          (this.renderer.mouseOverProperty &&
+            !this.isReadOnly &&
+            !this.renderer.mouseOverProperty.owner.isReadOnly) ||
+          (this.renderer.mouseOverClassName &&
+            !this.isReadOnly &&
+            !this.renderer.mouseOverClassName.class.value.isReadOnly)
+        ) {
           return 'diagram-editor__cursor--text';
         } else if (this.renderer.mouseOverClassView) {
           return 'diagram-editor__cursor--pointer';
@@ -269,6 +295,12 @@ export class DiagramEditorState extends ElementEditorState {
     this.inlinePropertyEditorState = val;
   }
 
+  setInlineClassRenamerState(
+    val: DiagramEditorInlineClassRenamerState | undefined,
+  ): void {
+    this.inlineClassRenamerState = val;
+  }
+
   setInlineClassCreatorState(
     val: DiagramEditorInlineClassCreatorState | undefined,
   ): void {
@@ -296,52 +328,71 @@ export class DiagramEditorState extends ElementEditorState {
     };
     this.renderer.onBackgroundDoubleClick = createNewClassView;
     this.renderer.onAddClassViewClick = createNewClassView;
+    this.renderer.editClassName = (
+      classView: ClassView,
+      point: Point,
+    ): void => {
+      if (!this.isReadOnly && !classView.class.value.isReadOnly) {
+        this.setInlineClassRenamerState(
+          new DiagramEditorInlineClassRenamerState(this, classView, point),
+        );
+      }
+    };
     this.renderer.editProperty = (
       property: AbstractProperty,
       point: Point,
     ): void => {
-      this.setInlinePropertyEditorState(
-        new DiagramEditorInlinePropertyEditorState(
-          this,
-          property,
-          point,
-          false,
-        ),
-      );
+      if (!this.isReadOnly && !property.owner.isReadOnly) {
+        this.setInlinePropertyEditorState(
+          new DiagramEditorInlinePropertyEditorState(
+            this,
+            property,
+            point,
+            false,
+          ),
+        );
+      }
     };
     this.renderer.editPropertyView = (
       propertyHolderView: PropertyHolderView,
     ): void => {
-      this.setInlinePropertyEditorState(
-        new DiagramEditorInlinePropertyEditorState(
-          this,
-          propertyHolderView.property.value,
-          propertyHolderView.path.length
-            ? propertyHolderView.path[0]
-            : propertyHolderView.from.classView.value.center(),
-          true,
-        ),
-      );
+      if (
+        !this.isReadOnly &&
+        !propertyHolderView.property.value.owner.isReadOnly
+      ) {
+        this.setInlinePropertyEditorState(
+          new DiagramEditorInlinePropertyEditorState(
+            this,
+            propertyHolderView.property.value,
+            propertyHolderView.path.length
+              ? propertyHolderView.path[0]
+              : propertyHolderView.from.classView.value.center(),
+            true,
+          ),
+        );
+      }
     };
     this.renderer.addSimpleProperty = (classView: ClassView): void => {
-      const _class = classView.class.value;
-      _class.addProperty(
-        new Property(
-          `property_${_class.properties.length + 1}`,
-          this.editorStore.graphState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              this.editorStore.graphState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.STRING,
+      if (!this.isReadOnly && !classView.class.value.isReadOnly) {
+        const _class = classView.class.value;
+        _class.addProperty(
+          new Property(
+            `property_${_class.properties.length + 1}`,
+            this.editorStore.graphState.graph.getTypicalMultiplicity(
+              TYPICAL_MULTIPLICITY_TYPE.ONE,
+            ),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                this.editorStore.graphState.graph.getPrimitiveType(
+                  PRIMITIVE_TYPE.STRING,
+                ),
               ),
             ),
+            _class,
           ),
-          _class,
-        ),
-      );
-      this.renderer.render();
+        );
+        this.renderer.render();
+      }
     };
 
     /**
@@ -400,7 +451,7 @@ export class DiagramEditorState extends ElementEditorState {
         // trigger hotkeys when the user is typing
         (!document.activeElement ||
           !['input', 'textarea', 'select'].includes(
-            document.activeElement.tagName.toLowerCase() ?? '',
+            document.activeElement.tagName.toLowerCase(),
           ))
       ) {
         handler(event);

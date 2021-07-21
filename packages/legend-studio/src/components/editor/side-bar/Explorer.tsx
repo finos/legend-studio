@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { Fragment, useRef, useState } from 'react';
+import React, { Fragment, useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../stores/EditorStore';
 import {
@@ -73,7 +73,6 @@ import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/
 import { Dialog } from '@material-ui/core';
 import { isValidFullPath, isValidPath } from '../../../models/MetaModelUtils';
 import { flowResult } from 'mobx';
-import { useEffect } from 'react';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;
@@ -154,7 +153,7 @@ const ElementRenamer = observer(() => {
             className="input-group__input input--dark explorer__element-renamer__input"
             ref={pathInputRef}
             value={path}
-            placeholder="Enter class path"
+            placeholder="Enter element path"
             onChange={changePath}
           />
           {elementRenameValidationErrorMessage && (

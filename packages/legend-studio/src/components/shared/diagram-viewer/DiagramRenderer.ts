@@ -205,6 +205,7 @@ export class DiagramRenderer {
   ) => RelationshipView | undefined;
 
   mouseOverClassCorner?: ClassView;
+  mouseOverClassName?: ClassView;
   mouseOverClassView?: ClassView;
   mouseOverProperty?: AbstractProperty;
   cursorPosition: Point;
@@ -221,6 +222,7 @@ export class DiagramRenderer {
   onBackgroundDoubleClick: (point: Point) => void = noop();
   editClassView: (classView: ClassView) => void = noop();
   editProperty: (property: AbstractProperty, point: Point) => void = noop();
+  editClassName: (classView: ClassView, point: Point) => void = noop();
   editPropertyView: (propertyView: PropertyHolderView) => void = noop();
   addSimpleProperty: (classView: ClassView) => void = noop();
 
@@ -230,8 +232,9 @@ export class DiagramRenderer {
       interactionMode: observable,
       relationshipMode: observable,
       zoom: observable,
-      mouseOverClassCorner: observable,
       mouseOverClassView: observable,
+      mouseOverClassName: observable,
+      mouseOverClassCorner: observable,
       mouseOverProperty: observable,
       selectionStart: observable,
       selectedClassCorner: observable,
@@ -243,8 +246,9 @@ export class DiagramRenderer {
       rightClick: observable,
       changeMode: action,
       setIsReadOnly: action,
-      setMouseOverClassCorner: action,
       setMouseOverClassView: action,
+      setMouseOverClassName: action,
+      setMouseOverClassCorner: action,
       setMouseOverProperty: action,
       setSelectionStart: action,
       setSelectedClassCorner: action,
@@ -382,12 +386,16 @@ export class DiagramRenderer {
     this.isReadOnly = val;
   }
 
-  setMouseOverClassCorner(val: ClassView | undefined): void {
-    this.mouseOverClassCorner = val;
-  }
-
   setMouseOverClassView(val: ClassView | undefined): void {
     this.mouseOverClassView = val;
+  }
+
+  setMouseOverClassName(val: ClassView | undefined): void {
+    this.mouseOverClassName = val;
+  }
+
+  setMouseOverClassCorner(val: ClassView | undefined): void {
+    this.mouseOverClassCorner = val;
   }
 
   setMouseOverProperty(val: AbstractProperty | undefined): void {
@@ -2013,7 +2021,7 @@ export class DiagramRenderer {
     // focus on the property name input when the inline editor pops up
     // we need to call `preventDefault` to avoid typing `e` in the property name input
     else if ('e' === e.key) {
-      if (!this.isReadOnly && this.selectedClassProperty) {
+      if (this.selectedClassProperty) {
         this.editProperty(
           this.selectedClassProperty.property,
           this.selectedClassProperty.selectionPoint,
@@ -2418,6 +2426,10 @@ export class DiagramRenderer {
     );
     if (this.mouseOverProperty) {
       this.editProperty(this.mouseOverProperty, eventPointInModelCoordinate);
+      return;
+    }
+    if (this.mouseOverClassName) {
+      this.editClassName(this.mouseOverClassName, eventPointInModelCoordinate);
       return;
     }
     const selectedClass = this.diagram.classViews.find((classView) =>
@@ -2862,8 +2874,9 @@ export class DiagramRenderer {
 
       // Check for hovering state
       this.setMouseOverClassView(undefined);
-      this.setMouseOverProperty(undefined);
+      this.setMouseOverClassName(undefined);
       this.setMouseOverClassCorner(undefined);
+      this.setMouseOverProperty(undefined);
 
       for (const classView of this.diagram.classViews.slice().reverse()) {
         if (
@@ -2873,23 +2886,6 @@ export class DiagramRenderer {
           )
         ) {
           this.setMouseOverClassView(classView);
-
-          // TODO: we probably should make this a shared function so we don't need to maintain
-          // this computation in both places: here and when we draw class view properties
-          const _class = classView.class.value;
-          let cursorY =
-            classView.position.y + this.lineHeight + this.classViewSpaceY * 2;
-
-          cursorY =
-            cursorY +
-            (classView.hideStereotypes
-              ? 0
-              : _class.stereotypes.length * this.fontSize);
-          cursorY =
-            cursorY +
-            (classView.hideTaggedValues
-              ? 0
-              : _class.taggedValues.length * this.fontSize);
 
           // Check hover class corner
           if (
@@ -2902,6 +2898,53 @@ export class DiagramRenderer {
           ) {
             this.setMouseOverClassCorner(classView);
           }
+
+          // TODO: we probably should make this a shared function so we don't need to maintain
+          // this computation in both places: here and when we draw class view properties
+          const _class = classView.class.value;
+          let cursorY = classView.position.y + this.classViewSpaceY;
+
+          // account for height of stereotypes
+          cursorY =
+            cursorY +
+            (classView.hideStereotypes
+              ? 0
+              : _class.stereotypes.length * this.fontSize);
+
+          // Check hover class name
+          const classNameWidth = this.computeClassNameWidth(classView);
+          if (
+            new PositionedRectangle(
+              this.modelCoordinateToCanvasCoordinate(
+                new Point(
+                  classView.position.x +
+                    (classView.rectangle.width - classNameWidth) / 2,
+                  cursorY,
+                ),
+              ),
+              // cursorY
+              new Rectangle(
+                classNameWidth,
+                this.lineHeight, // class name takes 1 line
+              ),
+            ).contains(
+              eventPointInCanvasCoordinate.x,
+              eventPointInCanvasCoordinate.y,
+            )
+          ) {
+            this.setMouseOverClassName(classView);
+          }
+
+          // account for height of class name
+          cursorY += this.lineHeight;
+
+          // account for height of tagged values
+          cursorY =
+            cursorY +
+            (classView.hideTaggedValues
+              ? 0
+              : _class.taggedValues.length * this.fontSize);
+          cursorY += this.classViewSpaceY;
 
           // Check hover class property
           for (const property of _class.getAllOwnedProperties()) {
@@ -2920,7 +2963,7 @@ export class DiagramRenderer {
                   new Rectangle(
                     this.drawProperty(classView, property, true, 0, 0) *
                       this.zoom,
-                    this.fontSize * this.zoom,
+                    this.fontSize * this.zoom, // property takes 1 line
                   ),
                 ).contains(
                   eventPointInCanvasCoordinate.x,

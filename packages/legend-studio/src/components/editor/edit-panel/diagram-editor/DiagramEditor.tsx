@@ -30,6 +30,7 @@ import {
 } from '../../../shared/diagram-viewer/DiagramRenderer';
 import type {
   DiagramEditorInlineClassCreatorState,
+  DiagramEditorInlineClassRenamerState,
   DiagramEditorInlinePropertyEditorState,
 } from '../../../../stores/editor-state/element-editor-state/DiagramEditorState';
 import {
@@ -83,10 +84,14 @@ import {
 import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { GenericType } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
 import {
+  createPath,
   isValidFullPath,
+  isValidPathIdentifier,
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -185,7 +190,7 @@ const DiagramRendererHotkeyInfosModal = observer(
               <div className="diagram-editor__hotkey__groups__divider" />
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for properties of selected element(s)
+                  Toggle display for properties of selected classes
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">Alt</div>
@@ -197,7 +202,7 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for tagged values of selected element(s)
+                  Toggle display for tagged values of selected classes
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">Alt</div>
@@ -209,7 +214,7 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Toggle display for stereotypes of selected element(s)
+                  Toggle display for stereotypes of selected classes
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">Alt</div>
@@ -269,7 +274,7 @@ const DiagramRendererHotkeyInfosModal = observer(
               <div className="diagram-editor__hotkey__groups__divider" />
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Populate immediate supertypes of selected class
+                  Populate immediate supertypes of selected classes
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">&uarr;</div>
@@ -277,7 +282,7 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Populate immediate subtypes of selected class
+                  Populate immediate subtypes of selected classes
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">&darr;</div>
@@ -464,6 +469,7 @@ const DiagramEditorClassViewEditor = observer(
     const editorStore = useEditorStore();
     const classView = classViewEditorState.classView;
     const diagramEditorState = classViewEditorState.diagramEditorState;
+    const isReadOnly = diagramEditorState.isReadOnly;
 
     // Tabs
     const selectedTab = classViewEditorState.selectedTab;
@@ -485,14 +491,23 @@ const DiagramEditorClassViewEditor = observer(
     }, [diagramEditorState, editorStore]);
 
     const toggleHideProperties = (): void => {
+      if (isReadOnly) {
+        return;
+      }
       classView.setHideProperties(!classView.hideProperties);
       diagramEditorState.renderer.render();
     };
     const toggleHideTaggedValues = (): void => {
+      if (isReadOnly) {
+        return;
+      }
       classView.setHideTaggedValues(!classView.hideTaggedValues);
       diagramEditorState.renderer.render();
     };
     const toggleHideStereotypes = (): void => {
+      if (isReadOnly) {
+        return;
+      }
       classView.setHideStereotypes(!classView.hideStereotypes);
       diagramEditorState.renderer.render();
     };
@@ -542,6 +557,7 @@ const DiagramEditorClassViewEditor = observer(
                           classView.hideProperties,
                       },
                     )}
+                    disabled={isReadOnly}
                   >
                     {classView.hideProperties ? (
                       <CheckSquareIcon />
@@ -566,6 +582,7 @@ const DiagramEditorClassViewEditor = observer(
                           classView.hideTaggedValues,
                       },
                     )}
+                    disabled={isReadOnly}
                   >
                     {classView.hideTaggedValues ? (
                       <CheckSquareIcon />
@@ -590,6 +607,7 @@ const DiagramEditorClassViewEditor = observer(
                           classView.hideStereotypes,
                       },
                     )}
+                    disabled={isReadOnly}
                   >
                     {classView.hideStereotypes ? (
                       <CheckSquareIcon />
@@ -650,6 +668,123 @@ const DiagramEditorOverlay = observer(
           </div>
         </ReflexElement>
       </ReflexContainer>
+    );
+  },
+);
+
+const DiagramEditorInlineClassRenamerInner = observer(
+  (props: {
+    inlineClassRenamerState: DiagramEditorInlineClassRenamerState;
+  }) => {
+    const { inlineClassRenamerState } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const diagramEditorState = inlineClassRenamerState.diagramEditorState;
+    const _class = inlineClassRenamerState.classView.class.value;
+    const isReadOnly = diagramEditorState.isReadOnly;
+    const [name, setName] = useState(_class.name);
+    const [packagePath] = resolvePackagePathAndElementName(_class.path);
+    const newClassPath = createPath(packagePath, name);
+    const isClassNameNonEmpty = name !== '';
+    const isClassNameValid = isValidPathIdentifier(name);
+    const existingElement =
+      editorStore.graphState.graph.getNullableElement(newClassPath);
+    const isClassNameUnique = !existingElement || existingElement === _class;
+    // const class
+    const classCreationValidationErrorMessage = !isClassNameNonEmpty
+      ? `Class name cannot be empty`
+      : !isClassNameValid
+      ? `Class name is not valid`
+      : !isClassNameUnique
+      ? `Element of the same name already existed`
+      : undefined;
+    const canRenameClass =
+      isClassNameNonEmpty && isClassNameValid && isClassNameUnique;
+
+    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+      event.preventDefault();
+      if (canRenameClass) {
+        diagramEditorState.setInlineClassRenamerState(undefined);
+        flowResult(editorStore.renameElement(_class, newClassPath)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
+    const pathInputRef = useRef<HTMLInputElement>(null);
+
+    const changePath: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+      setName(event.target.value);
+
+    useEffect(() => {
+      pathInputRef.current?.focus();
+    }, [inlineClassRenamerState]);
+
+    return (
+      <form className="diagram-editor__inline-class-creator">
+        <div className="input-group">
+          <input
+            className="diagram-editor__inline-class-creator__path input-group__input input--dark"
+            ref={pathInputRef}
+            disabled={isReadOnly}
+            value={name}
+            placeholder="Enter class name"
+            onChange={changePath}
+          />
+          {classCreationValidationErrorMessage && (
+            <div className="input-group__error-message">
+              {classCreationValidationErrorMessage}
+            </div>
+          )}
+        </div>
+        <button
+          type="submit"
+          className="diagram-editor__inline-class-creator__close-btn"
+          onClick={close}
+        />
+      </form>
+    );
+  },
+);
+
+const DiagramEditorInlineClassRenamer = observer(
+  (props: { diagramEditorState: DiagramEditorState }) => {
+    const { diagramEditorState } = props;
+    const closeEditor = (): void => {
+      diagramEditorState.setInlineClassRenamerState(undefined);
+    };
+    const inlineClassRenamerState = diagramEditorState.inlineClassRenamerState;
+    const anchorPositionPoint = inlineClassRenamerState
+      ? diagramEditorState.renderer.canvasCoordinateToEventCoordinate(
+          diagramEditorState.renderer.modelCoordinateToCanvasCoordinate(
+            inlineClassRenamerState.point,
+          ),
+        )
+      : new Point(0, 0);
+
+    return (
+      <BasePopover
+        onClose={closeEditor}
+        anchorPosition={{
+          left: anchorPositionPoint.x,
+          top: anchorPositionPoint.y,
+        }}
+        anchorReference="anchorPosition"
+        open={Boolean(inlineClassRenamerState)}
+        BackdropProps={{
+          invisible: true,
+        }}
+        elevation={0}
+        marginThreshold={0}
+        disableRestoreFocus={true}
+      >
+        <div className="diagram-editor__inline-class-creator__container">
+          {inlineClassRenamerState && (
+            <DiagramEditorInlineClassRenamerInner
+              inlineClassRenamerState={inlineClassRenamerState}
+            />
+          )}
+        </div>
+      </BasePopover>
     );
   },
 );
@@ -1180,6 +1315,9 @@ export const DiagramEditor = observer(() => {
                 diagramEditorState={diagramEditorState}
               />
               <DiagramEditorInlineClassCreator
+                diagramEditorState={diagramEditorState}
+              />
+              <DiagramEditorInlineClassRenamer
                 diagramEditorState={diagramEditorState}
               />
             </>

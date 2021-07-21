@@ -78,7 +78,11 @@ export const resolvePackagePathAndElementName = (
   ];
 };
 
+export const createPath = (packagePath: string, name: string): string =>
+  `${packagePath ? `${packagePath}${ELEMENT_PATH_DELIMITER}` : ''}${name}`;
 // TODO: we might need to support quoted identifier in the future
+export const isValidPathIdentifier = (val: string): boolean =>
+  Boolean(val.match(/^\w[\w$_-]*$/));
 export const isValidFullPath = (fullPath: string): boolean =>
   Boolean(fullPath.match(/^(?:\w[\w$_-]*)(?:::\w[\w$_-]*)+$/));
 export const isValidPath = (path: string): boolean =>
