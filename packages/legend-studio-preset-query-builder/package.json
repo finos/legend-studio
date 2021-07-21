@@ -44,7 +44,7 @@
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
-    "@material-ui/core": "4.12.1",
+    "@material-ui/core": "4.12.2",
     "@types/papaparse": "5.2.6",
     "@types/react": "17.0.14",
     "@types/react-dom": "17.0.9",

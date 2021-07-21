@@ -17,6 +17,7 @@
 import { observable, computed, action, flow, makeObservable } from 'mobx';
 import type { Clazz } from '@finos/legend-studio-shared';
 import {
+  assertNonEmptyString,
   UnsupportedOperationError,
   getClass,
   guaranteeNonNullable,
@@ -52,6 +53,11 @@ import { ServiceStore } from '../model/packageableElements/store/relational/mode
 import { PureGraphExtension } from './PureGraphExtension';
 import { PrimitiveType } from '../model/packageableElements/domain/PrimitiveType';
 import { DataType } from '../model/packageableElements/domain/DataType';
+import {
+  isValidFullPath,
+  isValidPath,
+  resolvePackagePathAndElementName,
+} from '../../../MetaModelUtils';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -188,7 +194,8 @@ export abstract class BasicModel {
       setFileGeneration: action,
       setDiagram: action,
       allElements: computed,
-      removeElement: action,
+      deleteElement: action,
+      renameElement: action,
       setIsBuilt: action,
       deleteSectionIndex: action,
     });
@@ -478,12 +485,10 @@ export abstract class BasicModel {
       'Name is required',
     )}`;
 
-  getOrCreatePackage = (packagePath: string | undefined): Package =>
-    Package.getOrCreatePackage(
-      this.root,
-      guaranteeNonNullable(packagePath, 'Package path is required'),
-      true,
-    );
+  getOrCreatePackage = (packagePath: string | undefined): Package => {
+    assertNonEmptyString(packagePath, 'Package path is required');
+    return Package.getOrCreatePackage(this.root, packagePath, true);
+  };
 
   getNullablePackage = (path: string): Package | undefined =>
     !path
@@ -527,7 +532,7 @@ export abstract class BasicModel {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  removeElement(element: PackageableElement): void {
+  deleteElement(element: PackageableElement): void {
     if (element.package) {
       element.package.deleteElement(element);
     }
@@ -543,7 +548,7 @@ export abstract class BasicModel {
         }
         element.nonCanonicalUnits.forEach((unit) =>
           this.typesIndex.delete(unit.path),
-        ); // also delete all related units
+        );
       }
     } else if (element instanceof Association) {
       this.associationsIndex.delete(element.path);
@@ -564,14 +569,156 @@ export abstract class BasicModel {
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(element.path);
     } else if (element instanceof Package) {
-      element.children.forEach((el) => this.removeElement(el));
+      element.children.forEach((el) => this.deleteElement(el));
     } else {
       const extension = this.getExtensionForElementClass(
         getClass<PackageableElement>(element),
       );
-      extension.removeElement(element.path);
+      extension.deleteElement(element.path);
     }
-    this.cleanUpDeadReferences();
+  }
+
+  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
+  renameElement(element: PackageableElement, newPath: string): void {
+    const elementCurrentPath = element.path;
+    // validation before renaming
+    if (elementCurrentPath === newPath) {
+      return;
+    }
+    if (!newPath) {
+      throw new UnsupportedOperationError(
+        `Can't rename element '${elementCurrentPath} to '${newPath}': path is empty'`,
+      );
+    }
+    if (
+      (element instanceof Package && !isValidPath(newPath)) ||
+      (!(element instanceof Package) && !isValidFullPath(newPath))
+    ) {
+      throw new UnsupportedOperationError(
+        `Can't rename element '${elementCurrentPath} to '${newPath}': invalid path'`,
+      );
+    }
+    const existingElement = this.getNullableElement(newPath, true);
+    if (existingElement) {
+      throw new UnsupportedOperationError(
+        `Can't rename element '${elementCurrentPath} to '${newPath}': element with the same path already existed'`,
+      );
+    }
+    const [packagePath, elementName] =
+      resolvePackagePathAndElementName(newPath);
+
+    // if we're not renaming package, we can simply add new package
+    // if the element new package does not exist. For renaming package
+    // it's a little bit more complicated as we need to rename its children
+    // we will handle this case later
+    if (!(element instanceof Package)) {
+      const parentPackage =
+        this.getNullablePackage(packagePath) ??
+        (packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root);
+      // update element name
+      element.setName(elementName);
+      // update element package if needed
+      if (element.package !== parentPackage) {
+        element.package?.deleteElement(element);
+        element.setPackage(parentPackage);
+        parentPackage.addChild(element);
+      }
+    }
+
+    // update index in the graph
+    if (element instanceof Mapping) {
+      this.mappingsIndex.delete(elementCurrentPath);
+      this.mappingsIndex.set(newPath, element);
+    } else if (element instanceof Store) {
+      this.storesIndex.delete(elementCurrentPath);
+      this.storesIndex.set(newPath, element);
+    } else if (element instanceof Type) {
+      this.typesIndex.delete(elementCurrentPath);
+      this.typesIndex.set(newPath, element);
+      if (element instanceof Measure) {
+        if (element.canonicalUnit) {
+          this.typesIndex.delete(element.canonicalUnit.path);
+          this.typesIndex.set(
+            element.canonicalUnit.path.replace(elementCurrentPath, newPath),
+            element.canonicalUnit,
+          );
+        }
+        element.nonCanonicalUnits.forEach((unit) => {
+          this.typesIndex.delete(unit.path);
+          this.typesIndex.set(
+            unit.path.replace(elementCurrentPath, newPath),
+            unit,
+          );
+        });
+      }
+    } else if (element instanceof Association) {
+      this.associationsIndex.delete(elementCurrentPath);
+      this.associationsIndex.set(newPath, element);
+    } else if (element instanceof Profile) {
+      this.profilesIndex.delete(elementCurrentPath);
+      this.profilesIndex.set(newPath, element);
+    } else if (element instanceof ConcreteFunctionDefinition) {
+      this.functionsIndex.delete(elementCurrentPath);
+      this.functionsIndex.set(newPath, element);
+    } else if (element instanceof Diagram) {
+      this.diagramsIndex.delete(elementCurrentPath);
+      this.diagramsIndex.set(newPath, element);
+    } else if (element instanceof Service) {
+      this.servicesIndex.delete(elementCurrentPath);
+      this.servicesIndex.set(newPath, element);
+    } else if (element instanceof PackageableRuntime) {
+      this.runtimesIndex.delete(elementCurrentPath);
+      this.runtimesIndex.set(newPath, element);
+    } else if (element instanceof PackageableConnection) {
+      this.connectionsIndex.delete(elementCurrentPath);
+      this.connectionsIndex.set(newPath, element);
+    } else if (element instanceof FileGenerationSpecification) {
+      this.fileGenerationsIndex.delete(elementCurrentPath);
+      this.fileGenerationsIndex.set(newPath, element);
+    } else if (element instanceof GenerationSpecification) {
+      this.generationSpecificationsIndex.delete(elementCurrentPath);
+      this.generationSpecificationsIndex.set(newPath, element);
+    } else if (element instanceof Package) {
+      // Since we will modify the package name, we need to first store the original
+      // paths of all of its children
+      const childElements = new Map<string, PackageableElement>();
+      element.children.forEach((childElement) => {
+        childElements.set(childElement.path, childElement);
+      });
+      // update element name
+      element.setName(elementName);
+      if (!element.package) {
+        throw new IllegalStateError(`Can't rename root package`);
+      }
+      /**
+       * Update element package if needed.
+       *
+       * NOTE: to be clean, first completely remove the package from its parent package
+       * Only then would we find or create the new parent package. This way, if we rename
+       * package `example::something` to `example::something::somethingElse`, we will not
+       * end up in a loop. If we did not first remove the package from its parent package
+       * we would end up having the `somethingElse` package containing itself as a child.
+       */
+      const currentParentPackage = element.package;
+      if (currentParentPackage !== this.getNullablePackage(packagePath)) {
+        currentParentPackage.deleteElement(element);
+        const newParentPackage =
+          packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
+        element.setPackage(newParentPackage);
+        newParentPackage.addChild(element);
+      }
+      childElements.forEach((childElement, childElementOriginalPath) => {
+        this.renameElement(
+          childElement,
+          childElementOriginalPath.replace(elementCurrentPath, newPath),
+        );
+      });
+    } else {
+      const extension = this.getExtensionForElementClass(
+        getClass<PackageableElement>(element),
+      );
+      extension.renameElement(elementCurrentPath, newPath);
+    }
   }
 
   setIsBuilt(built: boolean): void {
@@ -588,9 +735,5 @@ export abstract class BasicModel {
     // as such `this.sectionIndicesIndex.delete(sectionIndex.path)` won't work because the path is without the package
     this.sectionIndicesIndex = new Map<string, SectionIndex>();
     this.elementSectionMap = new Map<string, Section>();
-  }
-
-  cleanUpDeadReferences(): void {
-    this.diagrams.forEach((diagram) => diagram.cleanUpDeadReferences(this));
   }
 }

@@ -16,6 +16,7 @@
 
 import { computed, action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
+import { EditorHotkey } from '../../EditorStore';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -42,6 +43,28 @@ import type { PropertyHolderView } from '../../../models/metamodels/pure/model/p
 import type { PropertyReference } from '../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 import { PropertyExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 
+enum DIAGRAM_EDITOR_HOTKEY {
+  RECENTER = 'RECENTER',
+  USE_ZOOM_TOOL = 'USE_ZOOM_TOOL',
+  USE_VIEW_TOOL = 'USE_VIEW_TOOL',
+  USE_PAN_TOOL = 'USE_PAN_TOOL',
+  USE_PROPERTY_TOOL = 'USE_PROPERTY_TOOL',
+  USE_INHERITANCE_TOOL = 'USE_INHERITANCE_TOOL',
+  ADD_CLASS = 'ADD_CLASS',
+  EJECT_PROPERTY = 'EJECT_PROPERTY',
+}
+
+const DIAGRAM_EDITOR_HOTKEY_MAP = Object.freeze({
+  [DIAGRAM_EDITOR_HOTKEY.RECENTER]: 'r',
+  [DIAGRAM_EDITOR_HOTKEY.USE_ZOOM_TOOL]: 'z',
+  [DIAGRAM_EDITOR_HOTKEY.USE_VIEW_TOOL]: 'v',
+  [DIAGRAM_EDITOR_HOTKEY.USE_PAN_TOOL]: 'm',
+  [DIAGRAM_EDITOR_HOTKEY.USE_PROPERTY_TOOL]: 'p',
+  [DIAGRAM_EDITOR_HOTKEY.USE_INHERITANCE_TOOL]: 'i',
+  [DIAGRAM_EDITOR_HOTKEY.ADD_CLASS]: 'c',
+  [DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY]: 'alt+ArrowRight',
+});
+
 export abstract class DiagramEditorSidePanelState {
   uuid = uuid();
   editorStore: EditorStore;
@@ -56,21 +79,15 @@ export abstract class DiagramEditorSidePanelState {
   }
 }
 
-export class DiagramEditorClassEditorSidePanelState extends DiagramEditorSidePanelState {
-  classEditorState: ClassEditorState;
-
-  constructor(
-    editorStore: EditorStore,
-    diagramEditorState: DiagramEditorState,
-    classEditorState: ClassEditorState,
-  ) {
-    super(editorStore, diagramEditorState);
-    this.classEditorState = classEditorState;
-  }
+export enum DIAGRAM_EDITOR_SIDE_PANEL_TAB {
+  ELEMENT = 'ELEMENT',
+  VIEW = 'VIEW',
 }
 
 export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSidePanelState {
+  classEditorState: ClassEditorState;
   classView: ClassView;
+  selectedTab = DIAGRAM_EDITOR_SIDE_PANEL_TAB.ELEMENT;
 
   constructor(
     editorStore: EditorStore,
@@ -78,7 +95,25 @@ export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSid
     classView: ClassView,
   ) {
     super(editorStore, diagramEditorState);
+
+    makeObservable(this, {
+      selectedTab: observable,
+      setSelectedTab: action,
+    });
+
     this.classView = classView;
+    this.classEditorState = guaranteeType(
+      this.editorStore.openedEditorStates.find(
+        (elementState): elementState is ClassEditorState =>
+          elementState instanceof ClassEditorState &&
+          elementState.element === classView.class.value,
+      ) ?? this.editorStore.createElementState(classView.class.value),
+      ClassEditorState,
+    );
+  }
+
+  setSelectedTab(val: DIAGRAM_EDITOR_SIDE_PANEL_TAB): void {
+    this.selectedTab = val;
   }
 }
 
@@ -88,6 +123,22 @@ export class DiagramEditorInlineClassCreatorState {
 
   constructor(diagramEditorState: DiagramEditorState, point: Point) {
     this.diagramEditorState = diagramEditorState;
+    this.point = point;
+  }
+}
+
+export class DiagramEditorInlineClassRenamerState {
+  diagramEditorState: DiagramEditorState;
+  classView: ClassView;
+  point: Point;
+
+  constructor(
+    diagramEditorState: DiagramEditorState,
+    classView: ClassView,
+    point: Point,
+  ) {
+    this.diagramEditorState = diagramEditorState;
+    this.classView = classView;
     this.point = point;
   }
 }
@@ -122,6 +173,7 @@ export class DiagramEditorState extends ElementEditorState {
   sidePanelState?: DiagramEditorSidePanelState;
   inlinePropertyEditorState?: DiagramEditorInlinePropertyEditorState;
   inlineClassCreatorState?: DiagramEditorInlineClassCreatorState;
+  inlineClassRenamerState?: DiagramEditorInlineClassRenamerState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -133,6 +185,7 @@ export class DiagramEditorState extends ElementEditorState {
       sidePanelState: observable,
       inlinePropertyEditorState: observable,
       inlineClassCreatorState: observable,
+      inlineClassRenamerState: observable,
       renderer: computed,
       diagram: computed,
       isDiagramRendererInitialized: computed,
@@ -141,6 +194,7 @@ export class DiagramEditorState extends ElementEditorState {
       setSidePanelState: action,
       setInlinePropertyEditorState: action,
       setInlineClassCreatorState: action,
+      setInlineClassRenamerState: action,
       reprocess: action,
     });
   }
@@ -169,7 +223,7 @@ export class DiagramEditorState extends ElementEditorState {
   // See https://css-tricks.com/using-css-cursors/
   // See https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
   get diagramCursorClass(): string {
-    if (this.isReadOnly || !this.isDiagramRendererInitialized) {
+    if (!this.isDiagramRendererInitialized) {
       return '';
     }
     if (this.renderer.middleClick || this.renderer.rightClick) {
@@ -177,7 +231,12 @@ export class DiagramEditorState extends ElementEditorState {
     }
     switch (this.renderer.interactionMode) {
       case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
-        return 'diagram-editor__cursor--add';
+        return !this.isReadOnly ? 'diagram-editor__cursor--add' : '';
+      }
+      case DIAGRAM_INTERACTION_MODE.PAN: {
+        return this.renderer.leftClick
+          ? 'diagram-editor__cursor--grabbing'
+          : 'diagram-editor__cursor--grab';
       }
       case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
         return 'diagram-editor__cursor--zoom-in';
@@ -186,6 +245,9 @@ export class DiagramEditorState extends ElementEditorState {
         return 'diagram-editor__cursor--zoom-out';
       }
       case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
+        if (this.isReadOnly) {
+          return '';
+        }
         if (this.renderer.mouseOverClassView && this.renderer.selectionStart) {
           return 'diagram-editor__cursor--add';
         }
@@ -200,7 +262,15 @@ export class DiagramEditorState extends ElementEditorState {
         ) {
           return 'diagram-editor__cursor--resize';
         } else if (this.renderer.mouseOverProperty) {
-          return 'diagram-editor__cursor--text';
+          return this.isReadOnly ||
+            this.renderer.mouseOverProperty.owner.isReadOnly
+            ? 'diagram-editor__cursor--not-allowed'
+            : 'diagram-editor__cursor--text';
+        } else if (this.renderer.mouseOverClassName) {
+          return this.isReadOnly ||
+            this.renderer.mouseOverClassName.class.value.isReadOnly
+            ? 'diagram-editor__cursor--not-allowed'
+            : 'diagram-editor__cursor--text';
         } else if (this.renderer.mouseOverClassView) {
           return 'diagram-editor__cursor--pointer';
         }
@@ -229,27 +299,26 @@ export class DiagramEditorState extends ElementEditorState {
     this.inlinePropertyEditorState = val;
   }
 
+  setInlineClassRenamerState(
+    val: DiagramEditorInlineClassRenamerState | undefined,
+  ): void {
+    this.inlineClassRenamerState = val;
+  }
+
   setInlineClassCreatorState(
     val: DiagramEditorInlineClassCreatorState | undefined,
   ): void {
     this.inlineClassCreatorState = val;
   }
 
-  setupDiagramRenderer(): void {
+  setupRenderer(): void {
     this.renderer.setIsReadOnly(this.isReadOnly);
-    this.renderer.editClass = (classView: ClassView): void => {
+    this.renderer.editClassView = (classView: ClassView): void => {
       this.setSidePanelState(
-        new DiagramEditorClassEditorSidePanelState(
+        new DiagramEditorClassViewEditorSidePanelState(
           this.editorStore,
           this,
-          guaranteeType(
-            this.editorStore.openedEditorStates.find(
-              (elementState): elementState is ClassEditorState =>
-                elementState instanceof ClassEditorState &&
-                elementState.element === classView.class.value,
-            ) ?? this.editorStore.createElementState(classView.class.value),
-            ClassEditorState,
-          ),
+          classView,
         ),
       );
       this.sidePanelDisplayState.open();
@@ -261,33 +330,55 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
-    this.renderer.onSelectedClassChange = (
-      classView: ClassView | undefined,
-    ): void => {
-      if (classView) {
-        this.setSidePanelState(
-          new DiagramEditorClassViewEditorSidePanelState(
-            this.editorStore,
-            this,
-            classView,
-          ),
-        );
-      } else if (
-        this.sidePanelState instanceof
-        DiagramEditorClassViewEditorSidePanelState
-      ) {
-        this.setSidePanelState(undefined);
-      }
-    };
     this.renderer.onBackgroundDoubleClick = createNewClassView;
     this.renderer.onAddClassViewClick = createNewClassView;
-    this.renderer.addSelectedClassAsPropertyOfOpenedClass = (
+    this.renderer.editClassName = (
       classView: ClassView,
+      point: Point,
+    ): void => {
+      if (!this.isReadOnly && !classView.class.value.isReadOnly) {
+        this.setInlineClassRenamerState(
+          new DiagramEditorInlineClassRenamerState(this, classView, point),
+        );
+      }
+    };
+    this.renderer.editProperty = (
+      property: AbstractProperty,
+      point: Point,
+    ): void => {
+      if (!this.isReadOnly && !property.owner.isReadOnly) {
+        this.setInlinePropertyEditorState(
+          new DiagramEditorInlinePropertyEditorState(
+            this,
+            property,
+            point,
+            false,
+          ),
+        );
+      }
+    };
+    this.renderer.editPropertyView = (
+      propertyHolderView: PropertyHolderView,
     ): void => {
       if (
-        this.sidePanelState instanceof DiagramEditorClassEditorSidePanelState
+        !this.isReadOnly &&
+        !propertyHolderView.property.value.owner.isReadOnly
       ) {
-        const _class = this.sidePanelState.classEditorState.class;
+        this.setInlinePropertyEditorState(
+          new DiagramEditorInlinePropertyEditorState(
+            this,
+            propertyHolderView.property.value,
+            propertyHolderView.path.length
+              ? propertyHolderView.path[0]
+              : propertyHolderView.from.classView.value.center(),
+            true,
+          ),
+        );
+      }
+    };
+    this.renderer.addSimpleProperty = (classView: ClassView): void => {
+      if (!this.isReadOnly && !classView.class.value.isReadOnly) {
+        const _class = classView.class.value;
         _class.addProperty(
           new Property(
             `property_${_class.properties.length + 1}`,
@@ -295,64 +386,81 @@ export class DiagramEditorState extends ElementEditorState {
               TYPICAL_MULTIPLICITY_TYPE.ONE,
             ),
             GenericTypeExplicitReference.create(
-              new GenericType(classView.class.value),
+              new GenericType(
+                this.editorStore.graphState.graph.getPrimitiveType(
+                  PRIMITIVE_TYPE.STRING,
+                ),
+              ),
             ),
             _class,
           ),
         );
-        // TODO?: should we also try to add property views between these 2 classes?
-        // we would need to scan all possible source class view(s) and potentially link them to
-        // the class view selected or all class view(s) for the class of the selected class view
+        this.renderer.render();
       }
     };
-    this.renderer.editProperty = (
-      property: AbstractProperty,
-      point: Point,
-    ): void => {
-      this.setInlinePropertyEditorState(
-        new DiagramEditorInlinePropertyEditorState(
-          this,
-          property,
-          point,
-          false,
+
+    /**
+     * NOTE: although our renderer handles hotkeys, it only does so
+     * when it is in focus. This does not happen when the user just
+     * open the diagram editor, or click out of it. As such, here we create
+     * some global hotkeys that will call the renderer's hotkey handler method.
+     *
+     * We use {@link createDiagramHotKeyAction} to ensure global hotkeys are appropriately
+     * called and especially not called twice when the diagram is in focus. In such case,
+     * its native hotkey handlers will take precedence
+     */
+    [
+      DIAGRAM_EDITOR_HOTKEY.RECENTER,
+      DIAGRAM_EDITOR_HOTKEY.USE_ZOOM_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.USE_VIEW_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.USE_PAN_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.USE_PROPERTY_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.USE_INHERITANCE_TOOL,
+      DIAGRAM_EDITOR_HOTKEY.ADD_CLASS,
+      DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY,
+    ].forEach((key) => {
+      this.editorStore.addHotKey(
+        new EditorHotkey(
+          key,
+          [DIAGRAM_EDITOR_HOTKEY_MAP[key]],
+          this.createDiagramHotKeyAction((event?: KeyboardEvent) => {
+            if (event) {
+              this.renderer.keydown(event);
+            }
+          }),
         ),
       );
-    };
-    this.renderer.editPropertyView = (
-      propertyHolderView: PropertyHolderView,
-    ): void => {
-      this.setInlinePropertyEditorState(
-        new DiagramEditorInlinePropertyEditorState(
-          this,
-          propertyHolderView.property.value,
-          propertyHolderView.path.length
-            ? propertyHolderView.path[0]
-            : propertyHolderView.from.classView.value.center(),
-          true,
-        ),
-      );
-    };
-    this.renderer.addSimpleProperty = (classView: ClassView): void => {
-      const _class = classView.class.value;
-      _class.addProperty(
-        new Property(
-          `property_${_class.properties.length + 1}`,
-          this.editorStore.graphState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              this.editorStore.graphState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.STRING,
-              ),
-            ),
-          ),
-          _class,
-        ),
-      );
-      this.renderer.render();
-    };
+    });
   }
+
+  cleanUp(): void {
+    this.editorStore.resetHotkeys();
+  }
+
+  private createDiagramHotKeyAction = (
+    handler: (event?: KeyboardEvent) => void,
+  ): ((event?: KeyboardEvent) => void) =>
+    this.editorStore.createGlobalHotKeyAction((event?: KeyboardEvent): void => {
+      if (
+        // make sure the current active editor is this diagram editor
+        this.editorStore.currentEditorState === this &&
+        // make sure the renderer is initialized
+        this.isDiagramRendererInitialized &&
+        // make sure the renderer canvas is currently not being in focused
+        // so we don't end up triggering a hotkey twice, because natively the renderer
+        // listens to keydown event as well
+        this.renderer.div !== document.activeElement &&
+        // since we use hotkeys that can be easily in text input
+        // we would need to do this check to make sure we don't accidentally
+        // trigger hotkeys when the user is typing
+        (!document.activeElement ||
+          !['input', 'textarea', 'select'].includes(
+            document.activeElement.tagName.toLowerCase(),
+          ))
+      ) {
+        handler(event);
+      }
+    }, false);
 
   reprocess(
     newElement: PackageableElement,

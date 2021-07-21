@@ -522,4 +522,13 @@ export class PureModel extends BasicModel {
       extension.setElement(element.path, element);
     }
   }
+
+  override deleteElement(element: PackageableElement): void {
+    super.deleteElement(element);
+    this.cleanUpDeadReferences();
+  }
+
+  cleanUpDeadReferences(): void {
+    this.diagrams.forEach((diagram) => diagram.cleanUpDeadReferences(this));
+  }
 }
