@@ -214,12 +214,32 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
 
               <div className="diagram-editor__hotkey__groups__divider" />
+
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
                   Add simple property to selected class
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">/</div>
+                </div>
+              </div>
+
+              <div className="diagram-editor__hotkey__groups__divider" />
+
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Add subtypes of the selected classes to the diagram
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">&darr;</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Add supertypes of the selected classes to the diagram
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">&uarr;</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">

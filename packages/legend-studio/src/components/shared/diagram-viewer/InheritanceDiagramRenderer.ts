@@ -43,6 +43,7 @@ export class InheritanceDiagramRenderer extends DiagramRenderer {
       ),
       this.diagram,
       true,
+      true,
     );
     this.diagram.classViews = result[0];
     this.diagram.generalizationViews = result[1];

@@ -2133,10 +2133,44 @@ export class DiagramRenderer {
     }
 
     // Add a new simple property to selected class
-    else if (e.key === 'ArrowDown') {
+    else if (e.key === '/') {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.addSimpleProperty(this.selectedClasses[0]);
       }
+    } else if (e.key === 'ArrowDown') {
+      const views = uniqBy(
+        this.selectedClasses.flatMap((x) =>
+          x.class.value._subClasses.flatMap(
+            (c) =>
+              new ClassView(
+                this.diagram,
+                uuid(),
+                PackageableElementExplicitReference.create(c),
+              ),
+          ),
+        ),
+        (cv) => cv.class.value,
+      );
+
+      if (views.length > 0) {
+        views.forEach((classView) =>
+          this.ensureClassViewMeetMinDimensions(classView),
+        );
+
+        const res = this.layoutTaxonomy(
+          [views, this.selectedClasses],
+          this.diagram,
+          false,
+          false,
+        );
+        res[0].forEach((cv) => this.diagram.addClassView(cv));
+        res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
+      }
+
+      this.clearScreen(); // draw the first time so that the virtualscreen has the right size
+      this.drawAll();
+      this.manageVirtualScreen();
+      this.drawAll();
     }
     // Eject the property
     else if (e.key === 'ArrowRight') {
@@ -2178,7 +2212,7 @@ export class DiagramRenderer {
         0,
         1,
       );
-      const res = this.layoutTaxonomy(views, this.diagram, false);
+      const res = this.layoutTaxonomy(views, this.diagram, false, true);
       res[0].forEach((cv) => this.diagram.addClassView(cv));
       res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
 
@@ -2907,9 +2941,6 @@ export class DiagramRenderer {
     recurseMaxDepth: number,
   ): ClassView[][] {
     if (classViews.length) {
-      classViews.forEach((classView) =>
-        this.ensureClassViewMeetMinDimensions(classView),
-      );
       const res = uniqBy(
         classViews.flatMap((classView) =>
           classView.class.value.generalizations.map(
@@ -2924,6 +2955,9 @@ export class DiagramRenderer {
           ),
         ),
         (a: ClassView) => a.class.value,
+      );
+      res.forEach((classView) =>
+        this.ensureClassViewMeetMinDimensions(classView),
       );
       if (recurseMaxDepth === -1 || currentDepth < recurseMaxDepth) {
         const rec = this.getSuperTypeLevels(
@@ -2945,20 +2979,22 @@ export class DiagramRenderer {
     classViewLevels: ClassView[][],
     diagram: Diagram,
     positionInitialClass: boolean,
+    superType: boolean,
   ): [ClassView[], GeneralizationView[]] {
     //Offsets
     const spaceY = 30;
     const spaceX = 10;
 
-    classViewLevels = classViewLevels.reverse();
+    classViewLevels.reverse();
 
-    const classViews = classViewLevels.flatMap((level, i) => {
+    const classViews = classViewLevels.flatMap((level, currentLevelIndex) => {
       // Get the bounding box of the precedent level
       let precedentTotalWidth = 0;
+      let precedentTotalHeight = 0;
       let precedentX = 0;
       let precedentY = 0;
-      if (i > 0) {
-        const precedentByX = [...classViewLevels[i - 1]].sort(
+      if (currentLevelIndex > 0) {
+        const precedentByX = [...classViewLevels[currentLevelIndex - 1]].sort(
           (a, b) => a.position.x - b.position.x,
         );
         precedentX = precedentByX[0].position.x;
@@ -2966,9 +3002,15 @@ export class DiagramRenderer {
           precedentByX[precedentByX.length - 1].position.x +
           precedentByX[precedentByX.length - 1].rectangle.width -
           precedentByX[0].position.x;
-        precedentY = Math.min(
-          ...classViewLevels[i - 1].map((cv) => cv.position.y),
+
+        const precedentByY = [...classViewLevels[currentLevelIndex - 1]].sort(
+          (a, b) => a.position.y - b.position.y,
         );
+        precedentY = precedentByY[0].position.y;
+        precedentTotalHeight =
+          precedentByY[precedentByY.length - 1].position.y +
+          precedentByY[precedentByY.length - 1].rectangle.height -
+          precedentByY[0].position.y;
       }
 
       // Get the bounding box of current Level
@@ -2982,10 +3024,12 @@ export class DiagramRenderer {
 
       // Get the starting position
       const startX = precedentX + precedentTotalWidth / 2 - totalWidth / 2;
-      const currentLevelY = precedentY - maxHeight - spaceY;
+      const currentLevelY = superType
+        ? precedentY - maxHeight - spaceY
+        : precedentY + precedentTotalHeight + spaceY;
 
       // Set layout of current level
-      if (positionInitialClass || i > 0) {
+      if (positionInitialClass || currentLevelIndex > 0) {
         level[0].setPosition(new Point(startX, currentLevelY));
         level.forEach((view, index) => {
           if (index > 0) {
@@ -3002,7 +3046,9 @@ export class DiagramRenderer {
       return level;
     });
 
-    const generalizationViews = classViewLevels
+    const generalizationViews = (
+      superType ? classViewLevels : classViewLevels.reverse()
+    )
       .slice(0, classViewLevels.length - 1)
       .flatMap((level, i) =>
         level.flatMap((fromClassView) =>
