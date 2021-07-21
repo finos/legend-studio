@@ -1946,6 +1946,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-query-app@workspace:packages/legend-query-app":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-query-app@workspace:packages/legend-query-app"
+  dependencies:
+    "@finos/legend-studio": "workspace:*"
+    "@finos/legend-studio-dev-utils": "workspace:*"
+    "@finos/legend-studio-preset-dsl-text": "workspace:*"
+    "@finos/legend-studio-preset-query-builder": "workspace:*"
+    "@finos/legend-studio-shared": "workspace:*"
+    "@types/react": 17.0.14
+    copy-webpack-plugin: 9.0.1
+    cross-env: 7.0.3
+    eslint: 7.31.0
+    jest: 27.0.6
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    rimraf: 3.0.2
+    typescript: 4.3.5
+    webpack: 5.45.1
+    webpack-bundle-analyzer: 4.4.2
+    webpack-cli: 4.7.2
+    webpack-dev-server: 4.0.0-rc.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-studio-app@workspace:packages/legend-studio-app":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-app@workspace:packages/legend-studio-app"
@@ -2205,6 +2230,8 @@ __metadata:
     npm-run-all: 4.1.5
     papaparse: 5.3.1
     react: 17.0.2
+    react-dnd: 14.0.2
+    react-dnd-html5-backend: 14.0.0
     react-dom: 17.0.2
     react-hotkeys: 2.0.0
     react-router-dom: 5.2.0

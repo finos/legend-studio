@@ -48,7 +48,7 @@ writeFileSync(
   resolve(resolvedOutputDir, 'config.json'),
   JSON.stringify(
     {
-      appName: 'studio',
+      appName: 'query',
       env: 'local',
       sdlc: {
         url: 'http://localhost:7070/api',

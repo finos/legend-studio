@@ -23,6 +23,10 @@ import {
   assertTrue,
 } from './AssertionUtils';
 import { deflate } from 'pako';
+import {
+  parse as _getQueryParams,
+  parseUrl as _getQueryParamsFromUrl,
+} from 'query-string';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms
@@ -481,7 +485,11 @@ export const createUrlStringFromData = (
     ? `data:${contentType};base64,${btoa(data)}`
     : `data:${contentType},${encodeURIComponent(data)}`;
 
-export {
-  parse as getQueryParams,
-  parseUrl as getQueryParamsFromUrl,
-} from 'query-string';
+// NOTE: we can potentially use the native `URLSearchParams` as it provides
+// farily good API and structured output, but it does not support duplicated query
+// such as `?foo=1&foo=2`, only the first value of `foo` will be recorded
+// See https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
+  const params = isFullUrl ? _getQueryParamsFromUrl(url) : _getQueryParams(url);
+  return params as unknown as T;
+};

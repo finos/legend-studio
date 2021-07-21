@@ -34,7 +34,7 @@ import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import Backdrop from '@material-ui/core/Backdrop';
-import type { EditorRouteParams } from '../../stores/Router';
+import type { EditorPathParams } from '../../stores/Router';
 import {
   ActionAlertType,
   ActionAlertActionType,
@@ -61,7 +61,7 @@ const buildHotkeySupport = (
 };
 
 export const EditorInner = observer(() => {
-  const params = useParams<EditorRouteParams>();
+  const params = useParams<EditorPathParams>();
   const projectId = params.projectId;
   const workspaceId = params.workspaceId;
   const editorStore = useEditorStore();
