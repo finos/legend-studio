@@ -57,6 +57,7 @@ import { ModelStore } from '../model/packageableElements/store/modelToModel/mode
 import { GenerationSpecification } from '../model/packageableElements/generationSpecification/GenerationSpecification';
 import { Measure, Unit } from '../model/packageableElements/domain/Measure';
 import { ServiceStore } from '../model/packageableElements/store/relational/model/ServiceStore';
+import { cleanUpDeadReferencesInDiagram } from '../helpers/DiagramHelper';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -253,12 +254,6 @@ export class PureModel extends BasicModel {
       this.coreModel.primitiveTypesIndex.get(type),
       `Can't find primitive type '${type}'`,
     );
-  override getNullablePackage = (path: string): Package | undefined =>
-    !path
-      ? this.root
-      : returnUndefOnError(() =>
-          Package.getOrCreatePackage(this.root, path, false),
-        );
   getElement = (path: string, includePackage?: boolean): PackageableElement =>
     guaranteeNonNullable(
       this.getNullableElement(path, includePackage),
@@ -452,6 +447,9 @@ export class PureModel extends BasicModel {
     return element;
   }
 
+  /**
+   * We cache some typical/frequently-used multiplicity.
+   */
   getTypicalMultiplicity = (name: TYPICAL_MULTIPLICITY_TYPE): Multiplicity =>
     guaranteeNonNullable(
       this.coreModel.multiplicitiesIndex.get(name),
@@ -464,23 +462,21 @@ export class PureModel extends BasicModel {
   ): Multiplicity {
     let multiplicity: Multiplicity | undefined;
     if (lowerBound === 1 && upperBound === 1) {
-      multiplicity = this.coreModel.multiplicitiesIndex.get(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
+      multiplicity = this.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE);
     } else if (lowerBound === 0 && upperBound === 1) {
-      multiplicity = this.coreModel.multiplicitiesIndex.get(
+      multiplicity = this.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
       );
     } else if (lowerBound === 0 && upperBound === undefined) {
-      multiplicity = this.coreModel.multiplicitiesIndex.get(
+      multiplicity = this.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
       );
     } else if (lowerBound === 1 && upperBound === undefined) {
-      multiplicity = this.coreModel.multiplicitiesIndex.get(
+      multiplicity = this.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONEMANY,
       );
     } else if (lowerBound === 0 && upperBound === 0) {
-      multiplicity = this.coreModel.multiplicitiesIndex.get(
+      multiplicity = this.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ZERO,
       );
     }
@@ -523,12 +519,14 @@ export class PureModel extends BasicModel {
     }
   }
 
-  override deleteElement(element: PackageableElement): void {
-    super.deleteElement(element);
+  deleteElement(element: PackageableElement): void {
+    super.deleteOwnElement(element);
     this.cleanUpDeadReferences();
   }
 
   cleanUpDeadReferences(): void {
-    this.diagrams.forEach((diagram) => diagram.cleanUpDeadReferences(this));
+    this.diagrams.forEach((diagram) =>
+      cleanUpDeadReferencesInDiagram(diagram, this),
+    );
   }
 }

@@ -28,7 +28,6 @@ import type { PackageableElementVisitor } from '../../../model/packageableElemen
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
 import type { GeneralizationView } from './GeneralizationView';
 import type { AssociationView } from './AssociationView';
-import type { PureModel } from '../../../graph/PureModel';
 
 export class Diagram extends PackageableElement implements Hashable {
   classViews: ClassView[] = [];
@@ -57,40 +56,6 @@ export class Diagram extends PackageableElement implements Hashable {
       deletePropertyView: action,
       _elementHashCode: override,
     });
-  }
-
-  cleanUpDeadReferences(graph: PureModel): void {
-    // Delete orphan property views
-    const propertyViewsToRemove = this.propertyViews.filter(
-      (p) =>
-        !p.property.ownerReference.value.properties
-          .map((p) => p.name)
-          .includes(p.property.value.name),
-    );
-    propertyViewsToRemove.forEach((propertyView) =>
-      this.deletePropertyView(propertyView),
-    );
-
-    // Fix orphan class views
-    const classViewsToRemove = this.classViews.filter(
-      (cv) => !graph.getNullableClass(cv.class.value.path),
-    );
-    classViewsToRemove.forEach((cw) => this.deleteClassView(cw));
-
-    // Fix orphan gneralization views
-    const generalizationViewsToRemove = this.generalizationViews.filter((g) => {
-      const srcClass = g.from.classView.value.class.value;
-      const targetClass = g.to.classView.value.class.value;
-      return (
-        !graph.getNullableClass(srcClass.path) ||
-        !graph.getNullableClass(targetClass.path) ||
-        srcClass.generalizations.filter((c) => c.value.rawType === targetClass)
-          .length === 0
-      );
-    });
-    generalizationViewsToRemove.forEach((g) =>
-      this.deleteGeneralizationView(g),
-    );
   }
 
   setClassViews(val: ClassView[]): void {

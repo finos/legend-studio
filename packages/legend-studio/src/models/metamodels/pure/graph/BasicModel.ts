@@ -194,7 +194,7 @@ export abstract class BasicModel {
       setFileGeneration: action,
       setDiagram: action,
       allElements: computed,
-      deleteElement: action,
+      deleteOwnElement: action,
       renameElement: action,
       setIsBuilt: action,
       deleteSectionIndex: action,
@@ -473,6 +473,10 @@ export abstract class BasicModel {
 
   isRoot = (pack: Package | undefined): boolean => pack === this.root;
 
+  setIsBuilt(built: boolean): void {
+    this.isBuilt = built;
+  }
+
   buildPackageString = (
     packageName: string | undefined,
     name: string | undefined,
@@ -532,7 +536,7 @@ export abstract class BasicModel {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  deleteElement(element: PackageableElement): void {
+  deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
       element.package.deleteElement(element);
     }
@@ -569,7 +573,7 @@ export abstract class BasicModel {
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(element.path);
     } else if (element instanceof Package) {
-      element.children.forEach((el) => this.deleteElement(el));
+      element.children.forEach((el) => this.deleteOwnElement(el));
     } else {
       const extension = this.getExtensionForElementClass(
         getClass<PackageableElement>(element),
@@ -719,10 +723,6 @@ export abstract class BasicModel {
       );
       extension.renameElement(elementCurrentPath, newPath);
     }
-  }
-
-  setIsBuilt(built: boolean): void {
-    this.isBuilt = built;
   }
 
   // TODO: this will be removed once we fully support section index in SDLC flow

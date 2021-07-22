@@ -1048,7 +1048,7 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphState.graph.generationModel.deleteElement(el),
+      this.graphState.graph.generationModel.deleteOwnElement(el),
     );
     this.graphState.graph.deleteElement(element);
     // rerender currently opened diagram

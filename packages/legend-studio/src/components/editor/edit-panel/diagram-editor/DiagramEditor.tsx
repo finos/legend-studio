@@ -92,6 +92,7 @@ import {
 import { prettyCONSTName } from '@finos/legend-studio-shared';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import { cleanUpDeadReferencesInDiagram } from '../../../../models/metamodels/pure/helpers/DiagramHelper';
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -465,7 +466,8 @@ const DiagramEditorClassViewEditor = observer(
       };
 
     const redrawOnClassChange = useCallback((): void => {
-      diagramEditorState.diagram.cleanUpDeadReferences(
+      cleanUpDeadReferencesInDiagram(
+        diagramEditorState.diagram,
         editorStore.graphState.graph,
       );
       diagramEditorState.renderer.render();
