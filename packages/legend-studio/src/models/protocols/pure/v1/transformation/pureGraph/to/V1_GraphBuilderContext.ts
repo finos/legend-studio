@@ -466,7 +466,7 @@ export class V1_GraphBuilderContextBuilder {
   }
 
   withElement(element: V1_PackageableElement): V1_GraphBuilderContextBuilder {
-    const section = this.graph.getSection(element.path);
+    const section = this.graph.getOwnSection(element.path);
     return this.withSection(section);
   }
 

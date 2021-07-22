@@ -70,11 +70,11 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
         ): PackageableElement => {
           assertType(elementProtocol, V1_Text);
           const element = new Text(elementProtocol.name);
-          const path = context.currentSubGraph.buildPackageString(
+          const path = context.currentSubGraph.buildPath(
             elementProtocol.package,
             elementProtocol.name,
           );
-          context.currentSubGraph.setElementInExtension(path, element, Text);
+          context.currentSubGraph.setOwnElementInExtension(path, element, Text);
           return element;
         },
         secondPass: (
@@ -82,7 +82,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_Text);
-          const path = context.graph.buildPackageString(
+          const path = context.graph.buildPath(
             elementProtocol.package,
             elementProtocol.name,
           );

@@ -89,7 +89,7 @@ const checkGrammarRoundtrip = async (
     entities,
     { TEMPORARY__keepSectionIndex: true },
   );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
 

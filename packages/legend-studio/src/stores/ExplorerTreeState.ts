@@ -258,7 +258,7 @@ export class ExplorerTreeState {
       const openElements = new Set(
         openedTreeNodeIds
           .map((id) =>
-            this.editorStore.graphState.graph.generationModel.getNullableElement(
+            this.editorStore.graphState.graph.generationModel.getOwnNullableElement(
               id,
               true,
             ),

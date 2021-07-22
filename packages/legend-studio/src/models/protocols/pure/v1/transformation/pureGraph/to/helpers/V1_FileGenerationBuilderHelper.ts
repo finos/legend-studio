@@ -37,6 +37,7 @@ export const V1_buildScopeElement = (
 ): PackageableElementReference<PackageableElement> | string => {
   const _package = context.graph.getNullablePackage(path);
   return _package
-    ? PackageableElementExplicitReference.create(_package)
+    ? // NOTE: this is always intended to be provided as full path by user and it's always explicit
+      PackageableElementExplicitReference.create(_package)
     : returnUndefOnError(() => context.resolveElement(path, false)) ?? path;
 };

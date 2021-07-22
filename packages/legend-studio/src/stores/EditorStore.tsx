@@ -1030,7 +1030,7 @@ export class EditorStore {
       return;
     }
     const generatedChildrenElements =
-      this.graphState.graph.generationModel.allElements.filter(
+      this.graphState.graph.generationModel.allOwnElements.filter(
         (e) => e.generationParentElement === element,
       );
     const elementsToDelete = [element, ...generatedChildrenElements];
@@ -1048,7 +1048,7 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphState.graph.generationModel.deleteElement(el),
+      this.graphState.graph.generationModel.deleteOwnElement(el),
     );
     this.graphState.graph.deleteElement(element);
     // rerender currently opened diagram
@@ -1070,7 +1070,7 @@ export class EditorStore {
     if (element.isReadOnly) {
       return;
     }
-    this.graphState.graph.renameElement(element, newPath);
+    this.graphState.graph.renameOwnElement(element, newPath);
     // rerender currently opened diagram
     if (this.currentEditorState instanceof DiagramEditorState) {
       this.currentEditorState.renderer.render();
@@ -1232,8 +1232,25 @@ export class EditorStore {
       );
   }
 
+  /**
+   * Filter the list of system elements that will be shown in selection options
+   * to users. This is helpful to avoid overwhelming and confusing users in form
+   * mode since many system elements are needed to build the graph, but should
+   * not present at all as selection options in form mode.
+   */
+  filterSystemElementOptions<T extends PackageableElement>(
+    systemElements: T[],
+  ): T[] {
+    const allowedSystemElements = this.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
+    return systemElements.filter((element) =>
+      allowedSystemElements.includes(element.path),
+    );
+  }
+
   get enumerationOptions(): PackageableElementSelectOption<Enumeration>[] {
-    return this.graphState.graph.enumerations
+    return this.graphState.graph.ownEnumerations
       .concat(this.graphState.graph.dependencyManager.enumerations)
       .map(
         (e) => e.selectOption as PackageableElementSelectOption<Enumeration>,
@@ -1241,15 +1258,23 @@ export class EditorStore {
   }
 
   get classOptions(): PackageableElementSelectOption<Class>[] {
-    return this.graphState.graph.classes
-      .concat(this.graphState.graph.systemModel.classes)
+    return this.graphState.graph.ownClasses
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownClasses,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.classes)
       .map((c) => c.selectOption as PackageableElementSelectOption<Class>);
   }
 
   get associationOptions(): PackageableElementSelectOption<Association>[] {
-    return this.graphState.graph.associations
-      .concat(this.graphState.graph.systemModel.associations)
+    return this.graphState.graph.ownAssociations
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownAssociations,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.associations)
       .map(
         (p) => p.selectOption as PackageableElementSelectOption<Association>,
@@ -1257,8 +1282,12 @@ export class EditorStore {
   }
 
   get profileOptions(): PackageableElementSelectOption<Profile>[] {
-    return this.graphState.graph.profiles
-      .concat(this.graphState.graph.systemModel.profiles)
+    return this.graphState.graph.ownProfiles
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownProfiles,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.profiles)
       .map((p) => p.selectOption as PackageableElementSelectOption<Profile>);
   }
@@ -1268,21 +1297,25 @@ export class EditorStore {
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
       .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
       .concat(
-        this.graphState.graph.types
-          .concat(this.graphState.graph.systemModel.types)
+        this.graphState.graph.ownTypes
+          .concat(
+            this.filterSystemElementOptions(
+              this.graphState.graph.systemModel.ownTypes,
+            ),
+          )
           .concat(this.graphState.graph.dependencyManager.types)
           .map((a) => a.selectOption as PackageableElementSelectOption<Type>),
       );
   }
 
   get mappingOptions(): PackageableElementSelectOption<Mapping>[] {
-    return this.graphState.graph.mappings
+    return this.graphState.graph.ownMappings
       .concat(this.graphState.graph.dependencyManager.mappings)
       .map((a) => a.selectOption as PackageableElementSelectOption<Mapping>);
   }
 
   get storeOptions(): PackageableElementSelectOption<Store>[] {
-    return this.graphState.graph.stores
+    return this.graphState.graph.ownStores
       .concat(this.graphState.graph.dependencyManager.stores)
       .map((a) => a.selectOption as PackageableElementSelectOption<Store>);
   }

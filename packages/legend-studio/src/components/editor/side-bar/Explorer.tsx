@@ -601,7 +601,9 @@ const ExplorerTrees = observer(() => {
               <ProjectConfig />
             )}
             {/* SYSTEM TREE */}
-            {Boolean(editorStore.graphState.systemModel.allElements.length) && (
+            {Boolean(
+              editorStore.graphState.systemModel.allOwnElements.length,
+            ) && (
               <TreeView
                 components={{
                   TreeNodeContainer: PackageTreeNodeContainer,
@@ -631,7 +633,7 @@ const ExplorerTrees = observer(() => {
                 />
               )}
             {/* GENERATION SPECIFICATION */}
-            {Boolean(graph.generationModel.allElements.length) && (
+            {Boolean(graph.generationModel.allOwnElements.length) && (
               <TreeView
                 components={{
                   TreeNodeContainer: PackageTreeNodeContainer,

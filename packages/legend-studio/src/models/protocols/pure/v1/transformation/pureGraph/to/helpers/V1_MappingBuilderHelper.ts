@@ -42,9 +42,9 @@ import { FlatDataInputData } from '../../../../../../../metamodels/pure/model/pa
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import type { Class } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
-import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { toOptionalPackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
-import { EnumValueExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/EnumValueReference';
+import { EnumValueImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/domain/EnumValueReference';
 import { MappingInclude } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/MappingInclude';
 import { SubstituteStore } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/SubstituteStore';
 import type { SetImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';
@@ -79,7 +79,7 @@ export const V1_getInferredClassMappingId = (
 
 const buildEnumValueMapping = (
   srcEnumValueMapping: V1_EnumValueMapping,
-  enumeration: PackageableElementReference<Enumeration>,
+  enumerationReference: PackageableElementImplicitReference<Enumeration>,
   sourceType?: Type,
 ): EnumValueMapping => {
   assertNonNullable(
@@ -87,8 +87,9 @@ const buildEnumValueMapping = (
     `Enum value mapping enum value name is missing`,
   );
   const enumValueMapping = new EnumValueMapping(
-    EnumValueExplicitReference.create(
-      enumeration.value.getValue(srcEnumValueMapping.enumValue),
+    EnumValueImplicitReference.create(
+      enumerationReference,
+      enumerationReference.value.getValue(srcEnumValueMapping.enumValue),
     ),
   );
   // We will support processing for enumeration mappings with and without source type

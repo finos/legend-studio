@@ -8163,7 +8163,7 @@ export const relationalCompleteGraphEntities = [
               classMapping: {
                 _type: 'embedded',
                 class: 'meta::pure::tests::model::simple::PersonExtension',
-                id: '[object Object]_employeesExt.employeesExt',
+                id: 'meta_pure_tests_model_simple_PersonExtension.employeesExt',
                 primaryKey: [],
                 propertyMappings: [
                   {
@@ -13847,7 +13847,7 @@ export const inlineEmbeddedRelational = [
                 property: 'address',
               },
               source: 'alias1',
-              id: '[object Object]_address',
+              id: 'other_Person_address',
               setImplementationId: 'alias2',
             },
           ],

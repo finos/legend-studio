@@ -32,7 +32,7 @@ test(unitTest('Infer default mapping element ID'), async () => {
     testInferenceDefaultMappingElementID as Entity[],
     { TEMPORARY__keepSectionIndex: true },
   );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   expect(transformedEntities).toIncludeSameMembers(
@@ -68,7 +68,7 @@ test(
       editorStore.graphState.graph,
       testReferenceWithoutSection.original as Entity[],
     );
-    const transformedEntities = editorStore.graphState.graph.allElements.map(
+    const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
       (element) => editorStore.graphState.graphManager.elementToEntity(element),
     );
     expect(transformedEntities).toIncludeSameMembers(
@@ -94,7 +94,7 @@ test(
       editorStore.graphState.graph.getProfile('test::tProf').getTag('s4'),
     );
     expect(
-      editorStore.graphState.graph.allElements.map((element) =>
+      editorStore.graphState.graph.allOwnElements.map((element) =>
         editorStore.graphState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
@@ -115,7 +115,7 @@ test(
       editorStore.graphState.graph.getProfile('test2::tProf').getTag('s1'),
     );
     expect(
-      editorStore.graphState.graph.allElements.map((element) =>
+      editorStore.graphState.graph.allOwnElements.map((element) =>
         editorStore.graphState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
