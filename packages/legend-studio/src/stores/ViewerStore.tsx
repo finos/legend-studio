@@ -219,7 +219,9 @@ export class ViewerStore {
       yield this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions();
 
       // generate
-      if (this.editorStore.graphState.graph.generationSpecifications.length) {
+      if (
+        this.editorStore.graphState.graph.ownGenerationSpecifications.length
+      ) {
         yield this.editorStore.graphState.graphGenerationState.globalGenerate();
       }
 

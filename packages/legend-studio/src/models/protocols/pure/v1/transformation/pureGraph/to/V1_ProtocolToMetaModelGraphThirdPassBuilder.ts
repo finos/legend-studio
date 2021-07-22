@@ -83,7 +83,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
 
   visit_Class(element: V1_Class): void {
     const _class = this.context.graph.getClass(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     element.superTypes.forEach((type) => {
       // supertype `Any` will not be processed
@@ -98,7 +98,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
           assertErrorThrown(error);
           // NOTE: reconsider this as we might need to get elements from `system` and `platform` as well
           throw new GraphError(
-            `Can't find supertype '${type}' of class '${this.context.graph.buildPackageString(
+            `Can't find supertype '${type}' of class '${this.context.graph.buildPath(
               element.package,
               element.name,
             )}': ${error.message}`,
@@ -117,7 +117,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
       'Association must have exactly 2 properties',
     );
     const association = this.context.graph.getAssociation(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     const first = element.properties[0];
     const second = element.properties[1];
@@ -145,13 +145,13 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
 
   visit_FlatData(element: V1_FlatData): void {
     this.context.graph.getFlatDataStore(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
   }
 
   visit_Database(element: V1_Database): void {
     const database = this.context.graph.getDatabase(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     element.schemas.forEach((schema) =>
       V1_buildDatabaseSchemaViewsFirstPass(schema, database, this.context),
@@ -160,15 +160,12 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
 
   visit_ServiceStore(element: V1_ServiceStore): void {
     this.context.graph.getServiceStore(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    const path = this.context.graph.buildPackageString(
-      element.package,
-      element.name,
-    );
+    const path = this.context.graph.buildPath(element.package, element.name);
     const mapping = this.context.graph.getMapping(path);
     mapping.classMappings = element.classMappings.map((classMapping) =>
       classMapping.accept_ClassMappingVisitor(

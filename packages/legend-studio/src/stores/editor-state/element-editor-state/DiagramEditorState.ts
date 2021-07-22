@@ -261,9 +261,15 @@ export class DiagramEditorState extends ElementEditorState {
           this.renderer.selectedClassCorner
         ) {
           return 'diagram-editor__cursor--resize';
-        } else if (this.renderer.mouseOverProperty) {
+        } else if (this.renderer.mouseOverClassProperty) {
           return this.isReadOnly ||
-            this.renderer.mouseOverProperty.owner.isReadOnly
+            this.renderer.mouseOverClassProperty.owner.isReadOnly
+            ? 'diagram-editor__cursor--not-allowed'
+            : 'diagram-editor__cursor--text';
+        } else if (this.renderer.mouseOverPropertyHolderViewLabel) {
+          return this.isReadOnly ||
+            this.renderer.mouseOverPropertyHolderViewLabel.property.value.owner
+              .isReadOnly
             ? 'diagram-editor__cursor--not-allowed'
             : 'diagram-editor__cursor--text';
         } else if (this.renderer.mouseOverClassName) {
@@ -345,6 +351,7 @@ export class DiagramEditorState extends ElementEditorState {
     this.renderer.editProperty = (
       property: AbstractProperty,
       point: Point,
+      propertyHolderView: PropertyHolderView | undefined,
     ): void => {
       if (!this.isReadOnly && !property.owner.isReadOnly) {
         this.setInlinePropertyEditorState(
@@ -352,26 +359,7 @@ export class DiagramEditorState extends ElementEditorState {
             this,
             property,
             point,
-            false,
-          ),
-        );
-      }
-    };
-    this.renderer.editPropertyView = (
-      propertyHolderView: PropertyHolderView,
-    ): void => {
-      if (
-        !this.isReadOnly &&
-        !propertyHolderView.property.value.owner.isReadOnly
-      ) {
-        this.setInlinePropertyEditorState(
-          new DiagramEditorInlinePropertyEditorState(
-            this,
-            propertyHolderView.property.value,
-            propertyHolderView.path.length
-              ? propertyHolderView.path[0]
-              : propertyHolderView.from.classView.value.center(),
-            true,
+            Boolean(propertyHolderView),
           ),
         );
       }

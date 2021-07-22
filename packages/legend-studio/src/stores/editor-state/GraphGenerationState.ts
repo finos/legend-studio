@@ -187,7 +187,7 @@ export class GraphGenerationState {
     try {
       this.generatedEntities = new Map<string, Entity[]>(); // reset the map of generated entities
       const generationSpecs =
-        this.editorStore.graphState.graph.generationSpecifications;
+        this.editorStore.graphState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -241,7 +241,7 @@ export class GraphGenerationState {
       this.emptyFileGeneration();
       const generationResultMap = new Map<string, GenerationOutput[]>();
       const generationSpecs =
-        this.editorStore.graphState.graph.generationSpecifications;
+        this.editorStore.graphState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -315,7 +315,7 @@ export class GraphGenerationState {
    * 2. there exists a generation element
    */
   addMissingGenerationSpecifications(): void {
-    if (!this.editorStore.graphState.graph.generationSpecifications.length) {
+    if (!this.editorStore.graphState.graph.ownGenerationSpecifications.length) {
       const modelGenerationElements =
         this.editorStore.applicationStore.pluginManager
           .getPureGraphManagerPlugins()
@@ -326,7 +326,8 @@ export class GraphGenerationState {
               ).getExtraModelGenerationElementGetters?.() ?? [],
           )
           .flatMap((getter) => getter(this.editorStore.graphState.graph));
-      const fileGenerations = this.editorStore.graphState.graph.fileGenerations;
+      const fileGenerations =
+        this.editorStore.graphState.graph.ownFileGenerations;
       if (modelGenerationElements.length || fileGenerations.length) {
         const generationSpec = new GenerationSpecification(
           DEFAULT_GENERATION_SPECIFICATION_NAME,

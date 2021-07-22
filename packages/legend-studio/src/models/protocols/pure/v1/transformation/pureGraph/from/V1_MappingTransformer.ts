@@ -593,14 +593,10 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
 
 const transformXStorePropertyMapping = (
   element: XStorePropertyMapping,
-  isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
 ): V1_XStorePropertyMapping => {
   const xstore = new V1_XStorePropertyMapping();
-  xstore.property = V1_transformPropertyReference(
-    element.property,
-    isTransformingEmbeddedPropertyMapping,
-  );
+  xstore.property = V1_transformPropertyReference(element.property, false);
   xstore.source = transformPropertyMappingSource(
     element.sourceSetImplementation,
   );
@@ -721,11 +717,7 @@ class PropertyMappingTransformer
   visit_XStorePropertyMapping(
     propertyMapping: XStorePropertyMapping,
   ): V1_PropertyMapping {
-    return transformXStorePropertyMapping(
-      propertyMapping,
-      this.isTransformingEmbeddedPropertyMapping,
-      this.context,
-    );
+    return transformXStorePropertyMapping(propertyMapping, this.context);
   }
   visit_AggregationAwarePropertyMapping(
     propertyMapping: AggregationAwarePropertyMapping,

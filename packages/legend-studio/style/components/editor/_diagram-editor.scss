@@ -364,8 +364,12 @@
   @include flexVCenter;
 
   height: 2.8rem;
-  width: 39.2rem;
+  width: 23.9rem;
   padding: 0.3rem;
+
+  &--with-type {
+    width: 39.2rem;
+  }
 
   &__name {
     @include flexConstantDimension;
@@ -373,13 +377,14 @@
     width: 15rem;
     height: 2.2rem;
     border: 0.1rem solid var(--color-dark-grey-300);
+    margin-right: 0.3rem;
   }
 
   &__type {
     @include flexConstantDimension;
 
     width: 15rem;
-    margin: 0 0.3rem;
+    margin-right: 0.3rem;
   }
 
   &__multiplicity-editor {

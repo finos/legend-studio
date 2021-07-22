@@ -122,13 +122,13 @@ export const V1_buildUnit = (
         )
       : undefined,
   );
-  const path = currentGraph.buildPackageString(unit.package, unit.name);
+  const path = currentGraph.buildPath(unit.package, unit.name);
   assertTrue(
-    !currentGraph.getNullableElement(path),
+    !currentGraph.getOwnNullableElement(path),
     `Element '${path}' already exists`,
   );
   currentGraph.getOrCreatePackage(unit.package).addElement(pureUnit);
-  currentGraph.setType(path, pureUnit);
+  currentGraph.setOwnType(path, pureUnit);
   return pureUnit;
 };
 

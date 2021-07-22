@@ -34,7 +34,7 @@ import { GroupByMapping } from '../../../../../../metamodels/pure/model/packagea
 import { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import type { AbstractFlatDataPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
-import { SetImplementationExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementationReference';
+import { SetImplementationImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementationReference';
 import type { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
 import { V1_buildRelationalOperationElement } from './helpers/V1_DatabaseBuilderHelper';
@@ -53,6 +53,7 @@ import type { V1_AggregationAwareClassMapping } from '../../../model/packageable
 import { V1_getInferredClassMappingId } from './helpers/V1_MappingBuilderHelper';
 import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { V1_AggregateSetImplementationContainer } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer';
+import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 
 export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
@@ -94,7 +95,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
           return undefined;
         }
         return new SetImplementationContainer(
-          SetImplementationExplicitReference.create(setImplementation),
+          SetImplementationImplicitReference.create(
+            PackageableElementImplicitReference.create(this.parent, ''),
+            setImplementation,
+          ),
         );
       })
       .filter(isNonNullable);

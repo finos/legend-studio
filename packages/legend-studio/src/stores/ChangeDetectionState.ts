@@ -74,9 +74,9 @@ class RevisionChangeDetectionState {
     let changes: EntityDiff[] = [];
     if (!this.isBuildingEntityHashesIndex) {
       const originalPaths = new Set(Array.from(this.entityHashesIndex.keys()));
-      if (this.graphState.graph.allElements.length) {
+      if (this.graphState.graph.allOwnElements.length) {
         yield Promise.all<void>(
-          this.graphState.graph.allElements.map(
+          this.graphState.graph.allOwnElements.map(
             (element) =>
               new Promise((resolve) =>
                 setTimeout(() => {
@@ -375,7 +375,7 @@ export class ChangeDetectionState {
   snapshotLocalEntityHashesIndex(quiet?: boolean): Map<string, string> {
     const startTime = Date.now();
     const snapshot = new Map<string, string>();
-    this.graphState.graph.allElements.forEach((el) =>
+    this.graphState.graph.allOwnElements.forEach((el) =>
       snapshot.set(el.path, el.hashCode),
     );
     if (!quiet) {

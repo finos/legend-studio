@@ -43,7 +43,7 @@ export const ProjectSearchCommand = observer(() => {
     (type: string | undefined): (() => void) =>
     (): void =>
       setElementType(type);
-  const options = editorStore.graphState.graph.allElements
+  const options = editorStore.graphState.graph.allOwnElements
     .filter(
       (element) =>
         !elementType ||

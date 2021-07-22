@@ -215,7 +215,7 @@ const testDependencyElements = async (
       elementInGraph,
       `element ${e} not found in main graph`,
     );
-    const elementInMainGraph = editorStore.graphState.graph.allElements.find(
+    const elementInMainGraph = editorStore.graphState.graph.allOwnElements.find(
       (el) => el.path === e,
     );
     expect(elementInMainGraph).toBeUndefined();
@@ -239,7 +239,7 @@ const testDependencyElements = async (
       ).toBeDefined();
     });
   }
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (el) => editorStore.graphState.graphManager.elementToEntity(el),
   );
   expect(entities).toIncludeSameMembers(transformedEntities);

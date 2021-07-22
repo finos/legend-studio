@@ -428,7 +428,8 @@ const FileGenerationSpecifications = observer(
       generationSpecificationEditorState.spec.fileGenerations.map(
         (f) => f.value,
       );
-    const fileGenerationInGraph = editorStore.graphState.graph.fileGenerations;
+    const fileGenerationInGraph =
+      editorStore.graphState.graph.ownFileGenerations;
     const fileGenerationsOptions = fileGenerationInGraph
       .filter((f) => !fileGenerations.includes(f))
       .map(

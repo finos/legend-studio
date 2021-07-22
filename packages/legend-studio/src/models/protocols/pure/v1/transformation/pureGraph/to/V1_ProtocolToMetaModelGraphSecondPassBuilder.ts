@@ -98,7 +98,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_Profile(element: V1_Profile): void {
     const profile = this.context.graph.getProfile(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     profile.stereotypes = element.stereotypes.map(
       (stereotype) => new Stereotype(profile, stereotype),
@@ -107,10 +107,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Enumeration(element: V1_Enumeration): void {
-    const path = this.context.graph.buildPackageString(
-      element.package,
-      element.name,
-    );
+    const path = this.context.graph.buildPath(element.package, element.name);
     const enumeration = this.context.graph.getEnumeration(path);
     enumeration.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
@@ -137,7 +134,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       'Measure canonical unit is missing',
     );
     const measure = this.context.graph.getMeasure(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     measure.setCanonicalUnit(
       V1_buildUnit(
@@ -154,7 +151,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_Class(element: V1_Class): void {
     const _class = this.context.graph.getClass(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     _class.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
@@ -182,7 +179,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       'Function return type multiplicity is missing',
     );
     const func = this.context.graph.getFunction(
-      this.context.graph.buildPackageString(protocol.package, protocol.name),
+      this.context.graph.buildPath(protocol.package, protocol.name),
     );
     func.returnType = this.context.resolveType(protocol.returnType);
     func.returnMultiplicity = this.context.graph.getMultiplicity(
@@ -203,7 +200,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_FlatData(element: V1_FlatData): void {
     const flatData = this.context.graph.getFlatDataStore(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     flatData.sections = element.sections.map((section) =>
       V1_buildFlatDataSection(section, flatData, this.context),
@@ -212,7 +209,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_Database(element: V1_Database): void {
     const database = this.context.graph.getDatabase(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     database.includes = element.includedStores.map((includedStore) =>
       this.context.resolveDatabase(includedStore),
@@ -225,7 +222,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   visit_ServiceStore(element: V1_ServiceStore): void {
     assertNonEmptyString(element.docLink, 'Service store doc link is missing');
     const serviceStore = this.context.graph.getServiceStore(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     // TODO includedStores
     serviceStore.docLink = element.docLink;
@@ -233,7 +230,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_Mapping(element: V1_Mapping): void {
     const mapping = this.context.graph.getMapping(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     const mappingIncludesSet = new Set<string>();
     mapping.includes = element.includedMappings.map((i) => {
@@ -257,7 +254,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   visit_Service(element: V1_Service): void {
     assertNonEmptyString(element.pattern, 'Service pattern is missing');
     const service = this.context.graph.getService(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     service.pattern = element.pattern;
     service.owners = element.owners.slice();
@@ -272,7 +269,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_Diagram(element: V1_Diagram): void {
     const diagram = this.context.graph.getDiagram(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     diagram.classViews = element.classViews.map((classView) =>
       V1_buildClassView(classView, this.context, diagram),
@@ -298,7 +295,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   visit_FileGeneration(element: V1_FileGenerationSpecification): void {
     assertNonEmptyString(element.type, 'File generation type is missing');
     const fileGeneration = this.context.graph.getFileGeneration(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     fileGeneration.setType(element.type);
     fileGeneration.configurationProperties =
@@ -311,7 +308,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_GenerationSpecification(element: V1_GenerationSpecification): void {
     const generationSpec = this.context.graph.getGenerationSpecification(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     generationSpec.generationNodes = element.generationNodes.map((node) =>
       V1_buildGenerationTreeNode(node, this.context),
@@ -323,7 +320,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_PackageableRuntime(element: V1_PackageableRuntime): void {
     const runtime = this.context.graph.getRuntime(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     runtime.setRuntimeValue(
       V1_buildEngineRuntime(element.runtimeValue, this.context),
@@ -332,7 +329,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
 
   visit_PackageableConnection(element: V1_PackageableConnection): void {
     const connection = this.context.graph.getConnection(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     if (element.connectionValue instanceof V1_ConnectionPointer) {
       throw new IllegalStateError(

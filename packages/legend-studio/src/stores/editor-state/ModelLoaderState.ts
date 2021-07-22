@@ -106,7 +106,7 @@ export class ModelLoaderState extends EditorState {
     switch (this.currentInputType) {
       case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
         const graphEntities = this.editorStore.graphState.graph.isBuilt
-          ? this.editorStore.graphState.graph.allElements.map((element) =>
+          ? this.editorStore.graphState.graph.allOwnElements.map((element) =>
               this.editorStore.graphState.graphManager.elementToEntity(element),
             )
           : this.editorStore.changeDetectionState.workspaceLatestRevisionState
@@ -119,7 +119,7 @@ export class ModelLoaderState extends EditorState {
       }
       case MODEL_UPDATER_INPUT_TYPE.ENTITIES: {
         const graphEntities = this.editorStore.graphState.graph.isBuilt
-          ? this.editorStore.graphState.graph.allElements.map((element) =>
+          ? this.editorStore.graphState.graph.allOwnElements.map((element) =>
               this.editorStore.graphState.graphManager.elementToEntity(element),
             )
           : this.editorStore.changeDetectionState.workspaceLatestRevisionState

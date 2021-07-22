@@ -72,7 +72,7 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
 
   visit_Class(element: V1_Class): void {
     const _class = this.context.graph.getClass(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     _class.derivedProperties = element.derivedProperties.map(
       (derivedProperty) =>
@@ -95,13 +95,13 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
 
   visit_FlatData(element: V1_FlatData): void {
     this.context.graph.getFlatDataStore(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
   }
 
   visit_Database(element: V1_Database): void {
     const database = this.context.graph.getDatabase(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
     element.schemas.forEach((schema) =>
       V1_buildDatabaseSchemaViewsSecondPass(schema, this.context, database),
@@ -110,7 +110,7 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
 
   visit_ServiceStore(element: V1_ServiceStore): void {
     this.context.graph.getServiceStore(
-      this.context.graph.buildPackageString(element.package, element.name),
+      this.context.graph.buildPath(element.package, element.name),
     );
   }
 

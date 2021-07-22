@@ -385,7 +385,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
 
   autoSelectRuntimeOnMappingChange(mapping: Mapping): void {
     if (this.selectedExecutionConfiguration) {
-      const runtimes = this.editorStore.graphState.graph.runtimes.filter(
+      const runtimes = this.editorStore.graphState.graph.ownRuntimes.filter(
         (runtime) =>
           runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
       );

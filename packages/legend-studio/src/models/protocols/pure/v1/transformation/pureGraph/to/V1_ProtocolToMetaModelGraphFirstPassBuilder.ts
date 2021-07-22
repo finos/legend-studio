@@ -37,7 +37,7 @@ import { PackageableRuntime } from '../../../../../../metamodels/pure/model/pack
 import { PackageableConnection } from '../../../../../../metamodels/pure/model/packageableElements/connection/PackageableConnection';
 import { GenerationSpecification } from '../../../../../../metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
 import { SectionIndex } from '../../../../../../metamodels/pure/model/packageableElements/section/SectionIndex';
-import { PackageableElementExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
@@ -80,7 +80,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Section index package is missing');
     assertNonEmptyString(element.name, 'Section index is missing');
     const sectionIndex = new SectionIndex(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -88,7 +88,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph.setSectionIndex(path, sectionIndex);
+    this.context.currentSubGraph.setOwnSectionIndex(path, sectionIndex);
     return sectionIndex;
   }
 
@@ -96,7 +96,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Profile package is missing');
     assertNonEmptyString(element.name, 'Profile name is missing');
     const profile = new Profile(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -107,7 +107,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(profile);
-    this.context.currentSubGraph.setProfile(path, profile);
+    this.context.currentSubGraph.setOwnProfile(path, profile);
     return profile;
   }
 
@@ -115,7 +115,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Enumeration package is missing');
     assertNonEmptyString(element.name, 'Enumeration name is missing');
     const pureEnumeration = new Enumeration(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -126,7 +126,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(pureEnumeration);
-    this.context.currentSubGraph.setType(path, pureEnumeration);
+    this.context.currentSubGraph.setOwnType(path, pureEnumeration);
     return pureEnumeration;
   }
 
@@ -134,7 +134,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Measure package is missing');
     assertNonEmptyString(element.name, 'Measure name is missing');
     const pureMeasure = new Measure(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -145,7 +145,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(pureMeasure);
-    this.context.currentSubGraph.setType(path, pureMeasure);
+    this.context.currentSubGraph.setOwnType(path, pureMeasure);
     return pureMeasure;
   }
 
@@ -153,7 +153,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Class package is missing');
     assertNonEmptyString(element.name, 'Class name is missing');
     const _class = new Class(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -164,7 +164,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(_class);
-    this.context.currentSubGraph.setType(path, _class);
+    this.context.currentSubGraph.setOwnType(path, _class);
     return _class;
   }
 
@@ -172,7 +172,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Association package is missing');
     assertNonEmptyString(element.name, 'Association name is missing');
     const association = new Association(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -183,7 +183,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(association);
-    this.context.currentSubGraph.setAssociation(path, association);
+    this.context.currentSubGraph.setOwnAssociation(path, association);
     return association;
   }
 
@@ -194,14 +194,16 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.name, 'Function name is missing');
     const func = new ConcreteFunctionDefinition(
       element.name,
-      PackageableElementExplicitReference.create(
+      // This is just a stub to fill in when we first create the function
+      PackageableElementImplicitReference.create(
         this.context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+        '',
       ),
       this.context.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
       ),
     );
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -212,7 +214,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(func);
-    this.context.currentSubGraph.setFunction(path, func);
+    this.context.currentSubGraph.setOwnFunction(path, func);
     return func;
   }
 
@@ -220,7 +222,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Flat-data store package is missing');
     assertNonEmptyString(element.name, 'Flat data store name is missing');
     const flatData = new FlatData(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -231,7 +233,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(flatData);
-    this.context.currentSubGraph.setStore(path, flatData);
+    this.context.currentSubGraph.setOwnStore(path, flatData);
     return flatData;
   }
 
@@ -239,7 +241,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Database store package is missing');
     assertNonEmptyString(element.name, 'Database store name is missing');
     const database = new Database(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -250,7 +252,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(database);
-    this.context.currentSubGraph.setStore(path, database);
+    this.context.currentSubGraph.setOwnStore(path, database);
     return database;
   }
 
@@ -258,7 +260,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Service store package is missing');
     assertNonEmptyString(element.name, 'Service store name is missing');
     const serviceStore = new ServiceStore(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -269,7 +271,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(serviceStore);
-    this.context.currentSubGraph.setStore(path, serviceStore);
+    this.context.currentSubGraph.setOwnStore(path, serviceStore);
     return serviceStore;
   }
 
@@ -277,7 +279,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Mapping package is missing');
     assertNonEmptyString(element.name, 'Mapping name is missing');
     const pureMapping = new Mapping(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -288,7 +290,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(pureMapping);
-    this.context.currentSubGraph.setMapping(path, pureMapping);
+    this.context.currentSubGraph.setOwnMapping(path, pureMapping);
     return pureMapping;
   }
 
@@ -296,7 +298,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Service package is missing');
     assertNonEmptyString(element.name, 'Service name is missing');
     const service = new Service(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -307,7 +309,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(service);
-    this.context.currentSubGraph.setService(path, service);
+    this.context.currentSubGraph.setOwnService(path, service);
     return service;
   }
 
@@ -315,7 +317,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Diagram package is missing');
     assertNonEmptyString(element.name, 'Diagram name is missing');
     const diagram = new Diagram(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -326,7 +328,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(diagram);
-    this.context.currentSubGraph.setDiagram(path, diagram);
+    this.context.currentSubGraph.setOwnDiagram(path, diagram);
     return diagram;
   }
 
@@ -342,7 +344,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       'File generation element name is missing',
     );
     const fileGeneration = new FileGenerationSpecification(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -353,7 +355,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(fileGeneration);
-    this.context.currentSubGraph.setFileGeneration(path, fileGeneration);
+    this.context.currentSubGraph.setOwnFileGeneration(path, fileGeneration);
     return fileGeneration;
   }
 
@@ -370,7 +372,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       'Generation tree element name is missing',
     );
     const generationSpec = new GenerationSpecification(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -381,7 +383,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(generationSpec);
-    this.context.currentSubGraph.setGenerationSpecification(
+    this.context.currentSubGraph.setOwnGenerationSpecification(
       path,
       generationSpec,
     );
@@ -392,7 +394,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Runtime package is missing');
     assertNonEmptyString(element.name, 'Runtime name is missing');
     const runtime = new PackageableRuntime(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -403,7 +405,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(runtime);
-    this.context.currentSubGraph.setRuntime(path, runtime);
+    this.context.currentSubGraph.setOwnRuntime(path, runtime);
     return runtime;
   }
 
@@ -413,7 +415,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.package, 'Connection package is missing');
     assertNonEmptyString(element.name, 'Connection name is missing');
     const connection = new PackageableConnection(element.name);
-    const path = this.context.currentSubGraph.buildPackageString(
+    const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
     );
@@ -424,7 +426,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(connection);
-    this.context.currentSubGraph.setConnection(path, connection);
+    this.context.currentSubGraph.setOwnConnection(path, connection);
     return connection;
   }
 }
