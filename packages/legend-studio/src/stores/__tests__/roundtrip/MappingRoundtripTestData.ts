@@ -558,8 +558,7 @@ export const testLocalPropertyMapping = [
                 type: 'Integer',
               },
               property: {
-                class:
-                  'test::crossPropertyMappingWithLocalProperties_[object Object]firmId',
+                class: 'test::Person',
                 property: 'firmId',
               },
               source: '',

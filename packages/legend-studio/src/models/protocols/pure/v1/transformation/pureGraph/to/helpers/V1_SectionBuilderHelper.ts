@@ -56,7 +56,9 @@ export const V1_buildSection = (
           );
         }
         return element instanceof Package
-          ? PackageableElementExplicitReference.create(element)
+          ? // NOTE: here we use explicit because this information from section
+            // must always be the package full path
+            PackageableElementExplicitReference.create(element)
           : undefined;
       })
       .filter(isNonNullable);
@@ -85,6 +87,8 @@ export const V1_buildSection = (
       } else {
         context.graph.setOwnSection(element.path, sec);
       }
+      // NOTE: here we use explicit because this information from section
+      // must always be the full element path
       return PackageableElementExplicitReference.create(element);
     })
     .filter(isNonNullable);

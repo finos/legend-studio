@@ -37,7 +37,7 @@ import { PackageableRuntime } from '../../../../../../metamodels/pure/model/pack
 import { PackageableConnection } from '../../../../../../metamodels/pure/model/packageableElements/connection/PackageableConnection';
 import { GenerationSpecification } from '../../../../../../metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
 import { SectionIndex } from '../../../../../../metamodels/pure/model/packageableElements/section/SectionIndex';
-import { PackageableElementExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
@@ -194,8 +194,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     assertNonEmptyString(element.name, 'Function name is missing');
     const func = new ConcreteFunctionDefinition(
       element.name,
-      PackageableElementExplicitReference.create(
+      // This is just a stub to fill in when we first create the function
+      PackageableElementImplicitReference.create(
         this.context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+        '',
       ),
       this.context.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
