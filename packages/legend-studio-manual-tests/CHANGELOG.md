@@ -1,5 +1,17 @@
 # @finos/legend-studio-manual-tests
 
+## 0.0.18
+
+### Patch Changes
+
+- [#320](https://github.com/finos/legend-studio/pull/320) [`1feb9ce`](https://github.com/finos/legend-studio/commit/1feb9cef1408cfe8a0a98a9e0390a1f1fb004a71) Thanks [@kshradhan](https://github.com/kshradhan)! - Fix the bug where association mappings' source keys are omitted when building the graph (https://github.com/finos/legend-studio/issues/278).
+
+* [#347](https://github.com/finos/legend-studio/pull/347) [`5106c25`](https://github.com/finos/legend-studio/commit/5106c256f598dc960a084b4367fc9e1cf842f887) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add form checks in the operation class mapping editor. Inheritance operation mapping require no parameters. Additionally add manual test with operation class mapping.
+
+* Updated dependencies [[`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`1feb9ce`](https://github.com/finos/legend-studio/commit/1feb9cef1408cfe8a0a98a9e0390a1f1fb004a71), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`5106c25`](https://github.com/finos/legend-studio/commit/5106c256f598dc960a084b4367fc9e1cf842f887), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`7fc24dc`](https://github.com/finos/legend-studio/commit/7fc24dc5b9aaf9b350ed863bc51c4e76ffc270a9), [`cd78be6`](https://github.com/finos/legend-studio/commit/cd78be6e6669b5253c12ea9a9ceacef908a1686c), [`e0acc32`](https://github.com/finos/legend-studio/commit/e0acc325457a7836b6d2ca82cbad025bed39ab86), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`7561184`](https://github.com/finos/legend-studio/commit/75611843191f31d35dac51267b25de4298f48f4b), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`8df01ce`](https://github.com/finos/legend-studio/commit/8df01ceb5d45aba42ab8541ae12d01e731b0c988), [`b45e1ca`](https://github.com/finos/legend-studio/commit/b45e1ca06b7b3017972607c06c099bfa9fcd640f), [`178e955`](https://github.com/finos/legend-studio/commit/178e9559eab06b8fff471cbbcd59124570948506), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8)]:
+  - @finos/legend-studio@0.2.0
+  - @finos/legend-studio-shared@0.0.21
+
 ## 0.0.17
 
 ### Patch Changes
