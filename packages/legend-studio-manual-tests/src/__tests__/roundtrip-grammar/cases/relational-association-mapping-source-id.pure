@@ -1,0 +1,71 @@
+###Relational
+Database model::Test
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    Legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+
+###Pure
+Class model::Firm
+{
+  employees: model::Person[1..*];
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Association model::FirmPerson
+{
+  firm: model::Firm[1];
+  employee: model::Person[1];
+}
+
+
+###Mapping
+Mapping model::NewMapping
+(
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [model::Test]FirmTable.id
+    )
+    ~mainTable [model::Test]FirmTable
+    employees[model_Person]: [model::Test]@FirmPerson
+  }
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [model::Test]PersonTable.id
+    )
+    ~mainTable [model::Test]PersonTable
+    firstName: [model::Test]PersonTable.firstName,
+    lastName: [model::Test]PersonTable.lastName
+  }
+
+  model::FirmPerson: Relational
+  {
+    AssociationMapping
+    (
+      firm[model_Person,model_Firm]: [model::Test]@FirmPerson,
+      employee[model_Firm,model_Person]: [model::Test]@FirmPerson
+    )
+  }
+)

@@ -82,6 +82,7 @@ import {
 } from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
 import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext';
+import { RelationalAssociationImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/RelationalAssociationImplementation';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -441,7 +442,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     );
     const relationalPropertyMapping = new RelationalPropertyMapping(
       this.topParent ?? this.immediateParent,
-      propertyOwner instanceof Class // TODO: we also probably need to handle this for association mapping
+      propertyOwner instanceof Class ||
+      // Handle this specially for RelationalAssociationImplementation instead of AssociationImplementation
+      // as RelationalAssociationImplemenation's properties are inferred while (which defaults to null right now.)
+      // AssociationImplemtation would include both RelationalAssociationImplemenation and AssociationImplementation (which is explict)
+      this.immediateParent instanceof RelationalAssociationImplementation
         ? PropertyImplicitReference.create(
             PackageableElementImplicitReference.create(
               propertyOwner,
