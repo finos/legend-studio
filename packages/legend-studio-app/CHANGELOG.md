@@ -1,5 +1,15 @@
 # @finos/legend-studio-app
 
+## 0.2.46
+
+### Patch Changes
+
+- Updated dependencies [[`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e)]:
+  - @finos/legend-studio@0.2.1
+  - @finos/legend-studio-preset-dsl-text@0.0.38
+  - @finos/legend-studio-preset-external-format-json-schema@0.0.33
+  - @finos/legend-studio-preset-query-builder@0.0.23
+
 ## 0.2.45
 
 ### Patch Changes
