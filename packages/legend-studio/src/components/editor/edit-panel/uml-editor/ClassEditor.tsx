@@ -861,7 +861,7 @@ export const ClassFormEditor = observer(
           superType.value.rawType.deleteSubClass(_class);
         }
       };
-    const possibleSupertypes = editorStore.graphState.graph.classes.filter(
+    const possibleSupertypes = editorStore.graphState.graph.ownClasses.filter(
       (superType) =>
         // Exclude current class
         superType !== _class &&

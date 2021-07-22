@@ -58,7 +58,7 @@ export const NewServiceModal = observer(
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
-    const elementAlreadyExists = editorStore.graphState.graph.allElements
+    const elementAlreadyExists = editorStore.graphState.graph.allOwnElements
       .map((s) => s.path)
       .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
     return (

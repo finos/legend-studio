@@ -113,7 +113,7 @@ export class DependencyManager {
   }
 
   get allElements(): PackageableElement[] {
-    return this.models.flatMap((dep) => dep.allElements);
+    return this.models.flatMap((dep) => dep.allOwnElements);
   }
 
   get models(): BasicModel[] {
@@ -177,57 +177,57 @@ export class DependencyManager {
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   get profiles(): Profile[] {
-    return this.models.map((dep) => Array.from(dep.profiles)).flat();
+    return this.models.map((dep) => Array.from(dep.ownProfiles)).flat();
   }
   get enumerations(): Enumeration[] {
-    return this.models.map((dep) => Array.from(dep.enumerations)).flat();
+    return this.models.map((dep) => Array.from(dep.ownEnumerations)).flat();
   }
   get measures(): Measure[] {
-    return this.models.map((dep) => Array.from(dep.measures)).flat();
+    return this.models.map((dep) => Array.from(dep.ownMeasures)).flat();
   }
   get units(): Unit[] {
-    return this.models.map((dep) => Array.from(dep.units)).flat();
+    return this.models.map((dep) => Array.from(dep.ownUnits)).flat();
   }
   get classes(): Class[] {
-    return this.models.map((dep) => Array.from(dep.classes)).flat();
+    return this.models.map((dep) => Array.from(dep.ownClasses)).flat();
   }
   get types(): Type[] {
-    return this.models.map((dep) => Array.from(dep.types)).flat();
+    return this.models.map((dep) => Array.from(dep.ownTypes)).flat();
   }
   get associations(): Association[] {
-    return this.models.map((dep) => Array.from(dep.associations)).flat();
+    return this.models.map((dep) => Array.from(dep.ownAssociations)).flat();
   }
   get functions(): ConcreteFunctionDefinition[] {
-    return this.models.map((dep) => Array.from(dep.functions)).flat();
+    return this.models.map((dep) => Array.from(dep.ownFunctions)).flat();
   }
   get stores(): Store[] {
-    return this.models.map((dep) => Array.from(dep.stores)).flat();
+    return this.models.map((dep) => Array.from(dep.ownStores)).flat();
   }
   get mappings(): Mapping[] {
-    return this.models.map((dep) => Array.from(dep.mappings)).flat();
+    return this.models.map((dep) => Array.from(dep.ownMappings)).flat();
   }
   get services(): Service[] {
-    return this.models.map((dep) => Array.from(dep.services)).flat();
+    return this.models.map((dep) => Array.from(dep.ownServices)).flat();
   }
   get diagrams(): Diagram[] {
-    return this.models.map((dep) => Array.from(dep.diagrams)).flat();
+    return this.models.map((dep) => Array.from(dep.ownDiagrams)).flat();
   }
   get runtimes(): PackageableRuntime[] {
-    return this.models.map((dep) => Array.from(dep.runtimes)).flat();
+    return this.models.map((dep) => Array.from(dep.ownRuntimes)).flat();
   }
   get connections(): PackageableConnection[] {
-    return this.models.map((dep) => Array.from(dep.connections)).flat();
+    return this.models.map((dep) => Array.from(dep.ownConnections)).flat();
   }
   get fileGenerations(): FileGenerationSpecification[] {
-    return this.models.map((dep) => Array.from(dep.fileGenerations)).flat();
+    return this.models.map((dep) => Array.from(dep.ownFileGenerations)).flat();
   }
   get generationSpecifications(): GenerationSpecification[] {
     return this.models
-      .map((dep) => Array.from(dep.generationSpecifications))
+      .map((dep) => Array.from(dep.ownGenerationSpecifications))
       .flat();
   }
   get sectionIndices(): SectionIndex[] {
-    return this.models.map((dep) => Array.from(dep.sectionIndices)).flat();
+    return this.models.map((dep) => Array.from(dep.ownSectionIndices)).flat();
   }
 
   getModel(projectId: string): BasicModel {
@@ -242,9 +242,9 @@ export class DependencyManager {
     includePackage?: boolean,
   ): PackageableElement | undefined {
     const model = this.models.find((dep) =>
-      Boolean(dep.getNullableElement(path, includePackage)),
+      Boolean(dep.getOwnNullableElement(path, includePackage)),
     );
-    return model?.getNullableElement(path, includePackage);
+    return model?.getOwnNullableElement(path, includePackage);
   }
 
   setIsBuilt(built: boolean): void {

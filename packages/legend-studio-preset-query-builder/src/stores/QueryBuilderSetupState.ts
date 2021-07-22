@@ -70,11 +70,11 @@ export class QueryBuilderSetupState {
 
   get possibleMappings(): Mapping[] {
     const mappingsWithClassMapped =
-      this.editorStore.graphState.graph.mappings.filter((mapping) =>
+      this.editorStore.graphState.graph.ownMappings.filter((mapping) =>
         mapping.classMappings.some((cm) => cm.class.value === this._class),
       );
     const resolvedMappingIncludes =
-      this.editorStore.graphState.graph.mappings.filter((mapping) =>
+      this.editorStore.graphState.graph.ownMappings.filter((mapping) =>
         mapping.allIncludedMappings.some((e) =>
           mappingsWithClassMapped.includes(e),
         ),
@@ -86,7 +86,7 @@ export class QueryBuilderSetupState {
 
   get possibleRuntimes(): PackageableRuntime[] {
     return this._class && this.mapping
-      ? this.editorStore.graphState.graph.runtimes
+      ? this.editorStore.graphState.graph.ownRuntimes
           .map((packageableRuntime) =>
             packageableRuntime.runtimeValue.mappings.some((mapping) =>
               this.possibleMappings.includes(mapping.value),

@@ -421,8 +421,9 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
   }
 
   get packageableConnections(): PackageableConnection[] {
-    return this.editorStore.graphState.graph.connections.filter((connection) =>
-      isConnectionForStore(connection.connectionValue, this.store),
+    return this.editorStore.graphState.graph.ownConnections.filter(
+      (connection) =>
+        isConnectionForStore(connection.connectionValue, this.store),
     );
   }
 
@@ -507,11 +508,12 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
   }
 
   get packageableConnections(): PackageableConnection[] {
-    return this.editorStore.graphState.graph.connections.filter((connection) =>
-      isConnectionForModelStoreWithClass(
-        connection.connectionValue,
-        this.class,
-      ),
+    return this.editorStore.graphState.graph.ownConnections.filter(
+      (connection) =>
+        isConnectionForModelStoreWithClass(
+          connection.connectionValue,
+          this.class,
+        ),
     );
   }
 

@@ -1030,7 +1030,7 @@ export class EditorStore {
       return;
     }
     const generatedChildrenElements =
-      this.graphState.graph.generationModel.allElements.filter(
+      this.graphState.graph.generationModel.allOwnElements.filter(
         (e) => e.generationParentElement === element,
       );
     const elementsToDelete = [element, ...generatedChildrenElements];
@@ -1070,7 +1070,7 @@ export class EditorStore {
     if (element.isReadOnly) {
       return;
     }
-    this.graphState.graph.renameElement(element, newPath);
+    this.graphState.graph.renameOwnElement(element, newPath);
     // rerender currently opened diagram
     if (this.currentEditorState instanceof DiagramEditorState) {
       this.currentEditorState.renderer.render();
@@ -1250,7 +1250,7 @@ export class EditorStore {
   }
 
   get enumerationOptions(): PackageableElementSelectOption<Enumeration>[] {
-    return this.graphState.graph.enumerations
+    return this.graphState.graph.ownEnumerations
       .concat(this.graphState.graph.dependencyManager.enumerations)
       .map(
         (e) => e.selectOption as PackageableElementSelectOption<Enumeration>,
@@ -1258,10 +1258,10 @@ export class EditorStore {
   }
 
   get classOptions(): PackageableElementSelectOption<Class>[] {
-    return this.graphState.graph.classes
+    return this.graphState.graph.ownClasses
       .concat(
         this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.classes,
+          this.graphState.graph.systemModel.ownClasses,
         ),
       )
       .concat(this.graphState.graph.dependencyManager.classes)
@@ -1269,10 +1269,10 @@ export class EditorStore {
   }
 
   get associationOptions(): PackageableElementSelectOption<Association>[] {
-    return this.graphState.graph.associations
+    return this.graphState.graph.ownAssociations
       .concat(
         this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.associations,
+          this.graphState.graph.systemModel.ownAssociations,
         ),
       )
       .concat(this.graphState.graph.dependencyManager.associations)
@@ -1282,10 +1282,10 @@ export class EditorStore {
   }
 
   get profileOptions(): PackageableElementSelectOption<Profile>[] {
-    return this.graphState.graph.profiles
+    return this.graphState.graph.ownProfiles
       .concat(
         this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.profiles,
+          this.graphState.graph.systemModel.ownProfiles,
         ),
       )
       .concat(this.graphState.graph.dependencyManager.profiles)
@@ -1297,10 +1297,10 @@ export class EditorStore {
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
       .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
       .concat(
-        this.graphState.graph.types
+        this.graphState.graph.ownTypes
           .concat(
             this.filterSystemElementOptions(
-              this.graphState.graph.systemModel.types,
+              this.graphState.graph.systemModel.ownTypes,
             ),
           )
           .concat(this.graphState.graph.dependencyManager.types)
@@ -1309,13 +1309,13 @@ export class EditorStore {
   }
 
   get mappingOptions(): PackageableElementSelectOption<Mapping>[] {
-    return this.graphState.graph.mappings
+    return this.graphState.graph.ownMappings
       .concat(this.graphState.graph.dependencyManager.mappings)
       .map((a) => a.selectOption as PackageableElementSelectOption<Mapping>);
   }
 
   get storeOptions(): PackageableElementSelectOption<Store>[] {
-    return this.graphState.graph.stores
+    return this.graphState.graph.ownStores
       .concat(this.graphState.graph.dependencyManager.stores)
       .map((a) => a.selectOption as PackageableElementSelectOption<Store>);
   }

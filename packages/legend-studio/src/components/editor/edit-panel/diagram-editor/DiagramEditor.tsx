@@ -785,7 +785,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.diagram.package
           ? `${diagramEditorState.diagram.package.name}${ELEMENT_PATH_DELIMITER}`
           : ''
-      }Class_${editorStore.graphState.graph.classes.length + 1}`,
+      }Class_${editorStore.graphState.graph.ownClasses.length + 1}`,
     );
     const isClassPathNonEmpty = path !== '';
     const isNotTopLevelClass = path.includes(ELEMENT_PATH_DELIMITER);

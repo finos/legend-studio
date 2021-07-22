@@ -87,7 +87,7 @@ export class CoreModel extends BasicModel {
     this.initializePrimitiveTypes();
     // initialize ModelStore
     this.modelStore = new ModelStore();
-    this.setStore(this.modelStore.path, this.modelStore);
+    this.setOwnStore(this.modelStore.path, this.modelStore);
   }
 
   /**
@@ -97,7 +97,7 @@ export class CoreModel extends BasicModel {
     Object.values(PRIMITIVE_TYPE).forEach((type) => {
       const primitiveType = new PrimitiveType(type);
       this.primitiveTypesIndex.set(type, primitiveType);
-      this.setType(type, primitiveType);
+      this.setOwnType(type, primitiveType);
     });
   }
 
@@ -146,7 +146,7 @@ export class SystemModel extends BasicModel {
   initializeAutoImports(): void {
     this.autoImports = AUTO_IMPORTS.map((_package) =>
       guaranteeType(
-        this.getNullableElement(_package, true),
+        this.getOwnNullableElement(_package, true),
         Package,
         `Unable to find auto-import package '${_package}'`,
       ),
@@ -203,7 +203,7 @@ export class PureModel extends BasicModel {
   }
 
   get reservedPathsForDependencyProcessing(): string[] {
-    return this.systemModel.allElements.map((e) => e.path);
+    return this.systemModel.allOwnElements.map((e) => e.path);
   }
 
   get isDependenciesLoaded(): boolean {
@@ -222,9 +222,9 @@ export class PureModel extends BasicModel {
     quiet?: boolean,
   ) {
     const startTime = Date.now();
-    if (this.allElements.length) {
+    if (this.allOwnElements.length) {
       yield Promise.all<void>(
-        this.allElements.map(
+        this.allOwnElements.map(
           (element) =>
             new Promise((resolve) =>
               setTimeout(() => {
@@ -425,17 +425,17 @@ export class PureModel extends BasicModel {
     );
   }
 
-  override getNullableElement(
+  getNullableElement(
     path: string,
     includePackage?: boolean,
   ): PackageableElement | undefined {
     // NOTE: beware that this method will favor main graph elements over those of subgraphs when resolving
     const element =
-      super.getNullableElement(path) ??
+      super.getOwnNullableElement(path) ??
       this.dependencyManager.getNullableElement(path) ??
-      this.generationModel.getNullableElement(path) ??
-      this.systemModel.getNullableElement(path) ??
-      this.coreModel.getNullableElement(path);
+      this.generationModel.getOwnNullableElement(path) ??
+      this.systemModel.getOwnNullableElement(path) ??
+      this.coreModel.getOwnNullableElement(path);
     if (includePackage && !element) {
       return (
         this.getNullablePackage(path) ??
@@ -485,30 +485,31 @@ export class PureModel extends BasicModel {
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   addElement(element: PackageableElement): void {
+    this.getNullableElement(element.path);
     if (element instanceof Mapping) {
-      this.setMapping(element.path, element);
+      this.setOwnMapping(element.path, element);
     } else if (element instanceof Store) {
-      this.setStore(element.path, element);
+      this.setOwnStore(element.path, element);
     } else if (element instanceof Type) {
-      this.setType(element.path, element);
+      this.setOwnType(element.path, element);
     } else if (element instanceof Association) {
-      this.setAssociation(element.path, element);
+      this.setOwnAssociation(element.path, element);
     } else if (element instanceof Profile) {
-      this.setProfile(element.path, element);
+      this.setOwnProfile(element.path, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
-      this.setFunction(element.path, element);
+      this.setOwnFunction(element.path, element);
     } else if (element instanceof Diagram) {
-      this.setDiagram(element.path, element);
+      this.setOwnDiagram(element.path, element);
     } else if (element instanceof Service) {
-      this.setService(element.path, element);
+      this.setOwnService(element.path, element);
     } else if (element instanceof PackageableConnection) {
-      this.setConnection(element.path, element);
+      this.setOwnConnection(element.path, element);
     } else if (element instanceof PackageableRuntime) {
-      this.setRuntime(element.path, element);
+      this.setOwnRuntime(element.path, element);
     } else if (element instanceof FileGenerationSpecification) {
-      this.setFileGeneration(element.path, element);
+      this.setOwnFileGeneration(element.path, element);
     } else if (element instanceof GenerationSpecification) {
-      this.setGenerationSpecification(element.path, element);
+      this.setOwnGenerationSpecification(element.path, element);
     } else if (element instanceof Package) {
       // do nothing
     } else {
@@ -525,7 +526,7 @@ export class PureModel extends BasicModel {
   }
 
   cleanUpDeadReferences(): void {
-    this.diagrams.forEach((diagram) =>
+    this.ownDiagrams.forEach((diagram) =>
       cleanUpDeadReferencesInDiagram(diagram, this),
     );
   }

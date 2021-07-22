@@ -15,7 +15,7 @@
  */
 
 import { observable, computed, action, flow, makeObservable } from 'mobx';
-import type { Clazz } from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn } from '@finos/legend-studio-shared';
 import {
   assertNonEmptyString,
   UnsupportedOperationError,
@@ -82,6 +82,14 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   FileGenerationSpecification,
 ]);
 
+/**
+ * Since this is the basis of the Pure graph itself, it shares many methods with the graph.
+ * But the graph holds references to many basic graphs and expose those to outside consumers
+ * as if it is one graph.
+ *
+ * As such, to avoid confusion, we add `Own` to methods in basic graph for methods that only
+ * deal with elements belonging to the basic graph.
+ */
 export abstract class BasicModel {
   root: Package;
   isBuilt = false;
@@ -143,7 +151,6 @@ export abstract class BasicModel {
       root: observable,
       isBuilt: observable,
       failedToBuild: observable,
-      setFailedToBuild: action,
       elementSectionMap: observable,
       sectionIndicesIndex: observable,
       profilesIndex: observable,
@@ -158,46 +165,51 @@ export abstract class BasicModel {
       generationSpecificationsIndex: observable,
       fileGenerationsIndex: observable,
       diagramsIndex: observable,
-      sectionIndices: computed,
       extensions: observable,
-      profiles: computed,
-      enumerations: computed,
-      measures: computed,
-      units: computed,
-      classes: computed,
-      types: computed,
-      associations: computed,
-      functions: computed,
-      stores: computed,
-      flatDatas: computed,
-      databases: computed,
-      serviceStores: computed,
-      mappings: computed,
-      services: computed,
-      diagrams: computed,
-      runtimes: computed,
-      connections: computed,
-      fileGenerations: computed,
-      generationSpecifications: computed,
-      setSection: action,
-      setSectionIndex: action,
-      setProfile: action,
-      setType: action,
-      setAssociation: action,
-      setFunction: action,
-      setStore: action,
-      setMapping: action,
-      setConnection: action,
-      setRuntime: action,
-      setService: action,
-      setGenerationSpecification: action,
-      setFileGeneration: action,
-      setDiagram: action,
-      allElements: computed,
-      deleteOwnElement: action,
-      renameElement: action,
+
+      ownSectionIndices: computed,
+      ownProfiles: computed,
+      ownEnumerations: computed,
+      ownMeasures: computed,
+      ownUnits: computed,
+      ownClasses: computed,
+      ownTypes: computed,
+      ownAssociations: computed,
+      ownFunctions: computed,
+      ownStores: computed,
+      ownFlatDatas: computed,
+      ownDatabases: computed,
+      ownServiceStores: computed,
+      ownMappings: computed,
+      ownServices: computed,
+      ownDiagrams: computed,
+      ownRuntimes: computed,
+      ownConnections: computed,
+      ownFileGenerations: computed,
+      ownGenerationSpecifications: computed,
+      allOwnElements: computed,
+
+      dispose: flow,
+
+      setFailedToBuild: action,
       setIsBuilt: action,
-      deleteSectionIndex: action,
+      setOwnSection: action,
+      setOwnSectionIndex: action,
+      setOwnProfile: action,
+      setOwnType: action,
+      setOwnAssociation: action,
+      setOwnFunction: action,
+      setOwnStore: action,
+      setOwnMapping: action,
+      setOwnConnection: action,
+      setOwnRuntime: action,
+      setOwnService: action,
+      setOwnGenerationSpecification: action,
+      setOwnFileGeneration: action,
+      setOwnDiagram: action,
+      deleteOwnElement: action,
+      renameOwnElement: action,
+      TEMP__deleteOwnSectionIndex: action,
     });
 
     this.root = new Package(rootPackageName);
@@ -218,78 +230,78 @@ export abstract class BasicModel {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  get sectionIndices(): SectionIndex[] {
+  get ownSectionIndices(): SectionIndex[] {
     return Array.from(this.sectionIndicesIndex.values());
   }
-  get profiles(): Profile[] {
+  get ownProfiles(): Profile[] {
     return Array.from(this.profilesIndex.values());
   }
-  get enumerations(): Enumeration[] {
+  get ownEnumerations(): Enumeration[] {
     return Array.from(this.typesIndex.values()).filter(
       (type: Type): type is Enumeration => type instanceof Enumeration,
     );
   }
-  get measures(): Measure[] {
+  get ownMeasures(): Measure[] {
     return Array.from(this.typesIndex.values()).filter(
       (type: Type): type is Measure => type instanceof Measure,
     );
   }
-  get units(): Unit[] {
+  get ownUnits(): Unit[] {
     return Array.from(this.typesIndex.values()).filter(
       (type: Type): type is Unit => type instanceof Unit,
     );
   }
-  get classes(): Class[] {
+  get ownClasses(): Class[] {
     return Array.from(this.typesIndex.values()).filter(
       (type: Type): type is Class => type instanceof Class,
     );
   }
-  get types(): Type[] {
+  get ownTypes(): Type[] {
     return Array.from(this.typesIndex.values());
   }
-  get associations(): Association[] {
+  get ownAssociations(): Association[] {
     return Array.from(this.associationsIndex.values());
   }
-  get functions(): ConcreteFunctionDefinition[] {
+  get ownFunctions(): ConcreteFunctionDefinition[] {
     return Array.from(this.functionsIndex.values());
   }
-  get stores(): Store[] {
+  get ownStores(): Store[] {
     return Array.from(this.storesIndex.values());
   }
-  get flatDatas(): FlatData[] {
+  get ownFlatDatas(): FlatData[] {
     return Array.from(this.storesIndex.values()).filter(
       (store: Store): store is FlatData => store instanceof FlatData,
     );
   }
-  get databases(): Database[] {
+  get ownDatabases(): Database[] {
     return Array.from(this.storesIndex.values()).filter(
       (store: Store): store is Database => store instanceof Database,
     );
   }
-  get serviceStores(): ServiceStore[] {
+  get ownServiceStores(): ServiceStore[] {
     return Array.from(this.storesIndex.values()).filter(
       (store: Store): store is ServiceStore => store instanceof ServiceStore,
     );
   }
-  get mappings(): Mapping[] {
+  get ownMappings(): Mapping[] {
     return Array.from(this.mappingsIndex.values());
   }
-  get services(): Service[] {
+  get ownServices(): Service[] {
     return Array.from(this.servicesIndex.values());
   }
-  get diagrams(): Diagram[] {
+  get ownDiagrams(): Diagram[] {
     return Array.from(this.diagramsIndex.values());
   }
-  get runtimes(): PackageableRuntime[] {
+  get ownRuntimes(): PackageableRuntime[] {
     return Array.from(this.runtimesIndex.values());
   }
-  get connections(): PackageableConnection[] {
+  get ownConnections(): PackageableConnection[] {
     return Array.from(this.connectionsIndex.values());
   }
-  get fileGenerations(): FileGenerationSpecification[] {
+  get ownFileGenerations(): FileGenerationSpecification[] {
     return Array.from(this.fileGenerationsIndex.values());
   }
-  get generationSpecifications(): GenerationSpecification[] {
+  get ownGenerationSpecifications(): GenerationSpecification[] {
     return Array.from(this.generationSpecificationsIndex.values());
   }
 
@@ -311,7 +323,7 @@ export abstract class BasicModel {
     return extensions[0] as PureGraphExtension<T>;
   }
 
-  getSection = (path: string): Section | undefined =>
+  getOwnSection = (path: string): Section | undefined =>
     this.elementSectionMap.get(path);
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getOwnSectionIndex = (path: string): SectionIndex | undefined =>
@@ -367,51 +379,54 @@ export abstract class BasicModel {
     return extension.getElement(path);
   }
 
-  setSection(path: string, val: Section): void {
+  setOwnSection(path: string, val: Section): void {
     this.elementSectionMap.set(path, val);
   }
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  setSectionIndex(path: string, val: SectionIndex): void {
+  setOwnSectionIndex(path: string, val: SectionIndex): void {
     this.sectionIndicesIndex.set(path, val);
   }
-  setProfile(path: string, val: Profile): void {
+  setOwnProfile(path: string, val: Profile): void {
     this.profilesIndex.set(path, val);
   }
-  setType(path: string, val: Type): void {
+  setOwnType(path: string, val: Type): void {
     this.typesIndex.set(path, val);
   }
-  setAssociation(path: string, val: Association): void {
+  setOwnAssociation(path: string, val: Association): void {
     this.associationsIndex.set(path, val);
   }
-  setFunction(path: string, val: ConcreteFunctionDefinition): void {
+  setOwnFunction(path: string, val: ConcreteFunctionDefinition): void {
     this.functionsIndex.set(path, val);
   }
-  setStore(path: string, val: Store): void {
+  setOwnStore(path: string, val: Store): void {
     this.storesIndex.set(path, val);
   }
-  setMapping(path: string, val: Mapping): void {
+  setOwnMapping(path: string, val: Mapping): void {
     this.mappingsIndex.set(path, val);
   }
-  setConnection(path: string, val: PackageableConnection): void {
+  setOwnConnection(path: string, val: PackageableConnection): void {
     this.connectionsIndex.set(path, val);
   }
-  setRuntime(path: string, val: PackageableRuntime): void {
+  setOwnRuntime(path: string, val: PackageableRuntime): void {
     this.runtimesIndex.set(path, val);
   }
-  setService(path: string, val: Service): void {
+  setOwnService(path: string, val: Service): void {
     this.servicesIndex.set(path, val);
   }
-  setGenerationSpecification(path: string, val: GenerationSpecification): void {
+  setOwnGenerationSpecification(
+    path: string,
+    val: GenerationSpecification,
+  ): void {
     this.generationSpecificationsIndex.set(path, val);
   }
-  setFileGeneration(path: string, val: FileGenerationSpecification): void {
+  setOwnFileGeneration(path: string, val: FileGenerationSpecification): void {
     this.fileGenerationsIndex.set(path, val);
   }
-  setDiagram(path: string, val: Diagram): void {
+  setOwnDiagram(path: string, val: Diagram): void {
     this.diagramsIndex.set(path, val);
   }
 
-  setElementInExtension<T extends PackageableElement>(
+  setOwnElementInExtension<T extends PackageableElement>(
     path: string,
     val: T,
     extensionElementClass: Clazz<T>,
@@ -421,23 +436,23 @@ export abstract class BasicModel {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  get allElements(): PackageableElement[] {
+  get allOwnElements(): PackageableElement[] {
     this.extensions.flatMap((extension) => extension.elements);
     return [
-      ...this.profiles,
-      ...this.enumerations,
-      ...this.measures,
-      ...this.classes,
-      ...this.associations,
-      ...this.functions,
-      ...this.stores,
-      ...this.mappings,
-      ...this.services,
-      ...this.diagrams,
-      ...this.runtimes,
-      ...this.connections,
-      ...this.generationSpecifications,
-      ...this.fileGenerations,
+      ...this.ownProfiles,
+      ...this.ownEnumerations,
+      ...this.ownMeasures,
+      ...this.ownClasses,
+      ...this.ownAssociations,
+      ...this.ownFunctions,
+      ...this.ownStores,
+      ...this.ownMappings,
+      ...this.ownServices,
+      ...this.ownDiagrams,
+      ...this.ownRuntimes,
+      ...this.ownConnections,
+      ...this.ownGenerationSpecifications,
+      ...this.ownFileGenerations,
       ...this.extensions.flatMap((extension) => extension.elements),
     ];
   }
@@ -446,11 +461,11 @@ export abstract class BasicModel {
    * Dispose the current graph and any potential reference from parts outside of the graph to the graph
    * This is a MUST to prevent memory-leak as we use referneces to link between objects instead of string pointers
    */
-  dispose = flow(function* (this: BasicModel, logger: Logger, quiet?: boolean) {
+  *dispose(logger: Logger, quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
-    if (this.allElements.length) {
+    if (this.allOwnElements.length) {
       yield Promise.all<void>(
-        this.allElements.map(
+        this.allOwnElements.map(
           (element) =>
             new Promise((resolve) =>
               setTimeout(() => {
@@ -469,7 +484,7 @@ export abstract class BasicModel {
         'ms',
       );
     }
-  });
+  }
 
   isRoot = (pack: Package | undefined): boolean => pack === this.root;
 
@@ -477,13 +492,13 @@ export abstract class BasicModel {
     this.isBuilt = built;
   }
 
-  buildPackageString = (
-    packageName: string | undefined,
+  buildPath = (
+    packagePath: string | undefined,
     name: string | undefined,
   ): string =>
     `${guaranteeNonNullable(
-      packageName,
-      'Package name is required',
+      packagePath,
+      'Package path is required',
     )}${ELEMENT_PATH_DELIMITER}${guaranteeNonNullable(
       name,
       'Name is required',
@@ -502,7 +517,7 @@ export abstract class BasicModel {
         );
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  getNullableElement(
+  getOwnNullableElement(
     path: string,
     includePackage?: boolean,
   ): PackageableElement | undefined {
@@ -583,7 +598,7 @@ export abstract class BasicModel {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  renameElement(element: PackageableElement, newPath: string): void {
+  renameOwnElement(element: PackageableElement, newPath: string): void {
     const elementCurrentPath = element.path;
     // validation before renaming
     if (elementCurrentPath === newPath) {
@@ -602,7 +617,7 @@ export abstract class BasicModel {
         `Can't rename element '${elementCurrentPath} to '${newPath}': invalid path'`,
       );
     }
-    const existingElement = this.getNullableElement(newPath, true);
+    const existingElement = this.getOwnNullableElement(newPath, true);
     if (existingElement) {
       throw new UnsupportedOperationError(
         `Can't rename element '${elementCurrentPath} to '${newPath}': element with the same path already existed'`,
@@ -712,7 +727,7 @@ export abstract class BasicModel {
         newParentPackage.addChild(element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {
-        this.renameElement(
+        this.renameOwnElement(
           childElement,
           childElementOriginalPath.replace(elementCurrentPath, newPath),
         );
@@ -725,8 +740,11 @@ export abstract class BasicModel {
     }
   }
 
-  // TODO: this will be removed once we fully support section index in SDLC flow
-  deleteSectionIndex(): void {
+  /**
+   * TODO: this will be removed once we fully support section index in SDLC flow
+   * @deprecated
+   */
+  TEMP__deleteOwnSectionIndex(): void {
     this.sectionIndicesIndex.forEach((sectionIndex) => {
       sectionIndex.setIsDeleted(true);
       this.sectionIndicesIndex.delete(sectionIndex.path);

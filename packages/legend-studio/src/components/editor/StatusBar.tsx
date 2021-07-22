@@ -243,7 +243,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           disabled={
             editorStore.graphState.isApplicationUpdateOperationIsRunning ||
             actionsDisabled ||
-            !editorStore.graphState.graph.generationSpecifications.length
+            !editorStore.graphState.graph.ownGenerationSpecifications.length
           }
           onClick={generate}
           tabIndex={-1}

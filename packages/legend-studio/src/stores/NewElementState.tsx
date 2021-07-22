@@ -124,7 +124,7 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
       isValid: computed,
     });
 
-    const mappings = this.editorStore.graphState.graph.mappings;
+    const mappings = this.editorStore.graphState.graph.ownMappings;
     if (mappings.length) {
       this.mapping = mappings[0];
     }
@@ -174,7 +174,7 @@ export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureM
       isValid: computed,
     });
 
-    const classes = this.editorStore.graphState.graph.classes;
+    const classes = this.editorStore.graphState.graph.ownClasses;
     if (classes.length) {
       this.class = classes[0];
     }
@@ -236,7 +236,7 @@ export class NewRelationalDbConnectionDriver extends NewConnectionValueDriver<Re
     if (store instanceof Database) {
       selectedStore = store;
     } else {
-      const dbs = this.editorStore.graphState.graph.databases;
+      const dbs = this.editorStore.graphState.graph.ownDatabases;
       selectedStore = dbs.length ? dbs[0] : Database.createStub();
     }
     return new RelationalDatabaseConnection(
@@ -387,7 +387,7 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
   }
 
   get isValid(): boolean {
-    return !this.editorStore.graphState.graph.generationSpecifications;
+    return !this.editorStore.graphState.graph.ownGenerationSpecifications;
   }
 
   createElement(name: string): GenerationSpecification {
@@ -563,7 +563,7 @@ export class NewElementState {
     ) {
       const generationElement = element;
       const generationSpecifications =
-        this.editorStore.graphState.graph.generationSpecifications;
+        this.editorStore.graphState.graph.ownGenerationSpecifications;
       let generationSpec: GenerationSpecification;
       if (generationSpecifications.length) {
         // TODO? handle case when more than one generation specification
@@ -632,7 +632,7 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
         const service = new Service(name);
         const mapping = Mapping.createStub(); // since it does not really make sense to start with the first available mapping, we start with a stub
-        const runtimes = this.editorStore.graphState.graph.runtimes.filter(
+        const runtimes = this.editorStore.graphState.graph.ownRuntimes.filter(
           (runtime) =>
             runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
         );

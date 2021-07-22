@@ -77,13 +77,13 @@ export const V1_buildSection = (
         );
         return element;
       }
-      if (context.graph.getSection(element.path)) {
+      if (context.graph.getOwnSection(element.path)) {
         context.logger.warn(
           CORE_LOG_EVENT.GRAPH_PROBLEM,
           `Found duplicated section element '${elementPath}'`,
         );
       } else {
-        context.graph.setSection(element.path, sec);
+        context.graph.setOwnSection(element.path, sec);
       }
       return PackageableElementExplicitReference.create(element);
     })

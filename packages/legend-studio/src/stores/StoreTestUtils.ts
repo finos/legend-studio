@@ -143,7 +143,7 @@ export const checkBuildingElementsRoundtrip = async (
     entities,
     { TEMPORARY__keepSectionIndex: true },
   );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   // ensure that transformed entities have all fields ordered alphabetically
@@ -184,7 +184,7 @@ export const checkBuildingResolvedElements = async (
     editorStore.graphState.graph,
     entities,
   );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   // ensure that transformed entities have all fields ordered alphabetically

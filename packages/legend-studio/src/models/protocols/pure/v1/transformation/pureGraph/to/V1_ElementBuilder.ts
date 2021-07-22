@@ -103,7 +103,7 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
   ): PackageableElement {
     assertNonEmptyString(elementProtocol.package, 'Element package is missing');
     assertNonEmptyString(elementProtocol.name, 'Element index is missing');
-    const path = context.currentSubGraph.buildPackageString(
+    const path = context.currentSubGraph.buildPath(
       elementProtocol.package,
       elementProtocol.name,
     );
