@@ -1232,6 +1232,23 @@ export class EditorStore {
       );
   }
 
+  /**
+   * Filter the list of system elements that will be shown in selection options
+   * to users. This is helpful to avoid overwhelming and confusing users in form
+   * mode since many system elements are needed to build the graph, but should
+   * not present at all as selection options in form mode.
+   */
+  filterSystemElementOptions<T extends PackageableElement>(
+    systemElements: T[],
+  ): T[] {
+    const allowedSystemElements = this.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
+    return systemElements.filter((element) =>
+      allowedSystemElements.includes(element.path),
+    );
+  }
+
   get enumerationOptions(): PackageableElementSelectOption<Enumeration>[] {
     return this.graphState.graph.enumerations
       .concat(this.graphState.graph.dependencyManager.enumerations)
@@ -1242,14 +1259,22 @@ export class EditorStore {
 
   get classOptions(): PackageableElementSelectOption<Class>[] {
     return this.graphState.graph.classes
-      .concat(this.graphState.graph.systemModel.classes)
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.classes,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.classes)
       .map((c) => c.selectOption as PackageableElementSelectOption<Class>);
   }
 
   get associationOptions(): PackageableElementSelectOption<Association>[] {
     return this.graphState.graph.associations
-      .concat(this.graphState.graph.systemModel.associations)
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.associations,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.associations)
       .map(
         (p) => p.selectOption as PackageableElementSelectOption<Association>,
@@ -1258,7 +1283,11 @@ export class EditorStore {
 
   get profileOptions(): PackageableElementSelectOption<Profile>[] {
     return this.graphState.graph.profiles
-      .concat(this.graphState.graph.systemModel.profiles)
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.profiles,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.profiles)
       .map((p) => p.selectOption as PackageableElementSelectOption<Profile>);
   }
@@ -1269,7 +1298,11 @@ export class EditorStore {
       .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
       .concat(
         this.graphState.graph.types
-          .concat(this.graphState.graph.systemModel.types)
+          .concat(
+            this.filterSystemElementOptions(
+              this.graphState.graph.systemModel.types,
+            ),
+          )
           .concat(this.graphState.graph.dependencyManager.types)
           .map((a) => a.selectOption as PackageableElementSelectOption<Type>),
       );
