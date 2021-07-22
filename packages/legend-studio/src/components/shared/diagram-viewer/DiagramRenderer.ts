@@ -2170,14 +2170,14 @@ export class DiagramRenderer {
     }
 
     // Add a new simple property to selected class
-    else if (e.altKey && 'ArrowDown' === e.key) {
+    else if (e.altKey && 'ArrowDown' === e.code) {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.addSimpleProperty(this.selectedClasses[0]);
       }
     }
 
     // Eject the property
-    else if (e.altKey && 'ArrowRight' === e.key) {
+    else if (e.altKey && 'ArrowRight' === e.code) {
       if (!this.isReadOnly) {
         if (this.mouseOverClassProperty) {
           if (
@@ -2209,7 +2209,7 @@ export class DiagramRenderer {
     }
 
     // Add supertypes of selected classes to the diagram
-    else if (e.key === 'ArrowUp') {
+    else if ('ArrowUp' === e.key) {
       const views = this.getSuperTypeLevels(
         this.selectedClasses,
         this.diagram,
@@ -2224,7 +2224,7 @@ export class DiagramRenderer {
     }
 
     // Add subtypes of selected classes to the diagram
-    else if (e.key === 'ArrowDown') {
+    else if ('ArrowDown' === e.key) {
       const views = uniqBy(
         this.selectedClasses.flatMap((x) =>
           x.class.value._subClasses.flatMap(
