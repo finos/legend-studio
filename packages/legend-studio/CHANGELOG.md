@@ -1,5 +1,22 @@
 # @finos/legend-studio
 
+## 0.2.1
+
+### Patch Changes
+
+- [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** Rename methods in `BasicModel`: add `own` to methods name to avoid confusion on when consumers are interacting with elements from the whole graph (in `PureModel`) or elements just from the graph itself.
+
+* [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) Thanks [@akphi](https://github.com/akphi)! - Support filtering system elements from selection dropdown to make forms more user-friendly (see https://github.com/finos/legend-studio/issues/280).
+
+- [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) Thanks [@akphi](https://github.com/akphi)! - Remove unnecessary usage of `*ExplicitReference` in protocol building process.
+
+* [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) Thanks [@akphi](https://github.com/akphi)! - Allow double-click on property holder view label in diagram to edit property inline.
+
+* Updated dependencies [[`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e)]:
+  - @finos/legend-studio-components@0.0.26
+  - @finos/legend-studio-network@0.0.24
+  - @finos/legend-studio-shared@0.0.22
+
 ## 0.2.0
 
 ### Minor Changes
