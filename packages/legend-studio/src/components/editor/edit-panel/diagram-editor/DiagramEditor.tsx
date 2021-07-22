@@ -998,14 +998,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
 
     // Type
     const currentPropertyType = property.genericType.value.rawType;
-    const propertyTypeOptions =
-      editorStore.classPropertyGenericTypeOptions.filter(
-        (option) =>
-          // Do not allow to pick other class if we're editing a property view
-          !inlinePropertyEditorState.isEditingPropertyView ||
-          !(option.value instanceof Class) ||
-          option.value === currentPropertyType,
-      );
+    const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
     const propertyTypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -1029,7 +1022,12 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     }, [inlinePropertyEditorState]);
 
     return (
-      <form className="diagram-editor__inline-property-editor">
+      <form
+        className={clsx('diagram-editor__inline-property-editor', {
+          'diagram-editor__inline-property-editor--with-type':
+            !inlinePropertyEditorState.isEditingPropertyView,
+        })}
+      >
         <input
           className="diagram-editor__inline-property-editor__name input--dark"
           ref={propertyNameInputRef}
@@ -1037,16 +1035,18 @@ const DiagramEditorInlinePropertyEditorInner = observer(
           value={property.name}
           onChange={changePropertyName}
         />
-        <CustomSelectorInput
-          className="diagram-editor__inline-property-editor__type"
-          disabled={isReadOnly}
-          options={propertyTypeOptions}
-          onChange={changePropertyType}
-          value={selectedPropertyType}
-          placeholder="Choose a data type or enumeration"
-          darkMode={true}
-          filterOption={propertyTypeFilterOption}
-        />
+        {!inlinePropertyEditorState.isEditingPropertyView && (
+          <CustomSelectorInput
+            className="diagram-editor__inline-property-editor__type"
+            disabled={isReadOnly}
+            options={propertyTypeOptions}
+            onChange={changePropertyType}
+            value={selectedPropertyType}
+            placeholder="Choose a data type or enumeration"
+            darkMode={true}
+            filterOption={propertyTypeFilterOption}
+          />
+        )}
         <DiagramEditorInlinePropertyMultiplicityEditor
           isReadOnly={isReadOnly}
           value={property.multiplicity}
