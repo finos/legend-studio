@@ -115,6 +115,38 @@ const DiagramRendererHotkeyInfosModal = observer(
             <div className="diagram-editor__hotkey__groups">
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
+                  Use view tool
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">V</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Use pan tool
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">M</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">Zoom</div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Z</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Recenter
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">R</div>
+                </div>
+              </div>
+
+              <div className="diagram-editor__hotkey__groups__divider" />
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
                   Remove selected element(s)
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
@@ -131,38 +163,6 @@ const DiagramRendererHotkeyInfosModal = observer(
               </div>
 
               <div className="diagram-editor__hotkey__groups__divider" />
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Recenter
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">R</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">Zoom</div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">Z</div>
-                </div>
-              </div>
-
-              <div className="diagram-editor__hotkey__groups__divider" />
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Use view tool
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">V</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
-                  Use pan tool
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">M</div>
-                </div>
-              </div>
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
                   Use property tool
@@ -185,6 +185,18 @@ const DiagramRendererHotkeyInfosModal = observer(
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
                   <div className="hotkey__key">C</div>
+                </div>
+              </div>
+              <div className="diagram-editor__hotkey__group">
+                <div className="diagram-editor__hotkey__annotation">
+                  Add simple property to selected class
+                </div>
+                <div className="hotkey__combination diagram-editor__hotkey__keys">
+                  <div className="hotkey__key">Alt</div>
+                  <div className="hotkey__plus">
+                    <PlusIcon />
+                  </div>
+                  <div className="hotkey__key">&darr;</div>
                 </div>
               </div>
 
@@ -229,18 +241,6 @@ const DiagramRendererHotkeyInfosModal = observer(
               <div className="diagram-editor__hotkey__groups__divider" />
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
-                  Add simple property to selected class
-                </div>
-                <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">Alt</div>
-                  <div className="hotkey__plus">
-                    <PlusIcon />
-                  </div>
-                  <div className="hotkey__key">&darr;</div>
-                </div>
-              </div>
-              <div className="diagram-editor__hotkey__group">
-                <div className="diagram-editor__hotkey__annotation">
                   Eject the property
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
@@ -251,9 +251,6 @@ const DiagramRendererHotkeyInfosModal = observer(
                   <div className="hotkey__key">&rarr;</div>
                 </div>
               </div>
-
-              <div className="diagram-editor__hotkey__groups__divider" />
-
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
                   Add subtypes of the selected classes to the diagram
