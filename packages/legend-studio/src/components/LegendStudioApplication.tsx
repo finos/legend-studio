@@ -31,18 +31,18 @@ import {
   useApplicationStore,
   ApplicationStoreProvider,
 } from '../stores/ApplicationStore';
-import { NotificationSnackbar } from './shared/NotificationSnackbar';
+import { NotificationSnackbar } from './application/NotificationSnackbar';
 import { observer } from 'mobx-react-lite';
 import {
   CustomSelectorInput,
   PanelLoadingIndicator,
 } from '@finos/legend-studio-components';
-import type { SDLCServerKeyPathParams } from '../stores/Router';
+import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
 import {
   generateSetupRoute,
-  ROUTE_PATTERN,
+  LEGEND_STUDIO_ROUTE_PATTERN,
   generateRoutePatternWithSDLCServerKey,
-} from '../stores/Router';
+} from '../stores/LegendStudioRouter';
 import { ActionAlert } from './application/ActionAlert';
 import { BlockingAlert } from './application/BlockingAlert';
 import { AppHeader, BasicAppHeader } from './shared/AppHeader';
@@ -66,7 +66,7 @@ import { guaranteeNonNullable } from '@finos/legend-studio-shared';
  * TODO: Eventually, when we have componentize most of the apps, we can eliminate this usage
  * of Material UI Theme provider
  */
-const materialTheme = createTheme({
+export const LegendMaterialUITheme = createTheme({
   props: {
     MuiButtonBase: {
       // disable button ripples
@@ -124,7 +124,7 @@ const materialTheme = createTheme({
   },
 });
 
-export const AppRoot = observer(() => {
+export const LegendStudioApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore();
   const extraApplicationPageRenderEntries = applicationStore.pluginManager
     .getEditorPlugins()
@@ -167,23 +167,31 @@ export const AppRoot = observer(() => {
           <Route
             exact={true}
             path={[
-              ROUTE_PATTERN.VIEW,
-              ROUTE_PATTERN.VIEW_BY_ENTITY,
-              ROUTE_PATTERN.VIEW_BY_REVISION,
-              ROUTE_PATTERN.VIEW_BY_VERSION,
-              ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
-              ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
             ]}
             component={Viewer}
           />
-          <Route exact={true} path={ROUTE_PATTERN.REVIEW} component={Review} />
+          <Route
+            exact={true}
+            path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
+            component={Review}
+          />
           <Route
             exact={true}
             strict={true}
-            path={ROUTE_PATTERN.EDIT}
+            path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT}
             component={Editor}
           />
-          <Route exact={true} path={ROUTE_PATTERN.SETUP} component={Setup} />
+          <Route
+            exact={true}
+            path={LEGEND_STUDIO_ROUTE_PATTERN.SETUP}
+            component={Setup}
+          />
           {extraApplicationPageRenderEntries.map((entry) => (
             <Route
               key={entry.urlPattern}
@@ -204,7 +212,7 @@ export const AppRoot = observer(() => {
   );
 });
 
-export const AppConfigurationEditor = observer(
+const LegendStudioApplicationConfigEditor = observer(
   (props: { config: ApplicationConfig }) => {
     const { config } = props;
     const history = useHistory() as unknown as History<State>;
@@ -261,7 +269,7 @@ export const AppConfigurationEditor = observer(
   },
 );
 
-export const App = observer(
+export const LegendStudioApplication = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
     const { config, pluginManager } = props;
     const history = useHistory() as unknown as History<State>;
@@ -295,8 +303,8 @@ export const App = observer(
         return null;
       }
       return (
-        <ThemeProvider theme={materialTheme}>
-          <AppConfigurationEditor config={config} />
+        <ThemeProvider theme={LegendMaterialUITheme}>
+          <LegendStudioApplicationConfigEditor config={config} />
         </ThemeProvider>
       );
     }
@@ -306,8 +314,8 @@ export const App = observer(
         history={history}
         pluginManager={pluginManager}
       >
-        <ThemeProvider theme={materialTheme}>
-          <AppRoot />
+        <ThemeProvider theme={LegendMaterialUITheme}>
+          <LegendStudioApplicationRoot />
         </ThemeProvider>
       </ApplicationStoreProvider>
     );

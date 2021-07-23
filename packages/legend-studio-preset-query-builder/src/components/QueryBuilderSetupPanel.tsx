@@ -34,7 +34,6 @@ import type {
 import {
   PackageableElementExplicitReference,
   RuntimePointer,
-  useEditorStore,
   EmbeddedRuntimeEditor,
   ClassIcon,
   MappingIcon,
@@ -45,7 +44,7 @@ import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const querySetupState = queryBuilderState.querySetupState;
     const toggleShowSetupPanel = (): void =>
       querySetupState.setShowSetupPanel(!querySetupState.showSetupPanel);

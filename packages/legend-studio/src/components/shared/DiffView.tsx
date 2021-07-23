@@ -61,7 +61,7 @@ export const TextDiffView = observer(
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
           ...baseTextEditorSettings,
-          theme: EDITOR_THEME.STUDIO,
+          theme: EDITOR_THEME.LEGEND,
           readOnly: true,
         });
         _editor.getOriginalEditor().onKeyDown((event) => {

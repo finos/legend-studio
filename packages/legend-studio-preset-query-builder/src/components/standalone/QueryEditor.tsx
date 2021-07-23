@@ -14,15 +14,4 @@
  * limitations under the License.
  */
 
-import { LegendQuery } from '@finos/legend-studio-preset-query-builder';
-import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
-import studioConfig from '../studio.config';
-import './index.scss';
-
-LegendQuery.create()
-  .setup({ baseUrl: studioConfig.baseUrl })
-  .withPresets([new DSLText_Preset()])
-  .start()
-  .catch((e) => {
-    throw e;
-  });
+export const QueryEditor: React.FC<{}> = () => <div>todo</div>;

@@ -27,17 +27,17 @@ import {
   FaUser,
   FaRegWindowMaximize,
 } from 'react-icons/fa';
-import { NotificationSnackbar } from '../shared/NotificationSnackbar';
+import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
-import type { ReviewPathParams } from '../../stores/Router';
+import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateViewProjectRoute,
   generateEditorRoute,
-} from '../../stores/Router';
+} from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';

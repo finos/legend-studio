@@ -73,7 +73,7 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { assertErrorThrown } from '@finos/legend-studio-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
-import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
+import { useApplicationStore } from '@finos/legend-studio';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -327,7 +327,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
     const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
@@ -610,7 +610,7 @@ const QueryBuilderFilterTree = observer(
 export const QueryBuilderFilterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
     const rootNode = filterState.getRootNode();

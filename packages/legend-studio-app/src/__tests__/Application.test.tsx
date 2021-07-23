@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getTestApplicationConfig, Studio } from '@finos/legend-studio';
+import { getTestApplicationConfig, LegendStudio } from '@finos/legend-studio';
 import type { AbstractPluginManager } from '@finos/legend-studio-shared';
 import {
   AbstractPreset,
@@ -35,7 +35,7 @@ class Dummy_Preset extends AbstractPreset {
 }
 
 test(integrationTest('Application can start with a dummy preset'), async () => {
-  const application = Studio.create();
+  const application = LegendStudio.create();
 
   MOBX__enableSpyOrMock();
   jest

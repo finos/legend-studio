@@ -39,6 +39,7 @@ export {
   FaFlask as FlaskIcon,
   FaPlay as PlayIcon,
   FaGripVertical as GripVerticalIcon,
+  FaRobot as RobotIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

@@ -15,3 +15,4 @@
  */
 
 export * from './QueryBuilder_Preset';
+export * from './application/LegendQuery';

@@ -164,7 +164,7 @@ const LambdaEditorInner = observer(
         const _editor = monacoEditorAPI.create(element, {
           ...baseTextEditorSettings,
           language: EDITOR_LANGUAGE.PURE,
-          theme: EDITOR_THEME.STUDIO,
+          theme: EDITOR_THEME.LEGEND,
           ...lambdaEditorOptions,
         });
         disableEditorHotKeys(_editor);

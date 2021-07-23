@@ -65,7 +65,6 @@ import {
   getClassPropertyIcon,
   PrimitiveType,
   useApplicationStore,
-  useEditorStore,
   PRIMITIVE_TYPE,
   ClassIcon,
   CheckIcon,
@@ -587,7 +586,7 @@ const QueryBuilderExplorerTreeNodeView = observer(
 const QueryBuilderExplorerTree = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const explorerState = queryBuilderState.explorerState;
     const treeData = explorerState.nonNullableTreeData;
     const onNodeSelect = (node: QueryBuilderExplorerTreeNodeData): void => {

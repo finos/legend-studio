@@ -34,7 +34,7 @@ import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import Backdrop from '@material-ui/core/Backdrop';
-import type { EditorPathParams } from '../../stores/Router';
+import type { EditorPathParams } from '../../stores/LegendStudioRouter';
 import {
   ActionAlertType,
   ActionAlertActionType,

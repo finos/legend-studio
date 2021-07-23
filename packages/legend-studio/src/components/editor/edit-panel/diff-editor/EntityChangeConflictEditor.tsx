@@ -191,7 +191,7 @@ const MergeConflictEditor = observer(
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
           ...baseTextEditorSettings,
-          theme: EDITOR_THEME.STUDIO,
+          theme: EDITOR_THEME.LEGEND,
           language: EDITOR_LANGUAGE.PURE,
           minimap: { enabled: false },
           formatOnType: true,

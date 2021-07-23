@@ -29,8 +29,8 @@ import { clsx, HammerIcon } from '@finos/legend-studio-components';
 import { GoSync } from 'react-icons/go';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import type { EditorPathParams } from '../../stores/Router';
-import { generateSetupRoute } from '../../stores/Router';
+import type { EditorPathParams } from '../../stores/LegendStudioRouter';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 

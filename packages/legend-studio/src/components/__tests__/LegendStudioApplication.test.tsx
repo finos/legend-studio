@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AppRoot } from '../App';
+import { LegendStudioApplicationRoot } from '../LegendStudioApplication';
 import {
   integrationTest,
   MOBX__enableSpyOrMock,
@@ -63,7 +63,7 @@ test(integrationTest('App header is displayed properly'), async () => {
       pluginManager={PluginManager.create()}
     >
       <Router history={history}>
-        <AppRoot />
+        <LegendStudioApplicationRoot />
       </Router>
     </ApplicationStoreProvider>,
   );
@@ -95,7 +95,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
       pluginManager={PluginManager.create()}
     >
       <Router history={history}>
-        <AppRoot />
+        <LegendStudioApplicationRoot />
       </Router>
     </ApplicationStoreProvider>,
   );
@@ -137,7 +137,7 @@ test(
         pluginManager={PluginManager.create()}
       >
         <Router history={history}>
-          <AppRoot />
+          <LegendStudioApplicationRoot />
         </Router>
       </ApplicationStoreProvider>,
     );

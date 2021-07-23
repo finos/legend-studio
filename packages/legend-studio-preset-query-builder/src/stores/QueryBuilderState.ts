@@ -380,24 +380,6 @@ export class QueryBuilderState extends EditorExtensionState {
             // convert the lambda to grammar text), we might as well wait for the refactor
             // of query builder text-mode
             // See https://github.com/finos/legend-studio/issues/319
-
-            // try {
-            //   const code = (yield this.graphManager.graphToPureCode(
-            //     this.graph,
-            //   )) as string;
-            //   this.editorStore.grammarTextEditorState.setGraphGrammarText(code);
-            // } catch (error2: unknown) {
-            //   assertErrorThrown(error2);
-            //   this.editorStore.applicationStore.notifyWarning(
-            //     `Can't enter text mode. Transformation to grammar text failed: ${error2.message}`,
-            //   );
-            //   return;
-            // }
-            // this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
-            // yield this.globalCompileInTextMode({
-            //   ignoreBlocking: true,
-            //   suppressCompilationFailureMessage: true,
-            // });
           } else {
             this.editorStore.applicationStore.notifyWarning(
               `Compilation failed: ${error.message}`,

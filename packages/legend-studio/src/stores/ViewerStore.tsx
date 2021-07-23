@@ -34,12 +34,12 @@ import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { GraphError } from '../models/MetaModelUtils';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
-import type { ViewerPathParams } from './Router';
+import type { ViewerPathParams } from './LegendStudioRouter';
 import {
   generateViewVersionRoute,
   generateVieweRevisionRoute,
   generateViewProjectRoute,
-} from './Router';
+} from './LegendStudioRouter';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ViewerStore {

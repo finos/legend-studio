@@ -22,7 +22,7 @@ import { EditorStore } from './EditorStore';
 import { createBrowserHistory } from 'history';
 import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { PluginManager } from '../application/PluginManager';
-import { URL_PATH_PLACEHOLDER } from './Router';
+import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 
 export const testApplicationConfigData = {
   appName: 'test-app',

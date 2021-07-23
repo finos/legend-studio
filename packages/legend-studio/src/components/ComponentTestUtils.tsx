@@ -35,10 +35,10 @@ import type { ProjectConfiguration } from '../models/sdlc/models/configuration/P
 import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { Revision } from '../models/sdlc/models/revision/Revision';
 import {
-  ROUTE_PATTERN,
+  LEGEND_STUDIO_ROUTE_PATTERN,
   generateEditorRoute,
   URL_PATH_PLACEHOLDER,
-} from '../stores/Router';
+} from '../stores/LegendStudioRouter';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -313,7 +313,7 @@ export const setUpEditor = async (
     <Route
       exact={true}
       strict={true}
-      path={ROUTE_PATTERN.EDIT}
+      path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT}
       component={Editor}
     />
   );

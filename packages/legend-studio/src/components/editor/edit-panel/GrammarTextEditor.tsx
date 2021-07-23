@@ -95,7 +95,7 @@ export const GrammarTextEditor = observer(() => {
       const _editor = monacoEditorAPI.create(element, {
         ...baseTextEditorSettings,
         language: EDITOR_LANGUAGE.PURE,
-        theme: EDITOR_THEME.STUDIO,
+        theme: EDITOR_THEME.LEGEND,
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(_editor.getValue());

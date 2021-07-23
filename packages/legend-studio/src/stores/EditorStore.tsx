@@ -92,7 +92,10 @@ import { FileGenerationViewerState } from './editor-state/FileGenerationViewerSt
 import type { GenerationFile } from './shared/FileGenerationTreeUtil';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState';
 import { DevToolState } from './aux-panel-state/DevToolState';
-import { generateSetupRoute, generateViewProjectRoute } from './Router';
+import {
+  generateSetupRoute,
+  generateViewProjectRoute,
+} from './LegendStudioRouter';
 import {
   NonBlockingDialogState,
   PanelDisplayState,

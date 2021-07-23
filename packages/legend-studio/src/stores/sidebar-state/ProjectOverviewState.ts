@@ -29,7 +29,7 @@ import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { Workspace } from '../../models/sdlc/models/workspace/Workspace';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import { getNullableFirstElement } from '@finos/legend-studio-shared';
-import { generateSetupRoute } from '../Router';
+import { generateSetupRoute } from '../LegendStudioRouter';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',

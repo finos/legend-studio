@@ -72,7 +72,7 @@ export const TextInputEditor: React.FC<{
       const element = textInputRef.current;
       const _editor = monacoEditorAPI.create(element, {
         ...baseTextEditorSettings,
-        theme: EDITOR_THEME.STUDIO,
+        theme: EDITOR_THEME.LEGEND,
         formatOnType: true,
         formatOnPaste: true,
       });

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { App } from '../App';
+import { LegendStudioApplication } from '../LegendStudioApplication';
 import {
   integrationTest,
   MOBX__enableSpyOrMock,
@@ -33,7 +33,10 @@ import type { ApplicationStore } from '../../stores/ApplicationStore';
 import { PluginManager } from '../../application/PluginManager';
 import { ApplicationConfig } from '../../stores/ApplicationConfig';
 import { createMemoryHistory } from 'history';
-import { generateSetupRoute, URL_PATH_PLACEHOLDER } from '../../stores/Router';
+import {
+  generateSetupRoute,
+  URL_PATH_PLACEHOLDER,
+} from '../../stores/LegendStudioRouter';
 
 let applicationStore: ApplicationStore;
 
@@ -81,7 +84,10 @@ test(
 
     render(
       <Router history={history}>
-        <App config={config} pluginManager={PluginManager.create()} />
+        <LegendStudioApplication
+          config={config}
+          pluginManager={PluginManager.create()}
+        />
       </Router>,
     );
 
@@ -117,7 +123,10 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/something/']}>
-        <App config={config} pluginManager={PluginManager.create()} />
+        <LegendStudioApplication
+          config={config}
+          pluginManager={PluginManager.create()}
+        />
       </MemoryRouter>,
     );
 
@@ -152,7 +161,10 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/server1/']}>
-        <App config={config} pluginManager={PluginManager.create()} />
+        <LegendStudioApplication
+          config={config}
+          pluginManager={PluginManager.create()}
+        />
       </MemoryRouter>,
     );
 
@@ -179,7 +191,10 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/server1/']}>
-        <App config={config} pluginManager={PluginManager.create()} />
+        <LegendStudioApplication
+          config={config}
+          pluginManager={PluginManager.create()}
+        />
       </MemoryRouter>,
     );
 
@@ -207,7 +222,10 @@ test(
 
     render(
       <Router history={history}>
-        <App config={config} pluginManager={PluginManager.create()} />
+        <LegendStudioApplication
+          config={config}
+          pluginManager={PluginManager.create()}
+        />
       </Router>,
     );
 
@@ -233,7 +251,10 @@ test(
 
     render(
       <Router history={history}>
-        <App config={config} pluginManager={PluginManager.create()} />
+        <LegendStudioApplication
+          config={config}
+          pluginManager={PluginManager.create()}
+        />
       </Router>,
     );
 

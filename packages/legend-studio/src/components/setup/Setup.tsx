@@ -27,17 +27,17 @@ import {
 import { SetupStoreProvider, useSetupStore } from '../../stores/SetupStore';
 import { useParams } from 'react-router';
 import { CORE_TEST_ID } from '../../const';
-import { NotificationSnackbar } from '../shared/NotificationSnackbar';
+import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import Dialog from '@material-ui/core/Dialog';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { ProjectType } from '../../models/sdlc/models/project/Project';
 import { isNumber, ACTION_STATE } from '@finos/legend-studio-shared';
 import { MdModeEdit } from 'react-icons/md';
-import type { SetupPathParams } from '../../stores/Router';
+import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateEditorRoute,
   generateViewProjectRoute,
-} from '../../stores/Router';
+} from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';

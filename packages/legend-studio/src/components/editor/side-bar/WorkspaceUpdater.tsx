@@ -35,7 +35,7 @@ import {
   useApplicationStore,
 } from '../../../stores/ApplicationStore';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { generateReviewRoute } from '../../../stores/Router';
+import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
 
 export const WorkspaceUpdater = observer(() => {

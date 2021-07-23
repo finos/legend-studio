@@ -31,7 +31,7 @@ import {
   SerializationFactory,
 } from '@finos/legend-studio-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import { URL_PATH_PLACEHOLDER } from './Router';
+import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 
 export class ServiceRegistrationEnvInfo {
   env!: string;
@@ -153,7 +153,7 @@ export interface ConfigurationData {
   options?: Record<PropertyKey, unknown>;
 }
 
-export interface VersionData {
+export interface LegendApplicationVersionData {
   buildTime: string;
   version: string;
   commitSHA: string;
@@ -163,12 +163,13 @@ export class ApplicationConfig {
   readonly appName: string;
   readonly baseUrl: string;
   readonly env: string;
+  readonly options = new ApplicationCoreOptions();
+
   readonly documentationUrl: string;
   _sdlcServerKey: string | undefined;
   sdlcServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
   readonly metadataServerUrl: string;
-  readonly options = new ApplicationCoreOptions();
 
   // TODO: consider modifying and/or moving this out when we refactor `version.json`
   readonly appVersion: string;
@@ -179,7 +180,7 @@ export class ApplicationConfig {
 
   constructor(
     configData: ConfigurationData,
-    versionData: VersionData,
+    versionData: LegendApplicationVersionData,
     baseUrl: string,
   ) {
     makeObservable(this, {

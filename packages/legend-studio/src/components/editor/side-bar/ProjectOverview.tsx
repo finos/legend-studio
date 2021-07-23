@@ -34,7 +34,7 @@ import {
   generateEditorRoute,
   generateViewVersionRoute,
   generateReviewRoute,
-} from '../../../stores/Router';
+} from '../../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 
 const WorkspaceViewerContextMenu = observer<

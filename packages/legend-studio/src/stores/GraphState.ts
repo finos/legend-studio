@@ -125,6 +125,7 @@ export class GraphState {
       getSetImplementationType: false,
       isInstanceSetImplementation: false,
       hasCompilationError: computed,
+      resetGraph: action,
       clearCompilationError: action,
     });
 
@@ -144,6 +145,10 @@ export class GraphState {
       this.editorStore.applicationStore.logger,
     );
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
+  }
+
+  resetGraph(): void {
+    this.graph = this.createEmptyGraph();
   }
 
   private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {
@@ -267,7 +272,7 @@ export class GraphState {
       );
       // reset
       this.editorStore.changeDetectionState.stop();
-      this.graph = this.createEmptyGraph();
+      this.resetGraph();
       // build compile context
       this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(
@@ -320,7 +325,7 @@ export class GraphState {
       this.isInitializingGraph = true;
       const startTime = Date.now();
       // reset
-      this.graph = this.createEmptyGraph();
+      this.resetGraph();
       // build compile context
       const dependencyManager = new DependencyManager(
         this.getPureGraphExtensionElementClasses(),

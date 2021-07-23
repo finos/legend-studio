@@ -15,13 +15,14 @@
  */
 
 // application
-export * from './application/Studio';
+export * from './application/LegendStudio';
 export * from './application/PluginManager';
+export { ApplicationConfig } from './stores/ApplicationConfig';
 
 // network
 export * from './stores/network/Telemetry';
 export * from './stores/network/Tracer';
-export { PATH_PARAM_TOKEN } from './stores/Router';
+export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
 
 // metamodels
 export * from './models/metamodels/pure/graph/PureGraphExtension';
@@ -177,6 +178,10 @@ export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
 export { getElementIcon, getElementTypeIcon } from './components/shared/Icon';
 export { TypeTree } from './components/shared/TypeTree';
 export { LambdaEditor } from './components/shared/LambdaEditor';
+export { LegendMaterialUITheme } from './components/LegendStudioApplication';
+export { BlockingAlert } from './components/application/BlockingAlert';
+export { ActionAlert } from './components/application/ActionAlert';
+export { NotificationSnackbar } from './components/application/NotificationSnackbar';
 
 export * from './utils/Logger'; // TODO: to be removed when we move this to @finos/legend-studio-shared
 

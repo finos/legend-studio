@@ -21,7 +21,7 @@ import type { SelectComponent } from '@finos/legend-studio-components';
 import { CustomSelectorInput } from '@finos/legend-studio-components';
 import type { WorkspaceSelectOption } from '../../models/sdlc/models/workspace/Workspace';
 import { FaPlus } from 'react-icons/fa';
-import { generateSetupRoute } from '../../stores/Router';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { ACTION_STATE } from '@finos/legend-studio-shared';
 

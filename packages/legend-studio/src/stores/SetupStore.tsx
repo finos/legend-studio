@@ -40,7 +40,7 @@ import {
   ACTION_STATE,
 } from '@finos/legend-studio-shared';
 import { Review } from '../models/sdlc/models/review/Review';
-import { generateSetupRoute } from './Router';
+import { generateSetupRoute } from './LegendStudioRouter';
 
 interface ImportProjectSuccessReport {
   projectId: string;

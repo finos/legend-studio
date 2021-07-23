@@ -38,7 +38,7 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '../../../stores/ApplicationStore';
-import { generateReviewRoute } from '../../../stores/Router';
+import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
 

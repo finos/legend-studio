@@ -64,10 +64,6 @@ export class QueryBuilder_EditorPlugin extends EditorPlugin {
     ];
   }
 
-  override configure(_configData: object): QueryBuilder_EditorPlugin {
-    return this;
-  }
-
   override getExtraEditorExtensionComponentRendererConfigurations(): EditorExtensionComponentRendererConfiguration[] {
     return [
       {

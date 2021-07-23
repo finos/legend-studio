@@ -20,7 +20,7 @@ import Dialog from '@material-ui/core/Dialog';
 import {
   generateViewProjectRoute,
   generateViewVersionRoute,
-} from '../../../stores/Router';
+} from '../../../stores/LegendStudioRouter';
 import {
   PanelLoadingIndicator,
   CustomSelectorInput,
