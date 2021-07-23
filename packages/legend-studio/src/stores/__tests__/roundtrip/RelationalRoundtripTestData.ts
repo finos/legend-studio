@@ -3806,6 +3806,31 @@ export const testRelationalDatabaseConnectionRoundtrip = [
     classifierPath: 'meta::relational::metamodel::Database',
   },
   {
+    path: 'apps::myRedshift',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'oauth',
+          oauthKey: 'dummy',
+          scopeName: 'UserPass',
+        },
+        datasourceSpecification: {
+          _type: 'redshift',
+          databaseName: 'test',
+          endpoint: 'endpoint',
+          port: 5439,
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'H2',
+      },
+      name: 'myRedshift',
+      package: 'apps',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: 'apps::mySnowFlake',
     content: {
       _type: 'connection',

@@ -35,6 +35,7 @@ import {
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
+  UserPasswordAuthenticationStrategy,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
@@ -42,6 +43,7 @@ import {
   SnowflakeDatasourceSpecification,
   BigQueryDatasourceSpecification,
   StaticDatasourceSpecification,
+  RedshiftDatasourceSpecification,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { ValidationIssue } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
 import { createValidationError } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
@@ -70,6 +72,7 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   H2_LOCAL = 'H2_LOCAL',
   H2_EMBEDDED = 'H2_EMBEDDED',
   SNOWFLAKE = 'SNOWFLAKE',
+  REDSHIFT = 'REDSHIFT',
   BIGQUERY = 'BIGQUERY',
 }
 
@@ -80,6 +83,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   GCP_APPLICATION_DEFAULT_CREDENTIALS = 'GCP_APPLICATION_DEFAULT_CREDENTIALS',
   TEST = 'TEST',
   OAUTH = 'OAUTH',
+  USER_PASSWORD = 'USER_PASSWORD',
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
@@ -130,6 +134,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.BIGQUERY;
     } else if (spec instanceof LocalH2DatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL;
+    } else if (spec instanceof RedshiftDatasourceSpecification) {
+      return CORE_DATASOURCE_SPEC_TYPE.REDSHIFT;
     }
     const extraDatasourceSpecificationTypeGetters =
       this.editorStore.applicationStore.pluginManager
@@ -178,6 +184,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
+      case CORE_DATASOURCE_SPEC_TYPE.REDSHIFT: {
+        this.connection.setDatasourceSpecification(
+          new RedshiftDatasourceSpecification('', '', 5439),
+        );
+        return;
+      }
       case CORE_DATASOURCE_SPEC_TYPE.BIGQUERY: {
         this.connection.setDatasourceSpecification(
           new BigQueryDatasourceSpecification('', ''),
@@ -219,6 +231,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH;
     } else if (auth instanceof SnowflakePublicAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
+    } else if (auth instanceof UserPasswordAuthenticationStrategy) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD;
     } else if (
       auth instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
     ) {
@@ -269,6 +283,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT: {
         this.connection.setAuthenticationStrategy(
           new DefaultH2AuthenticationStrategy(),
+        );
+        return;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD: {
+        this.connection.setAuthenticationStrategy(
+          new UserPasswordAuthenticationStrategy('', ''),
         );
         return;
       }

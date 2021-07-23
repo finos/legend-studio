@@ -35,6 +35,7 @@ import {
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
+  UserPasswordAuthenticationStrategy,
   OAuthAuthenticationStrategy,
 } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { DatasourceSpecification } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
@@ -43,6 +44,7 @@ import {
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
 } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { ModelChainConnection } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/connection/ModelChainConnection';
@@ -58,11 +60,13 @@ import {
   V1_SnowflakeDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
   V1_StaticDatasourceSpecification,
+  V1_RedshiftDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
   V1_DefaultH2AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
+  V1_UserPasswordAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
@@ -113,6 +117,16 @@ const transformSnowflakeDatasourceSpecification = (
   return source;
 };
 
+const transformRedshiftDatasourceSpecification = (
+  metamodel: RedshiftDatasourceSpecification,
+): V1_RedshiftDatasourceSpecification => {
+  const source = new V1_RedshiftDatasourceSpecification();
+  source.databaseName = metamodel.databaseName;
+  source.endpoint = metamodel.endpoint;
+  source.port = metamodel.port;
+  return source;
+};
+
 const transformBigQueryDatasourceSpecification = (
   metamodel: BigQueryDatasourceSpecification,
 ): V1_BigQueryDatasourceSpecification => {
@@ -139,6 +153,8 @@ const transformDatasourceSpecification = (
     protocol.testDataSetupCsv = metamodel.testDataSetupCsv;
     protocol.testDataSetupSqls = metamodel.testDataSetupSqls;
     return protocol;
+  } else if (metamodel instanceof RedshiftDatasourceSpecification) {
+    return transformRedshiftDatasourceSpecification(metamodel);
   }
   const extraConnectionDatasourceSpecificationTransformers =
     context.plugins.flatMap(
@@ -187,6 +203,11 @@ const transformAuthenticationStrategy = (
     auth.privateKeyVaultReference = metamodel.privateKeyVaultReference;
     auth.passPhraseVaultReference = metamodel.passPhraseVaultReference;
     auth.publicUserName = metamodel.publicUserName;
+    return auth;
+  } else if (metamodel instanceof UserPasswordAuthenticationStrategy) {
+    const auth = new V1_UserPasswordAuthenticationStrategy();
+    auth.userName = metamodel.userName;
+    auth.passwordVaultReference = metamodel.passwordVaultReference;
     return auth;
   } else if (
     metamodel instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
