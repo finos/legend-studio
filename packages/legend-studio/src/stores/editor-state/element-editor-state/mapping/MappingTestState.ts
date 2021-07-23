@@ -88,6 +88,8 @@ import { Table } from '../../../../models/metamodels/pure/model/packageableEleme
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { LambdaEditorState } from '../LambdaEditorState';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import type { ExecutionPlan } from '../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -366,6 +368,8 @@ export class MappingTestState {
   assertionState: MappingTestAssertionState;
   executionPlan?: object;
   isGeneratingPlan = false;
+  executionPlanMeta?: ExecutionPlan;
+  executionPlanState: ExecutionPlanState;
 
   constructor(
     editorStore: EditorStore,
@@ -396,6 +400,7 @@ export class MappingTestState {
     this.queryState = this.buildQueryState();
     this.inputDataState = this.buildInputDataState();
     this.assertionState = this.buildAssertionState();
+    this.executionPlanState = new ExecutionPlanState(this.editorStore);
   }
 
   setSelectedTab(val: MAPPING_TEST_EDITOR_TAB_TYPE): void {
@@ -695,8 +700,12 @@ export class MappingTestState {
     this.test.setAssert(this.assertionState.assert);
   }
 
-  setExecutionPlan = (val: object | undefined): void => {
+  setExecutionPlan = (
+    val: object | undefined,
+    metaVal: ExecutionPlan | undefined,
+  ): void => {
     this.executionPlan = val;
+    this.executionPlanMeta = metaVal;
   };
 
   *generatePlan(): GeneratorFn<void> {
@@ -714,7 +723,12 @@ export class MappingTestState {
             CLIENT_VERSION.VX_X_X,
           ),
         )) as object;
-        this.setExecutionPlan(plan);
+        const ultimatePlan =
+          this.editorStore.graphState.graphManager.buildExecutionPlan(
+            plan,
+            this.editorStore.graphState.graph,
+          );
+        this.setExecutionPlan(plan, ultimatePlan);
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
