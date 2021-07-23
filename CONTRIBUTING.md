@@ -52,7 +52,7 @@ A `changeset` is used to express the intent to release a set of packages at part
 
 We use [changesets](https://github.com/atlassian/changesets) to manage this process. See below for the format of the changeset.
 
-````md
+```md
 ---
 'pkg1': minor <!-- this signals us to release a minor version for pkg1 -->
 'pkg2': patch <!-- this signals us to release a patch for pkg2 -->
@@ -65,7 +65,7 @@ Please try to adhere to the format in existing changelogs.
 -->
 
 An example description of the major changes.
-``
+```
 
 To create the changeset, you can use the following commands:
 
@@ -78,9 +78,10 @@ yarn changeset "e.g. some message ..."
 # To open an interactive prompt to build more advanced changeset
 yarn changeset:cli
 ```
-````
 
-> If you made a mistake in a changeset and want to create a PR to rectify that, to avoid the changeset being attributed to the wrong PR or author, you can add `pr` and `author` fields to the [front-matter part of the changelog](https://github.com/atlassian/changesets/blob/master/packages/changelog-github/CHANGELOG.md#minor-changes).
+> Note that changeset is generated using the command above uses local default branch as the reference point. This aligns with our recommended workflow that is contributors work on feature branch rather than directly on default branch. Also remember to keep your origin and local default branch in sync, this will help ensure the generated changeset is more accurate and compact, as well as avoid getting your PR blocked by the changeset validation gate.
+
+> Also, if you made a mistake in a changeset and want to create a PR to rectify that, to avoid the changeset being attributed to the wrong PR or author, you can add `pr` and `author` fields to the [front-matter part of the changelog](https://github.com/atlassian/changesets/blob/master/packages/changelog-github/CHANGELOG.md#minor-changes).
 
 ## Development Guidelines
 
