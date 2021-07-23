@@ -26,6 +26,7 @@ import {
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
 } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { AuthenticationStrategy } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
@@ -36,6 +37,7 @@ import {
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
+  UserPasswordAuthenticationStrategy,
 } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_DatasourceSpecification } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
@@ -44,6 +46,7 @@ import {
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
+  V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
@@ -54,6 +57,7 @@ import {
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
+  V1_UserPasswordAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
@@ -141,6 +145,25 @@ export const V1_buildDatasourceSpecification = (
     metamodel.testDataSetupCsv = protocol.testDataSetupCsv;
     metamodel.testDataSetupSqls = protocol.testDataSetupSqls;
     return metamodel;
+  } else if (protocol instanceof V1_RedshiftDatasourceSpecification) {
+    assertNonEmptyString(
+      protocol.databaseName,
+      'Redshift datasource specification databaseName is missing',
+    );
+    assertNonEmptyString(
+      protocol.endpoint,
+      'Redshift datasource specification endpoint is missing',
+    );
+    assertNonNullable(
+      protocol.port,
+      'Redshift datasource specification port is missing',
+    );
+    const redshiftSpec = new RedshiftDatasourceSpecification(
+      protocol.databaseName,
+      protocol.endpoint,
+      protocol.port,
+    );
+    return redshiftSpec;
   }
   const extraConnectionDatasourceSpecificationBuilders =
     context.extensions.plugins.flatMap(
@@ -206,6 +229,19 @@ export const V1_buildAuthenticationStrategy = (
         protocol.scopeName,
         `OAuth authentication specification 'scopeName' field is missing or empty`,
       ),
+    );
+  } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
+    assertNonEmptyString(
+      protocol.userName,
+      'User password authentication strategy userName is missing or empty',
+    );
+    assertNonEmptyString(
+      protocol.passwordVaultReference,
+      'User password authentication strategy passwordVaultReference is missing or empty',
+    );
+    return new UserPasswordAuthenticationStrategy(
+      protocol.userName,
+      protocol.passwordVaultReference,
     );
   }
   const extraConnectionAuthenticationStrategyBuilders =

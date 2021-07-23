@@ -24,6 +24,7 @@ export enum V1_DatasourceSpecificationType {
   SNOWFLAKE = 'snowflake',
   BIGQUERY = 'bigQuery',
   H2_LOCAL = 'h2Local',
+  REDSHIFT = 'redshift',
 }
 
 export abstract class V1_DatasourceSpecification implements Hashable {
@@ -88,6 +89,24 @@ export class V1_SnowflakeDatasourceSpecification
       this.databaseName,
       this.cloudType ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
+    ]);
+  }
+}
+
+export class V1_RedshiftDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  databaseName!: string;
+  endpoint!: string;
+  port!: number;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.REDSHIFT_DATASOURCE_SPECIFICATION,
+      this.databaseName,
+      this.endpoint,
+      this.port.toString(),
     ]);
   }
 }

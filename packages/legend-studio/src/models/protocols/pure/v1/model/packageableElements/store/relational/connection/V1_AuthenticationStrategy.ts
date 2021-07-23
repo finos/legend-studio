@@ -91,6 +91,22 @@ export class V1_SnowflakePublicAuthenticationStrategy
   }
 }
 
+export class V1_UserPasswordAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  userName!: string;
+  passwordVaultReference!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.USER_PASSWORD_AUTHENTICATION_STRATEGY,
+      this.userName,
+      this.passwordVaultReference,
+    ]);
+  }
+}
+
 export class V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable

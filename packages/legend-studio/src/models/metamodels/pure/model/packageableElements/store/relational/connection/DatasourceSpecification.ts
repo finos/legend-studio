@@ -237,6 +237,54 @@ export class SnowflakeDatasourceSpecification
   }
 }
 
+export class RedshiftDatasourceSpecification
+  extends DatasourceSpecification
+  implements Hashable
+{
+  databaseName: string;
+  endpoint: string;
+  port: number;
+
+  constructor(databaseName: string, endpoint: string, port: number) {
+    super();
+
+    makeObservable(this, {
+      databaseName: observable,
+      endpoint: observable,
+      port: observable,
+      hashCode: computed,
+      setDatabaseName: action,
+      setEndpoint: action,
+      setPort: action,
+    });
+
+    this.databaseName = databaseName;
+    this.endpoint = endpoint;
+    this.port = port;
+  }
+
+  setDatabaseName(val: string): void {
+    this.databaseName = val;
+  }
+
+  setEndpoint(val: string): void {
+    this.endpoint = val;
+  }
+
+  setPort(val: number): void {
+    this.port = val;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.REDSHIFT_DATASOURCE_SPECIFICATION,
+      this.databaseName,
+      this.endpoint,
+      this.port.toString(),
+    ]);
+  }
+}
+
 export class BigQueryDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable

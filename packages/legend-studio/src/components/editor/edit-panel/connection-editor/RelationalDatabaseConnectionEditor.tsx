@@ -40,6 +40,7 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  UserPasswordAuthenticationStrategy,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
@@ -47,6 +48,7 @@ import {
   SnowflakeDatasourceSpecification,
   StaticDatasourceSpecification,
   BigQueryDatasourceSpecification,
+  RedshiftDatasourceSpecification,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { runInAction } from 'mobx';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
@@ -533,6 +535,52 @@ const SnowflakeDatasourceSpecificationEditor = observer(
   },
 );
 
+const RedshiftDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: RedshiftDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    const changePort: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      const val = event.target.value;
+      sourceSpec.setPort(parseInt(val, 10));
+    };
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.databaseName}
+          propertyName="database"
+          update={(value: string | undefined): void =>
+            sourceSpec.setDatabaseName(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.endpoint}
+          propertyName="endpoint"
+          update={(value: string | undefined): void =>
+            sourceSpec.setEndpoint(value ?? '')
+          }
+        />
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            port
+          </div>
+          <input
+            className="panel__content__form__section__input panel__content__form__section__number-input"
+            spellCheck={false}
+            type="number"
+            disabled={isReadOnly}
+            value={sourceSpec.port}
+            onChange={changePort}
+          />
+        </div>
+      </>
+    );
+  },
+);
+
 const BigQueryDatasourceSpecificationEditor = observer(
   (props: {
     sourceSpec: BigQueryDatasourceSpecification;
@@ -615,6 +663,35 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
           propertyName={'public user name'}
           update={(value: string | undefined): void =>
             authSpec.setPublicUserName(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
+const UserPasswordAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: UserPasswordAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.userName}
+          propertyName={'userName'}
+          update={(value: string | undefined): void =>
+            authSpec.setUserName(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.passwordVaultReference}
+          propertyName={'passwordVaultReference'}
+          update={(value: string | undefined): void =>
+            authSpec.setPasswordVaultReference(value ?? '')
           }
         />
       </>
@@ -752,6 +829,13 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec instanceof RedshiftDatasourceSpecification) {
+    return (
+      <RedshiftDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else if (sourceSpec instanceof LocalH2DatasourceSpecification) {
     return (
       <LocalH2DatasourceSpecificationEditor
@@ -793,6 +877,13 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof SnowflakePublicAuthenticationStrategy) {
     return (
       <SnowflakePublicAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (authSpec instanceof UserPasswordAuthenticationStrategy) {
+    return (
+      <UserPasswordAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

@@ -36,6 +36,7 @@ export enum V1_DatabaseType {
   Snowflake = 'Snowflake',
   BigQuery = 'BigQuery',
   Presto = 'Presto',
+  Redshift = 'Redshift',
 }
 
 export abstract class V1_DatabaseConnection extends V1_Connection {
