@@ -16,6 +16,9 @@
 
 import {
   hashLambda,
+  isValidFullPath,
+  isValidPath,
+  isValidPathIdentifier,
   resolvePackagePathAndElementName,
 } from '../../../MetaModelUtils';
 import {
@@ -129,4 +132,29 @@ test(unitTest('Resolve package path and element name'), () => {
     'somethingElse',
     'b',
   ]);
+});
+
+test(unitTest('Check valid path and path identifier'), () => {
+  expect(isValidPathIdentifier('')).toBe(false);
+  expect(isValidPathIdentifier('$')).toBe(false);
+  expect(isValidPathIdentifier('asd')).toBe(true);
+  expect(isValidPathIdentifier('asd$')).toBe(true);
+
+  expect(isValidFullPath('')).toBe(false);
+  expect(isValidFullPath('something')).toBe(false);
+  expect(isValidFullPath('something::')).toBe(false);
+  expect(isValidFullPath('::')).toBe(false);
+  expect(isValidFullPath(':')).toBe(false);
+  expect(isValidFullPath('$123')).toBe(false);
+  expect(isValidFullPath('$123::something')).toBe(false);
+  expect(isValidFullPath('something::something')).toBe(true);
+
+  expect(isValidPath('')).toBe(false);
+  expect(isValidPath('asdas')).toBe(true);
+  expect(isValidPath('::')).toBe(false);
+  expect(isValidPath(':')).toBe(false);
+  expect(isValidPath(',')).toBe(false);
+  expect(isValidPath('$123')).toBe(false);
+  expect(isValidPath('$123::something')).toBe(false);
+  expect(isValidPath('something::something')).toBe(true);
 });

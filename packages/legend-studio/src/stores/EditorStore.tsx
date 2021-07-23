@@ -54,8 +54,13 @@ import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
-import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
+import type {
+  Clazz,
+  GeneratorFn,
+  PlainObject,
+} from '@finos/legend-studio-shared';
 import {
+  addUniqueEntry,
   isNonNullable,
   assertErrorThrown,
   guaranteeType,
@@ -118,20 +123,21 @@ import { PRIMITIVE_TYPE } from '../models/MetaModelConst';
 import type { Type } from '../models/metamodels/pure/model/packageableElements/domain/Type';
 import type { Store } from '../models/metamodels/pure/model/packageableElements/store/Store';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 
 export class EditorHotkey {
-  name: HOTKEY;
+  name: string;
   keyBinds: string[];
-  handler: (event: KeyboardEvent | undefined) => void;
+  handler: (event?: KeyboardEvent) => void;
 
   constructor(
-    name: HOTKEY,
+    name: string,
     keyBinds: string[],
-    handler: (event: KeyboardEvent | undefined) => void,
+    handler: (event?: KeyboardEvent) => void,
   ) {
     this.name = name;
     this.keyBinds = keyBinds;
@@ -199,6 +205,7 @@ export class EditorStore {
       setMode: action,
       setDevTool: action,
       setHotkeys: action,
+      addHotKey: action,
       resetHotkeys: action,
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
@@ -388,38 +395,53 @@ export class EditorStore {
   setMode(val: EDITOR_MODE): void {
     this.mode = val;
   }
+
   setDevTool(val: boolean): void {
     this.isDevToolEnabled = val;
   }
+
   setHotkeys(val: EditorHotkey[]): void {
     this.hotkeys = val;
   }
+
+  addHotKey(val: EditorHotkey): void {
+    addUniqueEntry(this.hotkeys, val);
+  }
+
   resetHotkeys(): void {
     this.hotkeys = this.defaultHotkeys;
   }
+
   setBlockGlobalHotkeys(val: boolean): void {
     this.blockGlobalHotkeys = val;
   }
+
   setCurrentEditorState(val: EditorState | undefined): void {
     this.currentEditorState = val;
   }
+
   setBackdrop(val: boolean): void {
     this.backdrop = val;
   }
+
   setExpandedMode(val: boolean): void {
     this.isInExpandedMode = val;
   }
+
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
     this.activeAuxPanelMode = val;
   }
+
   setIgnoreNavigationBlocking(val: boolean): void {
     this.ignoreNavigationBlocking = val;
   }
+
   refreshCurrentEntityDiffEditorState(): void {
     if (this.currentEditorState instanceof EntityDiffEditorState) {
       this.currentEditorState.refresh();
     }
   }
+
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
     if (this._isDisposed) {
       return;
@@ -1008,7 +1030,7 @@ export class EditorStore {
       return;
     }
     const generatedChildrenElements =
-      this.graphState.graph.generationModel.allElements.filter(
+      this.graphState.graph.generationModel.allOwnElements.filter(
         (e) => e.generationParentElement === element,
       );
     const elementsToDelete = [element, ...generatedChildrenElements];
@@ -1026,18 +1048,47 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphState.graph.generationModel.removeElement(el),
+      this.graphState.graph.generationModel.deleteOwnElement(el),
     );
-    this.graphState.graph.removeElement(element);
+    this.graphState.graph.deleteElement(element);
+    // rerender currently opened diagram
     if (this.currentEditorState instanceof DiagramEditorState) {
       this.currentEditorState.renderer.render();
     }
+    // reprocess project explorer tree
     this.explorerTreeState.reprocess();
-    // re-compile after deletion
+    // recompile
     yield this.graphState.globalCompileInFormMode({
       message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
     });
   });
+
+  *renameElement(
+    element: PackageableElement,
+    newPath: string,
+  ): GeneratorFn<void> {
+    if (element.isReadOnly) {
+      return;
+    }
+    this.graphState.graph.renameOwnElement(element, newPath);
+    // rerender currently opened diagram
+    if (this.currentEditorState instanceof DiagramEditorState) {
+      this.currentEditorState.renderer.render();
+    }
+    // reprocess project explorer tree
+    this.explorerTreeState.reprocess();
+    if (element instanceof Package) {
+      this.explorerTreeState.openNode(element);
+    } else if (element.package) {
+      this.explorerTreeState.openNode(element.package);
+    }
+    // recompile
+    yield flowResult(
+      this.graphState.globalCompileInFormMode({
+        message: `Can't compile graph after renaming and error cannot be located in form mode. Redirected to text mode for debugging`,
+      }),
+    );
+  }
 
   // FIXME: to be removed when we process editor states properly
   reprocessElementEditorState = (
@@ -1090,9 +1141,14 @@ export class EditorStore {
   }
 
   createGlobalHotKeyAction =
-    (handler: () => void): ((event: KeyboardEvent | undefined) => void) =>
-    (event: KeyboardEvent | undefined): void => {
-      event?.preventDefault();
+    (
+      handler: (event?: KeyboardEvent) => void,
+      preventDefault = true,
+    ): ((event?: KeyboardEvent) => void) =>
+    (event?: KeyboardEvent): void => {
+      if (preventDefault) {
+        event?.preventDefault();
+      }
       // FIXME: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
       const isResolvingConflicts =
         this.isInConflictResolutionMode &&
@@ -1103,7 +1159,7 @@ export class EditorStore {
           !this.blockGlobalHotkeys) ||
         this.isInViewerMode
       ) {
-        handler();
+        handler(event);
       }
     };
 
@@ -1176,8 +1232,25 @@ export class EditorStore {
       );
   }
 
+  /**
+   * Filter the list of system elements that will be shown in selection options
+   * to users. This is helpful to avoid overwhelming and confusing users in form
+   * mode since many system elements are needed to build the graph, but should
+   * not present at all as selection options in form mode.
+   */
+  filterSystemElementOptions<T extends PackageableElement>(
+    systemElements: T[],
+  ): T[] {
+    const allowedSystemElements = this.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
+    return systemElements.filter((element) =>
+      allowedSystemElements.includes(element.path),
+    );
+  }
+
   get enumerationOptions(): PackageableElementSelectOption<Enumeration>[] {
-    return this.graphState.graph.enumerations
+    return this.graphState.graph.ownEnumerations
       .concat(this.graphState.graph.dependencyManager.enumerations)
       .map(
         (e) => e.selectOption as PackageableElementSelectOption<Enumeration>,
@@ -1185,15 +1258,23 @@ export class EditorStore {
   }
 
   get classOptions(): PackageableElementSelectOption<Class>[] {
-    return this.graphState.graph.classes
-      .concat(this.graphState.graph.systemModel.classes)
+    return this.graphState.graph.ownClasses
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownClasses,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.classes)
       .map((c) => c.selectOption as PackageableElementSelectOption<Class>);
   }
 
   get associationOptions(): PackageableElementSelectOption<Association>[] {
-    return this.graphState.graph.associations
-      .concat(this.graphState.graph.systemModel.associations)
+    return this.graphState.graph.ownAssociations
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownAssociations,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.associations)
       .map(
         (p) => p.selectOption as PackageableElementSelectOption<Association>,
@@ -1201,8 +1282,12 @@ export class EditorStore {
   }
 
   get profileOptions(): PackageableElementSelectOption<Profile>[] {
-    return this.graphState.graph.profiles
-      .concat(this.graphState.graph.systemModel.profiles)
+    return this.graphState.graph.ownProfiles
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownProfiles,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.profiles)
       .map((p) => p.selectOption as PackageableElementSelectOption<Profile>);
   }
@@ -1212,21 +1297,25 @@ export class EditorStore {
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
       .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
       .concat(
-        this.graphState.graph.types
-          .concat(this.graphState.graph.systemModel.types)
+        this.graphState.graph.ownTypes
+          .concat(
+            this.filterSystemElementOptions(
+              this.graphState.graph.systemModel.ownTypes,
+            ),
+          )
           .concat(this.graphState.graph.dependencyManager.types)
           .map((a) => a.selectOption as PackageableElementSelectOption<Type>),
       );
   }
 
   get mappingOptions(): PackageableElementSelectOption<Mapping>[] {
-    return this.graphState.graph.mappings
+    return this.graphState.graph.ownMappings
       .concat(this.graphState.graph.dependencyManager.mappings)
       .map((a) => a.selectOption as PackageableElementSelectOption<Mapping>);
   }
 
   get storeOptions(): PackageableElementSelectOption<Store>[] {
-    return this.graphState.graph.stores
+    return this.graphState.graph.ownStores
       .concat(this.graphState.graph.dependencyManager.stores)
       .map((a) => a.selectOption as PackageableElementSelectOption<Store>);
   }

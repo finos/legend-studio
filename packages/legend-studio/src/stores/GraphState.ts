@@ -449,7 +449,7 @@ export class GraphState {
           .entityHashesIndex;
     const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
     const entityChanges: EntityChange[] = [];
-    this.graph.allElements.forEach((element) => {
+    this.graph.allOwnElements.forEach((element) => {
       const elementPath = element.path;
       if (baseHashesIndex.get(elementPath) !== element.hashCode) {
         const entity = this.graphManager.elementToEntity(element, true);

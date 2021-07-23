@@ -38,10 +38,7 @@ import type { Association } from '../../../../../../metamodels/pure/model/packag
 import type { TableAlias } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
 import { InferableMappingElementIdExplicitValue } from '../../../../../../metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
 import type { PackageableElementReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
-import {
-  PackageableElementImplicitReference,
-  PackageableElementExplicitReference,
-} from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { PropertyReference } from '../../../../../../metamodels/pure/model/packageableElements/domain/PropertyReference';
 import {
   PropertyImplicitReference,
@@ -170,7 +167,13 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         this.context.resolveGenericType(localMappingProperty.type),
         mappingClass,
       );
-      property = PropertyExplicitReference.create(_property);
+      property = PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          mappingClass,
+          protocol.property.class,
+        ),
+        _property,
+      );
       localMapping = new LocalMappingPropertyInfo();
       localMapping.localMappingProperty = true;
       localMapping.localMappingPropertyMultiplicity = _multiplicity;
@@ -279,7 +282,13 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     }
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
       this.immediateParent,
-      PropertyExplicitReference.create(property),
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          propertyOwnerClass,
+          protocol.property.class ?? '',
+        ),
+        property,
+      ),
       V1_resolvePathsInRawLambda(this.context, [], protocol.transform.body),
       sourceSetImplementation,
       targetSetImplementation,
@@ -339,7 +348,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         Class,
         'Only complex classes can be the target of an embedded property mapping',
       );
-      _class = PackageableElementExplicitReference.create(complexClass);
+      _class = PackageableElementImplicitReference.create(complexClass, '');
     }
     const sourceSetImplementation = guaranteeNonNullable(
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
@@ -348,7 +357,13 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     );
     const embeddedPropertyMapping = new EmbeddedFlatDataPropertyMapping(
       this.immediateParent,
-      PropertyExplicitReference.create(property),
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          propertyOwnerClass,
+          protocol.property.class ?? '',
+        ),
+        property,
+      ),
       guaranteeNonNullable(this.topParent),
       sourceSetImplementation,
       _class,
@@ -441,15 +456,13 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     );
     const relationalPropertyMapping = new RelationalPropertyMapping(
       this.topParent ?? this.immediateParent,
-      propertyOwner instanceof Class // TODO: we also probably need to handle this for association mapping
-        ? PropertyImplicitReference.create(
-            PackageableElementImplicitReference.create(
-              propertyOwner,
-              protocol.property.class ?? '',
-            ),
-            property,
-          )
-        : PropertyExplicitReference.create(property),
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          propertyOwner,
+          protocol.property.class ?? '',
+        ),
+        property,
+      ),
       sourceSetImplementation,
       targetSetImplementation,
     );
@@ -530,7 +543,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       Class,
       'Only complex classes can be the target of an embedded property mapping',
     );
-    const _class = PackageableElementExplicitReference.create(complexClass);
+    const _class = PackageableElementImplicitReference.create(
+      complexClass,
+      protocol.property.class ?? '',
+    );
     const id = `${this.immediateParent.id}_${property.name}`;
     const topParent = guaranteeNonNullable(this.topParent);
     const sourceSetImplementation =
@@ -715,6 +731,9 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     );
     const xStorePropertyMapping = new XStorePropertyMapping(
       xStoreParent,
+      // NOTE: this should be `implicit` because this comes from an association
+      // that we should have inferred. But we need to test the impact of changing it to `implicit`.
+      // This might cause bugs in the future.
       PropertyExplicitReference.create(property),
       guaranteeNonNullable(sourceSetImplementation),
       targetSetImplementation,

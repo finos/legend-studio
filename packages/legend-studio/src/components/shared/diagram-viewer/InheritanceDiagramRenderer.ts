@@ -19,6 +19,7 @@ import type { Class } from '../../../models/metamodels/pure/model/packageableEle
 import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 import { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import { uuid } from '@finos/legend-studio-shared';
 
 export class InheritanceDiagramRenderer extends DiagramRenderer {
   constructor(div: HTMLDivElement, _class: Class) {
@@ -27,20 +28,18 @@ export class InheritanceDiagramRenderer extends DiagramRenderer {
   }
 
   loadClass(_class: Class): void {
-    const result = this.layoutTaxonomy(
-      this.getSuperTypeLevels(
-        [
-          new ClassView(
-            this.diagram,
-            '',
-            PackageableElementExplicitReference.create(_class),
-          ),
-        ],
-        this.diagram,
-        0,
-        -1,
-      ),
+    const cv = new ClassView(
       this.diagram,
+      uuid(),
+      PackageableElementExplicitReference.create(_class),
+    );
+
+    this.ensureClassViewMeetMinDimensions(cv);
+
+    const result = this.layoutTaxonomy(
+      this.getSuperTypeLevels([cv], this.diagram, 0, -1),
+      this.diagram,
+      true,
       true,
     );
     this.diagram.classViews = result[0];

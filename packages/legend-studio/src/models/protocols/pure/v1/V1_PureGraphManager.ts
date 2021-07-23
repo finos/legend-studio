@@ -457,7 +457,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_SYSTEM_BUILT,
           Date.now() - startTime,
           'ms',
-          `[profile: ${systemModel.profiles.length}, enumeration: ${systemModel.enumerations.length}]`,
+          `[profile: ${systemModel.ownProfiles.length}, enumeration: ${systemModel.ownEnumerations.length}]`,
         );
       }
       systemModel.setIsBuilt(true);
@@ -636,7 +636,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_SECTION_INDICES_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[sectionIndex: ${graph.sectionIndices.length}]`,
+          `[sectionIndex: ${graph.ownSectionIndices.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -648,7 +648,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_DOMAIN_MODELS_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[class: ${graph.classes.length}, enumeration: ${graph.enumerations.length}, association: ${graph.associations.length}, profile: ${graph.profiles.length}, functions: ${graph.functions.length}]`,
+          `[class: ${graph.ownClasses.length}, enumeration: ${graph.ownEnumerations.length}, association: ${graph.ownAssociations.length}, profile: ${graph.ownProfiles.length}, functions: ${graph.ownFunctions.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -662,7 +662,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_STORES_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[store: ${graph.stores.length}]`,
+          `[store: ${graph.ownStores.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -675,7 +675,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_MAPPINGS_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[mapping: ${graph.mappings.length}]`,
+          `[mapping: ${graph.ownMappings.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -688,7 +688,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_CONNECTIONS_AND_RUNTIMES_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[connection: ${graph.connections.length}, runtime: ${graph.runtimes.length}]`,
+          `[connection: ${graph.ownConnections.length}, runtime: ${graph.ownRuntimes.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -701,7 +701,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_SERVICES_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[service: ${graph.services.length}]`,
+          `[service: ${graph.ownServices.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -714,7 +714,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_DIAGRAMS_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[diagram: ${graph.diagrams.length}]`,
+          `[diagram: ${graph.ownDiagrams.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -727,7 +727,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_FILE_GENERATIONS_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[file-generation: ${graph.fileGenerations.length}]`,
+          `[file-generation: ${graph.ownFileGenerations.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -744,7 +744,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_GENERATION_TREE_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[generation-specification: ${graph.generationSpecifications.length}]`,
+          `[generation-specification: ${graph.ownGenerationSpecifications.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -851,7 +851,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_GENERATIONS_BUILT,
           Date.now() - stepStartTime,
-          `${graph.generationModel.allElements.length} generated elements processed`,
+          `${graph.generationModel.allOwnElements.length} generated elements processed`,
           'ms',
         );
       }
@@ -979,7 +979,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      * perserve the element path both resolved and unresolved
      */
     if (!options?.TEMPORARY__keepSectionIndex) {
-      graph.deleteSectionIndex();
+      graph.TEMP__deleteOwnSectionIndex();
     }
   });
 
@@ -2350,7 +2350,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): V1_PureModelContextData => {
     const startTime = Date.now();
     const graphData = new V1_PureModelContextData();
-    graphData.elements = graph.allElements.map((e) =>
+    graphData.elements = graph.allOwnElements.map((e) =>
       this.elementToProtocol(e, {
         keepSourceInformation: options?.keepSourceInformation,
       }),
@@ -2373,7 +2373,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const generatedModel = graph.generationModel;
     graphData.elements = [
       ...dependencyManager.allElements,
-      ...generatedModel.allElements,
+      ...generatedModel.allOwnElements,
     ].map((e) => this.elementToProtocol(e));
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED,

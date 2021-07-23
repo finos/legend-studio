@@ -27,7 +27,6 @@ import type { Column } from '../../../../../../../metamodels/pure/model/packagea
 import { Table } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { View } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/View';
 import { ColumnExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/ColumnReference';
-import { FilterExplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/FilterReference';
 import { FilterMapping } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/FilterMapping';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_RelationalClassMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
@@ -86,6 +85,10 @@ export const V1_buildRelationalPrimaryKey = (
     }
     rootRelational.primaryKey = columns.map((col) => {
       const mainTableAlias = new TableAliasColumn();
+      // NOTE: this should be `implicit` because we do some inferencing
+      // but we need to test the impact of changing it to `implicit`.
+      // This might cause bugs in the future.
+      // We need more (manual) tests for confidence
       mainTableAlias.column = ColumnExplicitReference.create(col);
       mainTableAlias.alias = mainTable;
       return mainTableAlias;
@@ -97,12 +100,11 @@ export const V1_buildRelationalMappingFilter = (
   v1_filter: V1_FilterMapping,
   context: V1_GraphBuilderContext,
 ): FilterMapping => {
-  const db = context.resolveDatabase(v1_filter.filter.db).value;
-  const filter = db.getFilter(v1_filter.filter.name);
+  const filter = context.resolveFilter(v1_filter.filter);
   const filterMapping = new FilterMapping(
-    db,
-    filter.name,
-    FilterExplicitReference.create(filter),
+    filter.ownerReference.value,
+    filter.value.name,
+    filter,
   );
   if (v1_filter.joins) {
     filterMapping.joinTreeNode = V1_buildElementWithJoinsJoinTreeNode(

@@ -1,5 +1,28 @@
 # @finos/legend-studio-components
 
+## 0.0.27
+
+### Patch Changes
+
+- Updated dependencies [[`7f9fbbe`](https://github.com/finos/legend-studio/commit/7f9fbbe72dee6cb8fd2c9a7d128cc117ce8ba5eb)]:
+  - @finos/legend-studio-shared@0.0.23
+
+## 0.0.26
+
+### Patch Changes
+
+- Updated dependencies [[`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e)]:
+  - @finos/legend-studio-shared@0.0.22
+
+## 0.0.25
+
+### Patch Changes
+
+- [#349](https://github.com/finos/legend-studio/pull/349) [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3) Thanks [@akphi](https://github.com/akphi)! - Add `PanelDisplayState` that holds and organizes panel size and size-related interactions, such as `open`, `close`, `toggle`, `maxmize`, `snap`, etc.
+
+- Updated dependencies [[`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8)]:
+  - @finos/legend-studio-shared@0.0.21
+
 ## 0.0.24
 
 ### Patch Changes

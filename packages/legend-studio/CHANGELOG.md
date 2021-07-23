@@ -1,5 +1,86 @@
 # @finos/legend-studio
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [[`7f9fbbe`](https://github.com/finos/legend-studio/commit/7f9fbbe72dee6cb8fd2c9a7d128cc117ce8ba5eb)]:
+  - @finos/legend-studio-components@0.0.27
+  - @finos/legend-studio-network@0.0.25
+  - @finos/legend-studio-shared@0.0.23
+
+## 0.2.1
+
+### Patch Changes
+
+- [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** Rename methods in `BasicModel`: add `own` to methods name to avoid confusion on when consumers are interacting with elements from the whole graph (in `PureModel`) or elements just from the graph itself.
+
+* [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) Thanks [@akphi](https://github.com/akphi)! - Support filtering system elements from selection dropdown to make forms more user-friendly (see https://github.com/finos/legend-studio/issues/280).
+
+- [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) Thanks [@akphi](https://github.com/akphi)! - Remove unnecessary usage of `*ExplicitReference` in protocol building process.
+
+* [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) Thanks [@akphi](https://github.com/akphi)! - Allow double-click on property holder view label in diagram to edit property inline.
+
+* Updated dependencies [[`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e)]:
+  - @finos/legend-studio-components@0.0.26
+  - @finos/legend-studio-network@0.0.24
+  - @finos/legend-studio-shared@0.0.22
+
+## 0.2.0
+
+### Minor Changes
+
+- [#357](https://github.com/finos/legend-studio/pull/357) [`7fc24dc`](https://github.com/finos/legend-studio/commit/7fc24dc5b9aaf9b350ed863bc51c4e76ffc270a9) Thanks [@pierredebelen](https://github.com/pierredebelen)! - Add support for supertype navigation in the diagram
+
+* [#361](https://github.com/finos/legend-studio/pull/361) [`e0acc32`](https://github.com/finos/legend-studio/commit/e0acc325457a7836b6d2ca82cbad025bed39ab86) Thanks [@pierredebelen](https://github.com/pierredebelen)! - Add support for subtype navigation in the diagram
+  Improve the layout for supertype classes
+  Set an UUID for new ClassView so that they properly serialize to Text in Hacker mode
+
+### Patch Changes
+
+- [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) Thanks [@akphi](https://github.com/akphi)! - Made several improvements to diagram editor:
+
+  - Add a separate mode for pan/zoom
+  - Create new basic property hotkey is not `Alt + DownArrow`
+  - Fix a bug where diagram editor hotkeys not being picked up if the user hasn't clicked on the diagram editor
+  - Rework class view selection behavior: single clicking a class will no-longer show classview editor; double-clicking is required instead.
+
+* [#320](https://github.com/finos/legend-studio/pull/320) [`1feb9ce`](https://github.com/finos/legend-studio/commit/1feb9cef1408cfe8a0a98a9e0390a1f1fb004a71) Thanks [@kshradhan](https://github.com/kshradhan)! - Fix the bug where association mappings' source keys are omitted when building the graph (https://github.com/finos/legend-studio/issues/278).
+
+- [#350](https://github.com/finos/legend-studio/pull/350) [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8) Thanks [@akphi](https://github.com/akphi)! - Allow configuring class view in diagram editor side panel.
+
+* [#350](https://github.com/finos/legend-studio/pull/350) [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8) Thanks [@akphi](https://github.com/akphi)! - Make diagram editor hotkeys more systematic.
+
+- [#347](https://github.com/finos/legend-studio/pull/347) [`5106c25`](https://github.com/finos/legend-studio/commit/5106c256f598dc960a084b4367fc9e1cf842f887) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add form checks in the operation class mapping editor. Inheritance operation mapping require no parameters. Additionally add manual test with operation class mapping.
+
+* [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) Thanks [@akphi](https://github.com/akphi)! - Support renaming element (https://github.com/finos/legend-studio/issues/322). User can access this funtionality via the element context menu in the explorer tree. Diagram editor now also allows renaming classes.
+
+- [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where classes coming from immutable graphs (system, generation, dependencies) are automatically removed in diagrams (a regrssion introduced by https://github.com/finos/legend-studio/pull/351).
+
+* [#359](https://github.com/finos/legend-studio/pull/359) [`cd78be6`](https://github.com/finos/legend-studio/commit/cd78be6e6669b5253c12ea9a9ceacef908a1686c) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Enable query builder for generated and dependency elements.
+
+- [#350](https://github.com/finos/legend-studio/pull/350) [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8) Thanks [@akphi](https://github.com/akphi)! - Rework how zooming works in diagram editor. Now, upon scrolling, zoom will use the pointer location as the zoom center rather than using the canvas center. Also, we allow user to be able to choose the zoom level or do a zoom to fit. Also, we now disallow negative zoom level and cap at the minimum level of 5%.
+
+* [#351](https://github.com/finos/legend-studio/pull/351) [`7561184`](https://github.com/finos/legend-studio/commit/75611843191f31d35dac51267b25de4298f48f4b) Thanks [@pierredebelen](https://github.com/pierredebelen)! - Fix issue: https://github.com/finos/legend-studio/issues/335
+  Ensure the diagram is updated if:
+
+  - A Class is deleted
+  - A property is removed from a Class
+  - A supertype is removed from a Class
+
+- [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) Thanks [@akphi](https://github.com/akphi)! - Fix a regression (introduced by https://github.com/finos/legend-studio/pull/350) with DnD to add class and ejecting property position in diagram editor.
+
+* [#362](https://github.com/finos/legend-studio/pull/362) [`8df01ce`](https://github.com/finos/legend-studio/commit/8df01ceb5d45aba42ab8541ae12d01e731b0c988) Thanks [@pierredebelen](https://github.com/pierredebelen)! - Fix the inheritance view layout by ensuring the bounding rectangle is computed for the inital class
+
+- [#341](https://github.com/finos/legend-studio/pull/341) [`b45e1ca`](https://github.com/finos/legend-studio/commit/b45e1ca06b7b3017972607c06c099bfa9fcd640f) Thanks [@umarphaarook](https://github.com/umarphaarook)! - Enable query builder in viewer mode.
+
+* [#349](https://github.com/finos/legend-studio/pull/349) [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3) Thanks [@akphi](https://github.com/akphi)! - Rework diagram editor layout and state management. Allow user to edit property in-place (see https://github.com/finos/legend-studio/issues/300).
+
+* Updated dependencies [[`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8)]:
+  - @finos/legend-studio-components@0.0.25
+  - @finos/legend-studio-network@0.0.23
+  - @finos/legend-studio-shared@0.0.21
+
 ## 0.1.18
 
 ### Patch Changes

@@ -77,7 +77,20 @@ import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graph/AbstractPureGraphManager';
 import { DataType } from '../../../../../../metamodels/pure/model/packageableElements/domain/DataType';
 
-type ResolutionResult<T> = [T, boolean];
+interface ResolutionResult<T> {
+  /**
+   * The resolved element.
+   */
+  element: T;
+  /**
+   * Flag indicating if we need to use section imports to resolve the element.
+   */
+  resolvedUsingSectionImports?: boolean;
+  /**
+   * Flag indicating if the full path is already provided when resolving the element.
+   */
+  isFullPath?: boolean;
+}
 
 export class V1_GraphBuilderContext {
   readonly logger: Logger;
@@ -105,11 +118,16 @@ export class V1_GraphBuilderContext {
     // Try the find from special types (not user-defined top level types)
     const SPECIAL_TYPES: string[] = Object.values(PRIMITIVE_TYPE).concat([]);
     if (SPECIAL_TYPES.includes(path)) {
-      return [resolverFn(path), true];
+      return {
+        element: resolverFn(path),
+      };
     }
-    // if the path is a path with package, no resolution from import is needed
+    // if the path is a path with package, no resolution from section imports is needed
     if (path.includes(ELEMENT_PATH_DELIMITER)) {
-      return [resolverFn(path), true];
+      return {
+        element: resolverFn(path),
+        isFullPath: true,
+      };
     }
     // NOTE: here we make the assumption that we have populated the indices properly so the same element
     // is not referred using 2 different paths in the same element index
@@ -119,10 +137,11 @@ export class V1_GraphBuilderContext {
         const fullPath = importPackage.path + ELEMENT_PATH_DELIMITER + path;
         const element = resolverFn(fullPath);
         if (element) {
-          results.set(fullPath, [
+          results.set(fullPath, {
             element,
-            this.graph.sectionAutoImports.includes(importPackage),
-          ]);
+            resolvedUsingSectionImports:
+              !this.graph.sectionAutoImports.includes(importPackage),
+          });
         }
       } catch {
         // do nothing
@@ -138,7 +157,10 @@ export class V1_GraphBuilderContext {
        * here we count on the `resolver` to do the validation of the type of element instead
        */
       case 0:
-        return [resolverFn(path), true];
+        return {
+          element: resolverFn(path),
+          isFullPath: true,
+        };
       case 1:
         return Array.from(results.values())[0];
       default:
@@ -165,17 +187,17 @@ export class V1_GraphBuilderContext {
     path: string,
     resolverFn: (path: string) => T,
   ): PackageableElementImplicitReference<T> => {
-    const [element, skippedSectionImportResolution] = this.resolve(
+    const { element, resolvedUsingSectionImports, isFullPath } = this.resolve(
       path,
       resolverFn,
     );
-    if (skippedSectionImportResolution) {
+    if (!resolvedUsingSectionImports && !isFullPath) {
       return PackageableElementImplicitReference.create(element, path);
     }
     return PackageableElementImplicitReference.resolveFromSection(
       element,
       path,
-      this.section,
+      resolvedUsingSectionImports ? this.section : undefined,
     );
   };
 
@@ -444,7 +466,7 @@ export class V1_GraphBuilderContextBuilder {
   }
 
   withElement(element: V1_PackageableElement): V1_GraphBuilderContextBuilder {
-    const section = this.graph.getSection(element.path);
+    const section = this.graph.getOwnSection(element.path);
     return this.withSection(section);
   }
 

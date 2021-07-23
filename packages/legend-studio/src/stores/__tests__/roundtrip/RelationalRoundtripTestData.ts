@@ -8771,8 +8771,6 @@ export const testRelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class:
-                  'apps::meta::pure::tests::model::simple::PlaceOfInterest',
                 property: 'location',
               },
               relationalOperation: {
@@ -8784,12 +8782,12 @@ export const testRelationalAssociationMapping = [
                   },
                 ],
               },
+              source: 'apps_meta_pure_tests_model_simple_PlaceOfInterest',
               target: 'apps_meta_pure_tests_model_simple_Location',
             },
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Location',
                 property: 'placeOfInterest',
               },
               relationalOperation: {
@@ -8801,6 +8799,7 @@ export const testRelationalAssociationMapping = [
                   },
                 ],
               },
+              source: 'apps_meta_pure_tests_model_simple_Location',
               target: 'apps_meta_pure_tests_model_simple_PlaceOfInterest',
             },
           ],

@@ -65,7 +65,7 @@
     "last 2 Chrome versions"
   ],
   "devDependencies": {
-    "@babel/core": "7.14.6",
+    "@babel/core": "7.14.8",
     "@changesets/cli": "2.16.0",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
@@ -73,7 +73,7 @@
     "@finos/stylelint-config-legend-studio": "workspace:*",
     "@juggle/resize-observer": "3.3.1",
     "@types/jest": "26.0.24",
-    "@types/node": "16.3.3",
+    "@types/node": "16.4.0",
     "chalk": "4.1.1",
     "cross-env": "7.0.3",
     "eslint": "7.31.0",

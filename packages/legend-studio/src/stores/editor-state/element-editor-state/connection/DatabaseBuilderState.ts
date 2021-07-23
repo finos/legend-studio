@@ -487,10 +487,10 @@ export class DatabaseBuilderState {
       { quiet: true },
     )) as Entity[];
     assertTrue(
-      dbGraph.databases.length === 1,
+      dbGraph.ownDatabases.length === 1,
       'Expected one database to be generated from grammar',
     );
-    return dbGraph.databases[0];
+    return dbGraph.ownDatabases[0];
   });
 
   private buildDatabaseFromInput = flow(function* (
@@ -508,10 +508,10 @@ export class DatabaseBuilderState {
       { quiet: true },
     )) as Entity[];
     assertTrue(
-      dbGraph.databases.length === 1,
+      dbGraph.ownDatabases.length === 1,
       'Expected one database to be generated from input',
     );
-    return dbGraph.databases[0];
+    return dbGraph.ownDatabases[0];
   });
 
   createOrUpdateDatabase = flow(function* (this: DatabaseBuilderState) {
