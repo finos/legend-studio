@@ -42,7 +42,7 @@ import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import {
   IllegalStateError,
   isNonNullable,
@@ -67,6 +67,10 @@ import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
+import { ExecutionPlanTree } from './execution-plan-viewer/ExecutionPlanTree';
+import { ExecutionPlan } from '../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
+import SplitPane from 'react-split-pane';
+import { ExecutionNodesViewer } from './execution-plan-viewer/ExecutionNodesViewer';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -567,15 +571,19 @@ export const MappingTestEditor = observer(
     const runTest = applicationStore.guaranteeSafeAction(() =>
       flowResult(testState.runTest()),
     );
-
     // Plan
-    const closePlanViewer = (): void => testState.setExecutionPlan(undefined);
+    const executionPlanStateInstance = testState.executionPlanState;
+
+    const closePlanViewer = (): void => {
+      testState.setExecutionPlan(undefined, undefined);
+      testState.executionPlanState.setExecutionPlanDisplayData('');
+      executionPlanStateInstance.setSelectedNode(undefined);
+    };
     const generatePlan = applicationStore.guaranteeSafeAction(() =>
       flowResult(testState.generatePlan()),
     );
-    const planText = testState.executionPlan
-      ? JSON.stringify(testState.executionPlan, undefined, TAB_SIZE)
-      : '';
+
+    const planMeta = testState.executionPlanMeta;
 
     // Test Result
     let testResult = '';
@@ -678,6 +686,7 @@ export const MappingTestEditor = observer(
             </div>
           )}
         </div>
+
         <Dialog
           open={Boolean(testState.executionPlan)}
           onClose={closePlanViewer}
@@ -687,17 +696,41 @@ export const MappingTestEditor = observer(
             paper: 'editor-modal__content',
           }}
         >
-          <div className="modal modal--dark editor-modal execution-plan-viewer">
+          <div className="modal modal--dark editor-modal">
             <div className="modal__header">
               <div className="modal__title">Execution Plan</div>
             </div>
             <div className="modal__body">
-              <TextInputEditor
-                inputValue={planText}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.JSON}
-                showMiniMap={true}
-              />
+              {planMeta instanceof ExecutionPlan && (
+                <SplitPane
+                  className="review-explorer__content"
+                  split="vertical"
+                  size={350}
+                  minSize={350}
+                  maxSize={-600}
+                >
+                  <div className="panel explorer">
+                    <div className="panel__header side-bar__header">
+                      <div className="panel__header__title">
+                        <div className="panel__header__title__content side-bar__header__title__content">
+                          EXECUTION PLAN EXPLORER
+                        </div>
+                      </div>
+                    </div>
+                    <div className="panel__content explorer__content__container">
+                      <ExecutionPlanTree
+                        executionPlanState={executionPlanStateInstance}
+                        executionPlan={planMeta}
+                      />
+                    </div>
+                  </div>
+
+                  <ExecutionNodesViewer
+                    displayData={executionPlanStateInstance.displayData}
+                    executionPlanState={executionPlanStateInstance}
+                  />
+                </SplitPane>
+              )}
             </div>
             <div className="modal__footer">
               <button
