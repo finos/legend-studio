@@ -244,10 +244,6 @@ const DiagramRendererHotkeyInfosModal = observer(
                   Eject the property
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">Alt</div>
-                  <div className="hotkey__plus">
-                    <PlusIcon />
-                  </div>
                   <div className="hotkey__key">&rarr;</div>
                 </div>
               </div>
