@@ -2234,6 +2234,7 @@ __metadata:
     react-dnd-html5-backend: 14.0.0
     react-dom: 17.0.2
     react-hotkeys: 2.0.0
+    react-router: 5.2.0
     react-router-dom: 5.2.0
     rimraf: 3.0.2
     sass: 1.35.2
