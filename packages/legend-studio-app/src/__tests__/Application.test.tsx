@@ -39,7 +39,7 @@ test(integrationTest('Application can start with a dummy preset'), async () => {
 
   MOBX__enableSpyOrMock();
   jest
-    .spyOn(application, 'fetchConfiguration')
+    .spyOn(application, 'fetchApplicationConfiguration')
     .mockResolvedValue([getTestApplicationConfig(), {}]);
   MOBX__disableSpyOrMock();
 

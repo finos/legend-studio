@@ -168,7 +168,7 @@ export abstract class LegendApplication {
     return this;
   }
 
-  async fetchLegendApplicationConfiguration(
+  async fetchApplicationConfiguration(
     baseUrl: string,
   ): Promise<[ApplicationConfig, Record<PropertyKey, object>]> {
     const client = new NetworkClient();
@@ -209,7 +209,7 @@ export abstract class LegendApplication {
     try {
       // Fetch application config
       const [appConfig, pluginConfigData] =
-        await this.fetchLegendApplicationConfiguration(this.baseUrl);
+        await this.fetchApplicationConfiguration(this.baseUrl);
       this.appConfig = appConfig;
 
       // Setup plugins
