@@ -59,7 +59,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     editorStore.localChangesState.syncWithWorkspace(),
   );
   const syncStatusText =
-    editorStore.graphState.graph.failedToBuild ||
+    editorStore.graphState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
       : !editorStore.changeDetectionState.isChangeDetectionRunning
@@ -82,7 +82,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     editorStore.conflictResolutionState.acceptConflictResolution(),
   );
   const conflictResolutionStatusText =
-    editorStore.graphState.graph.failedToBuild ||
+    editorStore.graphState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
       : !editorStore.changeDetectionState.isChangeDetectionRunning

@@ -113,7 +113,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
   const disableRegistration =
     !selectedEnvOption ||
     !selectedServiceType ||
-    registrationState.registeringState.isInProgress;
+    registrationState.registrationState.isInProgress;
   return (
     <Dialog
       open={registrationState.modal}
@@ -132,7 +132,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
         </div>
         <form onSubmit={handleSubmit}>
           <PanelLoadingIndicator
-            isLoading={registrationState.registeringState.isInProgress}
+            isLoading={registrationState.registrationState.isInProgress}
           />
           <div className="setup-create__form">
             <div className="panel__content__form">

@@ -52,13 +52,13 @@ export class QueryStore {
   useSDLC = true; // TODO: remove this when metadata server is enabled by default
 
   projectMetadatas: ProjectMetadata[] = [];
-  loadProjectMetadataState = new ActionState();
+  loadProjectMetadataState = ActionState.create();
   currentProjectMetadata?: ProjectMetadata;
 
   // TODO: support `latest`
   currentVersionId?: string;
-  loadVersionsState = new ActionState();
-  buildGraphState = new ActionState();
+  loadVersionsState = ActionState.create();
+  buildGraphState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {

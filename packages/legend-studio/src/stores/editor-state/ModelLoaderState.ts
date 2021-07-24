@@ -105,7 +105,8 @@ export class ModelLoaderState extends EditorState {
   *loadCurrentProjectEntities(): GeneratorFn<void> {
     switch (this.currentInputType) {
       case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
-        const graphEntities = this.editorStore.graphState.graph.isBuilt
+        const graphEntities = this.editorStore.graphState.graph.buildState
+          .hasSucceeded
           ? this.editorStore.graphState.graph.allOwnElements.map((element) =>
               this.editorStore.graphState.graphManager.elementToEntity(element),
             )
@@ -118,7 +119,8 @@ export class ModelLoaderState extends EditorState {
         break;
       }
       case MODEL_UPDATER_INPUT_TYPE.ENTITIES: {
-        const graphEntities = this.editorStore.graphState.graph.isBuilt
+        const graphEntities = this.editorStore.graphState.graph.buildState
+          .hasSucceeded
           ? this.editorStore.graphState.graph.allOwnElements.map((element) =>
               this.editorStore.graphState.graphManager.elementToEntity(element),
             )

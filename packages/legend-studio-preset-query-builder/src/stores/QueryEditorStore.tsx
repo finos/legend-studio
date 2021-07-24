@@ -15,29 +15,18 @@
  */
 
 import { createContext, useContext } from 'react';
-import { flowResult, makeAutoObservable } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
-import {
-  ActionState,
-  assertErrorThrown,
-  guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
-import {
-  ProjectMetadata,
-  Project,
-  ProjectType,
-  Version,
-} from '@finos/legend-studio';
+import { ActionState, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { QueryStore } from './QueryStore';
 import { useQueryStore } from './QueryStore';
 
 export class QueryEditorStore {
   queryStore: QueryStore;
 
-  loadProjectMetadataState = new ActionState();
-  loadVersionsState = new ActionState();
-  buildGraphState = new ActionState();
+  loadProjectMetadataState = ActionState.create();
+  loadVersionsState = ActionState.create();
+  buildGraphState = ActionState.create();
 
   constructor(queryStore: QueryStore) {
     makeAutoObservable(this, {

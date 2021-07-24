@@ -25,7 +25,7 @@ import {
   isString,
   ApplicationError,
   NetworkClient,
-  createObservableActionState,
+  ActionState,
 } from '@finos/legend-studio-shared';
 import { observable, flow, makeAutoObservable, action } from 'mobx';
 import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
@@ -136,7 +136,7 @@ export class ApplicationStore {
   blockingAlertInfo?: BlockingAlertInfo;
   actionAlertInfo?: ActionAlertInfo;
   config: ApplicationConfig;
-  initState = createObservableActionState();
+  initState = ActionState.create();
 
   isSDLCAuthorized = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
@@ -315,7 +315,7 @@ export class ApplicationStore {
         width: window.screen.width,
       },
     });
-    this.initState.conclude(true);
+    this.initState.complete();
   });
 
   getSDLCCurrentUser = flow(function* (this: ApplicationStore) {

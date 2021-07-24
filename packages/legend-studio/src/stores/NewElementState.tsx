@@ -427,7 +427,7 @@ export class NewElementState {
   get elementAndPackageName(): [string, string] {
     return resolvePackageAndElementName(
       this.selectedPackage,
-      this.editorStore.graphState.graph.isRoot(this._package),
+      this._package === this.editorStore.graphState.graph.root,
       this.name,
     );
   }
@@ -529,9 +529,8 @@ export class NewElementState {
     if (this.name && this.isValid) {
       const [packagePath, elementName] = this.elementAndPackageName;
       if (
-        this.editorStore.graphState.graph.isRoot(
-          this.editorStore.graphState.graph.getNullablePackage(packagePath),
-        ) &&
+        this.editorStore.graphState.graph.getNullablePackage(packagePath) ===
+          this.editorStore.graphState.graph.root &&
         this.type !== PACKAGEABLE_ELEMENT_TYPE.PACKAGE
       ) {
         throw new IllegalStateError(

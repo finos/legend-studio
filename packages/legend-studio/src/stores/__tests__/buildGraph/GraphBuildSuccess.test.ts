@@ -37,7 +37,7 @@ beforeAll(async () => {
 
 test(unitTest('Graph has been initialized properly'), () => {
   const graph = editorStore.graphState.graph;
-  expect(graph.isBuilt).toBeTruthy();
+  expect(graph.buildState.hasSucceeded).toBeTruthy();
   expect(
     Array.from(editorStore.graphState.coreModel.multiplicitiesIndex.values())
       .length,

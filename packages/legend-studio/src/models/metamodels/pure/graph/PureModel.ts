@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, observable, makeObservable } from 'mobx';
+import { action, flow, observable, makeObservable } from 'mobx';
 import type { Logger } from '../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
@@ -179,7 +179,6 @@ export class PureModel extends BasicModel {
     makeObservable(this, {
       generationModel: observable,
       dependencyManager: observable,
-      isDependenciesLoaded: computed,
       setDependencyManager: action,
       addElement: action,
     });
@@ -204,10 +203,6 @@ export class PureModel extends BasicModel {
 
   get reservedPathsForDependencyProcessing(): string[] {
     return this.systemModel.allOwnElements.map((e) => e.path);
-  }
-
-  get isDependenciesLoaded(): boolean {
-    return this.dependencyManager.isBuilt;
   }
 
   /**

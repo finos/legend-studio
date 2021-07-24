@@ -58,7 +58,9 @@ const testGeneratedElements = async (
     entities,
     { TEMPORARY__keepSectionIndex: true },
   );
-  await waitFor(() => expect(editorStore.graphState.graph.isBuilt).toBeTrue());
+  await waitFor(() =>
+    expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
+  );
   // build generation graph
   const generatedEntitiesMap = new Map<string, Entity[]>();
   generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);

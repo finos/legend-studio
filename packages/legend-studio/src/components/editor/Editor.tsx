@@ -216,8 +216,7 @@ export const EditorInner = observer(() => {
     return true;
   };
   const editable =
-    (editorStore.graphState.graph.failedToBuild ||
-      editorStore.graphState.graph.isBuilt) &&
+    editorStore.graphState.graph.buildState.hasCompleted &&
     editorStore.isInitialized;
   const isResolvingConflicts =
     editorStore.isInConflictResolutionMode &&

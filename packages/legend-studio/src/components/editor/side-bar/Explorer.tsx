@@ -582,103 +582,109 @@ const ExplorerTrees = observer(() => {
       menuProps={{ elevation: 7 }}
     >
       <div data-testid={CORE_TEST_ID.EXPLORER_TREES}>
-        {editorStore.explorerTreeState.isBuilt && showPackageTrees && (
-          <>
-            {/* MAIN PROJECT TREE */}
-            <TreeView
-              components={{
-                TreeNodeContainer: PackageTreeNodeContainer,
-              }}
-              treeData={treeData}
-              onNodeSelect={onNodeSelect}
-              getChildNodes={getChildNodes}
-              innerProps={{
-                disableContextMenu: isInGrammarTextMode,
-              }}
-            />
-            <ElementRenamer />
-            {!config.options.TEMPORARY__disableSDLCProjectStructureSupport && (
-              <ProjectConfig />
-            )}
-            {/* SYSTEM TREE */}
-            {Boolean(
-              editorStore.graphState.systemModel.allOwnElements.length,
-            ) && (
+        {editorStore.explorerTreeState.buildState.hasCompleted &&
+          showPackageTrees && (
+            <>
+              {/* MAIN PROJECT TREE */}
               <TreeView
                 components={{
                   TreeNodeContainer: PackageTreeNodeContainer,
                 }}
-                treeData={systemTreeData}
-                onNodeSelect={onSystemTreeNodeSelect}
-                getChildNodes={getSystemTreeChildNodes}
+                treeData={treeData}
+                onNodeSelect={onNodeSelect}
+                getChildNodes={getChildNodes}
                 innerProps={{
-                  disableContextMenu: true,
+                  disableContextMenu: isInGrammarTextMode,
                 }}
               />
-            )}
-            {/* DEPENDENCY TREE */}
-            {graph.dependencyManager.hasDependencies &&
-              !config.options.TEMPORARY__disableSDLCProjectStructureSupport && (
+              <ElementRenamer />
+              {!config.options
+                .TEMPORARY__disableSDLCProjectStructureSupport && (
+                <ProjectConfig />
+              )}
+              {/* SYSTEM TREE */}
+              {Boolean(
+                editorStore.graphState.systemModel.allOwnElements.length,
+              ) && (
                 <TreeView
                   components={{
                     TreeNodeContainer: PackageTreeNodeContainer,
                   }}
-                  treeData={dependencyTreeData}
-                  onNodeSelect={onDependencyTreeSelect}
-                  getChildNodes={getDependencyTreeChildNodes}
+                  treeData={systemTreeData}
+                  onNodeSelect={onSystemTreeNodeSelect}
+                  getChildNodes={getSystemTreeChildNodes}
+                  innerProps={{
+                    disableContextMenu: true,
+                  }}
+                />
+              )}
+              {/* DEPENDENCY TREE */}
+              {graph.dependencyManager.hasDependencies &&
+                !config.options
+                  .TEMPORARY__disableSDLCProjectStructureSupport && (
+                  <TreeView
+                    components={{
+                      TreeNodeContainer: PackageTreeNodeContainer,
+                    }}
+                    treeData={dependencyTreeData}
+                    onNodeSelect={onDependencyTreeSelect}
+                    getChildNodes={getDependencyTreeChildNodes}
+                    innerProps={{
+                      disableContextMenu: isInGrammarTextMode,
+                      isContextImmutable: true,
+                    }}
+                  />
+                )}
+              {/* GENERATION SPECIFICATION */}
+              {Boolean(graph.generationModel.allOwnElements.length) && (
+                <TreeView
+                  components={{
+                    TreeNodeContainer: PackageTreeNodeContainer,
+                  }}
+                  treeData={generationTreeData}
+                  onNodeSelect={onGenerationTreeNodeSelect}
+                  getChildNodes={getGenerationTreeChildNodes}
                   innerProps={{
                     disableContextMenu: isInGrammarTextMode,
                     isContextImmutable: true,
                   }}
                 />
               )}
-            {/* GENERATION SPECIFICATION */}
-            {Boolean(graph.generationModel.allOwnElements.length) && (
-              <TreeView
-                components={{
-                  TreeNodeContainer: PackageTreeNodeContainer,
-                }}
-                treeData={generationTreeData}
-                onNodeSelect={onGenerationTreeNodeSelect}
-                getChildNodes={getGenerationTreeChildNodes}
-                innerProps={{
-                  disableContextMenu: isInGrammarTextMode,
-                  isContextImmutable: true,
-                }}
-              />
-            )}
-            <div />
-            {/* FILE GENERATION SPECIFICATION */}
-            {Boolean(
-              editorStore.graphState.graphGenerationState.rootFileDirectory
-                .children.length,
-            ) && (
-              <>
-                <div className="explorer__content__separator" />
-                <FileGenerationTree
-                  selectedNode={editorStore.explorerTreeState.selectedNode}
-                  directoryTreeData={generationFileTreeData}
-                  onNodeSelect={onGenerationFileTreeNodeSelect}
-                  getFileElementTreeChildNodes={getGenerationFileTreeChildNodes}
-                />
-              </>
-            )}
-          </>
-        )}
-        {editorStore.explorerTreeState.isBuilt && !showPackageTrees && (
-          <div className="explorer__content--empty">
-            <div className="explorer__content--empty__text">
-              Your workspace is empty, you can add elements or load existing
-              model/entites for quick adding
+              <div />
+              {/* FILE GENERATION SPECIFICATION */}
+              {Boolean(
+                editorStore.graphState.graphGenerationState.rootFileDirectory
+                  .children.length,
+              ) && (
+                <>
+                  <div className="explorer__content__separator" />
+                  <FileGenerationTree
+                    selectedNode={editorStore.explorerTreeState.selectedNode}
+                    directoryTreeData={generationFileTreeData}
+                    onNodeSelect={onGenerationFileTreeNodeSelect}
+                    getFileElementTreeChildNodes={
+                      getGenerationFileTreeChildNodes
+                    }
+                  />
+                </>
+              )}
+            </>
+          )}
+        {editorStore.explorerTreeState.buildState.hasCompleted &&
+          !showPackageTrees && (
+            <div className="explorer__content--empty">
+              <div className="explorer__content--empty__text">
+                Your workspace is empty, you can add elements or load existing
+                model/entites for quick adding
+              </div>
+              <button
+                className="btn--dark explorer__content--empty__btn"
+                onClick={openModelLoader}
+              >
+                Open Model Loader
+              </button>
             </div>
-            <button
-              className="btn--dark explorer__content--empty__btn"
-              onClick={openModelLoader}
-            >
-              Open Model Loader
-            </button>
-          </div>
-        )}
+          )}
       </div>
       <div className="explorer__deselector" onClick={deselectTreeNode} />
     </ContextMenu>
@@ -774,15 +780,15 @@ export const Explorer = observer(() => {
   const applicationStore = useApplicationStore();
   const sdlcState = editorStore.sdlcState;
   const isLoading =
-    ((!editorStore.explorerTreeState.isBuilt &&
+    ((!editorStore.explorerTreeState.buildState.hasCompleted &&
       !editorStore.isInGrammarTextMode) ||
       editorStore.graphState.isUpdatingGraph) &&
-    !editorStore.graphState.graph.failedToBuild;
+    !editorStore.graphState.graph.buildState.hasFailed;
   const showExplorerTrees =
     sdlcState.currentProject &&
     sdlcState.currentWorkspace &&
-    editorStore.graphState.graph.isBuilt &&
-    editorStore.explorerTreeState.isBuilt;
+    editorStore.graphState.graph.buildState.hasSucceeded &&
+    editorStore.explorerTreeState.buildState.hasCompleted;
   // conflict resolution
   const showConflictResolutionContent =
     editorStore.isInConflictResolutionMode &&
@@ -828,10 +834,12 @@ export const Explorer = observer(() => {
               </div>
             </div>
             <ProjectExplorerActionPanel
-              disabled={!editorStore.explorerTreeState.isBuilt}
+              disabled={!editorStore.explorerTreeState.buildState.hasCompleted}
             />
           </div>
-          {editorStore.explorerTreeState.isBuilt && <CreateNewElementModal />}
+          {editorStore.explorerTreeState.buildState.hasCompleted && (
+            <CreateNewElementModal />
+          )}
           <div className="panel__content explorer__content__container">
             {showConflictResolutionContent && (
               <>
@@ -873,7 +881,7 @@ export const Explorer = observer(() => {
                 <PanelLoadingIndicator isLoading={isLoading} />
                 {showExplorerTrees && <ExplorerTrees />}
                 {!showExplorerTrees &&
-                  editorStore.graphState.graph.failedToBuild && (
+                  editorStore.graphState.graph.buildState.hasFailed && (
                     <BlankPanelContent>
                       <div className="explorer__content__failure-notice">
                         <div className="explorer__content__failure-notice__icon">

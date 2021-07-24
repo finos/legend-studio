@@ -185,7 +185,9 @@ const testDependencyElements = async (
     dependencyMap,
   );
   await waitFor(() =>
-    expect(editorStore.graphState.graph.dependencyManager.isBuilt).toBeTrue(),
+    expect(
+      editorStore.graphState.graph.dependencyManager.buildState.hasSucceeded,
+    ).toBeTrue(),
   );
 
   await editorStore.graphState.graphManager.buildGraph(
@@ -193,7 +195,9 @@ const testDependencyElements = async (
     entities,
     { TEMPORARY__keepSectionIndex: true },
   );
-  await waitFor(() => expect(editorStore.graphState.graph.isBuilt).toBeTrue());
+  await waitFor(() =>
+    expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
+  );
   Array.from(dependencyMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );

@@ -22,6 +22,7 @@ import {
   isNonNullable,
   UnsupportedOperationError,
   guaranteeNonNullable,
+  ActionState,
 } from '@finos/legend-studio-shared';
 import {
   getPackableElementTreeData,
@@ -57,7 +58,7 @@ export class ExplorerTreeState {
   selectedNode?: PackageTreeNodeData;
   fileGenerationTreeData?: TreeData<GenerationTreeNodeData>;
   elementToRename?: PackageableElement;
-  isBuilt = false;
+  buildState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -68,7 +69,6 @@ export class ExplorerTreeState {
       dependencyTreeData: observable.ref,
       selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
-      isBuilt: observable,
       elementToRename: observable,
       setTreeData: action,
       setGenerationTreeData: action,
@@ -105,7 +105,7 @@ export class ExplorerTreeState {
       default:
         treeData = this.treeData;
     }
-    if (!treeData || !this.isBuilt) {
+    if (!treeData || !this.buildState.hasCompleted) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
         `Can't get explorer tree data for root package '${rootPackageName}' as it hasn't been initialized`,
@@ -160,7 +160,7 @@ export class ExplorerTreeState {
   }
 
   build(): void {
-    this.isBuilt = false;
+    this.buildState.reset();
     this.treeData = getPackableElementTreeData(
       this.editorStore,
       this.editorStore.graphState.graph.root,
@@ -176,7 +176,7 @@ export class ExplorerTreeState {
       ExplorerTreeRootPackageLabel.FILE_GENERATION,
     );
     this.setSelectedNode(undefined);
-    this.isBuilt = true;
+    this.buildState.complete();
   }
 
   buildImmutableModelTrees(): void {
@@ -202,7 +202,7 @@ export class ExplorerTreeState {
    */
   /* @MARKER: MEMORY-SENSITIVE */
   reprocess(): void {
-    this.isBuilt = false;
+    this.buildState.reset();
     if (!this.systemTreeData) {
       this.systemTreeData = getPackableElementTreeData(
         this.editorStore,
@@ -302,7 +302,7 @@ export class ExplorerTreeState {
     }
     this.setTreeData({ ...this.treeData });
     this.setGenerationTreeData({ ...this.generationTreeData });
-    this.isBuilt = true;
+    this.buildState.complete();
   }
 
   onTreeNodeSelect = (

@@ -27,7 +27,7 @@ import { CORE_LOG_EVENT } from '../utils/Logger';
 import {
   IllegalStateError,
   guaranteeNonNullable,
-  createObservableActionState,
+  ActionState,
 } from '@finos/legend-studio-shared';
 import { Workspace } from '../models/sdlc/models/workspace/Workspace';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
@@ -44,7 +44,7 @@ import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ViewerStore {
   editorStore: EditorStore;
-  initState = createObservableActionState();
+  initState = ActionState.create();
   currentRevision?: Revision;
   latestVersion?: Version;
   revision?: Revision;
@@ -115,7 +115,7 @@ export class ViewerStore {
     }
     this.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
-      this.initState.conclude(hasBuildSucceeded);
+      this.initState.complete(hasBuildSucceeded);
     };
 
     try {
@@ -227,9 +227,9 @@ export class ViewerStore {
 
       // open element if provided an element path
       if (
-        this.editorStore.graphState.graph.isBuilt &&
+        this.editorStore.graphState.graph.buildState.hasSucceeded &&
         this.editorStore.sdlcState.currentProject &&
-        this.editorStore.explorerTreeState.isBuilt &&
+        this.editorStore.explorerTreeState.buildState.hasCompleted &&
         this.elementPath
       ) {
         try {

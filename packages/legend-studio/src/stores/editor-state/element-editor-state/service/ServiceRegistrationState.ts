@@ -18,7 +18,7 @@ import { action, computed, flow, makeAutoObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
 import {
-  createObservableActionState,
+  ActionState,
   prettyCONSTName,
   assertNonEmptyString,
   guaranteeNonNullable,
@@ -58,7 +58,7 @@ export class ServiceRegistrationState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   modal = false;
-  registeringState = createObservableActionState();
+  registrationState = ActionState.create();
   serviceEnv?: string;
   serviceExecutionMode?: ServiceExecutionMode;
   projectVersion?: Version | string;
@@ -189,7 +189,7 @@ export class ServiceRegistrationState {
 
   registerService = flow(function* (this: ServiceRegistrationState) {
     try {
-      this.registeringState.inProgress();
+      this.registrationState.inProgress();
       this.validateServiceForRegistration();
       const serverUrl = guaranteeNonNullable(
         this.options.find((info) => info.env === this.serviceEnv),
@@ -229,7 +229,7 @@ export class ServiceRegistrationState {
       );
       this.editorStore.applicationStore.notifyError(error, undefined, null);
     } finally {
-      this.registeringState.reset();
+      this.registrationState.reset();
     }
   });
 

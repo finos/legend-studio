@@ -243,7 +243,7 @@ export class GraphState {
       yield this.graphManager.buildSystem(this.coreModel, this.systemModel);
       this.systemModel.initializeAutoImports();
     } catch (error: unknown) {
-      this.graph.setFailedToBuild(true);
+      this.graph.buildState.fail();
       // no recovery if system models cannot be built
       this.editorStore.setBlockingAlert({
         message: `Can't initialize system models`,
@@ -311,7 +311,7 @@ export class GraphState {
         CORE_LOG_EVENT.GRAPH_PROBLEM,
         error,
       );
-      this.graph.setFailedToBuild(true);
+      this.graph.buildState.fail();
       this.editorStore.applicationStore.notifyError(
         `Can't build graph. Error: ${error.message}`,
       );
@@ -374,7 +374,7 @@ export class GraphState {
         error,
       );
       if (error instanceof DependencyGraphProcessingError) {
-        this.graph.setFailedToBuild(true);
+        this.graph.buildState.fail();
         // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
         this.editorStore.setBlockingAlert({
@@ -384,7 +384,7 @@ export class GraphState {
         // if something goes wrong with de-serialization, redirect to model loader to fix
         this.redirectToModelLoaderForDebugging(error);
       } else if (error instanceof NetworkClientError) {
-        this.graph.setFailedToBuild(true);
+        this.graph.buildState.fail();
         this.editorStore.applicationStore.notifyWarning(
           `Can't build graph. Error: ${error.message}`,
         );
@@ -680,7 +680,7 @@ export class GraphState {
           'Compilation failed:',
           error,
         );
-        if (this.graph.failedToBuild) {
+        if (this.graph.buildState.hasFailed) {
           // FIXME when we support showing multiple notification, we can split this into 2 messages
           this.editorStore.applicationStore.notifyWarning(
             `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
@@ -796,7 +796,7 @@ export class GraphState {
       /* @MARKER: MEMORY-SENSITIVE */
       // NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
       // e.g. sub-classes analytics on the immutable class, etc.
-      if (this.graph.isDependenciesLoaded) {
+      if (this.graph.dependencyManager.buildState.hasSucceeded) {
         newGraph.setDependencyManager(this.graph.dependencyManager);
       } else {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
@@ -925,7 +925,8 @@ export class GraphState {
    */
   updateGenerationGraphAndApplication = flow(function* (this: GraphState) {
     assertTrue(
-      this.graph.isBuilt && this.graph.isDependenciesLoaded,
+      this.graph.buildState.hasSucceeded &&
+        this.graph.dependencyManager.buildState.hasSucceeded,
       'Both main model and dependencies must be processed to built generation graph',
     );
     this.isUpdatingApplication = true;

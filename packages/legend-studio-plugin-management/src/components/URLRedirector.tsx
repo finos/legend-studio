@@ -45,7 +45,7 @@ interface RedirectPathParams {
  */
 export const URLRedirector = observer(() => {
   const applicationStore = useApplicationStore();
-  const isApplicationLoadConcluded = applicationStore.initState.hasConcluded;
+  const isApplicationLoadConcluded = applicationStore.initState.hasCompleted;
   const params = useParams<RedirectPathParams>();
 
   useEffect(() => {

@@ -68,7 +68,7 @@ import {
   UnsupportedOperationError,
   assertNonNullable,
   assertTrue,
-  createObservableActionState,
+  ActionState,
 } from '@finos/legend-studio-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
@@ -166,7 +166,7 @@ export class EditorStore {
   conflictResolutionState: ConflictResolutionState;
   devToolState: DevToolState;
   private _isDisposed = false;
-  initState = createObservableActionState();
+  initState = ActionState.create();
   mode = EDITOR_MODE.STANDARD;
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
   // Aux Panel
@@ -388,7 +388,7 @@ export class EditorStore {
         this.sdlcState.currentProject &&
           this.sdlcState.currentWorkspace &&
           this.sdlcState.currentRevision,
-      ) && this.graphState.systemModel.isBuilt
+      ) && this.graphState.systemModel.buildState.hasSucceeded
     );
   }
   get isInGrammarTextMode(): boolean {
@@ -524,7 +524,7 @@ export class EditorStore {
     }
     this.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
-      this.initState.conclude(hasBuildSucceeded);
+      this.initState.complete(hasBuildSucceeded);
     };
 
     yield this.sdlcState.fetchCurrentProject(projectId, {

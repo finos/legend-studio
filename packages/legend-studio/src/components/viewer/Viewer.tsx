@@ -173,8 +173,7 @@ export const ViewerInner = observer(() => {
   const applicationStore = useApplicationStore();
   const allowOpeningElement =
     editorStore.sdlcState.currentProject &&
-    !editorStore.graphState.graph.failedToBuild &&
-    editorStore.graphState.graph.isBuilt;
+    editorStore.graphState.graph.buildState.hasSucceeded;
   const resizeSideBar = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
       editorStore.sideBarDisplayState.setSize(newSize);

@@ -54,9 +54,9 @@ export class QuerySetupStore {
 
   querySetupState?: QuerySetupState;
   projectMetadatas: ProjectMetadata[] = [];
-  loadProjectMetadataState = new ActionState();
-  loadVersionsState = new ActionState();
-  buildGraphState = new ActionState();
+  loadProjectMetadataState = ActionState.create();
+  loadVersionsState = ActionState.create();
+  buildGraphState = ActionState.create();
 
   constructor(queryStore: QueryStore) {
     makeAutoObservable(this, {

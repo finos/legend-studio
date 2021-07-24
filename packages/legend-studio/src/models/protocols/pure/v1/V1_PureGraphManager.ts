@@ -460,10 +460,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           `[profile: ${systemModel.ownProfiles.length}, enumeration: ${systemModel.ownEnumerations.length}]`,
         );
       }
-      systemModel.setIsBuilt(true);
+      systemModel.buildState.pass();
     } catch (error: unknown) {
       assertErrorThrown(error);
-      systemModel.setFailedToBuild(true);
+      systemModel.buildState.fail();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_FAILED,
@@ -486,7 +486,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ) {
     const startTime = Date.now();
-    dependencyManager.setIsBuilt(false);
+    dependencyManager.buildState.reset();
     // Create a dummy graph for system processing. This is to ensure dependency models do not depend on the main graph
     const graph = new PureModel(
       coreModel,
@@ -554,7 +554,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
 
-      dependencyManager.setIsBuilt(true);
+      dependencyManager.buildState.pass();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_DEPENDENCIES_BUILT,
@@ -573,7 +573,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-      dependencyManager.setFailedToBuild(true);
+      dependencyManager.buildState.fail();
       throw new DependencyGraphProcessingError(error);
     }
   });
@@ -763,7 +763,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield this.postProcess(graph, graphBuilderInput, {
         TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
       });
-      graph.setIsBuilt(true);
+      graph.buildState.pass();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILT,
@@ -782,7 +782,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-      graph.setFailedToBuild(true);
+      graph.buildState.fail();
       /**
        * Wrap all error with `GraphError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -799,8 +799,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ) {
     const stepStartTime = Date.now();
     const generatedModel = graph.generationModel;
-    generatedModel.setIsBuilt(false);
-    generatedModel.setFailedToBuild(false);
+    generatedModel.buildState.reset();
     try {
       if (!options?.quiet) {
         this.logger.info(CORE_LOG_EVENT.GRAPH_BUILD_DATA_MODEL_PARSED);
@@ -846,7 +845,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield this.buildOtherElements(graph, generationGraphBuilderInput);
 
       yield this.postProcess(graph, generationGraphBuilderInput);
-      generatedModel.setIsBuilt(true);
+      generatedModel.buildState.pass();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_GENERATIONS_BUILT,
@@ -864,7 +863,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-      generatedModel.setFailedToBuild(true);
+      generatedModel.buildState.fail();
       /**
        * Wrap all error with `GraphError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
