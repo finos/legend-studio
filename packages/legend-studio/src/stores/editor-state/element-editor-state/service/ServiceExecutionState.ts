@@ -249,6 +249,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       autoSelectRuntimeOnMappingChange: action,
       updateExecutionQuery: action,
       setOpeningQueryEditor: action,
+      generatePlan: flow,
+      execute: flow,
     });
 
     this.execution = execution;
@@ -273,7 +275,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     this.queryState = queryState;
   };
 
-  generatePlan = flow(function* (this: ServicePureExecutionState) {
+  *generatePlan(): GeneratorFn<void> {
     if (!this.selectedExecutionConfiguration || this.isGeneratingPlan) {
       return;
     }
@@ -298,9 +300,9 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     } finally {
       this.isGeneratingPlan = false;
     }
-  });
+  }
 
-  execute = flow(function* (this: ServicePureExecutionState) {
+  *execute(): GeneratorFn<void> {
     if (!this.selectedExecutionConfiguration || this.isExecuting) {
       return;
     }
@@ -328,7 +330,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     } finally {
       this.isExecuting = false;
     }
-  });
+  }
 
   get serviceExecutionParameters():
     | { query: RawLambda; mapping: Mapping; runtime: Runtime }

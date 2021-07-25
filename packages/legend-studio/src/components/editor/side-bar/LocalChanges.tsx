@@ -26,6 +26,7 @@ import { MdRefresh } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
+import { flowResult } from 'mobx';
 
 export const LocalChanges = observer(() => {
   const editorStore = useEditorStore();
@@ -35,10 +36,10 @@ export const LocalChanges = observer(() => {
   const downloadLocalChanges = (): void =>
     localChangesState.downloadLocalChanges();
   const syncingWithWorkspace = applicationStore.guaranteeSafeAction(() =>
-    localChangesState.syncWithWorkspace(),
+    flowResult(localChangesState.syncWithWorkspace()),
   );
   const refreshLocalChanges = applicationStore.guaranteeSafeAction(() =>
-    localChangesState.refreshLocalChanges(),
+    flowResult(localChangesState.refreshLocalChanges()),
   );
   const isDispatchingAction =
     localChangesState.isSyncingWithWorkspace ||

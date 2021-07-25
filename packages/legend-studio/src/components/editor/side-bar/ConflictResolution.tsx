@@ -28,6 +28,7 @@ import type { EntityChangeConflict } from '../../../models/sdlc/models/entity/En
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
+import { flowResult } from 'mobx';
 
 export const ConflictResolution = observer(() => {
   const editorStore = useEditorStore();
@@ -43,7 +44,7 @@ export const ConflictResolution = observer(() => {
     conflictResolutionState.isDiscardingConflictResolutionChanges ||
     conflictResolutionState.isAbortingConflictResolution;
   const updateWorkspace = applicationStore.guaranteeSafeAction(() =>
-    editorStore.workspaceUpdaterState.updateWorkspace(),
+    flowResult(editorStore.workspaceUpdaterState.updateWorkspace()),
   );
   const accept = applicationStore.guaranteeSafeAction(() =>
     conflictResolutionState.acceptConflictResolution(),

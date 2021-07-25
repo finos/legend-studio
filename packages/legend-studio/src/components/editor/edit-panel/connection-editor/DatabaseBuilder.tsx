@@ -222,7 +222,7 @@ export const DatabaseBuilder = observer(
         () => flowResult(databaseBuilderState.buildDatabaseWithTreeData()),
       );
     const saveOrUpdateDatabase = (): Promise<void> =>
-      databaseBuilderState.createOrUpdateDatabase();
+      flowResult(databaseBuilderState.createOrUpdateDatabase());
     const closeModal = (): void => {
       databaseBuilderState.setModal(false);
     };

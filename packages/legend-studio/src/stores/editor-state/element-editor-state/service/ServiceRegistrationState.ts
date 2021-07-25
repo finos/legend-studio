@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, makeAutoObservable } from 'mobx';
+import { action, computed, makeAutoObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   ActionState,
   prettyCONSTName,
@@ -187,7 +188,7 @@ export class ServiceRegistrationState {
     return undefined;
   }
 
-  registerService = flow(function* (this: ServiceRegistrationState) {
+  *registerService(): GeneratorFn<void> {
     try {
       this.registrationState.inProgress();
       this.validateServiceForRegistration();
@@ -231,7 +232,7 @@ export class ServiceRegistrationState {
     } finally {
       this.registrationState.reset();
     }
-  });
+  }
 
   validateServiceForRegistration(): void {
     assertTrue(

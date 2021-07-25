@@ -54,6 +54,7 @@ import type {
 } from '../stores/ApplicationConfig';
 import type { PluginManager } from '../application/PluginManager';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 /**
  * NOTE: this approach generally works well to control Material theme overriding
@@ -145,7 +146,9 @@ export const LegendStudioApplicationRoot = observer(() => {
     });
 
   useEffect(() => {
-    applicationStore.init().catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(applicationStore.init()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore]);
 
   return (

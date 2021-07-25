@@ -33,12 +33,15 @@ import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
 import { QueryStoreProvider } from '../../stores/QueryStore';
 import { QueryEditor } from './QueryEditor';
+import { flowResult } from 'mobx';
 
 export const LegendQueryApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore();
 
   useEffect(() => {
-    applicationStore.init().catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(applicationStore.init()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore]);
 
   return (

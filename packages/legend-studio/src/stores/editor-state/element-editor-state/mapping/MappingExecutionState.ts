@@ -430,8 +430,6 @@ export class MappingExecutionState {
       setShowServicePathModal: action,
       setInputDataStateBasedOnSource: action,
       reset: action,
-      buildQueryWithClassMapping: flow,
-      generatePlan: flow,
     });
 
     this.editorStore = editorStore;
@@ -535,7 +533,7 @@ export class MappingExecutionState {
     }
   }
 
-  promoteToTest = flow(function* (this: MappingExecutionState) {
+  *promoteToTest(): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       if (
@@ -554,7 +552,7 @@ export class MappingExecutionState {
           [inputData],
           assert,
         );
-        yield this.mappingEditorState.addTest(mappingTest);
+        yield flowResult(this.mappingEditorState.addTest(mappingTest));
         this.mappingEditorState.closeTab(this); // after promoting to test, remove the execution state
       }
     } catch (error: unknown) {
@@ -564,13 +562,12 @@ export class MappingExecutionState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  promoteToService = flow(function* (
-    this: MappingExecutionState,
+  *promoteToService(
     packagePath: string,
     serviceName: string,
-  ) {
+  ): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       if (
@@ -623,9 +620,9 @@ export class MappingExecutionState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  executeMapping = flow(function* (this: MappingExecutionState) {
+  *executeMapping(): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
@@ -658,7 +655,7 @@ export class MappingExecutionState {
     } finally {
       this.isExecuting = false;
     }
-  });
+  }
 
   *generatePlan(): GeneratorFn<void> {
     try {

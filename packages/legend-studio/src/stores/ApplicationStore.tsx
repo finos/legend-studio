@@ -16,6 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import type {
+  GeneratorFn,
   PlainObject,
   SuperGenericFunction,
 } from '@finos/legend-studio-shared';
@@ -27,7 +28,7 @@ import {
   NetworkClient,
   ActionState,
 } from '@finos/legend-studio-shared';
-import { observable, flow, makeAutoObservable, action } from 'mobx';
+import { observable, makeAutoObservable, action } from 'mobx';
 import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
 import type { ApplicationConfig } from './ApplicationConfig';
 import type { History } from 'history';
@@ -295,7 +296,7 @@ export class ApplicationStore {
     return Boolean(this.SDLCServerTermsOfServicesUrlsToView.length);
   }
 
-  init = flow(function* (this: ApplicationStore) {
+  *init(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       this.notifyIllegalState('Application store is re-initialized');
       return;
@@ -316,9 +317,9 @@ export class ApplicationStore {
       },
     });
     this.initState.complete();
-  });
+  }
 
-  getSDLCCurrentUser = flow(function* (this: ApplicationStore) {
+  private *getSDLCCurrentUser(): GeneratorFn<void> {
     try {
       const currentUser = User.serialization.fromJson(
         (yield this.networkClientManager.sdlcClient.getCurrentUser()) as PlainObject<User>,
@@ -330,9 +331,9 @@ export class ApplicationStore {
       this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.notifyWarning(error.message);
     }
-  });
+  }
 
-  checkSDLCAuthorization = flow(function* (this: ApplicationStore) {
+  private *checkSDLCAuthorization(): GeneratorFn<void> {
     try {
       this.isSDLCAuthorized = (
         (yield Promise.all(
@@ -393,7 +394,7 @@ export class ApplicationStore {
       this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.notifyError(error);
     }
-  });
+  }
 
   setupTelemetryService(): void {
     this.telemetryService.registerPlugins(

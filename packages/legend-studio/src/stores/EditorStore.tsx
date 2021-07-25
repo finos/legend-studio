@@ -325,9 +325,9 @@ export class EditorStore {
         HOTKEY.SYNC_WITH_WORKSPACE,
         [HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
-          this.localChangesState
-            .syncWithWorkspace()
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(this.localChangesState.syncWithWorkspace()).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         }),
       ),
       // simple actions (no blocking is needed)

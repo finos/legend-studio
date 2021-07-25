@@ -37,6 +37,7 @@ import {
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
+import { flowResult } from 'mobx';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();
@@ -60,9 +61,9 @@ export const WorkspaceUpdater = observer(() => {
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
               editorStore.setIgnoreNavigationBlocking(true);
-              workspaceUpdaterState
-                .updateWorkspace()
-                .catch(applicationStore.alertIllegalUnhandledError);
+              flowResult(workspaceUpdaterState.updateWorkspace()).catch(
+                applicationStore.alertIllegalUnhandledError,
+              );
             },
           },
           {
@@ -73,13 +74,13 @@ export const WorkspaceUpdater = observer(() => {
         ],
       });
     } else {
-      workspaceUpdaterState
-        .updateWorkspace()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(workspaceUpdaterState.updateWorkspace()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }
   };
   const refreshWorkspaceUpdater = applicationStore.guaranteeSafeAction(() =>
-    workspaceUpdaterState.refreshWorkspaceUpdater(),
+    flowResult(workspaceUpdaterState.refreshWorkspaceUpdater()),
   );
   const isDispatchingAction =
     workspaceUpdaterState.isUpdatingWorkspace ||
@@ -118,9 +119,9 @@ export const WorkspaceUpdater = observer(() => {
 
   // since the project latest changes can be affected by other users, we refresh it more proactively
   useEffect(() => {
-    workspaceUpdaterState
-      .refreshWorkspaceUpdater()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(workspaceUpdaterState.refreshWorkspaceUpdater()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, workspaceUpdaterState]);
 
   return (

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { flow, makeAutoObservable } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { CORE_LOG_EVENT } from '../../utils/Logger';
 import { Build } from '../../models/sdlc/models/build/Build';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 
 export class WorkspaceBuildsState {
   editorStore: EditorStore;
@@ -37,7 +37,7 @@ export class WorkspaceBuildsState {
     this.sdlcState = sdlcState;
   }
 
-  fetchAllWorkspaceBuilds = flow(function* (this: WorkspaceBuildsState) {
+  *fetchAllWorkspaceBuilds(): GeneratorFn<void> {
     try {
       this.isFetchingBuilds = true;
       // NOTE: this network call can take a while, so we might consider limiting the number of builds to 10 or so
@@ -59,5 +59,5 @@ export class WorkspaceBuildsState {
     } finally {
       this.isFetchingBuilds = false;
     }
-  });
+  }
 }

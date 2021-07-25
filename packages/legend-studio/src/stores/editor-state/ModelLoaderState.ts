@@ -56,6 +56,8 @@ export class ModelLoaderState extends EditorState {
       setCurrentInputType: action,
       setCurrentExternalFormatInputType: action,
       loadCurrentProjectEntities: flow,
+      loadModel: flow,
+      fetchAvailableModelImportDescriptions: flow,
     });
   }
 
@@ -136,7 +138,7 @@ export class ModelLoaderState extends EditorState {
     }
   }
 
-  loadModel = flow(function* (this: ModelLoaderState) {
+  *loadModel(): GeneratorFn<void> {
     try {
       this.isLoadingModel = true;
       this.editorStore.setBlockingAlert({
@@ -192,7 +194,7 @@ export class ModelLoaderState extends EditorState {
       this.isLoadingModel = false;
       this.editorStore.setBlockingAlert(undefined);
     }
-  });
+  }
 
   getImportConfiguration(key: string): ImportConfigurationDescription {
     return guaranteeNonNullable(
@@ -201,9 +203,7 @@ export class ModelLoaderState extends EditorState {
     );
   }
 
-  fetchAvailableModelImportDescriptions = flow(function* (
-    this: ModelLoaderState,
-  ) {
+  *fetchAvailableModelImportDescriptions(): GeneratorFn<void> {
     try {
       this.modelImportDescriptions =
         (yield this.editorStore.graphState.graphManager.getAvailableImportConfigurationDescriptions()) as unknown as ImportConfigurationDescription[];
@@ -214,7 +214,7 @@ export class ModelLoaderState extends EditorState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
   private getExampleEntitiesInputText(): string {
     return `// example entity\n${JSON.stringify(

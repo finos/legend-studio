@@ -269,7 +269,7 @@ export class MappingEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
-    makeObservable(this, {
+    makeObservable<MappingEditorState, 'closeMappingElementTabState'>(this, {
       currentTabState: observable,
       openedTabStates: observable,
       mappingTestStates: observable,
@@ -297,6 +297,9 @@ export class MappingEditorState extends ElementEditorState {
       deleteTest: flow,
       createNewTest: flow,
       runTests: flow,
+      changeClassMappingSourceDriver: flow,
+      closeMappingElementTabState: flow,
+      deleteMappingElement: flow,
     });
 
     this.editorStore = editorStore;
@@ -553,11 +556,10 @@ export class MappingEditorState extends ElementEditorState {
   }
 
   /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-  changeClassMappingSourceDriver = flow(function* (
-    this: MappingEditorState,
+  *changeClassMappingSourceDriver(
     setImplementation: InstanceSetImplementation,
     newSource: MappingElementSource | undefined,
-  ) {
+  ): GeneratorFn<void> {
     const currentSource = getMappingElementSource(setImplementation);
     if (currentSource !== newSource) {
       if (
@@ -641,16 +643,15 @@ export class MappingEditorState extends ElementEditorState {
         this.currentTabState = newMappingElementState;
 
         // close all children
-        yield this.closeMappingElementTabState(setImplementation);
+        yield flowResult(this.closeMappingElementTabState(setImplementation));
         this.reprocessMappingExplorerTree(true);
       }
     }
-  });
+  }
 
-  private closeMappingElementTabState = flow(function* (
-    this: MappingEditorState,
+  private *closeMappingElementTabState(
     mappingElement: MappingElement,
-  ) {
+  ): GeneratorFn<void> {
     let mappingElementsToClose = [mappingElement];
     if (
       this.editorStore.graphState.isInstanceSetImplementation(mappingElement)
@@ -667,21 +668,18 @@ export class MappingEditorState extends ElementEditorState {
       this.currentTabState &&
       matchMappingElementState(this.currentTabState)
     ) {
-      yield this.closeTab(this.currentTabState);
+      yield flowResult(this.closeTab(this.currentTabState));
     }
     this.openedTabStates = this.openedTabStates.filter(
       (tabState) => !matchMappingElementState(tabState),
     );
-  });
+  }
 
-  deleteMappingElement = flow(function* (
-    this: MappingEditorState,
-    mappingElement: MappingElement,
-  ) {
-    yield this.mapping.deleteMappingElement(mappingElement);
-    yield this.closeMappingElementTabState(mappingElement);
+  *deleteMappingElement(mappingElement: MappingElement): GeneratorFn<void> {
+    yield flowResult(this.mapping.deleteMappingElement(mappingElement));
+    yield flowResult(this.closeMappingElementTabState(mappingElement));
     this.reprocessMappingExplorerTree();
-  });
+  }
 
   /**
    * This will determine if we need to show the new mapping element modal or not

@@ -34,6 +34,7 @@ import { View } from '../../../../models/metamodels/pure/model/packageableElemen
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../models/MetaModelConst';
 import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSourceFilterText = (
@@ -145,8 +146,12 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     const changeSourceType = (
       val: MappingElementSourceSelectOption | null,
     ): Promise<void> =>
-      mappingEditorState
-        .changeClassMappingSourceDriver(setImplementation, val?.value)
+      flowResult(
+        mappingEditorState.changeClassMappingSourceDriver(
+          setImplementation,
+          val?.value,
+        ),
+      )
         .then(() => closeModal())
         .catch(applicationStore.alertIllegalUnhandledError);
     const handleEnter = (): void => sourceSelectorRef.current?.focus();

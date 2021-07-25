@@ -584,12 +584,12 @@ export const MappingExecutionBuilder = observer(
       : '';
     // execution
     const execute = applicationStore.guaranteeSafeAction(() =>
-      executionState.executeMapping(),
+      flowResult(executionState.executeMapping()),
     );
     const executionResultText = executionState.executionResultText;
     // actions
     const promote = applicationStore.guaranteeSafeAction(() =>
-      executionState.promoteToTest(),
+      flowResult(executionState.promoteToTest()),
     );
     const promoteToService = (): void =>
       executionState.setShowServicePathModal(true);
@@ -738,7 +738,7 @@ export const MappingExecutionBuilder = observer(
             name: string,
             packagePath: string,
           ): Promise<void> =>
-            executionState.promoteToService(name, packagePath)
+            flowResult(executionState.promoteToService(name, packagePath))
           }
           isReadOnly={mappingEditorState.isReadOnly}
         />

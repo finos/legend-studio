@@ -29,6 +29,7 @@ import { Version } from '../../../../models/sdlc/models/version/Version';
 import { CORE_TEST_ID } from '../../../../const';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
+import { flowResult } from 'mobx';
 
 export const ServiceRegistrationModalEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -102,9 +103,9 @@ export const ServiceRegistrationModalEditor = observer(() => {
   ): void => {
     event.preventDefault();
     if (selectedEnvOption && selectedServiceType) {
-      registrationState
-        .registerService()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(registrationState.registerService()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }
   };
   const closeModal = (): void => {

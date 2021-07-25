@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import { flow, action, makeAutoObservable } from 'mobx';
+import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { WorkspaceUpdateReport } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
 import { WORKSPACE_UPDATE_REPORT_STATUS } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
 import { CORE_LOG_EVENT } from '../../utils/Logger';
@@ -145,7 +145,7 @@ export class WorkspaceUpdaterState {
     this.editorStore.openEntityChangeConflict(conflictEditorState);
   }
 
-  refreshWorkspaceUpdater = flow(function* (this: WorkspaceUpdaterState) {
+  *refreshWorkspaceUpdater(): GeneratorFn<void> {
     // check if the workspace is in conflict resolution mode
     try {
       const isInConflictResolutionMode =
@@ -190,7 +190,7 @@ export class WorkspaceUpdaterState {
         return; // no need to do anything else if workspace is up to date
       }
 
-      yield this.fetchLatestCommittedReviews();
+      yield flowResult(this.fetchLatestCommittedReviews());
 
       // ======= (RE)START CHANGE DETECTION =======
       const restartChangeDetectionStartTime = Date.now();
@@ -226,9 +226,9 @@ export class WorkspaceUpdaterState {
     } finally {
       this.isRefreshingWorkspaceUpdater = false;
     }
-  });
+  }
 
-  updateWorkspace = flow(function* (this: WorkspaceUpdaterState) {
+  *updateWorkspace(): GeneratorFn<void> {
     if (this.isUpdatingWorkspace) {
       return;
     }
@@ -291,7 +291,7 @@ export class WorkspaceUpdaterState {
       this.editorStore.setBlockingAlert(undefined);
       this.isUpdatingWorkspace = false;
     }
-  });
+  }
 
   /**
    * Fetch committed reviews between workspace base and project latest

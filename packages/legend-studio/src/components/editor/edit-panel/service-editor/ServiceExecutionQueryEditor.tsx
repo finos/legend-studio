@@ -146,10 +146,10 @@ export const ServiceExecutionQueryEditor = observer(
     }
     // execution
     const execute = applicationStore.guaranteeSafeAction(() =>
-      executionState.execute(),
+      flowResult(executionState.execute()),
     );
     const generatePlan = applicationStore.guaranteeSafeAction(() =>
-      executionState.generatePlan(),
+      flowResult(executionState.generatePlan()),
     );
     // convert to string
     useEffect(() => {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { flow, action, makeAutoObservable } from 'mobx';
+import { action, makeAutoObservable, flowResult } from 'mobx';
 import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
@@ -22,6 +22,7 @@ import { CORE_LOG_EVENT } from '../../utils/Logger';
 import { Revision } from '../../models/sdlc/models/revision/Revision';
 import { DATE_TIME_FORMAT } from '../../const';
 import { TAB_SIZE } from '../EditorConfig';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   assertErrorThrown,
   downloadFile,
@@ -106,7 +107,7 @@ export class LocalChangesState {
     );
   }
 
-  refreshLocalChanges = flow(function* (this: LocalChangesState) {
+  *refreshLocalChanges(): GeneratorFn<void> {
     const startTime = Date.now();
     this.isRefreshingLocalChangesDetector = true;
     try {
@@ -137,7 +138,7 @@ export class LocalChangesState {
     } finally {
       this.isRefreshingLocalChangesDetector = false;
     }
-  });
+  }
 
   downloadLocalChanges = (): void => {
     const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
@@ -155,10 +156,7 @@ export class LocalChangesState {
     downloadFile(fileName, content, ContentType.APPLICATION_JSON);
   };
 
-  syncWithWorkspace = flow(function* (
-    this: LocalChangesState,
-    syncMessage?: string,
-  ) {
+  *syncWithWorkspace(syncMessage?: string): GeneratorFn<void> {
     if (
       this.isSyncingWithWorkspace ||
       this.editorStore.workspaceUpdaterState.isUpdatingWorkspace
@@ -194,23 +192,25 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
       const latestRevision = Revision.serialization.fromJson(
-        yield this.sdlcState.sdlcClient.performEntityChanges(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
-          {
-            message:
-              syncMessage ??
-              `syncing with workspace from ${
-                this.editorStore.applicationStore.config.appName
-              } [potentially affected ${
-                localChanges.length === 1
-                  ? '1 entity'
-                  : `${localChanges.length} entities`
-              }]`,
-            entityChanges: localChanges,
-            revisionId: this.sdlcState.currentRevisionId,
-          },
-        ),
+        (yield flowResult(
+          this.sdlcState.sdlcClient.performEntityChanges(
+            this.sdlcState.currentProjectId,
+            this.sdlcState.currentWorkspaceId,
+            {
+              message:
+                syncMessage ??
+                `syncing with workspace from ${
+                  this.editorStore.applicationStore.config.appName
+                } [potentially affected ${
+                  localChanges.length === 1
+                    ? '1 entity'
+                    : `${localChanges.length} entities`
+                }]`,
+              entityChanges: localChanges,
+              revisionId: this.sdlcState.currentRevisionId,
+            },
+          ),
+        )) as PlainObject<Revision>,
       );
       this.sdlcState.setCurrentRevision(latestRevision); // update current revision to the latest
       const syncFinishedTime = Date.now();
@@ -281,7 +281,8 @@ export class LocalChangesState {
                 label: 'Refresh changes',
                 type: ActionAlertActionType.STANDARD,
                 default: true,
-                handler: (): Promise<void> => this.refreshLocalChanges(),
+                handler: (): Promise<void> =>
+                  flowResult(this.refreshLocalChanges()),
               },
             ],
           });
@@ -289,8 +290,10 @@ export class LocalChangesState {
           throw error;
         }
       }
-      yield this.editorStore.graphState.graph.precomputeHashes(
-        this.editorStore.applicationStore.logger,
+      yield flowResult(
+        this.editorStore.graphState.graph.precomputeHashes(
+          this.editorStore.applicationStore.logger,
+        ),
       );
       this.editorStore.changeDetectionState.start();
       yield Promise.all([
@@ -326,5 +329,5 @@ export class LocalChangesState {
     } finally {
       this.isSyncingWithWorkspace = false;
     }
-  });
+  }
 }

@@ -105,19 +105,25 @@ export class DatabaseBuilderState {
     editorStore: EditorStore,
     connection: RelationalDatabaseConnection,
   ) {
-    makeObservable(this, {
+    makeObservable<
+      DatabaseBuilderState,
+      'buildDatabaseFromInput' | 'buildDatabaseGrammar'
+    >(this, {
       showModal: observable,
       targetDatabasePath: observable,
+      isBuildingDatabase: observable,
+      databaseGrammarCode: observable,
+      isSavingDatabase: observable,
       setTargetDatabasePath: action,
       setModal: action,
       setDatabaseGrammarCode: action,
       setTreeData: action,
-      isBuildingDatabase: observable,
-      databaseGrammarCode: observable,
-      isSavingDatabase: observable,
       treeData: observable,
       onNodeSelect: flow,
+      buildDatabaseGrammar: flow,
+      buildDatabaseFromInput: flow,
       buildDatabaseWithTreeData: flow,
+      createOrUpdateDatabase: flow,
       fetchSchemaDefinitions: flow,
       fetchSchemaMetadata: flow,
       fetchTableMetadata: flow,
@@ -221,8 +227,8 @@ export class DatabaseBuilderState {
     try {
       this.isBuildingDatabase = true;
       const databaseBuilderInput = this.buildNonEnrichedDbBuilderInput();
-      const database = (yield this.buildDatabaseFromInput(
-        databaseBuilderInput,
+      const database = (yield flowResult(
+        this.buildDatabaseFromInput(databaseBuilderInput),
       )) as Database;
       const rootIds: string[] = [];
       const nodes = new Map<string, DatabaseBuilderTreeNodeData>();
@@ -265,8 +271,8 @@ export class DatabaseBuilderState {
       const databaseBuilderInput = this.buildNonEnrichedDbBuilderInput(
         schema.name,
       );
-      const database = (yield this.buildDatabaseFromInput(
-        databaseBuilderInput,
+      const database = (yield flowResult(
+        this.buildDatabaseFromInput(databaseBuilderInput),
       )) as Database;
       const tables = database.getSchema(schema.name).tables;
       const childrenIds = schemaNode.childrenIds ?? [];
@@ -321,8 +327,8 @@ export class DatabaseBuilderState {
       config.enrichPrimaryKeys = true;
       const table = tableNode.table;
       config.patterns = [new DatabasePattern(table.schema.name, table.name)];
-      const database = (yield this.buildDatabaseFromInput(
-        databaseBuilderInput,
+      const database = (yield flowResult(
+        this.buildDatabaseFromInput(databaseBuilderInput),
       )) as Database;
       const enrichedTable = database.schemas
         .find((s) => table.schema.name === s.name)
@@ -472,10 +478,7 @@ export class DatabaseBuilderState {
       .filter(isNonNullable);
   }
 
-  private buildDatabaseGrammar = flow(function* (
-    this: DatabaseBuilderState,
-    grammar: string,
-  ): GeneratorFn<Database> {
+  private *buildDatabaseGrammar(grammar: string): GeneratorFn<Database> {
     const entities =
       (yield this.editorStore.graphState.graphManager.pureCodeToEntities(
         grammar,
@@ -491,10 +494,9 @@ export class DatabaseBuilderState {
       'Expected one database to be generated from grammar',
     );
     return dbGraph.ownDatabases[0];
-  });
+  }
 
-  private buildDatabaseFromInput = flow(function* (
-    this: DatabaseBuilderState,
+  private *buildDatabaseFromInput(
     databaseBuilderInput: DatabaseBuilderInput,
   ): GeneratorFn<Database> {
     const entities =
@@ -512,17 +514,17 @@ export class DatabaseBuilderState {
       'Expected one database to be generated from input',
     );
     return dbGraph.ownDatabases[0];
-  });
+  }
 
-  createOrUpdateDatabase = flow(function* (this: DatabaseBuilderState) {
+  *createOrUpdateDatabase(): GeneratorFn<void> {
     try {
       this.isSavingDatabase = true;
       assertNonEmptyString(
         this.databaseGrammarCode,
         'Database grammar is empty',
       );
-      const database = (yield this.buildDatabaseGrammar(
-        this.databaseGrammarCode,
+      const database = (yield flowResult(
+        this.buildDatabaseGrammar(this.databaseGrammarCode),
       )) as Database;
       let currentDatabase: Database;
       const isUpdating = Boolean(this.currentDatabase);
@@ -554,9 +556,11 @@ export class DatabaseBuilderState {
         );
         this.fetchSchemaDefinitions();
         if (isUpdating) {
-          yield this.editorStore.graphState.globalCompileInFormMode({
-            message: `Can't compile graph after editing database. Redirecting you to text mode`,
-          });
+          yield flowResult(
+            this.editorStore.graphState.globalCompileInFormMode({
+              message: `Can't compile graph after editing database. Redirecting you to text mode`,
+            }),
+          );
         }
       }
     } catch (error: unknown) {
@@ -568,7 +572,7 @@ export class DatabaseBuilderState {
     } finally {
       this.isSavingDatabase = false;
     }
-  });
+  }
 
   updateDatabase(
     current: Database,

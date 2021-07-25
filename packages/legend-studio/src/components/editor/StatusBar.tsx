@@ -56,7 +56,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       .length;
   const configurationState = editorStore.projectConfigurationEditorState;
   const syncWithWorkspace = applicationStore.guaranteeSafeAction(() =>
-    editorStore.localChangesState.syncWithWorkspace(),
+    flowResult(editorStore.localChangesState.syncWithWorkspace()),
   );
   const syncStatusText =
     editorStore.graphState.graph.buildState.hasFailed ||
