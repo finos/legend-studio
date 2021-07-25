@@ -47,13 +47,13 @@ export const ConflictResolution = observer(() => {
     flowResult(editorStore.workspaceUpdaterState.updateWorkspace()),
   );
   const accept = applicationStore.guaranteeSafeAction(() =>
-    conflictResolutionState.acceptConflictResolution(),
+    flowResult(conflictResolutionState.acceptConflictResolution()),
   );
   const discardChanges = applicationStore.guaranteeSafeAction(() =>
-    conflictResolutionState.discardConflictResolutionChanges(),
+    flowResult(conflictResolutionState.discardConflictResolutionChanges()),
   );
   const abort = applicationStore.guaranteeSafeAction(() =>
-    conflictResolutionState.abortConflictResolution(),
+    flowResult(conflictResolutionState.abortConflictResolution()),
   );
   // Conflicts
   const conflicts = conflictResolutionState.conflicts;

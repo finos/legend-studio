@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import { action, flow, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { VERSION_TYPE } from '../../models/sdlc/models/version/CreateVersionCommand';
 import { CreateVersionCommand } from '../../models/sdlc/models/version/CreateVersionCommand';
 import {
@@ -27,7 +27,7 @@ import { CORE_LOG_EVENT } from '../../utils/Logger';
 import { Version } from '../../models/sdlc/models/version/Version';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { Workspace } from '../../models/sdlc/models/workspace/Workspace';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import { getNullableFirstElement } from '@finos/legend-studio-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
 
@@ -70,7 +70,7 @@ export class ProjectOverviewState {
     this.activityMode = activityMode;
   }
 
-  fetchProjectWorkspaces = flow(function* (this: ProjectOverviewState) {
+  *fetchProjectWorkspaces(): GeneratorFn<void> {
     try {
       this.isFetchingProjectWorkspaces = true;
       this.projectWorkspaces = (
@@ -86,12 +86,9 @@ export class ProjectOverviewState {
     } finally {
       this.isFetchingProjectWorkspaces = false;
     }
-  });
+  }
 
-  deleteWorkspace = flow(function* (
-    this: ProjectOverviewState,
-    workspaceId: string,
-  ) {
+  *deleteWorkspace(workspaceId: string): GeneratorFn<void> {
     try {
       this.isDeletingWorkspace = true;
       yield this.sdlcState.sdlcClient.deleteWorkspace(
@@ -122,14 +119,13 @@ export class ProjectOverviewState {
     } finally {
       this.isDeletingWorkspace = false;
     }
-  });
+  }
 
-  updateProject = flow(function* (
-    this: ProjectOverviewState,
+  *updateProject(
     name: string,
     description: string,
     tags: string[],
-  ) {
+  ): GeneratorFn<void> {
     try {
       this.isUpdatingProject = true;
       yield this.sdlcState.sdlcClient.updateProject(
@@ -143,15 +139,17 @@ export class ProjectOverviewState {
       this.editorStore.applicationStore.notifySuccess(
         `Project '${name}' is succesfully updated`,
       );
-      yield this.sdlcState.fetchCurrentProject(this.sdlcState.currentProjectId);
+      yield flowResult(
+        this.sdlcState.fetchCurrentProject(this.sdlcState.currentProjectId),
+      );
     } catch (error: unknown) {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isUpdatingProject = false;
     }
-  });
+  }
 
-  fetchLatestProjectVersion = flow(function* (this: ProjectOverviewState) {
+  *fetchLatestProjectVersion(): GeneratorFn<void> {
     try {
       this.isFetchingLatestVersion = true;
       // fetch latest version
@@ -163,22 +161,22 @@ export class ProjectOverviewState {
         : null;
       // fetch current project revision and set release revision ID
       this.currentProjectRevision = Revision.serialization.fromJson(
-        yield this.sdlcState.sdlcClient.getRevision(
+        (yield this.sdlcState.sdlcClient.getRevision(
           this.sdlcState.currentProjectId,
           undefined,
           RevisionAlias.CURRENT,
-        ),
+        )) as PlainObject<Revision>,
       );
       this.releaseVersion.setRevisionId(this.currentProjectRevision.id);
 
       // fetch committed reviews between most recent version and project latest
       if (this.latestProjectVersion) {
         const latestProjectVersionRevision = Revision.serialization.fromJson(
-          yield this.sdlcState.sdlcClient.getRevision(
+          (yield this.sdlcState.sdlcClient.getRevision(
             this.sdlcState.currentProjectId,
             undefined,
             this.latestProjectVersion.revisionId,
-          ),
+          )) as PlainObject<Revision>,
         );
         // we find the review associated with the latest version revision, this usually exist, except in 2 cases:
         // 1. the revision is somehow directly added to the branch by the user (in the case of git, user unprotected master and directly pushed to master)
@@ -228,23 +226,20 @@ export class ProjectOverviewState {
     } finally {
       this.isFetchingLatestVersion = false;
     }
-  });
+  }
 
-  createVersion = flow(function* (
-    this: ProjectOverviewState,
-    versionType: VERSION_TYPE,
-  ) {
+  *createVersion(versionType: VERSION_TYPE): GeneratorFn<void> {
     this.isCreatingVersion = true;
     try {
       this.releaseVersion.versionType = versionType;
       this.releaseVersion.validate();
       this.latestProjectVersion = Version.serialization.fromJson(
-        yield this.sdlcState.sdlcClient.createVersion(
+        (yield this.sdlcState.sdlcClient.createVersion(
           this.sdlcState.currentProjectId,
           CreateVersionCommand.serialization.toJson(this.releaseVersion),
-        ),
+        )) as PlainObject<Version>,
       );
-      yield this.fetchLatestProjectVersion();
+      yield flowResult(this.fetchLatestProjectVersion());
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
@@ -254,5 +249,5 @@ export class ProjectOverviewState {
     } finally {
       this.isCreatingVersion = false;
     }
-  });
+  }
 }

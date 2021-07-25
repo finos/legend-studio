@@ -120,7 +120,9 @@ export class LocalChangesState {
         ),
       ]);
       this.editorStore.changeDetectionState.start();
-      yield this.editorStore.changeDetectionState.computeLocalChanges(true);
+      yield flowResult(
+        this.editorStore.changeDetectionState.computeLocalChanges(true),
+      );
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         Date.now() - startTime,
@@ -165,8 +167,9 @@ export class LocalChangesState {
     }
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode =
-        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode = (yield flowResult(
+        this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
+      )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
@@ -192,24 +195,22 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
       const latestRevision = Revision.serialization.fromJson(
-        (yield flowResult(
-          this.sdlcState.sdlcClient.performEntityChanges(
-            this.sdlcState.currentProjectId,
-            this.sdlcState.currentWorkspaceId,
-            {
-              message:
-                syncMessage ??
-                `syncing with workspace from ${
-                  this.editorStore.applicationStore.config.appName
-                } [potentially affected ${
-                  localChanges.length === 1
-                    ? '1 entity'
-                    : `${localChanges.length} entities`
-                }]`,
-              entityChanges: localChanges,
-              revisionId: this.sdlcState.currentRevisionId,
-            },
-          ),
+        (yield this.sdlcState.sdlcClient.performEntityChanges(
+          this.sdlcState.currentProjectId,
+          this.sdlcState.currentWorkspaceId,
+          {
+            message:
+              syncMessage ??
+              `syncing with workspace from ${
+                this.editorStore.applicationStore.config.appName
+              } [potentially affected ${
+                localChanges.length === 1
+                  ? '1 entity'
+                  : `${localChanges.length} entities`
+              }]`,
+            entityChanges: localChanges,
+            revisionId: this.sdlcState.currentRevisionId,
+          },
         )) as PlainObject<Revision>,
       );
       this.sdlcState.setCurrentRevision(latestRevision); // update current revision to the latest
@@ -236,9 +237,11 @@ export class LocalChangesState {
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
           entities,
         );
-        yield this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
-          entities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+        yield flowResult(
+          this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+            entities,
+            CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
         );
         this.editorStore.refreshCurrentEntityDiffEditorState();
       } catch (error: unknown) {

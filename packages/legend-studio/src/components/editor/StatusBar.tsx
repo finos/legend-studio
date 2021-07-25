@@ -79,7 +79,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   // Conflict resolution
   const conflicts = editorStore.conflictResolutionState.conflicts.length;
   const acceptConflictResolution = applicationStore.guaranteeSafeAction(() =>
-    editorStore.conflictResolutionState.acceptConflictResolution(),
+    flowResult(editorStore.conflictResolutionState.acceptConflictResolution()),
   );
   const conflictResolutionStatusText =
     editorStore.graphState.graph.buildState.hasFailed ||

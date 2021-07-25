@@ -148,8 +148,9 @@ export class WorkspaceUpdaterState {
   *refreshWorkspaceUpdater(): GeneratorFn<void> {
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode =
-        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode = (yield flowResult(
+        this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
+      )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
@@ -237,8 +238,9 @@ export class WorkspaceUpdaterState {
     // TODO: we might need to check if the workspace is up-to-date before allowing update
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode =
-        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode = (yield flowResult(
+        this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
+      )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',

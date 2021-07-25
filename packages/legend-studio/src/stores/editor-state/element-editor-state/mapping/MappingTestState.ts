@@ -384,9 +384,6 @@ export class MappingTestState {
       setAssertionState: action,
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
-      regenerateExpectedResult: flow,
-      onTestStateOpen: flow,
-      runTest: flow,
     });
 
     this.editorStore = editorStore;

@@ -123,17 +123,17 @@ export const WorkspaceReview = observer(() => {
   };
   const closeReview = (): void => {
     workspaceReviewState.setReviewTitle('');
-    workspaceReviewState
-      .closeWorkspaceReview()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(workspaceReviewState.closeWorkspaceReview()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   };
   const commitReview = (): void => {
     if (workspaceReview && !isDispatchingAction) {
       const commit = (): void => {
         workspaceReviewState.setReviewTitle('');
-        workspaceReviewState
-          .commitWorkspaceReview(workspaceReview)
-          .catch(applicationStore.alertIllegalUnhandledError);
+        flowResult(
+          workspaceReviewState.commitWorkspaceReview(workspaceReview),
+        ).catch(applicationStore.alertIllegalUnhandledError);
       };
       if (editorStore.hasUnsyncedChanges) {
         editorStore.setActionAltertInfo({
@@ -170,9 +170,11 @@ export const WorkspaceReview = observer(() => {
       !workspaceReview &&
       !isDispatchingAction
     ) {
-      workspaceReviewState
-        .createWorkspaceReview(workspaceReviewState.reviewTitle)
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        workspaceReviewState.createWorkspaceReview(
+          workspaceReviewState.reviewTitle,
+        ),
+      ).catch(applicationStore.alertIllegalUnhandledError);
     }
   };
 

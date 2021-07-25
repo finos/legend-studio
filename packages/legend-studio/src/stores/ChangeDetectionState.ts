@@ -15,7 +15,14 @@
  */
 
 import type { IReactionDisposer } from 'mobx';
-import { observable, action, reaction, flow, makeObservable } from 'mobx';
+import {
+  flowResult,
+  observable,
+  action,
+  reaction,
+  flow,
+  makeObservable,
+} from 'mobx';
 import { CORE_LOG_EVENT } from '../utils/Logger';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
@@ -60,16 +67,15 @@ class RevisionChangeDetectionState {
       setEntityHashesIndex: action,
       setIsBuildingEntityHashesIndex: action,
       setEntities: action,
+      computeChanges: flow,
+      buildEntityHashesIndex: flow,
     });
 
     this.editorStore = editorStore;
     this.graphState = graphState;
   }
 
-  computeChanges = flow(function* (
-    this: RevisionChangeDetectionState,
-    quiet?: boolean,
-  ) {
+  *computeChanges(quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
     let changes: EntityDiff[] = [];
     if (!this.isBuildingEntityHashesIndex) {
@@ -121,14 +127,13 @@ class RevisionChangeDetectionState {
         'ms',
       );
     }
-  });
+  }
 
-  buildEntityHashesIndex = flow(function* (
-    this: RevisionChangeDetectionState,
+  *buildEntityHashesIndex(
     entities: Entity[],
     logEvent: CORE_LOG_EVENT,
     quiet?: boolean,
-  ) {
+  ): GeneratorFn<void> {
     if (!this.entities.length && !this.entityHashesIndex.size) {
       return;
     }
@@ -160,7 +165,7 @@ class RevisionChangeDetectionState {
     } finally {
       this.setIsBuildingEntityHashesIndex(false);
     }
-  });
+  }
 }
 
 /**
@@ -264,6 +269,13 @@ export class ChangeDetectionState {
       setPotentialWorkspaceUpdateConflicts: action,
       stop: action,
       start: action,
+      computeAggregatedWorkspaceChanges: flow,
+      computeAggregatedProjectLatestChanges: flow,
+      computeAggregatedConflictResolutionChanges: flow,
+      computeWorkspaceUpdateConflicts: flow,
+      computeConflictResolutionConflicts: flow,
+      computeEntityChangeConflicts: flow,
+      computeLocalChanges: flow,
     });
 
     this.editorStore = editorStore;
@@ -359,7 +371,7 @@ export class ChangeDetectionState {
             .map(([key, value]) => `${key}@${value}`),
         ),
       () => {
-        this.computeLocalChanges(true).catch(noop());
+        flowResult(this.computeLocalChanges(true)).catch(noop());
       },
       { delay: throttleDuration }, // throttle the call
       /**
@@ -448,10 +460,7 @@ export class ChangeDetectionState {
     return changes;
   };
 
-  computeAggregatedWorkspaceChanges = flow(function* (
-    this: ChangeDetectionState,
-    quiet?: boolean,
-  ) {
+  *computeAggregatedWorkspaceChanges(quiet?: boolean): GeneratorFn<void> {
     this.aggregatedWorkspaceChanges =
       (yield this.computeAggregatedChangesBetweenStates(
         this.workspaceBaseRevisionState,
@@ -462,50 +471,44 @@ export class ChangeDetectionState {
       this.computeWorkspaceUpdateConflicts(quiet),
       this.computeConflictResolutionConflicts(quiet),
     ]);
-  });
+  }
 
-  computeAggregatedProjectLatestChanges = flow(function* (
-    this: ChangeDetectionState,
-    quiet?: boolean,
-  ) {
+  *computeAggregatedProjectLatestChanges(quiet?: boolean): GeneratorFn<void> {
     this.aggregatedProjectLatestChanges =
       (yield this.computeAggregatedChangesBetweenStates(
         this.workspaceBaseRevisionState,
         this.projectLatestRevisionState,
         quiet,
       )) as EntityDiff[];
-    yield this.computeWorkspaceUpdateConflicts(quiet);
-  });
+    yield flowResult(this.computeWorkspaceUpdateConflicts(quiet));
+  }
 
-  computeAggregatedConflictResolutionChanges = flow(function* (
-    this: ChangeDetectionState,
+  *computeAggregatedConflictResolutionChanges(
     quiet?: boolean,
-  ) {
+  ): GeneratorFn<void> {
     this.aggregatedConflictResolutionChanges =
       (yield this.computeAggregatedChangesBetweenStates(
         this.conflictResolutionBaseRevisionState,
         this.conflictResolutionHeadRevisionState,
         quiet,
       )) as EntityDiff[];
-  });
+  }
 
   /**
    * Workspace update conflicts are computed between 2 sets of changes:
    * 1. Incoming changes: changes between workspace BASE revision and project LATEST revision
    * 2. Current changes: changes between worksace BASE revision and workspace HEAD revision
    */
-  computeWorkspaceUpdateConflicts = flow(function* (
-    this: ChangeDetectionState,
-    quiet?: boolean,
-  ) {
+  *computeWorkspaceUpdateConflicts(quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
-    this.potentialWorkspaceUpdateConflicts =
-      (yield this.computeEntityChangeConflicts(
+    this.potentialWorkspaceUpdateConflicts = (yield flowResult(
+      this.computeEntityChangeConflicts(
         this.aggregatedWorkspaceChanges,
         this.aggregatedProjectLatestChanges,
         this.workspaceLatestRevisionState.entityHashesIndex,
         this.projectLatestRevisionState.entityHashesIndex,
-      )) as EntityChangeConflict[];
+      ),
+    )) as EntityChangeConflict[];
     if (!quiet) {
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
@@ -513,17 +516,14 @@ export class ChangeDetectionState {
         'ms',
       );
     }
-  });
+  }
 
   /**
    * Conflict resolution conflicts are computed between 2 sets of changes:
    * 1. Incoming changes: changes between workspace BASE revision and conflict resolution BASE revision
    * 2. Current changes: changes between worksace BASE revision and workspace HEAD revision
    */
-  computeConflictResolutionConflicts = flow(function* (
-    this: ChangeDetectionState,
-    quiet?: boolean,
-  ) {
+  *computeConflictResolutionConflicts(quiet?: boolean): GeneratorFn<void> {
     const aggregatedUpdateChanges =
       (yield this.computeAggregatedChangesBetweenStates(
         this.workspaceBaseRevisionState,
@@ -531,11 +531,13 @@ export class ChangeDetectionState {
         quiet,
       )) as EntityDiff[];
     const startTime = Date.now();
-    this.conflicts = (yield this.computeEntityChangeConflicts(
-      this.aggregatedWorkspaceChanges,
-      aggregatedUpdateChanges,
-      this.workspaceLatestRevisionState.entityHashesIndex,
-      this.conflictResolutionBaseRevisionState.entityHashesIndex,
+    this.conflicts = (yield flowResult(
+      this.computeEntityChangeConflicts(
+        this.aggregatedWorkspaceChanges,
+        aggregatedUpdateChanges,
+        this.workspaceLatestRevisionState.entityHashesIndex,
+        this.conflictResolutionBaseRevisionState.entityHashesIndex,
+      ),
     )) as EntityChangeConflict[];
     if (!quiet) {
       this.editorStore.applicationStore.logger.info(
@@ -544,7 +546,7 @@ export class ChangeDetectionState {
         'ms',
       );
     }
-  });
+  }
 
   /**
    * This function computes the entity change conflicts between 2 set of entity changes (let's call them incoming changes and current changes).
@@ -576,8 +578,7 @@ export class ChangeDetectionState {
    *             |  MODIFY  |   N.A.   | conflict | conflict |
    * -----------------------------------------------------------
    */
-  computeEntityChangeConflicts = flow(function* (
-    this: ChangeDetectionState,
+  *computeEntityChangeConflicts(
     currentChanges: EntityDiff[],
     incomingChanges: EntityDiff[],
     currentChangeEntityHashesIndex: Map<string, string>,
@@ -658,16 +659,13 @@ export class ChangeDetectionState {
       ),
     );
     return conflicts;
-  });
+  }
 
   /**
    * NOTE: here we have not dealt with non-entity changes like project dependency for example.
    * We will have to count that as part of the change in the future.
    */
-  computeLocalChanges = flow(function* (
-    this: ChangeDetectionState,
-    quiet?: boolean,
-  ) {
+  *computeLocalChanges(quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
     yield Promise.all([
       this.workspaceLatestRevisionState.computeChanges(quiet), // for local changes detection
@@ -680,5 +678,5 @@ export class ChangeDetectionState {
         'ms',
       );
     }
-  });
+  }
 }

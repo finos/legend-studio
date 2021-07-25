@@ -24,6 +24,7 @@ import type { ProjectSelectOption } from '../../models/sdlc/models/project/Proje
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { ACTION_STATE } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 const formatOptionLabel = (option: ProjectSelectOption): React.ReactNode => (
   <div className="setup__project__label">
@@ -65,9 +66,9 @@ export const ProjectSelector = observer(
         onChange(Boolean(selectedOption));
         setupStore.setCurrentProjectId(val?.value);
         if (val && !setupStore.currentProjectWorkspaces) {
-          setupStore
-            .fetchWorkspaces(val.value)
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(setupStore.fetchWorkspaces(val.value)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         }
         applicationStore.historyApiClient.push(
           generateSetupRoute(

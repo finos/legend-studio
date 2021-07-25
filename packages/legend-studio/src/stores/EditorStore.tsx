@@ -715,11 +715,11 @@ export class EditorStore {
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
           handler: (): void => {
             this.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
-            this.conflictResolutionState
-              .discardConflictResolutionChanges()
-              .catch((error) =>
-                this.applicationStore.alertIllegalUnhandledError(error),
-              );
+            flowResult(
+              this.conflictResolutionState.discardConflictResolutionChanges(),
+            ).catch((error) =>
+              this.applicationStore.alertIllegalUnhandledError(error),
+            );
           },
         },
         {

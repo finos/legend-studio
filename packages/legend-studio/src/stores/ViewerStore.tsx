@@ -120,31 +120,29 @@ export class ViewerStore {
 
     try {
       // fetch basic SDLC infos
-      yield this.editorStore.sdlcState.fetchCurrentProject(projectId);
+      yield flowResult(
+        this.editorStore.sdlcState.fetchCurrentProject(projectId),
+      );
       this.editorStore.sdlcState.setCurrentWorkspace(
         Workspace.createProjectLatestViewerWorkspace(projectId),
       );
 
       // get current revision so we can show how "outdated" the `current view` of the project is
       this.currentRevision = Revision.serialization.fromJson(
-        (yield flowResult(
-          this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
-            this.editorStore.sdlcState.currentProjectId,
-            undefined,
-            RevisionAlias.CURRENT,
-          ),
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+          this.editorStore.sdlcState.currentProjectId,
+          undefined,
+          RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
       );
       this.latestVersion = Version.serialization.fromJson(
-        (yield flowResult(
-          this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestVersion(
-            this.editorStore.sdlcState.currentProjectId,
-          ),
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestVersion(
+          this.editorStore.sdlcState.currentProjectId,
         )) as PlainObject<Version>,
       );
 
       // fetch project versions
-      yield this.editorStore.sdlcState.fetchProjectVersions();
+      yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
 
       // ensure only either version or revision is specified
       if (versionId && revisionId) {
@@ -159,11 +157,9 @@ export class ViewerStore {
         this.version =
           versionId !== this.latestVersion.id.id
             ? Version.serialization.fromJson(
-                (yield flowResult(
-                  this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersion(
-                    this.editorStore.sdlcState.currentProjectId,
-                    versionId,
-                  ),
+                (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersion(
+                  this.editorStore.sdlcState.currentProjectId,
+                  versionId,
                 )) as PlainObject<Version>,
               )
             : this.latestVersion;
@@ -179,12 +175,10 @@ export class ViewerStore {
         this.revision =
           revisionId !== this.currentRevision.id
             ? Revision.serialization.fromJson(
-                (yield flowResult(
-                  this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
-                    this.editorStore.sdlcState.currentProjectId,
-                    undefined,
-                    revisionId,
-                  ),
+                (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+                  this.editorStore.sdlcState.currentProjectId,
+                  undefined,
+                  revisionId,
                 )) as PlainObject<Revision>,
               )
             : this.currentRevision;

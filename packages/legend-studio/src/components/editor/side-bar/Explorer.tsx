@@ -797,9 +797,9 @@ export const Explorer = observer(() => {
     editorStore.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
   const buildGrapnInConflictResolutionMode = (): void => {
     editorStore.conflictResolutionState.confirmHasResolvedAllConflicts();
-    editorStore.conflictResolutionState
-      .buildGraphInConflictResolutionMode()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(
+      editorStore.conflictResolutionState.buildGraphInConflictResolutionMode(),
+    ).catch(applicationStore.alertIllegalUnhandledError);
   };
 
   return (

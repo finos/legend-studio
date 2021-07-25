@@ -334,7 +334,7 @@ export class QueryBuilderState extends EditorExtensionState {
     this.fetchStructureState.projectionState.clearCompilationError();
   }
 
-  *compileQuery(this: QueryBuilderState): GeneratorFn<void> {
+  *compileQuery(): GeneratorFn<void> {
     if (this.openQueryBuilder) {
       if (!this.queryTextEditorState.mode) {
         this.isCompiling = true;

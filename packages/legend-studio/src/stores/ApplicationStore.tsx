@@ -138,7 +138,6 @@ export class ApplicationStore {
   actionAlertInfo?: ActionAlertInfo;
   config: ApplicationConfig;
   initState = ActionState.create();
-
   isSDLCAuthorized = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
   currentSDLCUser = new User(UNKNOWN_USER_ID, UNKNOWN_USER_ID);

@@ -152,7 +152,6 @@ export class DatabaseBuilderState {
 
   // Tree Operations
   *onNodeSelect(
-    this: DatabaseBuilderState,
     node: DatabaseBuilderTreeNodeData,
     treeData: DatabaseBuilderTreeData,
   ): GeneratorFn<void> {
@@ -223,7 +222,7 @@ export class DatabaseBuilderState {
     return databaseBuilderInput;
   }
 
-  *fetchSchemaDefinitions(this: DatabaseBuilderState): GeneratorFn<void> {
+  *fetchSchemaDefinitions(): GeneratorFn<void> {
     try {
       this.isBuildingDatabase = true;
       const databaseBuilderInput = this.buildNonEnrichedDbBuilderInput();
@@ -261,7 +260,6 @@ export class DatabaseBuilderState {
   }
 
   *fetchSchemaMetadata(
-    this: DatabaseBuilderState,
     schemaNode: SchemaDatabaseBuilderTreeNodeData,
     treeData: DatabaseBuilderTreeData,
   ): GeneratorFn<void> {
@@ -307,7 +305,6 @@ export class DatabaseBuilderState {
   }
 
   *fetchTableMetadata(
-    this: DatabaseBuilderState,
     tableNode: TableDatabaseBuilderTreeNodeData,
     treeData: DatabaseBuilderTreeData,
   ): GeneratorFn<void> {
@@ -402,7 +399,7 @@ export class DatabaseBuilderState {
     );
   }
 
-  *buildDatabaseWithTreeData(this: DatabaseBuilderState): GeneratorFn<void> {
+  *buildDatabaseWithTreeData(): GeneratorFn<void> {
     try {
       if (this.treeData) {
         const dbTreeData = this.treeData;
