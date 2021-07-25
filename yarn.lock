@@ -1955,7 +1955,7 @@ __metadata:
     "@finos/legend-studio-preset-dsl-text": "workspace:*"
     "@finos/legend-studio-preset-query-builder": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.14
+    "@types/react": 17.0.15
     copy-webpack-plugin: 9.0.1
     cross-env: 7.0.3
     eslint: 7.31.0
@@ -1981,7 +1981,7 @@ __metadata:
     "@finos/legend-studio-preset-external-format-json-schema": "workspace:*"
     "@finos/legend-studio-preset-query-builder": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.14
+    "@types/react": 17.0.15
     copy-webpack-plugin: 9.0.1
     cross-env: 7.0.3
     eslint: 7.31.0
@@ -2004,7 +2004,7 @@ __metadata:
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@material-ui/core": 4.12.2
-    "@types/react": 17.0.14
+    "@types/react": 17.0.15
     "@types/react-select": 4.0.17
     "@types/react-window": 1.8.4
     clsx: 1.1.1
@@ -2021,7 +2021,7 @@ __metadata:
     react-select: 4.3.1
     react-window: 1.8.6
     rimraf: 3.0.2
-    sass: 1.35.2
+    sass: 1.36.0
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
@@ -2053,7 +2053,7 @@ __metadata:
     css-loader: 6.2.0
     cssnano: 5.0.7
     eslint: 7.31.0
-    fork-ts-checker-webpack-plugin: 6.2.12
+    fork-ts-checker-webpack-plugin: 6.2.13
     html-webpack-plugin: 5.3.2
     isbinaryfile: 4.0.8
     jest: 27.0.6
@@ -2069,7 +2069,7 @@ __metadata:
     react-refresh: 0.10.0
     resolve: 1.20.0
     rimraf: 3.0.2
-    sass: 1.35.2
+    sass: 1.36.0
     sass-loader: 12.1.0
     strip-ansi: 7.0.0
     text-table: 0.2.0
@@ -2086,7 +2086,7 @@ __metadata:
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.14
+    "@types/react": 17.0.15
     axios: 0.21.1
     cross-env: 7.0.3
     eslint: 7.31.0
@@ -2121,7 +2121,7 @@ __metadata:
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.14
+    "@types/react": 17.0.15
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
     eslint: 7.31.0
@@ -2133,7 +2133,7 @@ __metadata:
     react-icons: 4.2.0
     react-router-dom: 5.2.0
     rimraf: 3.0.2
-    sass: 1.35.2
+    sass: 1.36.0
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
@@ -2169,7 +2169,7 @@ __metadata:
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.14
+    "@types/react": 17.0.15
     cross-env: 7.0.3
     eslint: 7.31.0
     jest: 27.0.6
@@ -2179,7 +2179,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.35.2
+    sass: 1.36.0
     serializr: 2.0.5
     typescript: 4.3.5
   peerDependencies:
@@ -2218,11 +2218,11 @@ __metadata:
     "@testing-library/dom": 8.1.0
     "@testing-library/react": 12.0.0
     "@types/papaparse": 5.2.6
-    "@types/react": 17.0.14
+    "@types/react": 17.0.15
     "@types/react-dom": 17.0.9
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
-    date-fns: 2.22.1
+    date-fns: 2.23.0
     eslint: 7.31.0
     jest: 27.0.6
     mobx: 6.3.2
@@ -2238,7 +2238,7 @@ __metadata:
     react-router: 5.2.0
     react-router-dom: 5.2.0
     rimraf: 3.0.2
-    sass: 1.35.2
+    sass: 1.36.0
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
@@ -2289,11 +2289,11 @@ __metadata:
     "@testing-library/dom": 8.1.0
     "@testing-library/react": 12.0.0
     "@types/css-font-loading-module": 0.0.6
-    "@types/react": 17.0.14
+    "@types/react": 17.0.15
     "@types/react-dom": 17.0.9
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
-    date-fns: 2.22.1
+    date-fns: 2.23.0
     eslint: 7.31.0
     history: 5.0.0
     jest: 27.0.6
@@ -2316,7 +2316,7 @@ __metadata:
     react-router-dom: 5.2.0
     react-split-pane: 0.1.92
     rimraf: 3.0.2
-    sass: 1.35.2
+    sass: 1.36.0
     serializr: 2.0.5
     sql-formatter: 4.0.2
     typescript: 4.3.5
@@ -3189,10 +3189,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.4.1":
-  version: 16.4.1
-  resolution: "@types/node@npm:16.4.1"
-  checksum: 6cff78c802a1efecc900506a468a9bdaa321c7132a05e87552ab710f3d3a5cd230308317634f94b8db4833c66c72a765b28670d5ccf8c7c5a7363fcce32d1b1e
+"@types/node@npm:16.4.2":
+  version: 16.4.2
+  resolution: "@types/node@npm:16.4.2"
+  checksum: d9b02aeb2b9633a8f0e18bd9d322a3ff6c937715b96ad1c80b5f941c46a3f97f2419ffabdb44a3c9305e7b82579aef852f0adfa2e755b7ab32d4334a4ca070c7
   languageName: node
   linkType: hard
 
@@ -3314,7 +3314,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:17.0.14":
+"@types/react@npm:*":
   version: 17.0.14
   resolution: "@types/react@npm:17.0.14"
   dependencies:
@@ -3322,6 +3322,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: ca2eca8f33ddbcba46932efeb8affdd274ea5800ea38bf8bc8de205808d09de21ea1f3d6ab156573aca393b912f0d908826cc6ad92470a3f2b6c34e70d5f75db
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:17.0.15":
+  version: 17.0.15
+  resolution: "@types/react@npm:17.0.15"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 4ee41e0c8d0e938f501f80ac75a5ee70b5e8cd5968a1f764960bf7b2694fd0d8ca01345f00325617130643b4af6e072bb3ade023dbc2bd2db7e73504b355b8d9
   languageName: node
   linkType: hard
 
@@ -5602,10 +5613,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:2.22.1":
-  version: 2.22.1
-  resolution: "date-fns@npm:2.22.1"
-  checksum: 7ff97cd605af50c02f341687c2cafd218839a1aace67965374989855a13f76dc4fe52e0e38c343c1ad1f8399787cb6839a0b14a669c44b30550c287300b1bb50
+"date-fns@npm:2.23.0":
+  version: 2.23.0
+  resolution: "date-fns@npm:2.23.0"
+  checksum: 485216d550255a548552db16379e7a5cd440e262b90fbdc0362f63ee71d0e74bd00ce29ca8d76b343f6df36c1ecb6f22edba0b72848a4c32674e755619695c1f
   languageName: node
   linkType: hard
 
@@ -6970,9 +6981,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fork-ts-checker-webpack-plugin@npm:6.2.12":
-  version: 6.2.12
-  resolution: "fork-ts-checker-webpack-plugin@npm:6.2.12"
+"fork-ts-checker-webpack-plugin@npm:6.2.13":
+  version: 6.2.13
+  resolution: "fork-ts-checker-webpack-plugin@npm:6.2.13"
   dependencies:
     "@babel/code-frame": ^7.8.3
     "@types/json-schema": ^7.0.5
@@ -6987,7 +6998,7 @@ __metadata:
     schema-utils: 2.7.0
     semver: ^7.3.2
     tapable: ^1.0.0
-  checksum: 0ba28ccafe28fffcca4fda7d68a31561785de2731f8d9b536fb2f5a76ea16c04751b091548a7b2d7dbc9a0a3184e88b41ef2718f6082e329ad1e1f2ab4ccc6d6
+  checksum: ebe2f81800a7a894adbf2305510075500b4c346e9de03d44d1310178b5103241e1621246dfa3be874b5e90527090b9dd37fb7c633fd1b30a9647d2ca65ea21b6
   languageName: node
   linkType: hard
 
@@ -9578,14 +9589,14 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 26.0.24
-    "@types/node": 16.4.1
+    "@types/node": 16.4.2
     chalk: 4.1.1
     cross-env: 7.0.3
     eslint: 7.31.0
     fs-extra: 10.0.0
     husky: 7.0.1
     jest: 27.0.6
-    lint-staged: 11.1.0
+    lint-staged: 11.1.1
     prettier: 2.3.2
     rimraf: 3.0.2
     semver: 7.3.5
@@ -9636,9 +9647,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:11.1.0":
-  version: 11.1.0
-  resolution: "lint-staged@npm:11.1.0"
+"lint-staged@npm:11.1.1":
+  version: 11.1.1
+  resolution: "lint-staged@npm:11.1.1"
   dependencies:
     chalk: ^4.1.1
     cli-truncate: ^2.1.0
@@ -9657,7 +9668,7 @@ __metadata:
     stringify-object: ^3.3.0
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: a102f882d5708862b8f13bb0f9bab56ad00217f9058792c17500c83810faa04540fc481ba2b73efc4f71346a0e5f0554e285fb934b3985656109a4e7e2f4c937
+  checksum: 87d6654b71b898552712a6dba4689f40c887f1fd4b6a7b102a3e3e234cd8d6545c39e0f8b6380e26e5552ac788e2954d91eb7709ce6b5df9508584e2ddb8141f
   languageName: node
   linkType: hard
 
@@ -13005,14 +13016,14 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"sass@npm:1.35.2":
-  version: 1.35.2
-  resolution: "sass@npm:1.35.2"
+"sass@npm:1.36.0":
+  version: 1.36.0
+  resolution: "sass@npm:1.36.0"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
   bin:
     sass: sass.js
-  checksum: bae338ac88d5a2f6d99dd3fc8f3ac84a93419eaa2d38ee877ddd844f6996f21b0005ed074e9eadb28bb08c4a3c2dc379a01cd6fe47352a9857870d33f69273ef
+  checksum: fdb03deed1769f182900c1b5505bc22e50cf1d3ce4d5253fc907865f784c430236937bd391d91ef714e59995584f13ff31d3776d5283e730f5172ac227585754
   languageName: node
   linkType: hard
 
