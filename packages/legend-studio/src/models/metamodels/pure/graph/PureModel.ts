@@ -23,7 +23,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../../../MetaModelConst';
-import type { Clazz } from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn } from '@finos/legend-studio-shared';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -181,6 +181,7 @@ export class PureModel extends BasicModel {
       dependencyManager: observable,
       setDependencyManager: action,
       addElement: action,
+      precomputeHashes: flow,
     });
 
     this.coreModel = coreModel;
@@ -211,11 +212,7 @@ export class PureModel extends BasicModel {
    * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
    * not trigger memoization on computed so we need to enable `keepAlive`
    */
-  precomputeHashes = flow(function* (
-    this: PureModel,
-    logger: Logger,
-    quiet?: boolean,
-  ) {
+  *precomputeHashes(logger: Logger, quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
     if (this.allOwnElements.length) {
       yield Promise.all<void>(
@@ -238,7 +235,7 @@ export class PureModel extends BasicModel {
         'ms',
       );
     }
-  });
+  }
 
   setDependencyManager = (dependencyManager: DependencyManager): void => {
     this.dependencyManager = dependencyManager;

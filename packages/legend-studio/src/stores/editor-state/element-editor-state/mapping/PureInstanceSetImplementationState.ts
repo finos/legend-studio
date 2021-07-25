@@ -121,7 +121,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
 export class PureInstanceSetImplementationState extends InstanceSetImplementationState {
   declare mappingElement: PureInstanceSetImplementation;
   declare propertyMappingStates: PurePropertyMappingState[];
-  isConvertingTransformObjects = false;
+  isConvertingTransformLambdaObjects = false;
 
   constructor(
     editorStore: EditorStore,
@@ -130,7 +130,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     super(editorStore, setImplementation);
 
     makeObservable(this, {
-      isConvertingTransformObjects: observable,
+      isConvertingTransformLambdaObjects: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
       decorate: action,
@@ -187,7 +187,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       }
     });
     if (lambdas.size) {
-      this.isConvertingTransformObjects = true;
+      this.isConvertingTransformLambdaObjects = true;
       try {
         const isolatedLambdas =
           (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
@@ -205,7 +205,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
           error,
         );
       } finally {
-        this.isConvertingTransformObjects = false;
+        this.isConvertingTransformLambdaObjects = false;
       }
     }
   }

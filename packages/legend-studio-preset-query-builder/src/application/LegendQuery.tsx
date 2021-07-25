@@ -17,8 +17,8 @@
 import {
   LegendApplication,
   setupLegendStudioUILibrary,
+  PluginManager,
 } from '@finos/legend-studio';
-import { PluginManager } from '@finos/legend-studio';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/standalone/LegendQueryApplication';

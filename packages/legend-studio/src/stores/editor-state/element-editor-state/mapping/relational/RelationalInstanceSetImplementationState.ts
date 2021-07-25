@@ -222,7 +222,7 @@ export class EmbeddedRelationalInstanceSetImplementationState
 export class RootRelationalInstanceSetImplementationState extends RelationalInstanceSetImplementationState {
   declare mappingElement: RelationalInstanceSetImplementation;
   declare propertyMappingStates: RelationalPropertyMappingState[];
-  isConvertingTransformObjects = false;
+  isConvertingTransformLambdaObjects = false;
 
   constructor(
     editorStore: EditorStore,
@@ -231,7 +231,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
     super(editorStore, setImplementation);
 
     makeObservable(this, {
-      isConvertingTransformObjects: observable,
+      isConvertingTransformLambdaObjects: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
       decorate: action,
@@ -316,7 +316,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
       // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
     });
     if (operations.size) {
-      this.isConvertingTransformObjects = true;
+      this.isConvertingTransformLambdaObjects = true;
       try {
         const operationsInText =
           (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
@@ -334,7 +334,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
           error,
         );
       } finally {
-        this.isConvertingTransformObjects = false;
+        this.isConvertingTransformLambdaObjects = false;
       }
     }
   }

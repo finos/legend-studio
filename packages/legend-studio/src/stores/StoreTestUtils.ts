@@ -23,6 +23,7 @@ import { createBrowserHistory } from 'history';
 import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { PluginManager } from '../application/PluginManager';
 import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
+import { flowResult } from 'mobx';
 
 export const testApplicationConfigData = {
   appName: 'test-app',
@@ -155,8 +156,10 @@ export const checkBuildingElementsRoundtrip = async (
     excludeSectionIndex(entities),
   );
   // check hash
-  await editorStore.graphState.graph.precomputeHashes(
-    editorStore.applicationStore.logger,
+  await flowResult(
+    editorStore.graphState.graph.precomputeHashes(
+      editorStore.applicationStore.logger,
+    ),
   );
   const protocolHashesIndex =
     await editorStore.graphState.graphManager.buildHashesIndex(entities);
@@ -196,8 +199,10 @@ export const checkBuildingResolvedElements = async (
     excludeSectionIndex(resolvedEntities),
   );
   // check hash
-  await editorStore.graphState.graph.precomputeHashes(
-    editorStore.applicationStore.logger,
+  await flowResult(
+    editorStore.graphState.graph.precomputeHashes(
+      editorStore.applicationStore.logger,
+    ),
   );
   const protocolHashesIndex =
     await editorStore.graphState.graphManager.buildHashesIndex(entities);

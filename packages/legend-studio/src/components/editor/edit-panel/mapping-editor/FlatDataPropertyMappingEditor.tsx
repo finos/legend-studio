@@ -210,7 +210,7 @@ export const FlatDataPropertyMappingEditor = observer(
       isReadOnly,
     } = props;
     const disableEditingTransform =
-      flatDataInstanceSetImplementationState.isConvertingTransformObjects ||
+      flatDataInstanceSetImplementationState.isConvertingTransformLambdaObjects ||
       isReadOnly;
     // Drag and Drop
     const handleDrop = useCallback(
@@ -243,7 +243,7 @@ export const FlatDataPropertyMappingEditor = observer(
       item instanceof FlatDataColumnDragSource ? item : undefined;
     const transformProps = {
       disableTransform:
-        flatDataInstanceSetImplementationState.isConvertingTransformObjects,
+        flatDataInstanceSetImplementationState.isConvertingTransformLambdaObjects,
       forceBackdrop: setImplementationHasParserError,
     };
     switch (

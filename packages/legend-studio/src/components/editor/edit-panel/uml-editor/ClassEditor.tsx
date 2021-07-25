@@ -77,6 +77,7 @@ import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/
 import type { GenericTypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
 import { GenericTypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
+import { flowResult } from 'mobx';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -596,7 +597,7 @@ const DerivedPropertyBasicEditor = observer(
         </div>
         <LambdaEditor
           disabled={
-            editorState.classState.isConvertingDerivedPropertyObjects ||
+            editorState.classState.isConvertingDerivedPropertyLambdaObjects ||
             isInheritedProperty ||
             isReadOnly
           }
@@ -689,7 +690,7 @@ const ConstraintEditor = observer(
         </div>
         <LambdaEditor
           disabled={
-            editorState.classState.isConvertingConstraintObjects ||
+            editorState.classState.isConvertingConstraintLambdaObjects ||
             isReadOnly ||
             isInheritedConstraint
           }
@@ -1094,12 +1095,12 @@ export const ClassFormEditor = observer(
     // Decorate (add/remove states for derived properties/constraints) and convert lambda objects
     useEffect(() => {
       classState.decorate();
-      classState
-        .convertConstraintObjects()
-        .catch(applicationStore.alertIllegalUnhandledError);
-      classState
-        .convertDerivedPropertyObjects()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(classState.convertConstraintLambdaObjects()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+      flowResult(classState.convertDerivedPropertyLambdaObjects()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }, [applicationStore, classState]);
 
     return (

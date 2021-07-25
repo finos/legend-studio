@@ -77,8 +77,7 @@ const CreateQuerySetup = observer(
 
     // version
     const versionOptions =
-      queryStore.currentProjectMetadata?.versions?.map(buildVersionOption) ??
-      [];
+      queryStore.currentProjectMetadata?.versions.map(buildVersionOption) ?? [];
     const selectedVersionOption = queryStore.currentVersionId
       ? buildVersionOption(queryStore.currentVersionId)
       : null;

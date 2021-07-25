@@ -209,20 +209,22 @@ export class ClassState {
   class: Class;
   derivedPropertyStates: DerivedPropertyState[] = [];
   constraintStates: ConstraintState[] = [];
-  isConvertingConstraintObjects = false;
-  isConvertingDerivedPropertyObjects = false;
+  isConvertingConstraintLambdaObjects = false;
+  isConvertingDerivedPropertyLambdaObjects = false;
 
   constructor(editorStore: EditorStore, _class: Class) {
     makeObservable(this, {
       class: observable,
       derivedPropertyStates: observable,
       constraintStates: observable,
-      isConvertingConstraintObjects: observable,
-      isConvertingDerivedPropertyObjects: observable,
+      isConvertingConstraintLambdaObjects: observable,
+      isConvertingDerivedPropertyLambdaObjects: observable,
       addConstraintState: action,
       deleteConstraintState: action,
       addDerivedPropertyState: action,
       deleteDerivedPropertyState: action,
+      convertConstraintLambdaObjects: flow,
+      convertDerivedPropertyLambdaObjects: flow,
       decorate: action,
     });
 
@@ -302,7 +304,7 @@ export class ClassState {
     }
   }
 
-  convertConstraintObjects = flow(function* (this: ClassState) {
+  *convertConstraintLambdaObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
     const constraintStateMap = new Map<string, ConstraintState>();
     this.constraintStates.forEach((constraintState) => {
@@ -315,7 +317,7 @@ export class ClassState {
       }
     });
     if (lambdas.size) {
-      this.isConvertingConstraintObjects = true;
+      this.isConvertingConstraintLambdaObjects = true;
       try {
         const isolatedLambdas =
           (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
@@ -333,12 +335,12 @@ export class ClassState {
           error,
         );
       } finally {
-        this.isConvertingConstraintObjects = false;
+        this.isConvertingConstraintLambdaObjects = false;
       }
     }
-  });
+  }
 
-  convertDerivedPropertyObjects = flow(function* (this: ClassState) {
+  *convertDerivedPropertyLambdaObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
     const derivedPropertyStateMap = new Map<string, DerivedPropertyState>();
     this.derivedPropertyStates.forEach((state) => {
@@ -352,7 +354,7 @@ export class ClassState {
       }
     });
     if (lambdas.size) {
-      this.isConvertingDerivedPropertyObjects = true;
+      this.isConvertingDerivedPropertyLambdaObjects = true;
       try {
         const isolatedLambdas =
           (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
@@ -370,10 +372,10 @@ export class ClassState {
           error,
         );
       } finally {
-        this.isConvertingDerivedPropertyObjects = false;
+        this.isConvertingDerivedPropertyLambdaObjects = false;
       }
     }
-  });
+  }
 
   decorate(): void {
     this.constraintStates = this.class

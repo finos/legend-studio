@@ -15,7 +15,7 @@
  */
 
 import { useContext, createContext } from 'react';
-import { flow, action, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
 import {
@@ -24,6 +24,7 @@ import {
 } from '../models/sdlc/models/revision/Revision';
 import { Version } from '../models/sdlc/models/version/Version';
 import { CORE_LOG_EVENT } from '../utils/Logger';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   IllegalStateError,
   guaranteeNonNullable,
@@ -104,12 +105,11 @@ export class ViewerStore {
     }
   }
 
-  init = flow(function* (
-    this: ViewerStore,
+  *init(
     projectId: string,
     versionId: string | undefined,
     revisionId: string | undefined,
-  ) {
+  ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       return;
     }
@@ -127,16 +127,20 @@ export class ViewerStore {
 
       // get current revision so we can show how "outdated" the `current view` of the project is
       this.currentRevision = Revision.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
-          this.editorStore.sdlcState.currentProjectId,
-          undefined,
-          RevisionAlias.CURRENT,
-        ),
+        (yield flowResult(
+          this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+            this.editorStore.sdlcState.currentProjectId,
+            undefined,
+            RevisionAlias.CURRENT,
+          ),
+        )) as PlainObject<Revision>,
       );
       this.latestVersion = Version.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestVersion(
-          this.editorStore.sdlcState.currentProjectId,
-        ),
+        (yield flowResult(
+          this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestVersion(
+            this.editorStore.sdlcState.currentProjectId,
+          ),
+        )) as PlainObject<Version>,
       );
 
       // fetch project versions
@@ -155,10 +159,12 @@ export class ViewerStore {
         this.version =
           versionId !== this.latestVersion.id.id
             ? Version.serialization.fromJson(
-                yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersion(
-                  this.editorStore.sdlcState.currentProjectId,
-                  versionId,
-                ),
+                (yield flowResult(
+                  this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersion(
+                    this.editorStore.sdlcState.currentProjectId,
+                    versionId,
+                  ),
+                )) as PlainObject<Version>,
               )
             : this.latestVersion;
         entities =
@@ -173,11 +179,13 @@ export class ViewerStore {
         this.revision =
           revisionId !== this.currentRevision.id
             ? Revision.serialization.fromJson(
-                yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
-                  this.editorStore.sdlcState.currentProjectId,
-                  undefined,
-                  revisionId,
-                ),
+                (yield flowResult(
+                  this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+                    this.editorStore.sdlcState.currentProjectId,
+                    undefined,
+                    revisionId,
+                  ),
+                )) as PlainObject<Revision>,
               )
             : this.currentRevision;
         entities =
@@ -254,7 +262,7 @@ export class ViewerStore {
       this.editorStore.applicationStore.notifyError(error);
       onLeave(false);
     }
-  });
+  }
 }
 
 const ViewerStoreContext = createContext<ViewerStore | undefined>(undefined);

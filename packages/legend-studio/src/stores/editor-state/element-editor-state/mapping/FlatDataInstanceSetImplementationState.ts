@@ -139,7 +139,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
     | FlatDataInstanceSetImplementation
     | EmbeddedFlatDataPropertyMapping;
   declare propertyMappingStates: FlatDataPropertyMappingState[];
-  isConvertingTransformObjects = false;
+  isConvertingTransformLambdaObjects = false;
 
   constructor(
     editorStore: EditorStore,
@@ -150,7 +150,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
     super(editorStore, setImplementation);
 
     makeObservable(this, {
-      isConvertingTransformObjects: observable,
+      isConvertingTransformLambdaObjects: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
       decorate: action,
@@ -214,7 +214,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
       // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
     });
     if (lambdas.size) {
-      this.isConvertingTransformObjects = true;
+      this.isConvertingTransformLambdaObjects = true;
       try {
         const isolatedLambdas =
           (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
@@ -232,7 +232,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
           error,
         );
       } finally {
-        this.isConvertingTransformObjects = false;
+        this.isConvertingTransformLambdaObjects = false;
       }
     }
   }

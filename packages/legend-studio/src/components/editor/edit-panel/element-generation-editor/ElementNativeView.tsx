@@ -23,6 +23,7 @@ import {
 } from '../../../../stores/EditorConfig';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 export const ElementNativeView = observer(
   (props: { currentElementState: ElementEditorState }) => {
@@ -40,9 +41,9 @@ export const ElementNativeView = observer(
           currentElementState.generateElementProtocol();
           break;
         case ELEMENT_NATIVE_VIEW_MODE.GRAMMAR:
-          currentElementState
-            .generateElementGrammar()
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(currentElementState.generateElementGrammar()).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
           break;
         default:
           break;

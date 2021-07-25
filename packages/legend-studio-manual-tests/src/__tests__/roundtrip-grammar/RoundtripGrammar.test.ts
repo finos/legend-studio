@@ -47,6 +47,7 @@ import axios from 'axios';
 import type { V1_PackageableElement } from '@finos/legend-studio';
 import { EntityChangeType, getTestEditorStore } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -110,8 +111,10 @@ const checkGrammarRoundtrip = async (
   );
 
   // check hash computation
-  await editorStore.graphState.graph.precomputeHashes(
-    editorStore.applicationStore.logger,
+  await flowResult(
+    editorStore.graphState.graph.precomputeHashes(
+      editorStore.applicationStore.logger,
+    ),
   );
   const protocolHashesIndex =
     await editorStore.graphState.graphManager.buildHashesIndex(entities);
