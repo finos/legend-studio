@@ -776,7 +776,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
     const [path, setPath] = useState(
       `${
         diagramEditorState.diagram.package
-          ? `${diagramEditorState.diagram.package.name}${ELEMENT_PATH_DELIMITER}`
+          ? `${diagramEditorState.diagram.package.path}${ELEMENT_PATH_DELIMITER}`
           : ''
       }Class_${editorStore.graphState.graph.ownClasses.length + 1}`,
     );
