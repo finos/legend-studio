@@ -16,6 +16,7 @@
 
 import { observable, action, flow, makeObservable } from 'mobx';
 import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
@@ -58,9 +59,7 @@ export class DerivedPropertyState extends LambdaEditorState {
     this.derivedProperty.setParameters(lambda.parameters);
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: DerivedPropertyState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
@@ -84,12 +83,9 @@ export class DerivedPropertyState extends LambdaEditorState {
       this.clearErrors();
       this.setBodyAndParameters(emptyLambda);
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: DerivedPropertyState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.derivedProperty.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -122,7 +118,7 @@ export class DerivedPropertyState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 export class ConstraintState extends LambdaEditorState {
@@ -150,7 +146,7 @@ export class ConstraintState extends LambdaEditorState {
     ]);
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (this: ConstraintState) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyFunctionDefinition = RawLambda.createStub();
     if (this.lambdaString) {
       try {
@@ -174,12 +170,9 @@ export class ConstraintState extends LambdaEditorState {
       this.clearErrors();
       this.constraint.functionDefinition = emptyFunctionDefinition;
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: ConstraintState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (!this.constraint.functionDefinition.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -206,7 +199,7 @@ export class ConstraintState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 // NOTE: We went through the trouble of maintaining Class state outside of metamodel class prototype because we don't want to pollute

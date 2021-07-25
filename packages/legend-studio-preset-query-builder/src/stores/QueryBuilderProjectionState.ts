@@ -16,7 +16,7 @@
 
 import {
   action,
-  flow,
+  flowResult,
   makeAutoObservable,
   makeObservable,
   observable,
@@ -200,9 +200,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
     this.readOnlylambdaJson = lambdaJson;
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: QueryBuilderDerivationProjectionLambdaState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
@@ -226,12 +224,9 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
       this.clearErrors();
       this.derivationProjectionColumnState.setLambda(emptyLambda);
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: QueryBuilderDerivationProjectionLambdaState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.derivationProjectionColumnState.lambda.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -264,7 +259,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderProjectionColumnState {
@@ -401,9 +396,11 @@ export class QueryBuilderProjectionState {
     this.replaceColumn(simpleProjectionColumnState, derivationColumnState);
 
     // convert to grammar for display
-    derivationColumnState.derivationLambdaEditorState
-      .convertLambdaObjectToGrammarString(false)
-      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
+    flowResult(
+      derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
+        false,
+      ),
+    ).catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
   }
 
   replaceColumn(

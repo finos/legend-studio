@@ -25,7 +25,7 @@ import {
   TAB_SIZE,
 } from '@finos/legend-studio';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { observable, action, flow, makeObservable } from 'mobx';
+import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 
 export class QueryRawLambdaState {
@@ -96,9 +96,7 @@ export class QueryTextEditorState extends LambdaEditorState {
     this.readOnlylambdaJson = lambdaJson;
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: QueryTextEditorState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
@@ -122,12 +120,9 @@ export class QueryTextEditorState extends LambdaEditorState {
       this.clearErrors();
       this.rawLambdaState.setLambda(emptyLambda);
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: QueryTextEditorState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.rawLambdaState.lambda.body) {
       this.isConvertingLambdaToString = true;
       try {
@@ -163,7 +158,7 @@ export class QueryTextEditorState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 
   openModal(mode: QueryTextEditorMode): void {
     const rawLambda = this.queryBuilderState.getQuery();
@@ -188,7 +183,7 @@ export class QueryTextEditorState extends LambdaEditorState {
 
   *closeModal(): GeneratorFn<void> {
     if (this.mode === QueryTextEditorMode.TEXT) {
-      yield this.convertLambdaGrammarStringToObject();
+      yield flowResult(this.convertLambdaGrammarStringToObject());
       if (this.parserError) {
         this.editorStore.applicationStore.notifyError(
           `Can't parse query. Please fix error before closing: ${this.parserError.message}`,

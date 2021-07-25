@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable } from 'mobx';
 import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
@@ -30,6 +30,7 @@ import { ParserError } from '../../../../models/metamodels/pure/action/EngineErr
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 import type { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { isNonNullable } from '@finos/legend-studio-shared';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
@@ -61,9 +62,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
     );
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: PurePropertyMappingState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
@@ -87,12 +86,9 @@ export class PurePropertyMappingState extends PropertyMappingState {
       this.clearErrors();
       this.propertyMapping.transform = emptyLambda;
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: PurePropertyMappingState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (!this.propertyMapping.transform.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -119,7 +115,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 export class PureInstanceSetImplementationState extends InstanceSetImplementationState {
@@ -181,9 +177,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
-  convertPropertyMappingTransformObjects = flow(function* (
-    this: PureInstanceSetImplementationState,
-  ) {
+  *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
     const propertyMappingsMap = new Map<string, PurePropertyMappingState>();
     this.propertyMappingStates.forEach((pm) => {
@@ -214,5 +208,5 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
         this.isConvertingTransformObjects = false;
       }
     }
-  });
+  }
 }

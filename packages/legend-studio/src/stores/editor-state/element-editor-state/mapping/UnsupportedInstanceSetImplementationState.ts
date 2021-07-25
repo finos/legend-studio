@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-import { flow } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { InstanceSetImplementationState } from './MappingElementState';
 
 export class UnsupportedInstanceSetImplementationState extends InstanceSetImplementationState {
   decorate(): void {
-    // TODO: dummy decorate
+    // do nothing
   }
-  convertPropertyMappingTransformObjects = flow(function* (
-    this: UnsupportedInstanceSetImplementationState,
-  ) {
-    // TODO: dummy convertPropertyMappingTransformObjects
-  });
+  *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
+    // do nothing
+  }
 }

@@ -46,8 +46,7 @@ export const ServiceQueryBuilder = observer(
               mapping,
               runtime,
               async (lambda: RawLambda): Promise<void> =>
-                executionState.queryState
-                  .updateLamba(lambda)
+                flowResult(executionState.queryState.updateLamba(lambda))
                   .then(() =>
                     editorStore.applicationStore.notifySuccess(
                       `Service '${executionState.execution.owner.name}' execution query is updated`,

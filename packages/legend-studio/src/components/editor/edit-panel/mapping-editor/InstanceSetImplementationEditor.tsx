@@ -62,6 +62,7 @@ import {
   getSourceElementLabel,
   InstanceSetImplementationSourceSelectorModal,
 } from './InstanceSetImplementationSourceSelectorModal';
+import { flowResult } from 'mobx';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -377,9 +378,9 @@ export const InstanceSetImplementationEditor = observer(
       if (!isReadOnly) {
         instanceSetImplementationState.decorate();
       }
-      instanceSetImplementationState
-        .convertPropertyMappingTransformObjects()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        instanceSetImplementationState.convertPropertyMappingTransformObjects(),
+      ).catch(applicationStore.alertIllegalUnhandledError);
       return isReadOnly
         ? noop()
         : (): void =>

@@ -26,6 +26,7 @@ import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
 import SplitPane from 'react-split-pane';
 import { isNonNullable } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 const ServiceExecutionModals = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -152,9 +153,9 @@ export const ServiceExecutionQueryEditor = observer(
     );
     // convert to string
     useEffect(() => {
-      queryState
-        .convertLambdaObjectToGrammarString(true)
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(queryState.convertLambdaObjectToGrammarString(true)).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }, [applicationStore, queryState]);
 
     return (

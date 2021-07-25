@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from '../MappingElementState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   IllegalStateError,
   isNonNullable,
@@ -72,9 +73,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     );
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: RelationalPropertyMappingState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const stubOperation = createStubRelationalOperationElement();
     if (this.lambdaString) {
       try {
@@ -102,12 +101,9 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         this.propertyMapping.relationalOperation = stubOperation;
       }
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: RelationalPropertyMappingState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.propertyMapping instanceof RelationalPropertyMapping) {
       if (!this.propertyMapping.isStub) {
         try {
@@ -138,7 +134,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         this.setLambdaString('');
       }
     }
-  });
+  }
 }
 
 export abstract class RelationalInstanceSetImplementationState extends InstanceSetImplementationState {}
@@ -187,7 +183,7 @@ export class EmbeddedRelationalInstanceSetImplementationState
   decorate(): void {
     return;
   }
-  convertPropertyMappingTransformObjects(): Promise<void> {
+  *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
   setLambdaString(val: string): void {
@@ -215,17 +211,12 @@ export class EmbeddedRelationalInstanceSetImplementationState
     // TODO
     return;
   }
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: EmbeddedRelationalInstanceSetImplementation,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
-  });
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: EmbeddedRelationalInstanceSetImplementation,
-    pretty: boolean,
-  ) {
+  }
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     throw new UnsupportedOperationError();
-  });
+  }
 }
 
 export class RootRelationalInstanceSetImplementationState extends RelationalInstanceSetImplementationState {
@@ -305,9 +296,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
     this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
-  convertPropertyMappingTransformObjects = flow(function* (
-    this: RootRelationalInstanceSetImplementationState,
-  ) {
+  *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     const operations = new Map<string, RawRelationalOperationElement>();
     const propertyMappingStates = new Map<
       string,
@@ -348,5 +337,5 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
         this.isConvertingTransformObjects = false;
       }
     }
-  });
+  }
 }

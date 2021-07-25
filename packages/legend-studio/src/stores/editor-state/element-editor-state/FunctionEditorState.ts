@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, flow, makeObservable } from 'mobx';
+import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import { LambdaEditorState } from './LambdaEditorState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeType, assertType } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
@@ -58,9 +59,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
     return buildSourceInformationSourceId([this.functionElement.path]);
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: FunctionBodyEditorState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     if (this.lambdaString) {
       try {
         const lambda =
@@ -83,13 +82,12 @@ export class FunctionBodyEditorState extends LambdaEditorState {
       this.clearErrors();
       this.functionElement.body = [];
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: FunctionBodyEditorState,
+  *convertLambdaObjectToGrammarString(
     pretty: boolean,
     firstLoad?: boolean,
-  ) {
+  ): GeneratorFn<void> {
     if (!this.functionElement.isStub) {
       this.isConvertingFunctionBodyToString = true;
       try {
@@ -141,7 +139,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 export class FunctionEditorState extends ElementEditorState {

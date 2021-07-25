@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, makeObservable } from 'mobx';
+import { observable, action, flow, makeObservable, flowResult } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   losslessStringify,
   tryToFormatLosslessJSONString,
@@ -131,14 +132,13 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', LAMBDA_START);
+
     makeObservable(this, {
       execution: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
       setLambda: action,
-      convertLambdaObjectToGrammarString: action,
-      convertLambdaGrammarStringToObject: action,
-      updateLamba: action,
+      updateLamba: flow,
     });
 
     this.editorStore = editorStore;
@@ -164,18 +164,12 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     this.execution.setFunction(val);
   }
 
-  updateLamba = flow(function* (
-    this: ServicePureExecutionQueryState,
-    val: RawLambda,
-  ) {
+  *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.setLambda(val);
-    yield this.convertLambdaObjectToGrammarString(true);
-  });
+    yield flowResult(this.convertLambdaObjectToGrammarString(true));
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: ServicePureExecutionQueryState,
-    pretty?: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
     if (this.execution.func.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -208,10 +202,10 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
-  convertLambdaGrammarStringToObject(): Promise<void> {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
 }

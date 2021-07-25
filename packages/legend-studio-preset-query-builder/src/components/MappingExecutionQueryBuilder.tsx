@@ -44,8 +44,7 @@ export const MappingExecutionQueryBuilder = observer(
           mapping,
           customRuntime,
           (lambda: RawLambda): Promise<void> =>
-            executionState.queryState
-              .updateLamba(lambda)
+            flowResult(executionState.queryState.updateLamba(lambda))
               .then(() =>
                 editorStore.applicationStore.notifySuccess(
                   `Mapping execution query is updated`,

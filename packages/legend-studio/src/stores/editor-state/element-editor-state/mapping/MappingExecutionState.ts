@@ -115,9 +115,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
       query: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
-      convertLambdaObjectToGrammarString: action,
-      convertLambdaGrammarStringToObject: action,
-      updateLamba: action,
+      updateLamba: flow,
     });
 
     this.editorStore = editorStore;
@@ -132,18 +130,12 @@ export class MappingExecutionQueryState extends LambdaEditorState {
     this.isInitializingLambda = val;
   }
 
-  updateLamba = flow(function* (
-    this: MappingExecutionQueryState,
-    val: RawLambda,
-  ) {
+  *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.query = val;
-    yield this.convertLambdaObjectToGrammarString(true);
-  });
+    yield flowResult(this.convertLambdaObjectToGrammarString(true));
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: MappingExecutionQueryState,
-    pretty?: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
     if (!this.query.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -170,10 +162,10 @@ export class MappingExecutionQueryState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
-  convertLambdaGrammarStringToObject(): Promise<void> {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
 }
@@ -705,12 +697,14 @@ export class MappingExecutionState {
   ): GeneratorFn<void> {
     // do all the necessary updates
     this.setExecutionResultText(undefined);
-    yield this.queryState.updateLamba(
-      setImplementation
-        ? this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
-            guaranteeType(getMappingElementTarget(setImplementation), Class),
-          )
-        : RawLambda.createStub(),
+    yield flowResult(
+      this.queryState.updateLamba(
+        setImplementation
+          ? this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+              guaranteeType(getMappingElementTarget(setImplementation), Class),
+            )
+          : RawLambda.createStub(),
+      ),
     );
 
     // Attempt to generate data for input data panel as we pick the class mapping:

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable } from 'mobx';
 import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
@@ -24,6 +24,7 @@ import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   UnsupportedOperationError,
   guaranteeType,
@@ -72,9 +73,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     ]);
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: FlatDataPropertyMappingState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
@@ -102,12 +101,9 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         this.propertyMapping.transform = emptyLambda;
       }
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: FlatDataPropertyMappingState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.propertyMapping instanceof FlatDataPropertyMapping) {
       if (!this.propertyMapping.transform.isStub) {
         try {
@@ -136,7 +132,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         this.setLambdaString('');
       }
     }
-  });
+  }
 }
 export abstract class FlatDataInstanceSetImplementationState extends InstanceSetImplementationState {
   declare mappingElement:
@@ -201,9 +197,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
     this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
-  convertPropertyMappingTransformObjects = flow(function* (
-    this: FlatDataInstanceSetImplementationState,
-  ) {
+  *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
     const propertyMappingStates = new Map<
       string,
@@ -241,7 +235,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
         this.isConvertingTransformObjects = false;
       }
     }
-  });
+  }
 
   addEmbeddedPropertyMapping(
     property: Property,
@@ -349,17 +343,12 @@ export class EmbeddedFlatDataInstanceSetImplementationState
     // TODO
     return;
   }
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: EmbeddedFlatDataInstanceSetImplementationState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
-  });
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: EmbeddedFlatDataInstanceSetImplementationState,
-    pretty: boolean,
-  ) {
+  }
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     throw new UnsupportedOperationError();
-  });
+  }
 }
 
 export class RootFlatDataInstanceSetImplementationState extends FlatDataInstanceSetImplementationState {
