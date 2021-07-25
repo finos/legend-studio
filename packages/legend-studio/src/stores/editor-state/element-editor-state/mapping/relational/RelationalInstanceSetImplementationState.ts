@@ -234,7 +234,6 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
       isConvertingTransformLambdaObjects: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
-      decorate: action,
     });
 
     this.mappingElement = setImplementation;

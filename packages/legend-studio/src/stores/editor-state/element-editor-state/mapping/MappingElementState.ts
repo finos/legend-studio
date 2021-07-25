@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
+import { observable, computed, makeObservable, action, flow } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { uuid } from '@finos/legend-studio-shared';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
@@ -73,6 +73,8 @@ export abstract class InstanceSetImplementationState extends SetImplementationSt
       propertyMappingStates: observable,
       selectedType: observable,
       setSelectedType: action,
+      decorate: action,
+      convertPropertyMappingTransformObjects: flow,
     });
 
     this.mappingElement = setImplementation;

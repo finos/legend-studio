@@ -133,7 +133,6 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       isConvertingTransformLambdaObjects: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
-      decorate: action,
     });
 
     this.mappingElement = setImplementation;

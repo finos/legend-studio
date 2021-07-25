@@ -153,7 +153,6 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
       isConvertingTransformLambdaObjects: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
-      decorate: action,
       addEmbeddedPropertyMapping: action,
     });
 
