@@ -29,6 +29,7 @@ import {
 } from '../../utils/TextEditorUtil';
 import { useEditorStore } from '../../stores/EditorStore';
 import { useApplicationStore } from '../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 export const TextInputEditor: React.FC<{
   inputValue: string;
@@ -82,9 +83,9 @@ export const TextInputEditor: React.FC<{
         if (event.keyCode === KeyCode.F8) {
           event.preventDefault();
           event.stopPropagation();
-          editorStore
-            .toggleTextMode()
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(editorStore.toggleTextMode()).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         }
       });
       disableEditorHotKeys(_editor);

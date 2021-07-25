@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { action, flow, flowResult, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import type {
   ApplicationStore,
   ActionAlertInfo,
@@ -309,7 +309,7 @@ export class EditorStore {
         HOTKEY.TOGGLE_TEXT_MODE,
         [HOTKEY_MAP.TOGGLE_TEXT_MODE],
         this.createGlobalHotKeyAction(() => {
-          this.toggleTextMode().catch(
+          flowResult(this.toggleTextMode()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
         }),
@@ -495,11 +495,7 @@ export class EditorStore {
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */
-  init = flow(function* (
-    this: EditorStore,
-    projectId: string,
-    workspaceId: string,
-  ) {
+  *init(projectId: string, workspaceId: string): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
        * Since React `fast-refresh` will sometimes cause `Editor` to rerender, this method will be called again
@@ -527,9 +523,11 @@ export class EditorStore {
       this.initState.complete(hasBuildSucceeded);
     };
 
-    yield this.sdlcState.fetchCurrentProject(projectId, {
-      suppressNotification: true,
-    });
+    yield flowResult(
+      this.sdlcState.fetchCurrentProject(projectId, {
+        suppressNotification: true,
+      }),
+    );
     if (!this.sdlcState.currentProject) {
       // If the project is not found or the user does not have access to it,
       // we will not automatically redirect them to the setup page as they will lose the URL
@@ -568,9 +566,11 @@ export class EditorStore {
       onLeave(false);
       return;
     }
-    yield this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId, {
-      suppressNotification: true,
-    });
+    yield flowResult(
+      this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId, {
+        suppressNotification: true,
+      }),
+    );
     if (!this.sdlcState.currentWorkspace) {
       // If the workspace is not found,
       // we will not automatically redirect the user to the setup page as they will lose the URL
@@ -668,27 +668,27 @@ export class EditorStore {
         },
       ),
     ]);
-    yield this.initMode();
+    yield flowResult(this.initMode());
 
     onLeave(true);
-  });
+  }
 
-  initMode = flow(function* (this: EditorStore) {
+  *initMode(): GeneratorFn<void> {
     switch (this.mode) {
       case EDITOR_MODE.STANDARD:
-        yield this.initStandardMode();
+        yield flowResult(this.initStandardMode());
         return;
       case EDITOR_MODE.CONFLICT_RESOLUTION:
-        yield this.initConflictResolutionMode();
+        yield flowResult(this.initConflictResolutionMode());
         return;
       default:
         throw new UnsupportedOperationError(
           `Can't initialize editor for unsupported mode '${this.mode}'`,
         );
     }
-  });
+  }
 
-  initStandardMode = flow(function* (this: EditorStore) {
+  private *initStandardMode(): GeneratorFn<void> {
     yield Promise.all([
       this.buildGraph(),
       this.sdlcState.checkIfWorkspaceIsOutdated(),
@@ -699,9 +699,9 @@ export class EditorStore {
       this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
-  });
+  }
 
-  initConflictResolutionMode = flow(function* (this: EditorStore) {
+  private *initConflictResolutionMode(): GeneratorFn<void> {
     this.setActionAltertInfo({
       message: 'Failed to update workspace.',
       prompt:
@@ -737,9 +737,9 @@ export class EditorStore {
       this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
-  });
+  }
 
-  buildGraph = flow(function* (this: EditorStore) {
+  *buildGraph(): GeneratorFn<void> {
     const startTime = Date.now();
     let entities: Entity[];
     let projectConfiguration: PlainObject<ProjectConfiguration>;
@@ -778,7 +778,7 @@ export class EditorStore {
     }
 
     try {
-      yield this.graphState.buildGraph(entities);
+      yield flowResult(this.graphState.buildGraph(entities));
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
@@ -806,7 +806,7 @@ export class EditorStore {
       // since errors have been handled accordingly, we don't need to do anything here
       return;
     }
-  });
+  }
 
   getCurrentEditorState<T extends EditorState>(clazz: Clazz<T>): T {
     return guaranteeType(
@@ -1033,10 +1033,7 @@ export class EditorStore {
     }
   }
 
-  deleteElement = flow(function* (
-    this: EditorStore,
-    element: PackageableElement,
-  ) {
+  *deleteElement(element: PackageableElement): GeneratorFn<void> {
     if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
       return;
     }
@@ -1069,10 +1066,12 @@ export class EditorStore {
     // reprocess project explorer tree
     this.explorerTreeState.reprocess();
     // recompile
-    yield this.graphState.globalCompileInFormMode({
-      message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
-    });
-  });
+    yield flowResult(
+      this.graphState.globalCompileInFormMode({
+        message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
+      }),
+    );
+  }
 
   *renameElement(
     element: PackageableElement,
@@ -1179,7 +1178,7 @@ export class EditorStore {
     this.openedEditorStates = [];
   }
 
-  toggleTextMode = flow(function* (this: EditorStore) {
+  *toggleTextMode(): GeneratorFn<void> {
     if (this.isInFormMode) {
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
         return;
@@ -1193,7 +1192,9 @@ export class EditorStore {
           (yield this.graphState.graphManager.graphToPureCode(
             this.graphState.graph,
           )) as string;
-        yield this.grammarTextEditorState.setGraphGrammarText(graphGrammar);
+        yield flowResult(
+          this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
+        );
       } catch (error: unknown) {
         assertErrorThrown(error);
         this.applicationStore.notifyWarning(
@@ -1211,13 +1212,13 @@ export class EditorStore {
         );
       }
     } else if (this.isInGrammarTextMode) {
-      yield this.graphState.leaveTextMode();
+      yield flowResult(this.graphState.leaveTextMode());
     } else {
       throw new UnsupportedOperationError(
         'Editor only support form mode and text mode at the moment',
       );
     }
-  });
+  }
 
   /**
    * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened

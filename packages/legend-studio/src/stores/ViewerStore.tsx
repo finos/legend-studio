@@ -214,8 +214,10 @@ export class ViewerStore {
         },
       );
       // init graph
-      yield this.editorStore.graphState.initializeSystem();
-      yield this.editorStore.graphState.buildGraphForViewerMode(entities);
+      yield flowResult(this.editorStore.graphState.initializeSystem());
+      yield flowResult(
+        this.editorStore.graphState.buildGraphForViewerMode(entities),
+      );
 
       // fetch available file generation descriptions
       yield this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions();

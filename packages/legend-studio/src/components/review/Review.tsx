@@ -41,6 +41,7 @@ import {
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
@@ -142,9 +143,9 @@ const ReviewExplorer = observer(() => {
   };
 
   useEffect(() => {
-    reviewStore
-      .fetchReviewComparison()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(reviewStore.fetchReviewComparison()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, reviewStore]);
 
   return (
@@ -176,11 +177,15 @@ const ReviewInner = observer(() => {
 
   useEffect(() => {
     reviewStore.setProjectIdAndReviewId(projectId, reviewId);
-    reviewStore.init().catch(applicationStore.alertIllegalUnhandledError);
-    reviewStore.getReview().catch(applicationStore.alertIllegalUnhandledError);
-    reviewStore
-      .fetchProject()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(reviewStore.init()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+    flowResult(reviewStore.getReview()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+    flowResult(reviewStore.fetchProject()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, reviewStore, projectId, reviewId]);
 
   return (

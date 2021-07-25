@@ -129,13 +129,13 @@ export class QueryBuilder_EditorPlugin extends EditorPlugin {
         ): void => {
           const queryBuilderState =
             editorStore.getEditorExtensionState(QueryBuilderState);
-          editorStore.graphState
-            .checkLambdaParsingError(
+          flowResult(
+            editorStore.graphState.checkLambdaParsingError(
               lambdaEditorState,
               checkParseringError,
               () => flowResult(queryBuilderState.compileQuery()),
-            )
-            .catch(editorStore.applicationStore.alertIllegalUnhandledError);
+            ),
+          ).catch(editorStore.applicationStore.alertIllegalUnhandledError);
         },
       },
     ];

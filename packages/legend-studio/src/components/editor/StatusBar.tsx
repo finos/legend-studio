@@ -105,11 +105,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
   const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
-    editorStore.toggleTextMode(),
+    flowResult(editorStore.toggleTextMode()),
   );
   const compile = applicationStore.guaranteeSafeAction(
     editorStore.isInGrammarTextMode
-      ? (): Promise<void> => editorStore.graphState.globalCompileInTextMode()
+      ? (): Promise<void> =>
+          flowResult(editorStore.graphState.globalCompileInTextMode())
       : (): Promise<void> =>
           flowResult(editorStore.graphState.globalCompileInFormMode()),
   );

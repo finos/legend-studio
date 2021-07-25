@@ -302,29 +302,37 @@ const LambdaEditorInner = observer(
             event.preventDefault();
             event.stopPropagation();
             transformStringToLambda?.cancel();
-            editorStore.graphState
-              .checkLambdaParsingError(lambdaEditorState, !disabled, () =>
-                editorStore.toggleTextMode(),
-              )
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () => flowResult(editorStore.toggleTextMode()),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
           } else if (event.keyCode === KeyCode.F9) {
             event.preventDefault();
             event.stopPropagation();
             transformStringToLambda?.cancel();
-            editorStore.graphState
-              .checkLambdaParsingError(lambdaEditorState, !disabled, () =>
-                flowResult(editorStore.graphState.globalCompileInFormMode()),
-              )
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () =>
+                  flowResult(editorStore.graphState.globalCompileInFormMode()),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
           } else if (event.keyCode === KeyCode.F10) {
             event.preventDefault();
             event.stopPropagation();
             transformStringToLambda?.cancel();
-            editorStore.graphState
-              .checkLambdaParsingError(lambdaEditorState, !disabled, () =>
-                editorStore.graphState.graphGenerationState.globalGenerate(),
-              )
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () =>
+                  editorStore.graphState.graphGenerationState.globalGenerate(),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
           }
         }
       });

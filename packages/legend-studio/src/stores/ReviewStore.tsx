@@ -17,9 +17,10 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { CORE_LOG_EVENT } from '../utils/Logger';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
-import { flow, makeAutoObservable, action } from 'mobx';
+import { makeAutoObservable, action, flowResult } from 'mobx';
 import { Review } from '../models/sdlc/models/review/Review';
 import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
@@ -63,7 +64,7 @@ export class ReviewStore {
     return guaranteeNonNullable(this.currentReview, 'Review must exist');
   }
 
-  init = flow(function* (this: ReviewStore) {
+  *init(): GeneratorFn<void> {
     try {
       // init engine
       yield this.editorStore.graphState.graphManager.setupEngine(
@@ -87,14 +88,14 @@ export class ReviewStore {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
   setProjectIdAndReviewId(projectId: string, reviewId: string): void {
     this.currentProjectId = projectId;
     this.currentReviewId = reviewId;
   }
 
-  fetchReviewComparison = flow(function* (this: ReviewStore) {
+  *fetchReviewComparison(): GeneratorFn<void> {
     this.isFetchingComparison = true;
     try {
       const [fromEntities, toEntities] = (yield Promise.all([
@@ -123,7 +124,9 @@ export class ReviewStore {
           CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
         ),
       ]);
-      yield this.editorStore.changeDetectionState.computeAggregatedWorkspaceChanges();
+      yield flowResult(
+        this.editorStore.changeDetectionState.computeAggregatedWorkspaceChanges(),
+      );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
@@ -133,14 +136,14 @@ export class ReviewStore {
     } finally {
       this.isFetchingComparison = false;
     }
-  });
+  }
 
-  fetchProject = flow(function* (this: ReviewStore) {
+  *fetchProject(): GeneratorFn<void> {
     try {
       this.currentProject = Project.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getProject(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getProject(
           this.projectId,
-        ),
+        )) as PlainObject<Project>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -149,16 +152,16 @@ export class ReviewStore {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  getReview = flow(function* (this: ReviewStore) {
+  *getReview(): GeneratorFn<void> {
     try {
       this.isFetchingCurrentReview = true;
       this.currentReview = Review.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReview(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReview(
           this.projectId,
           this.reviewId,
-        ),
+        )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -169,16 +172,16 @@ export class ReviewStore {
     } finally {
       this.isFetchingCurrentReview = false;
     }
-  });
+  }
 
-  approveReview = flow(function* (this: ReviewStore) {
+  *approveReview(): GeneratorFn<void> {
     this.isApprovingReview = true;
     try {
       this.currentReview = Review.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.approveReview(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.approveReview(
           this.projectId,
           this.review.id,
-        ),
+        )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -189,17 +192,17 @@ export class ReviewStore {
     } finally {
       this.isApprovingReview = false;
     }
-  });
+  }
 
-  commitReview = flow(function* (this: ReviewStore) {
+  *commitReview(): GeneratorFn<void> {
     this.isCommittingReview = true;
     try {
       this.currentReview = Review.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.commitReview(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.commitReview(
           this.projectId,
           this.review.id,
           { message: `${this.review.title} [review]` },
-        ),
+        )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -210,16 +213,16 @@ export class ReviewStore {
     } finally {
       this.isCommittingReview = false;
     }
-  });
+  }
 
-  reOpenReview = flow(function* (this: ReviewStore) {
+  *reOpenReview(): GeneratorFn<void> {
     this.isReopeningReview = true;
     try {
       this.currentReview = Review.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.reopenReview(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.reopenReview(
           this.projectId,
           this.review.id,
-        ),
+        )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -230,16 +233,16 @@ export class ReviewStore {
     } finally {
       this.isReopeningReview = false;
     }
-  });
+  }
 
-  closeReview = flow(function* (this: ReviewStore) {
+  *closeReview(): GeneratorFn<void> {
     this.isClosingReview = true;
     try {
       this.currentReview = Review.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.closeReview(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.closeReview(
           this.projectId,
           this.review.id,
-        ),
+        )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -250,7 +253,7 @@ export class ReviewStore {
     } finally {
       this.isClosingReview = false;
     }
-  });
+  }
 }
 
 const ReviewStoreContext = createContext<ReviewStore | undefined>(undefined);

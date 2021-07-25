@@ -15,7 +15,7 @@
  */
 
 import { createContext, useContext } from 'react';
-import { action, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { ActionState, guaranteeNonNullable } from '@finos/legend-studio-shared';
@@ -125,12 +125,14 @@ export class QueryStore {
       );
 
       // build graph
-      yield this.editorStore.graphState.initializeSystem();
+      yield flowResult(this.editorStore.graphState.initializeSystem());
       // TODO: remove this when metadata server is enabled by default
       const project = new Project();
       project.projectId = this.currentProjectMetadata.projectId;
       this.editorStore.sdlcState.setCurrentProject(project);
-      yield this.editorStore.graphState.buildGraphForViewerMode(entities);
+      yield flowResult(
+        this.editorStore.graphState.buildGraphForViewerMode(entities),
+      );
 
       this.loadVersionsState.pass();
     } catch (error: unknown) {

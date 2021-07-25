@@ -73,7 +73,7 @@ const ViewerStatusBar = observer(() => {
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
   const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
-    editorStore.toggleTextMode(),
+    flowResult(editorStore.toggleTextMode()),
   );
 
   return (
@@ -205,9 +205,9 @@ export const ViewerInner = observer(() => {
       editorStore.searchElementCommandState.open(),
     ),
     [HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(() => {
-      editorStore
-        .toggleTextMode()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(editorStore.toggleTextMode()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }),
   };
 

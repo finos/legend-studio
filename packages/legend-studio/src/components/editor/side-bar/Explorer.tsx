@@ -206,9 +206,9 @@ const ExplorerContextMenu = observer(
       : editorStore.graphState.graph.root;
     const deleteElement = (): void => {
       if (node) {
-        editorStore
-          .deleteElement(node.packageableElement)
-          .catch(applicationStore.alertIllegalUnhandledError);
+        flowResult(editorStore.deleteElement(node.packageableElement)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
       }
     };
     const renameElement = (): void => {

@@ -36,6 +36,7 @@ import {
   tryToFormatLosslessJSONString,
 } from '@finos/legend-studio-shared';
 import { useApplicationStore } from '../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 export const TextDiffView = observer(
   (props: { language: EDITOR_LANGUAGE; from?: string; to?: string }) => {
@@ -68,18 +69,18 @@ export const TextDiffView = observer(
           if (event.keyCode === KeyCode.F8) {
             event.preventDefault();
             event.stopPropagation();
-            editorStore
-              .toggleTextMode()
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(editorStore.toggleTextMode()).catch(
+              applicationStore.alertIllegalUnhandledError,
+            );
           }
         });
         _editor.getModifiedEditor().onKeyDown((event) => {
           if (event.keyCode === KeyCode.F8) {
             event.preventDefault();
             event.stopPropagation();
-            editorStore
-              .toggleTextMode()
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(editorStore.toggleTextMode()).catch(
+              applicationStore.alertIllegalUnhandledError,
+            );
           }
         });
         disableEditorHotKeys(_editor);

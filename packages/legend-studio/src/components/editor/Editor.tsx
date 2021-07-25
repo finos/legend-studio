@@ -45,6 +45,7 @@ import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { isNonNullable } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],
@@ -118,9 +119,9 @@ export const EditorInner = observer(() => {
 
   // Initialize the app
   useEffect(() => {
-    editorStore
-      .init(projectId, workspaceId)
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(editorStore.init(projectId, workspaceId)).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [editorStore, applicationStore, projectId, workspaceId]);
 
   // Browser Navigation Blocking (reload, close tab, go to another URL)

@@ -28,6 +28,7 @@ import { useEditorStore } from '../../stores/EditorStore';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../const';
+import { flowResult } from 'mobx';
 
 export const ReviewSideBar = observer(() => {
   const reviewStore = useReviewStore();
@@ -79,16 +80,16 @@ export const ReviewSideBar = observer(() => {
     reviewStore.isCommittingReview ||
     reviewStore.isReopeningReview;
   const closeReview = applicationStore.guaranteeSafeAction(() =>
-    reviewStore.closeReview(),
+    flowResult(reviewStore.closeReview()),
   );
   const reOpenReview = applicationStore.guaranteeSafeAction(() =>
-    reviewStore.reOpenReview(),
+    flowResult(reviewStore.reOpenReview()),
   );
   const commitReview = applicationStore.guaranteeSafeAction(() =>
-    reviewStore.commitReview(),
+    flowResult(reviewStore.commitReview()),
   );
   const approveReview = applicationStore.guaranteeSafeAction(() =>
-    reviewStore.approveReview(),
+    flowResult(reviewStore.approveReview()),
   );
   // Changes
   const changes = editorStore.changeDetectionState.aggregatedWorkspaceChanges;
