@@ -19,6 +19,7 @@ import type {
   RawLambda,
 } from '@finos/legend-studio';
 import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 
@@ -39,20 +40,22 @@ export const ServiceQueryBuilder = observer(
           executionState.selectedExecutionConfiguration.mapping.value;
         const runtime = executionState.selectedExecutionConfiguration.runtime;
         if (!mapping.isStub) {
-          await queryBuilderState.querySetupState.setup(
-            executionState.execution.func,
-            mapping,
-            runtime,
-            async (lambda: RawLambda): Promise<void> =>
-              executionState.queryState
-                .updateLamba(lambda)
-                .then(() =>
-                  editorStore.applicationStore.notifySuccess(
-                    `Service '${executionState.execution.owner.name}' execution query is updated`,
-                  ),
-                )
-                .catch(applicationStore.alertIllegalUnhandledError),
-            executionState.queryState.query.isStub,
+          await flowResult(
+            queryBuilderState.querySetupState.setup(
+              executionState.execution.func,
+              mapping,
+              runtime,
+              async (lambda: RawLambda): Promise<void> =>
+                executionState.queryState
+                  .updateLamba(lambda)
+                  .then(() =>
+                    editorStore.applicationStore.notifySuccess(
+                      `Service '${executionState.execution.owner.name}' execution query is updated`,
+                    ),
+                  )
+                  .catch(applicationStore.alertIllegalUnhandledError),
+              executionState.queryState.query.isStub,
+            ),
           );
           executionState.setOpeningQueryEditor(false);
           return;

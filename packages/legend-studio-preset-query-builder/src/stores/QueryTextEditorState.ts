@@ -24,6 +24,7 @@ import {
   RawLambda,
   TAB_SIZE,
 } from '@finos/legend-studio';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { observable, action, flow, makeObservable } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 
@@ -71,7 +72,7 @@ export class QueryTextEditorState extends LambdaEditorState {
       setQueryRawLambdaState: action,
       setMode: action,
       openModal: action,
-      closeModal: action,
+      closeModal: flow,
     });
 
     this.editorStore = editorStore;
@@ -185,7 +186,7 @@ export class QueryTextEditorState extends LambdaEditorState {
     this.setMode(mode);
   }
 
-  closeModal = flow(function* (this: QueryTextEditorState) {
+  *closeModal(): GeneratorFn<void> {
     if (this.mode === QueryTextEditorMode.TEXT) {
       yield this.convertLambdaGrammarStringToObject();
       if (this.parserError) {
@@ -199,5 +200,5 @@ export class QueryTextEditorState extends LambdaEditorState {
       return;
     }
     this.setMode(undefined);
-  });
+  }
 }

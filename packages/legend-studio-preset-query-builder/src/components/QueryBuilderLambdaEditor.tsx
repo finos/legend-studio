@@ -26,6 +26,7 @@ import {
   TextInputEditor,
   EDITOR_LANGUAGE,
 } from '@finos/legend-studio';
+import { flowResult } from 'mobx';
 
 export const QueryBuilderLambdaEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -33,7 +34,9 @@ export const QueryBuilderLambdaEditor = observer(
     const applicationStore = useApplicationStore();
     const queryTextEditorState = queryBuilderState.queryTextEditorState;
     const close = (): Promise<void> =>
-      queryBuilderState.queryTextEditorState.closeModal();
+      flowResult(queryBuilderState.queryTextEditorState.closeModal()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     const discardChanges = (): void =>
       queryBuilderState.queryTextEditorState.setMode(undefined);
     const mode = queryTextEditorState.mode;
