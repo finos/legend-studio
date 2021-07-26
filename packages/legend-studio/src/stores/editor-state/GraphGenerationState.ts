@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { observable, flow, action, computed, makeObservable } from 'mobx';
+import {
+  observable,
+  flow,
+  action,
+  computed,
+  makeObservable,
+  flowResult,
+} from 'mobx';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
@@ -303,9 +310,11 @@ export class GraphGenerationState {
     this: GraphGenerationState,
     generationElement: PackageableElement,
   ): GeneratorFn<Entity[]> {
-    return (yield this.editorStore.graphState.graphManager.generateModel(
-      generationElement,
-      this.editorStore.graphState.graph,
+    return (yield flowResult(
+      this.editorStore.graphState.graphManager.generateModel(
+        generationElement,
+        this.editorStore.graphState.graph,
+      ),
     )) as Entity[];
   });
 

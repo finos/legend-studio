@@ -140,8 +140,8 @@ class RevisionChangeDetectionState {
     const startTime = Date.now();
     this.setIsBuildingEntityHashesIndex(true);
     try {
-      const hashesIndex = (yield this.graphState.graphManager.buildHashesIndex(
-        entities,
+      const hashesIndex = (yield flowResult(
+        this.graphState.graphManager.buildHashesIndex(entities),
       )) as Map<string, string>;
       this.setEntityHashesIndex(hashesIndex);
       this.setIsBuildingEntityHashesIndex(false);

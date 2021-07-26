@@ -443,14 +443,14 @@ export class DatabaseBuilderState {
               }
             }
           });
-        const entities =
-          (yield this.editorStore.graphState.graphManager.buildDatabase(
+        const entities = (yield flowResult(
+          this.editorStore.graphState.graphManager.buildDatabase(
             databaseBuilderInput,
-          )) as Entity[];
-        const dbGrammar =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureCode(
-            entities,
-          )) as string;
+          ),
+        )) as Entity[];
+        const dbGrammar = (yield flowResult(
+          this.editorStore.graphState.graphManager.entitiesToPureCode(entities),
+        )) as string;
         this.setDatabaseGrammarCode(dbGrammar);
       }
     } catch (error: unknown) {
@@ -476,15 +476,14 @@ export class DatabaseBuilderState {
   }
 
   private *buildDatabaseGrammar(grammar: string): GeneratorFn<Database> {
-    const entities =
-      (yield this.editorStore.graphState.graphManager.pureCodeToEntities(
-        grammar,
-      )) as Entity[];
+    const entities = (yield flowResult(
+      this.editorStore.graphState.graphManager.pureCodeToEntities(grammar),
+    )) as Entity[];
     const dbGraph = this.editorStore.graphState.createEmptyGraph();
-    (yield this.editorStore.graphState.graphManager.buildGraph(
-      dbGraph,
-      entities,
-      { quiet: true },
+    (yield flowResult(
+      this.editorStore.graphState.graphManager.buildGraph(dbGraph, entities, {
+        quiet: true,
+      }),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -496,15 +495,16 @@ export class DatabaseBuilderState {
   private *buildDatabaseFromInput(
     databaseBuilderInput: DatabaseBuilderInput,
   ): GeneratorFn<Database> {
-    const entities =
-      (yield this.editorStore.graphState.graphManager.buildDatabase(
+    const entities = (yield flowResult(
+      this.editorStore.graphState.graphManager.buildDatabase(
         databaseBuilderInput,
-      )) as Entity[];
+      ),
+    )) as Entity[];
     const dbGraph = this.editorStore.graphState.createEmptyGraph();
-    (yield this.editorStore.graphState.graphManager.buildGraph(
-      dbGraph,
-      entities,
-      { quiet: true },
+    (yield flowResult(
+      this.editorStore.graphState.graphManager.buildGraph(dbGraph, entities, {
+        quiet: true,
+      }),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,

@@ -198,20 +198,22 @@ export class ViewerStore {
             undefined,
           )) as Entity[];
       }
-      // init engine
-      yield this.editorStore.graphState.graphManager.setupEngine(
-        this.editorStore.applicationStore.pluginManager,
-        {
-          env: this.editorStore.applicationStore.config.env,
-          tabSize: TAB_SIZE,
-          clientConfig: {
-            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-            enableCompression: true,
-            authenticationUrl: SDLCServerClient.authenticationUrl(
-              this.editorStore.applicationStore.config.sdlcServerUrl,
-            ),
+      // setup engine
+      yield flowResult(
+        this.editorStore.graphState.graphManager.setupEngine(
+          this.editorStore.applicationStore.pluginManager,
+          {
+            env: this.editorStore.applicationStore.config.env,
+            tabSize: TAB_SIZE,
+            clientConfig: {
+              baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+              enableCompression: true,
+              authenticationUrl: SDLCServerClient.authenticationUrl(
+                this.editorStore.applicationStore.config.sdlcServerUrl,
+              ),
+            },
           },
-        },
+        ),
       );
       // init graph
       yield flowResult(this.editorStore.graphState.initializeSystem());

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, makeObservable } from 'mobx';
+import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import { TAB_SIZE } from '../EditorConfig';
 import { EditorState } from '../editor-state/EditorState';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
@@ -114,10 +114,11 @@ export class ModelLoaderState extends EditorState {
             )
           : this.editorStore.changeDetectionState.workspaceLatestRevisionState
               .entities;
-        this.modelText =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureProtocolText(
+        this.modelText = (yield flowResult(
+          this.editorStore.graphState.graphManager.entitiesToPureProtocolText(
             graphEntities,
-          )) as string;
+          ),
+        )) as string;
         break;
       }
       case MODEL_UPDATER_INPUT_TYPE.ENTITIES: {
@@ -148,12 +149,13 @@ export class ModelLoaderState extends EditorState {
       });
       let entities: Entity[];
       if (this.currentExternalInputType) {
-        entities =
-          (yield this.editorStore.graphState.graphManager.externalFormatTextToEntities(
+        entities = (yield flowResult(
+          this.editorStore.graphState.graphManager.externalFormatTextToEntities(
             this.modelText,
             this.currentExternalInputType,
             ImportMode.SCHEMA_IMPORT,
-          )) as Entity[];
+          ),
+        )) as Entity[];
       } else {
         switch (this.currentInputType) {
           case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
@@ -205,8 +207,9 @@ export class ModelLoaderState extends EditorState {
 
   *fetchAvailableModelImportDescriptions(): GeneratorFn<void> {
     try {
-      this.modelImportDescriptions =
-        (yield this.editorStore.graphState.graphManager.getAvailableImportConfigurationDescriptions()) as unknown as ImportConfigurationDescription[];
+      this.modelImportDescriptions = (yield flowResult(
+        this.editorStore.graphState.graphManager.getAvailableImportConfigurationDescriptions(),
+      )) as ImportConfigurationDescription[];
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.MODEL_LOADER_PROBLEM,

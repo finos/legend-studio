@@ -16,7 +16,14 @@
 
 import type { EditorStore } from '../../EditorStore';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import {
+  observable,
+  action,
+  flow,
+  computed,
+  makeObservable,
+  flowResult,
+} from 'mobx';
 import { ELEMENT_NATIVE_VIEW_MODE, TAB_SIZE } from '../../EditorConfig';
 import { EditorState } from '../../editor-state/EditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
@@ -107,10 +114,11 @@ export abstract class ElementEditorState extends EditorState {
           this.element,
           false,
         );
-      const grammar =
-        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+      const grammar = (yield flowResult(
+        this.editorStore.graphState.graphManager.entitiesToPureCode([
           elementEntity,
-        ])) as string;
+        ]),
+      )) as string;
       this.setTextContent(grammar);
     } catch (error: unknown) {
       assertErrorThrown(error);

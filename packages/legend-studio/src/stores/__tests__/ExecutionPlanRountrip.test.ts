@@ -18,6 +18,7 @@ import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import { unitTest } from '@finos/legend-studio-shared';
 import { getTestEditorStore } from '../StoreTestUtils';
 import { simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
+import { flowResult } from 'mobx';
 
 type RoundtripTestCase = [
   string,
@@ -40,7 +41,7 @@ describe(unitTest('Execution plan processing roundtrip test'), () => {
     const { entities } = context;
     // setup
     const editorStore = getTestEditorStore();
-    await editorStore.graphState.initializeSystem();
+    await flowResult(editorStore.graphState.initializeSystem());
     await editorStore.graphState.graphManager.buildGraph(
       editorStore.graphState.graph,
       entities,

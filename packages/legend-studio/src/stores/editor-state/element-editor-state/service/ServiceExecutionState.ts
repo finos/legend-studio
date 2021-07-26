@@ -180,11 +180,12 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             this.execution.func.body,
           ),
         );
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -282,14 +283,15 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     try {
       this.isGeneratingPlan = true;
       const query = this.queryState.query;
-      const plan =
-        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+      const plan = (yield flowResult(
+        this.editorStore.graphState.graphManager.generateExecutionPlan(
           this.editorStore.graphState.graph,
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
           CLIENT_VERSION.VX_X_X,
-        )) as unknown as object;
+        ),
+      )) as object;
       this.setExecutionPlan(plan);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -309,15 +311,16 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     try {
       this.isExecuting = true;
       const query = this.queryState.query;
-      const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.executeMapping(
           this.editorStore.graphState.graph,
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
           CLIENT_VERSION.VX_X_X,
           true,
-        )) as unknown as ExecutionResult;
+        ),
+      )) as ExecutionResult;
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );

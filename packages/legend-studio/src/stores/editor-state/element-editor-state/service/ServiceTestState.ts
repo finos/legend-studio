@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import {
+  observable,
+  action,
+  flow,
+  computed,
+  makeObservable,
+  flowResult,
+} from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
@@ -260,15 +267,16 @@ export class TestContainerState {
             execution.runtime,
             test.data,
           );
-        const result =
-          (yield this.editorStore.graphState.graphManager.executeMapping(
+        const result = (yield flowResult(
+          this.editorStore.graphState.graphManager.executeMapping(
             this.serviceEditorState.editorStore.graphState.graph,
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
             CLIENT_VERSION.VX_X_X,
             true,
-          )) as ExecutionResult;
+          ),
+        )) as ExecutionResult;
         this.setAssertionData(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           tryToFormatLosslessJSONString(
@@ -305,15 +313,16 @@ export class TestContainerState {
             execution.runtime,
             test.data,
           );
-        const result =
-          (yield this.editorStore.graphState.graphManager.executeMapping(
+        const result = (yield flowResult(
+          this.editorStore.graphState.graphManager.executeMapping(
             this.serviceEditorState.editorStore.graphState.graph,
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
             CLIENT_VERSION.VX_X_X,
             true,
-          )) as ExecutionResult;
+          ),
+        )) as ExecutionResult;
         this.setTestExecutionResultText({
           expected: this.assertionData ?? '',
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
@@ -446,14 +455,15 @@ export class SingleExecutionTestState {
       this.serviceEditorState.executionState.serviceExecutionParameters;
     if (executionInput) {
       try {
-        generatedTestData =
-          (yield this.editorStore.graphState.graphManager.generateTestData(
+        generatedTestData = (yield flowResult(
+          this.editorStore.graphState.graphManager.generateTestData(
             this.editorStore.graphState.graph,
             executionInput.mapping,
             executionInput.query,
             executionInput.runtime,
             CLIENT_VERSION.VX_X_X,
-          )) as string;
+          ),
+        )) as string;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.EXECUTION_PROBLEM,
@@ -479,11 +489,12 @@ export class SingleExecutionTestState {
       this.allTestRunTime = 0;
       this.isRunningAllTests = true;
       this.setTestResults([]);
-      const results =
-        (yield this.editorStore.graphState.graphManager.runServiceTests(
+      const results = (yield flowResult(
+        this.editorStore.graphState.graphManager.runServiceTests(
           this.serviceEditorState.service,
           this.serviceEditorState.editorStore.graphState.graph,
-        )) as ServiceTestResult[];
+        ),
+      )) as ServiceTestResult[];
       this.setTestResults(results);
     } catch (error: unknown) {
       this.testSuiteRunError = error as Error;

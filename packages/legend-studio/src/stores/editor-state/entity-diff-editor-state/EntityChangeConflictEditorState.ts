@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import {
+  observable,
+  action,
+  flow,
+  computed,
+  makeObservable,
+  flowResult,
+} from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
@@ -384,10 +391,9 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     entity: Entity | undefined,
   ): GeneratorFn<string> {
     if (entity) {
-      const elementGrammar =
-        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
-          entity,
-        ])) as string;
+      const elementGrammar = (yield flowResult(
+        this.editorStore.graphState.graphManager.entitiesToPureCode([entity]),
+      )) as string;
       return elementGrammar;
     }
     return '';

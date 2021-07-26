@@ -109,19 +109,21 @@ export class QueryStore {
           )) as Entity[];
       }
 
-      yield this.editorStore.graphState.graphManager.setupEngine(
-        this.editorStore.applicationStore.pluginManager,
-        {
-          env: this.editorStore.applicationStore.config.env,
-          tabSize: TAB_SIZE,
-          clientConfig: {
-            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-            enableCompression: true,
-            authenticationUrl: SDLCServerClient.authenticationUrl(
-              this.editorStore.applicationStore.config.sdlcServerUrl,
-            ),
+      yield flowResult(
+        this.editorStore.graphState.graphManager.setupEngine(
+          this.editorStore.applicationStore.pluginManager,
+          {
+            env: this.editorStore.applicationStore.config.env,
+            tabSize: TAB_SIZE,
+            clientConfig: {
+              baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+              enableCompression: true,
+              authenticationUrl: SDLCServerClient.authenticationUrl(
+                this.editorStore.applicationStore.config.sdlcServerUrl,
+              ),
+            },
           },
-        },
+        ),
       );
 
       // build graph

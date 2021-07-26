@@ -84,11 +84,13 @@ const checkGrammarRoundtrip = async (
     JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
 
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    entities,
-    { TEMPORARY__keepSectionIndex: true },
+  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(
+    editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      entities,
+      { TEMPORARY__keepSectionIndex: true },
+    ),
   );
   const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
@@ -116,12 +118,13 @@ const checkGrammarRoundtrip = async (
       editorStore.applicationStore.logger,
     ),
   );
-  const protocolHashesIndex =
-    await editorStore.graphState.graphManager.buildHashesIndex(entities);
+  const protocolHashesIndex = await flowResult(
+    editorStore.graphState.graphManager.buildHashesIndex(entities),
+  );
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
-  await editorStore.changeDetectionState.computeLocalChanges(true);
+  await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
 
   // TODO: avoid listing section index as part of change detection for now
   expect(

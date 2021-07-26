@@ -145,7 +145,7 @@ test(
         },
       ],
     );
-    await mockedEditorStore.sdlcState.fetchProjectVersions();
+    await flowResult(mockedEditorStore.sdlcState.fetchProjectVersions());
     const result = new ServiceRegistrationResult(
       '/example/myTestUrl/testing',
       'myURL',
@@ -154,10 +154,10 @@ test(
     MOBX__enableSpyOrMock();
     jest
       .spyOn(mockedEditorStore.graphState.graphManager, 'registerService')
-      .mockResolvedValue(result);
+      .mockResolvedValue(flowResult(result));
     jest
       .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
-      .mockResolvedValue();
+      .mockResolvedValue(flowResult(0));
     MOBX__disableSpyOrMock();
     await openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
@@ -238,10 +238,10 @@ test(
     MOBX__enableSpyOrMock();
     jest
       .spyOn(mockedEditorStore.graphState.graphManager, 'registerService')
-      .mockResolvedValue(result);
+      .mockResolvedValue(flowResult(result));
     jest
       .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
-      .mockResolvedValue();
+      .mockResolvedValue(flowResult(0));
     MOBX__disableSpyOrMock();
     await openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, flowResult } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
@@ -77,11 +77,12 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     const stubOperation = createStubRelationalOperationElement();
     if (this.lambdaString) {
       try {
-        const operation =
-          (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
+        const operation = (yield flowResult(
+          this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawRelationalOperationElement | undefined;
+          ),
+        )) as RawRelationalOperationElement | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof RelationalPropertyMapping) {
           this.propertyMapping.relationalOperation = operation ?? stubOperation;
@@ -112,10 +113,11 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
             this.lambdaId,
             this.propertyMapping.relationalOperation,
           );
-          const operationsInText =
-            (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+          const operationsInText = (yield flowResult(
+            this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
               operations,
-            )) as Map<string, string>;
+            ),
+          )) as Map<string, string>;
           const grammarText = operationsInText.get(this.lambdaId);
           this.setLambdaString(
             grammarText !== undefined
@@ -317,10 +319,11 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
     if (operations.size) {
       this.isConvertingTransformLambdaObjects = true;
       try {
-        const operationsInText =
-          (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+        const operationsInText = (yield flowResult(
+          this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
             operations,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         operationsInText.forEach((grammarText, key) => {
           const relationalPropertyMappingState = propertyMappingStates.get(key);
           relationalPropertyMappingState?.setLambdaString(
