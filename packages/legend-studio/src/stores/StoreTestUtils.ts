@@ -24,6 +24,7 @@ import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { PluginManager } from '../application/PluginManager';
 import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
+import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
 
 export const testApplicationConfigData = {
   appName: 'test-app',
@@ -134,18 +135,28 @@ export const ensureObjectFieldsAreSortedAlphabetically = (
   checkObjectFieldsAreSortedAlphabetically(obj);
 };
 
-export const checkBuildingElementsRoundtrip = async (
+export const buildGraphBasic = async (
   entities: Entity[],
-  editorStore = getTestEditorStore(),
+  editorStore: EditorStore,
+  options?: GraphBuilderOptions,
 ): Promise<void> => {
   await flowResult(editorStore.graphState.initializeSystem());
   await flowResult(
     editorStore.graphState.graphManager.buildGraph(
       editorStore.graphState.graph,
       entities,
-      { TEMPORARY__keepSectionIndex: true },
+      options,
     ),
   );
+};
+
+export const checkBuildingElementsRoundtrip = async (
+  entities: Entity[],
+  editorStore = getTestEditorStore(),
+): Promise<void> => {
+  await buildGraphBasic(entities, editorStore, {
+    TEMPORARY__keepSectionIndex: true,
+  });
   const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
@@ -185,13 +196,7 @@ export const checkBuildingResolvedElements = async (
   resolvedEntities: Entity[],
   editorStore = getTestEditorStore(),
 ): Promise<void> => {
-  await flowResult(editorStore.graphState.initializeSystem());
-  await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      entities,
-    ),
-  );
+  await buildGraphBasic(entities, editorStore);
   const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );

@@ -45,7 +45,11 @@ import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import type { V1_PackageableElement } from '@finos/legend-studio';
-import { EntityChangeType, getTestEditorStore } from '@finos/legend-studio';
+import {
+  EntityChangeType,
+  getTestEditorStore,
+  buildGraphBasic,
+} from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
 
@@ -84,14 +88,9 @@ const checkGrammarRoundtrip = async (
     JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
 
-  await flowResult(editorStore.graphState.initializeSystem());
-  await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      entities,
-      { TEMPORARY__keepSectionIndex: true },
-    ),
-  );
+  await buildGraphBasic(entities, editorStore, {
+    TEMPORARY__keepSectionIndex: true,
+  });
   const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );

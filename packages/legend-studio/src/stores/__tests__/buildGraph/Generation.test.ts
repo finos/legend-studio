@@ -22,7 +22,7 @@ import {
   testAutoImportsWithSystemProfiles,
 } from '../roundtrip/RoundtripTestData';
 import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
-import { getTestEditorStore } from '../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../StoreTestUtils';
 import { simpleCoreModelData } from './CoreTestData';
 import { waitFor } from '@testing-library/dom';
 import { flowResult } from 'mobx';
@@ -52,15 +52,9 @@ const testGeneratedElements = async (
   entities.push(buildParentElement());
   const generatedElementPaths = generatedEntities.map((e) => e.path);
   const editorStore = getTestEditorStore();
-  await flowResult(editorStore.graphState.initializeSystem());
-  // build main graph
-  await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      entities,
-      { TEMPORARY__keepSectionIndex: true },
-    ),
-  );
+  await buildGraphBasic(entities as Entity[], editorStore, {
+    TEMPORARY__keepSectionIndex: true,
+  });
   await waitFor(() =>
     expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
   );

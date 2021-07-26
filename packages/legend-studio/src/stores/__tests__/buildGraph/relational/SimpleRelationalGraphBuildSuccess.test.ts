@@ -18,22 +18,18 @@ import { relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { unitTest, guaranteeType } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { flowResult } from 'mobx';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await flowResult(editorStore.graphState.initializeSystem());
-  await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      relationalCompleteGraphEntities as Entity[],
-    ),
+  await buildGraphBasic(
+    relationalCompleteGraphEntities as Entity[],
+    editorStore,
   );
 });
 

@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-import { inlineEmbeddedRelational } from './RelationalEntitiesTestData';
+import { inlineEmbeddedRelationalTestData } from './RelationalEntitiesTestData';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { flowResult } from 'mobx';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await flowResult(editorStore.graphState.initializeSystem());
-  await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      inlineEmbeddedRelational as Entity[],
-    ),
+  await buildGraphBasic(
+    inlineEmbeddedRelationalTestData as Entity[],
+    editorStore,
   );
 });
 

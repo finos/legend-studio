@@ -22,18 +22,21 @@ import {
   testReferenceWithoutSection,
   testReferenceModification,
 } from '../__tests__/InferenceTestData';
-import { getTestEditorStore, excludeSectionIndex } from '../StoreTestUtils';
+import {
+  getTestEditorStore,
+  excludeSectionIndex,
+  buildGraphBasic,
+} from '../StoreTestUtils';
 import { flowResult } from 'mobx';
 
 test(unitTest('Infer default mapping element ID'), async () => {
   const editorStore = getTestEditorStore();
-  await flowResult(editorStore.graphState.initializeSystem());
-  await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testInferenceDefaultMappingElementID as Entity[],
-      { TEMPORARY__keepSectionIndex: true },
-    ),
+  await buildGraphBasic(
+    testInferenceDefaultMappingElementID as Entity[],
+    editorStore,
+    {
+      TEMPORARY__keepSectionIndex: true,
+    },
   );
   const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
@@ -68,12 +71,9 @@ test(
   ),
   async () => {
     const editorStore = getTestEditorStore();
-    await flowResult(editorStore.graphState.initializeSystem());
-    await flowResult(
-      editorStore.graphState.graphManager.buildGraph(
-        editorStore.graphState.graph,
-        testReferenceWithoutSection.original as Entity[],
-      ),
+    await buildGraphBasic(
+      testReferenceWithoutSection.original as Entity[],
+      editorStore,
     );
     const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
       (element) => editorStore.graphState.graphManager.elementToEntity(element),
@@ -89,13 +89,12 @@ test(
   async () => {
     // If the reference owner does not change, the serialized path is kept as user input
     let editorStore = getTestEditorStore();
-    await flowResult(editorStore.graphState.initializeSystem());
-    await flowResult(
-      editorStore.graphState.graphManager.buildGraph(
-        editorStore.graphState.graph,
-        testReferenceModification.original as Entity[],
-        { TEMPORARY__keepSectionIndex: true },
-      ),
+    await buildGraphBasic(
+      testReferenceModification.original as Entity[],
+      editorStore,
+      {
+        TEMPORARY__keepSectionIndex: true,
+      },
     );
     let enumeration =
       editorStore.graphState.graph.getEnumeration('test::tEnum');
@@ -113,13 +112,12 @@ test(
     );
     // If the reference owner changes, the serialized path is fully-resolved
     editorStore = getTestEditorStore();
-    await flowResult(editorStore.graphState.initializeSystem());
-    await flowResult(
-      editorStore.graphState.graphManager.buildGraph(
-        editorStore.graphState.graph,
-        testReferenceModification.original as Entity[],
-        { TEMPORARY__keepSectionIndex: true },
-      ),
+    await buildGraphBasic(
+      testReferenceModification.original as Entity[],
+      editorStore,
+      {
+        TEMPORARY__keepSectionIndex: true,
+      },
     );
     enumeration = editorStore.graphState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(

@@ -190,6 +190,7 @@ export * from './const';
 export {
   getTestApplicationConfig,
   getTestEditorStore,
+  buildGraphBasic,
   checkBuildingElementsRoundtrip,
 } from './stores/StoreTestUtils';
 export {

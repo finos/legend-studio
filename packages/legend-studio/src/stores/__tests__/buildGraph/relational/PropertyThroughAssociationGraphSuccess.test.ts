@@ -21,24 +21,20 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import {
   DynaFunction,
   TableAliasColumn,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { flowResult } from 'mobx';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await flowResult(editorStore.graphState.initializeSystem());
-  await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      targetSetImplementationThroughAssociation as Entity[],
-    ),
+  await buildGraphBasic(
+    targetSetImplementationThroughAssociation as Entity[],
+    editorStore,
   );
 });
 

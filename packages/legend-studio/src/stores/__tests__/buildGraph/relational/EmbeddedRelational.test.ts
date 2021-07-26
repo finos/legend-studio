@@ -14,24 +14,17 @@
  * limitations under the License.
  */
 
-import { embeddedRelational } from './RelationalEntitiesTestData';
+import { embeddedRelationalTestData } from './RelationalEntitiesTestData';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { flowResult } from 'mobx';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await flowResult(editorStore.graphState.initializeSystem());
-  await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      embeddedRelational as Entity[],
-    ),
-  );
+  await buildGraphBasic(embeddedRelationalTestData as Entity[], editorStore);
 });
 
 test(unitTest('Embedded Relational Mapping'), () => {
