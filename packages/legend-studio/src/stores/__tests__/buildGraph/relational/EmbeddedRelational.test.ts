@@ -20,14 +20,17 @@ import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
 import { getTestEditorStore } from '../../../StoreTestUtils';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
+import { flowResult } from 'mobx';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    embeddedRelational as Entity[],
+  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(
+    editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      embeddedRelational as Entity[],
+    ),
   );
 });
 

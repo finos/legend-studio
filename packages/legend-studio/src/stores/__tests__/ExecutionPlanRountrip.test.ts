@@ -42,10 +42,12 @@ describe(unitTest('Execution plan processing roundtrip test'), () => {
     // setup
     const editorStore = getTestEditorStore();
     await flowResult(editorStore.graphState.initializeSystem());
-    await editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      entities,
-      { TEMPORARY__keepSectionIndex: true },
+    await flowResult(
+      editorStore.graphState.graphManager.buildGraph(
+        editorStore.graphState.graph,
+        entities,
+        { TEMPORARY__keepSectionIndex: true },
+      ),
     );
     // roundtrip check
     const executionPlan =

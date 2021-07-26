@@ -19,14 +19,17 @@ import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
 import { getTestEditorStore } from '../../../StoreTestUtils';
 import { PackageableElementReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import { flowResult } from 'mobx';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    fileGenerationTestData as Entity[],
+  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(
+    editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      fileGenerationTestData as Entity[],
+    ),
   );
 });
 

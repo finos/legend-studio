@@ -173,51 +173,58 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
   ) {
     super(editorStore);
 
-    makeObservable<EntityChangeConflictEditorState, 'sortedMergedConflicts'>(
-      this,
-      {
-        entityPath: observable,
-        baseRevision: observable,
-        currentChangeRevision: observable,
-        incomingChangeRevision: observable,
-        baseEntity: observable.ref,
-        currentChangeEntity: observable.ref,
-        incomingChangeEntity: observable.ref,
-        baseGrammarText: observable,
-        currentChangeGrammarText: observable,
-        incomingChangeGrammarText: observable,
-        baseEntityGetter: observable,
-        currentChangeEntityGetter: observable,
-        incomingChangeEntityGetter: observable,
-        mergedText: observable,
-        mergeSucceeded: observable,
-        mergeConflicts: observable,
-        isReadOnly: observable,
-        currentMergeEditorConflict: observable,
-        currentMergeEditorLine: observable,
-        mergeEditorParserError: observable,
-        currentMode: observable,
-        setReadOnly: action,
-        setMergedText: action,
-        setCurrentMode: action,
-        setCurrentMergeEditorLine: action,
-        setCurrentMergeEditorConflict: action,
-        clearMergeEditorError: action,
-        refreshMergeConflict: action,
-        headerName: computed,
-        sortedMergedConflicts: computed,
-        canUseTheirs: computed,
-        canUseYours: computed,
-        canMarkAsResolved: computed,
-        previousConflict: computed,
-        nextConflict: computed,
-        resetMergeEditorStateOnLeave: action,
-        acceptCurrentChange: action,
-        acceptIncomingChange: action,
-        acceptBothChanges: action,
-        rejectBothChanges: action,
-      },
-    );
+    makeObservable<
+      EntityChangeConflictEditorState,
+      'sortedMergedConflicts' | 'getGrammarForEntity'
+    >(this, {
+      entityPath: observable,
+      baseRevision: observable,
+      currentChangeRevision: observable,
+      incomingChangeRevision: observable,
+      baseEntity: observable.ref,
+      currentChangeEntity: observable.ref,
+      incomingChangeEntity: observable.ref,
+      baseGrammarText: observable,
+      currentChangeGrammarText: observable,
+      incomingChangeGrammarText: observable,
+      baseEntityGetter: observable,
+      currentChangeEntityGetter: observable,
+      incomingChangeEntityGetter: observable,
+      mergedText: observable,
+      mergeSucceeded: observable,
+      mergeConflicts: observable,
+      isReadOnly: observable,
+      currentMergeEditorConflict: observable,
+      currentMergeEditorLine: observable,
+      mergeEditorParserError: observable,
+      currentMode: observable,
+      headerName: computed,
+      sortedMergedConflicts: computed,
+      canUseTheirs: computed,
+      canUseYours: computed,
+      canMarkAsResolved: computed,
+      previousConflict: computed,
+      nextConflict: computed,
+      setReadOnly: action,
+      setMergedText: action,
+      setCurrentMode: action,
+      setCurrentMergeEditorLine: action,
+      setCurrentMergeEditorConflict: action,
+      clearMergeEditorError: action,
+      refreshMergeConflict: action,
+      resetMergeEditorStateOnLeave: action,
+      acceptCurrentChange: action,
+      acceptIncomingChange: action,
+      acceptBothChanges: action,
+      rejectBothChanges: action,
+      refresh: flow,
+      getMergedText: flow,
+      markAsResolved: flow,
+      useCurrentChanges: flow,
+      useIncomingChanges: flow,
+      onMarkAsResolved: flow,
+      getGrammarForEntity: flow,
+    });
 
     this.entityPath = entityPath;
     // revision
@@ -347,7 +354,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     this.currentMergeEditorConflict = undefined;
   }
 
-  refresh = flow(function* (this: EntityChangeConflictEditorState) {
+  *refresh(): GeneratorFn<void> {
     this.baseEntity = this.baseEntityGetter
       ? this.baseEntityGetter(this.entityPath)
       : this.baseEntity;
@@ -358,19 +365,19 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
       ? this.incomingChangeEntityGetter(this.entityPath)
       : this.incomingChangeEntity;
     if (this.isReadOnly || this.mergedText === undefined) {
-      yield this.getMergedText();
+      yield flowResult(this.getMergedText());
     }
-  });
+  }
 
-  getMergedText = flow(function* (this: EntityChangeConflictEditorState) {
-    this.baseGrammarText = (yield this.getGrammarForEntity(
-      this.baseEntity,
+  *getMergedText(): GeneratorFn<void> {
+    this.baseGrammarText = (yield flowResult(
+      this.getGrammarForEntity(this.baseEntity),
     )) as string;
-    this.currentChangeGrammarText = (yield this.getGrammarForEntity(
-      this.currentChangeEntity,
+    this.currentChangeGrammarText = (yield flowResult(
+      this.getGrammarForEntity(this.currentChangeEntity),
     )) as string;
-    this.incomingChangeGrammarText = (yield this.getGrammarForEntity(
-      this.incomingChangeEntity,
+    this.incomingChangeGrammarText = (yield flowResult(
+      this.getGrammarForEntity(this.incomingChangeEntity),
     )) as string;
     const result = mergeDiff3<string>(
       this.currentChangeGrammarText,
@@ -384,10 +391,9 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     this.mergedText = result.result.join('\n');
     this.refreshMergeConflict();
     this.mergeSucceeded = !this.mergeConflicts.length;
-  });
+  }
 
-  private getGrammarForEntity = flow(function* (
-    this: EntityChangeConflictEditorState,
+  private *getGrammarForEntity(
     entity: Entity | undefined,
   ): GeneratorFn<string> {
     if (entity) {
@@ -397,14 +403,15 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
       return elementGrammar;
     }
     return '';
-  });
+  }
 
-  markAsResolved = flow(function* (this: EntityChangeConflictEditorState) {
+  *markAsResolved(): GeneratorFn<void> {
     try {
-      const entities =
-        (yield this.editorStore.graphState.graphManager.pureCodeToEntities(
+      const entities = (yield flowResult(
+        this.editorStore.graphState.graphManager.pureCodeToEntities(
           this.mergedText ?? '',
-        )) as Entity[];
+        ),
+      )) as Entity[];
       if (!entities.length) {
         this.editorStore.changeDetectionState.resolutions.push(
           new EntityChangeConflictResolution(this.entityPath, undefined),
@@ -433,28 +440,28 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
         );
       }
     }
-    yield this.onMarkAsResolved();
-  });
+    yield flowResult(this.onMarkAsResolved());
+  }
 
-  useCurrentChanges = flow(function* (this: EntityChangeConflictEditorState) {
+  *useCurrentChanges(): GeneratorFn<void> {
     this.editorStore.changeDetectionState.resolutions.push(
       new EntityChangeConflictResolution(
         this.entityPath,
         this.currentChangeEntity,
       ),
     );
-    yield this.onMarkAsResolved();
-  });
+    yield flowResult(this.onMarkAsResolved());
+  }
 
-  useIncomingChanges = flow(function* (this: EntityChangeConflictEditorState) {
+  *useIncomingChanges(): GeneratorFn<void> {
     this.editorStore.changeDetectionState.resolutions.push(
       new EntityChangeConflictResolution(
         this.entityPath,
         this.incomingChangeEntity,
       ),
     );
-    yield this.onMarkAsResolved();
-  });
+    yield flowResult(this.onMarkAsResolved());
+  }
 
   acceptCurrentChange(conflict: MergeConflict): void {
     if (this.mergedText === undefined) {
@@ -531,7 +538,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     this.refreshMergeConflict();
   }
 
-  onMarkAsResolved = flow(function* (this: EntityChangeConflictEditorState) {
+  *onMarkAsResolved(): GeneratorFn<void> {
     // swap out the current conflict editor with a normal diff editor
     const resolvedChange =
       this.editorStore.conflictResolutionState.resolvedChanges.find(
@@ -545,6 +552,8 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     this.editorStore.closeState(this);
     this.editorStore.conflictResolutionState.removeMergeEditorState(this);
     // check for remaining conflicts, if none left, prompt the users for the next action
-    yield this.editorStore.conflictResolutionState.promptBuildGraphAfterAllConflictsResolved();
-  });
+    yield flowResult(
+      this.editorStore.conflictResolutionState.promptBuildGraphAfterAllConflictsResolved(),
+    );
+  }
 }

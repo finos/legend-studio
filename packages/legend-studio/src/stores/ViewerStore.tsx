@@ -222,13 +222,17 @@ export class ViewerStore {
       );
 
       // fetch available file generation descriptions
-      yield this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions();
+      yield flowResult(
+        this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      );
 
       // generate
       if (
         this.editorStore.graphState.graph.ownGenerationSpecifications.length
       ) {
-        yield this.editorStore.graphState.graphGenerationState.globalGenerate();
+        yield flowResult(
+          this.editorStore.graphState.graphGenerationState.globalGenerate(),
+        );
       }
 
       // open element if provided an element path

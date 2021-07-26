@@ -28,14 +28,17 @@ import {
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import { flowResult } from 'mobx';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    targetSetImplementationThroughAssociation as Entity[],
+  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(
+    editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      targetSetImplementationThroughAssociation as Entity[],
+    ),
   );
 });
 

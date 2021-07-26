@@ -24,14 +24,17 @@ import type { PureInstanceSetImplementation } from '../../../models/metamodels/p
 import type { OperationSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { Enum } from '../../../models/metamodels/pure/model/packageableElements/domain/Enum';
 import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
+import { flowResult } from 'mobx';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    m2mGraphEntities as Entity[],
+  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(
+    editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      m2mGraphEntities as Entity[],
+    ),
   );
 });
 

@@ -15,6 +15,7 @@
  */
 
 import { unitTest } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 import { Logger } from '../../../../../../../../utils/Logger';
 import {
   CoreModel,
@@ -56,9 +57,11 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
     logger.mute();
     // setup
     const graphManager = new V1_PureGraphManager([], [], logger);
-    await graphManager.buildGraph(graph, entities, {
-      TEMPORARY__keepSectionIndex: true,
-    });
+    await flowResult(
+      graphManager.buildGraph(graph, entities, {
+        TEMPORARY__keepSectionIndex: true,
+      }),
+    );
     const fn = (): void => {
       graphManager.buildValueSpecification(lambdaJson, graph);
     };

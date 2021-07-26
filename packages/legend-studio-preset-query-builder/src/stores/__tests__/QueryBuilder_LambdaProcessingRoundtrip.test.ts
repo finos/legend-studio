@@ -21,6 +21,7 @@ import {
   getTestEditorStore,
 } from '@finos/legend-studio';
 import { unitTest } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 import { QueryBuilder_Preset } from '../../QueryBuilder_Preset';
 import {
   M2MModel,
@@ -93,11 +94,13 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       getTestApplicationConfig(),
       pluginManager,
     );
-    await editorStore.graphState.initializeSystem();
-    await editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      entities,
-      { TEMPORARY__keepSectionIndex: true },
+    await flowResult(editorStore.graphState.initializeSystem());
+    await flowResult(
+      editorStore.graphState.graphManager.buildGraph(
+        editorStore.graphState.graph,
+        entities,
+        { TEMPORARY__keepSectionIndex: true },
+      ),
     );
     // roundtrip check
     const lambda = editorStore.graphState.graphManager.buildValueSpecification(

@@ -16,9 +16,16 @@
 
 import type { EditorStore } from '../EditorStore';
 import { EditorState } from '../editor-state/EditorState';
-import { action, computed, flow, observable, makeObservable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  observable,
+  makeObservable,
+  flowResult,
+} from 'mobx';
 import type { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   assertErrorThrown,
   guaranteeNonNullable,
@@ -68,11 +75,18 @@ export class ProjectConfigurationEditorState extends EditorState {
       associatedProjectsAndVersionsFetched: observable,
       isFetchingAssociatedProjectsAndVersions: observable,
       latestProjectStructureVersion: observable,
+      originalConfig: computed,
+      projectOptions: computed,
       setOriginalProjectConfiguration: action,
       setProjectConfiguration: action,
       setSelectedTab: action,
-      originalConfig: computed,
-      projectOptions: computed,
+      fectchAssociatedProjectsAndVersions: flow,
+      updateProjectConfiguration: flow,
+      queryProjects: flow,
+      getProjectVersions: flow,
+      updateToLatestStructure: flow,
+      updateConfigs: flow,
+      fetchLatestProjectStructureVersion: flow,
     });
 
     this.selectedTab = CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE;
@@ -113,10 +127,9 @@ export class ProjectConfigurationEditorState extends EditorState {
       .sort(compareLabelFn);
   }
 
-  fectchAssociatedProjectsAndVersions = flow(function* (
-    this: ProjectConfigurationEditorState,
+  *fectchAssociatedProjectsAndVersions(
     projectConfig: ProjectConfiguration,
-  ) {
+  ): GeneratorFn<void> {
     this.isFetchingAssociatedProjectsAndVersions = true;
     try {
       const dependencies = projectConfig.projectDependencies;
@@ -176,12 +189,11 @@ export class ProjectConfigurationEditorState extends EditorState {
     } finally {
       this.isFetchingAssociatedProjectsAndVersions = false;
     }
-  });
+  }
 
-  updateProjectConfiguration = flow(function* (
-    this: ProjectConfigurationEditorState,
+  *updateProjectConfiguration(
     updateConfigurationCommand: UpdateProjectConfigurationCommand,
-  ) {
+  ): GeneratorFn<void> {
     try {
       this.isUpdatingConfiguration = true;
       yield this.sdlcState.sdlcClient.updateConfiguration(
@@ -193,15 +205,19 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
       this.editorStore.reset();
       // reset editor
-      yield this.editorStore.sdlcState.fetchCurrentWorkspace(
-        this.editorStore.sdlcState.currentProjectId,
-        this.editorStore.sdlcState.currentWorkspaceId,
+      yield flowResult(
+        this.editorStore.sdlcState.fetchCurrentWorkspace(
+          this.editorStore.sdlcState.currentProjectId,
+          this.editorStore.sdlcState.currentWorkspaceId,
+        ),
       );
-      yield this.sdlcState.fetchCurrentRevision(
-        this.editorStore.sdlcState.currentProjectId,
-        this.editorStore.sdlcState.currentWorkspaceId,
+      yield flowResult(
+        this.sdlcState.fetchCurrentRevision(
+          this.editorStore.sdlcState.currentProjectId,
+          this.editorStore.sdlcState.currentWorkspaceId,
+        ),
       );
-      yield this.editorStore.initMode();
+      yield flowResult(this.editorStore.initMode());
       this.editorStore.openSingletonEditorState(
         this.editorStore.projectConfigurationEditorState,
       );
@@ -215,14 +231,11 @@ export class ProjectConfigurationEditorState extends EditorState {
     } finally {
       this.isUpdatingConfiguration = false;
     }
-  });
+  }
 
   // FIXME: as of now we do caching on the query, we might want to rethink this strategy although it makes sense
   // but UX-wise, it's awkward that user have to refresh the browser in order to refresh this cache.
-  queryProjects = flow(function* (
-    this: ProjectConfigurationEditorState,
-    query: string,
-  ) {
+  *queryProjects(query: string): GeneratorFn<void> {
     if (!this.queryHistory.has(query) && query) {
       this.isQueryingProjects = true;
       try {
@@ -247,12 +260,9 @@ export class ProjectConfigurationEditorState extends EditorState {
         this.isQueryingProjects = false;
       }
     }
-  });
+  }
 
-  getProjectVersions = flow(function* (
-    this: ProjectConfigurationEditorState,
-    projectId: string,
-  ) {
+  *getProjectVersions(projectId: string): GeneratorFn<void> {
     try {
       const versionMap = observable<string, Version>(new Map());
       (
@@ -270,11 +280,9 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  updateToLatestStructure = flow(function* (
-    this: ProjectConfigurationEditorState,
-  ) {
+  *updateToLatestStructure(): GeneratorFn<void> {
     if (this.latestProjectStructureVersion) {
       try {
         const updateCommand = new UpdateProjectConfigurationCommand(
@@ -283,7 +291,7 @@ export class ProjectConfigurationEditorState extends EditorState {
           this.latestProjectStructureVersion,
           `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
         );
-        yield this.updateProjectConfiguration(updateCommand);
+        yield flowResult(this.updateProjectConfiguration(updateCommand));
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
           CORE_LOG_EVENT.SDLC_PROBLEM,
@@ -292,10 +300,10 @@ export class ProjectConfigurationEditorState extends EditorState {
         this.editorStore.applicationStore.notifyError(error);
       }
     }
-  });
+  }
 
-  // TODO: we will need to remove this in the future when we have a better strategy for change detection and persistence of project config
-  updateConfigs = flow(function* (this: ProjectConfigurationEditorState) {
+  // FIXME: we will probably need to remove this in the future when we have a better strategy for change detection and persistence of project config
+  *updateConfigs(): GeneratorFn<void> {
     this.isUpdatingConfiguration = true;
     try {
       const updateProjectConfigurationCommand =
@@ -319,7 +327,9 @@ export class ProjectConfigurationEditorState extends EditorState {
               (dep) => dep.hashCode === originalProjDep.hashCode,
             ),
         );
-      yield this.updateProjectConfiguration(updateProjectConfigurationCommand);
+      yield flowResult(
+        this.updateProjectConfiguration(updateProjectConfigurationCommand),
+      );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
@@ -329,11 +339,9 @@ export class ProjectConfigurationEditorState extends EditorState {
     } finally {
       this.isUpdatingConfiguration = false;
     }
-  });
+  }
 
-  fetchLatestProjectStructureVersion = flow(function* (
-    this: ProjectConfigurationEditorState,
-  ) {
+  *fetchLatestProjectStructureVersion(): GeneratorFn<void> {
     if (
       !this.editorStore.applicationStore.config.options
         .TEMPORARY__disableSDLCProjectStructureSupport
@@ -341,7 +349,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       try {
         this.latestProjectStructureVersion =
           ProjectStructureVersion.serialization.fromJson(
-            yield this.sdlcState.sdlcClient.getLatestProjectStructureVersion(),
+            (yield this.sdlcState.sdlcClient.getLatestProjectStructureVersion()) as PlainObject<ProjectStructureVersion>,
           );
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
@@ -351,5 +359,5 @@ export class ProjectConfigurationEditorState extends EditorState {
         this.editorStore.applicationStore.notifyError(error);
       }
     }
-  });
+  }
 }

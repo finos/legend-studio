@@ -180,11 +180,13 @@ const testDependencyElements = async (
     editorStore.graphState.getProjectDependencyEntities(),
   );
   editorStore.graphState.graph.setDependencyManager(dependencyManager);
-  await editorStore.graphState.graphManager.buildDependencies(
-    editorStore.graphState.coreModel,
-    editorStore.graphState.systemModel,
-    dependencyManager,
-    dependencyMap,
+  await flowResult(
+    editorStore.graphState.graphManager.buildDependencies(
+      editorStore.graphState.coreModel,
+      editorStore.graphState.systemModel,
+      dependencyManager,
+      dependencyMap,
+    ),
   );
   await waitFor(() =>
     expect(
@@ -192,10 +194,12 @@ const testDependencyElements = async (
     ).toBeTrue(),
   );
 
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    entities,
-    { TEMPORARY__keepSectionIndex: true },
+  await flowResult(
+    editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      entities,
+      { TEMPORARY__keepSectionIndex: true },
+    ),
   );
   await waitFor(() =>
     expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),

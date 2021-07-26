@@ -218,7 +218,7 @@ export const LegendStudioApplicationRoot = observer(() => {
 const LegendStudioApplicationConfigEditor = observer(
   (props: { config: ApplicationConfig }) => {
     const { config } = props;
-    const history = useHistory() as unknown as History<State>;
+    const history = useHistory() as History<State>;
     const sdlcServerOptions = config.sdlcServerOptions.map((option) => ({
       label: option.label,
       value: option,
@@ -275,7 +275,7 @@ const LegendStudioApplicationConfigEditor = observer(
 export const LegendStudioApplication = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
     const { config, pluginManager } = props;
-    const history = useHistory() as unknown as History<State>;
+    const history = useHistory() as History<State>;
     const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
       generateRoutePatternWithSDLCServerKey('/'),
     );

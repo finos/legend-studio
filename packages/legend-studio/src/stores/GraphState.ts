@@ -1033,7 +1033,7 @@ export class GraphState {
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
           (yield metadataClient.getDependencyEntities(
-            directDependencies as unknown as PlainObject<ProjectVersion>[],
+            directDependencies as PlainObject<ProjectVersion>[],
             true,
             true,
           )) as PlainObject<ProjectVersionEntities>[];

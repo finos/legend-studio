@@ -25,6 +25,7 @@ import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { simpleCoreModelData } from './CoreTestData';
 import { waitFor } from '@testing-library/dom';
+import { flowResult } from 'mobx';
 
 const PARENT_ELEMENT_PATH = 'model::myFileGeneration';
 const buildParentElement = (): Entity => {
@@ -51,12 +52,14 @@ const testGeneratedElements = async (
   entities.push(buildParentElement());
   const generatedElementPaths = generatedEntities.map((e) => e.path);
   const editorStore = getTestEditorStore();
-  await editorStore.graphState.initializeSystem();
+  await flowResult(editorStore.graphState.initializeSystem());
   // build main graph
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    entities,
-    { TEMPORARY__keepSectionIndex: true },
+  await flowResult(
+    editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      entities,
+      { TEMPORARY__keepSectionIndex: true },
+    ),
   );
   await waitFor(() =>
     expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
@@ -64,9 +67,11 @@ const testGeneratedElements = async (
   // build generation graph
   const generatedEntitiesMap = new Map<string, Entity[]>();
   generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);
-  await editorStore.graphState.graphManager.buildGenerations(
-    editorStore.graphState.graph,
-    generatedEntitiesMap,
+  await flowResult(
+    editorStore.graphState.graphManager.buildGenerations(
+      editorStore.graphState.graph,
+      generatedEntitiesMap,
+    ),
   );
 
   expect(

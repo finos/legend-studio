@@ -330,7 +330,9 @@ const LambdaEditorInner = observer(
                 lambdaEditorState,
                 !disabled,
                 () =>
-                  editorStore.graphState.graphGenerationState.globalGenerate(),
+                  flowResult(
+                    editorStore.graphState.graphGenerationState.globalGenerate(),
+                  ),
               ),
             ).catch(applicationStore.alertIllegalUnhandledError);
           }

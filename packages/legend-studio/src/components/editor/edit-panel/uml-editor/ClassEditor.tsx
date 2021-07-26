@@ -426,7 +426,7 @@ const DerivedPropertyBasicEditor = observer(
     const visitOwner = (): void =>
       editorStore.openElement(derivedProperty.owner);
     const remove = applicationStore.guaranteeSafeAction(async () => {
-      await dpState.convertLambdaObjectToGrammarString(false);
+      await flowResult(dpState.convertLambdaObjectToGrammarString(false));
       deleteDerivedProperty();
     });
 
@@ -633,7 +633,9 @@ const ConstraintEditor = observer(
       constraint.setName(event.target.value);
     // Actions
     const remove = applicationStore.guaranteeSafeAction(async () => {
-      await constraintState.convertLambdaObjectToGrammarString(false);
+      await flowResult(
+        constraintState.convertLambdaObjectToGrammarString(false),
+      );
       deleteConstraint();
     });
     const visitOwner = (): void => editorStore.openElement(constraint.owner);

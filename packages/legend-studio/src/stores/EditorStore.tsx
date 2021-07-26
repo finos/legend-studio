@@ -288,9 +288,9 @@ export class EditorStore {
         HOTKEY.GENERATE,
         [HOTKEY_MAP.GENERATE],
         this.createGlobalHotKeyAction(() => {
-          this.graphState.graphGenerationState
-            .globalGenerate()
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(
+            this.graphState.graphGenerationState.globalGenerate(),
+          ).catch(applicationStore.alertIllegalUnhandledError);
         }),
       ),
       new EditorHotkey(

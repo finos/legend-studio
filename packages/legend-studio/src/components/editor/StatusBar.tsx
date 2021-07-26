@@ -115,10 +115,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           flowResult(editorStore.graphState.globalCompileInFormMode()),
   );
   const generate = applicationStore.guaranteeSafeAction(() =>
-    editorStore.graphState.graphGenerationState.globalGenerate(),
+    flowResult(editorStore.graphState.graphGenerationState.globalGenerate()),
   );
   const emptyGenerationEntities = applicationStore.guaranteeSafeAction(() =>
-    editorStore.graphState.graphGenerationState.clearGenerations(),
+    flowResult(editorStore.graphState.graphGenerationState.clearGenerations()),
   );
 
   return (

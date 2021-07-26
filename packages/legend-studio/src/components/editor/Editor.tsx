@@ -228,7 +228,7 @@ export const EditorInner = observer(() => {
   const promptComponent = (
     <Prompt
       when={onNavigationChangeIndicator}
-      message={handleRouteNavigationBlocking as unknown as any} // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      message={handleRouteNavigationBlocking as any} // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
     />
   );
 

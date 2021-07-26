@@ -80,7 +80,7 @@ export const LegendQueryApplicationRoot = observer(() => {
 export const LegendQueryApplication = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
     const { config, pluginManager } = props;
-    const history = useHistory() as unknown as History<State>;
+    const history = useHistory() as History<State>;
 
     if (!config.isConfigured) {
       return null;
