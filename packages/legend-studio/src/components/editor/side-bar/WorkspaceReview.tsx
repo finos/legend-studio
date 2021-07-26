@@ -38,7 +38,7 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '../../../stores/ApplicationStore';
-import { generateReviewRoute } from '../../../stores/Router';
+import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
 
@@ -123,17 +123,17 @@ export const WorkspaceReview = observer(() => {
   };
   const closeReview = (): void => {
     workspaceReviewState.setReviewTitle('');
-    workspaceReviewState
-      .closeWorkspaceReview()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(workspaceReviewState.closeWorkspaceReview()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   };
   const commitReview = (): void => {
     if (workspaceReview && !isDispatchingAction) {
       const commit = (): void => {
         workspaceReviewState.setReviewTitle('');
-        workspaceReviewState
-          .commitWorkspaceReview(workspaceReview)
-          .catch(applicationStore.alertIllegalUnhandledError);
+        flowResult(
+          workspaceReviewState.commitWorkspaceReview(workspaceReview),
+        ).catch(applicationStore.alertIllegalUnhandledError);
       };
       if (editorStore.hasUnsyncedChanges) {
         editorStore.setActionAltertInfo({
@@ -170,9 +170,11 @@ export const WorkspaceReview = observer(() => {
       !workspaceReview &&
       !isDispatchingAction
     ) {
-      workspaceReviewState
-        .createWorkspaceReview(workspaceReviewState.reviewTitle)
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        workspaceReviewState.createWorkspaceReview(
+          workspaceReviewState.reviewTitle,
+        ),
+      ).catch(applicationStore.alertIllegalUnhandledError);
     }
   };
 

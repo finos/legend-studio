@@ -26,15 +26,12 @@ import { QueryBuilderResultPanel } from './QueryBuilderResultPanel';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
-import {
-  QueryBuilderUnsupportedExplorerPanel,
-  QueryBuilderUnsupportedPanel,
-} from './QueryBuilderUnsupportedPanel';
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import { HOTKEY, HOTKEY_MAP, useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import Backdrop from '@material-ui/core/Backdrop';
+import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -89,6 +86,7 @@ const QueryBuilderStatusBar = observer(
     );
   },
 );
+
 const QueryBuilderHeader = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -129,25 +127,6 @@ const QueryBuilderHeader = observer(
           </div>
         </div>
       </div>
-    );
-  },
-);
-
-const QueryBuilderUnsupported = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-
-    return (
-      <ReflexContainer orientation="vertical">
-        <ReflexElement size={450} minSize={0}>
-          <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
-          <QueryBuilderUnsupportedExplorerPanel />
-        </ReflexElement>
-        <ReflexSplitter />
-        <ReflexElement minSize={0}>
-          <QueryBuilderUnsupportedPanel queryBuilderState={queryBuilderState} />
-        </ReflexElement>
-      </ReflexContainer>
     );
   },
 );
@@ -209,7 +188,7 @@ export const QueryBuilder = observer(
                     </ReflexElement>
                   </ReflexContainer>
                 ) : (
-                  <QueryBuilderUnsupported
+                  <QueryBuilderUnsupportedQueryEditor
                     queryBuilderState={queryBuilderState}
                   />
                 )}

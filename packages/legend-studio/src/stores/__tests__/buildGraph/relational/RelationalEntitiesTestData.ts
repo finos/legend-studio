@@ -9481,7 +9481,7 @@ export const targetSetImplementationThroughAssociation = [
   },
 ];
 
-export const embeddedRelational = [
+export const embeddedRelationalTestData = [
   {
     path: 'meta::pure::tests::model::simple::Person',
     content: {
@@ -13110,7 +13110,7 @@ export const embeddedRelational = [
   },
 ];
 
-export const otherwiseEmbeddedRelational = [
+export const otherwiseEmbeddedRelationalTestData = [
   {
     path: 'other::Person',
     content: {
@@ -13521,8 +13521,7 @@ export const otherwiseEmbeddedRelational = [
   },
 ];
 
-// TODO
-export const inlineEmbeddedRelational = [
+export const inlineEmbeddedRelationalTestData = [
   {
     path: 'other::Person',
     content: {

@@ -30,6 +30,7 @@ import { clsx } from '@finos/legend-studio-components';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {
@@ -105,14 +106,14 @@ export const EntityDiffView = observer(() => {
     diffEditorState.refresh();
   }, [diffEditorState]);
   useEffect(() => {
-    diffEditorState
-      .getFromGrammar()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(diffEditorState.getFromGrammar()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, diffEditorState, diffEditorState.fromEntity]);
   useEffect(() => {
-    diffEditorState
-      .getToGrammar()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(diffEditorState.getToGrammar()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, diffEditorState, diffEditorState.toEntity]);
 
   return (

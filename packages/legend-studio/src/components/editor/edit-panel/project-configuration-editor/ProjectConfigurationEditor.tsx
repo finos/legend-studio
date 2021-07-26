@@ -47,6 +47,7 @@ import {
   ActionAlertType,
 } from '../../../../stores/ApplicationStore';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { flowResult } from 'mobx';
 
 const ProjectDependencyVersionSelector = observer(
   (
@@ -124,9 +125,9 @@ const ProjectDependencyProjectQuerySelector = observer(
     const debouncedQueryProject = useMemo(
       () =>
         debounce((input: string): void => {
-          configurationEditorState
-            .queryProjects(input)
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(configurationEditorState.queryProjects(input)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         }, 500),
       [applicationStore, configurationEditorState],
     );
@@ -139,9 +140,9 @@ const ProjectDependencyProjectQuerySelector = observer(
       ) {
         projectDependency.setProjectId(val?.value ?? '');
         if (val && !configurationEditorState.versionsByProject.get(val.value)) {
-          configurationEditorState
-            .getProjectVersions(val.value)
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(
+            configurationEditorState.getProjectVersions(val.value),
+          ).catch(applicationStore.alertIllegalUnhandledError);
         }
       }
     };
@@ -197,7 +198,9 @@ const ProjectStructureEditor = observer(
       }
     };
     const updateVersion = applicationStore.guaranteeSafeAction(() =>
-      editorStore.projectConfigurationEditorState.updateToLatestStructure(),
+      flowResult(
+        editorStore.projectConfigurationEditorState.updateToLatestStructure(),
+      ),
     );
 
     return (
@@ -397,9 +400,9 @@ export const ProjectConfigurationEditor = observer(() => {
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
               editorStore.setIgnoreNavigationBlocking(true);
-              configurationEditorState
-                .updateConfigs()
-                .catch(applicationStore.alertIllegalUnhandledError);
+              flowResult(configurationEditorState.updateConfigs()).catch(
+                applicationStore.alertIllegalUnhandledError,
+              );
             },
           },
           {
@@ -410,9 +413,9 @@ export const ProjectConfigurationEditor = observer(() => {
         ],
       });
     } else {
-      configurationEditorState
-        .updateConfigs()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(configurationEditorState.updateConfigs()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }
   };
 
@@ -421,11 +424,11 @@ export const ProjectConfigurationEditor = observer(() => {
       configurationEditorState.projectConfiguration &&
       !configurationEditorState.associatedProjectsAndVersionsFetched
     ) {
-      configurationEditorState
-        .fectchAssociatedProjectsAndVersions(
+      flowResult(
+        configurationEditorState.fectchAssociatedProjectsAndVersions(
           configurationEditorState.projectConfiguration,
-        )
-        .catch(applicationStore.alertIllegalUnhandledError);
+        ),
+      ).catch(applicationStore.alertIllegalUnhandledError);
     }
   }, [applicationStore, configurationEditorState]);
 

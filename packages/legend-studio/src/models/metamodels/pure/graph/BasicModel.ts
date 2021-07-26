@@ -17,6 +17,7 @@
 import { observable, computed, action, flow, makeObservable } from 'mobx';
 import type { Clazz, GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  ActionState,
   assertNonEmptyString,
   UnsupportedOperationError,
   getClass,
@@ -92,14 +93,9 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
  */
 export abstract class BasicModel {
   root: Package;
-  isBuilt = false;
-  failedToBuild = false;
+  buildState = ActionState.create();
+
   private readonly extensions: PureGraphExtension<PackageableElement>[] = [];
-
-  setFailedToBuild(failedToBuild: boolean): void {
-    this.failedToBuild = failedToBuild;
-  }
-
   private elementSectionMap = new Map<string, Section>();
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
@@ -148,9 +144,6 @@ export abstract class BasicModel {
       | 'diagramsIndex'
       | 'extensions'
     >(this, {
-      root: observable,
-      isBuilt: observable,
-      failedToBuild: observable,
       elementSectionMap: observable,
       sectionIndicesIndex: observable,
       profilesIndex: observable,
@@ -191,8 +184,6 @@ export abstract class BasicModel {
 
       dispose: flow,
 
-      setFailedToBuild: action,
-      setIsBuilt: action,
       setOwnSection: action,
       setOwnSectionIndex: action,
       setOwnProfile: action,
@@ -484,12 +475,6 @@ export abstract class BasicModel {
         'ms',
       );
     }
-  }
-
-  isRoot = (pack: Package | undefined): boolean => pack === this.root;
-
-  setIsBuilt(built: boolean): void {
-    this.isBuilt = built;
   }
 
   buildPath = (

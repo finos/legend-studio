@@ -244,10 +244,6 @@ const DiagramRendererHotkeyInfosModal = observer(
                   Eject the property
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">Alt</div>
-                  <div className="hotkey__plus">
-                    <PlusIcon />
-                  </div>
                   <div className="hotkey__key">&rarr;</div>
                 </div>
               </div>
@@ -780,7 +776,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
     const [path, setPath] = useState(
       `${
         diagramEditorState.diagram.package
-          ? `${diagramEditorState.diagram.package.name}${ELEMENT_PATH_DELIMITER}`
+          ? `${diagramEditorState.diagram.package.path}${ELEMENT_PATH_DELIMITER}`
           : ''
       }Class_${editorStore.graphState.graph.ownClasses.length + 1}`,
     );

@@ -15,11 +15,13 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
 import { BlankPanelContent } from '@finos/legend-studio-components';
+import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
 
-export const QueryBuilderUnsupportedExplorerPanel = observer(() => (
+const QueryBuilderUnsupportedQueryExplorer = observer(() => (
   <div className="panel query-builder__explorer">
     <div className="panel__header">
       <div className="panel__header__title">
@@ -36,7 +38,7 @@ export const QueryBuilderUnsupportedExplorerPanel = observer(() => (
   </div>
 ));
 
-export const QueryBuilderUnsupportedPanel = observer(
+const QueryBuilderUnsupportedQueryEditPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const queryUnsupportedState = queryBuilderState.queryUnsupportedState;
@@ -67,6 +69,27 @@ export const QueryBuilderUnsupportedPanel = observer(
           </BlankPanelContent>
         </div>
       </div>
+    );
+  },
+);
+
+export const QueryBuilderUnsupportedQueryEditor = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+
+    return (
+      <ReflexContainer orientation="vertical">
+        <ReflexElement size={450} minSize={0}>
+          <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
+          <QueryBuilderUnsupportedQueryExplorer />
+        </ReflexElement>
+        <ReflexSplitter />
+        <ReflexElement minSize={0}>
+          <QueryBuilderUnsupportedQueryEditPanel
+            queryBuilderState={queryBuilderState}
+          />
+        </ReflexElement>
+      </ReflexContainer>
     );
   },
 );

@@ -52,6 +52,7 @@ import { GenerationTreeNode } from '../../../models/metamodels/pure/model/packag
 import { getNullableFirstElement } from '@finos/legend-studio-shared';
 import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../../models/metamodels/pure/graph/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
 import type { DSLGenerationSpecification_EditorPlugin_Extension } from '../../../stores/DSLGenerationSpecification_EditorPlugin_Extension';
+import { flowResult } from 'mobx';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -530,10 +531,10 @@ export const GenerationSpecificationEditor = observer(() => {
   const modelGenerationState = editorStore.graphState.graphGenerationState;
   const generationSpec = generationSpecificationState.spec;
   const generate = applicationStore.guaranteeSafeAction(() =>
-    modelGenerationState.globalGenerate(),
+    flowResult(modelGenerationState.globalGenerate()),
   );
   const emptyGenerationEntities = applicationStore.guaranteeSafeAction(() =>
-    modelGenerationState.clearGenerations(),
+    flowResult(modelGenerationState.clearGenerations()),
   );
 
   return (

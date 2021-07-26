@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import { observable, action, flow, makeAutoObservable } from 'mobx';
+import { observable, action, makeAutoObservable, flowResult } from 'mobx';
 import { CORE_LOG_EVENT } from '../../utils/Logger';
 import type { TreeData } from '@finos/legend-studio-components';
 import type {
@@ -40,6 +40,7 @@ import {
 } from '../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
 import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 
 export class FileGenerationState {
   editorStore: EditorStore;
@@ -89,7 +90,7 @@ export class FileGenerationState {
   getOrCreateDirectory = (directoryName: string): GenerationDirectory =>
     GenerationDirectory.getOrCreateDirectory(this.root, directoryName, true);
 
-  generate = flow(function* (this: FileGenerationState) {
+  *generate(): GeneratorFn<void> {
     this.isGenerating = true;
     try {
       // avoid wasting a network call when the scope is empty, we can short-circuit this
@@ -102,12 +103,13 @@ export class FileGenerationState {
         this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
           this.fileGeneration.type,
         ).generationMode;
-      const result =
-        (yield this.editorStore.graphState.graphManager.generateFile(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.generateFile(
           this.fileGeneration,
           mode,
           this.editorStore.graphState.graph,
-        )) as GenerationOutput[];
+        ),
+      )) as GenerationOutput[];
       this.processGenerationResult(result);
     } catch (error: unknown) {
       this.selectedNode = undefined;
@@ -120,7 +122,7 @@ export class FileGenerationState {
     } finally {
       this.isGenerating = false;
     }
-  });
+  }
 
   processGenerationResult(output: GenerationOutput[]): void {
     this.root = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);

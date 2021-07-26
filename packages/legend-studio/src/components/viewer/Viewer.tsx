@@ -35,31 +35,32 @@ import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx } from '@finos/legend-studio-components';
 import { isNonNullable } from '@finos/legend-studio-shared';
-import { NotificationSnackbar } from '../shared/NotificationSnackbar';
+import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from '../../stores/ViewerStore';
-import type { ViewerRouteParams } from '../../stores/Router';
-import { generateSetupRoute } from '../../stores/Router';
+import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { useApplicationStore } from '../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const ViewerStatusBar = observer(() => {
-  const params = useParams<ViewerRouteParams>();
-  const viewerState = useViewerStore();
+  const params = useParams<ViewerPathParams>();
+  const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const latestVersion = viewerState.onLatestVersion;
-  const currentRevision = viewerState.onCurrentRevision;
+  const latestVersion = viewerStore.onLatestVersion;
+  const currentRevision = viewerStore.onCurrentRevision;
   const statusBarInfo = params.revisionId ?? params.versionId ?? 'HEAD';
   const projectId = params.projectId;
   const currentProject = editorStore.sdlcState.currentProject;
   const versionBehindProjectHead =
-    viewerState.currentRevision &&
-    viewerState.version &&
+    viewerStore.currentRevision &&
+    viewerStore.version &&
     params.versionId &&
-    viewerState.currentRevision.id !== viewerState.version.revisionId;
+    viewerStore.currentRevision.id !== viewerStore.version.revisionId;
   const description = `${
     latestVersion
       ? versionBehindProjectHead
@@ -72,7 +73,7 @@ const ViewerStatusBar = observer(() => {
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
   const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
-    editorStore.toggleTextMode(),
+    flowResult(editorStore.toggleTextMode()),
   );
 
   return (
@@ -164,17 +165,16 @@ const ViewerActivityBar = observer(() => {
 });
 
 export const ViewerInner = observer(() => {
-  const params = useParams<ViewerRouteParams>();
+  const params = useParams<ViewerPathParams>();
   const projectId = params.projectId;
   const versionId = params.versionId;
   const revisionId = params.revisionId;
-  const viewerState = useViewerStore();
+  const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const allowOpeningElement =
     editorStore.sdlcState.currentProject &&
-    !editorStore.graphState.graph.failedToBuild &&
-    editorStore.graphState.graph.isBuilt;
+    editorStore.graphState.graph.buildState.hasSucceeded;
   const resizeSideBar = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
       editorStore.sideBarDisplayState.setSize(newSize);
@@ -205,9 +205,9 @@ export const ViewerInner = observer(() => {
       editorStore.searchElementCommandState.open(),
     ),
     [HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(() => {
-      editorStore
-        .toggleTextMode()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(editorStore.toggleTextMode()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }),
   };
 
@@ -218,15 +218,15 @@ export const ViewerInner = observer(() => {
   }, [ref, editorStore, width, height]);
 
   useEffect(() => {
-    viewerState.internalizeEntityPath(params);
-  }, [viewerState, params]);
+    viewerStore.internalizeEntityPath(params);
+  }, [viewerStore, params]);
   // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
   // on the second call when we remove entity path from the route
   useEffect(() => {
-    viewerState
-      .init(projectId, versionId, revisionId)
-      .catch(applicationStore.alertIllegalUnhandledError);
-  }, [applicationStore, viewerState, projectId, versionId, revisionId]);
+    flowResult(viewerStore.init(projectId, versionId, revisionId)).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+  }, [applicationStore, viewerStore, projectId, versionId, revisionId]);
 
   return (
     <div className="app__page">

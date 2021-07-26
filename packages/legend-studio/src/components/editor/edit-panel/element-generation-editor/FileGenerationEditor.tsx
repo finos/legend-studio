@@ -16,7 +16,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { runInAction } from 'mobx';
+import { flowResult, runInAction } from 'mobx';
 import { getElementIcon } from '../../../shared/Icon';
 import { useDrop } from 'react-dnd';
 import { useEditorStore } from '../../../../stores/EditorStore';
@@ -221,7 +221,7 @@ export const GenerationResultViewer = observer(
     const selectedNode = fileGenerationState.selectedNode;
     const fileNode = selectedNode?.fileNode;
     const regenerate = applicationStore.guaranteeSafeAction(() =>
-      fileGenerationState.generate(),
+      flowResult(fileGenerationState.generate()),
     );
 
     return (
@@ -1250,7 +1250,7 @@ export const FileGenerationConfigurationEditor = observer(
         fileGeneration.type,
       ).properties;
     const debouncedRegenerate = useMemo(
-      () => debounce(() => fileGenerationState.generate(), 500),
+      () => debounce(() => flowResult(fileGenerationState.generate()), 500),
       [fileGenerationState],
     );
     const update = (

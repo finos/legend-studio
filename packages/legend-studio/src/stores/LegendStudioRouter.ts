@@ -16,7 +16,7 @@
 
 import { generatePath } from 'react-router-dom';
 
-export enum PATH_PARAM_TOKEN {
+export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
   SDLC_SERVER_KEY = 'sdlcServerKey',
   PROJECT_ID = 'projectId',
   WORKSPACE_ID = 'workspaceId',
@@ -30,35 +30,35 @@ export const URL_PATH_PLACEHOLDER = '-';
 
 export const generateRoutePatternWithSDLCServerKey = (
   pattern: string,
-): string => `/:${PATH_PARAM_TOKEN.SDLC_SERVER_KEY}${pattern}`;
+): string => `/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY}${pattern}`;
 
-export const ROUTE_PATTERN = Object.freeze({
+export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   VIEW: generateRoutePatternWithSDLCServerKey(
-    `/view/:${PATH_PARAM_TOKEN.PROJECT_ID}`,
+    `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}`,
   ),
   VIEW_BY_ENTITY: generateRoutePatternWithSDLCServerKey(
-    `/view/:${PATH_PARAM_TOKEN.PROJECT_ID}/entity/:${PATH_PARAM_TOKEN.ENTITY_PATH}`,
+    `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   ),
   VIEW_BY_REVISION: generateRoutePatternWithSDLCServerKey(
-    `/view/:${PATH_PARAM_TOKEN.PROJECT_ID}/revision/:${PATH_PARAM_TOKEN.REVISION_ID}`,
+    `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/revision/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.REVISION_ID}`,
   ),
   VIEW_BY_VERSION: generateRoutePatternWithSDLCServerKey(
-    `/view/:${PATH_PARAM_TOKEN.PROJECT_ID}/version/:${PATH_PARAM_TOKEN.VERSION_ID}`,
+    `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/version/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.VERSION_ID}`,
   ),
   VIEW_BY_REVISION_ENTITY: generateRoutePatternWithSDLCServerKey(
-    `/view/:${PATH_PARAM_TOKEN.PROJECT_ID}/revision/:${PATH_PARAM_TOKEN.REVISION_ID}/entity/:${PATH_PARAM_TOKEN.ENTITY_PATH}`,
+    `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/revision/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.REVISION_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   ),
   VIEW_BY_VERSION_ENTITY: generateRoutePatternWithSDLCServerKey(
-    `/view/:${PATH_PARAM_TOKEN.PROJECT_ID}/version/:${PATH_PARAM_TOKEN.VERSION_ID}/entity/:${PATH_PARAM_TOKEN.ENTITY_PATH}`,
+    `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/version/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.VERSION_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   ),
   REVIEW: generateRoutePatternWithSDLCServerKey(
-    `/review/:${PATH_PARAM_TOKEN.PROJECT_ID}/:${PATH_PARAM_TOKEN.REVIEW_ID}`,
+    `/review/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.REVIEW_ID}`,
   ),
   EDIT: generateRoutePatternWithSDLCServerKey(
-    `/edit/:${PATH_PARAM_TOKEN.PROJECT_ID}/:${PATH_PARAM_TOKEN.WORKSPACE_ID}/`,
+    `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}/`,
   ),
   SETUP: generateRoutePatternWithSDLCServerKey(
-    `/setup/:${PATH_PARAM_TOKEN.PROJECT_ID}?/:${PATH_PARAM_TOKEN.WORKSPACE_ID}?`,
+    `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}?/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}?`,
   ),
 });
 
@@ -67,7 +67,7 @@ export const generateSetupRoute = (
   projectId: string | undefined,
   workspaceId?: string,
 ): string =>
-  generatePath(ROUTE_PATTERN.SETUP, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP, {
     sdlcServerKey,
     projectId,
     workspaceId,
@@ -77,7 +77,7 @@ export const generateEditorRoute = (
   projectId: string,
   workspaceId: string,
 ): string =>
-  generatePath(ROUTE_PATTERN.EDIT, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT, {
     sdlcServerKey,
     projectId,
     workspaceId,
@@ -87,7 +87,7 @@ export const generateReviewRoute = (
   projectId: string,
   reviewId?: string,
 ): string =>
-  generatePath(ROUTE_PATTERN.REVIEW, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.REVIEW, {
     sdlcServerKey,
     projectId,
     reviewId,
@@ -96,7 +96,7 @@ export const generateViewProjectRoute = (
   sdlcServerKey: string,
   projectId: string,
 ): string =>
-  generatePath(ROUTE_PATTERN.VIEW, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW, {
     sdlcServerKey,
     projectId,
   });
@@ -105,7 +105,7 @@ export const generateViewVersionRoute = (
   projectId: string,
   versionId: string,
 ): string =>
-  generatePath(ROUTE_PATTERN.VIEW_BY_VERSION, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION, {
     sdlcServerKey,
     projectId,
     versionId,
@@ -115,7 +115,7 @@ export const generateVieweRevisionRoute = (
   projectId: string,
   revisionId: string,
 ): string =>
-  generatePath(ROUTE_PATTERN.VIEW_BY_REVISION, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION, {
     sdlcServerKey,
     projectId,
     revisionId,
@@ -125,34 +125,34 @@ export const generateViewEntityRoute = (
   projectId: string,
   entityPath: string,
 ): string =>
-  generatePath(ROUTE_PATTERN.VIEW_BY_ENTITY, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY, {
     sdlcServerKey,
     projectId,
     entityPath,
   });
 
-export interface SDLCServerKeyRouteParams {
-  [PATH_PARAM_TOKEN.SDLC_SERVER_KEY]: string;
+export interface SDLCServerKeyPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY]: string;
 }
 
-export interface ReviewRouteParams {
-  [PATH_PARAM_TOKEN.PROJECT_ID]: string;
-  [PATH_PARAM_TOKEN.REVIEW_ID]: string;
+export interface ReviewPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.REVIEW_ID]: string;
 }
 
-export interface ViewerRouteParams {
-  [PATH_PARAM_TOKEN.PROJECT_ID]: string;
-  [PATH_PARAM_TOKEN.VERSION_ID]?: string;
-  [PATH_PARAM_TOKEN.REVISION_ID]?: string;
-  [PATH_PARAM_TOKEN.ENTITY_PATH]?: string;
+export interface ViewerPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.VERSION_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.REVISION_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH]?: string;
 }
 
-export interface EditorRouteParams {
-  [PATH_PARAM_TOKEN.PROJECT_ID]: string;
-  [PATH_PARAM_TOKEN.WORKSPACE_ID]: string;
+export interface EditorPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]: string;
 }
 
-export interface SetupRouteParams {
-  [PATH_PARAM_TOKEN.PROJECT_ID]?: string;
-  [PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
+export interface SetupPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
 }

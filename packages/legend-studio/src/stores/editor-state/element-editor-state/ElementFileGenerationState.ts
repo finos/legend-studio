@@ -16,8 +16,9 @@
 
 import type { EditorStore } from '../../EditorStore';
 import { FileGenerationState } from '../../editor-state/FileGenerationState';
-import { action, flow, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import { ElementEditorState } from './ElementEditorState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { AssertionError, uuid } from '@finos/legend-studio-shared';
 import { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
@@ -69,17 +70,17 @@ export class ElementFileGenerationState {
     );
   }
 
-  regenerate = flow(function* (this: ElementFileGenerationState) {
+  *regenerate(): GeneratorFn<void> {
     const currentState = this.editorStore.currentEditorState;
     if (currentState instanceof ElementEditorState) {
       this.fileGenerationState.fileGeneration.scopeElements = [
         PackageableElementExplicitReference.create(currentState.element),
       ]; // always set the scope to the current element
-      yield this.fileGenerationState.generate();
+      yield flowResult(this.fileGenerationState.generate());
     } else {
       throw new AssertionError(
         'Generation state must have at least an element editor opened',
       );
     }
-  });
+  }
 }

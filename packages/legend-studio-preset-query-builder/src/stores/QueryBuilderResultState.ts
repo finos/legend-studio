@@ -94,15 +94,16 @@ export class QueryBuilderResultState {
           'Lambda is required to execute query',
         );
       }
-      const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.executeMapping(
           this.editorStore.graphState.graph,
           mapping,
           query,
           runtime,
           CLIENT_VERSION.VX_X_X,
           false,
-        )) as ExecutionResult;
+        ),
+      )) as ExecutionResult;
       this.setExecutionResult(result);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -124,14 +125,15 @@ export class QueryBuilderResultState {
       );
       const runtime = this.queryBuilderState.querySetupState.runtime;
       const query = this.queryBuilderState.getQuery();
-      const result =
-        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.generateExecutionPlan(
           this.editorStore.graphState.graph,
           mapping,
           query,
           runtime,
           CLIENT_VERSION.VX_X_X,
-        )) as ExecutionResult;
+        ),
+      )) as ExecutionResult;
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;
     } catch (error: unknown) {

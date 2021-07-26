@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { Studio } from '@finos/legend-studio';
+import { LegendStudio } from '@finos/legend-studio';
 import { QueryBuilder_Preset } from '@finos/legend-studio-preset-query-builder';
 import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
 import { EFJSONSchema_Preset } from '@finos/legend-studio-preset-external-format-json-schema';
 import studioConfig from '../studio.config';
 import './index.scss';
 
-Studio.create()
+LegendStudio.create()
   .setup({ baseUrl: studioConfig.baseUrl })
   .withPresets([
     new DSLText_Preset(),

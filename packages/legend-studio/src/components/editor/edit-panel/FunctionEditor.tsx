@@ -62,6 +62,7 @@ import { PrimitiveType } from '../../../models/metamodels/pure/model/packageable
 import { Unit } from '../../../models/metamodels/pure/model/packageableElements/domain/Measure';
 import type { StereotypeReference } from '../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import { StereotypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
+import { flowResult } from 'mobx';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -667,9 +668,12 @@ export const FunctionEditor = observer(() => {
       functionEditorState.setSelectedTab(tab);
 
   useEffect(() => {
-    functionEditorState.functionBodyEditorState
-      .convertLambdaObjectToGrammarString(false, true)
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(
+      functionEditorState.functionBodyEditorState.convertLambdaObjectToGrammarString(
+        false,
+        true,
+      ),
+    ).catch(applicationStore.alertIllegalUnhandledError);
   }, [applicationStore, functionEditorState]);
 
   return (

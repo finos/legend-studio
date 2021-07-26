@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, makeObservable } from 'mobx';
+import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
@@ -58,17 +59,16 @@ export class DerivedPropertyState extends LambdaEditorState {
     this.derivedProperty.setParameters(lambda.parameters);
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: DerivedPropertyState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda = (yield flowResult(
+          this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          ),
+        )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.setBodyAndParameters(lambda ?? emptyLambda);
       } catch (error: unknown) {
@@ -84,12 +84,9 @@ export class DerivedPropertyState extends LambdaEditorState {
       this.clearErrors();
       this.setBodyAndParameters(emptyLambda);
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: DerivedPropertyState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.derivedProperty.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -100,11 +97,12 @@ export class DerivedPropertyState extends LambdaEditorState {
             this.derivedProperty.body,
           ),
         );
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -122,7 +120,7 @@ export class DerivedPropertyState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 export class ConstraintState extends LambdaEditorState {
@@ -150,15 +148,16 @@ export class ConstraintState extends LambdaEditorState {
     ]);
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (this: ConstraintState) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyFunctionDefinition = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda = (yield flowResult(
+          this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          ),
+        )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.constraint.functionDefinition = lambda ?? emptyFunctionDefinition;
       } catch (error: unknown) {
@@ -174,21 +173,19 @@ export class ConstraintState extends LambdaEditorState {
       this.clearErrors();
       this.constraint.functionDefinition = emptyFunctionDefinition;
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: ConstraintState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (!this.constraint.functionDefinition.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.constraint.functionDefinition);
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -206,7 +203,7 @@ export class ConstraintState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 // NOTE: We went through the trouble of maintaining Class state outside of metamodel class prototype because we don't want to pollute
@@ -216,20 +213,22 @@ export class ClassState {
   class: Class;
   derivedPropertyStates: DerivedPropertyState[] = [];
   constraintStates: ConstraintState[] = [];
-  isConvertingConstraintObjects = false;
-  isConvertingDerivedPropertyObjects = false;
+  isConvertingConstraintLambdaObjects = false;
+  isConvertingDerivedPropertyLambdaObjects = false;
 
   constructor(editorStore: EditorStore, _class: Class) {
     makeObservable(this, {
       class: observable,
       derivedPropertyStates: observable,
       constraintStates: observable,
-      isConvertingConstraintObjects: observable,
-      isConvertingDerivedPropertyObjects: observable,
+      isConvertingConstraintLambdaObjects: observable,
+      isConvertingDerivedPropertyLambdaObjects: observable,
       addConstraintState: action,
       deleteConstraintState: action,
       addDerivedPropertyState: action,
       deleteDerivedPropertyState: action,
+      convertConstraintLambdaObjects: flow,
+      convertDerivedPropertyLambdaObjects: flow,
       decorate: action,
     });
 
@@ -309,7 +308,7 @@ export class ClassState {
     }
   }
 
-  convertConstraintObjects = flow(function* (this: ClassState) {
+  *convertConstraintLambdaObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
     const constraintStateMap = new Map<string, ConstraintState>();
     this.constraintStates.forEach((constraintState) => {
@@ -322,12 +321,11 @@ export class ClassState {
       }
     });
     if (lambdas.size) {
-      this.isConvertingConstraintObjects = true;
+      this.isConvertingConstraintLambdaObjects = true;
       try {
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-            lambdas,
-          )) as Map<string, string>;
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
+        )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const constraintState = constraintStateMap.get(key);
           constraintState?.setLambdaString(
@@ -340,12 +338,12 @@ export class ClassState {
           error,
         );
       } finally {
-        this.isConvertingConstraintObjects = false;
+        this.isConvertingConstraintLambdaObjects = false;
       }
     }
-  });
+  }
 
-  convertDerivedPropertyObjects = flow(function* (this: ClassState) {
+  *convertDerivedPropertyLambdaObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
     const derivedPropertyStateMap = new Map<string, DerivedPropertyState>();
     this.derivedPropertyStates.forEach((state) => {
@@ -359,12 +357,11 @@ export class ClassState {
       }
     });
     if (lambdas.size) {
-      this.isConvertingDerivedPropertyObjects = true;
+      this.isConvertingDerivedPropertyLambdaObjects = true;
       try {
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-            lambdas,
-          )) as Map<string, string>;
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
+        )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const derivedPropertyState = derivedPropertyStateMap.get(key);
           derivedPropertyState?.setLambdaString(
@@ -377,10 +374,10 @@ export class ClassState {
           error,
         );
       } finally {
-        this.isConvertingDerivedPropertyObjects = false;
+        this.isConvertingDerivedPropertyLambdaObjects = false;
       }
     }
-  });
+  }
 
   decorate(): void {
     this.constraintStates = this.class

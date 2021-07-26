@@ -34,7 +34,7 @@ import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import Backdrop from '@material-ui/core/Backdrop';
-import type { EditorRouteParams } from '../../stores/Router';
+import type { EditorPathParams } from '../../stores/LegendStudioRouter';
 import {
   ActionAlertType,
   ActionAlertActionType,
@@ -45,6 +45,7 @@ import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { isNonNullable } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],
@@ -61,7 +62,7 @@ const buildHotkeySupport = (
 };
 
 export const EditorInner = observer(() => {
-  const params = useParams<EditorRouteParams>();
+  const params = useParams<EditorPathParams>();
   const projectId = params.projectId;
   const workspaceId = params.workspaceId;
   const editorStore = useEditorStore();
@@ -118,9 +119,9 @@ export const EditorInner = observer(() => {
 
   // Initialize the app
   useEffect(() => {
-    editorStore
-      .init(projectId, workspaceId)
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(editorStore.init(projectId, workspaceId)).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [editorStore, applicationStore, projectId, workspaceId]);
 
   // Browser Navigation Blocking (reload, close tab, go to another URL)
@@ -216,19 +217,15 @@ export const EditorInner = observer(() => {
     return true;
   };
   const editable =
-    (editorStore.graphState.graph.failedToBuild ||
-      editorStore.graphState.graph.isBuilt) &&
+    editorStore.graphState.graph.buildState.hasCompleted &&
     editorStore.isInitialized;
   const isResolvingConflicts =
     editorStore.isInConflictResolutionMode &&
     !editorStore.conflictResolutionState.hasResolvedAllConflicts;
-
-  // NOTE: this type any cast is needed to handle the outdated typings of `history` used by `react-router@5`.
-  // TODO: We will fix this when we move to `react-router@6`
   const promptComponent = (
     <Prompt
       when={onNavigationChangeIndicator}
-      message={handleRouteNavigationBlocking as unknown as any} // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      message={handleRouteNavigationBlocking}
     />
   );
 

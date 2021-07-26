@@ -25,6 +25,7 @@
     "allowSyntheticDefaultImports": true,
     // This option is needed for `mobx` decorator in constructor to work properly with uninitialized class attributes
     // See https://github.com/mobxjs/mobx/issues/2486
+    // See https://mobx.js.org/installation.html#use-spec-compliant-transpilation-for-class-properties
     "useDefineForClassFields": true,
     // Other settings
     "noImplicitOverride": true,

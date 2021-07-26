@@ -16,7 +16,7 @@
 
 import {
   action,
-  flow,
+  flowResult,
   makeAutoObservable,
   makeObservable,
   observable,
@@ -200,17 +200,16 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
     this.readOnlylambdaJson = lambdaJson;
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: QueryBuilderDerivationProjectionLambdaState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda = (yield flowResult(
+          this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          ),
+        )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.derivationProjectionColumnState.setLambda(lambda ?? emptyLambda);
       } catch (error: unknown) {
@@ -226,12 +225,9 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
       this.clearErrors();
       this.derivationProjectionColumnState.setLambda(emptyLambda);
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: QueryBuilderDerivationProjectionLambdaState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.derivationProjectionColumnState.lambda.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -242,11 +238,12 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
             this.derivationProjectionColumnState.lambda.body,
           ),
         );
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -264,7 +261,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderProjectionColumnState {
@@ -351,10 +348,9 @@ export class QueryBuilderProjectionState {
     if (lambdas.size) {
       this.isConvertDerivationProjectionObjects = true;
       try {
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-            lambdas,
-          )) as Map<string, string>;
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
+        )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const derivationProjectionColumnState =
             derivationProjectionColumnStateMap.get(key);
@@ -401,9 +397,11 @@ export class QueryBuilderProjectionState {
     this.replaceColumn(simpleProjectionColumnState, derivationColumnState);
 
     // convert to grammar for display
-    derivationColumnState.derivationLambdaEditorState
-      .convertLambdaObjectToGrammarString(false)
-      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
+    flowResult(
+      derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
+        false,
+      ),
+    ).catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
   }
 
   replaceColumn(
@@ -635,8 +633,8 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.INTEGER:
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT: {
-          const previewResult =
-            (yield this.editorStore.graphState.graphManager.executeMapping(
+          const previewResult = (yield flowResult(
+            this.editorStore.graphState.graphManager.executeMapping(
               this.editorStore.graphState.graph,
               this.queryBuilderState.querySetupState.mapping,
               this.queryBuilderState.buildRawLambdaFromLambdaFunction(
@@ -649,7 +647,8 @@ export class QueryBuilderProjectionState {
               this.queryBuilderState.querySetupState.runtime,
               CLIENT_VERSION.VX_X_X,
               false,
-            )) as ExecutionResult;
+            ),
+          )) as ExecutionResult;
           assertType(
             previewResult,
             TdsExecutionResult,
@@ -674,8 +673,8 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.DATE:
         case PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.DATETIME: {
-          const previewResult =
-            (yield this.editorStore.graphState.graphManager.executeMapping(
+          const previewResult = (yield flowResult(
+            this.editorStore.graphState.graphManager.executeMapping(
               this.editorStore.graphState.graph,
               this.queryBuilderState.querySetupState.mapping,
               this.queryBuilderState.buildRawLambdaFromLambdaFunction(
@@ -688,7 +687,8 @@ export class QueryBuilderProjectionState {
               this.queryBuilderState.querySetupState.runtime,
               CLIENT_VERSION.VX_X_X,
               false,
-            )) as ExecutionResult;
+            ),
+          )) as ExecutionResult;
           assertType(
             previewResult,
             TdsExecutionResult,

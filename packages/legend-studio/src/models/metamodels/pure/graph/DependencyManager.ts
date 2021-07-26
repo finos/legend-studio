@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import type { Clazz } from '@finos/legend-studio-shared';
 import {
+  ActionState,
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-studio-shared';
@@ -45,26 +46,27 @@ import type {
 } from '../model/packageableElements/domain/Measure';
 import type { SectionIndex } from '../model/packageableElements/section/SectionIndex';
 
-export class DependencyModel extends BasicModel {
-  constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
+class DependencyModel extends BasicModel {
+  constructor(
+    extensionElementClasses: Clazz<PackageableElement>[],
+    root: Package,
+  ) {
     super(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT, extensionElementClasses);
+    this.root = root;
   }
 }
 
 export class DependencyManager {
   root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
   projectDependencyModelsIndex = new Map<string, BasicModel>();
-  isBuilt = false;
-  failedToBuild = false;
+  buildState = ActionState.create();
+
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     makeObservable(this, {
       root: observable,
       projectDependencyModelsIndex: observable,
-      isBuilt: observable,
-      failedToBuild: observable,
-      setFailedToBuild: action,
       allElements: computed,
       models: computed,
       profiles: computed,
@@ -84,14 +86,9 @@ export class DependencyManager {
       fileGenerations: computed,
       generationSpecifications: computed,
       sectionIndices: computed,
-      setIsBuilt: action,
     });
 
     this.extensionElementClasses = extensionElementClasses;
-  }
-
-  setFailedToBuild(failedToBuild: boolean): void {
-    this.failedToBuild = failedToBuild;
   }
 
   /**
@@ -101,10 +98,11 @@ export class DependencyManager {
     projectDependencyMetadataMap: Map<string, ProjectDependencyMetadata>,
   ): void {
     Array.from(projectDependencyMetadataMap.keys()).forEach((dependencyKey) => {
-      // Note: all dependency models will share the dependency manager package root.
-      const dependentModel = new DependencyModel(this.extensionElementClasses);
-      dependentModel.root = this.root; // make all dependency tree shares the same root
-      this.projectDependencyModelsIndex.set(dependencyKey, dependentModel);
+      // NOTE: all dependency models will share the dependency manager package root.
+      this.projectDependencyModelsIndex.set(
+        dependencyKey,
+        new DependencyModel(this.extensionElementClasses, this.root),
+      );
     });
   }
 
@@ -245,9 +243,5 @@ export class DependencyManager {
       Boolean(dep.getOwnNullableElement(path, includePackage)),
     );
     return model?.getOwnNullableElement(path, includePackage);
-  }
-
-  setIsBuilt(built: boolean): void {
-    this.isBuilt = built;
   }
 }

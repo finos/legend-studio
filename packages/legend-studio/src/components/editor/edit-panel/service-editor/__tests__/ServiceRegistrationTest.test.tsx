@@ -48,6 +48,7 @@ import type { Version } from '../../../../../models/sdlc/models/version/Version'
 import { ServiceExecutionMode } from '../../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
 import { ServiceRegistrationResult } from '../../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
 import { getTestApplicationConfig } from '../../../../../stores/StoreTestUtils';
+import { flowResult } from 'mobx';
 
 let renderResult: RenderResult;
 
@@ -144,7 +145,7 @@ test(
         },
       ],
     );
-    await mockedEditorStore.sdlcState.fetchProjectVersions();
+    await flowResult(mockedEditorStore.sdlcState.fetchProjectVersions());
     const result = new ServiceRegistrationResult(
       '/example/myTestUrl/testing',
       'myURL',
@@ -153,10 +154,10 @@ test(
     MOBX__enableSpyOrMock();
     jest
       .spyOn(mockedEditorStore.graphState.graphManager, 'registerService')
-      .mockResolvedValue(result);
+      .mockResolvedValue(flowResult(result));
     jest
       .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
-      .mockResolvedValue();
+      .mockResolvedValue(flowResult(0));
     MOBX__disableSpyOrMock();
     await openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
@@ -237,10 +238,10 @@ test(
     MOBX__enableSpyOrMock();
     jest
       .spyOn(mockedEditorStore.graphState.graphManager, 'registerService')
-      .mockResolvedValue(result);
+      .mockResolvedValue(flowResult(result));
     jest
       .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
-      .mockResolvedValue();
+      .mockResolvedValue(flowResult(0));
     MOBX__disableSpyOrMock();
     await openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
@@ -293,7 +294,7 @@ test(
     await waitFor(() => getByText(registrationModal, 'Project Version'));
     const registrationState = serviceEditorState.registrationState;
     // register
-    await registrationState.registerService();
+    await flowResult(registrationState.registerService());
     expect(mockedEditorStore.applicationStore.notification?.severity).toBe(
       NOTIFCATION_SEVERITY.SUCCESS,
     );
@@ -301,7 +302,7 @@ test(
     serviceEditorState.service.deleteOwner(0);
     serviceEditorState.service.deleteOwner(0);
     serviceEditorState.service.deleteOwner(0);
-    await registrationState.registerService();
+    await flowResult(registrationState.registerService());
     expect(mockedEditorStore.applicationStore.notification?.severity).toBe(
       NOTIFCATION_SEVERITY.ERROR,
     );

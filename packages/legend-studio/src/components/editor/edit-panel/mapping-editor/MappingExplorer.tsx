@@ -76,9 +76,9 @@ export const MappingExplorerContextMenu = observer(
         : undefined;
     const removeMappingElement = (): void => {
       if (mappingElement) {
-        mappingEditorState
-          .deleteMappingElement(mappingElement)
-          .catch(applicationStore.alertIllegalUnhandledError);
+        flowResult(
+          mappingEditorState.deleteMappingElement(mappingElement),
+        ).catch(applicationStore.alertIllegalUnhandledError);
       }
       if (currentMappingElement instanceof EnumerationMapping) {
         new MappingElementDecorator().visitEnumerationMapping(

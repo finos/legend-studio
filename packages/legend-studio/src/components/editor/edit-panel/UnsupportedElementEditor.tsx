@@ -20,6 +20,7 @@ import { FaLock } from 'react-icons/fa';
 import { useEditorStore } from '../../../stores/EditorStore';
 import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 export const UnsupportedEditorPanel = observer(
   (props: { text: string; isReadOnly: boolean }) => {
@@ -27,7 +28,7 @@ export const UnsupportedEditorPanel = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
-      editorStore.toggleTextMode(),
+      flowResult(editorStore.toggleTextMode()),
     );
 
     return (

@@ -34,5 +34,12 @@ module.exports = (api) => {
         },
       ],
     ],
+    // For @babel/plugin-proposal-class-properties, to work well with Mobx, we need to make sure setting
+    // `loose = false`, but we can also use the new transpiler assumptions in Babel >=7.13.0
+    // See https://babeljs.io/docs/en/babel-plugin-proposal-class-properties#loose
+    // See https://mobx.js.org/installation.html#use-spec-compliant-transpilation-for-class-properties
+    assumptions: {
+      setPublicClassFields: false,
+    },
   };
 };

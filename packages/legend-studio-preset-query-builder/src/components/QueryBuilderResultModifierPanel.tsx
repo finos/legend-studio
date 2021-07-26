@@ -29,7 +29,6 @@ import {
   SortColumnState,
 } from '../stores/QueryResultSetModifierState';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { useEditorStore } from '@finos/legend-studio';
 import type { QueryBuilderProjectionColumnState } from '../stores/QueryBuilderProjectionState';
 
 const ColumnSortEditor = observer(
@@ -109,7 +108,7 @@ const ColumnSortEditor = observer(
 const ColumnsSortEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const resultModifier = queryBuilderState.resultSetModifierState;
     const sortColumns = resultModifier.sortColumns;
     const projectionState =

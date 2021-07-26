@@ -84,7 +84,7 @@ export enum GRAPH_EDITOR_MODE {
 }
 
 export enum EDITOR_THEME {
-  STUDIO = 'STUDIO',
+  LEGEND = 'LEGEND',
 }
 
 export enum EDITOR_LANGUAGE {

@@ -24,7 +24,8 @@ import {
   RawLambda,
   TAB_SIZE,
 } from '@finos/legend-studio';
-import { observable, action, flow, makeObservable } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 
 export class QueryRawLambdaState {
@@ -71,7 +72,7 @@ export class QueryTextEditorState extends LambdaEditorState {
       setQueryRawLambdaState: action,
       setMode: action,
       openModal: action,
-      closeModal: action,
+      closeModal: flow,
     });
 
     this.editorStore = editorStore;
@@ -95,17 +96,16 @@ export class QueryTextEditorState extends LambdaEditorState {
     this.readOnlylambdaJson = lambdaJson;
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: QueryTextEditorState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda = (yield flowResult(
+          this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          ),
+        )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.rawLambdaState.setLambda(lambda ?? emptyLambda);
       } catch (error: unknown) {
@@ -121,12 +121,9 @@ export class QueryTextEditorState extends LambdaEditorState {
       this.clearErrors();
       this.rawLambdaState.setLambda(emptyLambda);
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: QueryTextEditorState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.rawLambdaState.lambda.body) {
       this.isConvertingLambdaToString = true;
       try {
@@ -138,11 +135,12 @@ export class QueryTextEditorState extends LambdaEditorState {
             this.rawLambdaState.lambda.body,
           ),
         );
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -162,7 +160,7 @@ export class QueryTextEditorState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 
   openModal(mode: QueryTextEditorMode): void {
     const rawLambda = this.queryBuilderState.getQuery();
@@ -185,9 +183,9 @@ export class QueryTextEditorState extends LambdaEditorState {
     this.setMode(mode);
   }
 
-  closeModal = flow(function* (this: QueryTextEditorState) {
+  *closeModal(): GeneratorFn<void> {
     if (this.mode === QueryTextEditorMode.TEXT) {
-      yield this.convertLambdaGrammarStringToObject();
+      yield flowResult(this.convertLambdaGrammarStringToObject());
       if (this.parserError) {
         this.editorStore.applicationStore.notifyError(
           `Can't parse query. Please fix error before closing: ${this.parserError.message}`,
@@ -199,5 +197,5 @@ export class QueryTextEditorState extends LambdaEditorState {
       return;
     }
     this.setMode(undefined);
-  });
+  }
 }

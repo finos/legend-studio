@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { computed, action, observable, makeObservable } from 'mobx';
+import { computed, action, observable, makeObservable, flowResult } from 'mobx';
 import { ElementEditorState } from './ElementEditorState';
 import { assertType, guaranteeType } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../EditorStore';
@@ -40,9 +40,9 @@ export class FileGenerationEditorState extends ElementEditorState {
       editorStore,
       this.fileGeneration,
     );
-    this.fileGenerationState
-      .generate()
-      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
+    flowResult(this.fileGenerationState.generate()).catch(
+      this.editorStore.applicationStore.alertIllegalUnhandledError,
+    );
     assertType(
       element,
       FileGenerationSpecification,

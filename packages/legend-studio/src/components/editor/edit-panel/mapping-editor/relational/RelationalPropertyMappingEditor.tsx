@@ -237,7 +237,7 @@ export const RelationalPropertyMappingEditor = observer(
       isReadOnly,
     } = props;
     const disableEditingTransform =
-      relationalInstanceSetImplementationState.isConvertingTransformObjects ||
+      relationalInstanceSetImplementationState.isConvertingTransformLambdaObjects ||
       isReadOnly;
     // Drag and Drop
     const handleDrop = useCallback(
@@ -268,7 +268,7 @@ export const RelationalPropertyMappingEditor = observer(
     );
     const transformProps = {
       disableTransform:
-        relationalInstanceSetImplementationState.isConvertingTransformObjects,
+        relationalInstanceSetImplementationState.isConvertingTransformLambdaObjects,
       forceBackdrop: setImplementationHasParserError,
     };
     switch (

@@ -34,7 +34,7 @@ import {
 import { clsx } from '@finos/legend-studio-components';
 import { FaLongArrowAltDown, FaLongArrowAltUp } from 'react-icons/fa';
 import type { LambdaEditorState } from '../../stores/editor-state/element-editor-state/LambdaEditorState';
-import type { DebouncedFunc } from '@finos/legend-studio-shared';
+import type { DebouncedFunc, GeneratorFn } from '@finos/legend-studio-shared';
 import { debounce } from '@finos/legend-studio-shared';
 import { CORE_TEST_ID } from '../../const';
 import { useApplicationStore } from '../../stores/ApplicationStore';
@@ -77,7 +77,7 @@ const LambdaEditorInner = observer(
     className?: string;
     disabled: boolean;
     lambdaEditorState: LambdaEditorState;
-    transformStringToLambda: DebouncedFunc<() => Promise<void>> | undefined;
+    transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | undefined;
     expectedType?: Type;
     matchedExpectedType?: () => boolean;
     onExpectedTypeLabelSelect?: () => void;
@@ -117,9 +117,9 @@ const LambdaEditorInner = observer(
 
     const transformLambdaToString = (pretty: boolean): Promise<void> => {
       transformStringToLambda?.cancel();
-      return lambdaEditorState
-        .convertLambdaObjectToGrammarString(pretty)
-        .catch(applicationStore.alertIllegalUnhandledError);
+      return flowResult(
+        lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
+      ).catch(applicationStore.alertIllegalUnhandledError);
     };
     const discardChanges = applicationStore.guaranteeSafeAction(() =>
       transformLambdaToString(isExpanded),
@@ -164,7 +164,7 @@ const LambdaEditorInner = observer(
         const _editor = monacoEditorAPI.create(element, {
           ...baseTextEditorSettings,
           language: EDITOR_LANGUAGE.PURE,
-          theme: EDITOR_THEME.STUDIO,
+          theme: EDITOR_THEME.LEGEND,
           ...lambdaEditorOptions,
         });
         disableEditorHotKeys(_editor);
@@ -246,9 +246,14 @@ const LambdaEditorInner = observer(
            * Although, technically a stub lambda is useless, so this is not too serious, but it may come across as buggy
            */
           transformStringToLambda?.cancel();
-          transformStringToLambda?.()?.catch(
-            applicationStore.alertIllegalUnhandledError,
-          );
+          if (transformStringToLambda) {
+            const stringToLambdaTransformation = transformStringToLambda();
+            if (stringToLambdaTransformation) {
+              flowResult(stringToLambdaTransformation).catch(
+                applicationStore.alertIllegalUnhandledError,
+              );
+            }
+          }
         });
 
       // set hotkeys (before calling the action, finish parsing the current text value)
@@ -297,29 +302,39 @@ const LambdaEditorInner = observer(
             event.preventDefault();
             event.stopPropagation();
             transformStringToLambda?.cancel();
-            editorStore.graphState
-              .checkLambdaParsingError(lambdaEditorState, !disabled, () =>
-                editorStore.toggleTextMode(),
-              )
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () => flowResult(editorStore.toggleTextMode()),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
           } else if (event.keyCode === KeyCode.F9) {
             event.preventDefault();
             event.stopPropagation();
             transformStringToLambda?.cancel();
-            editorStore.graphState
-              .checkLambdaParsingError(lambdaEditorState, !disabled, () =>
-                flowResult(editorStore.graphState.globalCompileInFormMode()),
-              )
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () =>
+                  flowResult(editorStore.graphState.globalCompileInFormMode()),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
           } else if (event.keyCode === KeyCode.F10) {
             event.preventDefault();
             event.stopPropagation();
             transformStringToLambda?.cancel();
-            editorStore.graphState
-              .checkLambdaParsingError(lambdaEditorState, !disabled, () =>
-                editorStore.graphState.graphGenerationState.globalGenerate(),
-              )
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () =>
+                  flowResult(
+                    editorStore.graphState.graphGenerationState.globalGenerate(),
+                  ),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
           }
         }
       });

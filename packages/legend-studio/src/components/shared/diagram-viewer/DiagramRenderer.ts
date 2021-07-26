@@ -2177,7 +2177,7 @@ export class DiagramRenderer {
     }
 
     // Eject the property
-    else if (e.altKey && 'ArrowRight' === e.code) {
+    else if ('ArrowRight' === e.key) {
       if (!this.isReadOnly) {
         if (this.mouseOverClassProperty) {
           if (

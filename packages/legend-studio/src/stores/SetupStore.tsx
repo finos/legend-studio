@@ -15,7 +15,7 @@
  */
 
 import { createContext, useContext } from 'react';
-import { observable, action, flow, makeAutoObservable } from 'mobx';
+import { observable, action, makeAutoObservable, flowResult } from 'mobx';
 import { CORE_LOG_EVENT } from '../utils/Logger';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { ApplicationStore } from './ApplicationStore';
@@ -32,7 +32,7 @@ import {
   WORKSPACE_TYPE,
   PROJECT_LATEST_VIEWER_WORKSPACE,
 } from '../models/sdlc/models/workspace/Workspace';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   assertNonNullable,
   guaranteeNonNullable,
@@ -40,7 +40,7 @@ import {
   ACTION_STATE,
 } from '@finos/legend-studio-shared';
 import { Review } from '../models/sdlc/models/review/Review';
-import { generateSetupRoute } from './Router';
+import { generateSetupRoute } from './LegendStudioRouter';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -109,7 +109,7 @@ export class SetupStore {
     this.importProjectSuccessReport = importProjectSuccessReport;
   }
 
-  fetchProjects = flow(function* (this: SetupStore) {
+  *fetchProjects(): GeneratorFn<void> {
     this.loadProjectsState = ACTION_STATE.IN_PROGRESS;
     try {
       const projects = (
@@ -155,24 +155,23 @@ export class SetupStore {
       this.applicationStore.notifyError(error);
       this.loadProjectsState = ACTION_STATE.FAILED;
     }
-  });
+  }
 
   /**
    * As of now we only create PROTOTYPE project since the creating PRODUCTION projects is not straight forward
    * we need to go to Gitlab, create a project there then associate that with SDLC server, etc.
    */
-  createProject = flow(function* (
-    this: SetupStore,
+  *createProject(
     name: string,
     description: string,
     groupId: string,
     artifactId: string,
     tags: string[] = [],
-  ) {
+  ): GeneratorFn<void> {
     this.createOrImportProjectState = ACTION_STATE.IN_PROGRESS;
     try {
       const createdProject = Project.serialization.fromJson(
-        yield this.applicationStore.networkClientManager.sdlcClient.createProject(
+        (yield this.applicationStore.networkClientManager.sdlcClient.createProject(
           {
             name,
             description,
@@ -181,12 +180,12 @@ export class SetupStore {
             artifactId,
             tags,
           },
-        ),
+        )) as PlainObject<Project>,
       );
       this.applicationStore.notifySuccess(
         `Project '${name}' is succesfully created`,
       );
-      yield this.fetchProjects();
+      yield flowResult(this.fetchProjects());
       this.projects?.set(createdProject.projectId, createdProject);
       this.applicationStore.historyApiClient.push(
         generateSetupRoute(
@@ -200,38 +199,37 @@ export class SetupStore {
     } finally {
       this.createOrImportProjectState = ACTION_STATE.INITIAL;
     }
-  });
+  }
 
-  importProject = flow(function* (
-    this: SetupStore,
+  *importProject(
     id: string,
     groupId: string,
     artifactId: string,
-  ) {
+  ): GeneratorFn<void> {
     this.createOrImportProjectState = ACTION_STATE.IN_PROGRESS;
     try {
       const report = ImportProjectReport.serialization.fromJson(
-        yield this.applicationStore.networkClientManager.sdlcClient.importProject(
+        (yield this.applicationStore.networkClientManager.sdlcClient.importProject(
           {
             id,
             type: ProjectType.PRODUCTION,
             groupId,
             artifactId,
           },
-        ),
+        )) as PlainObject<ImportProjectReport>,
       );
       const importReview = Review.serialization.fromJson(
-        yield this.applicationStore.networkClientManager.sdlcClient.getReview(
+        (yield this.applicationStore.networkClientManager.sdlcClient.getReview(
           report.project.projectId,
           report.reviewId,
-        ),
+        )) as PlainObject<Review>,
       );
       this.setImportProjectSuccessReport({
         projectName: report.project.name,
         projectId: report.project.projectId,
         reviewUrl: importReview.webURL,
       });
-      yield this.fetchProjects();
+      yield flowResult(this.fetchProjects());
       this.projects?.set(report.project.projectId, report.project);
       this.setCurrentProjectId(report.project.projectId);
     } catch (error: unknown) {
@@ -239,7 +237,7 @@ export class SetupStore {
     } finally {
       this.createOrImportProjectState = ACTION_STATE.INITIAL;
     }
-  });
+  }
 
   get projectOptions(): ProjectSelectOption[] {
     return this.projects
@@ -270,7 +268,7 @@ export class SetupStore {
       : [];
   }
 
-  fetchWorkspaces = flow(function* (this: SetupStore, projectId: string) {
+  *fetchWorkspaces(projectId: string): GeneratorFn<void> {
     this.loadWorkspacesState = ACTION_STATE.IN_PROGRESS;
     try {
       const workspacesInConflictResolutionIds = (
@@ -302,21 +300,17 @@ export class SetupStore {
     } finally {
       this.loadWorkspacesState = ACTION_STATE.INITIAL;
     }
-  });
+  }
 
-  createWorkspace = flow(function* (
-    this: SetupStore,
-    projectId: string,
-    workspaceId?: string,
-  ) {
+  *createWorkspace(projectId: string, workspaceId?: string): GeneratorFn<void> {
     this.createWorkspaceState = ACTION_STATE.IN_PROGRESS;
     try {
       assertNonNullable(workspaceId, 'workspace ID is required');
       const workspace = Workspace.serialization.fromJson(
-        yield this.applicationStore.networkClientManager.sdlcClient.createWorkspace(
+        (yield this.applicationStore.networkClientManager.sdlcClient.createWorkspace(
           projectId,
           workspaceId,
-        ),
+        )) as PlainObject<Workspace>,
       );
       const existingWorkspaceForProject: Map<string, Workspace> | undefined =
         this.workspacesByProject.get(projectId);
@@ -339,7 +333,7 @@ export class SetupStore {
       this.applicationStore.notifyError(error);
       this.createWorkspaceState = ACTION_STATE.FAILED;
     }
-  });
+  }
 }
 
 const SetupStoreContext = createContext<SetupStore | undefined>(undefined);

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { otherwiseEmbeddedRelational } from './RelationalEntitiesTestData';
+import { otherwiseEmbeddedRelationalTestData } from './RelationalEntitiesTestData';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
@@ -25,10 +25,9 @@ import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/mo
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    otherwiseEmbeddedRelational as Entity[],
+  await buildGraphBasic(
+    otherwiseEmbeddedRelationalTestData as Entity[],
+    editorStore,
   );
 });
 

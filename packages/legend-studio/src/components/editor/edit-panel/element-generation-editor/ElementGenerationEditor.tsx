@@ -31,6 +31,7 @@ import {
 import { FaArrowAltCircleLeft } from 'react-icons/fa';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
+import { flowResult } from 'mobx';
 
 const NewFileGenerationModal = observer(
   (props: {
@@ -127,9 +128,9 @@ export const ElementGenerationEditor = observer(
       currentElementState.setGenerationViewMode(undefined);
 
     useEffect(() => {
-      elementGenerationState
-        .regenerate()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(elementGenerationState.regenerate()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }, [applicationStore, currentElementState, elementGenerationState]);
 
     return (

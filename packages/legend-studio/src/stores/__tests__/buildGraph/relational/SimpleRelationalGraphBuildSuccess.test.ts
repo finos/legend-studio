@@ -18,7 +18,7 @@ import { relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { unitTest, guaranteeType } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
@@ -27,10 +27,9 @@ import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/mo
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
+  await buildGraphBasic(
     relationalCompleteGraphEntities as Entity[],
+    editorStore,
   );
 });
 

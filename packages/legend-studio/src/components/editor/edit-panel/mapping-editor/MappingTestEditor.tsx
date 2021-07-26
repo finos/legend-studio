@@ -109,8 +109,8 @@ const MappingTestQueryEditor = observer(
     const changeClassMapping = useCallback(
       (setImplementation: SetImplementation | undefined): void => {
         // do all the necessary updates
-        queryState
-          .updateLamba(
+        flowResult(
+          queryState.updateLamba(
             setImplementation
               ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
                   guaranteeType(
@@ -119,8 +119,8 @@ const MappingTestQueryEditor = observer(
                   ),
                 )
               : RawLambda.createStub(),
-          )
-          .catch(applicationStore.alertIllegalUnhandledError);
+          ),
+        ).catch(applicationStore.alertIllegalUnhandledError);
         hideClassMappingSelectorModal();
 
         // Attempt to generate data for input data panel as we pick the class mapping
@@ -173,9 +173,9 @@ const MappingTestQueryEditor = observer(
     );
 
     const clearQuery = (): Promise<void> =>
-      testState.queryState
-        .updateLamba(RawLambda.createStub())
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        testState.queryState.updateLamba(RawLambda.createStub()),
+      ).catch(applicationStore.alertIllegalUnhandledError);
 
     return (
       <div className="panel mapping-test-editor__query-panel">

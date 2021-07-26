@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import {
   NetworkClientError,
@@ -102,15 +102,14 @@ export class EditorSdlcState {
     this.currentRevision = val;
   };
 
-  fetchCurrentProject = flow(function* (
-    this: EditorSdlcState,
+  *fetchCurrentProject(
     projectId: string,
     options?: { suppressNotification?: boolean },
-  ) {
+  ): GeneratorFn<void> {
     try {
       this.isFetchingProject = true;
       this.currentProject = Project.serialization.fromJson(
-        yield this.sdlcClient.getProject(projectId),
+        (yield this.sdlcClient.getProject(projectId)) as PlainObject<Project>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -123,20 +122,23 @@ export class EditorSdlcState {
     } finally {
       this.isFetchingProject = false;
     }
-  });
+  }
 
-  fetchCurrentWorkspace = flow(function* (
-    this: EditorSdlcState,
+  *fetchCurrentWorkspace(
     projectId: string,
     workspaceId: string,
     options?: { suppressNotification?: boolean },
-  ) {
+  ): GeneratorFn<void> {
     try {
       this.currentWorkspace = Workspace.serialization.fromJson(
-        yield this.sdlcClient.getWorkspace(projectId, workspaceId),
+        (yield this.sdlcClient.getWorkspace(
+          projectId,
+          workspaceId,
+        )) as PlainObject<Workspace>,
       );
-      const isInConflictResolutionMode =
-        (yield this.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode = (yield flowResult(
+        this.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
+      )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setMode(EDITOR_MODE.CONFLICT_RESOLUTION);
         this.currentWorkspace.type = WORKSPACE_TYPE.CONFLICT_RESOLUTION;
@@ -151,9 +153,9 @@ export class EditorSdlcState {
         this.editorStore.applicationStore.notifyError(error);
       }
     }
-  });
+  }
 
-  fetchProjectVersions = flow(function* (this: EditorSdlcState) {
+  *fetchProjectVersions(): GeneratorFn<void> {
     try {
       this.isFetchingProjectVersions = true;
       this.projectVersions = (
@@ -169,35 +171,32 @@ export class EditorSdlcState {
     } finally {
       this.isFetchingProjectVersions = false;
     }
-  });
+  }
 
-  checkIfCurrentWorkspaceIsInConflictResolutionMode = flow(function* (
-    this: EditorSdlcState,
-  ): GeneratorFn<boolean> {
+  *checkIfCurrentWorkspaceIsInConflictResolutionMode(): GeneratorFn<boolean> {
     return (yield this.sdlcClient.checkIfWorkspaceIsInConflictResolutionMode(
       this.currentProjectId,
       this.currentWorkspaceId,
     )) as boolean;
-  });
+  }
 
-  fetchCurrentRevision = flow(function* (
-    this: EditorSdlcState,
+  *fetchCurrentRevision(
     projectId: string,
     workspaceId: string,
-  ) {
+  ): GeneratorFn<void> {
     try {
       this.currentRevision = Revision.serialization.fromJson(
         this.editorStore.isInConflictResolutionMode
-          ? yield this.sdlcClient.getConflictResolutionRevision(
+          ? ((yield this.sdlcClient.getConflictResolutionRevision(
               projectId,
               workspaceId,
               RevisionAlias.CURRENT,
-            )
-          : yield this.sdlcClient.getRevision(
+            )) as PlainObject<Revision>)
+          : ((yield this.sdlcClient.getRevision(
               projectId,
               workspaceId,
               RevisionAlias.CURRENT,
-            ),
+            )) as PlainObject<Revision>),
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -206,9 +205,9 @@ export class EditorSdlcState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  checkIfWorkspaceIsOutdated = flow(function* (this: EditorSdlcState) {
+  *checkIfWorkspaceIsOutdated(): GeneratorFn<void> {
     try {
       this.isCheckingIfWorkspaceIsOutdated = true;
       this.isWorkspaceOutdated = this.editorStore.isInConflictResolutionMode
@@ -229,7 +228,7 @@ export class EditorSdlcState {
     } finally {
       this.isCheckingIfWorkspaceIsOutdated = false;
     }
-  });
+  }
 
   handleChangeDetectionRefreshIssue(error: Error): void {
     if (
@@ -280,9 +279,11 @@ export class EditorSdlcState {
       this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
         entities,
       );
-      yield this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
-        entities,
-        CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+      yield flowResult(
+        this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+          entities,
+          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+        ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
@@ -305,9 +306,11 @@ export class EditorSdlcState {
       this.editorStore.changeDetectionState.workspaceBaseRevisionState.setEntities(
         workspaceBaseEntities,
       );
-      yield this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
-        workspaceBaseEntities,
-        CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+      yield flowResult(
+        this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
+          workspaceBaseEntities,
+          CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+        ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
@@ -328,9 +331,11 @@ export class EditorSdlcState {
       this.editorStore.changeDetectionState.projectLatestRevisionState.setEntities(
         projectLatestEntities,
       );
-      yield this.editorStore.changeDetectionState.projectLatestRevisionState.buildEntityHashesIndex(
-        projectLatestEntities,
-        CORE_LOG_EVENT.CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT,
+      yield flowResult(
+        this.editorStore.changeDetectionState.projectLatestRevisionState.buildEntityHashesIndex(
+          projectLatestEntities,
+          CORE_LOG_EVENT.CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT,
+        ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {

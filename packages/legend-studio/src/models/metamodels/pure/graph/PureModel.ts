@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, observable, makeObservable } from 'mobx';
+import { action, flow, observable, makeObservable } from 'mobx';
 import type { Logger } from '../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
@@ -23,7 +23,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../../../MetaModelConst';
-import type { Clazz } from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn } from '@finos/legend-studio-shared';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -179,9 +179,9 @@ export class PureModel extends BasicModel {
     makeObservable(this, {
       generationModel: observable,
       dependencyManager: observable,
-      isDependenciesLoaded: computed,
       setDependencyManager: action,
       addElement: action,
+      precomputeHashes: flow,
     });
 
     this.coreModel = coreModel;
@@ -206,21 +206,13 @@ export class PureModel extends BasicModel {
     return this.systemModel.allOwnElements.map((e) => e.path);
   }
 
-  get isDependenciesLoaded(): boolean {
-    return this.dependencyManager.isBuilt;
-  }
-
   /**
    * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
    * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
    * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
    * not trigger memoization on computed so we need to enable `keepAlive`
    */
-  precomputeHashes = flow(function* (
-    this: PureModel,
-    logger: Logger,
-    quiet?: boolean,
-  ) {
+  *precomputeHashes(logger: Logger, quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
     if (this.allOwnElements.length) {
       yield Promise.all<void>(
@@ -243,7 +235,7 @@ export class PureModel extends BasicModel {
         'ms',
       );
     }
-  });
+  }
 
   setDependencyManager = (dependencyManager: DependencyManager): void => {
     this.dependencyManager = dependencyManager;

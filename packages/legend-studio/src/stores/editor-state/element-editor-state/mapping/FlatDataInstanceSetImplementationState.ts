@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, flowResult } from 'mobx';
 import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
@@ -24,6 +24,7 @@ import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   UnsupportedOperationError,
   guaranteeType,
@@ -72,17 +73,16 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     ]);
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: FlatDataPropertyMappingState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda = (yield flowResult(
+          this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          ),
+        )) as RawLambda | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof FlatDataPropertyMapping) {
           this.propertyMapping.transform = lambda ?? emptyLambda;
@@ -102,22 +102,20 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         this.propertyMapping.transform = emptyLambda;
       }
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: FlatDataPropertyMappingState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.propertyMapping instanceof FlatDataPropertyMapping) {
       if (!this.propertyMapping.transform.isStub) {
         try {
           const lambdas = new Map<string, RawLambda>();
           lambdas.set(this.lambdaId, this.propertyMapping.transform);
-          const isolatedLambdas =
-            (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+          const isolatedLambdas = (yield flowResult(
+            this.editorStore.graphState.graphManager.lambdaToPureCode(
               lambdas,
               pretty,
-            )) as Map<string, string>;
+            ),
+          )) as Map<string, string>;
           const grammarText = isolatedLambdas.get(this.lambdaId);
           this.setLambdaString(
             grammarText !== undefined
@@ -136,14 +134,14 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         this.setLambdaString('');
       }
     }
-  });
+  }
 }
 export abstract class FlatDataInstanceSetImplementationState extends InstanceSetImplementationState {
   declare mappingElement:
     | FlatDataInstanceSetImplementation
     | EmbeddedFlatDataPropertyMapping;
   declare propertyMappingStates: FlatDataPropertyMappingState[];
-  isConvertingTransformObjects = false;
+  isConvertingTransformLambdaObjects = false;
 
   constructor(
     editorStore: EditorStore,
@@ -154,10 +152,9 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
     super(editorStore, setImplementation);
 
     makeObservable(this, {
-      isConvertingTransformObjects: observable,
+      isConvertingTransformLambdaObjects: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
-      decorate: action,
       addEmbeddedPropertyMapping: action,
     });
 
@@ -201,9 +198,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
     this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
-  convertPropertyMappingTransformObjects = flow(function* (
-    this: FlatDataInstanceSetImplementationState,
-  ) {
+  *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
     const propertyMappingStates = new Map<
       string,
@@ -220,12 +215,11 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
       // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
     });
     if (lambdas.size) {
-      this.isConvertingTransformObjects = true;
+      this.isConvertingTransformLambdaObjects = true;
       try {
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
-            lambdas,
-          )) as Map<string, string>;
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
+        )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const flatDataPropertyMappingState = propertyMappingStates.get(key);
           flatDataPropertyMappingState?.setLambdaString(
@@ -238,10 +232,10 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
           error,
         );
       } finally {
-        this.isConvertingTransformObjects = false;
+        this.isConvertingTransformLambdaObjects = false;
       }
     }
-  });
+  }
 
   addEmbeddedPropertyMapping(
     property: Property,
@@ -349,17 +343,12 @@ export class EmbeddedFlatDataInstanceSetImplementationState
     // TODO
     return;
   }
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: EmbeddedFlatDataInstanceSetImplementationState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
-  });
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: EmbeddedFlatDataInstanceSetImplementationState,
-    pretty: boolean,
-  ) {
+  }
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     throw new UnsupportedOperationError();
-  });
+  }
 }
 
 export class RootFlatDataInstanceSetImplementationState extends FlatDataInstanceSetImplementationState {

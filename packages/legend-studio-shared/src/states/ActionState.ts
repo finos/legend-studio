@@ -24,29 +24,33 @@ export enum ACTION_STATE {
 }
 
 export class ActionState {
-  state = ACTION_STATE.INITIAL;
+  state: ACTION_STATE;
 
-  withState(val: ACTION_STATE): ActionState {
-    this.state = val;
-    return this;
+  private constructor(initialState: ACTION_STATE) {
+    this.state = initialState;
   }
-  initial(): ActionState {
+
+  reset(): ActionState {
     this.state = ACTION_STATE.INITIAL;
     return this;
   }
+
   inProgress(): ActionState {
     this.state = ACTION_STATE.IN_PROGRESS;
     return this;
   }
+
   fail(): ActionState {
     this.state = ACTION_STATE.FAILED;
     return this;
   }
+
   pass(): ActionState {
     this.state = ACTION_STATE.SUCCEEDED;
     return this;
   }
-  conclude(hasSucceeded: boolean): ActionState {
+
+  complete(hasSucceeded = true): ActionState {
     if (hasSucceeded) {
       this.pass();
     } else {
@@ -54,34 +58,38 @@ export class ActionState {
     }
     return this;
   }
-  reset(): ActionState {
-    return this.initial();
-  }
 
   get isInInitialState(): boolean {
     return this.state === ACTION_STATE.INITIAL;
   }
+
   get isInProgress(): boolean {
     return this.state === ACTION_STATE.IN_PROGRESS;
   }
+
   get hasFailed(): boolean {
     return this.state === ACTION_STATE.FAILED;
   }
+
   get hasSucceeded(): boolean {
     return this.state === ACTION_STATE.SUCCEEDED;
   }
-  get hasConcluded(): boolean {
+
+  /**
+   * Use this if only the completion state of the action is of concern,
+   * i.e. we don't care if it fails or succeeds.
+   */
+  get hasCompleted(): boolean {
     return this.hasFailed || this.hasSucceeded;
   }
-}
 
-export const createObservableActionState = (): ActionState =>
-  makeAutoObservable(new ActionState(), {
-    withState: action,
-    initial: action,
-    inProgress: action,
-    fail: action,
-    pass: action,
-    conclude: action,
-    reset: action,
-  });
+  static create(initialState = ACTION_STATE.INITIAL): ActionState {
+    return makeAutoObservable(new ActionState(initialState), {
+      reset: action,
+      inProgress: action,
+      pass: action,
+      fail: action,
+      complete: action,
+    });
+  }
+}

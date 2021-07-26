@@ -62,6 +62,7 @@ import {
   getSourceElementLabel,
   InstanceSetImplementationSourceSelectorModal,
 } from './InstanceSetImplementationSourceSelectorModal';
+import { flowResult } from 'mobx';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -129,12 +130,12 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const changeClassMappingSourceDriver = useCallback(
       (droppedPackagableElement: PackageableElement): void => {
         if (droppedPackagableElement instanceof Class) {
-          mappingEditorState
-            .changeClassMappingSourceDriver(
+          flowResult(
+            mappingEditorState.changeClassMappingSourceDriver(
               setImplementation,
               droppedPackagableElement,
-            )
-            .catch(applicationStore.alertIllegalUnhandledError);
+            ),
+          ).catch(applicationStore.alertIllegalUnhandledError);
         } else if (droppedPackagableElement instanceof FlatData) {
           if (droppedPackagableElement.recordTypes.length === 0) {
             applicationStore.notifyWarning(
@@ -143,12 +144,12 @@ export const InstanceSetImplementationSourceExplorer = observer(
             return;
           }
           if (droppedPackagableElement.recordTypes.length === 1) {
-            mappingEditorState
-              .changeClassMappingSourceDriver(
+            flowResult(
+              mappingEditorState.changeClassMappingSourceDriver(
                 setImplementation,
                 droppedPackagableElement.recordTypes[0],
-              )
-              .catch(applicationStore.alertIllegalUnhandledError);
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
           } else {
             setSourceElementForSourceSelectorModal(
               droppedPackagableElement.recordTypes[0],
@@ -165,9 +166,12 @@ export const InstanceSetImplementationSourceExplorer = observer(
             return;
           }
           if (relations.length === 1) {
-            mappingEditorState
-              .changeClassMappingSourceDriver(setImplementation, relations[0])
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(
+              mappingEditorState.changeClassMappingSourceDriver(
+                setImplementation,
+                relations[0],
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
           } else {
             setSourceElementForSourceSelectorModal(relations[0]);
           }
@@ -377,9 +381,9 @@ export const InstanceSetImplementationEditor = observer(
       if (!isReadOnly) {
         instanceSetImplementationState.decorate();
       }
-      instanceSetImplementationState
-        .convertPropertyMappingTransformObjects()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        instanceSetImplementationState.convertPropertyMappingTransformObjects(),
+      ).catch(applicationStore.alertIllegalUnhandledError);
       return isReadOnly
         ? noop()
         : (): void =>

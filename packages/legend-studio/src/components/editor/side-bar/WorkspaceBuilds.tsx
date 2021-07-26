@@ -31,6 +31,7 @@ import {
 } from 'react-icons/fa';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
+import { flowResult } from 'mobx';
 
 const getBuildStatusIcon = (buildStatus: BuildStatus): React.ReactNode => {
   switch (buildStatus) {
@@ -98,13 +99,13 @@ export const WorkspaceBuilds = observer(() => {
   const workspaceBuildsState = editorStore.workspaceBuildsState;
   const isDispatchingAction = workspaceBuildsState.isFetchingBuilds;
   const refresh = applicationStore.guaranteeSafeAction(() =>
-    workspaceBuildsState.fetchAllWorkspaceBuilds(),
+    flowResult(workspaceBuildsState.fetchAllWorkspaceBuilds()),
   );
 
   useEffect(() => {
-    workspaceBuildsState
-      .fetchAllWorkspaceBuilds()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(workspaceBuildsState.fetchAllWorkspaceBuilds()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, workspaceBuildsState]);
 
   return (

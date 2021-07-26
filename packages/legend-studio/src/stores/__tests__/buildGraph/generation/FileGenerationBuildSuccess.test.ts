@@ -17,17 +17,13 @@
 import fileGenerationTestData from './FileGenerationTestData.json';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { PackageableElementReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    fileGenerationTestData as Entity[],
-  );
+  await buildGraphBasic(fileGenerationTestData as Entity[], editorStore);
 });
 
 test(unitTest('File Generation Graph Success'), () => {

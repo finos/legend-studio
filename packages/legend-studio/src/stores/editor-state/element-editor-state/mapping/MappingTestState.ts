@@ -111,9 +111,7 @@ export class MappingTestQueryState extends LambdaEditorState {
       query: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
-      convertLambdaObjectToGrammarString: action,
-      convertLambdaGrammarStringToObject: action,
-      updateLamba: action,
+      updateLamba: flow,
     });
 
     this.test = test;
@@ -129,25 +127,23 @@ export class MappingTestQueryState extends LambdaEditorState {
     this.isInitializingLambda = val;
   }
 
-  updateLamba = flow(function* (this: MappingTestQueryState, val: RawLambda) {
+  *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.query = val;
     this.test.setQuery(val);
-    yield this.convertLambdaObjectToGrammarString(true);
-  });
+    yield flowResult(this.convertLambdaObjectToGrammarString(true));
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: MappingTestQueryState,
-    pretty?: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
     if (!this.query.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -165,10 +161,10 @@ export class MappingTestQueryState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
-  convertLambdaGrammarStringToObject(): Promise<void> {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
 }
@@ -389,9 +385,6 @@ export class MappingTestState {
       setAssertionState: action,
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
-      regenerateExpectedResult: flow,
-      onTestStateOpen: flow,
-      runTest: flow,
     });
 
     this.editorStore = editorStore;
@@ -413,9 +406,9 @@ export class MappingTestState {
       this.test,
       this.test.query,
     );
-    queryState
-      .updateLamba(this.test.query)
-      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
+    flowResult(queryState.updateLamba(this.test.query)).catch(
+      this.editorStore.applicationStore.alertIllegalUnhandledError,
+    );
     return queryState;
   }
 

@@ -177,8 +177,8 @@ const MappingExecutionQueryEditor = observer(
       (setImplementation: SetImplementation | undefined): void => {
         // do all the necessary updates
         executionState.setExecutionResultText(undefined);
-        queryState
-          .updateLamba(
+        flowResult(
+          queryState.updateLamba(
             setImplementation
               ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
                   guaranteeType(
@@ -187,8 +187,8 @@ const MappingExecutionQueryEditor = observer(
                   ),
                 )
               : RawLambda.createStub(),
-          )
-          .catch(applicationStore.alertIllegalUnhandledError);
+          ),
+        ).catch(applicationStore.alertIllegalUnhandledError);
         hideClassMappingSelectorModal();
 
         // Attempt to generate data for input data panel as we pick the class mapping:
@@ -264,9 +264,9 @@ const MappingExecutionQueryEditor = observer(
     );
 
     const clearQuery = (): Promise<void> =>
-      executionState.queryState
-        .updateLamba(RawLambda.createStub())
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        executionState.queryState.updateLamba(RawLambda.createStub()),
+      ).catch(applicationStore.alertIllegalUnhandledError);
 
     return (
       <div className="panel mapping-execution-builder__query-panel">
@@ -584,12 +584,12 @@ export const MappingExecutionBuilder = observer(
       : '';
     // execution
     const execute = applicationStore.guaranteeSafeAction(() =>
-      executionState.executeMapping(),
+      flowResult(executionState.executeMapping()),
     );
     const executionResultText = executionState.executionResultText;
     // actions
     const promote = applicationStore.guaranteeSafeAction(() =>
-      executionState.promoteToTest(),
+      flowResult(executionState.promoteToTest()),
     );
     const promoteToService = (): void =>
       executionState.setShowServicePathModal(true);
@@ -738,7 +738,7 @@ export const MappingExecutionBuilder = observer(
             name: string,
             packagePath: string,
           ): Promise<void> =>
-            executionState.promoteToService(name, packagePath)
+            flowResult(executionState.promoteToService(name, packagePath))
           }
           isReadOnly={mappingEditorState.isReadOnly}
         />

@@ -21,6 +21,7 @@ import {
   useApplicationStore,
   useEditorStore,
 } from '@finos/legend-studio';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 
@@ -37,20 +38,21 @@ export const MappingTestQueryBuilder = observer(
       customRuntime.addMapping(
         PackageableElementExplicitReference.create(mapping),
       );
-      await queryBuilderState.querySetupState.setup(
-        testState.queryState.query,
-        mapping,
-        customRuntime,
-        (lambda: RawLambda): Promise<void> =>
-          testState.queryState
-            .updateLamba(lambda)
-            .then(() =>
-              editorStore.applicationStore.notifySuccess(
-                `Mapping test query is updated`,
-              ),
-            )
-            .catch(applicationStore.alertIllegalUnhandledError),
-        testState.queryState.query.isStub,
+      await flowResult(
+        queryBuilderState.querySetupState.setup(
+          testState.queryState.query,
+          mapping,
+          customRuntime,
+          (lambda: RawLambda): Promise<void> =>
+            flowResult(testState.queryState.updateLamba(lambda))
+              .then(() =>
+                editorStore.applicationStore.notifySuccess(
+                  `Mapping test query is updated`,
+                ),
+              )
+              .catch(applicationStore.alertIllegalUnhandledError),
+          testState.queryState.query.isStub,
+        ),
       );
     };
     return (

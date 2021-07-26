@@ -34,8 +34,9 @@ import {
   generateEditorRoute,
   generateViewVersionRoute,
   generateReviewRoute,
-} from '../../../stores/Router';
+} from '../../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const WorkspaceViewerContextMenu = observer<
   {
@@ -48,7 +49,9 @@ const WorkspaceViewerContextMenu = observer<
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const deleteWorkspace = applicationStore.guaranteeSafeAction(() =>
-      editorStore.projectOverviewState.deleteWorkspace(workspace.workspaceId),
+      flowResult(
+        editorStore.projectOverviewState.deleteWorkspace(workspace.workspaceId),
+      ),
     );
 
     return (
@@ -121,9 +124,9 @@ const WorkspacesViewer = observer(() => {
 
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
-    projectOverviewState
-      .fetchProjectWorkspaces()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(projectOverviewState.fetchProjectWorkspaces()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, projectOverviewState]);
 
   return (
@@ -173,13 +176,13 @@ const ReleaseEditor = observer(() => {
   const { latestProjectVersion, currentProjectRevision } = projectOverviewState;
   const revisionInput = projectOverviewState.releaseVersion;
   const createMajorRelease = applicationStore.guaranteeSafeAction(() =>
-    projectOverviewState.createVersion(VERSION_TYPE.MAJOR),
+    flowResult(projectOverviewState.createVersion(VERSION_TYPE.MAJOR)),
   );
   const createMinorRelease = applicationStore.guaranteeSafeAction(() =>
-    projectOverviewState.createVersion(VERSION_TYPE.MINOR),
+    flowResult(projectOverviewState.createVersion(VERSION_TYPE.MINOR)),
   );
   const createPatchRelease = applicationStore.guaranteeSafeAction(() =>
-    projectOverviewState.createVersion(VERSION_TYPE.PATCH),
+    flowResult(projectOverviewState.createVersion(VERSION_TYPE.PATCH)),
   );
   const changeNotes: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
     revisionInput.setNotes(event.target.value);
@@ -191,9 +194,9 @@ const ReleaseEditor = observer(() => {
 
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
-    projectOverviewState
-      .fetchLatestProjectVersion()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(projectOverviewState.fetchLatestProjectVersion()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, projectOverviewState]);
 
   if (!sdlcState.isCurrentProjectInProduction) {
@@ -360,9 +363,9 @@ const VersionsViewer = observer(() => {
 
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
-    editorStore.sdlcState
-      .fetchProjectVersions()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(editorStore.sdlcState.fetchProjectVersions()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, editorStore]);
 
   return (
@@ -479,9 +482,13 @@ const OverviewViewer = observer(() => {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ): void => {
     event.preventDefault();
-    projectOverviewState
-      .updateProject(projectIdentifier, description, tagsArray)
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(
+      projectOverviewState.updateProject(
+        projectIdentifier,
+        description,
+        tagsArray,
+      ),
+    ).catch(applicationStore.alertIllegalUnhandledError);
   };
 
   return (

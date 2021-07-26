@@ -354,7 +354,7 @@ export const CreateNewElementModal = observer(() => {
   const closeModal = (): void => newElementState.closeModal();
   const [packagePath, elementName] = resolvePackageAndElementName(
     selectedPackage,
-    editorStore.graphState.graph.isRoot(selectedPackage),
+    selectedPackage === editorStore.graphState.graph.root,
     name,
   );
   const resolvedPackage =

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { action, flow, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   getNullableFirstElement,
   isNonNullable,
@@ -155,24 +156,25 @@ export class QueryBuilderSetupState {
     }
   }
 
-  setup = flow(function* (
-    this: QueryBuilderSetupState,
+  *setup(
     func: RawLambda,
     mapping: Mapping | undefined,
     runtime: Runtime,
     onSave: (lambda: RawLambda) => Promise<void>,
     disableCompile: boolean,
-  ) {
+  ): GeneratorFn<void> {
     this.setMapping(mapping);
     this.setRuntime(runtime);
     this.queryBuilderState.init(func);
     this.setOnSaveQuery(onSave);
-    yield this.queryBuilderState.setOpenQueryBuilder(true, {
-      disableCompile: disableCompile,
-    });
+    yield flowResult(
+      this.queryBuilderState.setOpenQueryBuilder(true, {
+        disableCompile: disableCompile,
+      }),
+    );
     this.setMappingIsReadOnly(true);
     this.setRuntimeIsReadOnly(true);
-  });
+  }
 
   closeRuntimeEditor(): void {
     this.runtimeEditorState = undefined;
