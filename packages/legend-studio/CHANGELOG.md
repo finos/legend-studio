@@ -1,5 +1,28 @@
 # @finos/legend-studio
 
+## 0.2.3
+
+### Patch Changes
+
+- [#364](https://github.com/finos/legend-studio/pull/364) [`73e5fa2`](https://github.com/finos/legend-studio/commit/73e5fa241ccc3b7464bb7c767316f37cd1c08a6e) Thanks [@varunmaddipati](https://github.com/varunmaddipati)! - Add support for redshift connector.
+
+* [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) Thanks [@akphi](https://github.com/akphi)! - Refactor codebase to use new syntax for `Mobx` `flow` and `flowResult` (related to https://github.com/finos/legend-studio/issues/83).
+
+  **BREAKING CHANGE:** A fair amount of core methods are now nolonger returning `Promise<...>`, but instead `GeneratorFn<...>` due to the new `flow` syntax. This does not affect the functionality, just the syntax.
+
+- [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) Thanks [@akphi](https://github.com/akphi)! - Refactor graphs to use `ActionState` (See https://github.com/finos/legend-studio/issues/283).
+
+* [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** Renamed application class `Studio` to `LegendStudio`.
+
+- [#368](https://github.com/finos/legend-studio/pull/368) [`f7c181d`](https://github.com/finos/legend-studio/commit/f7c181dbc779e896726be7af535006f50c082345) Thanks [@nayanika2](https://github.com/nayanika2)! - feature:execution plan viewer
+
+* [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) Thanks [@akphi](https://github.com/akphi)! - Refactor tests to use a shared method for building simple graph for testing.
+
+* Updated dependencies [[`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523), [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523)]:
+  - @finos/legend-studio-components@0.0.28
+  - @finos/legend-studio-shared@0.0.24
+  - @finos/legend-studio-network@0.0.26
+
 ## 0.2.2
 
 ### Patch Changes

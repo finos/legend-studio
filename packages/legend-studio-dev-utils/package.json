@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-dev-utils",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
