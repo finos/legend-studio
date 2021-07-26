@@ -52,7 +52,7 @@ const testGeneratedElements = async (
   entities.push(buildParentElement());
   const generatedElementPaths = generatedEntities.map((e) => e.path);
   const editorStore = getTestEditorStore();
-  await buildGraphBasic(entities as Entity[], editorStore, {
+  await buildGraphBasic(entities, editorStore, {
     TEMPORARY__keepSectionIndex: true,
   });
   await waitFor(() =>

@@ -16,7 +16,6 @@
 
 import { useEffect } from 'react';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
-import type { History, State } from 'history';
 import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator } from '@finos/legend-studio-components';
 import { ThemeProvider } from '@material-ui/core/styles';
@@ -80,7 +79,7 @@ export const LegendQueryApplicationRoot = observer(() => {
 export const LegendQueryApplication = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
     const { config, pluginManager } = props;
-    const history = useHistory() as History<State>;
+    const history = useHistory();
 
     if (!config.isConfigured) {
       return null;

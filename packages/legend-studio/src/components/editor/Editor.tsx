@@ -222,13 +222,10 @@ export const EditorInner = observer(() => {
   const isResolvingConflicts =
     editorStore.isInConflictResolutionMode &&
     !editorStore.conflictResolutionState.hasResolvedAllConflicts;
-
-  // NOTE: this type any cast is needed to handle the outdated typings of `history` used by `react-router@5`.
-  // TODO: We will fix this when we move to `react-router@6`
   const promptComponent = (
     <Prompt
       when={onNavigationChangeIndicator}
-      message={handleRouteNavigationBlocking as any} // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      message={handleRouteNavigationBlocking}
     />
   );
 
