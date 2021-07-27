@@ -572,19 +572,16 @@ export const MappingTestEditor = observer(
       flowResult(testState.runTest()),
     );
     // Plan
-    const executionPlanStateInstance = testState.executionPlanState;
-
+    const executionPlanState = testState.executionPlanState;
     const closePlanViewer = (): void => {
-      testState.setExecutionPlan(undefined, undefined);
+      executionPlanState.setExecutionPlan(undefined);
       testState.executionPlanState.setExecutionPlanDisplayData('');
-      executionPlanStateInstance.setSelectedNode(undefined);
+      executionPlanState.setSelectedNode(undefined);
     };
     const generatePlan = applicationStore.guaranteeSafeAction(() =>
       flowResult(testState.generatePlan()),
     );
-
     const planMeta = testState.executionPlanMeta;
-
     // Test Result
     let testResult = '';
     switch (testState.result) {
@@ -688,7 +685,7 @@ export const MappingTestEditor = observer(
         </div>
 
         <Dialog
-          open={Boolean(testState.executionPlan)}
+          open={Boolean(testState.executionPlanState.plan)}
           onClose={closePlanViewer}
           classes={{
             root: 'editor-modal__root-container',
@@ -719,15 +716,15 @@ export const MappingTestEditor = observer(
                     </div>
                     <div className="panel__content explorer__content__container">
                       <ExecutionPlanTree
-                        executionPlanState={executionPlanStateInstance}
+                        executionPlanState={executionPlanState}
                         executionPlan={planMeta}
                       />
                     </div>
                   </div>
 
                   <ExecutionNodesViewer
-                    displayData={executionPlanStateInstance.displayData}
-                    executionPlanState={executionPlanStateInstance}
+                    displayData={executionPlanState.displayData}
+                    executionPlanState={executionPlanState}
                   />
                 </SplitPane>
               )}

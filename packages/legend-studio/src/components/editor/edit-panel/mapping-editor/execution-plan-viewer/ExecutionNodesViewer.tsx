@@ -24,7 +24,7 @@ import { ExecutionPlan } from '../../../../../models/metamodels/pure/model/execu
 import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
-} from './ExecutionPlanTree';
+} from './ExecutionPlanViewer';
 import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
 import { EDITOR_LANGUAGE } from '../../../../../stores/EditorConfig';
 import type { ResultType } from '../../../../../models/metamodels/pure/model/executionPlan/result/ResultType';
