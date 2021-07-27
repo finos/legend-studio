@@ -15,7 +15,14 @@
  */
 
 import type { EditorStore } from './EditorStore';
-import { observable, action, makeObservable, flowResult } from 'mobx';
+import {
+  observable,
+  action,
+  makeObservable,
+  flowResult,
+  flow,
+  ObservableMap,
+} from 'mobx';
 import { ExecutionPlan } from '../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import { ExecutionNode } from '../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import type {
@@ -58,6 +65,7 @@ export class ExecutionPlanState {
       sqlSelectedTab: observable,
       viewMode: observable,
       isGenerating: observable,
+      plan: observable,
       setExecutionPlanDisplayData: action,
       setExecutionPlanDisplayDataJson: action,
       transformMetaDataToProtocolJson: action,
@@ -65,6 +73,7 @@ export class ExecutionPlanState {
       setSqlSelectedTab: action,
       setExecutionPlan: action,
       setViewMode: action,
+      generatePlan: flow,
     });
     this.editorStore = editorStore;
   }
