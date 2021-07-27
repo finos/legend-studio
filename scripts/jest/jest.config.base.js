@@ -40,7 +40,7 @@ export default {
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
     // mock since Jest@26 does not support ESM
-    // TODO: remove this and `lodash` dependency when we upgrade to Jest@27
+    // TODO: remove this and `lodash` dependency when we upgrade to Jest@27 and use ESM for Jest
     '^lodash-es$': 'lodash',
   },
   modulePathIgnorePatterns: ['packages/.*/lib'],
