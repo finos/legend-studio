@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-import type { ProjectMetadata } from '@finos/legend-studio';
+import type {
+  Mapping,
+  PackageableElementSelectOption,
+  PackageableRuntime,
+  ProjectMetadata,
+} from '@finos/legend-studio';
 import { useApplicationStore } from '@finos/legend-studio';
 import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  BlankPanelContent,
+  clsx,
   CustomSelectorInput,
+  PanelLoadingIndicator,
   PencilIcon,
   PlusIcon,
   RobotIcon,
@@ -28,6 +38,7 @@ import { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { FaQuestionCircle } from 'react-icons/fa';
+import { generateCreateNewQueryRoute } from '../../stores/LegendQueryRouter';
 import {
   CreateQuerySetupState,
   EditQuerySetupState,
@@ -51,143 +62,290 @@ const buildVersionOption = (version: string): VersionOption => ({
 
 const CreateQuerySetup = observer(
   (props: { querySetupState: CreateQuerySetupState }) => {
+    const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
     const queryStore = useQueryStore();
+    const back = (): void => {
+      setupStore.setSetupState(undefined);
+      setupStore.queryStore.setCurrentVersionId(undefined);
+      setupStore.queryStore.setCurrentProjectMetadata(undefined);
+      setupStore.queryStore.editorStore.graphState.resetGraph();
+    };
+    const next = (): void => {
+      if (
+        queryStore.currentProjectMetadata &&
+        queryStore.currentVersionId &&
+        querySetupState.currentMapping &&
+        querySetupState.currentRuntime
+      ) {
+        applicationStore.historyApiClient.push(
+          generateCreateNewQueryRoute(
+            queryStore.currentProjectMetadata.projectId,
+            queryStore.currentVersionId,
+            querySetupState.currentMapping.path,
+            querySetupState.currentRuntime.path,
+          ),
+        );
+      }
+      setupStore.setSetupState(undefined);
+    };
+    const canProceed =
+      queryStore.currentProjectMetadata &&
+      queryStore.currentVersionId &&
+      queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
+      !queryStore.editorStore.graphState.isInitializingGraph &&
+      querySetupState.currentMapping &&
+      querySetupState.currentRuntime;
 
     // project
-    const projectOptions = setupStore.projectMetadatas.map(buildProjectOption);
+    const projectOptions =
+      querySetupState.projectMetadatas.map(buildProjectOption);
     const selectedProjectOption = queryStore.currentProjectMetadata
       ? buildProjectOption(queryStore.currentProjectMetadata)
       : null;
-
+    const projectSelectorPlaceholder = querySetupState.loadProjectMetadataState
+      .isInProgress
+      ? 'Loading projects'
+      : querySetupState.loadProjectMetadataState.hasFailed
+      ? 'Error fetching projects'
+      : querySetupState.projectMetadatas.length
+      ? 'Choose a project'
+      : 'You have no projects, please create or acquire access for at least one';
     const onProjectOptionChange = (option: ProjectOption | null): void => {
       if (option?.value !== queryStore.currentProjectMetadata) {
         queryStore.setCurrentProjectMetadata(option?.value);
+        // cascade
+        queryStore.setCurrentVersionId(undefined);
+        querySetupState.setCurrentMapping(undefined);
+        querySetupState.setCurrentRuntime(undefined);
         if (queryStore.currentProjectMetadata) {
-          queryStore.setCurrentVersionId(undefined);
-          flowResult(setupStore.loadProjectVersions()).catch(
+          flowResult(querySetupState.loadProjectVersions()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
-        } else {
-          queryStore.setCurrentVersionId(undefined);
         }
       }
     };
 
     // version
-    const versionOptions =
-      queryStore.currentProjectMetadata?.versions.map(buildVersionOption) ?? [];
+    const versionOptions = (
+      queryStore.currentProjectMetadata?.versions ?? []
+    ).map(buildVersionOption);
     const selectedVersionOption = queryStore.currentVersionId
       ? buildVersionOption(queryStore.currentVersionId)
       : null;
-
+    const versionSelectorPlaceholder = querySetupState.loadVersionsState
+      .isInProgress
+      ? 'Loading versions'
+      : !queryStore.currentProjectMetadata
+      ? 'No project selected'
+      : querySetupState.loadVersionsState.hasFailed
+      ? 'Error fetching versions'
+      : queryStore.currentProjectMetadata.versions.length
+      ? 'Choose a version'
+      : 'The specified project has no published version';
     const onVersionOptionChange = (option: VersionOption | null): void => {
       if (option?.value !== queryStore.currentVersionId) {
         queryStore.setCurrentVersionId(option?.value);
+        // cascade
+        queryStore.editorStore.graphState.resetGraph();
+        querySetupState.setCurrentMapping(undefined);
+        querySetupState.setCurrentRuntime(undefined);
         if (queryStore.currentVersionId) {
           flowResult(queryStore.buildGraph()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
-        } else {
-          queryStore.editorStore.graphState.resetGraph();
         }
       }
     };
 
+    // mapping
+    const mappingOptions = queryStore.editorStore.mappingOptions;
+    const selectedMappingOption = querySetupState.currentMapping
+      ? {
+          label: querySetupState.currentMapping.name,
+          value: querySetupState.currentMapping,
+        }
+      : null;
+    const mappingSelectorPlaceholder = mappingOptions.length
+      ? 'Choose a mapping'
+      : 'No mapping available';
+    const onMappingOptionChange = (
+      option: PackageableElementSelectOption<Mapping> | null,
+    ): void => {
+      querySetupState.setCurrentMapping(option?.value);
+      // cascade
+      if (querySetupState.currentMapping) {
+        if (querySetupState.runtimeOptions.length) {
+          querySetupState.setCurrentRuntime(
+            querySetupState.runtimeOptions[0].value,
+          );
+        }
+      } else {
+        querySetupState.setCurrentRuntime(undefined);
+      }
+    };
+
+    // runtime
+    const runtimeOptions = querySetupState.runtimeOptions;
+    const selectedRuntimeOption = querySetupState.currentRuntime
+      ? {
+          label: querySetupState.currentRuntime.name,
+          value: querySetupState.currentRuntime,
+        }
+      : null;
+    const runtimeSelectorPlaceholder = !querySetupState.currentMapping
+      ? 'No mapping specified'
+      : runtimeOptions.length
+      ? 'Choose a runtime'
+      : 'No runtime available';
+    const onRuntimeOptionChange = (
+      option: PackageableElementSelectOption<PackageableRuntime> | null,
+    ): void => {
+      querySetupState.setCurrentRuntime(option?.value);
+    };
+
     useEffect(() => {
-      setupStore.init();
-    }, [setupStore]);
+      flowResult(querySetupState.loadProjects());
+    }, [querySetupState]);
 
     return (
       <div className="query-setup__create-query">
         <div className="query-setup__create-query__header">
+          <button
+            className="query-setup__create-query__header__btn"
+            onClick={back}
+            title="Back to Main Menu"
+          >
+            <ArrowLeftIcon />
+          </button>
           <div className="query-setup__create-query__header__title">
             Creating a new query...
           </div>
+          <button
+            className={clsx('query-setup__create-query__header__btn', {
+              'query-setup__create-query__header__btn--ready': canProceed,
+            })}
+            onClick={next}
+            disabled={!canProceed}
+            title="Proceed"
+          >
+            <ArrowRightIcon />
+          </button>
         </div>
         <div className="query-setup__create-query__content">
-          <div className="query-setup__create-query__group">
-            <div className="query-setup__create-query__group__title">
-              Project
+          <div className="query-setup__create-query__project">
+            <div className="query-setup__create-query__group">
+              <div className="query-setup__create-query__group__title">
+                Project
+              </div>
+              <CustomSelectorInput
+                className="query-setup__create-query__selector"
+                options={projectOptions}
+                disabled={
+                  querySetupState.loadProjectMetadataState.isInProgress ||
+                  !projectOptions.length
+                }
+                isLoading={
+                  querySetupState.loadProjectMetadataState.isInProgress
+                }
+                onChange={onProjectOptionChange}
+                value={selectedProjectOption}
+                placeholder={projectSelectorPlaceholder}
+                isClearable={true}
+                escapeClearsValue={true}
+                darkMode={true}
+              />
             </div>
-            <CustomSelectorInput
-              className="query-setup__create-query__selector"
-              options={projectOptions}
-              disabled={
-                setupStore.loadProjectMetadataState.isInProgress ||
-                !projectOptions.length
-              }
-              isLoading={setupStore.loadProjectMetadataState.isInProgress}
-              onChange={onProjectOptionChange}
-              value={selectedProjectOption}
-              isClearable={true}
-              escapeClearsValue={true}
-              darkMode={true}
-            />
-          </div>
-          <div className="query-setup__create-query__group">
-            <div className="query-setup__create-query__group__title">
-              Version
+            <div className="query-setup__create-query__group">
+              <div className="query-setup__create-query__group__title">
+                Version
+              </div>
+              <CustomSelectorInput
+                className="query-setup__create-query__selector"
+                options={versionOptions}
+                disabled={
+                  !queryStore.currentProjectMetadata ||
+                  querySetupState.loadVersionsState.isInProgress ||
+                  !versionOptions.length
+                }
+                isLoading={querySetupState.loadVersionsState.isInProgress}
+                onChange={onVersionOptionChange}
+                value={selectedVersionOption}
+                placeholder={versionSelectorPlaceholder}
+                isClearable={true}
+                escapeClearsValue={true}
+                darkMode={true}
+              />
             </div>
-            <CustomSelectorInput
-              className="query-setup__create-query__selector"
-              options={versionOptions}
-              disabled={
-                !queryStore.currentProjectMetadata ||
-                setupStore.loadVersionsState.isInProgress ||
-                !versionOptions.length
-              }
-              isLoading={setupStore.loadVersionsState.isInProgress}
-              onChange={onVersionOptionChange}
-              value={selectedVersionOption}
-              isClearable={true}
-              escapeClearsValue={true}
-              darkMode={true}
-            />
           </div>
           <div className="query-setup__create-query__graph">
-            {/* {queryStore.editorStore.graphState.graph.isBuilt} */}
-            <div className="query-setup__create-query__group">
-              <div className="query-setup__create-query__group__title">
-                Mapping
+            {(!queryStore.currentProjectMetadata ||
+              !queryStore.currentVersionId ||
+              !queryStore.editorStore.graphState.graph.buildState
+                .hasSucceeded ||
+              queryStore.editorStore.graphState.isInitializingGraph) && (
+              <div className="query-setup__create-query__graph__loader">
+                <PanelLoadingIndicator
+                  isLoading={
+                    Boolean(queryStore.currentProjectMetadata) &&
+                    Boolean(queryStore.currentVersionId) &&
+                    !queryStore.editorStore.graphState.graph.buildState
+                      .hasSucceeded &&
+                    !queryStore.editorStore.graphState.isInitializingGraph
+                  }
+                />
+                <BlankPanelContent>
+                  {queryStore.editorStore.graphState.graph.buildState.hasFailed
+                    ? `Can't build graph`
+                    : queryStore.editorStore.graphState.isInitializingGraph
+                    ? `Building graph...`
+                    : 'Project and version must be specified'}
+                </BlankPanelContent>
               </div>
-              <CustomSelectorInput
-                className="query-setup__create-query__selector"
-                options={versionOptions}
-                disabled={
-                  !queryStore.currentProjectMetadata ||
-                  setupStore.loadVersionsState.isInProgress ||
-                  !versionOptions.length
-                }
-                isLoading={setupStore.loadVersionsState.isInProgress}
-                onChange={onVersionOptionChange}
-                value={selectedVersionOption}
-                isClearable={true}
-                escapeClearsValue={true}
-                darkMode={true}
-              />
-            </div>
-            <div className="query-setup__create-query__group">
-              <div className="query-setup__create-query__group__title">
-                Runtime
-              </div>
-              <CustomSelectorInput
-                className="query-setup__create-query__selector"
-                options={versionOptions}
-                disabled={
-                  !queryStore.currentProjectMetadata ||
-                  setupStore.loadVersionsState.isInProgress ||
-                  !versionOptions.length
-                }
-                isLoading={setupStore.loadVersionsState.isInProgress}
-                onChange={onVersionOptionChange}
-                value={selectedVersionOption}
-                isClearable={true}
-                escapeClearsValue={true}
-                darkMode={true}
-              />
-            </div>
+            )}
+            {queryStore.currentProjectMetadata &&
+              queryStore.currentVersionId &&
+              queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
+              !queryStore.editorStore.graphState.isInitializingGraph && (
+                <>
+                  <div className="query-setup__create-query__group">
+                    <div className="query-setup__create-query__group__title">
+                      Mapping
+                    </div>
+                    <CustomSelectorInput
+                      className="query-setup__create-query__selector"
+                      options={mappingOptions}
+                      disabled={!mappingOptions.length}
+                      onChange={onMappingOptionChange}
+                      value={selectedMappingOption}
+                      placeholder={mappingSelectorPlaceholder}
+                      isClearable={true}
+                      escapeClearsValue={true}
+                      darkMode={true}
+                    />
+                  </div>
+                  <div className="query-setup__create-query__group">
+                    <div className="query-setup__create-query__group__title">
+                      Runtime
+                    </div>
+                    <CustomSelectorInput
+                      className="query-setup__create-query__selector"
+                      options={runtimeOptions}
+                      disabled={
+                        !mappingOptions.length ||
+                        !querySetupState.currentMapping
+                      }
+                      onChange={onRuntimeOptionChange}
+                      value={selectedRuntimeOption}
+                      placeholder={runtimeSelectorPlaceholder}
+                      isClearable={true}
+                      escapeClearsValue={true}
+                      darkMode={true}
+                    />
+                  </div>
+                </>
+              )}
           </div>
         </div>
       </div>
@@ -223,7 +381,7 @@ const QuerySetupLandingPage = observer(() => {
             <PencilIcon className="query-setup__landing-page__icon--edit" />
           </div>
           <div className="query-setup__landing-page__option__label">
-            Edit existing query
+            Load an existing query
           </div>
         </button>
         <button

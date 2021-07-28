@@ -14,4 +14,19 @@
  * limitations under the License.
  */
 
-export const QueryEditor: React.FC<{}> = () => <div>todo</div>;
+import { observer } from 'mobx-react-lite';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useQueryStore } from '../../stores/QueryStore';
+import { QueryBuilder } from '../QueryBuilder';
+
+export const QueryEditorInner = observer(() => {
+  const queryStore = useQueryStore();
+  return <QueryBuilder queryBuilderState={queryStore.queryBuilderState} />;
+});
+
+export const QueryEditor: React.FC<{}> = () => (
+  <DndProvider backend={HTML5Backend}>
+    <QueryEditorInner />
+  </DndProvider>
+);

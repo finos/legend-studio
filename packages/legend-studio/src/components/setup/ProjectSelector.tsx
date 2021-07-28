@@ -100,10 +100,10 @@ export const ProjectSelector = observer(
       onChange,
     ]);
 
-    const projectSelectorPlaceHolder = isLoadingOptions
+    const projectSelectorPlaceholder = isLoadingOptions
       ? 'Loading projects'
       : setupStore.loadProjectsState === ACTION_STATE.FAILED
-      ? 'Error fetching Projects'
+      ? 'Error fetching projects'
       : options.length
       ? 'Choose an existing project'
       : 'You have no projects, please create or acquire access for at least one';
@@ -130,7 +130,7 @@ export const ProjectSelector = observer(
           isLoading={isLoadingOptions}
           onChange={onSelectionChange}
           value={selectedOption}
-          placeholder={projectSelectorPlaceHolder}
+          placeholder={projectSelectorPlaceholder}
           isClearable={true}
           escapeClearsValue={true}
           darkMode={true}

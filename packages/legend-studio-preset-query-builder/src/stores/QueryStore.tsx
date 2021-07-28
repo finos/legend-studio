@@ -19,7 +19,12 @@ import { action, flowResult, makeAutoObservable } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { ActionState, guaranteeNonNullable } from '@finos/legend-studio-shared';
-import type { Entity, ProjectMetadata } from '@finos/legend-studio';
+import type {
+  Entity,
+  Mapping,
+  PackageableRuntime,
+  ProjectMetadata,
+} from '@finos/legend-studio';
 import {
   SDLCServerClient,
   TAB_SIZE,
@@ -28,26 +33,51 @@ import {
   EditorStore,
   useApplicationStore,
 } from '@finos/legend-studio';
+import { QueryBuilderState } from './QueryBuilderState';
 
 export abstract class QueryInfoState {
-  // something
+  queryStore: QueryStore;
+
+  constructor(queryStore: QueryStore) {
+    this.queryStore = queryStore;
+  }
 }
 
 export class CreateQueryInfoState extends QueryInfoState {
-  // something
+  mapping: Mapping;
+  runtime: PackageableRuntime;
+  // lambda: RawLambda;
+
+  constructor(
+    queryStore: QueryStore,
+    mapping: Mapping,
+    runtime: PackageableRuntime,
+  ) {
+    super(queryStore);
+    this.mapping = mapping;
+    this.runtime = runtime;
+  }
 }
 
 export class EditQueryInfoState extends QueryInfoState {
-  // something
+  // query: Query;
+  // constructor(queryStore: QueryStore) {
+  //   this.queryStore = queryStore;
+  // }
 }
 
 export class ServiceQueryInfoState extends QueryInfoState {
-  // something
+  // service: Service;
+  // key?: string;
+  // constructor(queryStore: QueryStore) {
+  //   this.queryStore = queryStore;
+  // }
 }
 
 export class QueryStore {
   editorStore: EditorStore;
   queryInfoState?: QueryInfoState;
+  queryBuilderState: QueryBuilderState;
 
   useSDLC = true; // TODO: remove this when metadata server is enabled by default
 
@@ -59,6 +89,7 @@ export class QueryStore {
   currentVersionId?: string;
   loadVersionsState = ActionState.create();
   buildGraphState = ActionState.create();
+  initGraphState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
@@ -69,6 +100,7 @@ export class QueryStore {
     });
 
     this.editorStore = editorStore;
+    this.queryBuilderState = new QueryBuilderState(editorStore);
   }
 
   setCurrentProjectMetadata(val: ProjectMetadata | undefined): void {
@@ -83,11 +115,52 @@ export class QueryStore {
     this.queryInfoState = val;
   }
 
+  *initGraph(): GeneratorFn<void> {
+    if (!this.initGraphState.isInInitialState) {
+      return;
+    }
+    try {
+      this.initGraphState.inProgress();
+      yield flowResult(
+        this.editorStore.graphState.graphManager.setupEngine(
+          this.editorStore.applicationStore.pluginManager,
+          {
+            env: this.editorStore.applicationStore.config.env,
+            tabSize: TAB_SIZE,
+            clientConfig: {
+              baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+              enableCompression: true,
+              authenticationUrl: SDLCServerClient.authenticationUrl(
+                this.editorStore.applicationStore.config.sdlcServerUrl,
+              ),
+            },
+          },
+        ),
+      );
+
+      yield flowResult(this.editorStore.graphState.initializeSystem());
+
+      this.initGraphState.pass();
+    } catch (error: unknown) {
+      this.editorStore.applicationStore.logger.error(
+        CORE_LOG_EVENT.SDLC_PROBLEM,
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+      this.initGraphState.fail();
+    }
+  }
+
   *buildGraph(): GeneratorFn<void> {
     if (!this.currentProjectMetadata || !this.currentVersionId) {
       this.editorStore.applicationStore.notifyIllegalState(
         `Can't build graph when project and version is not specified`,
       );
+      return;
+    }
+    if (this.initGraphState.isInInitialState) {
+      yield flowResult(this.initGraph());
+    } else if (this.initGraphState.isInProgress) {
       return;
     }
 
@@ -109,25 +182,6 @@ export class QueryStore {
           )) as Entity[];
       }
 
-      yield flowResult(
-        this.editorStore.graphState.graphManager.setupEngine(
-          this.editorStore.applicationStore.pluginManager,
-          {
-            env: this.editorStore.applicationStore.config.env,
-            tabSize: TAB_SIZE,
-            clientConfig: {
-              baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-              enableCompression: true,
-              authenticationUrl: SDLCServerClient.authenticationUrl(
-                this.editorStore.applicationStore.config.sdlcServerUrl,
-              ),
-            },
-          },
-        ),
-      );
-
-      // build graph
-      yield flowResult(this.editorStore.graphState.initializeSystem());
       // TODO: remove this when metadata server is enabled by default
       const project = new Project();
       project.projectId = this.currentProjectMetadata.projectId;

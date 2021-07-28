@@ -81,7 +81,7 @@ const ProjectDependencyVersionSelector = observer(
         }
       }
     };
-    const projectSelectorPlaceHolder = !projectDependency.projectId.length
+    const projectSelectorPlaceholder = !projectDependency.projectId.length
       ? 'Choose project'
       : disabled
       ? 'No project version found. Please create a new one.'
@@ -96,7 +96,7 @@ const ProjectDependencyVersionSelector = observer(
         onChange={onSelectionChange}
         value={selectedVersionOption}
         disabled={disabled}
-        placeholder={projectSelectorPlaceHolder}
+        placeholder={projectSelectorPlaceholder}
         isLoading={
           editorStore.projectConfigurationEditorState
             .isFetchingAssociatedProjectsAndVersions

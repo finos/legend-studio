@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-import type { Mapping } from '../../model/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../model/packageableElements/runtime/Runtime';
-
 export class Query {
   name!: string;
   id!: string;
   projectId!: string;
   versionId!: string;
-  mapping!: Mapping;
-  runtime!: Runtime;
+  mapping!: string;
+  runtime!: string;
   content!: string;
 }

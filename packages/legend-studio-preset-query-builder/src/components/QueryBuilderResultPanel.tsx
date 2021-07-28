@@ -30,7 +30,6 @@ import {
   TdsExecutionResult,
   TextInputEditor,
   useApplicationStore,
-  NewServiceModal,
 } from '@finos/legend-studio';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 
@@ -205,7 +204,7 @@ export const QueryBuilderResultPanel = observer(
             </div>
           </div>
         </Dialog>
-        {queryBuilderState.querySetupState.mapping && (
+        {/* {queryBuilderState.querySetupState.mapping && (
           <NewServiceModal
             mapping={queryBuilderState.querySetupState.mapping}
             close={(): void => resultState.setShowServicePathModal(false)}
@@ -217,7 +216,7 @@ export const QueryBuilderResultPanel = observer(
               flowResult(resultState.promoteToService(name, packagePath))
             }
           />
-        )}
+        )} */}
       </div>
     );
   },

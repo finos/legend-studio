@@ -1325,6 +1325,15 @@ export class EditorStore {
       .map((a) => a.selectOption as PackageableElementSelectOption<Mapping>);
   }
 
+  get runtimeOptions(): PackageableElementSelectOption<PackageableRuntime>[] {
+    return this.graphState.graph.ownRuntimes
+      .concat(this.graphState.graph.dependencyManager.runtimes)
+      .map(
+        (a) =>
+          a.selectOption as PackageableElementSelectOption<PackageableRuntime>,
+      );
+  }
+
   get storeOptions(): PackageableElementSelectOption<Store>[] {
     return this.graphState.graph.ownStores
       .concat(this.graphState.graph.dependencyManager.stores)

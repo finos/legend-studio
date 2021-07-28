@@ -60,7 +60,7 @@ export const LegendQueryApplicationRoot = observer(() => {
             path={[
               LEGEND_QUERY_ROUTE_PATTERN.LOAD_SERVICE_QUERY,
               LEGEND_QUERY_ROUTE_PATTERN.CREATE_NEW_QUERY,
-              LEGEND_QUERY_ROUTE_PATTERN.EDIT_QUERY,
+              LEGEND_QUERY_ROUTE_PATTERN.LOAD_EXISTING_QUERY,
             ]}
             component={QueryEditor}
           />

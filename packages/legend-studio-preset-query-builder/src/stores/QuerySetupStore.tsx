@@ -15,65 +15,97 @@
  */
 
 import { createContext, useContext } from 'react';
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  makeAutoObservable,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  IllegalStateError,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-studio-shared';
+import type {
+  Mapping,
+  PackageableElementSelectOption,
+  PackageableRuntime,
+} from '@finos/legend-studio';
 import {
   ProjectMetadata,
   Project,
   ProjectType,
   Version,
 } from '@finos/legend-studio';
-import type { QueryStore } from './QueryStore';
+import type { QueryInfoState, QueryStore } from './QueryStore';
+import { EditQueryInfoState, ServiceQueryInfoState } from './QueryStore';
+import { CreateQueryInfoState } from './QueryStore';
 import { useQueryStore } from './QueryStore';
 
 export abstract class QuerySetupState {
   queryStore: QueryStore;
+
   constructor(queryStore: QueryStore) {
     this.queryStore = queryStore;
   }
-  // something
+
+  abstract toInfoState(): QueryInfoState;
 }
+
 export class EditQuerySetupState extends QuerySetupState {
-  // something
+  toInfoState(): QueryInfoState {
+    const infoState = new EditQueryInfoState(this.queryStore);
+    return infoState;
+  }
 }
+
 export class CreateQuerySetupState extends QuerySetupState {
-  // something
-}
-export class ServiceQuerySetupState extends QuerySetupState {
-  // something
-}
-
-export class QuerySetupStore {
-  queryStore: QueryStore;
-
-  querySetupState?: QuerySetupState;
   projectMetadatas: ProjectMetadata[] = [];
   loadProjectMetadataState = ActionState.create();
   loadVersionsState = ActionState.create();
-  buildGraphState = ActionState.create();
+  currentMapping?: Mapping;
+  currentRuntime?: PackageableRuntime;
 
   constructor(queryStore: QueryStore) {
-    makeAutoObservable(this, {
-      queryStore: false,
-      setSetupState: action,
+    super(queryStore);
+
+    makeObservable(this, {
+      projectMetadatas: observable,
+      loadProjectMetadataState: observable,
+      loadVersionsState: observable,
+      currentMapping: observable,
+      currentRuntime: observable,
+      runtimeOptions: computed,
+      setCurrentMapping: action,
+      setCurrentRuntime: action,
+      loadProjects: flow,
+      loadProjectVersions: flow,
     });
 
     this.queryStore = queryStore;
   }
 
-  setSetupState(val: QuerySetupState | undefined): void {
-    this.querySetupState = val;
+  setCurrentMapping(val: Mapping | undefined): void {
+    this.currentMapping = val;
   }
 
-  *init(): GeneratorFn<void> {
-    // NOTE: load query
-    yield flowResult(this.loadProjects());
+  setCurrentRuntime(val: PackageableRuntime | undefined): void {
+    this.currentRuntime = val;
+  }
+
+  get runtimeOptions(): PackageableElementSelectOption<PackageableRuntime>[] {
+    return this.currentMapping
+      ? this.queryStore.editorStore.runtimeOptions.filter((option) =>
+          option.value.runtimeValue.mappings
+            .map((mappingReference) => mappingReference.value)
+            .includes(guaranteeNonNullable(this.currentMapping)),
+        )
+      : [];
   }
 
   *loadProjects(): GeneratorFn<void> {
@@ -99,6 +131,8 @@ export class QuerySetupStore {
         ).map((project) => ProjectMetadata.serialization.fromJson(project));
       }
       this.loadProjectMetadataState.pass();
+
+      // TODO: auto-select first version
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.loadProjectMetadataState.fail();
@@ -129,6 +163,45 @@ export class QuerySetupStore {
       this.loadVersionsState.fail();
       this.queryStore.editorStore.applicationStore.notifyError(error);
     }
+  }
+
+  toInfoState(): QueryInfoState {
+    if (!this.currentMapping || !this.currentRuntime) {
+      throw new IllegalStateError(
+        `Can't create query info state: expect mapping and runtime to be specified`,
+      );
+    }
+    const infoState = new CreateQueryInfoState(
+      this.queryStore,
+      this.currentMapping,
+      this.currentRuntime,
+    );
+    return infoState;
+  }
+}
+
+export class ServiceQuerySetupState extends QuerySetupState {
+  toInfoState(): QueryInfoState {
+    const infoState = new ServiceQueryInfoState(this.queryStore);
+    return infoState;
+  }
+}
+
+export class QuerySetupStore {
+  queryStore: QueryStore;
+  querySetupState?: QuerySetupState;
+
+  constructor(queryStore: QueryStore) {
+    makeAutoObservable(this, {
+      queryStore: false,
+      setSetupState: action,
+    });
+
+    this.queryStore = queryStore;
+  }
+
+  setSetupState(val: QuerySetupState | undefined): void {
+    this.querySetupState = val;
   }
 }
 

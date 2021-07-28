@@ -61,7 +61,6 @@
 
     height: 3.4rem;
     width: 25rem;
-    margin-top: 0.5rem;
     border-radius: 0.2rem;
     background: var(--color-light-grey-300);
     user-select: none;
@@ -77,6 +76,10 @@
     &--create:hover {
       background: var(--color-lime-75);
     }
+  }
+
+  &__option + &__option {
+    margin-top: 0.5rem;
   }
 
   &__option__icon {
@@ -113,30 +116,67 @@
 .query-setup__create-query {
   display: flex;
   flex-direction: column;
-  height: 40rem;
+  height: 38.2rem;
   width: 60rem;
   background: var(--color-dark-grey-80);
   border-radius: 0.2rem;
 
   &__header {
-    @include flexCenter;
+    @include flexVCenter;
 
     height: 3.4rem;
     background: var(--color-lime-75);
     border-radius: 0.2rem 0.2rem 0 0;
 
+    &__btn {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      width: 5rem;
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-dark-shade-250);
+      }
+
+      &:not([disabled]):hover {
+        svg {
+          color: var(--color-dark-shade-800);
+        }
+      }
+
+      &--ready svg {
+        color: var(--color-dark-shade-800);
+        animation: nudge-horizontal 0.5s infinite ease;
+      }
+
+      &[disabled] {
+        background: var(--color-dark-grey-80);
+        cursor: not-allowed;
+
+        svg {
+          color: var(--color-dark-grey-280);
+        }
+      }
+    }
+
     &__title {
-      width: 50rem;
-      font-family: 'Roboto Mono', monospace;
+      @include flexVCenter;
+
+      height: 100%;
+      width: calc(100% - 10rem);
+      padding: 0 2rem;
       color: var(--color-dark-shade-800);
+      font-family: 'Roboto Mono', monospace;
       font-size: 1.3rem;
-      font-weight: 500;
-      user-select: none;
+      border-left: 0.1rem solid var(--color-dark-shade-250);
+      cursor: default;
     }
   }
 
   &__content {
-    @include flexCenter;
+    @include flexVCenter;
 
     flex-direction: column;
     height: calc(100% - 3.4rem);
@@ -158,12 +198,38 @@
     margin-top: 1rem;
   }
 
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem 0;
+  }
+
   &__graph {
-    height: 12.4rem;
-    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    height: 13.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
   }
 
   &__selector {
     width: 50rem;
+  }
+}
+
+@keyframes nudge-horizontal {
+  from {
+    transform: translateX(0.1rem);
+  }
+
+  to {
+    transform: translateX(-0.1rem);
   }
 }

@@ -40,6 +40,8 @@ export {
   FaPlay as PlayIcon,
   FaGripVertical as GripVerticalIcon,
   FaRobot as RobotIcon,
+  FaArrowLeft as ArrowLeftIcon,
+  FaArrowRight as ArrowRightIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

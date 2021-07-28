@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { FaUserSecret, FaRobot, FaSave } from 'react-icons/fa';
+import { FaUserSecret, FaSave } from 'react-icons/fa';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { clsx, HammerIcon } from '@finos/legend-studio-components';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
@@ -91,13 +91,13 @@ const QueryBuilderHeader = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const promoteToService = (): void =>
-      queryBuilderState.resultState.setShowServicePathModal(true);
+    // const promoteToService = (): void =>
+    //   queryBuilderState.resultState.setShowServicePathModal(true);
     const saveQuery = (): Promise<void> =>
       queryBuilderState
         .saveQuery()
         .catch(applicationStore.alertIllegalUnhandledError);
-    const disablePromoteToService = !queryBuilderState.querySetupState.mapping;
+    // const disablePromoteToService = !queryBuilderState.querySetupState.mapping;
 
     return (
       <div className="query-builder__header">
@@ -105,7 +105,7 @@ const QueryBuilderHeader = observer(
           <div className="query-builder__header__title"></div>
           <div className="query-builder__header__actions">
             <div className="query-builder__header__action">
-              <button
+              {/* <button
                 className="panel__header__action"
                 onClick={promoteToService}
                 disabled={disablePromoteToService}
@@ -113,7 +113,7 @@ const QueryBuilderHeader = observer(
                 title="Promote to Service"
               >
                 <FaRobot />
-              </button>
+              </button> */}
               <button
                 className="panel__header__action"
                 onClick={saveQuery}

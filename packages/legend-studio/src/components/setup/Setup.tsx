@@ -494,10 +494,10 @@ const CreateWorkspaceModal = observer(() => {
       workspaceNameInputRef.current?.focus();
     }
   };
-  const projectSelectorPlaceHolder = isFetchingProjects
+  const projectSelectorPlaceholder = isFetchingProjects
     ? 'Loading projects'
     : loadProjectsState === ACTION_STATE.FAILED
-    ? 'Error fetching Projects'
+    ? 'Error fetching projects'
     : projectOptions.length
     ? 'Choose an existing project'
     : 'You have no projects, please create or acquire access for at least one';
@@ -558,7 +558,7 @@ const CreateWorkspaceModal = observer(() => {
               isLoading={isFetchingProjects}
               onChange={onSelectionChange}
               value={selectedOption}
-              placeholder={projectSelectorPlaceHolder}
+              placeholder={projectSelectorPlaceholder}
               isClearable={true}
               escapeClearsValue={true}
               darkMode={true}
