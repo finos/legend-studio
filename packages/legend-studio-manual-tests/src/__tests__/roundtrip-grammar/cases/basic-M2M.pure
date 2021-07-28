@@ -1,13 +1,14 @@
 Enum model::target::IncType
 {
   LLC,
-  QB
+  CORP
 }
 
 Class model::Firm
 {
   employees: model::Person[1..*];
   type: String[1];
+  legalName: String[1];
 }
 
 Class model::Person
@@ -16,7 +17,7 @@ Class model::Person
   lastName: String[1];
 }
 
-Class model::target::_Firm
+Class model::target::_Firm extends model::target::_LegalEntity
 {
   employees: model::target::_Person[1..*];
   type: model::target::IncType[1];
@@ -27,9 +28,14 @@ Class model::target::_Person
   fullName: String[1];
 }
 
+Class model::target::_LegalEntity
+{
+  name: String[1];
+}
+
 
 ###Mapping
-Mapping model::mapping
+Mapping model::ModelToModelMapping
 (
   *model::target::_Person: Pure
   {
@@ -40,14 +46,28 @@ Mapping model::mapping
   {
     ~src model::Firm
     employees[model_target__Person]: $src.employees,
-    type: EnumerationMapping model_target_IncType: $src.type
+    type: EnumerationMapping model_target_IncType: $src.type,
+    name: $src.legalName
   }
 
   model::target::IncType: EnumerationMapping
   {
     LLC: ['llc'],
-    QB: ['qb']
+    CORP: ['corp']
   }
+
+  MappingTests
+  [
+    test_1
+    (
+      query: |model::target::_Firm.all()->graphFetchChecked(#{model::target::_Firm{name,type,employees{fullName}}}#)->serialize(#{model::target::_Firm{name,type,employees{fullName}}}#);
+      data:
+      [
+        <Object, JSON, model::Firm, '{"employees":[{"firstName":"firstName 92","lastName":"lastName 40"}],"type":"corp","legalName":"legalName 55"}'>
+      ];
+      assert: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\"employees\":[{\"firstName\":\"firstName 92\",\"lastName\":\"lastName 40\"}],\"type\":\"corp\",\"legalName\":\"legalName 55\"}"},"value":{"legalName":"legalName 55","type":"corp","employees":[{"firstName":"firstName 92"}]}},"value":{"name":"legalName 55","type":"CORP","employees":[{"fullName":"firstName 92"}]}}';
+    )
+  ]
 )
 
 
@@ -56,7 +76,7 @@ Runtime model::runtime
 {
   mappings:
   [
-    model::mapping
+    model::ModelToModelMapping
   ];
   connections:
   [
