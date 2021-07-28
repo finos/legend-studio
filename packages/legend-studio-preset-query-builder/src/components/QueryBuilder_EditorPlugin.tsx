@@ -19,8 +19,6 @@ import type {
   EditorExtensionState,
   EditorExtensionStateCreator,
   EditorStore,
-  LambdaEditorHotkeyConfiguration,
-  LambdaEditorState,
   PackageableElement,
   PluginManager,
   EditorExtensionComponentRendererConfiguration,
@@ -41,8 +39,6 @@ import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';
 import { MappingTestQueryBuilder } from './MappingTestQueryBuilder';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
-import type { IKeyboardEvent } from 'monaco-editor';
-import { KeyCode } from 'monaco-editor';
 import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
@@ -107,35 +103,6 @@ export class QueryBuilder_EditorPlugin extends EditorPlugin {
             );
           }
           return undefined;
-        },
-      },
-    ];
-  }
-
-  override getExtraLambdaEditorHotkeyConfigurations(): LambdaEditorHotkeyConfiguration[] {
-    return [
-      {
-        eventMatcher: (
-          editorStore: EditorStore,
-          event: IKeyboardEvent,
-        ): boolean =>
-          editorStore.getEditorExtensionState(QueryBuilderState)
-            .openQueryBuilder && event.keyCode === KeyCode.F9,
-        skipGlobalAction: true,
-        action: (
-          editorStore: EditorStore,
-          lambdaEditorState: LambdaEditorState,
-          checkParseringError: boolean,
-        ): void => {
-          const queryBuilderState =
-            editorStore.getEditorExtensionState(QueryBuilderState);
-          flowResult(
-            editorStore.graphState.checkLambdaParsingError(
-              lambdaEditorState,
-              checkParseringError,
-              () => flowResult(queryBuilderState.compileQuery()),
-            ),
-          ).catch(editorStore.applicationStore.alertIllegalUnhandledError);
         },
       },
     ];

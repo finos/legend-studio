@@ -85,7 +85,6 @@ export class QueryBuilderState extends EditorExtensionState {
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
-  openQueryBuilder = false;
   filterOperators: QueryBuilderFilterOperator[] = [
     new QueryBuilderFilterOperator_Equal(),
     new QueryBuilderFilterOperator_NotEqual(),
@@ -104,7 +103,9 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderFilterOperator_IsEmpty(),
     new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
+  openQueryBuilder = false;
   isCompiling = false;
+  backdrop = false;
 
   constructor(editorStore: EditorStore) {
     super();
@@ -120,12 +121,14 @@ export class QueryBuilderState extends EditorExtensionState {
       queryUnsupportedState: observable,
       openQueryBuilder: observable,
       isCompiling: observable,
-      setOpenQueryBuilder: flow,
-      compileQuery: flow,
+      backdrop: observable,
       reset: action,
       resetData: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
+      setBackdrop: action,
+      setOpenQueryBuilder: flow,
+      compileQuery: flow,
     });
 
     this.editorStore = editorStore;
@@ -150,6 +153,10 @@ export class QueryBuilderState extends EditorExtensionState {
       editorStore,
       this,
     );
+  }
+
+  setBackdrop(val: boolean): void {
+    this.backdrop = val;
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {

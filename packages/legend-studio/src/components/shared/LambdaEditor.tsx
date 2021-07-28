@@ -15,7 +15,7 @@
  */
 
 import { useRef, useEffect, useState, useMemo } from 'react';
-import type { IDisposable } from 'monaco-editor';
+import type { IDisposable, IKeyboardEvent } from 'monaco-editor';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
 import {
@@ -42,6 +42,12 @@ import type { EngineError } from '../../models/metamodels/pure/action/EngineErro
 import { ParserError } from '../../models/metamodels/pure/action/EngineError';
 import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { flowResult } from 'mobx';
+import { useCallback } from 'react';
+
+export type LambdaEditorOnKeyDownEventHandler = {
+  matcher: (event: IKeyboardEvent) => boolean;
+  action: (event: IKeyboardEvent) => void;
+};
 
 const LambdaErrorFeedback: React.FC<{
   error?: EngineError;
@@ -81,10 +87,12 @@ const LambdaEditorInner = observer(
     expectedType?: Type;
     matchedExpectedType?: () => boolean;
     onExpectedTypeLabelSelect?: () => void;
-    forceBackdrop: boolean;
     forceExpansion?: boolean;
     useBaseTextEditorSettings?: boolean;
     hideErrorBar?: boolean;
+    forceBackdrop: boolean;
+    backdropSetter?: (val: boolean) => void;
+    onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[];
   }) => {
     const {
       className,
@@ -95,11 +103,12 @@ const LambdaEditorInner = observer(
       onExpectedTypeLabelSelect,
       matchedExpectedType,
       forceBackdrop,
+      backdropSetter,
       forceExpansion,
       useBaseTextEditorSettings,
       hideErrorBar,
+      onKeyDownEventHandlers,
     } = props;
-    const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const onDidChangeModelContentEventDisposer = useRef<
       IDisposable | undefined
@@ -198,13 +207,15 @@ const LambdaEditorInner = observer(
 
     // set backdrop to force user to fix parser error when it happens
     useEffect(() => {
-      if (parserError) {
-        editorStore.setBackdrop(true);
-      } else if (!forceBackdrop) {
-        // make sure the backdrop is no longer `needed` for blocking by another parser error before hiding it
-        editorStore.setBackdrop(false);
+      if (backdropSetter) {
+        if (parserError) {
+          backdropSetter(true);
+        } else if (!forceBackdrop) {
+          // make sure the backdrop is no longer `needed` for blocking by another parser error before hiding it
+          backdropSetter(false);
+        }
       }
-    }, [editorStore, parserError, forceBackdrop]);
+    }, [parserError, forceBackdrop, backdropSetter]);
 
     if (editor) {
       /**
@@ -259,7 +270,7 @@ const LambdaEditorInner = observer(
       // set hotkeys (before calling the action, finish parsing the current text value)
       onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger multiple compilation/generation/etc.
       /**
-       * NOTE: We can use `setCommand` here but that does not expose the event so we cannot `stopPropagation`, but we need to
+       * NOTE: We can use `setCommand` here but that does not expose the event so we cannot `stopPropagation`, and we need to
        * use `stopPropagation` to prevent the event top bubble up to global hotkeys listener.
        * If we really want to use `setCommand` the other approach is to set <HotKeys/> around this lambda editor to override F9
        * perhaps that's the cleaner approach because we use `react-hotkeys` to handle it's business, but there is an on-going
@@ -272,71 +283,14 @@ const LambdaEditorInner = observer(
        * parsing passes before actually calling those global operations.
        */
       onKeyDownEventDisposer.current = editor.onKeyDown((event) => {
-        const applicableLambdaEditorHotkeyConfigurations =
-          editorStore.applicationStore.pluginManager
-            .getEditorPlugins()
-            .flatMap(
-              (plugin) =>
-                plugin.getExtraLambdaEditorHotkeyConfigurations?.() ?? [],
-            )
-            .filter((configuration) =>
-              configuration.eventMatcher(editorStore, event),
-            );
-        const enableGlobalAction =
-          !applicableLambdaEditorHotkeyConfigurations.length ||
-          applicableLambdaEditorHotkeyConfigurations.every(
-            (configuration) => !configuration.skipGlobalAction,
-          );
-        if (applicableLambdaEditorHotkeyConfigurations.length) {
-          applicableLambdaEditorHotkeyConfigurations.forEach(
-            (configuration) => {
-              event.preventDefault();
-              event.stopPropagation();
-              transformStringToLambda?.cancel();
-              configuration.action(editorStore, lambdaEditorState, !disabled);
-            },
-          );
-        }
-        if (enableGlobalAction) {
-          if (event.keyCode === KeyCode.F8) {
+        onKeyDownEventHandlers.forEach((handler) => {
+          if (handler.matcher(event)) {
             event.preventDefault();
             event.stopPropagation();
             transformStringToLambda?.cancel();
-            flowResult(
-              editorStore.graphState.checkLambdaParsingError(
-                lambdaEditorState,
-                !disabled,
-                () => flowResult(editorStore.toggleTextMode()),
-              ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
-          } else if (event.keyCode === KeyCode.F9) {
-            event.preventDefault();
-            event.stopPropagation();
-            transformStringToLambda?.cancel();
-            flowResult(
-              editorStore.graphState.checkLambdaParsingError(
-                lambdaEditorState,
-                !disabled,
-                () =>
-                  flowResult(editorStore.graphState.globalCompileInFormMode()),
-              ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
-          } else if (event.keyCode === KeyCode.F10) {
-            event.preventDefault();
-            event.stopPropagation();
-            transformStringToLambda?.cancel();
-            flowResult(
-              editorStore.graphState.checkLambdaParsingError(
-                lambdaEditorState,
-                !disabled,
-                () =>
-                  flowResult(
-                    editorStore.graphState.graphGenerationState.globalGenerate(),
-                  ),
-              ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
+            handler.action(event);
           }
-        }
+        });
       });
 
       // Set the text value
@@ -461,21 +415,25 @@ export const LambdaEditor = observer(
     matchedExpectedType?: () => boolean;
     onExpectedTypeLabelSelect?: () => void;
     forceBackdrop: boolean;
+    backdropSetter?: (val: boolean) => void;
     forceExpansion?: boolean;
     useBaseTextEditorSettings?: boolean;
     hideErrorBar?: boolean;
+    onKeyDownEventHandlers?: LambdaEditorOnKeyDownEventHandler[];
   }) => {
     const {
       className,
       lambdaEditorState,
       disabled,
       forceBackdrop,
+      backdropSetter,
       expectedType,
       onExpectedTypeLabelSelect,
       matchedExpectedType,
       forceExpansion,
       useBaseTextEditorSettings,
       hideErrorBar,
+      onKeyDownEventHandlers,
     } = props;
     const debouncedTransformStringToLambda = useMemo(
       () =>
@@ -523,9 +481,117 @@ export const LambdaEditor = observer(
         matchedExpectedType={matchedExpectedType}
         onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
         forceBackdrop={forceBackdrop}
+        backdropSetter={backdropSetter}
         forceExpansion={forceExpansion}
         useBaseTextEditorSettings={useBaseTextEditorSettings}
         hideErrorBar={hideErrorBar}
+        onKeyDownEventHandlers={onKeyDownEventHandlers ?? []}
+      />
+    );
+  },
+);
+
+export const StudioLambdaEditor = observer(
+  (props: {
+    className?: string;
+    disabled: boolean;
+    lambdaEditorState: LambdaEditorState;
+    /**
+     * TODO: when we pass in these expected type we should match a type as expected type if it's covariance, i.e. it is a subtype of
+     * the expected type. Note that we also have to handle that relationship for Primitive type
+     * See https://dzone.com/articles/covariance-and-contravariance
+     */
+    expectedType?: Type;
+    matchedExpectedType?: () => boolean;
+    onExpectedTypeLabelSelect?: () => void;
+    forceBackdrop: boolean;
+    forceExpansion?: boolean;
+    useBaseTextEditorSettings?: boolean;
+    hideErrorBar?: boolean;
+  }) => {
+    const {
+      className,
+      lambdaEditorState,
+      disabled,
+      forceBackdrop,
+      expectedType,
+      onExpectedTypeLabelSelect,
+      matchedExpectedType,
+      forceExpansion,
+      useBaseTextEditorSettings,
+      hideErrorBar,
+    } = props;
+    const applicationStore = useApplicationStore();
+    const editorStore = useEditorStore();
+
+    const backdropSetter = useCallback(
+      (val: boolean) => editorStore.setBackdrop(val),
+      [editorStore],
+    );
+    const onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[] = useMemo(
+      () => [
+        {
+          matcher: (event: IKeyboardEvent): boolean =>
+            event.keyCode === KeyCode.F8,
+          action: (event: IKeyboardEvent): void => {
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () => flowResult(editorStore.toggleTextMode()),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
+          },
+        },
+        {
+          matcher: (event: IKeyboardEvent): boolean =>
+            event.keyCode === KeyCode.F9,
+          action: (event: IKeyboardEvent): void => {
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () =>
+                  flowResult(editorStore.graphState.globalCompileInFormMode()),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
+          },
+        },
+        {
+          matcher: (event: IKeyboardEvent): boolean =>
+            event.keyCode === KeyCode.F10,
+          action: (event: IKeyboardEvent): void => {
+            flowResult(
+              editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () =>
+                  flowResult(
+                    editorStore.graphState.graphGenerationState.globalGenerate(),
+                  ),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
+          },
+        },
+      ],
+      [disabled, lambdaEditorState, applicationStore, editorStore],
+    );
+
+    return (
+      <LambdaEditor
+        key={lambdaEditorState.uuid}
+        className={className}
+        disabled={disabled}
+        lambdaEditorState={lambdaEditorState}
+        expectedType={expectedType}
+        matchedExpectedType={matchedExpectedType}
+        onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
+        forceBackdrop={forceBackdrop}
+        backdropSetter={backdropSetter}
+        forceExpansion={forceExpansion}
+        useBaseTextEditorSettings={useBaseTextEditorSettings}
+        hideErrorBar={hideErrorBar}
+        onKeyDownEventHandlers={onKeyDownEventHandlers}
       />
     );
   },

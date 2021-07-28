@@ -15,11 +15,9 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-studio-shared';
-import type { IKeyboardEvent } from 'monaco-editor';
 import type { PluginManager } from '../application/PluginManager';
 import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
-import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
@@ -49,16 +47,6 @@ export type EditorExtensionComponentRendererConfiguration = {
 export type EditorExtensionStateCreator = (
   editorStore: EditorStore,
 ) => EditorExtensionState | undefined;
-
-export type LambdaEditorHotkeyConfiguration = {
-  eventMatcher: (editorStore: EditorStore, event: IKeyboardEvent) => boolean;
-  skipGlobalAction: boolean;
-  action: (
-    editorStore: EditorStore,
-    lambdaEditorState: LambdaEditorState,
-    checkParseringError: boolean,
-  ) => void;
-};
 
 export type MappingExecutionQueryEditorRendererConfiguration = {
   key: string;
@@ -102,8 +90,6 @@ export abstract class EditorPlugin extends AbstractPlugin {
   getExtraEditorExtensionStateCreators?(): EditorExtensionStateCreator[];
 
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
-
-  getExtraLambdaEditorHotkeyConfigurations?(): LambdaEditorHotkeyConfiguration[];
 
   getExtraMappingExecutionQueryEditorRendererConfigurations?(): MappingExecutionQueryEditorRendererConfiguration[];
 

@@ -1,124 +1,89 @@
-/**
- * Copyright (c) 2020-present, Goldman Sachs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import { useEffect } from 'react';
-import Dialog from '@material-ui/core/Dialog';
-import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-studio-components';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
-import {
-  useApplicationStore,
-  LambdaEditor,
-  TextInputEditor,
-  EDITOR_LANGUAGE,
+import type {
+  LambdaEditorOnKeyDownEventHandler,
+  LambdaEditorState,
+  Type,
 } from '@finos/legend-studio';
+import { LambdaEditor, useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
+import { observer } from 'mobx-react-lite';
+import type { IKeyboardEvent } from 'monaco-editor';
+import { KeyCode } from 'monaco-editor';
+import { useCallback, useMemo } from 'react';
+import type { QueryBuilderState } from '../stores/QueryBuilderState';
 
 export const QueryBuilderLambdaEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
+  (props: {
+    queryBuilderState: QueryBuilderState;
+    className?: string;
+    disabled: boolean;
+    lambdaEditorState: LambdaEditorState;
+    /**
+     * TODO: when we pass in these expected type we should match a type as expected type if it's covariance, i.e. it is a subtype of
+     * the expected type. Note that we also have to handle that relationship for Primitive type
+     * See https://dzone.com/articles/covariance-and-contravariance
+     */
+    expectedType?: Type;
+    matchedExpectedType?: () => boolean;
+    onExpectedTypeLabelSelect?: () => void;
+    forceBackdrop: boolean;
+    forceExpansion?: boolean;
+    useBaseTextEditorSettings?: boolean;
+    hideErrorBar?: boolean;
+  }) => {
+    const {
+      queryBuilderState,
+      className,
+      lambdaEditorState,
+      disabled,
+      forceBackdrop,
+      expectedType,
+      onExpectedTypeLabelSelect,
+      matchedExpectedType,
+      forceExpansion,
+      useBaseTextEditorSettings,
+      hideErrorBar,
+    } = props;
     const applicationStore = useApplicationStore();
-    const queryTextEditorState = queryBuilderState.queryTextEditorState;
-    const close = (): Promise<void> =>
-      flowResult(queryBuilderState.queryTextEditorState.closeModal()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
-    const discardChanges = (): void =>
-      queryBuilderState.queryTextEditorState.setMode(undefined);
-    const mode = queryTextEditorState.mode;
-    useEffect(() => {
-      flowResult(
-        queryTextEditorState.convertLambdaObjectToGrammarString(true),
-      ).catch(applicationStore.alertIllegalUnhandledError);
-    }, [applicationStore, queryTextEditorState]);
+    const backdropSetter = useCallback(
+      (val: boolean) => queryBuilderState.setBackdrop(val),
+      [queryBuilderState],
+    );
+    const onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[] = useMemo(
+      () => [
+        {
+          matcher: (event: IKeyboardEvent): boolean =>
+            event.keyCode === KeyCode.F9,
+          action: (event: IKeyboardEvent): void => {
+            flowResult(
+              // TODO?: we can genericise this so we don't need to rely on `EditorStore`
+              queryBuilderState.editorStore.graphState.checkLambdaParsingError(
+                lambdaEditorState,
+                !disabled,
+                () => flowResult(queryBuilderState.compileQuery()),
+              ),
+            ).catch(applicationStore.alertIllegalUnhandledError);
+          },
+        },
+      ],
+      [disabled, lambdaEditorState, applicationStore, queryBuilderState],
+    );
 
     return (
-      <Dialog
-        open={Boolean(mode)}
-        onClose={close}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-      >
-        <div
-          className={clsx(
-            'modal modal--dark editor-modal query-builder-text-mode__modal',
-            {
-              'query-builder-text-mode__modal--has-error': Boolean(
-                queryTextEditorState.parserError,
-              ),
-            },
-          )}
-        >
-          <div className="modal__header">
-            <div className="modal__title">Query</div>
-            {queryTextEditorState.parserError && (
-              <div className="modal__title__error-badge">
-                Failed to parse query
-              </div>
-            )}
-          </div>
-          <div className="modal__body">
-            <div
-              className={clsx('query-builder-text-mode__modal__content', {
-                backdrop__element: Boolean(queryTextEditorState.parserError),
-              })}
-            >
-              {mode === QueryTextEditorMode.TEXT && (
-                <LambdaEditor
-                  className={'query-builder-text-mode__lambda-editor'}
-                  disabled={queryTextEditorState.isConvertingLambdaToString}
-                  lambdaEditorState={queryTextEditorState}
-                  forceBackdrop={false}
-                  forceExpansion={true}
-                  useBaseTextEditorSettings={true}
-                  hideErrorBar={true}
-                />
-              )}
-              {mode === QueryTextEditorMode.JSON && (
-                <TextInputEditor
-                  language={EDITOR_LANGUAGE.JSON}
-                  inputValue={queryTextEditorState.readOnlylambdaJson}
-                  isReadOnly={true}
-                />
-              )}
-            </div>
-          </div>
-          <div className="modal__footer">
-            {mode === QueryTextEditorMode.TEXT && (
-              <button
-                className="btn btn--dark btn--caution"
-                onClick={discardChanges}
-              >
-                Discard changes
-              </button>
-            )}
-            <button
-              className="btn btn--dark"
-              onClick={close}
-              disabled={Boolean(queryTextEditorState.parserError)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </Dialog>
+      <LambdaEditor
+        key={lambdaEditorState.uuid}
+        className={className}
+        disabled={disabled}
+        lambdaEditorState={lambdaEditorState}
+        expectedType={expectedType}
+        matchedExpectedType={matchedExpectedType}
+        onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
+        forceBackdrop={forceBackdrop}
+        backdropSetter={backdropSetter}
+        forceExpansion={forceExpansion}
+        useBaseTextEditorSettings={useBaseTextEditorSettings}
+        hideErrorBar={hideErrorBar}
+        onKeyDownEventHandlers={onKeyDownEventHandlers}
+      />
     );
   },
 );

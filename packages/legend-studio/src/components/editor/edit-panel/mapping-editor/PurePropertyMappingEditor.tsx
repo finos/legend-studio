@@ -31,7 +31,7 @@ import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { LambdaEditor } from '../../../shared/LambdaEditor';
+import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
 import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import {
@@ -70,7 +70,7 @@ const SimplePropertyMappingEditor = observer(
     return (
       <div className="property-mapping-editor__entry__container">
         <div ref={drop} className="property-mapping-editor__entry">
-          <LambdaEditor
+          <StudioLambdaEditor
             className={clsx({ 'lambda-editor--dnd-match': canDrop })}
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
@@ -180,7 +180,7 @@ const EnumerationPropertyMappingEditor = observer(
               <FaArrowAltCircleRight />
             </button>
           </div>
-          <LambdaEditor
+          <StudioLambdaEditor
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
               { 'lambda-editor--dnd-match': canDrop },
@@ -272,7 +272,7 @@ const ClassPropertyMappingEditor = observer(
               <FaArrowAltCircleRight />
             </button>
           </div>
-          <LambdaEditor
+          <StudioLambdaEditor
             className={clsx({ 'lambda-editor--dnd-match': canDrop })}
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}

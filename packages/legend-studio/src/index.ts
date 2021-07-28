@@ -177,6 +177,7 @@ export * from './components/shared/Icon'; // TODO: we might want to move all of 
 export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
 export { getElementIcon, getElementTypeIcon } from './components/shared/Icon';
 export { TypeTree } from './components/shared/TypeTree';
+export type { LambdaEditorOnKeyDownEventHandler } from './components/shared/LambdaEditor';
 export { LambdaEditor } from './components/shared/LambdaEditor';
 export { LegendMaterialUITheme } from './components/LegendStudioApplication';
 export { BlockingAlert } from './components/application/BlockingAlert';

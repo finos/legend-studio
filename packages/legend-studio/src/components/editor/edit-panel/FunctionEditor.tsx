@@ -32,7 +32,7 @@ import {
 } from '@finos/legend-studio-shared';
 import { useDrop } from 'react-dnd';
 import { FaLock, FaPlus, FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
-import { LambdaEditor } from '../../shared/LambdaEditor';
+import { StudioLambdaEditor } from '../../shared/LambdaEditor';
 import {
   clsx,
   CustomSelectorInput,
@@ -560,7 +560,7 @@ export const FunctionMainEditor = observer(
               ),
             })}
           >
-            <LambdaEditor
+            <StudioLambdaEditor
               className={'function-editor__element__lambda-editor'}
               disabled={
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly

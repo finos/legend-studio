@@ -23,7 +23,7 @@ import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
 import { QueryBuilderResultPanel } from './QueryBuilderResultPanel';
-import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
+import { QueryBuilderTextEditor } from './QueryBuilderTextEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
@@ -157,10 +157,7 @@ export const QueryBuilder = observer(
       >
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
           <QueryBuilderHeader queryBuilderState={queryBuilderState} />
-          <Backdrop
-            className="backdrop"
-            open={queryBuilderState.editorStore.backdrop}
-          />
+          <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
           <div className="query-builder__content">
             <ReflexContainer orientation="horizontal">
               <ReflexElement minSize={132}>
@@ -203,7 +200,7 @@ export const QueryBuilder = observer(
           </div>
           <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
           {queryBuilderState.queryTextEditorState.mode && (
-            <QueryBuilderLambdaEditor queryBuilderState={queryBuilderState} />
+            <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
         </GlobalHotKeys>
       </div>
