@@ -33,11 +33,20 @@ import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationT
 
 const transformBusinessMilesoning = (
   metamodel: BusinessMilestoning,
+  context: V1_GraphTransformerContext,
 ): V1_BusinessMilestoning => {
   const protocol = new V1_BusinessMilestoning();
   protocol.from = metamodel.from;
   protocol.thru = metamodel.thru;
   protocol.thruIsInclusive = metamodel.thruIsInclusive;
+  if (metamodel.infinityDate) {
+    protocol.infinityDate = guaranteeType(
+      metamodel.infinityDate.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
+      ),
+      V1_RawInstanceValue,
+    );
+  }
   return protocol;
 };
 
@@ -73,7 +82,7 @@ export const V1_transformMilestoning = (
   context: V1_GraphTransformerContext,
 ): V1_Milestoning => {
   if (metamodel instanceof BusinessMilestoning) {
-    return transformBusinessMilesoning(metamodel);
+    return transformBusinessMilesoning(metamodel, context);
   } else if (metamodel instanceof BusinessSnapshotMilestoning) {
     return transformBusinessSnapshotMilestoning(metamodel);
   } else if (metamodel instanceof ProcessingMilestoning) {
