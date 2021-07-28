@@ -30,7 +30,7 @@ import {
 
 import { ExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
-import type { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
+import { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
 import { addUniqueEntry, isNonNullable } from '@finos/legend-studio-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
@@ -38,6 +38,8 @@ import { observer } from 'mobx-react-lite';
 import SplitPane from 'react-split-pane';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
 import Dialog from '@material-ui/core/Dialog';
+import { TextInputEditor } from '../../../../shared/TextInputEditor';
+import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../../../stores/EditorConfig';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;
@@ -343,35 +345,46 @@ export const ExecutionPlanViewer = observer(
           <div className="modal__header">
             <div className="modal__title">Execution Plan</div>
           </div>
-          <div className="modal__body">
-            <SplitPane
-              className="review-explorer__content"
-              split="vertical"
-              size={350}
-              minSize={350}
-              maxSize={-600}
-            >
-              <div className="panel explorer">
-                <div className="panel__header side-bar__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__content side-bar__header__title__content">
-                      EXECUTION PLAN EXPLORER
+          {plan instanceof ExecutionPlan ? (
+            <div className="modal__body">
+              <SplitPane
+                className="review-explorer__content"
+                split="vertical"
+                size={350}
+                minSize={350}
+                maxSize={-600}
+              >
+                <div className="panel explorer">
+                  <div className="panel__header side-bar__header">
+                    <div className="panel__header__title">
+                      <div className="panel__header__title__content side-bar__header__title__content">
+                        EXECUTION PLAN EXPLORER
+                      </div>
                     </div>
                   </div>
+                  <div className="panel__content explorer__content__container">
+                    <ExecutionPlanTree
+                      executionPlanState={executionPlanState}
+                      executionPlan={plan}
+                    />
+                  </div>
                 </div>
-                <div className="panel__content explorer__content__container">
-                  <ExecutionPlanTree
-                    executionPlanState={executionPlanState}
-                    executionPlan={plan}
-                  />
-                </div>
-              </div>
-              <ExecutionNodesViewer
-                displayData={executionPlanState.displayData}
-                executionPlanState={executionPlanState}
+                <ExecutionNodesViewer
+                  displayData={executionPlanState.displayData}
+                  executionPlanState={executionPlanState}
+                />
+              </SplitPane>
+            </div>
+          ) : (
+            <div className="modal__body">
+              <TextInputEditor
+                inputValue={JSON.stringify(plan, undefined, TAB_SIZE)}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.JSON}
+                showMiniMap={true}
               />
-            </SplitPane>
-          </div>
+            </div>
+          )}
           <div className="modal__footer">
             <button
               className="btn modal__footer__close-btn"

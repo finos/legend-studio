@@ -89,7 +89,6 @@ import { View } from '../../../../models/metamodels/pure/model/packageableElemen
 import { LambdaEditorState } from '../LambdaEditorState';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type { ExecutionPlan } from '../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -363,7 +362,6 @@ export class MappingTestState {
   inputDataState: MappingTestInputDataState;
   assertionState: MappingTestAssertionState;
   isGeneratingPlan = false;
-  executionPlanMeta?: ExecutionPlan;
   executionPlanState: ExecutionPlanState;
 
   constructor(
@@ -692,10 +690,6 @@ export class MappingTestState {
   updateAssertion(): void {
     this.test.setAssert(this.assertionState.assert);
   }
-
-  setExecutionPlan = (metaVal: ExecutionPlan | undefined): void => {
-    this.executionPlanMeta = metaVal;
-  };
 
   *generatePlan(): GeneratorFn<void> {
     try {

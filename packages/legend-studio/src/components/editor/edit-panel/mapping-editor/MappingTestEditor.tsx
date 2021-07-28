@@ -630,7 +630,7 @@ export const MappingTestEditor = observer(
               className="mapping-test-editor__header__action"
               onClick={generatePlan}
               tabIndex={-1}
-              title="View Execution Plancc"
+              title="View Execution Plan"
             >
               <FaScroll className="mapping-test-editor__icon__generate-plan" />
             </button>

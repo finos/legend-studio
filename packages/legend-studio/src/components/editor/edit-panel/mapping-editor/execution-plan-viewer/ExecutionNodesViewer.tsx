@@ -55,7 +55,6 @@ import {
 } from '@finos/legend-studio-components';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
 import { TextInputEditor } from '../../../../shared/TextInputEditor';
-import type { PackageableElementImplicitReference } from '../../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/domain/DataType';
 
 const generateDataTypeLabel = (type: unknown | undefined): string => {
@@ -104,13 +103,13 @@ interface resultTypeProps {
 }
 interface TDSresultTypeProps {
   colName: string;
-  colType: PackageableElementImplicitReference<DataType> | undefined;
+  colType: DataType | undefined;
   colSourceDatatype: unknown;
 }
 
 const TDSResultTypeViewer: React.FC<TDSresultTypeProps> = (props: {
   colName: string;
-  colType: PackageableElementImplicitReference<DataType> | undefined;
+  colType: DataType | undefined;
   colSourceDatatype: unknown;
 }) => {
   const { colName, colType, colSourceDatatype } = props;
@@ -128,7 +127,7 @@ const TDSResultTypeViewer: React.FC<TDSresultTypeProps> = (props: {
       {!(colType === undefined) && (
         <div className="property-basic-editor__type">
           <button className="property-basic-editor__name" title={`Column Type`}>
-            {colType.input}
+            {colType.name}
           </button>
         </div>
       )}
@@ -179,7 +178,7 @@ const ResultTypeViewer: React.FC<resultTypeProps> = (props: {
               <TDSResultTypeViewer
                 key={tdscol.name}
                 colName={tdscol.name}
-                colType={tdscol.type}
+                colType={tdscol.type?.value}
                 colSourceDatatype={tdscol.sourceDataType}
               />
             ))}

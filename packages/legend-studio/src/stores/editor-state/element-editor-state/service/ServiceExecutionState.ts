@@ -55,6 +55,7 @@ import { PackageableElementExplicitReference } from '../../../../models/metamode
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -221,8 +222,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   isExecuting = false;
   isGeneratingPlan = false;
   isOpeningQueryEditor = false;
-  executionPlan?: object;
   executionResultText?: string; // NOTE: stored as lossless JSON string
+  executionPlanState: ExecutionPlanState;
 
   constructor(
     editorStore: EditorStore,
@@ -239,10 +240,9 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       isExecuting: observable,
       isGeneratingPlan: observable,
       isOpeningQueryEditor: observable,
-      executionPlan: observable.ref,
       executionResultText: observable,
+      executionPlanState: observable,
       setExecutionResultText: action,
-      setExecutionPlan: action,
       closeRuntimeEditor: action,
       openRuntimeEditor: action,
       useCustomRuntime: action,
@@ -261,6 +261,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       this.editorStore,
       execution,
     );
+    this.executionPlanState = new ExecutionPlanState(this.editorStore);
   }
 
   setOpeningQueryEditor(val: boolean): void {
@@ -268,9 +269,6 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   }
   setExecutionResultText = (executionResult: string | undefined): void => {
     this.executionResultText = executionResult;
-  };
-  setExecutionPlan = (executionPlan: object | undefined): void => {
-    this.executionPlan = executionPlan;
   };
   setQueryState = (queryState: ServicePureExecutionQueryState): void => {
     this.queryState = queryState;
@@ -283,16 +281,13 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     try {
       this.isGeneratingPlan = true;
       const query = this.queryState.query;
-      const plan = (yield flowResult(
-        this.editorStore.graphState.graphManager.generateExecutionPlan(
-          this.editorStore.graphState.graph,
+      yield flowResult(
+        this.executionPlanState.generatePlan(
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
-          CLIENT_VERSION.VX_X_X,
         ),
-      )) as object;
-      this.setExecutionPlan(plan);
+      );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.EXECUTION_PROBLEM,

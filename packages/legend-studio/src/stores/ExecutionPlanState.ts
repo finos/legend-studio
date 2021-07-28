@@ -15,14 +15,7 @@
  */
 
 import type { EditorStore } from './EditorStore';
-import {
-  observable,
-  action,
-  makeObservable,
-  flowResult,
-  flow,
-  ObservableMap,
-} from 'mobx';
+import { observable, action, makeObservable, flowResult, flow } from 'mobx';
 import { ExecutionPlan } from '../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import { ExecutionNode } from '../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import type {
@@ -55,7 +48,7 @@ export class ExecutionPlanState {
     | undefined = undefined;
   sqlSelectedTab: SQL_DISPLAY_TABS = SQL_DISPLAY_TABS.SQL_QUERY;
   viewMode: EXECUTION_PLAN_VIEW_MODE = EXECUTION_PLAN_VIEW_MODE.FORM;
-  plan?: ExecutionPlan;
+  plan?: ExecutionPlan | object;
   isGenerating = false;
 
   constructor(editorStore: EditorStore) {
@@ -86,7 +79,7 @@ export class ExecutionPlanState {
     this.viewMode = mode;
   }
 
-  setExecutionPlan = (plan: ExecutionPlan | undefined): void => {
+  setExecutionPlan = (plan: ExecutionPlan | object | undefined): void => {
     this.plan = plan;
   };
 
@@ -147,11 +140,7 @@ export class ExecutionPlanState {
           CLIENT_VERSION.VX_X_X,
         ),
       )) as object;
-      const plan = this.editorStore.graphState.graphManager.buildExecutionPlan(
-        rawPlan,
-        this.editorStore.graphState.graph,
-      );
-      this.setExecutionPlan(plan);
+      this.buildExecutionPlan(rawPlan);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.EXECUTION_PROBLEM,
@@ -160,6 +149,19 @@ export class ExecutionPlanState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isGenerating = false;
+    }
+  }
+
+  buildExecutionPlan(rawPlan: object): void {
+    try {
+      this.setExecutionPlan(rawPlan);
+      const plan = this.editorStore.graphState.graphManager.buildExecutionPlan(
+        rawPlan,
+        this.editorStore.graphState.graph,
+      );
+      this.setExecutionPlan(plan);
+    } catch (error: unknown) {
+      // Ignore
     }
   }
 }
