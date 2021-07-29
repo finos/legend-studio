@@ -1,5 +1,13 @@
 # @finos/legend-studio
 
+## 0.2.4
+
+### Patch Changes
+
+- [#374](https://github.com/finos/legend-studio/pull/374) [`f0dd419`](https://github.com/finos/legend-studio/commit/f0dd4192cdb032579faebf833f78c06020055b28) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Clean up execution plan state and add execution plan viewer to service and execution mapping tab.
+
+* [#378](https://github.com/finos/legend-studio/pull/378) [`25e8287`](https://github.com/finos/legend-studio/commit/25e8287c67375fc6d824aee679396e704c7f060f) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Fix handling of raw instance type in milestoning's infinity date.
+
 ## 0.2.3
 
 ### Patch Changes
