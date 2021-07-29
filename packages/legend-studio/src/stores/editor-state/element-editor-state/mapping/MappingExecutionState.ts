@@ -102,6 +102,7 @@ import {
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -411,9 +412,9 @@ export class MappingExecutionState {
   isGeneratingPlan = false;
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
-  executionPlan?: object;
   executionResultText?: string; // NOTE: stored as lossless JSON text
   showServicePathModal = false;
+  executionPlanState: ExecutionPlanState;
 
   constructor(
     editorStore: EditorStore,
@@ -423,14 +424,14 @@ export class MappingExecutionState {
     makeAutoObservable(this, {
       editorStore: false,
       mappingEditorState: false,
-      executionPlan: observable.ref,
+      executionPlanState: observable,
       setQueryState: action,
       setInputDataState: action,
       setExecutionResultText: action,
-      setExecutionPlan: action,
       setShowServicePathModal: action,
       setInputDataStateBasedOnSource: action,
       reset: action,
+      generatePlan: flow,
     });
 
     this.editorStore = editorStore;
@@ -445,6 +446,7 @@ export class MappingExecutionState {
       mappingEditorState.mapping,
       undefined,
     );
+    this.executionPlanState = new ExecutionPlanState(this.editorStore);
   }
 
   setQueryState = (val: MappingExecutionQueryState): void => {
@@ -455,9 +457,6 @@ export class MappingExecutionState {
   };
   setExecutionResultText = (val: string | undefined): void => {
     this.executionResultText = val;
-  };
-  setExecutionPlan = (val: object | undefined): void => {
-    this.executionPlan = val;
   };
   setShowServicePathModal = (val: boolean): void => {
     this.showServicePathModal = val;
@@ -669,16 +668,13 @@ export class MappingExecutionState {
         !this.isGeneratingPlan
       ) {
         this.isGeneratingPlan = true;
-        const plan = (yield flowResult(
-          this.editorStore.graphState.graphManager.generateExecutionPlan(
-            this.editorStore.graphState.graph,
+        yield flowResult(
+          this.executionPlanState.generatePlan(
             this.mappingEditorState.mapping,
             query,
             runtime,
-            CLIENT_VERSION.VX_X_X,
           ),
-        )) as object;
-        this.setExecutionPlan(plan);
+        );
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(

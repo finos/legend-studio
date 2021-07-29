@@ -15,13 +15,19 @@
  */
 
 import type { EditorStore } from './EditorStore';
-import { observable, action, makeObservable } from 'mobx';
+import { observable, action, makeObservable, flowResult, flow } from 'mobx';
 import { ExecutionPlan } from '../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import { ExecutionNode } from '../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import type {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { CLIENT_VERSION } from '../models/MetaModelConst';
+import type { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import type { RawLambda } from '../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import type { Runtime } from '../models/metamodels/pure/model/packageableElements/runtime/Runtime';
+import { CORE_LOG_EVENT } from '../utils/Logger';
 
 export enum SQL_DISPLAY_TABS {
   SQL_QUERY = 'SQL_QUERY',
@@ -42,6 +48,8 @@ export class ExecutionPlanState {
     | undefined = undefined;
   sqlSelectedTab: SQL_DISPLAY_TABS = SQL_DISPLAY_TABS.SQL_QUERY;
   viewMode: EXECUTION_PLAN_VIEW_MODE = EXECUTION_PLAN_VIEW_MODE.FORM;
+  plan?: ExecutionPlan | object;
+  isGenerating = false;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -49,12 +57,16 @@ export class ExecutionPlanState {
       displayDataJson: observable,
       sqlSelectedTab: observable,
       viewMode: observable,
+      isGenerating: observable,
+      plan: observable,
       setExecutionPlanDisplayData: action,
       setExecutionPlanDisplayDataJson: action,
       transformMetaDataToProtocolJson: action,
       setSelectedNode: action,
       setSqlSelectedTab: action,
+      setExecutionPlan: action,
       setViewMode: action,
+      generatePlan: flow,
     });
     this.editorStore = editorStore;
   }
@@ -62,9 +74,14 @@ export class ExecutionPlanState {
   setSqlSelectedTab(tab: SQL_DISPLAY_TABS): void {
     this.sqlSelectedTab = tab;
   }
+
   setViewMode(mode: EXECUTION_PLAN_VIEW_MODE): void {
     this.viewMode = mode;
   }
+
+  setExecutionPlan = (plan: ExecutionPlan | object | undefined): void => {
+    this.plan = plan;
+  };
 
   setSelectedNode(
     node: ExecutionNodeTreeNodeData | ExecutionPlanViewTreeNodeData | undefined,
@@ -104,6 +121,47 @@ export class ExecutionPlanState {
           metaModel,
         );
       this.setExecutionPlanDisplayDataJson(protocolJson);
+    }
+  }
+
+  *generatePlan(
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+  ): GeneratorFn<void> {
+    try {
+      this.isGenerating = true;
+      const rawPlan = (yield flowResult(
+        this.editorStore.graphState.graphManager.generateExecutionPlan(
+          this.editorStore.graphState.graph,
+          mapping,
+          lambda,
+          runtime,
+          CLIENT_VERSION.VX_X_X,
+        ),
+      )) as object;
+      this.buildExecutionPlan(rawPlan);
+    } catch (error: unknown) {
+      this.editorStore.applicationStore.logger.error(
+        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+    } finally {
+      this.isGenerating = false;
+    }
+  }
+
+  buildExecutionPlan(rawPlan: object): void {
+    try {
+      this.setExecutionPlan(rawPlan);
+      const plan = this.editorStore.graphState.graphManager.buildExecutionPlan(
+        rawPlan,
+        this.editorStore.graphState.graph,
+      );
+      this.setExecutionPlan(plan);
+    } catch (error: unknown) {
+      // Ignore
     }
   }
 }

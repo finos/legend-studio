@@ -17,7 +17,6 @@
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
-import Dialog from '@material-ui/core/Dialog';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
@@ -67,10 +66,7 @@ import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
-import { ExecutionPlanTree } from './execution-plan-viewer/ExecutionPlanTree';
-import { ExecutionPlan } from '../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
-import SplitPane from 'react-split-pane';
-import { ExecutionNodesViewer } from './execution-plan-viewer/ExecutionNodesViewer';
+import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -572,19 +568,10 @@ export const MappingTestEditor = observer(
       flowResult(testState.runTest()),
     );
     // Plan
-    const executionPlanStateInstance = testState.executionPlanState;
-
-    const closePlanViewer = (): void => {
-      testState.setExecutionPlan(undefined, undefined);
-      testState.executionPlanState.setExecutionPlanDisplayData('');
-      executionPlanStateInstance.setSelectedNode(undefined);
-    };
+    const executionPlanState = testState.executionPlanState;
     const generatePlan = applicationStore.guaranteeSafeAction(() =>
       flowResult(testState.generatePlan()),
     );
-
-    const planMeta = testState.executionPlanMeta;
-
     // Test Result
     let testResult = '';
     switch (testState.result) {
@@ -686,62 +673,7 @@ export const MappingTestEditor = observer(
             </div>
           )}
         </div>
-
-        <Dialog
-          open={Boolean(testState.executionPlan)}
-          onClose={closePlanViewer}
-          classes={{
-            root: 'editor-modal__root-container',
-            container: 'editor-modal__container',
-            paper: 'editor-modal__content',
-          }}
-        >
-          <div className="modal modal--dark editor-modal">
-            <div className="modal__header">
-              <div className="modal__title">Execution Plan</div>
-            </div>
-            <div className="modal__body">
-              {planMeta instanceof ExecutionPlan && (
-                <SplitPane
-                  className="review-explorer__content"
-                  split="vertical"
-                  size={350}
-                  minSize={350}
-                  maxSize={-600}
-                >
-                  <div className="panel explorer">
-                    <div className="panel__header side-bar__header">
-                      <div className="panel__header__title">
-                        <div className="panel__header__title__content side-bar__header__title__content">
-                          EXECUTION PLAN EXPLORER
-                        </div>
-                      </div>
-                    </div>
-                    <div className="panel__content explorer__content__container">
-                      <ExecutionPlanTree
-                        executionPlanState={executionPlanStateInstance}
-                        executionPlan={planMeta}
-                      />
-                    </div>
-                  </div>
-
-                  <ExecutionNodesViewer
-                    displayData={executionPlanStateInstance.displayData}
-                    executionPlanState={executionPlanStateInstance}
-                  />
-                </SplitPane>
-              )}
-            </div>
-            <div className="modal__footer">
-              <button
-                className="btn modal__footer__close-btn"
-                onClick={closePlanViewer}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Dialog>
+        <ExecutionPlanViewer executionPlanState={executionPlanState} />
       </div>
     );
   },

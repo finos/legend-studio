@@ -19,7 +19,7 @@ import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';
 import type { ServicePureExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { Dialog } from '@material-ui/core';
 import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
@@ -27,6 +27,7 @@ import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
 import SplitPane from 'react-split-pane';
 import { isNonNullable } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
+import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
 
 const ServiceExecutionModals = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -35,46 +36,11 @@ const ServiceExecutionModals = observer(
     const executionResultText = executionState.executionResultText;
     const closeExecutionResultViewer = (): void =>
       executionState.setExecutionResultText(undefined);
-    // plan
-    const executionPlan = executionState.executionPlan;
-    const closePlanViewer = (): void =>
-      executionState.setExecutionPlan(undefined);
-    const planText = executionState.executionPlan
-      ? JSON.stringify(executionState.executionPlan, undefined, TAB_SIZE)
-      : '';
     return (
       <>
-        <Dialog
-          open={Boolean(executionPlan)}
-          onClose={closePlanViewer}
-          classes={{
-            root: 'editor-modal__root-container',
-            container: 'editor-modal__container',
-            paper: 'editor-modal__content',
-          }}
-        >
-          <div className="modal modal--dark editor-modal execution-plan-viewer">
-            <div className="modal__header">
-              <div className="modal__title">Execution Plan</div>
-            </div>
-            <div className="modal__body">
-              <TextInputEditor
-                inputValue={planText}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.JSON}
-                showMiniMap={true}
-              />
-            </div>
-            <div className="modal__footer">
-              <button
-                className="btn modal__footer__close-btn"
-                onClick={closePlanViewer}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Dialog>
+        <ExecutionPlanViewer
+          executionPlanState={executionState.executionPlanState}
+        />
         <Dialog
           open={Boolean(executionResultText)}
           onClose={closeExecutionResultViewer}

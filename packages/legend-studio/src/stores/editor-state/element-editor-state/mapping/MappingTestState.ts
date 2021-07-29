@@ -89,7 +89,6 @@ import { View } from '../../../../models/metamodels/pure/model/packageableElemen
 import { LambdaEditorState } from '../LambdaEditorState';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type { ExecutionPlan } from '../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -362,9 +361,7 @@ export class MappingTestState {
   queryState: MappingTestQueryState;
   inputDataState: MappingTestInputDataState;
   assertionState: MappingTestAssertionState;
-  executionPlan?: object;
   isGeneratingPlan = false;
-  executionPlanMeta?: ExecutionPlan;
   executionPlanState: ExecutionPlanState;
 
   constructor(
@@ -385,6 +382,7 @@ export class MappingTestState {
       setAssertionState: action,
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
+      generatePlan: flow,
     });
 
     this.editorStore = editorStore;
@@ -693,36 +691,16 @@ export class MappingTestState {
     this.test.setAssert(this.assertionState.assert);
   }
 
-  setExecutionPlan = (
-    val: object | undefined,
-    metaVal: ExecutionPlan | undefined,
-  ): void => {
-    this.executionPlan = val;
-    this.executionPlanMeta = metaVal;
-  };
-
   *generatePlan(): GeneratorFn<void> {
     try {
-      const query = this.queryState.query;
-      const runtime = this.inputDataState.runtime;
-      if (!this.isGeneratingPlan) {
-        this.isGeneratingPlan = true;
-        const plan = (yield flowResult(
-          this.editorStore.graphState.graphManager.generateExecutionPlan(
-            this.editorStore.graphState.graph,
-            this.mappingEditorState.mapping,
-            query,
-            runtime,
-            CLIENT_VERSION.VX_X_X,
-          ),
-        )) as object;
-        const ultimatePlan =
-          this.editorStore.graphState.graphManager.buildExecutionPlan(
-            plan,
-            this.editorStore.graphState.graph,
-          );
-        this.setExecutionPlan(plan, ultimatePlan);
-      }
+      this.isGeneratingPlan = true;
+      yield flowResult(
+        this.executionPlanState.generatePlan(
+          this.mappingEditorState.mapping,
+          this.queryState.query,
+          this.inputDataState.runtime,
+        ),
+      );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.EXECUTION_PROBLEM,
