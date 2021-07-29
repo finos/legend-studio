@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
+import { RuntimePointer, useApplicationStore } from '@finos/legend-studio';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useQueryStore } from '../../stores/QueryStore';
+import { useParams } from 'react-router';
+import type { CreateNewQueryPathParams } from '../../stores/LegendQueryRouter';
+import { generateCreateNewQueryRoute } from '../../stores/LegendQueryRouter';
+import { CreateQueryInfoState, useQueryStore } from '../../stores/QueryStore';
 import { QueryBuilder } from '../QueryBuilder';
 
 export const QueryEditorInner = observer(() => {
@@ -30,3 +35,53 @@ export const QueryEditor: React.FC<{}> = () => (
     <QueryEditorInner />
   </DndProvider>
 );
+
+// export const ExistingQueryLoader = observer(() => {
+//   // build the state
+//   return null;
+// });
+
+// export const ServiceQueryLoader = observer(() => {
+//   // build the state
+//   return null;
+// });
+
+export const NewQueryCreator = observer(() => {
+  const applicationStore = useApplicationStore();
+  const queryStore = useQueryStore();
+  const params = useParams<CreateNewQueryPathParams>();
+  const currentMapping = queryStore.queryBuilderState.querySetupState.mapping;
+  const currentRuntime =
+    queryStore.queryBuilderState.querySetupState.runtime instanceof
+    RuntimePointer
+      ? queryStore.queryBuilderState.querySetupState.runtime.packageableRuntime
+          .value
+      : undefined;
+
+  useEffect(() => {
+    queryStore.setupCreateNewQueryInfoState(params);
+  }, [queryStore, params]);
+
+  // TODO: this will make the route change as the users select another mapping and runtime
+  useEffect(() => {
+    if (queryStore.queryInfoState instanceof CreateQueryInfoState) {
+      if (
+        currentMapping &&
+        currentRuntime &&
+        (queryStore.queryInfoState.mapping !== currentMapping ||
+          queryStore.queryInfoState.runtime !== currentRuntime)
+      ) {
+        applicationStore.historyApiClient.push(
+          generateCreateNewQueryRoute(
+            queryStore.queryInfoState.projectMetadata.projectId,
+            queryStore.queryInfoState.versionId,
+            currentMapping.path,
+            currentRuntime.path,
+          ),
+        );
+      }
+    }
+  }, [applicationStore, queryStore, currentMapping, currentRuntime]);
+
+  return <QueryEditor />;
+});

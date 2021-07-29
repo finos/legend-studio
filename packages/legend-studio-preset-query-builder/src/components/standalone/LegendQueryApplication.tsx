@@ -31,7 +31,7 @@ import {
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
 import { QueryStoreProvider } from '../../stores/QueryStore';
-import { QueryEditor } from './QueryEditor';
+import { NewQueryCreator, QueryEditor } from './QueryEditor';
 import { flowResult } from 'mobx';
 
 export const LegendQueryApplicationRoot = observer(() => {
@@ -59,10 +59,14 @@ export const LegendQueryApplicationRoot = observer(() => {
             exact={true}
             path={[
               LEGEND_QUERY_ROUTE_PATTERN.LOAD_SERVICE_QUERY,
-              LEGEND_QUERY_ROUTE_PATTERN.CREATE_NEW_QUERY,
               LEGEND_QUERY_ROUTE_PATTERN.LOAD_EXISTING_QUERY,
             ]}
             component={QueryEditor}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_NEW_QUERY}
+            component={NewQueryCreator}
           />
           <Route
             exact={true}

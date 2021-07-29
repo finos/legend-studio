@@ -15,17 +15,25 @@
  */
 
 import { createContext, useContext } from 'react';
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import {
+  action,
+  flowResult,
+  makeAutoObservable,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { ActionState, guaranteeNonNullable } from '@finos/legend-studio-shared';
-import type {
-  Entity,
-  Mapping,
-  PackageableRuntime,
-  ProjectMetadata,
-} from '@finos/legend-studio';
 import {
+  assertTrue,
+  guaranteeNonNullable,
+  ActionState,
+} from '@finos/legend-studio-shared';
+import type { Entity, Mapping, PackageableRuntime } from '@finos/legend-studio';
+import {
+  PackageableElementExplicitReference,
+  RuntimePointer,
+  ProjectMetadata,
   SDLCServerClient,
   TAB_SIZE,
   CORE_LOG_EVENT,
@@ -34,6 +42,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-studio';
 import { QueryBuilderState } from './QueryBuilderState';
+import type { CreateNewQueryPathParams } from './LegendQueryRouter';
 
 export abstract class QueryInfoState {
   queryStore: QueryStore;
@@ -44,18 +53,39 @@ export abstract class QueryInfoState {
 }
 
 export class CreateQueryInfoState extends QueryInfoState {
+  projectMetadata: ProjectMetadata;
+  versionId: string;
   mapping: Mapping;
   runtime: PackageableRuntime;
-  // lambda: RawLambda;
 
   constructor(
     queryStore: QueryStore,
+    projectMetadata: ProjectMetadata,
+    versionId: string,
     mapping: Mapping,
     runtime: PackageableRuntime,
   ) {
     super(queryStore);
+
+    makeObservable(this, {
+      mapping: observable,
+      runtime: observable,
+      setMapping: action,
+      setRuntime: action,
+    });
+
+    this.projectMetadata = projectMetadata;
+    this.versionId = versionId;
     this.mapping = mapping;
     this.runtime = runtime;
+  }
+
+  setMapping(val: Mapping): void {
+    this.mapping = val;
+  }
+
+  setRuntime(val: PackageableRuntime): void {
+    this.runtime = val;
   }
 }
 
@@ -81,21 +111,12 @@ export class QueryStore {
 
   useSDLC = true; // TODO: remove this when metadata server is enabled by default
 
-  projectMetadatas: ProjectMetadata[] = [];
-  loadProjectMetadataState = ActionState.create();
-  currentProjectMetadata?: ProjectMetadata;
-
-  // TODO: support `latest`
-  currentVersionId?: string;
-  loadVersionsState = ActionState.create();
   buildGraphState = ActionState.create();
   initGraphState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
       editorStore: false,
-      setCurrentProjectMetadata: action,
-      setCurrentVersionId: action,
       setQueryInfoState: action,
     });
 
@@ -103,16 +124,58 @@ export class QueryStore {
     this.queryBuilderState = new QueryBuilderState(editorStore);
   }
 
-  setCurrentProjectMetadata(val: ProjectMetadata | undefined): void {
-    this.currentProjectMetadata = val;
-  }
-
-  setCurrentVersionId(val: string | undefined): void {
-    this.currentVersionId = val;
-  }
-
   setQueryInfoState(val: QueryInfoState | undefined): void {
     this.queryInfoState = val;
+  }
+
+  *setupCreateNewQueryInfoState(
+    params: CreateNewQueryPathParams,
+  ): GeneratorFn<void> {
+    const { projectId, versionId, mappingPath, runtimePath } = params;
+    let queryInfoState: CreateQueryInfoState;
+    if (this.queryInfoState instanceof CreateQueryInfoState) {
+      assertTrue(this.queryInfoState.projectMetadata.projectId === projectId);
+      assertTrue(this.queryInfoState.versionId === versionId);
+      this.queryInfoState.setMapping(
+        this.editorStore.graphState.graph.getMapping(mappingPath),
+      );
+      this.queryInfoState.setRuntime(
+        this.editorStore.graphState.graph.getRuntime(runtimePath),
+      );
+      queryInfoState = this.queryInfoState;
+    } else {
+      // TODO: fix this when we use metadata server
+      const projectMetadata = new ProjectMetadata();
+      projectMetadata.projectId = projectId;
+      projectMetadata.setVersions([versionId]);
+      yield flowResult(this.buildGraph(projectMetadata, versionId));
+      const currentMapping =
+        this.editorStore.graphState.graph.getMapping(mappingPath);
+      const currentRuntime =
+        this.editorStore.graphState.graph.getRuntime(runtimePath);
+      queryInfoState = new CreateQueryInfoState(
+        this,
+        projectMetadata,
+        versionId,
+        currentMapping,
+        currentRuntime,
+      );
+      this.setQueryInfoState(queryInfoState);
+    }
+    this.queryBuilderState.querySetupState.mapping = queryInfoState.mapping;
+    this.queryBuilderState.querySetupState.runtime = new RuntimePointer(
+      PackageableElementExplicitReference.create(queryInfoState.runtime),
+    );
+    if (!this.queryBuilderState.querySetupState._class) {
+      const possibleTargets =
+        this.queryBuilderState.querySetupState.mapping.allClassMappings.map(
+          (classMapping) => classMapping.class.value,
+        );
+      if (possibleTargets.length !== 0) {
+        this.queryBuilderState.querySetupState._class = possibleTargets[0];
+      }
+    }
+    this.queryBuilderState.resetData();
   }
 
   *initGraph(): GeneratorFn<void> {
@@ -151,13 +214,10 @@ export class QueryStore {
     }
   }
 
-  *buildGraph(): GeneratorFn<void> {
-    if (!this.currentProjectMetadata || !this.currentVersionId) {
-      this.editorStore.applicationStore.notifyIllegalState(
-        `Can't build graph when project and version is not specified`,
-      );
-      return;
-    }
+  *buildGraph(
+    projectMetadata: ProjectMetadata,
+    versionId: string,
+  ): GeneratorFn<void> {
     if (this.initGraphState.isInInitialState) {
       yield flowResult(this.initGraph());
     } else if (this.initGraphState.isInProgress) {
@@ -171,55 +231,35 @@ export class QueryStore {
       if (this.useSDLC) {
         entities =
           (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByVersion(
-            this.currentProjectMetadata.projectId,
-            this.currentVersionId,
+            projectMetadata.projectId,
+            versionId,
           )) as Entity[];
       } else {
         entities =
           (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getVersionEntities(
-            this.currentProjectMetadata.projectId,
-            this.currentVersionId,
+            projectMetadata.projectId,
+            versionId,
           )) as Entity[];
       }
 
       // TODO: remove this when metadata server is enabled by default
       const project = new Project();
-      project.projectId = this.currentProjectMetadata.projectId;
+      project.projectId = projectMetadata.projectId;
       this.editorStore.sdlcState.setCurrentProject(project);
       yield flowResult(
         this.editorStore.graphState.buildGraphForViewerMode(entities),
       );
 
-      this.loadVersionsState.pass();
+      this.buildGraphState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
-      this.loadVersionsState.fail();
+      this.buildGraphState.fail();
     }
   }
-
-  // const customRuntime = new EngineRuntime();
-  // customRuntime.addMapping(
-  //   PackageableElementExplicitReference.create(mapping),
-  // );
-  // await queryBuilderState.querySetupState.setup(
-  //   testState.queryState.query,
-  //   mapping,
-  //   customRuntime,
-  //   (lambda: RawLambda): Promise<void> =>
-  //     testState.queryState
-  //       .updateLamba(lambda)
-  //       .then(() =>
-  //         editorStore.applicationStore.notifySuccess(
-  //           `Mapping test query is updated`,
-  //         ),
-  //       )
-  //       .catch(applicationStore.alertIllegalUnhandledError),
-  //   testState.queryState.query.isStub,
-  // );
 }
 
 const QueryStoreContext = createContext<QueryStore | undefined>(undefined);

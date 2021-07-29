@@ -68,6 +68,8 @@ export class CreateQuerySetupState extends QuerySetupState {
   projectMetadatas: ProjectMetadata[] = [];
   loadProjectMetadataState = ActionState.create();
   loadVersionsState = ActionState.create();
+  currentProjectMetadata?: ProjectMetadata;
+  currentVersionId?: string;
   currentMapping?: Mapping;
   currentRuntime?: PackageableRuntime;
 
@@ -76,11 +78,13 @@ export class CreateQuerySetupState extends QuerySetupState {
 
     makeObservable(this, {
       projectMetadatas: observable,
-      loadProjectMetadataState: observable,
-      loadVersionsState: observable,
+      currentProjectMetadata: observable,
+      currentVersionId: observable,
       currentMapping: observable,
       currentRuntime: observable,
       runtimeOptions: computed,
+      setCurrentProjectMetadata: action,
+      setCurrentVersionId: action,
       setCurrentMapping: action,
       setCurrentRuntime: action,
       loadProjects: flow,
@@ -88,6 +92,14 @@ export class CreateQuerySetupState extends QuerySetupState {
     });
 
     this.queryStore = queryStore;
+  }
+
+  setCurrentProjectMetadata(val: ProjectMetadata | undefined): void {
+    this.currentProjectMetadata = val;
+  }
+
+  setCurrentVersionId(val: string | undefined): void {
+    this.currentVersionId = val;
   }
 
   setCurrentMapping(val: Mapping | undefined): void {
@@ -141,7 +153,7 @@ export class CreateQuerySetupState extends QuerySetupState {
   }
 
   *loadProjectVersions(): GeneratorFn<void> {
-    if (!this.queryStore.currentProjectMetadata) {
+    if (!this.currentProjectMetadata) {
       this.queryStore.editorStore.applicationStore.notifyIllegalState(
         `Can't fetch versions when project is not specified`,
       );
@@ -152,10 +164,10 @@ export class CreateQuerySetupState extends QuerySetupState {
       if (this.queryStore.useSDLC) {
         const versionIds = (
           (yield this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getVersions(
-            this.queryStore.currentProjectMetadata.projectId,
+            this.currentProjectMetadata.projectId,
           )) as PlainObject<Version>[]
         ).map((project) => Version.serialization.fromJson(project).id.id);
-        this.queryStore.currentProjectMetadata.setVersions(versionIds);
+        this.currentProjectMetadata.setVersions(versionIds);
       }
       this.loadVersionsState.pass();
     } catch (error: unknown) {
@@ -166,13 +178,20 @@ export class CreateQuerySetupState extends QuerySetupState {
   }
 
   toInfoState(): QueryInfoState {
-    if (!this.currentMapping || !this.currentRuntime) {
+    if (
+      !this.currentProjectMetadata ||
+      !this.currentVersionId ||
+      !this.currentMapping ||
+      !this.currentRuntime
+    ) {
       throw new IllegalStateError(
-        `Can't create query info state: expect mapping and runtime to be specified`,
+        `Can't create query info state: some setup information is missing`,
       );
     }
     const infoState = new CreateQueryInfoState(
       this.queryStore,
+      this.currentProjectMetadata,
+      this.currentVersionId,
       this.currentMapping,
       this.currentRuntime,
     );
@@ -202,6 +221,11 @@ export class QuerySetupStore {
 
   setSetupState(val: QuerySetupState | undefined): void {
     this.querySetupState = val;
+  }
+
+  *init(): GeneratorFn<void> {
+    this.queryStore.setQueryInfoState(undefined);
+    this.queryStore.editorStore.graphState.resetGraph();
   }
 }
 

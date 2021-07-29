@@ -207,6 +207,7 @@ export class QueryBuilderState extends EditorExtensionState {
     }
   }
 
+  // TODO: consider removing this method since it's not encapsulated to within Legend Query
   reset(): void {
     changeEntry(
       this.editorStore.editorExtensionStates,
