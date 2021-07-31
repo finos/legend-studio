@@ -26,7 +26,6 @@ import {
 import { useLocalObservable } from 'mobx-react-lite';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
-  IllegalStateError,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -35,16 +34,17 @@ import type {
   Mapping,
   PackageableElementSelectOption,
   PackageableRuntime,
+  Service,
 } from '@finos/legend-studio';
 import {
+  PureSingleExecution,
+  PureMultiExecution,
   ProjectMetadata,
   Project,
   ProjectType,
   Version,
 } from '@finos/legend-studio';
-import type { QueryInfoState, QueryStore } from './QueryStore';
-import { EditQueryInfoState, ServiceQueryInfoState } from './QueryStore';
-import { CreateQueryInfoState } from './QueryStore';
+import type { QueryStore } from './QueryStore';
 import { useQueryStore } from './QueryStore';
 
 export abstract class QuerySetupState {
@@ -53,16 +53,9 @@ export abstract class QuerySetupState {
   constructor(queryStore: QueryStore) {
     this.queryStore = queryStore;
   }
-
-  abstract toInfoState(): QueryInfoState;
 }
 
-export class EditQuerySetupState extends QuerySetupState {
-  toInfoState(): QueryInfoState {
-    const infoState = new EditQueryInfoState(this.queryStore);
-    return infoState;
-  }
-}
+export class ExistingQuerySetupState extends QuerySetupState {}
 
 export class CreateQuerySetupState extends QuerySetupState {
   projectMetadatas: ProjectMetadata[] = [];
@@ -176,33 +169,136 @@ export class CreateQuerySetupState extends QuerySetupState {
       this.queryStore.editorStore.applicationStore.notifyError(error);
     }
   }
+}
 
-  toInfoState(): QueryInfoState {
-    if (
-      !this.currentProjectMetadata ||
-      !this.currentVersionId ||
-      !this.currentMapping ||
-      !this.currentRuntime
-    ) {
-      throw new IllegalStateError(
-        `Can't create query info state: some setup information is missing`,
-      );
-    }
-    const infoState = new CreateQueryInfoState(
-      this.queryStore,
-      this.currentProjectMetadata,
-      this.currentVersionId,
-      this.currentMapping,
-      this.currentRuntime,
-    );
-    return infoState;
-  }
+export interface ServiceExecutionOption {
+  label: string;
+  value: { service: Service; key?: string };
 }
 
 export class ServiceQuerySetupState extends QuerySetupState {
-  toInfoState(): QueryInfoState {
-    const infoState = new ServiceQueryInfoState(this.queryStore);
-    return infoState;
+  projectMetadatas: ProjectMetadata[] = [];
+  loadProjectMetadataState = ActionState.create();
+  loadVersionsState = ActionState.create();
+  currentProjectMetadata?: ProjectMetadata;
+  currentVersionId?: string;
+  currentService?: Service;
+  currentServiceExecutionKey?: string;
+
+  constructor(queryStore: QueryStore) {
+    super(queryStore);
+
+    makeObservable(this, {
+      projectMetadatas: observable,
+      currentProjectMetadata: observable,
+      currentVersionId: observable,
+      currentService: observable,
+      currentServiceExecutionKey: observable,
+      setCurrentProjectMetadata: action,
+      setCurrentVersionId: action,
+      setCurrentServiceExecution: action,
+      loadProjects: flow,
+      loadProjectVersions: flow,
+    });
+
+    this.queryStore = queryStore;
+  }
+
+  setCurrentProjectMetadata(val: ProjectMetadata | undefined): void {
+    this.currentProjectMetadata = val;
+  }
+
+  setCurrentVersionId(val: string | undefined): void {
+    this.currentVersionId = val;
+  }
+
+  setCurrentServiceExecution(
+    service: Service | undefined,
+    key: string | undefined,
+  ): void {
+    this.currentService = service;
+    this.currentServiceExecutionKey = key;
+  }
+
+  get serviceExecutionOptions(): ServiceExecutionOption[] {
+    return this.queryStore.editorStore.serviceOptions.flatMap((option) => {
+      const service = option.value;
+      const serviceExecution = service.execution;
+      if (serviceExecution instanceof PureSingleExecution) {
+        return {
+          label: service.name,
+          value: {
+            service,
+          },
+        };
+      } else if (serviceExecution instanceof PureMultiExecution) {
+        return serviceExecution.executionParameters.map((parameter) => ({
+          label: `${service.name} [${parameter.key}]`,
+          value: {
+            service,
+            key: parameter.key,
+          },
+        }));
+      }
+      return [];
+    });
+  }
+
+  *loadProjects(): GeneratorFn<void> {
+    this.loadProjectMetadataState.inProgress();
+    try {
+      if (this.queryStore.useSDLC) {
+        const projects = (
+          (yield this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getProjects(
+            ProjectType.PRODUCTION,
+            undefined,
+            undefined,
+            undefined,
+          )) as PlainObject<Project>[]
+        ).map((project) => Project.serialization.fromJson(project));
+        this.projectMetadatas = projects.map((project) => {
+          const projectMetadata = new ProjectMetadata();
+          projectMetadata.projectId = project.projectId;
+          return projectMetadata;
+        });
+      } else {
+        this.projectMetadatas = (
+          (yield this.queryStore.editorStore.applicationStore.networkClientManager.metadataClient.getProjects()) as PlainObject<ProjectMetadata>[]
+        ).map((project) => ProjectMetadata.serialization.fromJson(project));
+      }
+      this.loadProjectMetadataState.pass();
+
+      // TODO: auto-select first version
+    } catch (error: unknown) {
+      assertErrorThrown(error);
+      this.loadProjectMetadataState.fail();
+      this.queryStore.editorStore.applicationStore.notifyError(error);
+    }
+  }
+
+  *loadProjectVersions(): GeneratorFn<void> {
+    if (!this.currentProjectMetadata) {
+      this.queryStore.editorStore.applicationStore.notifyIllegalState(
+        `Can't fetch versions when project is not specified`,
+      );
+      return;
+    }
+    this.loadVersionsState.inProgress();
+    try {
+      if (this.queryStore.useSDLC) {
+        const versionIds = (
+          (yield this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getVersions(
+            this.currentProjectMetadata.projectId,
+          )) as PlainObject<Version>[]
+        ).map((project) => Version.serialization.fromJson(project).id.id);
+        this.currentProjectMetadata.setVersions(versionIds);
+      }
+      this.loadVersionsState.pass();
+    } catch (error: unknown) {
+      assertErrorThrown(error);
+      this.loadVersionsState.fail();
+      this.queryStore.editorStore.applicationStore.notifyError(error);
+    }
   }
 }
 

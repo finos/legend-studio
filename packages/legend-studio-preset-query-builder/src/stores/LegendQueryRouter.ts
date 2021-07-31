@@ -31,56 +31,56 @@ export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: '/setup',
-  LOAD_SERVICE_QUERY: `/service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
-  CREATE_NEW_QUERY: `/create/:${LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
-  LOAD_EXISTING_QUERY: `/load/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
+  SERVICE_QUERY: `/service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
+  CREATE_QUERY: `/create/:${LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
+  EXISTING_QUERY: `/load/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
 
-export const generateLoadServiceQueryRoute = (
+export const generateServiceQueryRoute = (
   projectId: string,
   versionId: string,
   servicePath: string,
   key?: string,
 ): string =>
-  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.LOAD_SERVICE_QUERY, {
+  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID]: projectId,
     [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: versionId,
     [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
   })}${key ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_KEY}=${key}` : ''}`;
 
-export const generateCreateNewQueryRoute = (
+export const generateCreateQueryRoute = (
   projectId: string,
   versionId: string,
   mappingPath: string,
   runtimePath: string,
 ): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_NEW_QUERY, {
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID]: projectId,
     [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: versionId,
     [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: mappingPath,
     [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
   });
 
-export const generateLoadExistingQueryRoute = (queryId: string): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.LOAD_EXISTING_QUERY, {
+export const generateExistingQueryRoute = (queryId: string): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
   });
 
-export interface LoadServiceQueryPathParams {
+export interface ServiceQueryPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
 }
 
-export interface LoadServiceQueryQueryParams {
+export interface ServiceQueryQueryParams {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_KEY]?: string;
 }
 
-export interface LoadExistingQueryPathParams {
+export interface ExistingQueryPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: string;
 }
 
-export interface CreateNewQueryPathParams {
+export interface CreateQueryPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: string;

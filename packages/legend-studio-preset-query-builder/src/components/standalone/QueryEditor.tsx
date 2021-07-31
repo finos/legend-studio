@@ -15,13 +15,19 @@
  */
 
 import { RuntimePointer, useApplicationStore } from '@finos/legend-studio';
+import { getQueryParameters } from '@finos/legend-studio-shared';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useParams } from 'react-router';
-import type { CreateNewQueryPathParams } from '../../stores/LegendQueryRouter';
-import { generateCreateNewQueryRoute } from '../../stores/LegendQueryRouter';
+import type {
+  CreateQueryPathParams,
+  ExistingQueryPathParams,
+  ServiceQueryPathParams,
+  ServiceQueryQueryParams,
+} from '../../stores/LegendQueryRouter';
+import { generateCreateQueryRoute } from '../../stores/LegendQueryRouter';
 import { CreateQueryInfoState, useQueryStore } from '../../stores/QueryStore';
 import { QueryBuilder } from '../QueryBuilder';
 
@@ -36,20 +42,36 @@ export const QueryEditor: React.FC<{}> = () => (
   </DndProvider>
 );
 
-// export const ExistingQueryLoader = observer(() => {
-//   // build the state
-//   return null;
-// });
+export const ExistingQueryLoader = observer(() => {
+  const queryStore = useQueryStore();
+  const params = useParams<ExistingQueryPathParams>();
 
-// export const ServiceQueryLoader = observer(() => {
-//   // build the state
-//   return null;
-// });
+  useEffect(() => {
+    queryStore.setupExistingQueryInfoState(params);
+  }, [queryStore, params]);
 
-export const NewQueryCreator = observer(() => {
+  return <QueryEditor />;
+});
+
+export const ServiceQueryLoader = observer(() => {
   const applicationStore = useApplicationStore();
   const queryStore = useQueryStore();
-  const params = useParams<CreateNewQueryPathParams>();
+  const params = useParams<ServiceQueryPathParams>();
+  const queryParams = getQueryParameters<ServiceQueryQueryParams>(
+    applicationStore.historyApiClient.location.search,
+  );
+
+  useEffect(() => {
+    queryStore.setupServiceQueryInfoState(params, queryParams.key);
+  }, [queryStore, params, queryParams]);
+
+  return <QueryEditor />;
+});
+
+export const CreateQueryLoader = observer(() => {
+  const applicationStore = useApplicationStore();
+  const queryStore = useQueryStore();
+  const params = useParams<CreateQueryPathParams>();
   const currentMapping = queryStore.queryBuilderState.querySetupState.mapping;
   const currentRuntime =
     queryStore.queryBuilderState.querySetupState.runtime instanceof
@@ -59,7 +81,7 @@ export const NewQueryCreator = observer(() => {
       : undefined;
 
   useEffect(() => {
-    queryStore.setupCreateNewQueryInfoState(params);
+    queryStore.setupCreateQueryInfoState(params);
   }, [queryStore, params]);
 
   // TODO: this will make the route change as the users select another mapping and runtime
@@ -72,7 +94,7 @@ export const NewQueryCreator = observer(() => {
           queryStore.queryInfoState.runtime !== currentRuntime)
       ) {
         applicationStore.historyApiClient.push(
-          generateCreateNewQueryRoute(
+          generateCreateQueryRoute(
             queryStore.queryInfoState.projectMetadata.projectId,
             queryStore.queryInfoState.versionId,
             currentMapping.path,

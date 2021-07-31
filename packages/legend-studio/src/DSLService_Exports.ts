@@ -16,7 +16,11 @@
 
 // metamodels
 export { Service } from './models/metamodels/pure/model/packageableElements/service/Service';
-export { PureSingleExecution } from './models/metamodels/pure/model/packageableElements/service/ServiceExecution';
+export {
+  PureExecution,
+  PureSingleExecution,
+  PureMultiExecution,
+} from './models/metamodels/pure/model/packageableElements/service/ServiceExecution';
 
 // stores
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';

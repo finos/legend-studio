@@ -24,12 +24,23 @@ import {
 } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { assertType } from '@finos/legend-studio-shared';
 import {
   assertTrue,
   guaranteeNonNullable,
   ActionState,
 } from '@finos/legend-studio-shared';
-import type { Entity, Mapping, PackageableRuntime } from '@finos/legend-studio';
+import type {
+  Entity,
+  Mapping,
+  PackageableRuntime,
+  Service,
+} from '@finos/legend-studio';
+import {
+  PureExecution,
+  PureMultiExecution,
+  PureSingleExecution,
+} from '@finos/legend-studio';
 import {
   PackageableElementExplicitReference,
   RuntimePointer,
@@ -42,7 +53,11 @@ import {
   useApplicationStore,
 } from '@finos/legend-studio';
 import { QueryBuilderState } from './QueryBuilderState';
-import type { CreateNewQueryPathParams } from './LegendQueryRouter';
+import type {
+  CreateQueryPathParams,
+  ExistingQueryPathParams,
+  ServiceQueryPathParams,
+} from './LegendQueryRouter';
 
 export abstract class QueryInfoState {
   queryStore: QueryStore;
@@ -89,16 +104,30 @@ export class CreateQueryInfoState extends QueryInfoState {
   }
 }
 
-export class EditQueryInfoState extends QueryInfoState {
-  // query: Query;
-  // constructor(queryStore: QueryStore) {
-  //   this.queryStore = queryStore;
-  // }
+export class ServiceQueryInfoState extends QueryInfoState {
+  projectMetadata: ProjectMetadata;
+  versionId: string;
+  service: Service;
+  key?: string;
+
+  constructor(
+    queryStore: QueryStore,
+    projectMetadata: ProjectMetadata,
+    versionId: string,
+    service: Service,
+    key: string | undefined,
+  ) {
+    super(queryStore);
+
+    this.projectMetadata = projectMetadata;
+    this.versionId = versionId;
+    this.service = service;
+    this.key = key;
+  }
 }
 
-export class ServiceQueryInfoState extends QueryInfoState {
-  // service: Service;
-  // key?: string;
+export class ExistingQueryInfoState extends QueryInfoState {
+  // query: Query;
   // constructor(queryStore: QueryStore) {
   //   this.queryStore = queryStore;
   // }
@@ -128,9 +157,70 @@ export class QueryStore {
     this.queryInfoState = val;
   }
 
-  *setupCreateNewQueryInfoState(
-    params: CreateNewQueryPathParams,
+  *setupExistingQueryInfoState(
+    params: ExistingQueryPathParams,
   ): GeneratorFn<void> {
+    // TODO
+  }
+
+  *setupServiceQueryInfoState(
+    params: ServiceQueryPathParams,
+    serviceExecutionKey: string | undefined,
+  ): GeneratorFn<void> {
+    const { projectId, versionId, servicePath } = params;
+
+    let queryInfoState: ServiceQueryInfoState;
+    if (this.queryInfoState instanceof ServiceQueryInfoState) {
+      assertTrue(this.queryInfoState.projectMetadata.projectId === projectId);
+      assertTrue(this.queryInfoState.versionId === versionId);
+      assertTrue(this.queryInfoState.service.path === servicePath);
+      assertTrue(this.queryInfoState.key === serviceExecutionKey);
+      queryInfoState = this.queryInfoState;
+    } else {
+      // TODO: handle error here more gracefully
+      // TODO: fix this when we use metadata server
+      const projectMetadata = new ProjectMetadata();
+      projectMetadata.projectId = projectId;
+      projectMetadata.setVersions([versionId]);
+      yield flowResult(this.buildGraph(projectMetadata, versionId));
+      const currentService =
+        this.editorStore.graphState.graph.getService(servicePath);
+      queryInfoState = new ServiceQueryInfoState(
+        this,
+        projectMetadata,
+        versionId,
+        currentService,
+        serviceExecutionKey,
+      );
+      this.setQueryInfoState(queryInfoState);
+    }
+    assertType(queryInfoState.service.execution, PureExecution);
+    if (serviceExecutionKey) {
+      assertType(queryInfoState.service.execution, PureMultiExecution);
+      const serviceExecution = guaranteeNonNullable(
+        queryInfoState.service.execution.executionParameters.find(
+          (parameter) => parameter.key === serviceExecutionKey,
+        ),
+      );
+      this.queryBuilderState.querySetupState.mapping =
+        serviceExecution.mapping.value;
+      this.queryBuilderState.querySetupState.runtime = serviceExecution.runtime;
+    } else {
+      assertType(queryInfoState.service.execution, PureSingleExecution);
+      this.queryBuilderState.querySetupState.mapping =
+        queryInfoState.service.execution.mapping.value;
+      this.queryBuilderState.querySetupState.runtime =
+        queryInfoState.service.execution.runtime;
+    }
+    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
+    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+    this.queryBuilderState.buildStateFromRawLambda(
+      queryInfoState.service.execution.func,
+    );
+    // this.queryBuilderState.resetData();
+  }
+
+  *setupCreateQueryInfoState(params: CreateQueryPathParams): GeneratorFn<void> {
     const { projectId, versionId, mappingPath, runtimePath } = params;
     let queryInfoState: CreateQueryInfoState;
     if (this.queryInfoState instanceof CreateQueryInfoState) {
@@ -144,6 +234,7 @@ export class QueryStore {
       );
       queryInfoState = this.queryInfoState;
     } else {
+      // TODO: handle error here more gracefully
       // TODO: fix this when we use metadata server
       const projectMetadata = new ProjectMetadata();
       projectMetadata.projectId = projectId;

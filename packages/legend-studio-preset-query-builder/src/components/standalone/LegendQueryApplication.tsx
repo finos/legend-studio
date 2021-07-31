@@ -31,7 +31,11 @@ import {
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
 import { QueryStoreProvider } from '../../stores/QueryStore';
-import { NewQueryCreator, QueryEditor } from './QueryEditor';
+import {
+  CreateQueryLoader,
+  ExistingQueryLoader,
+  ServiceQueryLoader,
+} from './QueryEditor';
 import { flowResult } from 'mobx';
 
 export const LegendQueryApplicationRoot = observer(() => {
@@ -57,16 +61,18 @@ export const LegendQueryApplicationRoot = observer(() => {
         <Switch>
           <Route
             exact={true}
-            path={[
-              LEGEND_QUERY_ROUTE_PATTERN.LOAD_SERVICE_QUERY,
-              LEGEND_QUERY_ROUTE_PATTERN.LOAD_EXISTING_QUERY,
-            ]}
-            component={QueryEditor}
+            path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
+            component={ExistingQueryLoader}
           />
           <Route
             exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_NEW_QUERY}
-            component={NewQueryCreator}
+            path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
+            component={ServiceQueryLoader}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
+            component={CreateQueryLoader}
           />
           <Route
             exact={true}

@@ -114,9 +114,66 @@
 }
 
 .query-setup__create-query {
+  height: 38.2rem;
+
+  &__header {
+    background: var(--color-lime-75);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem 0;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 13.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+}
+
+.query-setup__service-query {
+  height: 32.2rem;
+
+  &__header {
+    background: var(--color-blue-50);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem 0;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 8.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+}
+
+.query-setup__wizard {
   display: flex;
   flex-direction: column;
-  height: 38.2rem;
   width: 60rem;
   background: var(--color-dark-grey-80);
   border-radius: 0.2rem;
@@ -125,7 +182,6 @@
     @include flexVCenter;
 
     height: 3.4rem;
-    background: var(--color-lime-75);
     border-radius: 0.2rem 0.2rem 0 0;
 
     &__btn {
@@ -196,27 +252,6 @@
 
   &__group + &__group {
     margin-top: 1rem;
-  }
-
-  &__project {
-    @include flexCenter;
-
-    flex-direction: column;
-    height: 16.9rem;
-    padding: 2.5rem 0 1rem 0;
-  }
-
-  &__graph {
-    display: flex;
-    flex-direction: column;
-    height: 13.4rem;
-    width: 50rem;
-
-    &__loader {
-      height: 13.4rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
-      margin-top: 2rem;
-    }
   }
 
   &__selector {

@@ -1334,6 +1334,12 @@ export class EditorStore {
       );
   }
 
+  get serviceOptions(): PackageableElementSelectOption<Service>[] {
+    return this.graphState.graph.ownServices
+      .concat(this.graphState.graph.dependencyManager.services)
+      .map((a) => a.selectOption as PackageableElementSelectOption<Service>);
+  }
+
   get storeOptions(): PackageableElementSelectOption<Store>[] {
     return this.graphState.graph.ownStores
       .concat(this.graphState.graph.dependencyManager.stores)
