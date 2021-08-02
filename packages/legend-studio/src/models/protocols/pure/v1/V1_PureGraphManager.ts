@@ -196,6 +196,9 @@ import {
   V1_serializeExecutionPlan,
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
+import type { Query } from '../../../metamodels/pure/action/query/Query';
+import { V1_Query } from './engine/query/V1_Query';
+import { V1_buildQuery, V1_transformQuery } from './engine/V1_EngineHelper';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -421,6 +424,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runServiceTests: flow,
       registerService: flow,
       activateService: flow,
+      getQueries: flow,
+      getQuery: flow,
+      createQuery: flow,
+      updateQuery: flow,
       buildHashesIndex: flow,
       entitiesToPureModelContextData: flow,
     });
@@ -2180,6 +2187,45 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     prunedGraphData.elements.push(this.elementToProtocol<V1_Service>(service));
     return prunedGraphData;
   };
+
+  // --------------------------------------------- Query ---------------------------------------------
+
+  *getQueries(
+    isOwner: boolean,
+    limit: number | undefined,
+    graph: PureModel,
+  ): GeneratorFn<Query[]> {
+    return (
+      (yield this.engine.engineServerClient.getQueries(
+        isOwner,
+        limit,
+      )) as PlainObject<V1_Query>[]
+    )
+      .map((query) => V1_Query.serialization.fromJson(query))
+      .map((protocol) => V1_buildQuery(protocol, graph));
+  }
+
+  *getQuery(queryId: string, graph: PureModel): GeneratorFn<Query> {
+    return V1_buildQuery(
+      V1_Query.serialization.fromJson(
+        (yield this.engine.engineServerClient.getQuery(
+          queryId,
+        )) as PlainObject<V1_Query>,
+      ),
+      graph,
+    );
+  }
+
+  *createQuery(query: Query): GeneratorFn<void> {
+    yield this.engine.engineServerClient.createQuery(V1_transformQuery(query));
+  }
+
+  *updateQuery(query: Query): GeneratorFn<void> {
+    yield this.engine.engineServerClient.updateQuery(
+      query.id,
+      V1_transformQuery(query),
+    );
+  }
 
   // --------------------------------------------- Change Detection ---------------------------------------------
 

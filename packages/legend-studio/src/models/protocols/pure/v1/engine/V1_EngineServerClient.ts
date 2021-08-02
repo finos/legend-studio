@@ -379,13 +379,11 @@ export class V1_EngineServerClient extends AbstractServerClient {
       queryId ? `/${encodeURIComponent(queryId)}` : ''
     }`;
   getQueries = (
-    projectId: string,
-    versionId: string,
+    isOwner: boolean,
     limit: number | undefined,
   ): Promise<PlainObject<V1_Query>[]> =>
     this.get(this._query(), undefined, undefined, {
-      projectId,
-      versionId,
+      isOwner,
       limit,
     });
   getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>

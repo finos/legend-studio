@@ -53,6 +53,7 @@ import type {
 } from '../model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { Query } from '../action/query/Query';
 
 export interface EngineSetupConfig {
   env: string;
@@ -293,6 +294,17 @@ export abstract class AbstractPureGraphManager {
     serviceId: string,
   ): GeneratorFn<void>;
 
+  // ------------------------------------------- Query -------------------------------------------
+
+  abstract getQueries(
+    isOwner: boolean,
+    limit: number | undefined,
+    graph: PureModel,
+  ): GeneratorFn<Query[]>;
+  abstract getQuery(queryId: string, graph: PureModel): GeneratorFn<Query>;
+  abstract createQuery(query: Query): GeneratorFn<void>;
+  abstract updateQuery(query: Query): GeneratorFn<void>;
+
   // ------------------------------------------- Change detection -------------------------------------------
 
   abstract buildHashesIndex(
@@ -318,7 +330,8 @@ export abstract class AbstractPureGraphManager {
   ): Entity;
 
   // --------------------------------------------- HACKY ---------------------------------------------
-  // As the name suggested, these methods are temporary hacks until we support value-specification completely
+  // As the name suggested, these methods are temporary hacks since we don't handle value-specification
+  // structurally in Studio
 
   abstract HACKY_createGetAllLambda(_class: Class): RawLambda;
   abstract HACKY_createServiceTestAssertLambda(assertData: string): RawLambda;

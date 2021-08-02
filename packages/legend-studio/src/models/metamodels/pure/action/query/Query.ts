@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
+import type { Mapping } from '../../model/packageableElements/mapping/Mapping';
+import type { PackageableElementReference } from '../../model/packageableElements/PackageableElementReference';
+import type { PackageableRuntime } from '../../model/packageableElements/runtime/PackageableRuntime';
+
 export class Query {
   name!: string;
   id!: string;
   projectId!: string;
   versionId!: string;
-  mapping!: string;
-  runtime!: string;
+  mapping!: PackageableElementReference<Mapping>;
+  runtime!: PackageableElementReference<PackageableRuntime>;
+  // NOTE: we decide to store the query in text because text format is more compact and stable than JSON
   content!: string;
 }

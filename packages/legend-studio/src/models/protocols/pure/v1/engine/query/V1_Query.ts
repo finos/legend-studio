@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { SerializationFactory } from '@finos/legend-studio-shared';
+import { createModelSchema, primitive } from 'serializr';
+
 export class V1_Query {
   name!: string;
   id!: string;
@@ -21,6 +24,17 @@ export class V1_Query {
   versionId!: string;
   mapping!: string;
   runtime!: string;
-  // NOTE: we decide to store the query in text because text format is more compact and stable than JSON
   content!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_Query, {
+      content: primitive(),
+      id: primitive(),
+      mapping: primitive(),
+      name: primitive(),
+      projectId: primitive(),
+      runtime: primitive(),
+      versionId: primitive(),
+    }),
+  );
 }
