@@ -670,7 +670,7 @@ export const FunctionEditor = observer(() => {
   useEffect(() => {
     flowResult(
       functionEditorState.functionBodyEditorState.convertLambdaObjectToGrammarString(
-        false,
+        true,
         true,
       ),
     ).catch(applicationStore.alertIllegalUnhandledError);
