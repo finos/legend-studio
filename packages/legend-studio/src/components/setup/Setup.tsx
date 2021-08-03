@@ -27,20 +27,21 @@ import {
 import { SetupStoreProvider, useSetupStore } from '../../stores/SetupStore';
 import { useParams } from 'react-router';
 import { CORE_TEST_ID } from '../../const';
-import { NotificationSnackbar } from '../shared/NotificationSnackbar';
+import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import Dialog from '@material-ui/core/Dialog';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { ProjectType } from '../../models/sdlc/models/project/Project';
 import { isNumber, ACTION_STATE } from '@finos/legend-studio-shared';
 import { MdModeEdit } from 'react-icons/md';
-import type { SetupRouteParams } from '../../stores/Router';
+import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateEditorRoute,
   generateViewProjectRoute,
-} from '../../stores/Router';
+} from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
@@ -78,16 +79,20 @@ const CreateProjectModal = observer(() => {
     setupStore.setImportProjectSuccessReport(undefined);
   };
   const createProject = applicationStore.guaranteeSafeAction(() =>
-    setupStore.createProject(
-      projectIdentifier,
-      description,
-      groupId,
-      artifactId,
-      tagsArray,
+    flowResult(
+      setupStore.createProject(
+        projectIdentifier,
+        description,
+        groupId,
+        artifactId,
+        tagsArray,
+      ),
     ),
   );
   const importProject = applicationStore.guaranteeSafeAction(() =>
-    setupStore.importProject(projectIdentifier, groupId, artifactId),
+    flowResult(
+      setupStore.importProject(projectIdentifier, groupId, artifactId),
+    ),
   );
   const handleSubmit = (
     event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
@@ -502,9 +507,9 @@ const CreateWorkspaceModal = observer(() => {
   };
   const createWorkspace = (): void => {
     if (currentProjectId && workspaceName) {
-      setupStore
-        .createWorkspace(currentProjectId, workspaceName)
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        setupStore.createWorkspace(currentProjectId, workspaceName),
+      ).catch(applicationStore.alertIllegalUnhandledError);
     }
   };
   const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
@@ -702,7 +707,7 @@ const SetupSelection = observer(() => {
 });
 
 export const SetupInner = observer(() => {
-  const params = useParams<SetupRouteParams>();
+  const params = useParams<SetupPathParams>();
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore();
 
@@ -712,13 +717,13 @@ export const SetupInner = observer(() => {
   }, [setupStore, params]);
 
   useEffect(() => {
-    setupStore
-      .fetchProjects()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(setupStore.fetchProjects()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
     if (setupStore.currentProjectId) {
-      setupStore
-        .fetchWorkspaces(setupStore.currentProjectId)
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(setupStore.fetchWorkspaces(setupStore.currentProjectId)).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }
   }, [applicationStore, setupStore]);
 

@@ -51,7 +51,8 @@
   }
 
   &__multiplicity {
-    display: flex;
+    @include flexVCenter;
+
     background: var(--color-light-grey-200);
     margin-left: 0.5rem;
     padding: 0.3rem;
@@ -59,11 +60,10 @@
   }
 
   &__multiplicity__range {
-    padding: 0 0.3rem;
-    font-size: 2rem;
-
     @include flexVCenter;
 
+    padding: 0 0.3rem;
+    font-size: 2rem;
     font-weight: bold;
     height: 2.2rem;
     color: var(--color-dark-grey-400);

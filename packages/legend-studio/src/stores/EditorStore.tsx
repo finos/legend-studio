@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { action, flow, flowResult, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import type {
   ApplicationStore,
   ActionAlertInfo,
@@ -32,10 +32,8 @@ import { editor as monacoEditorAPI } from 'monaco-editor';
 import { ExplorerTreeState } from './ExplorerTreeState';
 import {
   ACTIVITY_MODE,
-  DEFAULT_SIDE_BAR_SIZE,
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
-  DEFAULT_AUX_PANEL_SIZE,
   EDITOR_MODE,
   MONOSPACED_FONT_FAMILY,
   TAB_SIZE,
@@ -56,8 +54,13 @@ import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
-import type { Clazz, PlainObject } from '@finos/legend-studio-shared';
+import type {
+  Clazz,
+  GeneratorFn,
+  PlainObject,
+} from '@finos/legend-studio-shared';
 import {
+  addUniqueEntry,
   isNonNullable,
   assertErrorThrown,
   guaranteeType,
@@ -65,7 +68,7 @@ import {
   UnsupportedOperationError,
   assertNonNullable,
   assertTrue,
-  createObservableActionState,
+  ActionState,
 } from '@finos/legend-studio-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
@@ -76,7 +79,7 @@ import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/Ent
 import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState';
 import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState';
 import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState';
-import { PackageableConnectionEditorState } from './editor-state/element-editor-state/ConnectionEditorState';
+import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
@@ -89,8 +92,14 @@ import { FileGenerationViewerState } from './editor-state/FileGenerationViewerSt
 import type { GenerationFile } from './shared/FileGenerationTreeUtil';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState';
 import { DevToolState } from './aux-panel-state/DevToolState';
-import { generateSetupRoute, generateViewProjectRoute } from './Router';
-import { NonBlockingDialogState } from '@finos/legend-studio-components';
+import {
+  generateSetupRoute,
+  generateViewProjectRoute,
+} from './LegendStudioRouter';
+import {
+  NonBlockingDialogState,
+  PanelDisplayState,
+} from '@finos/legend-studio-components';
 import type {
   PackageableElement,
   PackageableElementSelectOption,
@@ -117,20 +126,21 @@ import { PRIMITIVE_TYPE } from '../models/MetaModelConst';
 import type { Type } from '../models/metamodels/pure/model/packageableElements/domain/Type';
 import type { Store } from '../models/metamodels/pure/model/packageableElements/store/Store';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 
 export class EditorHotkey {
-  name: HOTKEY;
+  name: string;
   keyBinds: string[];
-  handler: (event: KeyboardEvent | undefined) => void;
+  handler: (event?: KeyboardEvent) => void;
 
   constructor(
-    name: HOTKEY,
+    name: string,
     keyBinds: string[],
-    handler: (event: KeyboardEvent | undefined) => void,
+    handler: (event?: KeyboardEvent) => void,
   ) {
     this.name = name;
     this.keyBinds = keyBinds;
@@ -156,19 +166,23 @@ export class EditorStore {
   conflictResolutionState: ConflictResolutionState;
   devToolState: DevToolState;
   private _isDisposed = false;
-  initState = createObservableActionState();
+  initState = ActionState.create();
   mode = EDITOR_MODE.STANDARD;
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
   // Aux Panel
-  isMaxAuxPanelSizeSet = false;
   activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
-  maxAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
-  auxPanelSize = 0;
-  previousAuxPanelSize = DEFAULT_AUX_PANEL_SIZE;
+  auxPanelDisplayState = new PanelDisplayState({
+    initial: 0,
+    default: 300,
+    snap: 100,
+  });
   // Side Bar
   activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.EXPLORER;
-  sideBarSize = DEFAULT_SIDE_BAR_SIZE;
-  sideBarSizeBeforeHidden = DEFAULT_SIDE_BAR_SIZE;
+  sideBarDisplayState = new PanelDisplayState({
+    initial: 300,
+    default: 300,
+    snap: 150,
+  });
   // Hot keys
   blockGlobalHotkeys = false;
   defaultHotkeys: EditorHotkey[] = [];
@@ -194,24 +208,19 @@ export class EditorStore {
       setMode: action,
       setDevTool: action,
       setHotkeys: action,
+      addHotKey: action,
       resetHotkeys: action,
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
       setBackdrop: action,
       setExpandedMode: action,
-      setAuxPanelSize: action,
       setActiveAuxPanelMode: action,
-      setSideBarSize: action,
       setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
       setBlockingAlert: action,
       setActionAltertInfo: action,
       cleanUp: action,
       reset: action,
-      openAuxPanel: action,
-      toggleAuxPanel: action,
-      toggleExpandAuxPanel: action,
-      setMaxAuxPanelSize: action,
       setGraphEditMode: action,
       setActiveActivity: action,
       closeState: action,
@@ -279,9 +288,9 @@ export class EditorStore {
         HOTKEY.GENERATE,
         [HOTKEY_MAP.GENERATE],
         this.createGlobalHotKeyAction(() => {
-          this.graphState.graphGenerationState
-            .globalGenerate()
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(
+            this.graphState.graphGenerationState.globalGenerate(),
+          ).catch(applicationStore.alertIllegalUnhandledError);
         }),
       ),
       new EditorHotkey(
@@ -300,7 +309,7 @@ export class EditorStore {
         HOTKEY.TOGGLE_TEXT_MODE,
         [HOTKEY_MAP.TOGGLE_TEXT_MODE],
         this.createGlobalHotKeyAction(() => {
-          this.toggleTextMode().catch(
+          flowResult(this.toggleTextMode()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
         }),
@@ -316,16 +325,16 @@ export class EditorStore {
         HOTKEY.SYNC_WITH_WORKSPACE,
         [HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
-          this.localChangesState
-            .syncWithWorkspace()
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(this.localChangesState.syncWithWorkspace()).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         }),
       ),
       // simple actions (no blocking is needed)
       new EditorHotkey(
         HOTKEY.TOGGLE_AUX_PANEL,
         [HOTKEY_MAP.TOGGLE_AUX_PANEL],
-        this.createGlobalHotKeyAction(() => this.toggleAuxPanel()),
+        this.createGlobalHotKeyAction(() => this.auxPanelDisplayState.toggle()),
       ),
       new EditorHotkey(
         HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
@@ -359,6 +368,14 @@ export class EditorStore {
     this.hotkeys = this.defaultHotkeys;
   }
 
+  // NOTE: once we clear up the editor store to make modes more separated
+  // we should remove these sets of functions. They are basically hacks to
+  // ensure hiding parts of the UI based on the editing mode.
+  // Instead, perhaps, we should think of separating the modes out and if
+  // it is needed that they share `EditorStore`, we should make them pass in
+  // a set of config for the feature of the store instead of using
+  // flags like this
+  // See https://github.com/finos/legend-studio/issues/317
   get isInViewerMode(): boolean {
     return this.mode === EDITOR_MODE.VIEWER;
   }
@@ -371,7 +388,7 @@ export class EditorStore {
         this.sdlcState.currentProject &&
           this.sdlcState.currentWorkspace &&
           this.sdlcState.currentRevision,
-      ) && this.graphState.systemModel.isBuilt
+      ) && this.graphState.systemModel.buildState.hasSucceeded
     );
   }
   get isInGrammarTextMode(): boolean {
@@ -379,9 +396,6 @@ export class EditorStore {
   }
   get isInFormMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.FORM;
-  }
-  get isAuxPanelMaximized(): boolean {
-    return this.auxPanelSize === this.maxAuxPanelSize;
   }
   get hasUnsyncedChanges(): boolean {
     return Boolean(
@@ -392,44 +406,53 @@ export class EditorStore {
   setMode(val: EDITOR_MODE): void {
     this.mode = val;
   }
+
   setDevTool(val: boolean): void {
     this.isDevToolEnabled = val;
   }
+
   setHotkeys(val: EditorHotkey[]): void {
     this.hotkeys = val;
   }
+
+  addHotKey(val: EditorHotkey): void {
+    addUniqueEntry(this.hotkeys, val);
+  }
+
   resetHotkeys(): void {
     this.hotkeys = this.defaultHotkeys;
   }
+
   setBlockGlobalHotkeys(val: boolean): void {
     this.blockGlobalHotkeys = val;
   }
+
   setCurrentEditorState(val: EditorState | undefined): void {
     this.currentEditorState = val;
   }
+
   setBackdrop(val: boolean): void {
     this.backdrop = val;
   }
+
   setExpandedMode(val: boolean): void {
     this.isInExpandedMode = val;
   }
-  setAuxPanelSize(val: number): void {
-    this.auxPanelSize = val;
-  }
+
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
     this.activeAuxPanelMode = val;
   }
-  setSideBarSize(val: number): void {
-    this.sideBarSize = val;
-  }
+
   setIgnoreNavigationBlocking(val: boolean): void {
     this.ignoreNavigationBlocking = val;
   }
+
   refreshCurrentEntityDiffEditorState(): void {
     if (this.currentEditorState instanceof EntityDiffEditorState) {
       this.currentEditorState.refresh();
     }
   }
+
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
     if (this._isDisposed) {
       return;
@@ -472,11 +495,7 @@ export class EditorStore {
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */
-  init = flow(function* (
-    this: EditorStore,
-    projectId: string,
-    workspaceId: string,
-  ) {
+  *init(projectId: string, workspaceId: string): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
        * Since React `fast-refresh` will sometimes cause `Editor` to rerender, this method will be called again
@@ -501,12 +520,14 @@ export class EditorStore {
     }
     this.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
-      this.initState.conclude(hasBuildSucceeded);
+      this.initState.complete(hasBuildSucceeded);
     };
 
-    yield this.sdlcState.fetchCurrentProject(projectId, {
-      suppressNotification: true,
-    });
+    yield flowResult(
+      this.sdlcState.fetchCurrentProject(projectId, {
+        suppressNotification: true,
+      }),
+    );
     if (!this.sdlcState.currentProject) {
       // If the project is not found or the user does not have access to it,
       // we will not automatically redirect them to the setup page as they will lose the URL
@@ -545,9 +566,11 @@ export class EditorStore {
       onLeave(false);
       return;
     }
-    yield this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId, {
-      suppressNotification: true,
-    });
+    yield flowResult(
+      this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId, {
+        suppressNotification: true,
+      }),
+    );
     if (!this.sdlcState.currentWorkspace) {
       // If the workspace is not found,
       // we will not automatically redirect the user to the setup page as they will lose the URL
@@ -645,27 +668,27 @@ export class EditorStore {
         },
       ),
     ]);
-    yield this.initMode();
+    yield flowResult(this.initMode());
 
     onLeave(true);
-  });
+  }
 
-  initMode = flow(function* (this: EditorStore) {
+  *initMode(): GeneratorFn<void> {
     switch (this.mode) {
       case EDITOR_MODE.STANDARD:
-        yield this.initStandardMode();
+        yield flowResult(this.initStandardMode());
         return;
       case EDITOR_MODE.CONFLICT_RESOLUTION:
-        yield this.initConflictResolutionMode();
+        yield flowResult(this.initConflictResolutionMode());
         return;
       default:
         throw new UnsupportedOperationError(
           `Can't initialize editor for unsupported mode '${this.mode}'`,
         );
     }
-  });
+  }
 
-  initStandardMode = flow(function* (this: EditorStore) {
+  private *initStandardMode(): GeneratorFn<void> {
     yield Promise.all([
       this.buildGraph(),
       this.sdlcState.checkIfWorkspaceIsOutdated(),
@@ -676,9 +699,9 @@ export class EditorStore {
       this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
-  });
+  }
 
-  initConflictResolutionMode = flow(function* (this: EditorStore) {
+  private *initConflictResolutionMode(): GeneratorFn<void> {
     this.setActionAltertInfo({
       message: 'Failed to update workspace.',
       prompt:
@@ -692,11 +715,11 @@ export class EditorStore {
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
           handler: (): void => {
             this.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
-            this.conflictResolutionState
-              .discardConflictResolutionChanges()
-              .catch((error) =>
-                this.applicationStore.alertIllegalUnhandledError(error),
-              );
+            flowResult(
+              this.conflictResolutionState.discardConflictResolutionChanges(),
+            ).catch((error) =>
+              this.applicationStore.alertIllegalUnhandledError(error),
+            );
           },
         },
         {
@@ -714,9 +737,9 @@ export class EditorStore {
       this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
-  });
+  }
 
-  buildGraph = flow(function* (this: EditorStore) {
+  *buildGraph(): GeneratorFn<void> {
     const startTime = Date.now();
     let entities: Entity[];
     let projectConfiguration: PlainObject<ProjectConfiguration>;
@@ -755,7 +778,7 @@ export class EditorStore {
     }
 
     try {
-      yield this.graphState.buildGraph(entities);
+      yield flowResult(this.graphState.buildGraph(entities));
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
@@ -783,7 +806,7 @@ export class EditorStore {
       // since errors have been handled accordingly, we don't need to do anything here
       return;
     }
-  });
+  }
 
   getCurrentEditorState<T extends EditorState>(clazz: Clazz<T>): T {
     return guaranteeType(
@@ -802,55 +825,6 @@ export class EditorStore {
     );
   }
 
-  openAuxPanel(
-    auxPanelMode: AUX_PANEL_MODE,
-    resetHeightIfTooSmall: boolean,
-  ): void {
-    this.activeAuxPanelMode = auxPanelMode;
-    if (this.auxPanelSize === 0) {
-      this.toggleAuxPanel();
-    } else if (
-      this.auxPanelSize < DEFAULT_AUX_PANEL_SIZE &&
-      resetHeightIfTooSmall
-    ) {
-      this.auxPanelSize = DEFAULT_AUX_PANEL_SIZE;
-    }
-  }
-
-  toggleAuxPanel(): void {
-    if (this.auxPanelSize === 0) {
-      this.auxPanelSize = this.previousAuxPanelSize;
-    } else {
-      this.previousAuxPanelSize = this.auxPanelSize || DEFAULT_AUX_PANEL_SIZE;
-      this.auxPanelSize = 0;
-    }
-  }
-
-  toggleExpandAuxPanel(): void {
-    if (this.auxPanelSize === this.maxAuxPanelSize) {
-      this.auxPanelSize =
-        this.previousAuxPanelSize === this.maxAuxPanelSize
-          ? DEFAULT_AUX_PANEL_SIZE
-          : this.previousAuxPanelSize;
-    } else {
-      this.previousAuxPanelSize = this.auxPanelSize;
-      this.auxPanelSize = this.maxAuxPanelSize;
-    }
-  }
-
-  setMaxAuxPanelSize(val: number): void {
-    if (this.isMaxAuxPanelSizeSet) {
-      if (this.previousAuxPanelSize === this.maxAuxPanelSize) {
-        this.previousAuxPanelSize = val;
-      }
-      if (this.auxPanelSize === this.maxAuxPanelSize) {
-        this.auxPanelSize = val;
-      }
-    }
-    this.maxAuxPanelSize = val;
-    this.isMaxAuxPanelSizeSet = true;
-  }
-
   setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
     this.graphEditMode = graphEditor;
     this.graphState.clearCompilationError();
@@ -860,14 +834,13 @@ export class EditorStore {
     activity: ACTIVITY_MODE,
     options?: { keepShowingIfMatchedCurrent?: boolean },
   ): void {
-    if (this.sideBarSize === 0) {
-      this.sideBarSize = this.sideBarSizeBeforeHidden;
+    if (!this.sideBarDisplayState.isOpen) {
+      this.sideBarDisplayState.open();
     } else if (
       activity === this.activeActivity &&
       !options?.keepShowingIfMatchedCurrent
     ) {
-      this.sideBarSizeBeforeHidden = this.sideBarSize || DEFAULT_SIDE_BAR_SIZE;
-      this.sideBarSize = 0;
+      this.sideBarDisplayState.close();
     }
     this.activeActivity = activity;
   }
@@ -1060,15 +1033,12 @@ export class EditorStore {
     }
   }
 
-  deleteElement = flow(function* (
-    this: EditorStore,
-    element: PackageableElement,
-  ) {
+  *deleteElement(element: PackageableElement): GeneratorFn<void> {
     if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
       return;
     }
     const generatedChildrenElements =
-      this.graphState.graph.generationModel.allElements.filter(
+      this.graphState.graph.generationModel.allOwnElements.filter(
         (e) => e.generationParentElement === element,
       );
     const elementsToDelete = [element, ...generatedChildrenElements];
@@ -1086,15 +1056,49 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphState.graph.generationModel.removeElement(el),
+      this.graphState.graph.generationModel.deleteOwnElement(el),
     );
-    this.graphState.graph.removeElement(element);
+    this.graphState.graph.deleteElement(element);
+    // rerender currently opened diagram
+    if (this.currentEditorState instanceof DiagramEditorState) {
+      this.currentEditorState.renderer.render();
+    }
+    // reprocess project explorer tree
     this.explorerTreeState.reprocess();
-    // re-compile after deletion
-    yield this.graphState.globalCompileInFormMode({
-      message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
-    });
-  });
+    // recompile
+    yield flowResult(
+      this.graphState.globalCompileInFormMode({
+        message: `Can't compile graph after deletion and error cannot be located in form mode. Redirected to text mode for debugging`,
+      }),
+    );
+  }
+
+  *renameElement(
+    element: PackageableElement,
+    newPath: string,
+  ): GeneratorFn<void> {
+    if (element.isReadOnly) {
+      return;
+    }
+    this.graphState.graph.renameOwnElement(element, newPath);
+    // rerender currently opened diagram
+    if (this.currentEditorState instanceof DiagramEditorState) {
+      this.currentEditorState.renderer.render();
+    }
+    // reprocess project explorer tree
+    this.explorerTreeState.reprocess();
+    if (element instanceof Package) {
+      this.explorerTreeState.openNode(element);
+    } else if (element.package) {
+      this.explorerTreeState.openNode(element.package);
+    }
+    // recompile
+    yield flowResult(
+      this.graphState.globalCompileInFormMode({
+        message: `Can't compile graph after renaming and error cannot be located in form mode. Redirected to text mode for debugging`,
+      }),
+    );
+  }
 
   // FIXME: to be removed when we process editor states properly
   reprocessElementEditorState = (
@@ -1147,19 +1151,25 @@ export class EditorStore {
   }
 
   createGlobalHotKeyAction =
-    (handler: () => void): ((event: KeyboardEvent | undefined) => void) =>
-    (event: KeyboardEvent | undefined): void => {
-      event?.preventDefault();
+    (
+      handler: (event?: KeyboardEvent) => void,
+      preventDefault = true,
+    ): ((event?: KeyboardEvent) => void) =>
+    (event?: KeyboardEvent): void => {
+      if (preventDefault) {
+        event?.preventDefault();
+      }
       // FIXME: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
       const isResolvingConflicts =
         this.isInConflictResolutionMode &&
         !this.conflictResolutionState.hasResolvedAllConflicts;
       if (
-        this.isInitialized &&
-        !isResolvingConflicts &&
-        !this.blockGlobalHotkeys
+        (this.isInitialized &&
+          !isResolvingConflicts &&
+          !this.blockGlobalHotkeys) ||
+        this.isInViewerMode
       ) {
-        handler();
+        handler(event);
       }
     };
 
@@ -1168,7 +1178,7 @@ export class EditorStore {
     this.openedEditorStates = [];
   }
 
-  toggleTextMode = flow(function* (this: EditorStore) {
+  *toggleTextMode(): GeneratorFn<void> {
     if (this.isInFormMode) {
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
         return;
@@ -1178,11 +1188,12 @@ export class EditorStore {
         showLoading: true,
       });
       try {
-        const graphGrammar =
-          (yield this.graphState.graphManager.graphToPureCode(
-            this.graphState.graph,
-          )) as string;
-        yield this.grammarTextEditorState.setGraphGrammarText(graphGrammar);
+        const graphGrammar = (yield flowResult(
+          this.graphState.graphManager.graphToPureCode(this.graphState.graph),
+        )) as string;
+        yield flowResult(
+          this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
+        );
       } catch (error: unknown) {
         assertErrorThrown(error);
         this.applicationStore.notifyWarning(
@@ -1200,13 +1211,13 @@ export class EditorStore {
         );
       }
     } else if (this.isInGrammarTextMode) {
-      yield this.graphState.leaveTextMode();
+      yield flowResult(this.graphState.leaveTextMode());
     } else {
       throw new UnsupportedOperationError(
         'Editor only support form mode and text mode at the moment',
       );
     }
-  });
+  }
 
   /**
    * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened
@@ -1232,8 +1243,25 @@ export class EditorStore {
       );
   }
 
+  /**
+   * Filter the list of system elements that will be shown in selection options
+   * to users. This is helpful to avoid overwhelming and confusing users in form
+   * mode since many system elements are needed to build the graph, but should
+   * not present at all as selection options in form mode.
+   */
+  filterSystemElementOptions<T extends PackageableElement>(
+    systemElements: T[],
+  ): T[] {
+    const allowedSystemElements = this.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
+    return systemElements.filter((element) =>
+      allowedSystemElements.includes(element.path),
+    );
+  }
+
   get enumerationOptions(): PackageableElementSelectOption<Enumeration>[] {
-    return this.graphState.graph.enumerations
+    return this.graphState.graph.ownEnumerations
       .concat(this.graphState.graph.dependencyManager.enumerations)
       .map(
         (e) => e.selectOption as PackageableElementSelectOption<Enumeration>,
@@ -1241,15 +1269,23 @@ export class EditorStore {
   }
 
   get classOptions(): PackageableElementSelectOption<Class>[] {
-    return this.graphState.graph.classes
-      .concat(this.graphState.graph.systemModel.classes)
+    return this.graphState.graph.ownClasses
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownClasses,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.classes)
       .map((c) => c.selectOption as PackageableElementSelectOption<Class>);
   }
 
   get associationOptions(): PackageableElementSelectOption<Association>[] {
-    return this.graphState.graph.associations
-      .concat(this.graphState.graph.systemModel.associations)
+    return this.graphState.graph.ownAssociations
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownAssociations,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.associations)
       .map(
         (p) => p.selectOption as PackageableElementSelectOption<Association>,
@@ -1257,8 +1293,12 @@ export class EditorStore {
   }
 
   get profileOptions(): PackageableElementSelectOption<Profile>[] {
-    return this.graphState.graph.profiles
-      .concat(this.graphState.graph.systemModel.profiles)
+    return this.graphState.graph.ownProfiles
+      .concat(
+        this.filterSystemElementOptions(
+          this.graphState.graph.systemModel.ownProfiles,
+        ),
+      )
       .concat(this.graphState.graph.dependencyManager.profiles)
       .map((p) => p.selectOption as PackageableElementSelectOption<Profile>);
   }
@@ -1268,21 +1308,25 @@ export class EditorStore {
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
       .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
       .concat(
-        this.graphState.graph.types
-          .concat(this.graphState.graph.systemModel.types)
+        this.graphState.graph.ownTypes
+          .concat(
+            this.filterSystemElementOptions(
+              this.graphState.graph.systemModel.ownTypes,
+            ),
+          )
           .concat(this.graphState.graph.dependencyManager.types)
           .map((a) => a.selectOption as PackageableElementSelectOption<Type>),
       );
   }
 
   get mappingOptions(): PackageableElementSelectOption<Mapping>[] {
-    return this.graphState.graph.mappings
+    return this.graphState.graph.ownMappings
       .concat(this.graphState.graph.dependencyManager.mappings)
       .map((a) => a.selectOption as PackageableElementSelectOption<Mapping>);
   }
 
   get storeOptions(): PackageableElementSelectOption<Store>[] {
-    return this.graphState.graph.stores
+    return this.graphState.graph.ownStores
       .concat(this.graphState.graph.dependencyManager.stores)
       .map((a) => a.selectOption as PackageableElementSelectOption<Store>);
   }

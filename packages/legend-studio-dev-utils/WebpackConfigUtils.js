@@ -338,9 +338,11 @@ export const getWebAppBaseWebpackConfig = (
     },
     resolve: {
       ...baseConfig.resolve,
-      // Ignore usage of Node module `os` in `zipkin`
-      // See https://github.com/openzipkin/zipkin-js/issues/465
-      fallback: { os: false },
+      fallback: {
+        // Ignore usage of Node module `os` in `zipkin`
+        // See https://github.com/openzipkin/zipkin-js/issues/465
+        os: false,
+      },
       alias: {
         ...baseConfig.resolve.alias,
         // Reduce `monaco-editor` bundle size by using ESM bundle which enables tree-shaking

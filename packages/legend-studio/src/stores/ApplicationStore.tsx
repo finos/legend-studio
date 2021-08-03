@@ -26,9 +26,9 @@ import {
   isString,
   ApplicationError,
   NetworkClient,
-  createObservableActionState,
+  ActionState,
 } from '@finos/legend-studio-shared';
-import { observable, flow, makeAutoObservable, action } from 'mobx';
+import { observable, makeAutoObservable, action } from 'mobx';
 import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
 import type { ApplicationConfig } from './ApplicationConfig';
 import type { History } from 'history';
@@ -111,7 +111,7 @@ export class Notification {
 export class NetworkClientManager {
   coreClient!: NetworkClient;
   sdlcClient!: SDLCServerClient;
-  metadataClient: MetadataServerClient;
+  metadataClient!: MetadataServerClient;
 
   constructor(config: ApplicationConfig) {
     this.coreClient = new NetworkClient();
@@ -134,12 +134,12 @@ export class ApplicationStore {
   historyApiClient: History;
   notification?: Notification;
   logger: Logger;
-  isSDLCAuthorized = false;
-  SDLCServerTermsOfServicesUrlsToView: string[] = [];
   blockingAlertInfo?: BlockingAlertInfo;
   actionAlertInfo?: ActionAlertInfo;
   config: ApplicationConfig;
-  initState = createObservableActionState();
+  initState = ActionState.create();
+  isSDLCAuthorized = false;
+  SDLCServerTermsOfServicesUrlsToView: string[] = [];
   currentSDLCUser = new User(UNKNOWN_USER_ID, UNKNOWN_USER_ID);
 
   constructor(
@@ -295,7 +295,7 @@ export class ApplicationStore {
     return Boolean(this.SDLCServerTermsOfServicesUrlsToView.length);
   }
 
-  init = flow(function* (this: ApplicationStore) {
+  *init(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       this.notifyIllegalState('Application store is re-initialized');
       return;
@@ -315,10 +315,10 @@ export class ApplicationStore {
         width: window.screen.width,
       },
     });
-    this.initState.conclude(true);
-  });
+    this.initState.complete();
+  }
 
-  getSDLCCurrentUser = flow(function* (this: ApplicationStore) {
+  private *getSDLCCurrentUser(): GeneratorFn<void> {
     try {
       const currentUser = User.serialization.fromJson(
         (yield this.networkClientManager.sdlcClient.getCurrentUser()) as PlainObject<User>,
@@ -330,11 +330,29 @@ export class ApplicationStore {
       this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.notifyWarning(error.message);
     }
-  });
+  }
 
-  checkSDLCAuthorization = flow(function* (this: ApplicationStore) {
+  private *checkSDLCAuthorization(): GeneratorFn<void> {
     try {
-      this.isSDLCAuthorized = (yield this.areModesAuthorized()) as boolean;
+      this.isSDLCAuthorized = (
+        (yield Promise.all(
+          Object.values(SdlcMode).map((mode) =>
+            this.networkClientManager.sdlcClient
+              .isAuthorized(mode)
+              .catch((error) => {
+                if (mode !== SdlcMode.PROD) {
+                  // if there is an issue with an endpoint in a non prod env, we return authorized as true
+                  // but notify the user of the error
+                  this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+                  this.notifyError(error);
+                  return true;
+                }
+                throw error;
+              }),
+          ),
+        )) as boolean[]
+      ).every(Boolean);
+
       if (!this.isSDLCAuthorized) {
         window.location.href = SDLCServerClient.authorizeCallbackUrl(
           this.config.sdlcServerUrl,
@@ -346,9 +364,8 @@ export class ApplicationStore {
           (yield this.networkClientManager.sdlcClient.hasAcceptedTermsOfService()) as string[];
         if (this.SDLCServerTermsOfServicesUrlsToView.length) {
           this.setActionAltertInfo({
-            message:
-              "Please read and accept the SDLC servers' terms of service",
-            prompt: 'Click "Done" when you have accepted all the terms',
+            message: `Please read and accept the SDLC servers' terms of service`,
+            prompt: `Click 'Done' when you have accepted all the terms`,
             type: ActionAlertType.CAUTION,
             actions: [
               {
@@ -376,7 +393,7 @@ export class ApplicationStore {
       this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.notifyError(error);
     }
-  });
+  }
 
   setupTelemetryService(): void {
     this.telemetryService.registerPlugins(
@@ -384,29 +401,6 @@ export class ApplicationStore {
     );
     this.telemetryService.setUserId(this.currentSDLCUser.userId);
   }
-
-  areModesAuthorized = flow(function* (
-    this: ApplicationStore,
-  ): GeneratorFn<boolean> {
-    const modesAuthorized = (yield Promise.all(
-      Object.values(SdlcMode).map((mode) =>
-        this.networkClientManager.sdlcClient
-          .isAuthorized(mode)
-          .then((bool) => bool)
-          .catch((error) => {
-            if (mode !== SdlcMode.PROD) {
-              // if there is an issue with an endpoint in a non prod env, we return authorized as true
-              // but notify the user of the error
-              this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
-              this.notifyError(error);
-              return true;
-            }
-            throw error;
-          }),
-      ),
-    )) as boolean[];
-    return modesAuthorized.every((b) => b);
-  });
 
   /**
    * This function creates a more user-friendly way to throw error in the UI. Rather than crashing the whole app, we will

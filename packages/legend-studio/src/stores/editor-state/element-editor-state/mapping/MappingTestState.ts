@@ -88,6 +88,7 @@ import { Table } from '../../../../models/metamodels/pure/model/packageableEleme
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { LambdaEditorState } from '../LambdaEditorState';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -109,9 +110,7 @@ export class MappingTestQueryState extends LambdaEditorState {
       query: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
-      convertLambdaObjectToGrammarString: action,
-      convertLambdaGrammarStringToObject: action,
-      updateLamba: action,
+      updateLamba: flow,
     });
 
     this.test = test;
@@ -127,25 +126,23 @@ export class MappingTestQueryState extends LambdaEditorState {
     this.isInitializingLambda = val;
   }
 
-  updateLamba = flow(function* (this: MappingTestQueryState, val: RawLambda) {
+  *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.query = val;
     this.test.setQuery(val);
-    yield this.convertLambdaObjectToGrammarString(true);
-  });
+    yield flowResult(this.convertLambdaObjectToGrammarString(true));
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: MappingTestQueryState,
-    pretty?: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
     if (!this.query.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -163,10 +160,10 @@ export class MappingTestQueryState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
-  convertLambdaGrammarStringToObject(): Promise<void> {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
 }
@@ -364,8 +361,8 @@ export class MappingTestState {
   queryState: MappingTestQueryState;
   inputDataState: MappingTestInputDataState;
   assertionState: MappingTestAssertionState;
-  executionPlan?: object;
   isGeneratingPlan = false;
+  executionPlanState: ExecutionPlanState;
 
   constructor(
     editorStore: EditorStore,
@@ -385,9 +382,7 @@ export class MappingTestState {
       setAssertionState: action,
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
-      regenerateExpectedResult: flow,
-      onTestStateOpen: flow,
-      runTest: flow,
+      generatePlan: flow,
     });
 
     this.editorStore = editorStore;
@@ -396,6 +391,7 @@ export class MappingTestState {
     this.queryState = this.buildQueryState();
     this.inputDataState = this.buildInputDataState();
     this.assertionState = this.buildAssertionState();
+    this.executionPlanState = new ExecutionPlanState(this.editorStore);
   }
 
   setSelectedTab(val: MAPPING_TEST_EDITOR_TAB_TYPE): void {
@@ -408,9 +404,9 @@ export class MappingTestState {
       this.test,
       this.test.query,
     );
-    queryState
-      .updateLamba(this.test.query)
-      .catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
+    flowResult(queryState.updateLamba(this.test.query)).catch(
+      this.editorStore.applicationStore.alertIllegalUnhandledError,
+    );
     return queryState;
   }
 
@@ -695,27 +691,16 @@ export class MappingTestState {
     this.test.setAssert(this.assertionState.assert);
   }
 
-  setExecutionPlan = (val: object | undefined): void => {
-    this.executionPlan = val;
-  };
-
   *generatePlan(): GeneratorFn<void> {
     try {
-      const query = this.queryState.query;
-      const runtime = this.inputDataState.runtime;
-      if (!this.isGeneratingPlan) {
-        this.isGeneratingPlan = true;
-        const plan = (yield flowResult(
-          this.editorStore.graphState.graphManager.generateExecutionPlan(
-            this.editorStore.graphState.graph,
-            this.mappingEditorState.mapping,
-            query,
-            runtime,
-            CLIENT_VERSION.VX_X_X,
-          ),
-        )) as object;
-        this.setExecutionPlan(plan);
-      }
+      this.isGeneratingPlan = true;
+      yield flowResult(
+        this.executionPlanState.generatePlan(
+          this.mappingEditorState.mapping,
+          this.queryState.query,
+          this.inputDataState.runtime,
+        ),
+      );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.EXECUTION_PROBLEM,

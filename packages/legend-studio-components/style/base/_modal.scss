@@ -90,6 +90,20 @@
       color: var(--color-light-grey-50);
     }
   }
+
+  &__footer__close-btn {
+    border-color: var(--color-blue-200);
+    background: var(--color-blue-300);
+  }
+}
+
+.modal.modal--scrollable {
+  height: 100%;
+
+  .modal__body {
+    height: calc(100% - 3.6rem);
+    overflow-y: auto;
+  }
 }
 
 .modal.modal--dark {
@@ -139,6 +153,11 @@
 
   &__content {
     max-width: 100vw !important;
+  }
+
+  &__content--scrollable {
+    max-width: 100vw !important;
+    height: 100%;
   }
 
   .modal__body {

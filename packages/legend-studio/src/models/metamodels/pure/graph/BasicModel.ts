@@ -15,8 +15,10 @@
  */
 
 import { observable, computed, action, flow, makeObservable } from 'mobx';
-import type { Clazz } from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  ActionState,
+  assertNonEmptyString,
   UnsupportedOperationError,
   getClass,
   guaranteeNonNullable,
@@ -52,6 +54,11 @@ import { ServiceStore } from '../model/packageableElements/store/relational/mode
 import { PureGraphExtension } from './PureGraphExtension';
 import { PrimitiveType } from '../model/packageableElements/domain/PrimitiveType';
 import { DataType } from '../model/packageableElements/domain/DataType';
+import {
+  isValidFullPath,
+  isValidPath,
+  resolvePackagePathAndElementName,
+} from '../../../MetaModelUtils';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -76,16 +83,19 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   FileGenerationSpecification,
 ]);
 
+/**
+ * Since this is the basis of the Pure graph itself, it shares many methods with the graph.
+ * But the graph holds references to many basic graphs and expose those to outside consumers
+ * as if it is one graph.
+ *
+ * As such, to avoid confusion, we add `Own` to methods in basic graph for methods that only
+ * deal with elements belonging to the basic graph.
+ */
 export abstract class BasicModel {
   root: Package;
-  isBuilt = false;
-  failedToBuild = false;
+  buildState = ActionState.create();
+
   private readonly extensions: PureGraphExtension<PackageableElement>[] = [];
-
-  setFailedToBuild(failedToBuild: boolean): void {
-    this.failedToBuild = failedToBuild;
-  }
-
   private elementSectionMap = new Map<string, Section>();
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
@@ -134,10 +144,6 @@ export abstract class BasicModel {
       | 'diagramsIndex'
       | 'extensions'
     >(this, {
-      root: observable,
-      isBuilt: observable,
-      failedToBuild: observable,
-      setFailedToBuild: action,
       elementSectionMap: observable,
       sectionIndicesIndex: observable,
       profilesIndex: observable,
@@ -152,45 +158,49 @@ export abstract class BasicModel {
       generationSpecificationsIndex: observable,
       fileGenerationsIndex: observable,
       diagramsIndex: observable,
-      sectionIndices: computed,
       extensions: observable,
-      profiles: computed,
-      enumerations: computed,
-      measures: computed,
-      units: computed,
-      classes: computed,
-      types: computed,
-      associations: computed,
-      functions: computed,
-      stores: computed,
-      flatDatas: computed,
-      databases: computed,
-      serviceStores: computed,
-      mappings: computed,
-      services: computed,
-      diagrams: computed,
-      runtimes: computed,
-      connections: computed,
-      fileGenerations: computed,
-      generationSpecifications: computed,
-      setSection: action,
-      setSectionIndex: action,
-      setProfile: action,
-      setType: action,
-      setAssociation: action,
-      setFunction: action,
-      setStore: action,
-      setMapping: action,
-      setConnection: action,
-      setRuntime: action,
-      setService: action,
-      setGenerationSpecification: action,
-      setFileGeneration: action,
-      setDiagram: action,
-      allElements: computed,
-      removeElement: action,
-      setIsBuilt: action,
-      deleteSectionIndex: action,
+
+      ownSectionIndices: computed,
+      ownProfiles: computed,
+      ownEnumerations: computed,
+      ownMeasures: computed,
+      ownUnits: computed,
+      ownClasses: computed,
+      ownTypes: computed,
+      ownAssociations: computed,
+      ownFunctions: computed,
+      ownStores: computed,
+      ownFlatDatas: computed,
+      ownDatabases: computed,
+      ownServiceStores: computed,
+      ownMappings: computed,
+      ownServices: computed,
+      ownDiagrams: computed,
+      ownRuntimes: computed,
+      ownConnections: computed,
+      ownFileGenerations: computed,
+      ownGenerationSpecifications: computed,
+      allOwnElements: computed,
+
+      dispose: flow,
+
+      setOwnSection: action,
+      setOwnSectionIndex: action,
+      setOwnProfile: action,
+      setOwnType: action,
+      setOwnAssociation: action,
+      setOwnFunction: action,
+      setOwnStore: action,
+      setOwnMapping: action,
+      setOwnConnection: action,
+      setOwnRuntime: action,
+      setOwnService: action,
+      setOwnGenerationSpecification: action,
+      setOwnFileGeneration: action,
+      setOwnDiagram: action,
+      deleteOwnElement: action,
+      renameOwnElement: action,
+      TEMP__deleteOwnSectionIndex: action,
     });
 
     this.root = new Package(rootPackageName);
@@ -211,78 +221,78 @@ export abstract class BasicModel {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  get sectionIndices(): SectionIndex[] {
+  get ownSectionIndices(): SectionIndex[] {
     return Array.from(this.sectionIndicesIndex.values());
   }
-  get profiles(): Profile[] {
+  get ownProfiles(): Profile[] {
     return Array.from(this.profilesIndex.values());
   }
-  get enumerations(): Enumeration[] {
+  get ownEnumerations(): Enumeration[] {
     return Array.from(this.typesIndex.values()).filter(
       (type: Type): type is Enumeration => type instanceof Enumeration,
     );
   }
-  get measures(): Measure[] {
+  get ownMeasures(): Measure[] {
     return Array.from(this.typesIndex.values()).filter(
       (type: Type): type is Measure => type instanceof Measure,
     );
   }
-  get units(): Unit[] {
+  get ownUnits(): Unit[] {
     return Array.from(this.typesIndex.values()).filter(
       (type: Type): type is Unit => type instanceof Unit,
     );
   }
-  get classes(): Class[] {
+  get ownClasses(): Class[] {
     return Array.from(this.typesIndex.values()).filter(
       (type: Type): type is Class => type instanceof Class,
     );
   }
-  get types(): Type[] {
+  get ownTypes(): Type[] {
     return Array.from(this.typesIndex.values());
   }
-  get associations(): Association[] {
+  get ownAssociations(): Association[] {
     return Array.from(this.associationsIndex.values());
   }
-  get functions(): ConcreteFunctionDefinition[] {
+  get ownFunctions(): ConcreteFunctionDefinition[] {
     return Array.from(this.functionsIndex.values());
   }
-  get stores(): Store[] {
+  get ownStores(): Store[] {
     return Array.from(this.storesIndex.values());
   }
-  get flatDatas(): FlatData[] {
+  get ownFlatDatas(): FlatData[] {
     return Array.from(this.storesIndex.values()).filter(
       (store: Store): store is FlatData => store instanceof FlatData,
     );
   }
-  get databases(): Database[] {
+  get ownDatabases(): Database[] {
     return Array.from(this.storesIndex.values()).filter(
       (store: Store): store is Database => store instanceof Database,
     );
   }
-  get serviceStores(): ServiceStore[] {
+  get ownServiceStores(): ServiceStore[] {
     return Array.from(this.storesIndex.values()).filter(
       (store: Store): store is ServiceStore => store instanceof ServiceStore,
     );
   }
-  get mappings(): Mapping[] {
+  get ownMappings(): Mapping[] {
     return Array.from(this.mappingsIndex.values());
   }
-  get services(): Service[] {
+  get ownServices(): Service[] {
     return Array.from(this.servicesIndex.values());
   }
-  get diagrams(): Diagram[] {
+  get ownDiagrams(): Diagram[] {
     return Array.from(this.diagramsIndex.values());
   }
-  get runtimes(): PackageableRuntime[] {
+  get ownRuntimes(): PackageableRuntime[] {
     return Array.from(this.runtimesIndex.values());
   }
-  get connections(): PackageableConnection[] {
+  get ownConnections(): PackageableConnection[] {
     return Array.from(this.connectionsIndex.values());
   }
-  get fileGenerations(): FileGenerationSpecification[] {
+  get ownFileGenerations(): FileGenerationSpecification[] {
     return Array.from(this.fileGenerationsIndex.values());
   }
-  get generationSpecifications(): GenerationSpecification[] {
+  get ownGenerationSpecifications(): GenerationSpecification[] {
     return Array.from(this.generationSpecificationsIndex.values());
   }
 
@@ -304,7 +314,7 @@ export abstract class BasicModel {
     return extensions[0] as PureGraphExtension<T>;
   }
 
-  getSection = (path: string): Section | undefined =>
+  getOwnSection = (path: string): Section | undefined =>
     this.elementSectionMap.get(path);
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getOwnSectionIndex = (path: string): SectionIndex | undefined =>
@@ -360,51 +370,54 @@ export abstract class BasicModel {
     return extension.getElement(path);
   }
 
-  setSection(path: string, val: Section): void {
+  setOwnSection(path: string, val: Section): void {
     this.elementSectionMap.set(path, val);
   }
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  setSectionIndex(path: string, val: SectionIndex): void {
+  setOwnSectionIndex(path: string, val: SectionIndex): void {
     this.sectionIndicesIndex.set(path, val);
   }
-  setProfile(path: string, val: Profile): void {
+  setOwnProfile(path: string, val: Profile): void {
     this.profilesIndex.set(path, val);
   }
-  setType(path: string, val: Type): void {
+  setOwnType(path: string, val: Type): void {
     this.typesIndex.set(path, val);
   }
-  setAssociation(path: string, val: Association): void {
+  setOwnAssociation(path: string, val: Association): void {
     this.associationsIndex.set(path, val);
   }
-  setFunction(path: string, val: ConcreteFunctionDefinition): void {
+  setOwnFunction(path: string, val: ConcreteFunctionDefinition): void {
     this.functionsIndex.set(path, val);
   }
-  setStore(path: string, val: Store): void {
+  setOwnStore(path: string, val: Store): void {
     this.storesIndex.set(path, val);
   }
-  setMapping(path: string, val: Mapping): void {
+  setOwnMapping(path: string, val: Mapping): void {
     this.mappingsIndex.set(path, val);
   }
-  setConnection(path: string, val: PackageableConnection): void {
+  setOwnConnection(path: string, val: PackageableConnection): void {
     this.connectionsIndex.set(path, val);
   }
-  setRuntime(path: string, val: PackageableRuntime): void {
+  setOwnRuntime(path: string, val: PackageableRuntime): void {
     this.runtimesIndex.set(path, val);
   }
-  setService(path: string, val: Service): void {
+  setOwnService(path: string, val: Service): void {
     this.servicesIndex.set(path, val);
   }
-  setGenerationSpecification(path: string, val: GenerationSpecification): void {
+  setOwnGenerationSpecification(
+    path: string,
+    val: GenerationSpecification,
+  ): void {
     this.generationSpecificationsIndex.set(path, val);
   }
-  setFileGeneration(path: string, val: FileGenerationSpecification): void {
+  setOwnFileGeneration(path: string, val: FileGenerationSpecification): void {
     this.fileGenerationsIndex.set(path, val);
   }
-  setDiagram(path: string, val: Diagram): void {
+  setOwnDiagram(path: string, val: Diagram): void {
     this.diagramsIndex.set(path, val);
   }
 
-  setElementInExtension<T extends PackageableElement>(
+  setOwnElementInExtension<T extends PackageableElement>(
     path: string,
     val: T,
     extensionElementClass: Clazz<T>,
@@ -414,23 +427,23 @@ export abstract class BasicModel {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  get allElements(): PackageableElement[] {
+  get allOwnElements(): PackageableElement[] {
     this.extensions.flatMap((extension) => extension.elements);
     return [
-      ...this.profiles,
-      ...this.enumerations,
-      ...this.measures,
-      ...this.classes,
-      ...this.associations,
-      ...this.functions,
-      ...this.stores,
-      ...this.mappings,
-      ...this.services,
-      ...this.diagrams,
-      ...this.runtimes,
-      ...this.connections,
-      ...this.generationSpecifications,
-      ...this.fileGenerations,
+      ...this.ownProfiles,
+      ...this.ownEnumerations,
+      ...this.ownMeasures,
+      ...this.ownClasses,
+      ...this.ownAssociations,
+      ...this.ownFunctions,
+      ...this.ownStores,
+      ...this.ownMappings,
+      ...this.ownServices,
+      ...this.ownDiagrams,
+      ...this.ownRuntimes,
+      ...this.ownConnections,
+      ...this.ownGenerationSpecifications,
+      ...this.ownFileGenerations,
       ...this.extensions.flatMap((extension) => extension.elements),
     ];
   }
@@ -439,11 +452,11 @@ export abstract class BasicModel {
    * Dispose the current graph and any potential reference from parts outside of the graph to the graph
    * This is a MUST to prevent memory-leak as we use referneces to link between objects instead of string pointers
    */
-  dispose = flow(function* (this: BasicModel, logger: Logger, quiet?: boolean) {
+  *dispose(logger: Logger, quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
-    if (this.allElements.length) {
+    if (this.allOwnElements.length) {
       yield Promise.all<void>(
-        this.allElements.map(
+        this.allOwnElements.map(
           (element) =>
             new Promise((resolve) =>
               setTimeout(() => {
@@ -462,30 +475,24 @@ export abstract class BasicModel {
         'ms',
       );
     }
-  });
+  }
 
-  isRoot = (pack: Package | undefined): boolean => pack === this.root;
-
-  buildPackageString = (
-    packageName: string | undefined,
+  buildPath = (
+    packagePath: string | undefined,
     name: string | undefined,
   ): string =>
     `${guaranteeNonNullable(
-      packageName,
-      'Package name is required',
+      packagePath,
+      'Package path is required',
     )}${ELEMENT_PATH_DELIMITER}${guaranteeNonNullable(
       name,
       'Name is required',
     )}`;
 
-  getOrCreatePackageWithPackageName = (
-    packageName: string | undefined,
-  ): Package =>
-    Package.getOrCreatePackage(
-      this.root,
-      guaranteeNonNullable(packageName, 'Package name is required'),
-      true,
-    );
+  getOrCreatePackage = (packagePath: string | undefined): Package => {
+    assertNonEmptyString(packagePath, 'Package path is required');
+    return Package.getOrCreatePackage(this.root, packagePath, true);
+  };
 
   getNullablePackage = (path: string): Package | undefined =>
     !path
@@ -495,7 +502,7 @@ export abstract class BasicModel {
         );
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  getNullableElement(
+  getOwnNullableElement(
     path: string,
     includePackage?: boolean,
   ): PackageableElement | undefined {
@@ -529,7 +536,7 @@ export abstract class BasicModel {
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  removeElement(element: PackageableElement): void {
+  deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
       element.package.deleteElement(element);
     }
@@ -545,7 +552,7 @@ export abstract class BasicModel {
         }
         element.nonCanonicalUnits.forEach((unit) =>
           this.typesIndex.delete(unit.path),
-        ); // also delete all related units
+        );
       }
     } else if (element instanceof Association) {
       this.associationsIndex.delete(element.path);
@@ -566,21 +573,163 @@ export abstract class BasicModel {
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(element.path);
     } else if (element instanceof Package) {
-      element.children.forEach((el) => this.removeElement(el));
+      element.children.forEach((el) => this.deleteOwnElement(el));
     } else {
       const extension = this.getExtensionForElementClass(
         getClass<PackageableElement>(element),
       );
-      extension.removeElement(element.path);
+      extension.deleteElement(element.path);
     }
   }
 
-  setIsBuilt(built: boolean): void {
-    this.isBuilt = built;
+  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
+  renameOwnElement(element: PackageableElement, newPath: string): void {
+    const elementCurrentPath = element.path;
+    // validation before renaming
+    if (elementCurrentPath === newPath) {
+      return;
+    }
+    if (!newPath) {
+      throw new UnsupportedOperationError(
+        `Can't rename element '${elementCurrentPath} to '${newPath}': path is empty'`,
+      );
+    }
+    if (
+      (element instanceof Package && !isValidPath(newPath)) ||
+      (!(element instanceof Package) && !isValidFullPath(newPath))
+    ) {
+      throw new UnsupportedOperationError(
+        `Can't rename element '${elementCurrentPath} to '${newPath}': invalid path'`,
+      );
+    }
+    const existingElement = this.getOwnNullableElement(newPath, true);
+    if (existingElement) {
+      throw new UnsupportedOperationError(
+        `Can't rename element '${elementCurrentPath} to '${newPath}': element with the same path already existed'`,
+      );
+    }
+    const [packagePath, elementName] =
+      resolvePackagePathAndElementName(newPath);
+
+    // if we're not renaming package, we can simply add new package
+    // if the element new package does not exist. For renaming package
+    // it's a little bit more complicated as we need to rename its children
+    // we will handle this case later
+    if (!(element instanceof Package)) {
+      const parentPackage =
+        this.getNullablePackage(packagePath) ??
+        (packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root);
+      // update element name
+      element.setName(elementName);
+      // update element package if needed
+      if (element.package !== parentPackage) {
+        element.package?.deleteElement(element);
+        element.setPackage(parentPackage);
+        parentPackage.addChild(element);
+      }
+    }
+
+    // update index in the graph
+    if (element instanceof Mapping) {
+      this.mappingsIndex.delete(elementCurrentPath);
+      this.mappingsIndex.set(newPath, element);
+    } else if (element instanceof Store) {
+      this.storesIndex.delete(elementCurrentPath);
+      this.storesIndex.set(newPath, element);
+    } else if (element instanceof Type) {
+      this.typesIndex.delete(elementCurrentPath);
+      this.typesIndex.set(newPath, element);
+      if (element instanceof Measure) {
+        if (element.canonicalUnit) {
+          this.typesIndex.delete(element.canonicalUnit.path);
+          this.typesIndex.set(
+            element.canonicalUnit.path.replace(elementCurrentPath, newPath),
+            element.canonicalUnit,
+          );
+        }
+        element.nonCanonicalUnits.forEach((unit) => {
+          this.typesIndex.delete(unit.path);
+          this.typesIndex.set(
+            unit.path.replace(elementCurrentPath, newPath),
+            unit,
+          );
+        });
+      }
+    } else if (element instanceof Association) {
+      this.associationsIndex.delete(elementCurrentPath);
+      this.associationsIndex.set(newPath, element);
+    } else if (element instanceof Profile) {
+      this.profilesIndex.delete(elementCurrentPath);
+      this.profilesIndex.set(newPath, element);
+    } else if (element instanceof ConcreteFunctionDefinition) {
+      this.functionsIndex.delete(elementCurrentPath);
+      this.functionsIndex.set(newPath, element);
+    } else if (element instanceof Diagram) {
+      this.diagramsIndex.delete(elementCurrentPath);
+      this.diagramsIndex.set(newPath, element);
+    } else if (element instanceof Service) {
+      this.servicesIndex.delete(elementCurrentPath);
+      this.servicesIndex.set(newPath, element);
+    } else if (element instanceof PackageableRuntime) {
+      this.runtimesIndex.delete(elementCurrentPath);
+      this.runtimesIndex.set(newPath, element);
+    } else if (element instanceof PackageableConnection) {
+      this.connectionsIndex.delete(elementCurrentPath);
+      this.connectionsIndex.set(newPath, element);
+    } else if (element instanceof FileGenerationSpecification) {
+      this.fileGenerationsIndex.delete(elementCurrentPath);
+      this.fileGenerationsIndex.set(newPath, element);
+    } else if (element instanceof GenerationSpecification) {
+      this.generationSpecificationsIndex.delete(elementCurrentPath);
+      this.generationSpecificationsIndex.set(newPath, element);
+    } else if (element instanceof Package) {
+      // Since we will modify the package name, we need to first store the original
+      // paths of all of its children
+      const childElements = new Map<string, PackageableElement>();
+      element.children.forEach((childElement) => {
+        childElements.set(childElement.path, childElement);
+      });
+      // update element name
+      element.setName(elementName);
+      if (!element.package) {
+        throw new IllegalStateError(`Can't rename root package`);
+      }
+      /**
+       * Update element package if needed.
+       *
+       * NOTE: to be clean, first completely remove the package from its parent package
+       * Only then would we find or create the new parent package. This way, if we rename
+       * package `example::something` to `example::something::somethingElse`, we will not
+       * end up in a loop. If we did not first remove the package from its parent package
+       * we would end up having the `somethingElse` package containing itself as a child.
+       */
+      const currentParentPackage = element.package;
+      if (currentParentPackage !== this.getNullablePackage(packagePath)) {
+        currentParentPackage.deleteElement(element);
+        const newParentPackage =
+          packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
+        element.setPackage(newParentPackage);
+        newParentPackage.addChild(element);
+      }
+      childElements.forEach((childElement, childElementOriginalPath) => {
+        this.renameOwnElement(
+          childElement,
+          childElementOriginalPath.replace(elementCurrentPath, newPath),
+        );
+      });
+    } else {
+      const extension = this.getExtensionForElementClass(
+        getClass<PackageableElement>(element),
+      );
+      extension.renameElement(elementCurrentPath, newPath);
+    }
   }
 
-  // TODO: this will be removed once we fully support section index in SDLC flow
-  deleteSectionIndex(): void {
+  /**
+   * TODO: this will be removed once we fully support section index in SDLC flow
+   * @deprecated
+   */
+  TEMP__deleteOwnSectionIndex(): void {
     this.sectionIndicesIndex.forEach((sectionIndex) => {
       sectionIndex.setIsDeleted(true);
       this.sectionIndicesIndex.delete(sectionIndex.path);

@@ -35,10 +35,10 @@ import type { ProjectConfiguration } from '../models/sdlc/models/configuration/P
 import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { Revision } from '../models/sdlc/models/revision/Revision';
 import {
-  ROUTE_PATTERN,
+  LEGEND_STUDIO_ROUTE_PATTERN,
   generateEditorRoute,
   URL_PATH_PLACEHOLDER,
-} from '../stores/Router';
+} from '../stores/LegendStudioRouter';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -53,6 +53,7 @@ import type { GenerationConfigurationDescription } from '../models/metamodels/pu
 import { PluginManager } from '../application/PluginManager';
 import type { ApplicationConfig } from '../stores/ApplicationConfig';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import { flowResult } from 'mobx';
 
 export const SDLC_TestData = {
   project: {
@@ -287,13 +288,13 @@ export const setUpEditor = async (
       mockedEditorStore.graphState.graphManager,
       'getAvailableGenerationConfigurationDescriptions',
     )
-    .mockResolvedValue(availableGenerationDescriptions);
+    .mockResolvedValue(flowResult(availableGenerationDescriptions));
   jest
     .spyOn(
       mockedEditorStore.graphState.graphManager,
       'getAvailableImportConfigurationDescriptions',
     )
-    .mockResolvedValue(availableImportDescriptions);
+    .mockResolvedValue(flowResult(availableImportDescriptions));
   // skip font loader (as we have no network access in test)
   mockedEditorStore.preloadTextEditorFont = jest.fn();
   // mock change detections (since we do not test them now)
@@ -313,7 +314,7 @@ export const setUpEditor = async (
     <Route
       exact={true}
       strict={true}
-      path={ROUTE_PATTERN.EDIT}
+      path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT}
       component={Editor}
     />
   );
@@ -342,20 +343,27 @@ export const setUpEditor = async (
   );
   // assert immutable models have been model
   await waitFor(() =>
-    expect(mockedEditorStore.graphState.systemModel.isBuilt).toBeTrue(),
+    expect(
+      mockedEditorStore.graphState.systemModel.buildState.hasSucceeded,
+    ).toBeTrue(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.dependencyManager.isBuilt,
+      mockedEditorStore.graphState.graph.dependencyManager.buildState
+        .hasSucceeded,
     ).toBeTrue(),
   );
   // assert main model has been build
   await waitFor(() =>
-    expect(mockedEditorStore.graphState.graph.isBuilt).toBeTrue(),
+    expect(
+      mockedEditorStore.graphState.graph.buildState.hasSucceeded,
+    ).toBeTrue(),
   );
   // assert explorer trees have been built and rendered
   await waitFor(() =>
-    expect(mockedEditorStore.explorerTreeState.isBuilt).toBeTrue(),
+    expect(
+      mockedEditorStore.explorerTreeState.buildState.hasCompleted,
+    ).toBeTrue(),
   );
   await waitFor(() => renderResult.getByTestId(CORE_TEST_ID.EXPLORER_TREES));
   return renderResult;

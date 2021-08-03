@@ -22,7 +22,9 @@ export enum V1_DatasourceSpecificationType {
   STATIC = 'static',
   H2_EMBEDDED = 'h2Embedded',
   SNOWFLAKE = 'snowflake',
+  BIGQUERY = 'bigQuery',
   H2_LOCAL = 'h2Local',
+  REDSHIFT = 'redshift',
   DELTALAKE = 'deltaLake',
 }
 
@@ -104,6 +106,40 @@ export class V1_SnowflakeDatasourceSpecification
       this.databaseName,
       this.cloudType ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
+    ]);
+  }
+}
+
+export class V1_RedshiftDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  databaseName!: string;
+  endpoint!: string;
+  port!: number;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.REDSHIFT_DATASOURCE_SPECIFICATION,
+      this.databaseName,
+      this.endpoint,
+      this.port.toString(),
+    ]);
+  }
+}
+
+export class V1_BigQueryDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  projectId!: string;
+  defaultDataset!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
+      this.projectId,
+      this.defaultDataset,
     ]);
   }
 }

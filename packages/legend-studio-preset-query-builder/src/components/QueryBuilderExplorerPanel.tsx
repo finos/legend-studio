@@ -50,6 +50,7 @@ import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   getQueryBuilderPropertyNodeData,
+  buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { prettyCamelCase } from '@finos/legend-studio-shared';
@@ -64,13 +65,76 @@ import {
   getClassPropertyIcon,
   PrimitiveType,
   useApplicationStore,
-  useEditorStore,
   PRIMITIVE_TYPE,
   ClassIcon,
   CheckIcon,
 } from '@finos/legend-studio';
 import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil';
 import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState';
+import { flowResult } from 'mobx';
+import { Dialog } from '@material-ui/core';
+
+const QueryBuilderExplorerPreviewDataModal = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const previewDataState = queryBuilderState.explorerState.previewDataState;
+    const close = (): void => previewDataState.setPreviewData(undefined);
+
+    return (
+      <Dialog
+        open={Boolean(previewDataState.previewData)}
+        onClose={close}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <div className="modal modal--dark editor-modal query-builder__explorer__preview-data-modal">
+          <div className="modal__header">
+            <div className="modal__title">
+              {prettyCamelCase(previewDataState.propertyName)}
+            </div>
+          </div>
+          <div className="modal__body query-builder__explorer__preview-data-modal__body">
+            {previewDataState.previewData && (
+              <table className="table">
+                <thead>
+                  <tr>
+                    {previewDataState.previewData.columns.map((column, idx) => (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <th key={idx} className="table__cell--left">
+                        {column}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {previewDataState.previewData.rows.map((row, rowIdx) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <tr key={rowIdx}>
+                      {row.values.map((value, idx) => (
+                        // eslint-disable-next-line react/no-array-index-key
+                        <td key={idx} className="table__cell--left">
+                          {value}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <div className="modal__footer">
+            <button className="btn modal__footer__close-btn" onClick={close}>
+              Close
+            </button>
+          </div>
+        </div>
+      </Dialog>
+    );
+  },
+);
 
 const QueryBuilderExplorerPropertyDragLayer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -94,9 +158,9 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
       return null;
     }
     return (
-      <div className="query-builder-tree__drag-preview-layer">
+      <div className="query-builder-explorer-tree__drag-preview-layer">
         <div
-          className="query-builder-tree__drag-preview"
+          className="query-builder-explorer-tree__drag-preview"
           // added some offset so the mouse doesn't overlap the label too much
           style={
             !currentPosition
@@ -145,7 +209,11 @@ const QueryBuilderExplorerContextMenu = observer(
             new QueryBuilderSimpleProjectionColumnState(
               projectionState.editorStore,
               projectionState,
-              node,
+              buildPropertyExpressionFromExplorerTreeNodeData(
+                queryBuilderState.explorerState.nonNullableTreeData,
+                node,
+                projectionState.editorStore.graphState.graph,
+              ),
             ),
           );
         }
@@ -194,7 +262,11 @@ const QueryBuilderExplorerContextMenu = observer(
               new QueryBuilderSimpleProjectionColumnState(
                 projectionState.editorStore,
                 projectionState,
-                nodeToAdd,
+                buildPropertyExpressionFromExplorerTreeNodeData(
+                  queryBuilderState.explorerState.nonNullableTreeData,
+                  nodeToAdd,
+                  projectionState.editorStore.graphState.graph,
+                ),
               ),
             );
           });
@@ -203,31 +275,20 @@ const QueryBuilderExplorerContextMenu = observer(
     };
 
     return (
-      <div ref={ref} className="query-builder-tree__context-menu">
+      <MenuContent ref={ref}>
         {node instanceof QueryBuilderExplorerTreePropertyNodeData &&
           !(node.type instanceof Class) && (
-            <div
-              className="query-builder-tree__context-menu__item"
-              onClick={addNodeToFetchStructure}
-            >
+            <MenuContentItem onClick={addNodeToFetchStructure}>
               Add Property to Fetch Structure
-            </div>
+            </MenuContentItem>
           )}
         {node.type instanceof Class && (
-          <div
-            className="query-builder-tree__context-menu__item"
-            onClick={addAllChildrenToFetchStructure}
-          >
+          <MenuContentItem onClick={addAllChildrenToFetchStructure}>
             Add All Properties to Fetch Structure
-          </div>
+          </MenuContentItem>
         )}
-        <div
-          className="query-builder-tree__context-menu__item"
-          onClick={viewType}
-        >
-          View Type
-        </div>
-      </div>
+        <MenuContentItem onClick={viewType}>View Type</MenuContentItem>
+      </MenuContent>
     );
   },
   { forwardRef: true },
@@ -237,11 +298,11 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {
     if (type.name === PRIMITIVE_TYPE.STRING) {
       return (
-        <StringTypeIcon className="query-builder-tree__icon query-builder-tree__icon__string" />
+        <StringTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__string" />
       );
     } else if (type.name === PRIMITIVE_TYPE.BOOLEAN) {
       return (
-        <BooleanTypeIcon className="query-builder-tree__icon query-builder-tree__icon__boolean" />
+        <BooleanTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__boolean" />
       );
     } else if (
       type.name === PRIMITIVE_TYPE.NUMBER ||
@@ -250,7 +311,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       type.name === PRIMITIVE_TYPE.DECIMAL
     ) {
       return (
-        <NumberTypeIcon className="query-builder-tree__icon query-builder-tree__icon__number" />
+        <NumberTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
       );
     } else if (
       type.name === PRIMITIVE_TYPE.DATE ||
@@ -258,7 +319,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       type.name === PRIMITIVE_TYPE.STRICTDATE
     ) {
       return (
-        <DateTypeIcon className="query-builder-tree__icon query-builder-tree__icon__time" />
+        <DateTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
       );
     }
   }
@@ -308,8 +369,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
     const allowPreview =
       node.mapped &&
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
-      !(node.property instanceof DerivedProperty) &&
-      node.type instanceof PrimitiveType;
+      node.type instanceof PrimitiveType &&
+      !node.isPartOfDerivedPropertyBranch;
     const nodeExpandIcon = isExpandable ? (
       node.isOpen ? (
         <ChevronDownIcon />
@@ -327,8 +388,15 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
         !(node.type instanceof PrimitiveType));
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
-    const previewData = (): void =>
-      applicationStore.notifyUnsupportedFeature('Preview Data');
+    const previewData = (): void => {
+      if (node instanceof QueryBuilderExplorerTreePropertyNodeData) {
+        flowResult(
+          queryBuilderState.fetchStructureState.projectionState.previewData(
+            node,
+          ),
+        ).catch(applicationStore.alertIllegalUnhandledError);
+      }
+    };
     // hide default HTML5 preview image
     useEffect(() => {
       dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
@@ -349,18 +417,23 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
             node={node}
           />
         }
-        disabled={!showContextMenu}
+        disabled={
+          !showContextMenu ||
+          // NOTE: this might make it hard to modularize
+          queryBuilderState.fetchStructureState.projectionState.hasParserError
+        }
         menuProps={{ elevation: 7 }}
         onOpen={onContextMenuOpen}
         onClose={onContextMenuClose}
       >
         <div
           className={clsx(
-            'tree-view__node__container query-builder-tree__node__container',
+            'tree-view__node__container query-builder-explorer-tree__node__container',
             {
-              'query-builder-tree__node__container--selected-from-context-menu':
+              'query-builder-explorer-tree__node__container--selected-from-context-menu':
                 isSelectedFromContextMenu,
-              'query-builder-tree__node__container--unmapped': !node.mapped,
+              'query-builder-explorer-tree__node__container--unmapped':
+                !node.mapped,
             },
           )}
           title={!node.mapped ? 'Property is not mapped' : undefined}
@@ -374,14 +447,14 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           {node instanceof QueryBuilderExplorerTreeRootNodeData && (
             // NOTE: since the root of the tree is the class, not the property, we want to display it differently
             <>
-              <div className="query-builder-tree__expand-icon">
+              <div className="query-builder-explorer-tree__expand-icon">
                 {nodeExpandIcon}
               </div>
-              <div className="tree-view__node__label query-builder-tree__root-node__label">
-                <div className="query-builder-tree__root-node__label__icon">
+              <div className="tree-view__node__label query-builder-explorer-tree__root-node__label">
+                <div className="query-builder-explorer-tree__root-node__label__icon">
                   <ClassIcon />
                 </div>
-                <div className="query-builder-tree__root-node__label__text">
+                <div className="query-builder-explorer-tree__root-node__label__text">
                   {node.label}
                 </div>
               </div>
@@ -389,19 +462,19 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           )}
           {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
             <>
-              <div className="tree-view__node__icon query-builder-tree__node__icon">
-                <div className="query-builder-tree__expand-icon">
+              <div className="tree-view__node__icon query-builder-explorer-tree__node__icon">
+                <div className="query-builder-explorer-tree__expand-icon">
                   {nodeExpandIcon}
                 </div>
-                <div className="query-builder-tree__type-icon">
+                <div className="query-builder-explorer-tree__type-icon">
                   {renderPropertyTypeIcon(node.type)}
                 </div>
               </div>
               <div
                 className={clsx(
-                  'tree-view__node__label query-builder-tree__node__label query-builder-tree__node__label--with-action',
+                  'tree-view__node__label query-builder-explorer-tree__node__label query-builder-explorer-tree__node__label--with-action',
                   {
-                    'query-builder-tree__node__label--with-preview':
+                    'query-builder-explorer-tree__node__label--with-preview':
                       allowPreview,
                   },
                 )}
@@ -411,7 +484,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                   : node.label}
                 {isDerivedProperty && (
                   <div
-                    className="query-builder-tree__node__label__derived-property"
+                    className="query-builder-explorer-tree__node__label__derived-property"
                     title="Property is derived and may require user to specify parameter values"
                   >
                     (...)
@@ -419,17 +492,20 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 )}
                 {isMultiple && (
                   <div
-                    className="query-builder-tree__node__label__multiple"
+                    className="query-builder-explorer-tree__node__label__multiple"
                     title="Multiple values of this property can cause row explosion"
                   >
                     *
                   </div>
                 )}
               </div>
-              <div className="query-builder-tree__node__actions">
+              <div className="query-builder-explorer-tree__node__actions">
                 {allowPreview && (
                   <button
-                    className="query-builder-tree__node__action"
+                    className="query-builder-explorer-tree__node__action"
+                    disabled={
+                      explorerState.previewDataState.isGeneratingPreviewData
+                    }
                     tabIndex={-1}
                     title="Preview Data"
                     onClick={previewData}
@@ -443,7 +519,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                   isMapped={node.mapped}
                   placement="bottom"
                 >
-                  <div className="query-builder-tree__node__action query-builder-tree__node__info">
+                  <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
                     <InfoCircleIcon />
                   </div>
                 </QueryBuilderPropertyInfoTooltip>
@@ -510,7 +586,7 @@ const QueryBuilderExplorerTreeNodeView = observer(
 const QueryBuilderExplorerTree = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const explorerState = queryBuilderState.explorerState;
     const treeData = explorerState.nonNullableTreeData;
     const onNodeSelect = (node: QueryBuilderExplorerTreeNodeData): void => {
@@ -568,7 +644,7 @@ const QueryBuilderExplorerTree = observer(
           TreeNodeContainer: QueryBuilderExplorerTreeNodeContainer,
           TreeNodeView: QueryBuilderExplorerTreeNodeView,
         }}
-        className="query-builder-tree__root"
+        className="query-builder-explorer-tree__root"
         treeData={treeData}
         onNodeSelect={onNodeSelect}
         getChildNodes={getChildNodes}
@@ -606,6 +682,10 @@ export const QueryBuilderExplorerPanel = observer(
         className={clsx('panel query-builder__explorer', {
           'query-builder__explorer--expanded':
             !queryBuilderState.querySetupState.showSetupPanel,
+          // NOTE: this might make it hard to modularize
+          backdrop__element:
+            queryBuilderState.fetchStructureState.projectionState
+              .hasParserError,
         })}
       >
         <div className="panel__header">
@@ -660,7 +740,7 @@ export const QueryBuilderExplorerPanel = observer(
             </DropdownMenu>
           </div>
         </div>
-        <div className="panel__content query-builder-tree__content">
+        <div className="panel__content query-builder-explorer-tree__content">
           <QueryBuilderExplorerPropertyDragLayer
             queryBuilderState={queryBuilderState}
           />
@@ -672,6 +752,9 @@ export const QueryBuilderExplorerPanel = observer(
           {explorerState.treeData && (
             <QueryBuilderExplorerTree queryBuilderState={queryBuilderState} />
           )}
+          <QueryBuilderExplorerPreviewDataModal
+            queryBuilderState={queryBuilderState}
+          />
         </div>
       </div>
     );

@@ -14,51 +14,53 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import SplitPane from 'react-split-pane';
-import { FaList, FaCodeBranch, FaRegWindowMaximize } from 'react-icons/fa';
+import {
+  FaList,
+  FaCodeBranch,
+  FaRegWindowMaximize,
+  FaUserSecret,
+} from 'react-icons/fa';
 import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
+import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
 import { CORE_TEST_ID } from '../../const';
-import {
-  ACTIVITY_MODE,
-  HOTKEY,
-  HOTKEY_MAP,
-  SIDE_BAR_RESIZE_SNAP_THRESHOLD,
-  DEFAULT_SIDE_BAR_SIZE,
-} from '../../stores/EditorConfig';
+import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx } from '@finos/legend-studio-components';
-import { NotificationSnackbar } from '../shared/NotificationSnackbar';
+import { isNonNullable } from '@finos/legend-studio-shared';
+import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from '../../stores/ViewerStore';
-import type { ViewerRouteParams } from '../../stores/Router';
-import { generateSetupRoute } from '../../stores/Router';
+import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { useApplicationStore } from '../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const ViewerStatusBar = observer(() => {
-  const params = useParams<ViewerRouteParams>();
-  const viewerState = useViewerStore();
+  const params = useParams<ViewerPathParams>();
+  const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const latestVersion = viewerState.onLatestVersion;
-  const currentRevision = viewerState.onCurrentRevision;
+  const latestVersion = viewerStore.onLatestVersion;
+  const currentRevision = viewerStore.onCurrentRevision;
   const statusBarInfo = params.revisionId ?? params.versionId ?? 'HEAD';
   const projectId = params.projectId;
   const currentProject = editorStore.sdlcState.currentProject;
   const versionBehindProjectHead =
-    viewerState.currentRevision &&
-    viewerState.version &&
+    viewerStore.currentRevision &&
+    viewerStore.version &&
     params.versionId &&
-    viewerState.currentRevision.id !== viewerState.version.revisionId;
+    viewerStore.currentRevision.id !== viewerStore.version.revisionId;
   const description = `${
     latestVersion
       ? versionBehindProjectHead
@@ -70,6 +72,9 @@ const ViewerStatusBar = observer(() => {
   }`;
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
+  const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
+    flowResult(editorStore.toggleTextMode()),
+  );
 
   return (
     <div
@@ -117,6 +122,20 @@ const ViewerStatusBar = observer(() => {
         >
           <FaRegWindowMaximize />
         </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__action__toggler',
+            {
+              'editor__status-bar__action editor__status-bar__action__toggler--active':
+                editorStore.isInGrammarTextMode,
+            },
+          )}
+          onClick={handleTextModeClick}
+          tabIndex={-1}
+          title={'Toggle text mode (F8)'}
+        >
+          <FaUserSecret />
+        </button>
       </div>
     </div>
   );
@@ -146,56 +165,68 @@ const ViewerActivityBar = observer(() => {
 });
 
 export const ViewerInner = observer(() => {
-  const params = useParams<ViewerRouteParams>();
+  const params = useParams<ViewerPathParams>();
   const projectId = params.projectId;
   const versionId = params.versionId;
   const revisionId = params.revisionId;
-  const viewerState = useViewerStore();
+  const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const allowOpeningElement =
     editorStore.sdlcState.currentProject &&
-    !editorStore.graphState.graph.failedToBuild &&
-    editorStore.graphState.graph.isBuilt;
-  const snapSideBar = (newSize: number | undefined): void => {
+    editorStore.graphState.graph.buildState.hasSucceeded;
+  const resizeSideBar = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
-      editorStore.setSideBarSize(
-        newSize < SIDE_BAR_RESIZE_SNAP_THRESHOLD
-          ? editorStore.sideBarSize > 0
-            ? 0
-            : DEFAULT_SIDE_BAR_SIZE
-          : newSize,
-      );
+      editorStore.sideBarDisplayState.setSize(newSize);
     }
   };
+  // Extensions
+  const extraEditorExtensionComponents =
+    editorStore.applicationStore.pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
+          [],
+      )
+      .filter(isNonNullable)
+      .map((config) => (
+        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+      ));
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys
   const keyMap = {
     [HOTKEY.OPEN_ELEMENT]: [HOTKEY_MAP.OPEN_ELEMENT],
+    [HOTKEY.TOGGLE_TEXT_MODE]: [HOTKEY_MAP.TOGGLE_TEXT_MODE],
   };
   const handlers = {
     [HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
       editorStore.searchElementCommandState.open(),
     ),
+    [HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(() => {
+      flowResult(editorStore.toggleTextMode()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }),
   };
 
   useEffect(() => {
     if (ref.current) {
-      editorStore.setMaxAuxPanelSize(ref.current.offsetHeight);
+      editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
     }
   }, [ref, editorStore, width, height]);
 
   useEffect(() => {
-    viewerState.internalizeEntityPath(params);
-  }, [viewerState, params]);
+    viewerStore.internalizeEntityPath(params);
+  }, [viewerStore, params]);
   // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
   // on the second call when we remove entity path from the route
   useEffect(() => {
-    viewerState
-      .init(projectId, versionId, revisionId)
-      .catch(applicationStore.alertIllegalUnhandledError);
-  }, [applicationStore, viewerState, projectId, versionId, revisionId]);
+    flowResult(viewerStore.init(projectId, versionId, revisionId)).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+  }, [applicationStore, viewerStore, projectId, versionId, revisionId]);
 
   return (
     <div className="app__page">
@@ -216,13 +247,14 @@ export const ViewerInner = observer(() => {
                 >
                   <SplitPane
                     split="vertical"
-                    onDragFinished={snapSideBar}
-                    size={editorStore.sideBarSize}
+                    onDragFinished={resizeSideBar}
+                    size={editorStore.sideBarDisplayState.size}
                     minSize={0}
                     maxSize={-600}
                   >
                     <SideBar />
-                    <EditPanel />
+                    {editorStore.isInFormMode && <EditPanel />}
+                    {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
                     <div />
                     <div />
                   </SplitPane>
@@ -230,6 +262,7 @@ export const ViewerInner = observer(() => {
               </div>
             </div>
             <ViewerStatusBar />
+            {extraEditorExtensionComponents}
             {allowOpeningElement && <ProjectSearchCommand />}
           </GlobalHotKeys>
         </div>

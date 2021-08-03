@@ -29,14 +29,14 @@ import { clsx, HammerIcon } from '@finos/legend-studio-components';
 import { GoSync } from 'react-icons/go';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import type { EditorRouteParams } from '../../stores/Router';
-import { generateSetupRoute } from '../../stores/Router';
+import type { EditorPathParams } from '../../stores/LegendStudioRouter';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
-  const params = useParams<EditorRouteParams>();
+  const params = useParams<EditorPathParams>();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const isInConflictResolutionMode = editorStore.isInConflictResolutionMode;
@@ -56,10 +56,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       .length;
   const configurationState = editorStore.projectConfigurationEditorState;
   const syncWithWorkspace = applicationStore.guaranteeSafeAction(() =>
-    editorStore.localChangesState.syncWithWorkspace(),
+    flowResult(editorStore.localChangesState.syncWithWorkspace()),
   );
   const syncStatusText =
-    editorStore.graphState.graph.failedToBuild ||
+    editorStore.graphState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
       : !editorStore.changeDetectionState.isChangeDetectionRunning
@@ -79,10 +79,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   // Conflict resolution
   const conflicts = editorStore.conflictResolutionState.conflicts.length;
   const acceptConflictResolution = applicationStore.guaranteeSafeAction(() =>
-    editorStore.conflictResolutionState.acceptConflictResolution(),
+    flowResult(editorStore.conflictResolutionState.acceptConflictResolution()),
   );
   const conflictResolutionStatusText =
-    editorStore.graphState.graph.failedToBuild ||
+    editorStore.graphState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
       : !editorStore.changeDetectionState.isChangeDetectionRunning
@@ -101,23 +101,24 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       : 'all conflicts resolved';
 
   // Other actions
-  const toggleAuxPanel = (): void => editorStore.toggleAuxPanel();
+  const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
   const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
-    editorStore.toggleTextMode(),
+    flowResult(editorStore.toggleTextMode()),
   );
   const compile = applicationStore.guaranteeSafeAction(
     editorStore.isInGrammarTextMode
-      ? (): Promise<void> => editorStore.graphState.globalCompileInTextMode()
+      ? (): Promise<void> =>
+          flowResult(editorStore.graphState.globalCompileInTextMode())
       : (): Promise<void> =>
           flowResult(editorStore.graphState.globalCompileInFormMode()),
   );
   const generate = applicationStore.guaranteeSafeAction(() =>
-    editorStore.graphState.graphGenerationState.globalGenerate(),
+    flowResult(editorStore.graphState.graphGenerationState.globalGenerate()),
   );
   const emptyGenerationEntities = applicationStore.guaranteeSafeAction(() =>
-    editorStore.graphState.graphGenerationState.clearGenerations(),
+    flowResult(editorStore.graphState.graphGenerationState.clearGenerations()),
   );
 
   return (
@@ -243,7 +244,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           disabled={
             editorStore.graphState.isApplicationUpdateOperationIsRunning ||
             actionsDisabled ||
-            !editorStore.graphState.graph.generationSpecifications.length
+            !editorStore.graphState.graph.ownGenerationSpecifications.length
           }
           onClick={generate}
           tabIndex={-1}
@@ -306,9 +307,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           className={clsx(
             'editor__status-bar__action editor__status-bar__action__toggler',
             {
-              'editor__status-bar__action__toggler--active': Boolean(
-                editorStore.auxPanelSize,
-              ),
+              'editor__status-bar__action__toggler--active':
+                editorStore.auxPanelDisplayState.isOpen,
             },
           )}
           onClick={toggleAuxPanel}

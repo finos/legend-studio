@@ -86,9 +86,9 @@ export const ModelLoader = observer(() => {
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
               editorStore.setIgnoreNavigationBlocking(true);
-              modelLoaderState
-                .loadModel()
-                .catch(applicationStore.alertIllegalUnhandledError);
+              flowResult(modelLoaderState.loadModel()).catch(
+                applicationStore.alertIllegalUnhandledError,
+              );
             },
           },
           {
@@ -99,9 +99,9 @@ export const ModelLoader = observer(() => {
         ],
       });
     } else {
-      modelLoaderState
-        .loadModel()
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(modelLoaderState.loadModel()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }
   };
   const updateModel = (val: string): void => modelLoaderState.setModelText(val);

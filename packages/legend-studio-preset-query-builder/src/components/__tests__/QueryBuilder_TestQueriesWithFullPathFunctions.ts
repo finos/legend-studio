@@ -393,8 +393,8 @@ export const lambda_input_projectionWithFullPathFunctions = {
                         },
                       ],
                       multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
+                        lowerBound: 3,
+                        upperBound: 3,
                       },
                     },
                     {
@@ -426,8 +426,8 @@ export const lambda_input_projectionWithFullPathFunctions = {
                         },
                       ],
                       multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
+                        lowerBound: 3,
+                        upperBound: 3,
                       },
                     },
                   ],
@@ -590,8 +590,8 @@ export const lambda_output_projectionWithFullPathFunctions = {
                         },
                       ],
                       multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
+                        lowerBound: 3,
+                        upperBound: 3,
                       },
                     },
                     {
@@ -623,8 +623,8 @@ export const lambda_output_projectionWithFullPathFunctions = {
                         },
                       ],
                       multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
+                        lowerBound: 3,
+                        upperBound: 3,
                       },
                     },
                   ],

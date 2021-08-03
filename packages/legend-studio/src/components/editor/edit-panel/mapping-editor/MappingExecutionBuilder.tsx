@@ -37,7 +37,7 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { NewServiceModal } from '../service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import { TAB_SIZE, EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import {
   guaranteeType,
   uniq,
@@ -65,6 +65,7 @@ import {
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
+import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -177,8 +178,8 @@ const MappingExecutionQueryEditor = observer(
       (setImplementation: SetImplementation | undefined): void => {
         // do all the necessary updates
         executionState.setExecutionResultText(undefined);
-        queryState
-          .updateLamba(
+        flowResult(
+          queryState.updateLamba(
             setImplementation
               ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
                   guaranteeType(
@@ -187,8 +188,8 @@ const MappingExecutionQueryEditor = observer(
                   ),
                 )
               : RawLambda.createStub(),
-          )
-          .catch(applicationStore.alertIllegalUnhandledError);
+          ),
+        ).catch(applicationStore.alertIllegalUnhandledError);
         hideClassMappingSelectorModal();
 
         // Attempt to generate data for input data panel as we pick the class mapping:
@@ -264,9 +265,9 @@ const MappingExecutionQueryEditor = observer(
     );
 
     const clearQuery = (): Promise<void> =>
-      executionState.queryState
-        .updateLamba(RawLambda.createStub())
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        executionState.queryState.updateLamba(RawLambda.createStub()),
+      ).catch(applicationStore.alertIllegalUnhandledError);
 
     return (
       <div className="panel mapping-execution-builder__query-panel">
@@ -572,24 +573,18 @@ export const MappingExecutionBuilder = observer(
     const { executionState } = props;
     const mappingEditorState = executionState.mappingEditorState;
     const applicationStore = useApplicationStore();
-    const { queryState, inputDataState, executionPlan } = executionState;
-    // plan
-    const closePlanViewer = (): void =>
-      executionState.setExecutionPlan(undefined);
+    const { queryState, inputDataState } = executionState;
     const generatePlan = applicationStore.guaranteeSafeAction(() =>
       flowResult(executionState.generatePlan()),
     );
-    const planText = executionState.executionPlan
-      ? JSON.stringify(executionState.executionPlan, undefined, TAB_SIZE)
-      : '';
     // execution
     const execute = applicationStore.guaranteeSafeAction(() =>
-      executionState.executeMapping(),
+      flowResult(executionState.executeMapping()),
     );
     const executionResultText = executionState.executionResultText;
     // actions
     const promote = applicationStore.guaranteeSafeAction(() =>
-      executionState.promoteToTest(),
+      flowResult(executionState.promoteToTest()),
     );
     const promoteToService = (): void =>
       executionState.setShowServicePathModal(true);
@@ -699,46 +694,18 @@ export const MappingExecutionBuilder = observer(
             </ReflexElement>
           </ReflexContainer>
         </div>
-        <Dialog
-          open={Boolean(executionPlan)}
-          onClose={closePlanViewer}
-          classes={{
-            root: 'editor-modal__root-container',
-            container: 'editor-modal__container',
-            paper: 'editor-modal__content',
-          }}
-        >
-          <div className="modal modal--dark editor-modal execution-plan-viewer">
-            <div className="modal__header">
-              <div className="modal__title">Execution Plan</div>
-            </div>
-            <div className="modal__body">
-              <TextInputEditor
-                inputValue={planText}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.JSON}
-                showMiniMap={true}
-              />
-            </div>
-            <div className="modal__footer">
-              <button
-                className="btn execution-plan-viewer__close-btn"
-                onClick={closePlanViewer}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Dialog>
+        <ExecutionPlanViewer
+          executionPlanState={executionState.executionPlanState}
+        />
         <NewServiceModal
           mapping={mappingEditorState.mapping}
           close={(): void => executionState.setShowServicePathModal(false)}
           showModal={executionState.showServicePathModal}
           promoteToService={(
             name: string,
-            packageName: string,
+            packagePath: string,
           ): Promise<void> =>
-            executionState.promoteToService(name, packageName)
+            flowResult(executionState.promoteToService(name, packagePath))
           }
           isReadOnly={mappingEditorState.isReadOnly}
         />

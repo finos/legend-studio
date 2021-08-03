@@ -102,6 +102,7 @@ import {
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -115,9 +116,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
       query: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
-      convertLambdaObjectToGrammarString: action,
-      convertLambdaGrammarStringToObject: action,
-      updateLamba: action,
+      updateLamba: flow,
     });
 
     this.editorStore = editorStore;
@@ -132,27 +131,22 @@ export class MappingExecutionQueryState extends LambdaEditorState {
     this.isInitializingLambda = val;
   }
 
-  updateLamba = flow(function* (
-    this: MappingExecutionQueryState,
-    val: RawLambda,
-  ) {
+  *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.query = val;
-    yield this.convertLambdaObjectToGrammarString(true);
-  });
+    yield flowResult(this.convertLambdaObjectToGrammarString(true));
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: MappingExecutionQueryState,
-    pretty?: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
     if (!this.query.isStub) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -170,10 +164,10 @@ export class MappingExecutionQueryState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
-  convertLambdaGrammarStringToObject(): Promise<void> {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
 }
@@ -418,9 +412,9 @@ export class MappingExecutionState {
   isGeneratingPlan = false;
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
-  executionPlan?: object;
   executionResultText?: string; // NOTE: stored as lossless JSON text
   showServicePathModal = false;
+  executionPlanState: ExecutionPlanState;
 
   constructor(
     editorStore: EditorStore,
@@ -430,15 +424,13 @@ export class MappingExecutionState {
     makeAutoObservable(this, {
       editorStore: false,
       mappingEditorState: false,
-      executionPlan: observable.ref,
+      executionPlanState: observable,
       setQueryState: action,
       setInputDataState: action,
       setExecutionResultText: action,
-      setExecutionPlan: action,
       setShowServicePathModal: action,
       setInputDataStateBasedOnSource: action,
       reset: action,
-      buildQueryWithClassMapping: flow,
       generatePlan: flow,
     });
 
@@ -454,6 +446,7 @@ export class MappingExecutionState {
       mappingEditorState.mapping,
       undefined,
     );
+    this.executionPlanState = new ExecutionPlanState(this.editorStore);
   }
 
   setQueryState = (val: MappingExecutionQueryState): void => {
@@ -464,9 +457,6 @@ export class MappingExecutionState {
   };
   setExecutionResultText = (val: string | undefined): void => {
     this.executionResultText = val;
-  };
-  setExecutionPlan = (val: object | undefined): void => {
-    this.executionPlan = val;
   };
   setShowServicePathModal = (val: boolean): void => {
     this.showServicePathModal = val;
@@ -543,7 +533,7 @@ export class MappingExecutionState {
     }
   }
 
-  promoteToTest = flow(function* (this: MappingExecutionState) {
+  *promoteToTest(): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       if (
@@ -562,7 +552,7 @@ export class MappingExecutionState {
           [inputData],
           assert,
         );
-        yield this.mappingEditorState.addTest(mappingTest);
+        yield flowResult(this.mappingEditorState.addTest(mappingTest));
         this.mappingEditorState.closeTab(this); // after promoting to test, remove the execution state
       }
     } catch (error: unknown) {
@@ -572,13 +562,12 @@ export class MappingExecutionState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  promoteToService = flow(function* (
-    this: MappingExecutionState,
-    packageName: string,
+  *promoteToService(
+    packagePath: string,
     serviceName: string,
-  ) {
+  ): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       if (
@@ -612,9 +601,7 @@ export class MappingExecutionState {
           );
           singleExecutionTest.asserts.push(testContainer);
           const servicePackage =
-            this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-              packageName,
-            );
+            this.editorStore.graphState.graph.getOrCreatePackage(packagePath);
           service.test = singleExecutionTest;
           servicePackage.addElement(service);
           this.editorStore.graphState.graph.addElement(service);
@@ -633,9 +620,9 @@ export class MappingExecutionState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  executeMapping = flow(function* (this: MappingExecutionState) {
+  *executeMapping(): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
@@ -645,15 +632,16 @@ export class MappingExecutionState {
         !this.isExecuting
       ) {
         this.isExecuting = true;
-        const result =
-          (yield this.editorStore.graphState.graphManager.executeMapping(
+        const result = (yield flowResult(
+          this.editorStore.graphState.graphManager.executeMapping(
             this.editorStore.graphState.graph,
             this.mappingEditorState.mapping,
             query,
             runtime,
             CLIENT_VERSION.VX_X_X,
             true,
-          )) as unknown as ExecutionResult;
+          ),
+        )) as ExecutionResult;
         this.setExecutionResultText(
           losslessStringify(result.values, undefined, TAB_SIZE),
         );
@@ -668,7 +656,7 @@ export class MappingExecutionState {
     } finally {
       this.isExecuting = false;
     }
-  });
+  }
 
   *generatePlan(): GeneratorFn<void> {
     try {
@@ -680,16 +668,13 @@ export class MappingExecutionState {
         !this.isGeneratingPlan
       ) {
         this.isGeneratingPlan = true;
-        const plan = (yield flowResult(
-          this.editorStore.graphState.graphManager.generateExecutionPlan(
-            this.editorStore.graphState.graph,
+        yield flowResult(
+          this.executionPlanState.generatePlan(
             this.mappingEditorState.mapping,
             query,
             runtime,
-            CLIENT_VERSION.VX_X_X,
           ),
-        )) as object;
-        this.setExecutionPlan(plan);
+        );
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -707,12 +692,14 @@ export class MappingExecutionState {
   ): GeneratorFn<void> {
     // do all the necessary updates
     this.setExecutionResultText(undefined);
-    yield this.queryState.updateLamba(
-      setImplementation
-        ? this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
-            guaranteeType(getMappingElementTarget(setImplementation), Class),
-          )
-        : RawLambda.createStub(),
+    yield flowResult(
+      this.queryState.updateLamba(
+        setImplementation
+          ? this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+              guaranteeType(getMappingElementTarget(setImplementation), Class),
+            )
+          : RawLambda.createStub(),
+      ),
     );
 
     // Attempt to generate data for input data panel as we pick the class mapping:

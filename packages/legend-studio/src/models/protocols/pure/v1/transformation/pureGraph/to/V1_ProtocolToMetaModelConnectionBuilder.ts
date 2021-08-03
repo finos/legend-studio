@@ -33,7 +33,7 @@ import { FlatData } from '../../../../../../metamodels/pure/model/packageableEle
 import { Database } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
 import { ModelStore } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/model/ModelStore';
 import type { PackageableElementReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { ModelChainConnection } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_ConnectionVisitor } from '../../../model/packageableElements/connection/V1_Connection';
@@ -89,7 +89,10 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       );
     }
     const modelConnection = new ModelChainConnection(
-      PackageableElementExplicitReference.create(this.context.graph.modelStore),
+      PackageableElementImplicitReference.create(
+        this.context.graph.modelStore,
+        '',
+      ),
     );
     modelConnection.mappings = connection.mappings.map(
       this.context.resolveMapping,
@@ -116,7 +119,10 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     );
     assertNonNullable(connection.url, 'JSON model connection data is missing');
     return new JsonModelConnection(
-      PackageableElementExplicitReference.create(this.context.graph.modelStore),
+      PackageableElementImplicitReference.create(
+        this.context.graph.modelStore,
+        '',
+      ),
       this.context.resolveClass(connection.class),
       connection.url,
     );
@@ -141,7 +147,10 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     );
     assertNonNullable(connection.url, 'XML model connection data is missing');
     return new XmlModelConnection(
-      PackageableElementExplicitReference.create(this.context.graph.modelStore),
+      PackageableElementImplicitReference.create(
+        this.context.graph.modelStore,
+        '',
+      ),
       this.context.resolveClass(connection.class),
       connection.url,
     );

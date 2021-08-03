@@ -16,6 +16,7 @@
 
 import { AbstractPlugin } from '@finos/legend-studio-shared';
 import type { IKeyboardEvent } from 'monaco-editor';
+import type { PluginManager } from '../application/PluginManager';
 import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
@@ -24,6 +25,8 @@ import type { MappingTestState } from './editor-state/element-editor-state/mappi
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
+
+export type EditorPluginSetup = (pluginManager: PluginManager) => Promise<void>;
 
 export type ApplicationPageRenderEntry = {
   urlPattern: string;
@@ -87,6 +90,11 @@ export type TEMP__ServiceQueryEditorRendererConfiguration = {
 export abstract class EditorPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'EditorPlugin';
 
+  /**
+   * NOTE: The application will call the setup method from all editor plugins concurrently.
+   */
+  getExtraEditorPluginSetups?(): EditorPluginSetup[];
+
   getExtraApplicationPageRenderEntries?(): ApplicationPageRenderEntry[];
 
   getExtraExplorerContextMenuItemRendererConfigurations?(): ExplorerContextMenuItemRendererConfiguration[];
@@ -100,6 +108,14 @@ export abstract class EditorPlugin extends AbstractPlugin {
   getExtraMappingExecutionQueryEditorRendererConfigurations?(): MappingExecutionQueryEditorRendererConfiguration[];
 
   getExtraMappingTestQueryEditorRendererConfigurations?(): MappingTestQueryEditorRendererConfiguration[];
+
+  /**
+   * Many system elements are included when building the graph, but only a few should
+   * be presented in the form view to user as selection options. This method will
+   * provide the allowed list of system element paths that we want the users to be
+   * able to see directly in selection/dropdown menus.
+   */
+  getExtraExposedSystemElementPath?(): string[];
 
   /**
    * NOTE: this is temporary since we want to eventually move Service out to its own DSL

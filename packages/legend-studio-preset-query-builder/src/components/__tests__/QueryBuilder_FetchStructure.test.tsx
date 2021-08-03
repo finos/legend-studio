@@ -132,7 +132,7 @@ test(
     const firstNameProperty = guaranteeType(
       fistNameCol,
       QueryBuilderSimpleProjectionColumnState,
-    ).propertyEditorState.propertyExpression.func;
+    ).propertyExpressionState.propertyExpression.func;
     expect(firstNameProperty).toBe(_personClass.getProperty('firstName'));
     const lastNameCol = guaranteeNonNullable(
       queryBuilderState.fetchStructureState.projectionState.columns.find(
@@ -142,7 +142,7 @@ test(
     const lastNameProperty = guaranteeType(
       lastNameCol,
       QueryBuilderSimpleProjectionColumnState,
-    ).propertyEditorState.propertyExpression.func;
+    ).propertyExpressionState.propertyExpression.func;
     expect(lastNameProperty).toBe(_personClass.getProperty('lastName'));
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
 
@@ -170,11 +170,11 @@ test(
     const legalNameColProperty = guaranteeType(
       legalNameCol,
       QueryBuilderSimpleProjectionColumnState,
-    ).propertyEditorState.propertyExpression.func;
+    ).propertyExpressionState.propertyExpression.func;
     expect(legalNameColProperty).toBe(_firmClass.getProperty('legalName'));
     const _firmPropertyExpression = guaranteeType(
       guaranteeType(legalNameCol, QueryBuilderSimpleProjectionColumnState)
-        .propertyEditorState.propertyExpression.parametersValues[0],
+        .propertyExpressionState.propertyExpression.parametersValues[0],
       AbstractPropertyExpression,
     );
     expect(_firmPropertyExpression.func).toBe(_personClass.getProperty('firm'));

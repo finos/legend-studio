@@ -1,5 +1,29 @@
 # @finos/legend-studio-shared
 
+## 0.0.24
+
+## 0.0.23
+
+## 0.0.22
+
+## 0.0.21
+
+## 0.0.20
+
+### Patch Changes
+
+- [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! -
+
+## 0.0.19
+
+## 0.0.18
+
+## 0.0.17
+
+### Patch Changes
+
+- [#293](https://github.com/finos/legend-studio/pull/293) [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502) Thanks [@akphi](https://github.com/akphi)! - Add method `printObject()` which can be used to stringify any object (deep-print is also supported via options). This is useful when we want to print out object in log or console when error occurs for debugging purpose.
+
 ## 0.0.16
 
 ## 0.0.15

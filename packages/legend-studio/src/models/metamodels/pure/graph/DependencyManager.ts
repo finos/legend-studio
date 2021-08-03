@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import type { Clazz } from '@finos/legend-studio-shared';
 import {
+  ActionState,
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-studio-shared';
@@ -45,26 +46,27 @@ import type {
 } from '../model/packageableElements/domain/Measure';
 import type { SectionIndex } from '../model/packageableElements/section/SectionIndex';
 
-export class DependencyModel extends BasicModel {
-  constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
+class DependencyModel extends BasicModel {
+  constructor(
+    extensionElementClasses: Clazz<PackageableElement>[],
+    root: Package,
+  ) {
     super(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT, extensionElementClasses);
+    this.root = root;
   }
 }
 
 export class DependencyManager {
   root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
   projectDependencyModelsIndex = new Map<string, BasicModel>();
-  isBuilt = false;
-  failedToBuild = false;
+  buildState = ActionState.create();
+
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     makeObservable(this, {
       root: observable,
       projectDependencyModelsIndex: observable,
-      isBuilt: observable,
-      failedToBuild: observable,
-      setFailedToBuild: action,
       allElements: computed,
       models: computed,
       profiles: computed,
@@ -84,14 +86,9 @@ export class DependencyManager {
       fileGenerations: computed,
       generationSpecifications: computed,
       sectionIndices: computed,
-      setIsBuilt: action,
     });
 
     this.extensionElementClasses = extensionElementClasses;
-  }
-
-  setFailedToBuild(failedToBuild: boolean): void {
-    this.failedToBuild = failedToBuild;
   }
 
   /**
@@ -101,10 +98,11 @@ export class DependencyManager {
     projectDependencyMetadataMap: Map<string, ProjectDependencyMetadata>,
   ): void {
     Array.from(projectDependencyMetadataMap.keys()).forEach((dependencyKey) => {
-      // Note: all dependency models will share the dependency manager package root.
-      const dependentModel = new DependencyModel(this.extensionElementClasses);
-      dependentModel.root = this.root; // make all dependency tree shares the same root
-      this.projectDependencyModelsIndex.set(dependencyKey, dependentModel);
+      // NOTE: all dependency models will share the dependency manager package root.
+      this.projectDependencyModelsIndex.set(
+        dependencyKey,
+        new DependencyModel(this.extensionElementClasses, this.root),
+      );
     });
   }
 
@@ -113,7 +111,7 @@ export class DependencyManager {
   }
 
   get allElements(): PackageableElement[] {
-    return this.models.flatMap((dep) => dep.allElements);
+    return this.models.flatMap((dep) => dep.allOwnElements);
   }
 
   get models(): BasicModel[] {
@@ -177,57 +175,57 @@ export class DependencyManager {
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   get profiles(): Profile[] {
-    return this.models.map((dep) => Array.from(dep.profiles)).flat();
+    return this.models.map((dep) => Array.from(dep.ownProfiles)).flat();
   }
   get enumerations(): Enumeration[] {
-    return this.models.map((dep) => Array.from(dep.enumerations)).flat();
+    return this.models.map((dep) => Array.from(dep.ownEnumerations)).flat();
   }
   get measures(): Measure[] {
-    return this.models.map((dep) => Array.from(dep.measures)).flat();
+    return this.models.map((dep) => Array.from(dep.ownMeasures)).flat();
   }
   get units(): Unit[] {
-    return this.models.map((dep) => Array.from(dep.units)).flat();
+    return this.models.map((dep) => Array.from(dep.ownUnits)).flat();
   }
   get classes(): Class[] {
-    return this.models.map((dep) => Array.from(dep.classes)).flat();
+    return this.models.map((dep) => Array.from(dep.ownClasses)).flat();
   }
   get types(): Type[] {
-    return this.models.map((dep) => Array.from(dep.types)).flat();
+    return this.models.map((dep) => Array.from(dep.ownTypes)).flat();
   }
   get associations(): Association[] {
-    return this.models.map((dep) => Array.from(dep.associations)).flat();
+    return this.models.map((dep) => Array.from(dep.ownAssociations)).flat();
   }
   get functions(): ConcreteFunctionDefinition[] {
-    return this.models.map((dep) => Array.from(dep.functions)).flat();
+    return this.models.map((dep) => Array.from(dep.ownFunctions)).flat();
   }
   get stores(): Store[] {
-    return this.models.map((dep) => Array.from(dep.stores)).flat();
+    return this.models.map((dep) => Array.from(dep.ownStores)).flat();
   }
   get mappings(): Mapping[] {
-    return this.models.map((dep) => Array.from(dep.mappings)).flat();
+    return this.models.map((dep) => Array.from(dep.ownMappings)).flat();
   }
   get services(): Service[] {
-    return this.models.map((dep) => Array.from(dep.services)).flat();
+    return this.models.map((dep) => Array.from(dep.ownServices)).flat();
   }
   get diagrams(): Diagram[] {
-    return this.models.map((dep) => Array.from(dep.diagrams)).flat();
+    return this.models.map((dep) => Array.from(dep.ownDiagrams)).flat();
   }
   get runtimes(): PackageableRuntime[] {
-    return this.models.map((dep) => Array.from(dep.runtimes)).flat();
+    return this.models.map((dep) => Array.from(dep.ownRuntimes)).flat();
   }
   get connections(): PackageableConnection[] {
-    return this.models.map((dep) => Array.from(dep.connections)).flat();
+    return this.models.map((dep) => Array.from(dep.ownConnections)).flat();
   }
   get fileGenerations(): FileGenerationSpecification[] {
-    return this.models.map((dep) => Array.from(dep.fileGenerations)).flat();
+    return this.models.map((dep) => Array.from(dep.ownFileGenerations)).flat();
   }
   get generationSpecifications(): GenerationSpecification[] {
     return this.models
-      .map((dep) => Array.from(dep.generationSpecifications))
+      .map((dep) => Array.from(dep.ownGenerationSpecifications))
       .flat();
   }
   get sectionIndices(): SectionIndex[] {
-    return this.models.map((dep) => Array.from(dep.sectionIndices)).flat();
+    return this.models.map((dep) => Array.from(dep.ownSectionIndices)).flat();
   }
 
   getModel(projectId: string): BasicModel {
@@ -242,12 +240,8 @@ export class DependencyManager {
     includePackage?: boolean,
   ): PackageableElement | undefined {
     const model = this.models.find((dep) =>
-      Boolean(dep.getNullableElement(path, includePackage)),
+      Boolean(dep.getOwnNullableElement(path, includePackage)),
     );
-    return model?.getNullableElement(path, includePackage);
-  }
-
-  setIsBuilt(built: boolean): void {
-    this.isBuilt = built;
+    return model?.getOwnNullableElement(path, includePackage);
   }
 }

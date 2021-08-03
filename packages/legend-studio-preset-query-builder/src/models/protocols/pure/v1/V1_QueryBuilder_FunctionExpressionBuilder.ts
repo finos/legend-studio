@@ -382,7 +382,7 @@ export const V1_buildProjectFunctionExpression = (
     `Can't build project() expression: project() expects 2 arguments`,
   );
 
-  let variablesFromTopLevelLambdas: V1_Variable[] = [];
+  let topLevelLambdaParameters: V1_Variable[] = [];
   const precedingExperession = parameters[0].accept_ValueSpecificationVisitor(
     new V1_ValueSpecificationBuilder(
       compileContext,
@@ -401,7 +401,7 @@ export const V1_buildProjectFunctionExpression = (
     V1_Collection,
     `Can't build project() expression: project() expects argument #1 to be a collection`,
   );
-  variablesFromTopLevelLambdas = columnExpressions.values
+  topLevelLambdaParameters = columnExpressions.values
     .filter(
       (value: V1_ValueSpecification): value is V1_Lambda =>
         value instanceof V1_Lambda,
@@ -410,7 +410,8 @@ export const V1_buildProjectFunctionExpression = (
     .flat();
 
   const variables = new Set<string>();
-  variablesFromTopLevelLambdas.forEach((variable) => {
+  // Make sure top-level lambdas have their lambda parameter types set properly
+  topLevelLambdaParameters.forEach((variable) => {
     if (!variables.has(variable.name) && !variable.class) {
       const variableExpression = new VariableExpression(
         variable.name,
@@ -468,7 +469,7 @@ export const V1_buildGroupByFunctionExpression = (
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] => {
-  let variablesFromTopLevelLambdas: V1_Variable[] = [];
+  let topLevelLambdaParameters: V1_Variable[] = [];
   assertTrue(
     parameters.length === 4,
     `Can't build groupBy() expression: groupBy() expects 3 arguments`,
@@ -493,7 +494,7 @@ export const V1_buildGroupByFunctionExpression = (
     V1_Collection,
     `Can't build groupBy() expression: groupBy() expects argument #1 to be a collection`,
   );
-  variablesFromTopLevelLambdas = columnExpressions.values
+  topLevelLambdaParameters = columnExpressions.values
     .filter(
       (value: V1_ValueSpecification): value is V1_Lambda =>
         value instanceof V1_Lambda,
@@ -508,23 +509,26 @@ export const V1_buildGroupByFunctionExpression = (
     V1_Collection,
     `Can't build groupBy() expression: groupBy() expects argument #2 to be a collection`,
   );
-  variablesFromTopLevelLambdas = aggregationExpressions.values
-    .filter(
-      (value: V1_ValueSpecification): value is V1_AppliedFunction =>
-        value instanceof V1_AppliedFunction &&
-        matchFunctionName(value.function, SUPPORTED_FUNCTIONS.TDS_AGG),
-    )
-    .map((value) => value.parameters)
-    .flat()
-    .filter(
-      (value: V1_ValueSpecification): value is V1_Lambda =>
-        value instanceof V1_Lambda,
-    )
-    .map((lambda) => lambda.parameters)
-    .flat();
+  topLevelLambdaParameters = topLevelLambdaParameters.concat(
+    aggregationExpressions.values
+      .filter(
+        (value: V1_ValueSpecification): value is V1_AppliedFunction =>
+          value instanceof V1_AppliedFunction &&
+          matchFunctionName(value.function, SUPPORTED_FUNCTIONS.TDS_AGG),
+      )
+      .map((value) => value.parameters)
+      .flat()
+      .filter(
+        (value: V1_ValueSpecification): value is V1_Lambda =>
+          value instanceof V1_Lambda,
+      )
+      .map((lambda) => lambda.parameters)
+      .flat(),
+  );
 
+  // Make sure top-level lambdas have their lambda parameter types set properly
   const variables = new Set<string>();
-  variablesFromTopLevelLambdas.forEach((variable) => {
+  topLevelLambdaParameters.forEach((variable) => {
     if (!variables.has(variable.name) && !variable.class) {
       const variableExpression = new VariableExpression(
         variable.name,

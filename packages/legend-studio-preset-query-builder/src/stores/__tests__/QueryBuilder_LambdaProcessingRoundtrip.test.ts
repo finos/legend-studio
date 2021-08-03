@@ -16,6 +16,7 @@
 
 import type { Entity } from '@finos/legend-studio';
 import {
+  buildGraphBasic,
   getTestApplicationConfig,
   PluginManager,
   getTestEditorStore,
@@ -93,12 +94,9 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       getTestApplicationConfig(),
       pluginManager,
     );
-    await editorStore.graphState.initializeSystem();
-    await editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      entities,
-      { TEMPORARY__keepSectionIndex: true },
-    );
+    await buildGraphBasic(entities, editorStore, {
+      TEMPORARY__keepSectionIndex: true,
+    });
     // roundtrip check
     const lambda = editorStore.graphState.graphManager.buildValueSpecification(
       lambdaJson,

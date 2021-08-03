@@ -22,17 +22,23 @@ import {
   testReferenceWithoutSection,
   testReferenceModification,
 } from '../__tests__/InferenceTestData';
-import { getTestEditorStore, excludeSectionIndex } from '../StoreTestUtils';
+import {
+  getTestEditorStore,
+  excludeSectionIndex,
+  buildGraphBasic,
+} from '../StoreTestUtils';
+import { flowResult } from 'mobx';
 
 test(unitTest('Infer default mapping element ID'), async () => {
   const editorStore = getTestEditorStore();
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
+  await buildGraphBasic(
     testInferenceDefaultMappingElementID as Entity[],
-    { TEMPORARY__keepSectionIndex: true },
+    editorStore,
+    {
+      TEMPORARY__keepSectionIndex: true,
+    },
   );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   expect(transformedEntities).toIncludeSameMembers(
@@ -44,12 +50,14 @@ test(
   unitTest('Import resolution throws when multiple matches found'),
   async () => {
     const editorStore = getTestEditorStore();
-    await editorStore.graphState.initializeSystem();
+    await flowResult(editorStore.graphState.initializeSystem());
     await expect(() =>
-      editorStore.graphState.graphManager.buildGraph(
-        editorStore.graphState.graph,
-        testImportResolutionMultipleMatchesFound as Entity[],
-        { TEMPORARY__keepSectionIndex: true },
+      flowResult(
+        editorStore.graphState.graphManager.buildGraph(
+          editorStore.graphState.graph,
+          testImportResolutionMultipleMatchesFound as Entity[],
+          { TEMPORARY__keepSectionIndex: true },
+        ),
       ),
     ).rejects.toThrow(
       `Can't resolve element with path 'A' - multiple matches found [test::A, test2::A]`,
@@ -63,12 +71,11 @@ test(
   ),
   async () => {
     const editorStore = getTestEditorStore();
-    await editorStore.graphState.initializeSystem();
-    await editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    await buildGraphBasic(
       testReferenceWithoutSection.original as Entity[],
+      editorStore,
     );
-    const transformedEntities = editorStore.graphState.graph.allElements.map(
+    const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
       (element) => editorStore.graphState.graphManager.elementToEntity(element),
     );
     expect(transformedEntities).toIncludeSameMembers(
@@ -82,11 +89,12 @@ test(
   async () => {
     // If the reference owner does not change, the serialized path is kept as user input
     let editorStore = getTestEditorStore();
-    await editorStore.graphState.initializeSystem();
-    await editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    await buildGraphBasic(
       testReferenceModification.original as Entity[],
-      { TEMPORARY__keepSectionIndex: true },
+      editorStore,
+      {
+        TEMPORARY__keepSectionIndex: true,
+      },
     );
     let enumeration =
       editorStore.graphState.graph.getEnumeration('test::tEnum');
@@ -94,7 +102,7 @@ test(
       editorStore.graphState.graph.getProfile('test::tProf').getTag('s4'),
     );
     expect(
-      editorStore.graphState.graph.allElements.map((element) =>
+      editorStore.graphState.graph.allOwnElements.map((element) =>
         editorStore.graphState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
@@ -104,18 +112,19 @@ test(
     );
     // If the reference owner changes, the serialized path is fully-resolved
     editorStore = getTestEditorStore();
-    await editorStore.graphState.initializeSystem();
-    await editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    await buildGraphBasic(
       testReferenceModification.original as Entity[],
-      { TEMPORARY__keepSectionIndex: true },
+      editorStore,
+      {
+        TEMPORARY__keepSectionIndex: true,
+      },
     );
     enumeration = editorStore.graphState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(
       editorStore.graphState.graph.getProfile('test2::tProf').getTag('s1'),
     );
     expect(
-      editorStore.graphState.graph.allElements.map((element) =>
+      editorStore.graphState.graph.allOwnElements.map((element) =>
         editorStore.graphState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(

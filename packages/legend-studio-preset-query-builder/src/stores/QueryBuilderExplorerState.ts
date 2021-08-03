@@ -19,18 +19,17 @@ import {
   guaranteeNonNullable,
   addUniqueEntry,
 } from '@finos/legend-studio-shared';
-import type { QueryBuilderState } from './QueryBuilderState';
-import { action, makeAutoObservable, observable } from 'mobx';
 import type {
   AbstractProperty,
   EditorStore,
   Mapping,
-  Multiplicity,
   PropertyMapping,
+  PureModel,
   SetImplementation,
   Type,
 } from '@finos/legend-studio';
 import {
+  TYPICAL_MULTIPLICITY_TYPE,
   OperationSetImplementation,
   AbstractPropertyExpression,
   Class,
@@ -39,7 +38,10 @@ import {
   Property,
   VariableExpression,
 } from '@finos/legend-studio';
+import type { QueryBuilderState } from './QueryBuilderState';
+import { action, makeAutoObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
+import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -47,7 +49,6 @@ export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ENUM_PROPERTY = 'ENUM_PROPERTY',
   PRIMITIVE_PROPERTY = 'PRIMITIVE_PROPERTY',
 }
-
 export interface QueryBuilderExplorerTreeDragSource {
   node: QueryBuilderExplorerTreePropertyNodeData;
 }
@@ -67,6 +68,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
    * e.g. derived properties, operation class mappings, etc.
    */
   skipMappingCheck: boolean;
+  isPartOfDerivedPropertyBranch: boolean;
   type: Type;
   setImpl?: SetImplementation;
 
@@ -76,6 +78,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     dndText: string,
     mapped: boolean,
     skipMappingCheck: boolean,
+    isPartOfDerivedPropertyBranch: boolean,
     type: Type,
     setImpl: SetImplementation | undefined,
   ) {
@@ -84,6 +87,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     this.dndText = dndText;
     this.mapped = mapped;
     this.skipMappingCheck = skipMappingCheck;
+    this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
     this.type = type;
     this.setImpl = setImpl;
   }
@@ -103,6 +107,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     parentId: string,
     mapped: boolean,
     skipMappingCheck: boolean,
+    isPartOfDerivedPropertyBranch: boolean,
     setImpl: SetImplementation | undefined,
   ) {
     super(
@@ -111,6 +116,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
       dndText,
       mapped,
       skipMappingCheck,
+      isPartOfDerivedPropertyBranch,
       property.genericType.value.rawType,
       setImpl,
     );
@@ -120,11 +126,14 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
   }
 }
 
-export const getPropertyExpression = (
+export const buildPropertyExpressionFromExplorerTreeNodeData = (
   treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
-  multiplicityOne: Multiplicity,
+  graph: PureModel,
 ): AbstractPropertyExpression => {
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
   const projectionColumnLambdaVariable = new VariableExpression(
     DEFAULT_LAMBDA_VARIABLE_NAME,
     multiplicityOne,
@@ -239,6 +248,10 @@ export const getQueryBuilderPropertyNodeData = (
     property,
     parentNode.id,
     mappingData.mapped,
+    property instanceof DerivedProperty ||
+      parentNode.isPartOfDerivedPropertyBranch ||
+      (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+        parentNode.property instanceof DerivedProperty),
     mappingData.skipMappingCheck,
     mappingData.setImpl,
   );
@@ -266,6 +279,7 @@ const getQueryBuilderTreeData = (
     true,
     // NOTE: we will not try to analyze property mappedness for operation class mapping
     rootSetImpl instanceof OperationSetImplementation,
+    false,
     rootClass,
     rootSetImpl,
   );
@@ -293,9 +307,37 @@ const getQueryBuilderTreeData = (
   return { rootIds, nodes };
 };
 
+export class QueryBuilderExplorerPreviewDataState {
+  isGeneratingPreviewData = false;
+  propertyName = '(unknown)';
+  previewData?: QueryBuilderPreviewData;
+
+  constructor() {
+    makeAutoObservable(this, {
+      previewData: observable.ref,
+      setPropertyName: action,
+      setIsGeneratingPreviewData: action,
+      setPreviewData: action,
+    });
+  }
+
+  setPropertyName(val: string): void {
+    this.propertyName = val;
+  }
+
+  setIsGeneratingPreviewData(val: boolean): void {
+    this.isGeneratingPreviewData = val;
+  }
+
+  setPreviewData(val: QueryBuilderPreviewData | undefined): void {
+    this.previewData = val;
+  }
+}
+
 export class QueryBuilderExplorerState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
+  previewDataState = new QueryBuilderExplorerPreviewDataState();
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData>;
   humanizePropertyName = true;
   showUnmappedProperties = false;
@@ -304,6 +346,7 @@ export class QueryBuilderExplorerState {
     makeAutoObservable(this, {
       editorStore: false,
       queryBuilderState: false,
+      previewDataState: false,
       treeData: observable.ref,
       setTreeData: action,
       refreshTree: action,
@@ -328,17 +371,21 @@ export class QueryBuilderExplorerState {
   ): void {
     this.treeData = val;
   }
+
   refreshTree(): void {
     if (this.treeData) {
       this.treeData = { ...this.treeData };
     }
   }
+
   setHumanizePropertyName(val: boolean): void {
     this.humanizePropertyName = val;
   }
+
   setShowUnmappedProperties(val: boolean): void {
     this.showUnmappedProperties = val;
   }
+
   refreshTreeData(): void {
     const _class = this.queryBuilderState.querySetupState._class;
     const _mapping = this.queryBuilderState.querySetupState.mapping;

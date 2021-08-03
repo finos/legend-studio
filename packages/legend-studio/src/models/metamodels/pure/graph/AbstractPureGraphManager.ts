@@ -42,8 +42,7 @@ import type { RawValueSpecification } from '../model/rawValueSpecification/RawVa
 import type { ServiceExecutionMode } from '../action/service/ServiceExecutionMode';
 import type { AbstractEngineConfig } from '../action/AbstractEngineConfiguration';
 import type { PluginManager } from '../../../../application/PluginManager';
-import type { GenerateStoreInput } from '../action/generation/GenerateStoreInput';
-import type { Store } from '../model/packageableElements/store/Store';
+import type { DatabaseBuilderInput } from '../action/generation/DatabaseBuilderInput';
 import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import type { ServerClientConfig } from '@finos/legend-studio-network';
@@ -53,6 +52,7 @@ import type {
   RawExecutionPlan,
 } from '../model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 
 export interface EngineSetupConfig {
   env: string;
@@ -87,7 +87,7 @@ export abstract class AbstractPureGraphManager {
   abstract setupEngine(
     pluginManager: PluginManager,
     config: EngineSetupConfig,
-  ): Promise<void>;
+  ): GeneratorFn<void>;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
@@ -100,7 +100,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     options?: GraphBuilderOptions,
-  ): Promise<void>;
+  ): GeneratorFn<void>;
 
   /**
    * Process entities and build model graph.
@@ -111,7 +111,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     entities: Entity[],
     options?: GraphBuilderOptions,
-  ): Promise<void>;
+  ): GeneratorFn<void>;
 
   /**
    * Build immutable models which holds dependencies.
@@ -128,53 +128,53 @@ export abstract class AbstractPureGraphManager {
     dependencyManager: DependencyManager,
     projectDependencyMetadataMap: Map<string, ProjectDependencyMetadata>,
     options?: GraphBuilderOptions,
-  ): Promise<void>;
+  ): GeneratorFn<void>;
 
   abstract buildGenerations(
     graph: PureModel,
     generationEntities: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): Promise<void>;
+  ): GeneratorFn<void>;
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  abstract graphToPureCode(graph: PureModel): Promise<string>;
-  abstract pureCodeToEntities(code: string): Promise<Entity[]>;
-  abstract entitiesToPureCode(entities: Entity[]): Promise<string>;
+  abstract graphToPureCode(graph: PureModel): GeneratorFn<string>;
+  abstract pureCodeToEntities(code: string): GeneratorFn<Entity[]>;
+  abstract entitiesToPureCode(entities: Entity[]): GeneratorFn<string>;
   abstract pureCodeToLambda(
     lambda: string,
     lambdaId: string,
-  ): Promise<RawLambda | undefined>;
+  ): GeneratorFn<RawLambda | undefined>;
   abstract lambdaToPureCode(
     lambdas: Map<string, RawLambda>,
     pretty?: boolean,
-  ): Promise<Map<string, string>>;
+  ): GeneratorFn<Map<string, string>>;
 
   // TODO: consider moving these to relational plugin when we complete modularization
   abstract pureCodeToRelationalOperationElement(
     operation: string,
     operationId: string,
-  ): Promise<RawRelationalOperationElement | undefined>;
+  ): GeneratorFn<RawRelationalOperationElement | undefined>;
   abstract relationalOperationElementToPureCode(
     operations: Map<string, RawRelationalOperationElement>,
-  ): Promise<Map<string, string>>;
+  ): GeneratorFn<Map<string, string>>;
 
   // ------------------------------------------- Compile -------------------------------------------
 
   abstract compileGraph(
     graph: PureModel,
     options?: { onError?: () => void; keepSourceInformation?: boolean },
-  ): Promise<void>;
+  ): GeneratorFn<void>;
   abstract compileText(
     graphGrammar: string,
     graph: PureModel,
     options?: { onError?: () => void },
-  ): Promise<Entity[]>;
+  ): GeneratorFn<Entity[]>;
   abstract getLambdaReturnType(
     lambda: RawLambda,
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
-  ): Promise<string>;
+  ): GeneratorFn<string>;
 
   // ------------------------------------------- ValueSpecification  -------------------------------------------
 
@@ -182,8 +182,11 @@ export abstract class AbstractPureGraphManager {
     valueSpecificationJson: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification;
+  abstract serializeValueSpecification(
+    valueSpecification: ValueSpecification,
+  ): Record<PropertyKey, unknown>;
   abstract buildRawValueSpecification(
-    compiledValueSpecification: ValueSpecification,
+    valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification;
   abstract serializeRawValueSpecification(
@@ -192,32 +195,32 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Generation -------------------------------------------
 
-  abstract getAvailableGenerationConfigurationDescriptions(): Promise<
+  abstract getAvailableGenerationConfigurationDescriptions(): GeneratorFn<
     GenerationConfigurationDescription[]
   >;
   abstract generateFile(
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,
     graph: PureModel,
-  ): Promise<GenerationOutput[]>;
+  ): GeneratorFn<GenerationOutput[]>;
   abstract generateModel(
     generationElement: PackageableElement,
     graph: PureModel,
-  ): Promise<Entity[]>;
+  ): GeneratorFn<Entity[]>;
 
   // ------------------------------------------- Import -------------------------------------------
 
-  abstract getAvailableImportConfigurationDescriptions(): Promise<
+  abstract getAvailableImportConfigurationDescriptions(): GeneratorFn<
     ImportConfigurationDescription[]
   >;
   abstract externalFormatTextToEntities(
     code: string,
     type: string,
     mode: ImportMode,
-  ): Promise<Entity[]>;
+  ): GeneratorFn<Entity[]>;
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
-  abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;
+  abstract entitiesToPureProtocolText(entities: Entity[]): GeneratorFn<string>;
   abstract pureProtocolToEntities(protocol: string): Entity[];
 
   // ------------------------------------------- Execute -------------------------------------------
@@ -233,7 +236,7 @@ export abstract class AbstractPureGraphManager {
      * NOTE: This will result in numeric values being stored as object instead of primitive type number values.
      */
     lossless: boolean,
-  ): Promise<ExecutionResult>;
+  ): GeneratorFn<ExecutionResult>;
 
   abstract generateTestData(
     graph: PureModel,
@@ -241,7 +244,7 @@ export abstract class AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-  ): Promise<string>;
+  ): GeneratorFn<string>;
 
   abstract generateExecutionPlan(
     graph: PureModel,
@@ -249,7 +252,7 @@ export abstract class AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-  ): Promise<RawExecutionPlan>;
+  ): GeneratorFn<RawExecutionPlan>;
 
   /**
    * TOOD?: potentially consider merging this method and `generateExecutionPlan`.
@@ -259,18 +262,17 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): ExecutionPlan;
 
-  abstract transformExecutionPlan(
+  abstract serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): RawExecutionPlan;
 
-  abstract getExecutionNodeProtocolJson(executionNode: ExecutionNode): object;
+  abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
-  // ------------------------------------------- Store -------------------------------------------
+  // ------------------------------------------- Database -------------------------------------------
 
-  abstract generateStore(
-    generateStoreInput: GenerateStoreInput,
-  ): Promise<string>;
-  abstract saveStore(store: string, graph: PureModel): Promise<Store>;
+  abstract buildDatabase(
+    databaseBuilderInput: DatabaseBuilderInput,
+  ): GeneratorFn<Entity[]>;
 
   // ------------------------------------------- Service -------------------------------------------
 
@@ -281,19 +283,21 @@ export abstract class AbstractPureGraphManager {
     server: string,
     executionMode: ServiceExecutionMode,
     version: string | undefined,
-  ): Promise<ServiceRegistrationResult>;
+  ): GeneratorFn<ServiceRegistrationResult>;
   abstract runServiceTests(
     service: Service,
     graph: PureModel,
-  ): Promise<ServiceTestResult[]>;
+  ): GeneratorFn<ServiceTestResult[]>;
   abstract activateService(
     serviceUrl: string,
     serviceId: string,
-  ): Promise<void>;
+  ): GeneratorFn<void>;
 
   // ------------------------------------------- Change detection -------------------------------------------
 
-  abstract buildHashesIndex(entities: Entity[]): Promise<Map<string, string>>;
+  abstract buildHashesIndex(
+    entities: Entity[],
+  ): GeneratorFn<Map<string, string>>;
 
   // ------------------------------------------- Raw Protocol Handling -------------------------------------------
   // This is the set of method that exposes the protocol out into the app, these are for readonly purpose like

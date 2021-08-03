@@ -68,7 +68,14 @@ const QueryBuilderResultValues = observer(
           />
         )}
         {executionResult instanceof TdsExecutionResult && (
-          <div className="ag-theme-balham-dark query-builder__result__tds-grid">
+          <div
+            // NOTE: since we use the column name as the key the column
+            // if we execute once then immediate add another column and execute again
+            // the old columns rendering will be kept the same and the new column
+            // will be pushed to last regardless of its type (aggregation or simple projection)
+            key={executionResult.uuid}
+            className="ag-theme-balham-dark query-builder__result__tds-grid"
+          >
             <AgGridReact rowData={rowData}>
               {columns.map((colName) => (
                 <AgGridColumn
@@ -190,7 +197,7 @@ export const QueryBuilderResultPanel = observer(
             </div>
             <div className="modal__footer">
               <button
-                className="btn execution-plan-viewer__close-btn"
+                className="btn modal__footer__close-btn"
                 onClick={(): void => resultState.setExecutionPlan(undefined)}
               >
                 Close
@@ -205,9 +212,9 @@ export const QueryBuilderResultPanel = observer(
             showModal={resultState.showServicePathModal}
             promoteToService={(
               name: string,
-              packageName: string,
+              packagePath: string,
             ): Promise<void> =>
-              flowResult(resultState.promoteToService(name, packageName))
+              flowResult(resultState.promoteToService(name, packagePath))
             }
           />
         )}

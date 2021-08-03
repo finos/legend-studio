@@ -31,12 +31,12 @@ import { V1_BusinessMilestoning } from '../../../model/packageableElements/store
 import { V1_BusinessSnapshotMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_BusinessSnapshotMilestoning';
 import type { V1_Milestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning';
 import { V1_ProcessingMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning';
-import {
-  V1_serializeValueSpecification,
-  V1_deserializeValueSpecification,
-} from './V1_ValueSpecificationSerializer';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import {
+  V1_deserializeRawValueSpecification,
+  V1_serializeRawValueSpecification,
+} from './V1_RawValueSpecificationSerializationHelper';
 
 enum V1_MilestoningType {
   BUSINESS_MILESTONING = 'businessMilestoning',
@@ -50,8 +50,8 @@ const businessMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(V1_MilestoningType.BUSINESS_MILESTONING),
     from: primitive(),
     infinityDate: custom(
-      (val) => (val ? V1_serializeValueSpecification(val) : SKIP),
-      (val) => (val ? V1_deserializeValueSpecification(val) : SKIP),
+      (val) => (val ? V1_serializeRawValueSpecification(val) : SKIP),
+      (val) => (val ? V1_deserializeRawValueSpecification(val) : SKIP),
     ),
     thru: primitive(),
     thruIsInclusive: primitive(),
@@ -65,8 +65,8 @@ const businessSnapshotMilestoningModelSchema = createModelSchema(
       V1_MilestoningType.BUSINESS_SNAPSHOT_MILESTONING,
     ),
     infinityDate: custom(
-      (val) => (val ? V1_serializeValueSpecification(val) : SKIP),
-      (val) => (val ? V1_deserializeValueSpecification(val) : SKIP),
+      (val) => (val ? V1_serializeRawValueSpecification(val) : SKIP),
+      (val) => (val ? V1_deserializeRawValueSpecification(val) : SKIP),
     ),
     snapshotDate: primitive(),
   },
@@ -78,8 +78,8 @@ const processingMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(V1_MilestoningType.PROCESSING_MILESTONING),
     in: primitive(),
     infinityDate: custom(
-      (val) => (val ? V1_serializeValueSpecification(val) : SKIP),
-      (val) => (val ? V1_deserializeValueSpecification(val) : SKIP),
+      (val) => (val ? V1_serializeRawValueSpecification(val) : SKIP),
+      (val) => (val ? V1_deserializeRawValueSpecification(val) : SKIP),
     ),
     out: primitive(),
     outIsInclusive: primitive(),

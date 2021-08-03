@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { flow, action, makeAutoObservable } from 'mobx';
+import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import { CORE_LOG_EVENT } from '../../utils/Logger';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   assertErrorThrown,
   assertTrue,
@@ -198,9 +198,7 @@ export class ConflictResolutionState {
     this.editorStore.openEntityChangeConflict(mergeEditorState);
   }
 
-  private initProjectConfigurationInConflictResolutionMode = flow(function* (
-    this: ConflictResolutionState,
-  ) {
+  private *initProjectConfigurationInConflictResolutionMode(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',
@@ -217,11 +215,9 @@ export class ConflictResolutionState {
     this.editorStore.projectConfigurationEditorState.setOriginalProjectConfiguration(
       ProjectConfiguration.serialization.fromJson(projectConfiguration),
     );
-  });
+  }
 
-  private initChangeDetectionInConflictResolutionMode = flow(function* (
-    this: ConflictResolutionState,
-  ) {
+  private *initChangeDetectionInConflictResolutionMode(): GeneratorFn<void> {
     try {
       const startTime = Date.now();
       // ======= (RE)START CHANGE DETECTION =======
@@ -258,9 +254,9 @@ export class ConflictResolutionState {
       this.sdlcState.handleChangeDetectionRefreshIssue(error);
       throw error;
     }
-  });
+  }
 
-  init = flow(function* (this: ConflictResolutionState) {
+  *init(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',
@@ -283,11 +279,9 @@ export class ConflictResolutionState {
     } finally {
       this.isInitializingConflictResolution = false;
     }
-  });
+  }
 
-  buildGraphInConflictResolutionMode = flow(function* (
-    this: ConflictResolutionState,
-  ) {
+  *buildGraphInConflictResolutionMode(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode &&
         this.hasResolvedAllConflicts,
@@ -317,18 +311,22 @@ export class ConflictResolutionState {
             .filter(isNonNullable),
         );
       // build graph
-      yield this.editorStore.graphState.buildGraph(entities);
+      yield flowResult(this.editorStore.graphState.buildGraph(entities));
 
       // NOTE: since we have already started change detection engine when we entered conflict resolution mode, we just need
       // to restart local change detection here
 
       // ======= (RE)START CHANGE DETECTION =======
       this.editorStore.changeDetectionState.stop();
-      yield this.editorStore.graphState.graph.precomputeHashes(
-        this.editorStore.applicationStore.logger,
+      yield flowResult(
+        this.editorStore.graphState.graph.precomputeHashes(
+          this.editorStore.applicationStore.logger,
+        ),
       );
       this.editorStore.changeDetectionState.start();
-      yield this.editorStore.changeDetectionState.computeLocalChanges(true);
+      yield flowResult(
+        this.editorStore.changeDetectionState.computeLocalChanges(true),
+      );
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         '[ASNYC]',
@@ -341,11 +339,9 @@ export class ConflictResolutionState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  buildConflictResolutionLatestRevisionEntityHashesIndex = flow(function* (
-    this: ConflictResolutionState,
-  ) {
+  *buildConflictResolutionLatestRevisionEntityHashesIndex(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',
@@ -353,11 +349,11 @@ export class ConflictResolutionState {
     try {
       // fetch latest revision
       const latestRevision = Revision.serialization.fromJson(
-        yield this.sdlcState.sdlcClient.getConflictResolutionRevision(
+        (yield this.sdlcState.sdlcClient.getConflictResolutionRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.CURRENT,
-        ),
+        )) as PlainObject<Revision>,
       );
       // make sure there is no good recovery from this, at this point all users work risk conflict
       assertTrue(
@@ -373,9 +369,11 @@ export class ConflictResolutionState {
       this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.setEntities(
         entities,
       );
-      yield this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.buildEntityHashesIndex(
-        entities,
-        CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+      yield flowResult(
+        this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.buildEntityHashesIndex(
+          entities,
+          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+        ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
@@ -385,11 +383,9 @@ export class ConflictResolutionState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  buildConflictResolutionBaseRevisionEntityHashesIndex = flow(function* (
-    this: ConflictResolutionState,
-  ) {
+  *buildConflictResolutionBaseRevisionEntityHashesIndex(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',
@@ -404,9 +400,11 @@ export class ConflictResolutionState {
       this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.setEntities(
         workspaceBaseEntities,
       );
-      yield this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.buildEntityHashesIndex(
-        workspaceBaseEntities,
-        CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+      yield flowResult(
+        this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.buildEntityHashesIndex(
+          workspaceBaseEntities,
+          CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+        ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
@@ -416,13 +414,14 @@ export class ConflictResolutionState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
-  acceptConflictResolution = flow(function* (this: ConflictResolutionState) {
+  *acceptConflictResolution(): GeneratorFn<void> {
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode =
-        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode = (yield flowResult(
+        this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
+      )) as boolean;
       if (!isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
@@ -482,15 +481,14 @@ export class ConflictResolutionState {
     } finally {
       this.isAcceptingConflictResolution = false;
     }
-  });
+  }
 
-  discardConflictResolutionChanges = flow(function* (
-    this: ConflictResolutionState,
-  ) {
+  *discardConflictResolutionChanges(): GeneratorFn<void> {
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode =
-        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode = (yield flowResult(
+        this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
+      )) as boolean;
       if (!isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
@@ -537,13 +535,14 @@ export class ConflictResolutionState {
     } finally {
       this.isDiscardingConflictResolutionChanges = false;
     }
-  });
+  }
 
-  abortConflictResolution = flow(function* (this: ConflictResolutionState) {
+  *abortConflictResolution(): GeneratorFn<void> {
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode =
-        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode = (yield flowResult(
+        this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
+      )) as boolean;
       if (!isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
@@ -590,7 +589,7 @@ export class ConflictResolutionState {
     } finally {
       this.isAbortingConflictResolution = false;
     }
-  });
+  }
 
   openConflictResolutionChange(diff: EntityDiff): void {
     const fromEntityGetter = (
@@ -662,9 +661,7 @@ export class ConflictResolutionState {
   /**
    * Check for remaining conflicts, if none left, prompt the users for the next action
    */
-  promptBuildGraphAfterAllConflictsResolved = flow(function* (
-    this: ConflictResolutionState,
-  ) {
+  *promptBuildGraphAfterAllConflictsResolved(): GeneratorFn<void> {
     if (!this.conflicts.length) {
       this.confirmHasResolvedAllConflicts();
       this.editorStore.setBlockingAlert({
@@ -672,8 +669,8 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.buildGraphInConflictResolutionMode();
+      yield flowResult(this.buildGraphInConflictResolutionMode());
       this.editorStore.setBlockingAlert(undefined);
     }
-  });
+  }
 }

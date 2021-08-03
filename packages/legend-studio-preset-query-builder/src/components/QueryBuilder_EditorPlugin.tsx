@@ -31,6 +31,7 @@ import type {
   MappingExecutionState,
   MappingTestQueryEditorRendererConfiguration,
   MappingTestState,
+  EditorPluginSetup,
 } from '@finos/legend-studio';
 import { Class, EditorPlugin } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-studio-components';
@@ -42,6 +43,8 @@ import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import type { IKeyboardEvent } from 'monaco-editor';
 import { KeyCode } from 'monaco-editor';
+import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
 export class QueryBuilder_EditorPlugin extends EditorPlugin {
   constructor() {
@@ -52,8 +55,13 @@ export class QueryBuilder_EditorPlugin extends EditorPlugin {
     pluginManager.registerEditorPlugin(this);
   }
 
-  override configure(_configData: object): QueryBuilder_EditorPlugin {
-    return this;
+  override getExtraEditorPluginSetups(): EditorPluginSetup[] {
+    return [
+      async (pluginManager: PluginManager): Promise<void> => {
+        // Register module extensions for `ag-grid`
+        agGrid_ModuleRegistry.registerModules([ClientSideRowModelModule]);
+      },
+    ];
   }
 
   override getExtraEditorExtensionComponentRendererConfigurations(): EditorExtensionComponentRendererConfiguration[] {
@@ -121,13 +129,13 @@ export class QueryBuilder_EditorPlugin extends EditorPlugin {
         ): void => {
           const queryBuilderState =
             editorStore.getEditorExtensionState(QueryBuilderState);
-          editorStore.graphState
-            .checkLambdaParsingError(
+          flowResult(
+            editorStore.graphState.checkLambdaParsingError(
               lambdaEditorState,
               checkParseringError,
               () => flowResult(queryBuilderState.compileQuery()),
-            )
-            .catch(editorStore.applicationStore.alertIllegalUnhandledError);
+            ),
+          ).catch(editorStore.applicationStore.alertIllegalUnhandledError);
         },
       },
     ];

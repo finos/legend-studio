@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, flowResult } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from '../MappingElementState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   IllegalStateError,
   isNonNullable,
@@ -72,17 +73,16 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     );
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: RelationalPropertyMappingState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const stubOperation = createStubRelationalOperationElement();
     if (this.lambdaString) {
       try {
-        const operation =
-          (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
+        const operation = (yield flowResult(
+          this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawRelationalOperationElement | undefined;
+          ),
+        )) as RawRelationalOperationElement | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof RelationalPropertyMapping) {
           this.propertyMapping.relationalOperation = operation ?? stubOperation;
@@ -102,12 +102,9 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         this.propertyMapping.relationalOperation = stubOperation;
       }
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: RelationalPropertyMappingState,
-    pretty: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.propertyMapping instanceof RelationalPropertyMapping) {
       if (!this.propertyMapping.isStub) {
         try {
@@ -116,10 +113,11 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
             this.lambdaId,
             this.propertyMapping.relationalOperation,
           );
-          const operationsInText =
-            (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+          const operationsInText = (yield flowResult(
+            this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
               operations,
-            )) as Map<string, string>;
+            ),
+          )) as Map<string, string>;
           const grammarText = operationsInText.get(this.lambdaId);
           this.setLambdaString(
             grammarText !== undefined
@@ -138,7 +136,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         this.setLambdaString('');
       }
     }
-  });
+  }
 }
 
 export abstract class RelationalInstanceSetImplementationState extends InstanceSetImplementationState {}
@@ -187,7 +185,7 @@ export class EmbeddedRelationalInstanceSetImplementationState
   decorate(): void {
     return;
   }
-  convertPropertyMappingTransformObjects(): Promise<void> {
+  *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
   setLambdaString(val: string): void {
@@ -215,23 +213,18 @@ export class EmbeddedRelationalInstanceSetImplementationState
     // TODO
     return;
   }
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: EmbeddedRelationalInstanceSetImplementation,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
-  });
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: EmbeddedRelationalInstanceSetImplementation,
-    pretty: boolean,
-  ) {
+  }
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     throw new UnsupportedOperationError();
-  });
+  }
 }
 
 export class RootRelationalInstanceSetImplementationState extends RelationalInstanceSetImplementationState {
   declare mappingElement: RelationalInstanceSetImplementation;
   declare propertyMappingStates: RelationalPropertyMappingState[];
-  isConvertingTransformObjects = false;
+  isConvertingTransformLambdaObjects = false;
 
   constructor(
     editorStore: EditorStore,
@@ -240,10 +233,9 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
     super(editorStore, setImplementation);
 
     makeObservable(this, {
-      isConvertingTransformObjects: observable,
+      isConvertingTransformLambdaObjects: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
-      decorate: action,
     });
 
     this.mappingElement = setImplementation;
@@ -305,9 +297,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
     this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
-  convertPropertyMappingTransformObjects = flow(function* (
-    this: RootRelationalInstanceSetImplementationState,
-  ) {
+  *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     const operations = new Map<string, RawRelationalOperationElement>();
     const propertyMappingStates = new Map<
       string,
@@ -327,12 +317,13 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
       // we don't have to do anything for embedded. they don't have a transform and do not require converting back and form.
     });
     if (operations.size) {
-      this.isConvertingTransformObjects = true;
+      this.isConvertingTransformLambdaObjects = true;
       try {
-        const operationsInText =
-          (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+        const operationsInText = (yield flowResult(
+          this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
             operations,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         operationsInText.forEach((grammarText, key) => {
           const relationalPropertyMappingState = propertyMappingStates.get(key);
           relationalPropertyMappingState?.setLambdaString(
@@ -345,8 +336,8 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
           error,
         );
       } finally {
-        this.isConvertingTransformObjects = false;
+        this.isConvertingTransformLambdaObjects = false;
       }
     }
-  });
+  }
 }

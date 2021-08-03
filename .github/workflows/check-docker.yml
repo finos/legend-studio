@@ -11,8 +11,8 @@ on:
       - '**'
 
 jobs:
-  release:
-    name: Run Image Checks
+  check-docker-image-studio:
+    name: Run Image Checks (@finos/legend-studio-app)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -29,13 +29,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.2.0
+        uses: actions/setup-node@v2.3.0
         with:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
-      - name: Check image
-        run: yarn workspace @finos/legend-studio-app check:docker ${{ github.sha }}
+      - name: Build image
+        run: yarn workspace @finos/legend-studio-app build-dry:docker ${{ github.sha }}
       - name: Scan image for security issues
         uses: Azure/container-scan@v0
         env:
@@ -44,4 +44,38 @@ jobs:
           TRIVY_IGNORE_UNFIXED: true
         with:
           image-name: local/legend-studio:${{ github.sha }}
+          severity-threshold: CRITICAL
+  check-docker-image-query:
+    name: Run Image Checks (@finos/legend-query-app)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.3.4
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2.1.6
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v2.3.0
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: yarn
+      - name: Build image
+        run: yarn workspace @finos/legend-query-app build-dry:docker ${{ github.sha }}
+      - name: Scan image for security issues
+        uses: Azure/container-scan@v0
+        env:
+          # Skip `won't fix` CVEs
+          # See https://github.com/Azure/container-scan/issues/61
+          TRIVY_IGNORE_UNFIXED: true
+        with:
+          image-name: local/legend-query:${{ github.sha }}
           severity-threshold: CRITICAL

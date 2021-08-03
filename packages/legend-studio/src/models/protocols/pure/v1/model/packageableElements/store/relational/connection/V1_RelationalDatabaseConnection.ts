@@ -34,8 +34,10 @@ export enum V1_DatabaseType {
   SqlServer = 'SqlServer',
   Hive = 'Hive',
   Snowflake = 'Snowflake',
+  BigQuery = 'BigQuery',
   DeltaLake = 'DeltaLake',
   Presto = 'Presto',
+  Redshift = 'Redshift',
 }
 
 export abstract class V1_DatabaseConnection extends V1_Connection {

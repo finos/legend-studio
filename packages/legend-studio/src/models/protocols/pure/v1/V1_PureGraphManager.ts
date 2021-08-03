@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { flow, runInAction } from 'mobx';
+import { flow, flowResult, makeObservable, runInAction } from 'mobx';
 import type { Logger } from '../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import type { Entity } from '../../../sdlc/models/entity/Entity';
@@ -58,8 +58,8 @@ import type {
 } from '../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import type { PackageableElement } from '../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type {
-  CoreModel,
   SystemModel,
+  CoreModel,
 } from '../../../metamodels/pure/graph/PureModel';
 import { PureModel } from '../../../metamodels/pure/graph/PureModel';
 import type { BasicModel } from '../../../metamodels/pure/graph/BasicModel';
@@ -95,7 +95,6 @@ import {
   V1_serializePureModelContext,
   V1_deserializePureModelContextData,
   V1_setupPureModelContextDataSerialization,
-  V1_PureModelContextType,
 } from './transformation/pureProtocol/V1_PureProtocolSerialization';
 import type { V1_ServiceConfigurationInfo } from './engine/service/V1_ServiceConfiguration';
 import { V1_PureModelContextData } from './model/context/V1_PureModelContextData';
@@ -154,20 +153,21 @@ import { V1_Protocol } from './model/V1_Protocol';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
 import type { PluginManager } from '../../../../application/PluginManager';
 import { V1_ServiceStorage } from './engine/service/V1_ServiceStorage';
-import type { Store } from '../../../metamodels/pure/model/packageableElements/store/Store';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
 import { V1_GraphBuilderExtensions } from './transformation/pureGraph/to/V1_GraphBuilderExtensions';
 import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from '../../../metamodels/pure/graph/PureGraphManagerPlugin';
 import type {
-  GenerateStoreInput,
-  StorePattern,
-} from '../../../metamodels/pure/action/generation/GenerateStoreInput';
+  DatabaseBuilderInput,
+  DatabasePattern,
+} from '../../../metamodels/pure/action/generation/DatabaseBuilderInput';
 import {
-  V1_GenerateStoreInput,
-  V1_StorePattern,
-} from './engine/generation/V1_GenerateStoreInput';
-import { V1_transformConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
+  V1_DatabaseBuilderConfig,
+  V1_DatabaseBuilderInput,
+  V1_DatabasePattern,
+  V1_TargetDatabase,
+} from './engine/generation/V1_DatabaseBuilderInput';
+import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database';
 import { V1_ServiceStore } from './model/packageableElements/store/relational/V1_ServiceStore';
@@ -362,6 +362,69 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     logger: Logger,
   ) {
     super(pureGraphManagerPlugins, pureProtocolProcessorPlugins);
+
+    makeObservable<
+      V1_PureGraphManager,
+      | 'initializeAndIndexElements'
+      | 'postProcess'
+      | 'buildTypes'
+      | 'buildStores'
+      | 'buildMappings'
+      | 'buildConnectionsAndRuntimes'
+      | 'buildServices'
+      | 'buildDiagrams'
+      | 'buildFileGenerations'
+      | 'buildGenerationSpecificationss'
+      | 'buildSectionIndex'
+      | 'buildOtherElements'
+      | 'pureCodeToPureModelContextData'
+      | 'entitiesToPureModelContextData'
+    >(this, {
+      setupEngine: flow,
+      buildSystem: flow,
+      buildDependencies: flow,
+      buildGraph: flow,
+      buildGenerations: flow,
+      initializeAndIndexElements: flow,
+      postProcess: flow,
+      buildTypes: flow,
+      buildStores: flow,
+      buildMappings: flow,
+      buildConnectionsAndRuntimes: flow,
+      buildServices: flow,
+      buildDiagrams: flow,
+      buildFileGenerations: flow,
+      buildGenerationSpecificationss: flow,
+      buildSectionIndex: flow,
+      buildOtherElements: flow,
+      graphToPureCode: flow,
+      pureCodeToPureModelContextData: flow,
+      entitiesToPureCode: flow,
+      pureCodeToEntities: flow,
+      pureCodeToLambda: flow,
+      lambdaToPureCode: flow,
+      pureCodeToRelationalOperationElement: flow,
+      relationalOperationElementToPureCode: flow,
+      compileGraph: flow,
+      compileText: flow,
+      getLambdaReturnType: flow,
+      getAvailableGenerationConfigurationDescriptions: flow,
+      generateFile: flow,
+      generateModel: flow,
+      getAvailableImportConfigurationDescriptions: flow,
+      externalFormatTextToEntities: flow,
+      entitiesToPureProtocolText: flow,
+      executeMapping: flow,
+      generateTestData: flow,
+      generateExecutionPlan: flow,
+      buildDatabase: flow,
+      runServiceTests: flow,
+      registerService: flow,
+      activateService: flow,
+      buildHashesIndex: flow,
+      entitiesToPureModelContextData: flow,
+    });
+
     this.logger = logger;
     // setup plugins
     this.extensions = new V1_GraphBuilderExtensions(
@@ -378,11 +441,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.config;
   }
 
-  setupEngine = flow(function* (
-    this: V1_PureGraphManager,
+  *setupEngine(
     pluginManager: PluginManager,
     config: EngineSetupConfig,
-  ) {
+  ): GeneratorFn<void> {
     this.engine = new V1_Engine(config.clientConfig, this.logger);
     // register plugin
     this.engine.engineServerClient.registerTracerServicePlugins(
@@ -398,17 +460,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     } catch {
       // do nothing
     }
-  });
+  }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  buildSystem = flow(function* (
-    this: V1_PureGraphManager,
+  *buildSystem(
     coreModel: CoreModel,
     systemModel: SystemModel,
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     const startTime = Date.now();
 
     // Create a dummy graph for system processing. This is to ensure system model does not depend on the main graph
@@ -447,23 +508,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           data: indexPureModelContextData(systemData, this.extensions),
         },
       ];
-      yield this.initializeAndIndexElements(graph, systemGraphBuilderInput);
+      yield flowResult(
+        this.initializeAndIndexElements(graph, systemGraphBuilderInput),
+      );
       // NOTE: right now we only have profile and enumeration for system, we might need to generalize this step in the future
-      yield this.buildTypes(graph, systemGraphBuilderInput);
-      yield this.buildOtherElements(graph, systemGraphBuilderInput);
-      yield this.postProcess(graph, systemGraphBuilderInput);
+      yield flowResult(this.buildTypes(graph, systemGraphBuilderInput));
+      yield flowResult(this.buildOtherElements(graph, systemGraphBuilderInput));
+      yield flowResult(this.postProcess(graph, systemGraphBuilderInput));
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_SYSTEM_BUILT,
           Date.now() - startTime,
           'ms',
-          `[profile: ${systemModel.profiles.length}, enumeration: ${systemModel.enumerations.length}]`,
+          `[profile: ${systemModel.ownProfiles.length}, enumeration: ${systemModel.ownEnumerations.length}]`,
         );
       }
-      systemModel.setIsBuilt(true);
+      systemModel.buildState.pass();
     } catch (error: unknown) {
       assertErrorThrown(error);
-      systemModel.setFailedToBuild(true);
+      systemModel.buildState.fail();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_FAILED,
@@ -474,19 +537,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
       throw new SystemGraphProcessingError(error);
     }
-  });
+  }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  buildDependencies = flow(function* (
-    this: V1_PureGraphManager,
+  *buildDependencies(
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
     dependencyMetadataMap: Map<string, ProjectDependencyMetadata>,
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     const startTime = Date.now();
-    dependencyManager.setIsBuilt(false);
+    dependencyManager.buildState.reset();
     // Create a dummy graph for system processing. This is to ensure dependency models do not depend on the main graph
     const graph = new PureModel(
       coreModel,
@@ -528,23 +590,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data: indexPureModelContextData(dependencyData, this.extensions),
         model: graph.dependencyManager.getModel(dependencyKey),
       }));
-      yield this.initializeAndIndexElements(graph, graphBuilderInput, options);
-      // NOTE: we might need to process sectionIndex if we support unresolved element paths in dependencies
-      yield this.buildTypes(graph, graphBuilderInput, options);
-      yield this.buildStores(graph, graphBuilderInput, options);
-      yield this.buildMappings(graph, graphBuilderInput, options);
-      yield this.buildConnectionsAndRuntimes(graph, graphBuilderInput, options);
-      yield this.buildServices(graph, graphBuilderInput, options);
-      yield this.buildDiagrams(graph, graphBuilderInput, options);
-      yield this.buildFileGenerations(graph, graphBuilderInput, options);
-      yield this.buildGenerationSpecificationss(
-        graph,
-        graphBuilderInput,
-        options,
+      yield flowResult(
+        this.initializeAndIndexElements(graph, graphBuilderInput, options),
       );
-      yield this.buildOtherElements(graph, graphBuilderInput, options);
+      // NOTE: we might need to process sectionIndex if we support unresolved element paths in dependencies
+      yield flowResult(this.buildTypes(graph, graphBuilderInput, options));
+      yield flowResult(this.buildStores(graph, graphBuilderInput, options));
+      yield flowResult(this.buildMappings(graph, graphBuilderInput, options));
+      yield flowResult(
+        this.buildConnectionsAndRuntimes(graph, graphBuilderInput, options),
+      );
+      yield flowResult(this.buildServices(graph, graphBuilderInput, options));
+      yield flowResult(this.buildDiagrams(graph, graphBuilderInput, options));
+      yield flowResult(
+        this.buildFileGenerations(graph, graphBuilderInput, options),
+      );
+      yield flowResult(
+        this.buildGenerationSpecificationss(graph, graphBuilderInput, options),
+      );
+      yield flowResult(
+        this.buildOtherElements(graph, graphBuilderInput, options),
+      );
 
-      yield this.postProcess(graph, graphBuilderInput);
+      yield flowResult(this.postProcess(graph, graphBuilderInput));
       const processingFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
@@ -554,7 +622,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
 
-      dependencyManager.setIsBuilt(true);
+      dependencyManager.buildState.pass();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_DEPENDENCIES_BUILT,
@@ -573,18 +641,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-      dependencyManager.setFailedToBuild(true);
+      dependencyManager.buildState.fail();
       throw new DependencyGraphProcessingError(error);
     }
-  });
+  }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  buildGraph = flow(function* (
-    this: V1_PureGraphManager,
+  *buildGraph(
     graph: PureModel,
     entities: Entity[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     if (!options?.quiet) {
       this.logger.info(CORE_LOG_EVENT.GRAPH_BUILD_STARTED);
     }
@@ -616,7 +683,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
       stepStartTime = stepFinishedTime;
 
-      yield this.initializeAndIndexElements(graph, graphBuilderInput, options);
+      yield flowResult(
+        this.initializeAndIndexElements(graph, graphBuilderInput, options),
+      );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
@@ -629,32 +698,34 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stepStartTime = stepFinishedTime;
 
       // Section index
-      yield this.buildSectionIndex(graph, graphBuilderInput, options);
+      yield flowResult(
+        this.buildSectionIndex(graph, graphBuilderInput, options),
+      );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_SECTION_INDICES_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[sectionIndex: ${graph.sectionIndices.length}]`,
+          `[sectionIndex: ${graph.ownSectionIndices.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
       // Types
-      yield this.buildTypes(graph, graphBuilderInput, options);
+      yield flowResult(this.buildTypes(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_DOMAIN_MODELS_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[class: ${graph.classes.length}, enumeration: ${graph.enumerations.length}, association: ${graph.associations.length}, profile: ${graph.profiles.length}, functions: ${graph.functions.length}]`,
+          `[class: ${graph.ownClasses.length}, enumeration: ${graph.ownEnumerations.length}, association: ${graph.ownAssociations.length}, profile: ${graph.ownProfiles.length}, functions: ${graph.ownFunctions.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
 
       // Stores
-      yield this.buildStores(graph, graphBuilderInput, options);
+      yield flowResult(this.buildStores(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       // TODO: we might want to detail out the number of stores by type
       if (!options?.quiet) {
@@ -662,81 +733,83 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_STORES_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[store: ${graph.stores.length}]`,
+          `[store: ${graph.ownStores.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
 
       // Mappings
-      yield this.buildMappings(graph, graphBuilderInput, options);
+      yield flowResult(this.buildMappings(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_MAPPINGS_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[mapping: ${graph.mappings.length}]`,
+          `[mapping: ${graph.ownMappings.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
 
       // Connections
-      yield this.buildConnectionsAndRuntimes(graph, graphBuilderInput, options);
+      yield flowResult(
+        this.buildConnectionsAndRuntimes(graph, graphBuilderInput, options),
+      );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_CONNECTIONS_AND_RUNTIMES_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[connection: ${graph.connections.length}, runtime: ${graph.runtimes.length}]`,
+          `[connection: ${graph.ownConnections.length}, runtime: ${graph.ownRuntimes.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
 
       // Services
-      yield this.buildServices(graph, graphBuilderInput, options);
+      yield flowResult(this.buildServices(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_SERVICES_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[service: ${graph.services.length}]`,
+          `[service: ${graph.ownServices.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
 
       // Diagrams
-      yield this.buildDiagrams(graph, graphBuilderInput, options);
+      yield flowResult(this.buildDiagrams(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_DIAGRAMS_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[diagram: ${graph.diagrams.length}]`,
+          `[diagram: ${graph.ownDiagrams.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
 
       // File Generation
-      yield this.buildFileGenerations(graph, graphBuilderInput, options);
+      yield flowResult(
+        this.buildFileGenerations(graph, graphBuilderInput, options),
+      );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILD_FILE_GENERATIONS_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[file-generation: ${graph.fileGenerations.length}]`,
+          `[file-generation: ${graph.ownFileGenerations.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
 
       // Generation Specifications (tree)
-      yield this.buildGenerationSpecificationss(
-        graph,
-        graphBuilderInput,
-        options,
+      yield flowResult(
+        this.buildGenerationSpecificationss(graph, graphBuilderInput, options),
       );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
@@ -744,13 +817,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           CORE_LOG_EVENT.GRAPH_BUILD_GENERATION_TREE_BUILT,
           stepFinishedTime - stepStartTime,
           'ms',
-          `[generation-specification: ${graph.generationSpecifications.length}]`,
+          `[generation-specification: ${graph.ownGenerationSpecifications.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
 
       // Other elements
-      yield this.buildOtherElements(graph, graphBuilderInput, options);
+      yield flowResult(
+        this.buildOtherElements(graph, graphBuilderInput, options),
+      );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
         this.logger.info(
@@ -760,10 +835,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
 
-      yield this.postProcess(graph, graphBuilderInput, {
-        TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
-      });
-      graph.setIsBuilt(true);
+      yield flowResult(
+        this.postProcess(graph, graphBuilderInput, {
+          TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
+        }),
+      );
+      graph.buildState.pass();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_BUILT,
@@ -782,25 +859,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-      graph.setFailedToBuild(true);
+      graph.buildState.fail();
       /**
        * Wrap all error with `GraphError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
        */
       throw error instanceof GraphError ? error : new GraphError(error);
     }
-  });
+  }
 
-  buildGenerations = flow(function* (
-    this: V1_PureGraphManager,
+  *buildGenerations(
     graph: PureModel,
     generatedEntities: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     const stepStartTime = Date.now();
     const generatedModel = graph.generationModel;
-    generatedModel.setIsBuilt(false);
-    generatedModel.setFailedToBuild(false);
+    generatedModel.buildState.reset();
     try {
       if (!options?.quiet) {
         this.logger.info(CORE_LOG_EVENT.GRAPH_BUILD_DATA_MODEL_PARSED);
@@ -827,31 +902,35 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         model: generatedModel,
       }));
 
-      yield this.initializeAndIndexElements(graph, generationGraphBuilderInput);
-
-      yield this.buildTypes(graph, generationGraphBuilderInput);
-      yield this.buildStores(graph, generationGraphBuilderInput);
-      yield this.buildMappings(graph, generationGraphBuilderInput);
-      yield this.buildConnectionsAndRuntimes(
-        graph,
-        generationGraphBuilderInput,
+      yield flowResult(
+        this.initializeAndIndexElements(graph, generationGraphBuilderInput),
       );
-      yield this.buildServices(graph, generationGraphBuilderInput);
-      yield this.buildDiagrams(graph, generationGraphBuilderInput);
-      yield this.buildFileGenerations(graph, generationGraphBuilderInput);
-      yield this.buildGenerationSpecificationss(
-        graph,
-        generationGraphBuilderInput,
-      );
-      yield this.buildOtherElements(graph, generationGraphBuilderInput);
 
-      yield this.postProcess(graph, generationGraphBuilderInput);
-      generatedModel.setIsBuilt(true);
+      yield flowResult(this.buildTypes(graph, generationGraphBuilderInput));
+      yield flowResult(this.buildStores(graph, generationGraphBuilderInput));
+      yield flowResult(this.buildMappings(graph, generationGraphBuilderInput));
+      yield flowResult(
+        this.buildConnectionsAndRuntimes(graph, generationGraphBuilderInput),
+      );
+      yield flowResult(this.buildServices(graph, generationGraphBuilderInput));
+      yield flowResult(this.buildDiagrams(graph, generationGraphBuilderInput));
+      yield flowResult(
+        this.buildFileGenerations(graph, generationGraphBuilderInput),
+      );
+      yield flowResult(
+        this.buildGenerationSpecificationss(graph, generationGraphBuilderInput),
+      );
+      yield flowResult(
+        this.buildOtherElements(graph, generationGraphBuilderInput),
+      );
+
+      yield flowResult(this.postProcess(graph, generationGraphBuilderInput));
+      generatedModel.buildState.pass();
       if (!options?.quiet) {
         this.logger.info(
           CORE_LOG_EVENT.GRAPH_GENERATIONS_BUILT,
           Date.now() - stepStartTime,
-          `${graph.generationModel.allElements.length} generated elements processed`,
+          `${graph.generationModel.allOwnElements.length} generated elements processed`,
           'ms',
         );
       }
@@ -864,14 +943,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-      generatedModel.setFailedToBuild(true);
+      generatedModel.buildState.fail();
       /**
        * Wrap all error with `GraphError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
        */
       throw error instanceof GraphError ? error : new GraphError(error);
     }
-  });
+  }
 
   private getBuilderContext(
     graph: PureModel,
@@ -898,12 +977,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
    *
    * NOTE: We aim to not do anything more than running the first pass and indexing the first pass.
    */
-  private initializeAndIndexElements = flow(function* (
-    this: V1_PureGraphManager,
+  private *initializeAndIndexElements(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.nativeElements.map((element) =>
@@ -938,19 +1016,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }),
     );
-  });
+  }
 
   /**
    * Run post-processers on elements of the graph.
    */
-  private postProcess = flow(function* (
-    this: V1_PureGraphManager,
+  private *postProcess(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: {
       TEMPORARY__keepSectionIndex?: boolean;
     },
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.elements.map((el) =>
@@ -979,16 +1056,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      * perserve the element path both resolved and unresolved
      */
     if (!options?.TEMPORARY__keepSectionIndex) {
-      graph.deleteSectionIndex();
+      graph.TEMP__deleteOwnSectionIndex();
     }
-  });
+  }
 
-  private buildTypes = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildTypes(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     // Second pass
     yield Promise.all(
       inputs.flatMap((input) =>
@@ -1088,14 +1164,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildStores = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildStores(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
@@ -1144,14 +1219,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildMappings = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildMappings(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
@@ -1188,14 +1262,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildConnectionsAndRuntimes = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildConnectionsAndRuntimes(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     // NOTE: connections must be built before runtimes
     yield Promise.all(
       inputs.flatMap((input) =>
@@ -1221,14 +1294,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildServices = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildServices(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.services.map((element) =>
@@ -1241,14 +1313,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildDiagrams = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildDiagrams(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.diagrams.map((element) =>
@@ -1261,14 +1332,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildFileGenerations = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildFileGenerations(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.fileGenerations.map((element) =>
@@ -1281,14 +1351,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildGenerationSpecificationss = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildGenerationSpecificationss(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.generationSpecifications.map((element) =>
@@ -1301,14 +1370,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildSectionIndex = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildSectionIndex(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.sectionIndices.map((element) =>
@@ -1321,14 +1389,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-  });
+  }
 
-  private buildOtherElements = flow(function* (
-    this: V1_PureGraphManager,
+  private *buildOtherElements(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ) {
+  ): GeneratorFn<void> {
     yield Promise.all(
       this.extensions.sortedExtraElementBuilders.map(async (builder) => {
         await Promise.all(
@@ -1405,7 +1472,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }),
     );
-  });
+  }
 
   private visitWithErrorHandling<T>(
     element: V1_PackageableElement,
@@ -1425,14 +1492,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Grammar ---------------------------------------------
 
-  graphToPureCode = flow(function* (
-    this: V1_PureGraphManager,
-    graph: PureModel,
-  ): GeneratorFn<string> {
+  *graphToPureCode(graph: PureModel): GeneratorFn<string> {
     const startTime = Date.now();
     const graphData = this.graphToPureModelContextData(graph);
-    const grammarToJson = (yield this.engine.pureModelContextDataToPureCode(
-      graphData,
+    const grammarToJson = (yield flowResult(
+      this.engine.pureModelContextDataToPureCode(graphData),
     )) as string;
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
@@ -1440,29 +1504,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       'ms',
     );
     return grammarToJson;
-  });
+  }
 
-  private pureCodeToPureModelContextData = flow(function* (
-    this: V1_PureGraphManager,
+  private *pureCodeToPureModelContextData(
     code: string,
     options?: { onError?: () => void },
   ): GeneratorFn<V1_PureModelContextData> {
-    return (yield this.engine.pureCodeToPureModelContextData(
-      code,
-      options,
+    return (yield flowResult(
+      this.engine.pureCodeToPureModelContextData(code, options),
     )) as V1_PureModelContextData;
-  });
+  }
 
-  entitiesToPureCode = flow(function* (
-    this: V1_PureGraphManager,
-    entities: Entity[],
-  ): GeneratorFn<string> {
-    const graphData = (yield this.V1_entitiesToPureModelContextData(
-      entities,
+  *entitiesToPureCode(entities: Entity[]): GeneratorFn<string> {
+    const graphData = (yield flowResult(
+      this.entitiesToPureModelContextData(entities),
     )) as V1_PureModelContextData;
     const startTime = Date.now();
-    const grammarToJson = (yield this.engine.pureModelContextDataToPureCode(
-      graphData,
+    const grammarToJson = (yield flowResult(
+      this.engine.pureModelContextDataToPureCode(graphData),
     )) as string;
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
@@ -1470,140 +1529,139 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       'ms',
     );
     return grammarToJson;
-  });
+  }
 
-  pureCodeToEntities = flow(function* (
-    this: V1_PureGraphManager,
-    code: string,
-  ): GeneratorFn<Entity[]> {
-    const graphData = (yield this.pureCodeToPureModelContextData(
-      code,
+  *pureCodeToEntities(code: string): GeneratorFn<Entity[]> {
+    const graphData = (yield flowResult(
+      this.pureCodeToPureModelContextData(code),
     )) as V1_PureModelContextData;
     return this.pureModelContextDataToEntities(graphData);
-  });
+  }
 
-  pureCodeToLambda = flow(function* (
-    this: V1_PureGraphManager,
+  *pureCodeToLambda(
     lambda: string,
     lambdaId: string,
   ): GeneratorFn<RawLambda | undefined> {
-    const result = (yield this.engine.transformCodeToLambda(
-      lambda,
-      lambdaId,
+    const result = (yield flowResult(
+      this.engine.transformCodeToLambda(lambda, lambdaId),
     )) as V1_RawLambda | undefined;
     return result ? new RawLambda(result.parameters, result.body) : undefined;
-  });
-
-  lambdaToPureCode(
-    lambdas: Map<string, RawLambda>,
-    pretty?: boolean,
-  ): Promise<Map<string, string>> {
-    return this.engine.transformLambdasToCode(
-      lambdas,
-      this.pureProtocolProcessorPlugins,
-      pretty,
-    );
   }
 
-  pureCodeToRelationalOperationElement = flow(function* (
-    this: V1_PureGraphManager,
+  *lambdaToPureCode(
+    lambdas: Map<string, RawLambda>,
+    pretty?: boolean,
+  ): GeneratorFn<Map<string, string>> {
+    return (yield flowResult(
+      this.engine.transformLambdasToCode(
+        lambdas,
+        this.pureProtocolProcessorPlugins,
+        pretty,
+      ),
+    )) as Map<string, string>;
+  }
+
+  *pureCodeToRelationalOperationElement(
     operation: string,
     operationId: string,
   ): GeneratorFn<RawRelationalOperationElement | undefined> {
-    return (yield this.engine.transformPureCodeToRelationalOperationElement(
-      operation,
-      operationId,
+    return (yield flowResult(
+      this.engine.transformPureCodeToRelationalOperationElement(
+        operation,
+        operationId,
+      ),
     )) as V1_RawRelationalOperationElement | undefined;
-  });
+  }
 
-  relationalOperationElementToPureCode(
+  *relationalOperationElementToPureCode(
     operations: Map<string, RawRelationalOperationElement>,
-  ): Promise<Map<string, string>> {
-    return this.engine.transformRelationalOperationElementsToPureCode(
-      operations,
-    );
+  ): GeneratorFn<Map<string, string>> {
+    return (yield flowResult(
+      this.engine.transformRelationalOperationElementsToPureCode(operations),
+    )) as Map<string, string>;
   }
 
   // ------------------------------------------- Compile -------------------------------------------
 
-  compileGraph = flow(function* (
-    this: V1_PureGraphManager,
+  *compileGraph(
     graph: PureModel,
     options?: { onError?: () => void; keepSourceInformation?: boolean },
-  ) {
+  ): GeneratorFn<void> {
     const fullModel = this.getFullGraphModelData(graph, {
       keepSourceInformation: options?.keepSourceInformation,
     });
-    yield this.engine.compilePureModelContextData(fullModel, {
-      onError: options?.onError,
-    });
-  });
+    yield flowResult(
+      this.engine.compilePureModelContextData(fullModel, {
+        onError: options?.onError,
+      }),
+    );
+  }
 
-  compileText = flow(function* (
-    this: V1_PureGraphManager,
+  *compileText(
     graphGrammar: string,
     graph: PureModel,
     options?: { onError?: () => void },
   ): GeneratorFn<Entity[]> {
     const compileContext = this.getGraphCompileContext(graph);
-    const pureModelContextData = (yield this.engine.compileText(
-      graphGrammar,
-      compileContext,
-      options,
+    const pureModelContextData = (yield flowResult(
+      this.engine.compileText(graphGrammar, compileContext, options),
     )) as V1_PureModelContextData;
     return this.pureModelContextDataToEntities(pureModelContextData);
-  });
+  }
 
-  getLambdaReturnType = flow(function* (
-    this: V1_PureGraphManager,
+  *getLambdaReturnType(
     lambda: RawLambda,
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
   ): GeneratorFn<string> {
-    return (yield this.engine.getLambdaReturnType(
-      lambda.accept_RawValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(
-          new V1_GraphTransformerContextBuilder(
-            this.pureProtocolProcessorPlugins,
-          )
-            .withKeepSourceInformationFlag(
-              Boolean(options?.keepSourceInformation),
+    return (yield flowResult(
+      this.engine.getLambdaReturnType(
+        lambda.accept_RawValueSpecificationVisitor(
+          new V1_RawValueSpecificationTransformer(
+            new V1_GraphTransformerContextBuilder(
+              this.pureProtocolProcessorPlugins,
             )
-            .build(),
-        ),
-      ) as V1_RawLambda,
-      this.getFullGraphModelData(graph),
+              .withKeepSourceInformationFlag(
+                Boolean(options?.keepSourceInformation),
+              )
+              .build(),
+          ),
+        ) as V1_RawLambda,
+        this.getFullGraphModelData(graph),
+      ),
     )) as string;
-  });
+  }
 
   // ------------------------------------------- Generation -------------------------------------------
 
-  getAvailableGenerationConfigurationDescriptions(): Promise<
+  *getAvailableGenerationConfigurationDescriptions(): GeneratorFn<
     GenerationConfigurationDescription[]
   > {
-    return this.engine.getAvailableGenerationConfigurationDescriptions();
+    return (yield flowResult(
+      this.engine.getAvailableGenerationConfigurationDescriptions(),
+    )) as GenerationConfigurationDescription[];
   }
 
-  generateFile = flow(function* (
-    this: V1_PureGraphManager,
+  *generateFile(
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,
     graph: PureModel,
   ): GeneratorFn<GenerationOutput[]> {
     return (
-      (yield this.engine.generateFile(
-        fileGeneration.createConfig(),
-        fileGeneration.type,
-        generationMode,
-        this.getFullGraphModelData(graph),
+      (yield flowResult(
+        this.engine.generateFile(
+          fileGeneration.createConfig(),
+          fileGeneration.type,
+          generationMode,
+          this.getFullGraphModelData(graph),
+        ),
       )) as PlainObject<V1_GenerationOutput>[]
     ).map((output) =>
       V1_GenerationOutput.serialization.fromJson(output).build(),
     );
-  });
+  }
 
-  generateModel = flow(function* (
-    this: V1_PureGraphManager,
+  *generateModel(
     generationElement: PackageableElement,
     graph: PureModel,
   ): GeneratorFn<Entity[]> {
@@ -1633,7 +1691,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
     }
     return this.pureModelContextDataToEntities(generatedModel);
-  });
+  }
 
   // ------------------------------------------- ValueSpecification -------------------------------------------
 
@@ -1652,23 +1710,27 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  serializeValueSpecification(
+    valueSpecification: ValueSpecification,
+  ): Record<PropertyKey, unknown> {
+    return V1_serializeValueSpecification(
+      valueSpecification.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationTransformer(
+          [],
+          new Map<string, unknown[]>(),
+          true,
+          false,
+        ),
+      ),
+    ) as Record<PropertyKey, unknown>;
+  }
+
   buildRawValueSpecification(
-    protocol: ValueSpecification,
+    valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification {
     // converts value spec to json
-    const _valueSpecification = protocol.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationTransformer(
-        [],
-        new Map<string, unknown[]>(),
-        true,
-        false,
-      ),
-    );
-    const json = V1_serializeValueSpecification(_valueSpecification) as Record<
-      PropertyKey,
-      unknown
-    >;
+    const json = this.serializeValueSpecification(valueSpecification);
     // deserialize json and builds metamodal raw value spec
     const rawValueSpecification = V1_deserializeRawValueSpecification(json);
     return rawValueSpecification.accept_RawValueSpecificationVisitor(
@@ -1699,25 +1761,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ------------------------------------------- Import -------------------------------------------
 
-  getAvailableImportConfigurationDescriptions(): Promise<
+  *getAvailableImportConfigurationDescriptions(): GeneratorFn<
     ImportConfigurationDescription[]
   > {
-    return this.engine.getAvailableImportConfigurationDescriptions();
+    return (yield flowResult(
+      this.engine.getAvailableImportConfigurationDescriptions(),
+    )) as ImportConfigurationDescription[];
   }
 
-  externalFormatTextToEntities = flow(function* (
-    this: V1_PureGraphManager,
+  *externalFormatTextToEntities(
     code: string,
     type: string,
     mode: ImportMode,
   ): GeneratorFn<Entity[]> {
-    const graphData = (yield this.engine.transformExternalFormatToProtocol(
-      code,
-      type,
-      mode,
+    const graphData = (yield flowResult(
+      this.engine.transformExternalFormatToProtocol(code, type, mode),
     )) as V1_PureModelContextData;
     return this.pureModelContextDataToEntities(graphData);
-  });
+  }
 
   getExamplePureProtocolText(): string {
     return JSON.stringify(
@@ -1726,6 +1787,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.engine.config.tabSize,
     );
   }
+
   getExampleExternalFormatImportText(): string {
     return JSON.stringify(
       {
@@ -1742,14 +1804,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  entitiesToPureProtocolText = async (entities: Entity[]): Promise<string> =>
-    JSON.stringify(
+  *entitiesToPureProtocolText(entities: Entity[]): GeneratorFn<string> {
+    return JSON.stringify(
       V1_serializePureModelContext(
-        await this.V1_entitiesToPureModelContextData(entities),
+        (yield flowResult(
+          this.entitiesToPureModelContextData(entities),
+        )) as V1_PureModelContextData,
       ),
       undefined,
       this.engine.config.tabSize,
     );
+  }
 
   pureProtocolToEntities = (protocol: string): Entity[] => {
     const graphData = V1_deserializePureModelContextData(JSON.parse(protocol));
@@ -1822,8 +1887,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return executeInput;
   };
 
-  executeMapping = flow(function* (
-    this: V1_PureGraphManager,
+  *executeMapping(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
@@ -1846,10 +1910,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_serializeExecutionResult(
       lossless ? losslessParse(resultTest) : JSON.parse(resultTest),
     ).build();
-  });
+  }
 
-  generateTestData = flow(function* (
-    this: V1_PureGraphManager,
+  *generateTestData(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
@@ -1866,10 +1929,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return (yield this.engine.engineServerClient.generateTestDataWithDefaultSeed(
       V1_ExecuteInput.serialization.toJson(executeInput),
     )) as string;
-  });
+  }
 
-  generateExecutionPlan = flow(function* (
-    this: V1_PureGraphManager,
+  *generateExecutionPlan(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
@@ -1886,7 +1948,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return (yield this.engine.engineServerClient.generatePlan(
       V1_ExecuteInput.serialization.toJson(executeInput),
     )) as RawExecutionPlan;
-  });
+  }
 
   buildExecutionPlan(
     executionPlanJson: PlainObject<V1_ExecutionPlan>,
@@ -1903,7 +1965,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  transformExecutionPlan(
+  serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): PlainObject<V1_ExecutionPlan> {
     return V1_serializeExecutionPlan(
@@ -1916,7 +1978,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  getExecutionNodeProtocolJson(
+  serializeExecutionNode(
     executionNode: ExecutionNode,
   ): PlainObject<V1_ExecutionNode> {
     return V1_serializeExecutionNode(
@@ -1931,68 +1993,44 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- V1_Store ---------------------------------------------
 
-  generateStore = flow(function* (
-    this: V1_PureGraphManager,
-    input: GenerateStoreInput,
-  ): GeneratorFn<string> {
-    const generateStoreInput = new V1_GenerateStoreInput();
-    generateStoreInput.connection = V1_transformConnection(
+  *buildDatabase(input: DatabaseBuilderInput): GeneratorFn<Entity[]> {
+    const dbBuilderInput = new V1_DatabaseBuilderInput();
+    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
       input.connection,
-      false,
       new V1_GraphTransformerContextBuilder(
         this.pureProtocolProcessorPlugins,
       ).build(),
     );
-    generateStoreInput.targetPackage = input.targetPackage;
-    generateStoreInput.targetName = input.targetName;
-    generateStoreInput.maxTables = input.maxTables;
-    generateStoreInput.enrichTables = input.enrichTables;
-    generateStoreInput.enrichPrimaryKeys = input.enrichPrimaryKeys;
-    generateStoreInput.enrichColumns = input.enrichColumns;
-    generateStoreInput.patterns = input.patterns.map(
-      (storePattern: StorePattern): V1_StorePattern => {
-        const generateStore = new V1_StorePattern();
-        generateStore.schemaPattern = storePattern.schemaPattern;
-        generateStore.tablePattern = storePattern.tablePattern;
-        generateStore.escapeSchemaPattern = storePattern.escapeSchemaPattern;
-        generateStore.escapeTablePattern = storePattern.escapeTablePattern;
-        return generateStore;
+    const targetDatabase = new V1_TargetDatabase();
+    targetDatabase.package = input.targetDatabase.package;
+    targetDatabase.name = input.targetDatabase.name;
+    dbBuilderInput.targetDatabase = targetDatabase;
+    const config = new V1_DatabaseBuilderConfig();
+    config.maxTables = input.config.maxTables;
+    config.enrichTables = input.config.enrichTables;
+    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
+    config.enrichColumns = input.config.enrichColumns;
+    config.patterns = input.config.patterns.map(
+      (storePattern: DatabasePattern): V1_DatabasePattern => {
+        const pattern = new V1_DatabasePattern();
+        pattern.schemaPattern = storePattern.schemaPattern;
+        pattern.tablePattern = storePattern.tablePattern;
+        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
+        pattern.escapeTablePattern = storePattern.escapeTablePattern;
+        return pattern;
       },
     );
-    const store = (yield this.engine.engineServerClient.generateStore(
-      V1_GenerateStoreInput.serialization.toJson(generateStoreInput),
-    )) as PlainObject<V1_Store>;
-    return (yield this.engine.pureModelContextDataToPureCode(
-      V1_deserializePureModelContextData({
-        _type: V1_PureModelContextType.DATA,
-        elements: [store],
-      }),
-    )) as string;
-  });
-
-  saveStore = flow(function* (
-    this: V1_PureGraphManager,
-    store: string,
-    graph: PureModel,
-  ): GeneratorFn<Store> {
-    const data = (yield this.engine.pureCodeToPureModelContextData(
-      store,
-    )) as V1_PureModelContextData;
-    const v1Store = data.elements.find((e) => e instanceof V1_Store);
-    const graphBuilderInput: V1_GraphBuilderInput[] = [
-      { model: graph, data: indexPureModelContextData(data, this.extensions) },
-    ];
-    yield this.initializeAndIndexElements(graph, graphBuilderInput);
-    yield this.buildStores(graph, graphBuilderInput);
-    return graph.getStore(
-      guaranteeNonNullable(v1Store, 'No generated store found in text').path,
-    );
-  });
+    dbBuilderInput.config = config;
+    const jsonGraph = (yield this.engine.engineServerClient.buildDatabase(
+      V1_DatabaseBuilderInput.serialization.toJson(dbBuilderInput),
+    )) as PlainObject<V1_PureModelContextData>;
+    const graph = V1_deserializePureModelContextData(jsonGraph);
+    return this.pureModelContextDataToEntities(graph);
+  }
 
   // --------------------------------------------- V1_Service ---------------------------------------------
 
-  runServiceTests = flow(function* (
-    this: V1_PureGraphManager,
+  *runServiceTests(
     service: Service,
     graph: PureModel,
   ): GeneratorFn<ServiceTestResult[]> {
@@ -2008,15 +2046,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     protocolGraph.elements.push(targetService);
     return (
-      (yield this.engine.runServiceTests(
-        service.path,
-        protocolGraph,
+      (yield flowResult(
+        this.engine.runServiceTests(service.path, protocolGraph),
       )) as V1_ServiceTestResult[]
     ).map((result) => result.build());
-  });
+  }
 
-  registerService = flow(function* (
-    this: V1_PureGraphManager,
+  *registerService(
     graph: PureModel,
     service: Service,
     projectId: string,
@@ -2105,13 +2141,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         )) as PlainObject<V1_ServiceRegistrationResult>,
       )
       .build();
-  });
+  }
 
-  activateService = flow(function* (
-    this: V1_PureGraphManager,
-    serviceUrl: string,
-    serviceId: string,
-  ): GeneratorFn<void> {
+  *activateService(serviceUrl: string, serviceId: string): GeneratorFn<void> {
     const serviceStoreg = V1_ServiceStorage.serialization.fromJson(
       (yield this.engine.engineServerClient.getServiceVersionInfo(
         serviceUrl,
@@ -2122,7 +2154,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       serviceUrl,
       serviceStoreg.getGenerationId(),
     );
-  });
+  }
 
   private createServiceRegistrationInput = (
     graph: PureModel,
@@ -2151,17 +2183,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Change Detection ---------------------------------------------
 
-  buildHashesIndex = async (
-    entities: Entity[],
-  ): Promise<Map<string, string>> => {
+  *buildHashesIndex(entities: Entity[]): GeneratorFn<Map<string, string>> {
     const hashMap = new Map<string, string>();
     const pureModelContextData = new V1_PureModelContextData();
-    await V1_entitiesToPureModelContextData(
+    yield V1_entitiesToPureModelContextData(
       entities,
       pureModelContextData,
       this.pureProtocolProcessorPlugins,
     );
-    await Promise.all(
+    yield Promise.all(
       pureModelContextData.elements.map((element) =>
         promisify(() =>
           runInAction(() => hashMap.set(element.path, element.hashCode)),
@@ -2169,7 +2199,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ),
     );
     return hashMap;
-  };
+  }
 
   // ------------------------------------------- Raw V1_Protocol Handling -------------------------------------------
 
@@ -2231,8 +2261,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- SHARED ---------------------------------------------
 
-  private V1_entitiesToPureModelContextData = flow(function* (
-    this: V1_PureGraphManager,
+  private *entitiesToPureModelContextData(
     entities: Entity[],
   ): GeneratorFn<V1_PureModelContextData> {
     const graphData = new V1_PureModelContextData();
@@ -2242,7 +2271,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pureProtocolProcessorPlugins,
     );
     return graphData;
-  });
+  }
 
   private getFullGraphModelData(
     graph: PureModel,
@@ -2366,7 +2395,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): V1_PureModelContextData => {
     const startTime = Date.now();
     const graphData = new V1_PureModelContextData();
-    graphData.elements = graph.allElements.map((e) =>
+    graphData.elements = graph.allOwnElements.map((e) =>
       this.elementToProtocol(e, {
         keepSourceInformation: options?.keepSourceInformation,
       }),
@@ -2389,7 +2418,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const generatedModel = graph.generationModel;
     graphData.elements = [
       ...dependencyManager.allElements,
-      ...generatedModel.allElements,
+      ...generatedModel.allOwnElements,
     ].map((e) => this.elementToProtocol(e));
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED,

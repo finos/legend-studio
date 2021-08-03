@@ -31,15 +31,10 @@ import { GrammarTextEditor } from './edit-panel/GrammarTextEditor';
 import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
-import {
-  SIDE_BAR_RESIZE_SNAP_THRESHOLD,
-  DEFAULT_SIDE_BAR_SIZE,
-  AUX_PANEL_RESIZE_SNAP_THRESHOLD,
-} from '../../stores/EditorConfig';
 import type { EditorHotkey } from '../../stores/EditorStore';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import Backdrop from '@material-ui/core/Backdrop';
-import type { EditorRouteParams } from '../../stores/Router';
+import type { EditorPathParams } from '../../stores/LegendStudioRouter';
 import {
   ActionAlertType,
   ActionAlertActionType,
@@ -50,6 +45,7 @@ import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { isNonNullable } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],
@@ -66,7 +62,7 @@ const buildHotkeySupport = (
 };
 
 export const EditorInner = observer(() => {
-  const params = useParams<EditorRouteParams>();
+  const params = useParams<EditorPathParams>();
   const projectId = params.projectId;
   const workspaceId = params.workspaceId;
   const editorStore = useEditorStore();
@@ -89,39 +85,22 @@ export const EditorInner = observer(() => {
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // These create snapping effect on panel resizing
-  const snapSideBar = (newSize: number | undefined): void => {
+  const resizeSideBar = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
-      editorStore.setSideBarSize(
-        newSize < SIDE_BAR_RESIZE_SNAP_THRESHOLD
-          ? editorStore.sideBarSize > 0
-            ? 0
-            : DEFAULT_SIDE_BAR_SIZE
-          : newSize,
-      );
+      editorStore.sideBarDisplayState.setSize(newSize);
     }
   };
-  const snapAuxPanel = (newSize: number | undefined): void => {
+  const resizeAuxPanel = (newSize: number | undefined): void => {
     if (ref.current) {
       if (newSize !== undefined) {
-        if (
-          newSize >=
-          ref.current.offsetHeight - AUX_PANEL_RESIZE_SNAP_THRESHOLD
-        ) {
-          editorStore.setAuxPanelSize(ref.current.offsetHeight);
-        } else if (newSize <= AUX_PANEL_RESIZE_SNAP_THRESHOLD) {
-          editorStore.setAuxPanelSize(
-            editorStore.auxPanelSize > 0 ? 0 : AUX_PANEL_RESIZE_SNAP_THRESHOLD,
-          );
-        } else {
-          editorStore.setAuxPanelSize(newSize);
-        }
+        editorStore.auxPanelDisplayState.setSize(newSize);
       }
     }
   };
 
   useEffect(() => {
     if (ref.current) {
-      editorStore.setMaxAuxPanelSize(ref.current.offsetHeight);
+      editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
     }
   }, [editorStore, ref, height, width]);
 
@@ -140,9 +119,9 @@ export const EditorInner = observer(() => {
 
   // Initialize the app
   useEffect(() => {
-    editorStore
-      .init(projectId, workspaceId)
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(editorStore.init(projectId, workspaceId)).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [editorStore, applicationStore, projectId, workspaceId]);
 
   // Browser Navigation Blocking (reload, close tab, go to another URL)
@@ -238,19 +217,15 @@ export const EditorInner = observer(() => {
     return true;
   };
   const editable =
-    (editorStore.graphState.graph.failedToBuild ||
-      editorStore.graphState.graph.isBuilt) &&
+    editorStore.graphState.graph.buildState.hasCompleted &&
     editorStore.isInitialized;
   const isResolvingConflicts =
     editorStore.isInConflictResolutionMode &&
     !editorStore.conflictResolutionState.hasResolvedAllConflicts;
-
-  // NOTE: this type any cast is needed to handle the outdated typings of `history` used by `react-router@5`.
-  // TODO: We will fix this when we move to `react-router@6`
   const promptComponent = (
     <Prompt
       when={onNavigationChangeIndicator}
-      message={handleRouteNavigationBlocking as unknown as any} // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      message={handleRouteNavigationBlocking}
     />
   );
 
@@ -279,8 +254,8 @@ export const EditorInner = observer(() => {
                 >
                   <SplitPane
                     split="vertical"
-                    size={editorStore.sideBarSize}
-                    onDragFinished={snapSideBar}
+                    size={editorStore.sideBarDisplayState.size}
+                    onDragFinished={resizeSideBar}
                     minSize={0}
                     maxSize={-600}
                   >
@@ -288,8 +263,8 @@ export const EditorInner = observer(() => {
                     <SplitPane
                       primary="second"
                       split="horizontal"
-                      size={editorStore.auxPanelSize}
-                      onDragFinished={snapAuxPanel}
+                      size={editorStore.auxPanelDisplayState.size}
+                      onDragFinished={resizeAuxPanel}
                       minSize={0}
                       maxSize={0}
                     >

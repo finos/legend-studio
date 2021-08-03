@@ -3806,6 +3806,31 @@ export const testRelationalDatabaseConnectionRoundtrip = [
     classifierPath: 'meta::relational::metamodel::Database',
   },
   {
+    path: 'apps::myRedshift',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'oauth',
+          oauthKey: 'dummy',
+          scopeName: 'UserPass',
+        },
+        datasourceSpecification: {
+          _type: 'redshift',
+          databaseName: 'test',
+          endpoint: 'endpoint',
+          port: 5439,
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'H2',
+      },
+      name: 'myRedshift',
+      package: 'apps',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: 'apps::mySnowFlake',
     content: {
       _type: 'connection',
@@ -8771,8 +8796,6 @@ export const testRelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class:
-                  'apps::meta::pure::tests::model::simple::PlaceOfInterest',
                 property: 'location',
               },
               relationalOperation: {
@@ -8784,12 +8807,12 @@ export const testRelationalAssociationMapping = [
                   },
                 ],
               },
+              source: 'apps_meta_pure_tests_model_simple_PlaceOfInterest',
               target: 'apps_meta_pure_tests_model_simple_Location',
             },
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Location',
                 property: 'placeOfInterest',
               },
               relationalOperation: {
@@ -8801,6 +8824,7 @@ export const testRelationalAssociationMapping = [
                   },
                 ],
               },
+              source: 'apps_meta_pure_tests_model_simple_Location',
               target: 'apps_meta_pure_tests_model_simple_PlaceOfInterest',
             },
           ],

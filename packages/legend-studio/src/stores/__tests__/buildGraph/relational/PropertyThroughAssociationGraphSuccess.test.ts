@@ -21,7 +21,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import {
   DynaFunction,
   TableAliasColumn,
@@ -32,10 +32,9 @@ import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/mo
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
+  await buildGraphBasic(
     targetSetImplementationThroughAssociation as Entity[],
+    editorStore,
   );
 });
 

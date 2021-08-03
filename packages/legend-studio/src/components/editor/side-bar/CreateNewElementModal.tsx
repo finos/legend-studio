@@ -352,13 +352,13 @@ export const CreateNewElementModal = observer(() => {
     newElementState.setElementType(val.value);
   // Submit button
   const closeModal = (): void => newElementState.closeModal();
-  const [packageName, elementName] = resolvePackageAndElementName(
+  const [packagePath, elementName] = resolvePackageAndElementName(
     selectedPackage,
-    editorStore.graphState.graph.isRoot(selectedPackage),
+    selectedPackage === editorStore.graphState.graph.root,
     name,
   );
   const resolvedPackage =
-    editorStore.graphState.graph.getNullablePackage(packageName);
+    editorStore.graphState.graph.getNullablePackage(packagePath);
   const needsToOverride = Boolean(
     resolvedPackage?.children.find((child) => child.name === elementName),
   );

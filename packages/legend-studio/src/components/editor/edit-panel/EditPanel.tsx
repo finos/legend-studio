@@ -40,7 +40,7 @@ import {
 } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffView } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import { DiagramEditorState } from '../../../stores/editor-state/element-editor-state/DiagramEditorState';
-import { DiagramEditor } from './DiagramEditor';
+import { DiagramEditor } from './diagram-editor/DiagramEditor';
 import { ModelLoader } from '../../editor/edit-panel/ModelLoader';
 import { ModelLoaderState } from '../../../stores/editor-state/ModelLoaderState';
 import { FunctionEditorState } from '../../../stores/editor-state/element-editor-state/FunctionEditorState';
@@ -53,7 +53,7 @@ import { ElementNativeView } from './element-generation-editor/ElementNativeView
 import { ServiceEditor } from './service-editor/ServiceEditor';
 import { PackageableRuntimeEditor } from './RuntimeEditor';
 import { PackageableRuntimeEditorState } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
-import { PackageableConnectionEditorState } from '../../../stores/editor-state/element-editor-state/ConnectionEditorState';
+import { PackageableConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { PackageableConnectionEditor } from './connection-editor/ConnectionEditor';
 import { FileGenerationEditorState } from '../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
 import { FileGenerationEditor } from './element-generation-editor/FileGenerationEditor';

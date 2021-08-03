@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, flow, makeObservable } from 'mobx';
+import { computed, observable, action, makeObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import { LambdaEditorState } from './LambdaEditorState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeType, assertType } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
@@ -58,16 +59,15 @@ export class FunctionBodyEditorState extends LambdaEditorState {
     return buildSourceInformationSourceId([this.functionElement.path]);
   }
 
-  convertLambdaGrammarStringToObject = flow(function* (
-    this: FunctionBodyEditorState,
-  ) {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     if (this.lambdaString) {
       try {
-        const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda = (yield flowResult(
+          this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          ),
+        )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.functionElement.body = lambda ? (lambda.body as object[]) : [];
       } catch (error: unknown) {
@@ -83,13 +83,12 @@ export class FunctionBodyEditorState extends LambdaEditorState {
       this.clearErrors();
       this.functionElement.body = [];
     }
-  });
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: FunctionBodyEditorState,
+  *convertLambdaObjectToGrammarString(
     pretty: boolean,
     firstLoad?: boolean,
-  ) {
+  ): GeneratorFn<void> {
     if (!this.functionElement.isStub) {
       this.isConvertingFunctionBodyToString = true;
       try {
@@ -99,11 +98,12 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           this.functionElement.body as object,
         );
         lambdas.set(this.lambdaId, functionLamba);
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         if (grammarText) {
           let grammarString = this.extractLambdaString(grammarText);
@@ -141,7 +141,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 }
 
 export class FunctionEditorState extends ElementEditorState {

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, flow } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { uuid } from '@finos/legend-studio-shared';
 import { SourceInformation } from '../../../models/metamodels/pure/action/SourceInformation';
 import type {
@@ -44,6 +45,8 @@ export abstract class LambdaEditorState {
       clearErrors: action,
       setCompilationError: action,
       setParserError: action,
+      convertLambdaGrammarStringToObject: flow,
+      convertLambdaObjectToGrammarString: flow,
     });
 
     this.lambdaString = lambdaString;
@@ -109,6 +112,8 @@ export abstract class LambdaEditorState {
     );
   }
 
-  abstract convertLambdaGrammarStringToObject(): Promise<void>;
-  abstract convertLambdaObjectToGrammarString(pretty: boolean): Promise<void>;
+  abstract convertLambdaGrammarStringToObject(): GeneratorFn<void>;
+  abstract convertLambdaObjectToGrammarString(
+    pretty: boolean,
+  ): GeneratorFn<void>;
 }

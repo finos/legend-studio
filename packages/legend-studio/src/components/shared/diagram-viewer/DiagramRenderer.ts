@@ -18,6 +18,11 @@ import {
   uuid,
   noop,
   getNullableFirstElement,
+  UnsupportedOperationError,
+  IllegalStateError,
+  guaranteeNonNullable,
+  findLast,
+  uniqBy,
 } from '@finos/legend-studio-shared';
 import { PositionedRectangle } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/PositionedRectangle';
 import { Point } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
@@ -40,9 +45,40 @@ import type { AbstractProperty } from '../../../models/metamodels/pure/model/pac
 import { DerivedProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PropertyExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
+import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
+import { GenericType } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
+import { Property } from '../../../models/metamodels/pure/model/packageableElements/domain/Property';
+import { Multiplicity } from '../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
+import { action, makeObservable, observable } from 'mobx';
+
+export enum DIAGRAM_INTERACTION_MODE {
+  LAYOUT,
+  PAN,
+  ZOOM_IN,
+  ZOOM_OUT,
+  ADD_RELATIONSHIP,
+  ADD_CLASS,
+}
+
+export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
+  // ASSOCIATION,
+  PROPERTY,
+  INHERITANCE,
+  NONE,
+}
+
+const MIN_ZOOM_LEVEL = 0.05; // 5%
+const FIT_ZOOM_PADDING = 10;
+export const DIAGRAM_ZOOM_LEVELS = [
+  50, 75, 90, 100, 110, 125, 150, 200, 250, 300, 400,
+];
+
+const getPropertyDisplayName = (property: AbstractProperty): string =>
+  (property instanceof DerivedProperty ? '/ ' : '') + property.name;
 
 export class DiagramRenderer {
   diagram: Diagram;
+
   isReadOnly: boolean;
 
   div: HTMLDivElement;
@@ -59,11 +95,13 @@ export class DiagramRenderer {
    */
   virtualScreen: PositionedRectangle;
   /**
-   * This is the offset of the virtual screen with respect to the canvas. To understand this better, please read on.
-   * (to make it clear, we have 2 types of coordinate: `stored` (in the JSON protocol) and `rendering`)
-   * There are 2 important facts about all the stored coordinates in the protocol (e.g. position of classview, line points):
-   * 1. Zoom is not taken into account (rendering coordinates change as we zoom)
+   * This refers the offset of the virtual screen with respect to the canvas. We have 2 types of coordinate:
+   * `stored` (in the JSON protocol of class and relationship views) vs. `rendering`.
+   *
+   * There are 2 important facts about stored coordinates:
+   * 1. Zoom is not taken into account (unlike rendering coordinates which change as we zoom)
    * 2. They are with respect to the canvas, not the screen (because the screen is virtual - see above)
+   *
    * As such, when we debug, let's say we have a position (x,y), if we want to find that coordinate in the coordiante system of the canvas, we have to
    * add the offset, so the coordinate of (x, y) is (x + screenOffset.x, y + screenOffset.y) when we refer to the canvas coordinate system
    * So if we turn on debug mode and try to move the top left corner of the screen to the `offset crosshair` the screen coordinate system should align
@@ -72,6 +110,12 @@ export class DiagramRenderer {
    */
   screenOffset: Point;
   zoom: number;
+
+  // edit modes
+  // NOTE: we keep the edit mode separated like this
+  // becase we anticipate more complex interactions in the future
+  interactionMode: DIAGRAM_INTERACTION_MODE;
+  relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE;
 
   // UML specific shapes
   triangle: Point[];
@@ -139,31 +183,90 @@ export class DiagramRenderer {
   selectionBoxBorderColor: string;
 
   // Selection
+  selection?: PositionedRectangle;
   selectionStart?: Point;
   selectedClassCorner?: ClassView; // the class view which we currently select the bottom right corner
-  selection?: PositionedRectangle;
+  selectedClassProperty?: { property: AbstractProperty; selectionPoint: Point };
   selectedClasses: ClassView[];
-  selectedClassesOldPos: { classView: ClassView; oldPos: Point }[];
   selectedPropertyOrAssociation?: PropertyHolderView;
   selectedInheritance?: GeneralizationView;
   selectedPoint?: Point;
 
-  mouseOverProperty?: AbstractProperty;
+  private _selectedClassesInitialPositions: {
+    classView: ClassView;
+    oldPos: Point;
+  }[];
+
+  // Relationship
+  startClassView?: ClassView;
+  addRelationshipToDiagramFn?: (
+    start: ClassView,
+    target: ClassView,
+  ) => RelationshipView | undefined;
+
+  mouseOverClassCorner?: ClassView;
+  mouseOverClassName?: ClassView;
   mouseOverClassView?: ClassView;
+  mouseOverClassProperty?: AbstractProperty;
+  mouseOverPropertyHolderViewLabel?: PropertyHolderView;
   cursorPosition: Point;
 
   leftClick: boolean;
+  middleClick: boolean;
   rightClick: boolean;
   clickX: number;
   clickY: number;
   positionBeforeLastMove: Point;
 
-  // functions to interact with diagram editor
-  onClassViewClick: (classView: ClassView) => void = noop();
-  onBackgroundDoubleClick: (event: MouseEvent) => void = noop();
-  onAddClassPropertyForSelectedClass: (classView: ClassView) => void = noop();
+  // interactions
+  onAddClassViewClick: (point: Point) => void = noop();
+  onBackgroundDoubleClick: (point: Point) => void = noop();
+  editClassView: (classView: ClassView) => void = noop();
+  editClassName: (classView: ClassView, point: Point) => void = noop();
+  editProperty: (
+    property: AbstractProperty,
+    point: Point,
+    propertyHolderView: PropertyHolderView | undefined,
+  ) => void = noop();
+  addSimpleProperty: (classView: ClassView) => void = noop();
 
   constructor(div: HTMLDivElement, diagram: Diagram) {
+    makeObservable(this, {
+      isReadOnly: observable,
+      interactionMode: observable,
+      relationshipMode: observable,
+      zoom: observable,
+      mouseOverClassView: observable,
+      mouseOverClassName: observable,
+      mouseOverClassCorner: observable,
+      mouseOverClassProperty: observable,
+      mouseOverPropertyHolderViewLabel: observable,
+      selectionStart: observable,
+      selectedClassCorner: observable,
+      selectedClasses: observable,
+      selectedPropertyOrAssociation: observable,
+      selectedInheritance: observable,
+      leftClick: observable,
+      middleClick: observable,
+      rightClick: observable,
+      changeMode: action,
+      setIsReadOnly: action,
+      setMouseOverClassView: action,
+      setMouseOverClassName: action,
+      setMouseOverClassCorner: action,
+      setMouseOverClassProperty: action,
+      setMouseOverPropertyHolderViewLabel: action,
+      setSelectionStart: action,
+      setSelectedClassCorner: action,
+      setSelectedClasses: action,
+      setSelectedPropertyOrAssociation: action,
+      setSelectedInheritance: action,
+      setLeftClick: action,
+      setMiddleClick: action,
+      setRightClick: action,
+      setZoomLevel: action,
+    });
+
     this.diagram = diagram;
 
     // Container and canvas
@@ -257,6 +360,8 @@ export class DiagramRenderer {
     this.selectionBoxBorderColor = 'rgba(0,0,0, 0.02)';
 
     // Preferences
+    this.interactionMode = DIAGRAM_INTERACTION_MODE.LAYOUT;
+    this.relationshipMode = DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE;
     this.isReadOnly = false;
     this.screenPadding = 20;
     this.classViewSpaceX = 10;
@@ -267,9 +372,10 @@ export class DiagramRenderer {
     this.selectionStart = undefined;
     this.selection = undefined;
     this.selectedClasses = [];
-    this.selectedClassesOldPos = [];
+    this._selectedClassesInitialPositions = [];
     this.cursorPosition = new Point(0, 0);
     this.leftClick = false;
+    this.middleClick = false;
     this.rightClick = false;
     this.clickX = 0;
     this.clickY = 0;
@@ -282,16 +388,78 @@ export class DiagramRenderer {
     this.div.onmousemove = this.mousemove.bind(this);
   }
 
-  start(): void {
+  setIsReadOnly(val: boolean): void {
+    this.isReadOnly = val;
+  }
+
+  setMouseOverClassView(val: ClassView | undefined): void {
+    this.mouseOverClassView = val;
+  }
+
+  setMouseOverClassName(val: ClassView | undefined): void {
+    this.mouseOverClassName = val;
+  }
+
+  setMouseOverClassCorner(val: ClassView | undefined): void {
+    this.mouseOverClassCorner = val;
+  }
+
+  setMouseOverClassProperty(val: AbstractProperty | undefined): void {
+    this.mouseOverClassProperty = val;
+  }
+
+  setMouseOverPropertyHolderViewLabel(
+    val: PropertyHolderView | undefined,
+  ): void {
+    this.mouseOverPropertyHolderViewLabel = val;
+  }
+
+  setSelectionStart(val: Point | undefined): void {
+    this.selectionStart = val;
+  }
+
+  setSelectedClassCorner(val: ClassView | undefined): void {
+    this.selectedClassCorner = val;
+  }
+
+  setSelectedClasses(val: ClassView[]): void {
+    this.selectedClasses = val;
+  }
+
+  setSelectedPropertyOrAssociation(val: PropertyHolderView | undefined): void {
+    this.selectedPropertyOrAssociation = val;
+  }
+
+  setSelectedInheritance(val: GeneralizationView | undefined): void {
+    this.selectedInheritance = val;
+  }
+
+  setLeftClick(val: boolean): void {
+    this.leftClick = val;
+  }
+
+  setMiddleClick(val: boolean): void {
+    this.middleClick = val;
+  }
+
+  setRightClick(val: boolean): void {
+    this.rightClick = val;
+  }
+
+  setZoomLevel(val: number): void {
+    this.zoom = val;
+  }
+
+  render(): void {
     this.diagram.classViews.forEach((classView) =>
-      this.computeClassViewMinDimensions(classView),
+      this.ensureClassViewMeetMinDimensions(classView),
     );
     this.refresh();
   }
 
   refresh(): void {
     this.refreshCanvas();
-    this.redraw();
+    this.drawScreen();
   }
 
   refreshCanvas(): void {
@@ -317,7 +485,7 @@ export class DiagramRenderer {
     );
   }
 
-  redraw(): void {
+  private drawScreen(): void {
     this.manageVirtualScreen();
     this.clearScreen();
     this.drawAll();
@@ -333,12 +501,130 @@ export class DiagramRenderer {
   /**
    * Reset the screen offset
    */
-  recenter(x: number, y: number): void {
+  private recenter(x: number, y: number): void {
     this.screenOffset = new Point(
       -x + this.canvasCenter.x,
       -y + this.canvasCenter.y,
     );
     this.refresh();
+  }
+
+  changeMode(
+    editMode: DIAGRAM_INTERACTION_MODE,
+    relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE,
+  ): void {
+    switch (editMode) {
+      case DIAGRAM_INTERACTION_MODE.LAYOUT:
+      case DIAGRAM_INTERACTION_MODE.PAN:
+      case DIAGRAM_INTERACTION_MODE.ZOOM_IN:
+      case DIAGRAM_INTERACTION_MODE.ZOOM_OUT:
+      case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
+        if (relationshipMode !== DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE) {
+          throw new IllegalStateError(
+            `Can't change to '${editMode}' mode: relationship mode should not be specified in layout mode`,
+          );
+        }
+        break;
+      }
+      case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
+        if (relationshipMode === DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE) {
+          throw new IllegalStateError(
+            `Can't switch to relationship mode: relationship is missing`,
+          );
+        }
+        break;
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Can't switch to mode '${editMode}': unsupported mode`,
+        );
+    }
+
+    this.interactionMode = editMode;
+    this.relationshipMode = relationshipMode;
+
+    if (editMode === DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP) {
+      switch (relationshipMode) {
+        case DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE: {
+          this.addRelationshipToDiagramFn = (
+            startClassView: ClassView,
+            targetClassView: ClassView,
+          ): RelationshipView | undefined => {
+            if (
+              // Do not allow creating self-inheritance
+              startClassView.class.value !== targetClassView.class.value &&
+              // Avoid creating inhertance that already existed
+              !startClassView.class.value.allSuperClasses.includes(
+                targetClassView.class.value,
+              ) &&
+              // Avoid loop (might be expensive)
+              !targetClassView.class.value.allSuperClasses.includes(
+                startClassView.class.value,
+              )
+            ) {
+              startClassView.class.value.addSuperType(
+                GenericTypeExplicitReference.create(
+                  new GenericType(targetClassView.class.value),
+                ),
+              );
+            }
+            // only add an inheritance relationship view if the start class
+            // has already had the target class as its supertype
+            if (
+              startClassView.class.value.generalizations.find(
+                (generalization) =>
+                  generalization.value.rawType === targetClassView.class.value,
+              )
+            ) {
+              const gview = new GeneralizationView(
+                this.diagram,
+                startClassView,
+                targetClassView,
+              );
+              this.diagram.addGeneralizationView(gview);
+              return gview;
+            }
+            return undefined;
+          };
+          break;
+        }
+        case DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY: {
+          this.addRelationshipToDiagramFn = (
+            startClassView: ClassView,
+            targetClassView: ClassView,
+          ): PropertyView | undefined => {
+            const property = new Property(
+              `property_${startClassView.class.value.properties.length + 1}`,
+              new Multiplicity(1, 1),
+              GenericTypeExplicitReference.create(
+                new GenericType(targetClassView.class.value),
+              ),
+              startClassView.class.value,
+            );
+            startClassView.class.value.addProperty(property);
+            // only create property view if the classviews are different
+            // else we end up with a weird rendering where the property view
+            // is not targetable
+            if (startClassView !== targetClassView) {
+              const pView = new PropertyView(
+                this.diagram,
+                PropertyExplicitReference.create(property),
+                startClassView,
+                targetClassView,
+              );
+              this.diagram.addPropertyView(pView);
+              return pView;
+            }
+            return undefined;
+          };
+          break;
+        }
+        default:
+          throw new UnsupportedOperationError(
+            `Can't switch to relationship mode '${relationshipMode}': unsupported mode`,
+          );
+      }
+    }
   }
 
   truncateTextWithEllipsis(val: string, limit = this.maxLineLength): string {
@@ -348,10 +634,7 @@ export class DiagramRenderer {
       : val;
   }
 
-  /**
-   * Convert from canvas coordinate to model coordinate
-   */
-  toModelCoordinate(point: Point): Point {
+  canvasCoordinateToModelCoordinate(point: Point): Point {
     return new Point(
       (point.x - this.canvasCenter.x) / this.zoom -
         this.screenOffset.x +
@@ -362,15 +645,26 @@ export class DiagramRenderer {
     );
   }
 
-  /**
-   * Convert from model coordinate to canvas coordinate
-   */
-  toCanvasCoordinate(point: Point): Point {
+  modelCoordinateToCanvasCoordinate(point: Point): Point {
     return new Point(
       (point.x - this.canvasCenter.x + this.screenOffset.x) * this.zoom +
         this.canvasCenter.x,
       (point.y - this.canvasCenter.y + this.screenOffset.y) * this.zoom +
         this.canvasCenter.y,
+    );
+  }
+
+  eventCoordinateToCanvasCoordinate(point: Point): Point {
+    return new Point(
+      point.x - this.divPosition.x + this.div.scrollLeft,
+      point.y - this.divPosition.y + this.div.scrollTop,
+    );
+  }
+
+  canvasCoordinateToEventCoordinate(point: Point): Point {
+    return new Point(
+      point.x - this.div.scrollLeft + this.divPosition.x,
+      point.y - this.div.scrollTop + this.divPosition.y,
     );
   }
 
@@ -387,7 +681,7 @@ export class DiagramRenderer {
     return getElementPosition(this.div);
   }
 
-  manageVirtualScreen(): void {
+  private manageVirtualScreen(): void {
     if (this.diagram.classViews.length) {
       let minX = this.diagram.classViews[0].position.x;
       let minY = this.diagram.classViews[0].position.y;
@@ -419,11 +713,12 @@ export class DiagramRenderer {
           relationshipView.to.classView.value,
         );
         if (relationshipView instanceof PropertyView) {
-          const box = this.drawLineText(
+          const box = this.drawLinePropertyText(
             fullPath[fullPath.length - 2],
             fullPath[fullPath.length - 1],
             relationshipView.to.classView.value,
             relationshipView.property.value,
+            false,
           );
           minX = Math.min(minX, box.position.x);
           minY = Math.min(minY, box.position.y);
@@ -449,7 +744,7 @@ export class DiagramRenderer {
         new Rectangle(maxX - minX, maxY - minY),
       );
     } else {
-      this.zoom = 1;
+      this.setZoomLevel(1);
       this.screenOffset = new Point(0, 0);
       this.virtualScreen = new PositionedRectangle(
         new Point(
@@ -462,12 +757,73 @@ export class DiagramRenderer {
   }
 
   /**
+   * Here we zoom with respect to the point the mouse is currently pointing at.
+   * The idea is fairly simple. We convert the coordinate of the zoom point
+   * to the model coordinate and find a way to alter `screenOffset` in response
+   * to change in zoom level to ensure the model coordinate stays constant.
+   */
+  private executeZoom(newZoomLevel: number, point: Point): void {
+    // NOTE: we cap the minimum zoom level to avoid negative zoom
+    newZoomLevel = Math.max(newZoomLevel, MIN_ZOOM_LEVEL);
+
+    const canvasZoomCenterPosition = this.canvasCoordinateToModelCoordinate(
+      this.eventCoordinateToCanvasCoordinate(point),
+    );
+    const currentZoomLevel = this.zoom;
+    this.setZoomLevel(newZoomLevel);
+
+    this.screenOffset = new Point(
+      ((canvasZoomCenterPosition.x - this.canvasCenter.x) *
+        (currentZoomLevel - newZoomLevel) +
+        this.screenOffset.x * currentZoomLevel) /
+        newZoomLevel,
+      ((canvasZoomCenterPosition.y - this.canvasCenter.y) *
+        (currentZoomLevel - newZoomLevel) +
+        this.screenOffset.y * currentZoomLevel) /
+        newZoomLevel,
+    );
+
+    this.clearScreen();
+    this.drawAll();
+  }
+
+  zoomPoint(zoomLevel: number, zoomPoint: Point): void {
+    this.executeZoom(zoomLevel, zoomPoint);
+  }
+
+  zoomCenter(zoomLevel: number): void {
+    // NOTE: we cap the minimum zoom level to avoid negative zoom
+    this.setZoomLevel(Math.max(zoomLevel, MIN_ZOOM_LEVEL));
+    this.clearScreen();
+    this.drawAll();
+  }
+
+  zoomToFit(): void {
+    this.autoRecenter();
+    this.zoomCenter(
+      Math.max(
+        Math.min(
+          this.canvas.width /
+            (this.virtualScreen.rectangle.width +
+              this.screenPadding * 2 +
+              FIT_ZOOM_PADDING * 2),
+          this.canvas.height /
+            (this.virtualScreen.rectangle.height +
+              this.screenPadding * 2 +
+              FIT_ZOOM_PADDING * 2),
+        ),
+        MIN_ZOOM_LEVEL,
+      ),
+    );
+  }
+
+  /**
    * Add a classview to current diagram and draw it.
    * This function is intended to be used with drag and drop, hence the position paramter, which must be relative to the screen/window
    */
   addClassView(
     addedClass: Class,
-    absolutePosition?: Point,
+    classViewModelCoordinate?: Point,
   ): ClassView | undefined {
     if (!this.isReadOnly) {
       // NOTE: Using `uuid` might be overkill since the `id` is only required to be unique
@@ -486,12 +842,15 @@ export class DiagramRenderer {
         PackageableElementExplicitReference.create(addedClass),
       );
       newClassView.setPosition(
-        this.toModelCoordinate(
-          new Point(
-            absolutePosition ? absolutePosition.x - this.divPosition.x : 0,
-            absolutePosition ? absolutePosition.y - this.divPosition.y : 0,
+        classViewModelCoordinate ??
+          this.canvasCoordinateToModelCoordinate(
+            new Point(
+              this.virtualScreen.position.x +
+                this.virtualScreen.rectangle.width / 2,
+              this.virtualScreen.position.y +
+                this.virtualScreen.rectangle.height / 2,
+            ),
           ),
-        ),
       );
       this.diagram.addClassView(newClassView);
       // Refresh hash since ClassView position is not observable
@@ -547,13 +906,13 @@ export class DiagramRenderer {
           });
         });
       this.drawClassView(newClassView);
-      this.redraw();
+      this.drawScreen();
       return newClassView;
     }
     return undefined;
   }
 
-  drawAll(): void {
+  private drawBoundingBox(): void {
     this.ctx.fillStyle = this.backgroundColor;
     this.ctx.lineWidth = 1;
     this.ctx.fillRect(
@@ -590,6 +949,9 @@ export class DiagramRenderer {
       (this.virtualScreen.rectangle.height + this.screenPadding * 2) *
         this.zoom,
     );
+  }
+
+  private drawDiagram(): void {
     this.diagram.associationViews.forEach((associationView) =>
       this.drawPropertyOrAssociation(associationView),
     );
@@ -610,7 +972,12 @@ export class DiagramRenderer {
     }
   }
 
-  drawScreenGrid(): void {
+  drawAll(): void {
+    this.drawBoundingBox();
+    this.drawDiagram();
+  }
+
+  private drawScreenGrid(): void {
     const startX =
       (this.virtualScreen.position.x +
         this.screenOffset.x -
@@ -780,7 +1147,7 @@ export class DiagramRenderer {
     this.ctx.lineWidth = this.defaultLineWidth;
   }
 
-  drawCanvasGrid(): void {
+  private drawCanvasGrid(): void {
     const startX = -this.canvasCenter.x * this.zoom + this.canvasCenter.x;
     const startY = -this.canvasCenter.y * this.zoom + this.canvasCenter.y;
     const width = this.canvasDimension.width;
@@ -933,23 +1300,23 @@ export class DiagramRenderer {
     this.ctx.lineWidth = this.defaultLineWidth;
   }
 
-  drawProperty(
+  private drawClassViewProperty(
     classView: ClassView,
     property: AbstractProperty,
-    measureOnly: boolean,
     propX: number,
     propY: number,
+    measureOnly: boolean,
   ): number {
     this.ctx.font =
       this.mouseOverClassView === classView &&
-      this.mouseOverProperty === property
+      this.mouseOverClassProperty === property
         ? `bold ${(this.fontSize - 1) * (measureOnly ? 1 : this.zoom)}px ${
             this.fontFamily
           }`
         : `${measureOnly ? 'bold' : ''} ${
             (this.fontSize - 1) * (measureOnly ? 1 : this.zoom)
           }px ${this.fontFamily}`;
-    const propertyName = this.propertyName(property);
+    const propertyName = getPropertyDisplayName(property);
     let txtMeasure = this.ctx.measureText(`${propertyName} : `).width;
     if (!measureOnly) {
       this.ctx.fillText(`${propertyName} : `, propX, propY);
@@ -991,16 +1358,19 @@ export class DiagramRenderer {
     return txtMeasure;
   }
 
-  computeClassViewMinDimensions(classView: ClassView): number {
+  private computeClassNameWidth(classView: ClassView): number {
     this.ctx.font = `bold ${this.fontSize}px ${this.fontFamily}`;
     this.ctx.textBaseline = 'top'; // Compute min dimensions
 
     // Calculate the box for the class name header
-    const classNameText = this.truncateTextWithEllipsis(
-      classView.class.value.name,
-    );
-    const classNameWidth = this.ctx.measureText(classNameText).width;
-    let classMinWidth = classNameWidth;
+    return this.ctx.measureText(
+      this.truncateTextWithEllipsis(classView.class.value.name),
+    ).width;
+  }
+
+  ensureClassViewMeetMinDimensions(classView: ClassView): void {
+    // Calculate the box for the class name header
+    let classMinWidth = this.computeClassNameWidth(classView);
     let classMinHeight = this.lineHeight + this.classViewSpaceY * 2; // padding top and bottom fo the header
 
     // Calculate box for Stereotypes
@@ -1032,18 +1402,19 @@ export class DiagramRenderer {
       }
     }
 
-    // Calculate box for Properties
+    // Calculate box for properties
     if (!classView.hideProperties) {
       classView.class.value.getAllOwnedProperties().forEach((property) => {
         if (!this.hasPropertyView(classView, property)) {
-          const txtMeasure = this.drawProperty(
+          const propertyTextMeasure = this.drawClassViewProperty(
             classView,
             property,
+            // these means nothing since we only need to measure here
+            0,
+            0,
             true,
-            -1,
-            -1,
           );
-          classMinWidth = Math.max(classMinWidth, txtMeasure);
+          classMinWidth = Math.max(classMinWidth, propertyTextMeasure);
           classMinHeight = classMinHeight + this.lineHeight;
         }
       });
@@ -1064,15 +1435,15 @@ export class DiagramRenderer {
           : classMinHeight;
       classView.setRectangle(new Rectangle(width, height));
     }
-    return classNameWidth;
   }
 
-  drawClassView(classView: ClassView): void {
-    const classMinWidth = this.computeClassViewMinDimensions(classView);
+  private drawClassView(classView: ClassView): void {
+    const classMinWidth = this.computeClassNameWidth(classView);
+    this.ensureClassViewMeetMinDimensions(classView);
     this.ctx.fillStyle = this.classViewFillColor;
 
     // Draw the Box
-    const position = this.toCanvasCoordinate(classView.position);
+    const position = this.modelCoordinateToCanvasCoordinate(classView.position);
     this.ctx.fillRect(
       position.x,
       position.y,
@@ -1232,7 +1603,7 @@ export class DiagramRenderer {
           const propY =
             (cursorY + this.screenOffset.y - this.canvasCenter.y) * this.zoom +
             this.canvasCenter.y;
-          this.drawProperty(classView, property, false, propX, propY);
+          this.drawClassViewProperty(classView, property, propX, propY, false);
           cursorY = cursorY + this.lineHeight;
         }
       }
@@ -1243,38 +1614,39 @@ export class DiagramRenderer {
     classView.forceRefreshHash();
   }
 
-  propertyName(prop: AbstractProperty): string {
-    return (prop instanceof DerivedProperty ? '/ ' : '') + prop.name;
-  }
-
-  drawLinePropertyAndMultiplicityText(
+  private drawLinePropertyNameAndMultiplicity(
     property: AbstractProperty,
     textPositionX: (n: number) => number,
     textPositionY: (n: number) => number,
     multiplicityPositionX: (n: number) => number,
     multiplicityPositionY: (n: number) => number,
+    measureOnly: boolean,
   ): PositionedRectangle {
     this.ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-    const propertyName = this.propertyName(property);
+    const propertyName = getPropertyDisplayName(property);
     const textSize = this.ctx.measureText(propertyName).width;
     const mulSize = this.ctx.measureText(property.multiplicity.str).width;
     this.ctx.font = `${this.fontSize * this.zoom}px ${this.fontFamily}`;
     const posX = textPositionX(textSize);
     const posY = textPositionY(textSize);
-    const propertyPosition = this.toCanvasCoordinate(
+    const propertyPosition = this.modelCoordinateToCanvasCoordinate(
       new Point(textPositionX(textSize), textPositionY(textSize)),
     );
-    this.ctx.fillText(propertyName, propertyPosition.x, propertyPosition.y);
+    if (!measureOnly) {
+      this.ctx.fillText(propertyName, propertyPosition.x, propertyPosition.y);
+    }
     const mulPosX = multiplicityPositionX(mulSize);
     const mulPosY = multiplicityPositionY(mulSize);
-    const multiplicityPosition = this.toCanvasCoordinate(
+    const multiplicityPosition = this.modelCoordinateToCanvasCoordinate(
       new Point(multiplicityPositionX(mulSize), multiplicityPositionY(mulSize)),
     );
-    this.ctx.fillText(
-      property.multiplicity.str,
-      multiplicityPosition.x,
-      multiplicityPosition.y,
-    );
+    if (!measureOnly) {
+      this.ctx.fillText(
+        property.multiplicity.str,
+        multiplicityPosition.x,
+        multiplicityPosition.y,
+      );
+    }
     const position = new Point(
       Math.min(posX, mulPosX),
       Math.min(posY, mulPosY),
@@ -1288,11 +1660,12 @@ export class DiagramRenderer {
     );
   }
 
-  drawLineText(
+  private drawLinePropertyText(
     from: Point,
     to: Point,
     viewSide: ClassView,
     property: AbstractProperty,
+    measureOnly: boolean,
   ): PositionedRectangle {
     this.ctx.textBaseline = 'top';
     this.ctx.fillStyle = this.relationshipViewTextColor;
@@ -1306,7 +1679,7 @@ export class DiagramRenderer {
         startX +
         ((endX - startX) / (endY - startY)) * (viewSide.position.y - startY);
       if (x > viewSide.position.x && x < viewSide.position.x + rect.width) {
-        return this.drawLinePropertyAndMultiplicityText(
+        return this.drawLinePropertyNameAndMultiplicity(
           property,
           (textSize) =>
             x < viewSide.position.x + rect.width / 2
@@ -1320,6 +1693,7 @@ export class DiagramRenderer {
               : x + this.propertySpacing,
           (mulSize) =>
             viewSide.position.y - this.lineHeight - this.propertySpacing,
+          measureOnly,
         );
       }
     } else {
@@ -1328,7 +1702,7 @@ export class DiagramRenderer {
         ((endX - startX) / (endY - startY)) *
           (viewSide.position.y + rect.height - startY);
       if (x > viewSide.position.x && x < viewSide.position.x + rect.width) {
-        return this.drawLinePropertyAndMultiplicityText(
+        return this.drawLinePropertyNameAndMultiplicity(
           property,
           (textSize) =>
             x < viewSide.position.x + rect.width / 2
@@ -1341,6 +1715,7 @@ export class DiagramRenderer {
               ? x - mulSize - this.propertySpacing
               : x + this.propertySpacing,
           (mulSize) => viewSide.position.y + rect.height + this.propertySpacing,
+          measureOnly,
         );
       }
     }
@@ -1349,7 +1724,7 @@ export class DiagramRenderer {
         startY +
         ((endY - startY) / (endX - startX)) * (viewSide.position.x - startX);
       if (y > viewSide.position.y && y < viewSide.position.y + rect.height) {
-        return this.drawLinePropertyAndMultiplicityText(
+        return this.drawLinePropertyNameAndMultiplicity(
           property,
           (textSize) => viewSide.position.x - textSize - this.propertySpacing,
           (textSize) =>
@@ -1361,6 +1736,7 @@ export class DiagramRenderer {
             y < viewSide.position.y + viewSide.rectangle.height / 2
               ? y - this.lineHeight - this.propertySpacing
               : y + this.propertySpacing,
+          measureOnly,
         );
       }
     } else {
@@ -1372,7 +1748,7 @@ export class DiagramRenderer {
         y > viewSide.position.y &&
         y < viewSide.position.y + viewSide.rectangle.height
       ) {
-        return this.drawLinePropertyAndMultiplicityText(
+        return this.drawLinePropertyNameAndMultiplicity(
           property,
           (textSize) =>
             viewSide.position.x +
@@ -1390,13 +1766,14 @@ export class DiagramRenderer {
             y < viewSide.position.y + viewSide.rectangle.height / 2
               ? y - this.lineHeight - this.propertySpacing
               : y + this.propertySpacing,
+          measureOnly,
         );
       }
     }
     return new PositionedRectangle(new Point(0, 0), new Rectangle(0, 0));
   }
 
-  drawPropertyOrAssociation(propertyView: PropertyView): void {
+  private drawPropertyOrAssociation(propertyView: PropertyView): void {
     let fullPath = propertyView.buildFullPath();
     fullPath = manageInsidePointsDynamically(
       fullPath,
@@ -1405,11 +1782,12 @@ export class DiagramRenderer {
     );
     // const toProperty = asso instanceof.property ? asso.property : asso.association.properties[1];
     const toProperty = propertyView.property.value;
-    this.drawLineText(
+    this.drawLinePropertyText(
       fullPath[fullPath.length - 2],
       fullPath[fullPath.length - 1],
       propertyView.to.classView.value,
       toProperty,
+      false,
     );
     // if (asso.association) {
     //   this.displayText(fullPath[1], fullPath[0], asso.from.classView, asso.association.properties[0], this.ctx);
@@ -1418,7 +1796,7 @@ export class DiagramRenderer {
     this.ctx.lineWidth =
       propertyView === this.selectedPropertyOrAssociation ? 2 : 1;
     fullPath.forEach((point, idx) => {
-      const position = this.toCanvasCoordinate(point);
+      const position = this.modelCoordinateToCanvasCoordinate(point);
       if (idx === 0) {
         this.ctx.moveTo(position.x, position.y);
       } else {
@@ -1483,7 +1861,7 @@ export class DiagramRenderer {
     // }
   }
 
-  drawInheritance(inheritance: GeneralizationView): void {
+  private drawInheritance(inheritance: GeneralizationView): void {
     const rect = inheritance.to.classView.value.rectangle;
     let fullPath = inheritance.buildFullPath();
     fullPath = manageInsidePointsDynamically(
@@ -1566,7 +1944,7 @@ export class DiagramRenderer {
     this.ctx.beginPath();
     this.ctx.lineWidth = inheritance === this.selectedInheritance ? 2 : 1;
     fullPath.forEach((point, idx) => {
-      const position = this.toCanvasCoordinate(point);
+      const position = this.modelCoordinateToCanvasCoordinate(point);
       if (idx === 0) {
         this.ctx.moveTo(position.x, position.y);
       } else {
@@ -1609,7 +1987,7 @@ export class DiagramRenderer {
 
   keydown(e: KeyboardEvent): void {
     // Remove selected view(s)
-    if (e.key === 'Delete') {
+    if ('Delete' === e.key) {
       if (!this.isReadOnly) {
         this.selectedClasses.forEach((classView) => {
           this.diagram.deleteClassView(classView);
@@ -1658,57 +2036,41 @@ export class DiagramRenderer {
             this.diagram.deleteGeneralizationView(this.selectedInheritance);
           }
         }
-        this.redraw();
+        this.selectedClasses = [];
+        this.drawScreen();
       }
     }
-
-    // Hide/show properties
-    if (e.key === 'h') {
-      if (!this.isReadOnly) {
-        if (this.selectedClasses.length !== 0) {
-          this.selectedClasses.forEach((classView) => {
-            classView.setHideProperties(!classView.hideProperties);
-          });
-          this.clearScreen(); // draw the first time so that the virtualscreen has the right size
-          this.drawAll();
-          this.manageVirtualScreen();
-          this.drawAll();
-        }
-      }
-    }
-
-    // Hide/show stereotypes
-    if (e.key === 's') {
-      if (!this.isReadOnly) {
-        if (this.selectedClasses.length !== 0) {
-          this.selectedClasses.forEach((classView) => {
-            classView.setHideStereotypes(!classView.hideStereotypes);
-          });
-          this.clearScreen(); // draw the first time so that the virtualscreen has the right size
-          this.drawAll();
-          this.manageVirtualScreen();
-          this.drawAll();
-        }
-      }
-    }
-
-    // Hide/show tagged values
-    if (e.key === 't') {
-      if (!this.isReadOnly) {
-        if (this.selectedClasses.length !== 0) {
-          this.selectedClasses.forEach((classView) => {
-            classView.setHideTaggedValues(!classView.hideTaggedValues);
-          });
-          this.clearScreen(); // draw the first time so that the virtualscreen has the right size
-          this.drawAll();
-          this.manageVirtualScreen();
-          this.drawAll();
-        }
+    // Edit selected view
+    // NOTE: since the current behavior when editing property is to immediately
+    // focus on the property name input when the inline editor pops up
+    // we need to call `preventDefault` to avoid typing `e` in the property name input
+    else if ('e' === e.key) {
+      if (this.selectedClassProperty) {
+        this.editProperty(
+          this.selectedClassProperty.property,
+          this.selectedClassProperty.selectionPoint,
+          undefined,
+        );
+        e.preventDefault();
+      } else if (this.selectedPropertyOrAssociation) {
+        // TODO: we might want to revise this to allow edit property holder view
+        // on the side panel instead of showing the inline property editor
+        this.editProperty(
+          this.selectedPropertyOrAssociation.property.value,
+          this.selectedPoint ??
+            (this.selectedPropertyOrAssociation.path.length
+              ? this.selectedPropertyOrAssociation.path[0]
+              : this.selectedPropertyOrAssociation.from.classView.value.center()),
+          this.selectedPropertyOrAssociation,
+        );
+        e.preventDefault();
+      } else if (this.selectedClasses.length === 1) {
+        this.editClassView(this.selectedClasses[0]);
       }
     }
 
     // Recenter
-    if (e.key === 'c') {
+    else if ('r' === e.key) {
       if (this.selectedClasses.length !== 0) {
         const firstClass = getNullableFirstElement(this.selectedClasses);
         if (firstClass) {
@@ -1721,52 +2083,338 @@ export class DiagramRenderer {
         this.autoRecenter();
       }
     }
+    // Zoom
+    else if ('z' === e.key) {
+      this.changeMode(
+        this.interactionMode !== DIAGRAM_INTERACTION_MODE.ZOOM_IN
+          ? DIAGRAM_INTERACTION_MODE.ZOOM_IN
+          : DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
 
-    // Add type view
-    if (e.key === 'a') {
-      if (this.mouseOverProperty) {
-        if (this.mouseOverProperty.genericType.value.rawType instanceof Class) {
-          this.addClassView(
-            this.mouseOverProperty.genericType.value.rawType,
-            new Point(this.cursorPosition.x, this.cursorPosition.y),
-          );
+    // Use View Tool
+    else if ('v' === e.key) {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.LAYOUT,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+    // Use Pan Tool
+    else if ('m' === e.key) {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.PAN,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+    // Use Property Tool
+    else if ('p' === e.key) {
+      if (!this.isReadOnly) {
+        this.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+        );
+      }
+    }
+    // Use Inheritance Tool
+    else if ('i' === e.key) {
+      if (!this.isReadOnly) {
+        this.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+        );
+      }
+    }
+    // Add Class
+    else if ('c' === e.key) {
+      if (!this.isReadOnly) {
+        this.changeMode(
+          DIAGRAM_INTERACTION_MODE.ADD_CLASS,
+          DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+        );
+      }
+    }
+
+    // Hide/show properties for selected element(s)
+    else if (e.altKey && 'KeyP' === e.code) {
+      if (!this.isReadOnly) {
+        if (this.selectedClasses.length !== 0) {
+          this.selectedClasses.forEach((classView) => {
+            classView.setHideProperties(!classView.hideProperties);
+          });
+          this.drawScreen();
+        }
+      }
+    }
+    // Hide/show stereotypes for selected element(s)
+    else if (e.altKey && 'KeyS' === e.code) {
+      if (!this.isReadOnly) {
+        if (this.selectedClasses.length !== 0) {
+          this.selectedClasses.forEach((classView) => {
+            classView.setHideStereotypes(!classView.hideStereotypes);
+          });
+          this.drawScreen();
+        }
+      }
+    }
+    // Hide/show tagged values for selected element(s)
+    else if (e.altKey && 'KeyT' === e.code) {
+      if (!this.isReadOnly) {
+        if (this.selectedClasses.length !== 0) {
+          this.selectedClasses.forEach((classView) => {
+            classView.setHideTaggedValues(!classView.hideTaggedValues);
+          });
+          this.drawScreen();
         }
       }
     }
 
-    // Add currently selected class as property to the currently opened class
-    if (e.key === 'p') {
-      if (this.selectedClasses.length !== 0) {
-        this.selectedClasses.forEach((classView) =>
-          this.onAddClassPropertyForSelectedClass(classView),
-        );
+    // Add a new simple property to selected class
+    else if (e.altKey && 'ArrowDown' === e.code) {
+      if (!this.isReadOnly && this.selectedClasses.length === 1) {
+        this.addSimpleProperty(this.selectedClasses[0]);
       }
+    }
+
+    // Eject the property
+    else if ('ArrowRight' === e.key) {
+      if (!this.isReadOnly) {
+        if (this.mouseOverClassProperty) {
+          if (
+            this.mouseOverClassProperty.genericType.value.rawType instanceof
+            Class
+          ) {
+            this.addClassView(
+              this.mouseOverClassProperty.genericType.value.rawType,
+              this.canvasCoordinateToModelCoordinate(
+                this.eventCoordinateToCanvasCoordinate(
+                  new Point(this.cursorPosition.x, this.cursorPosition.y),
+                ),
+              ),
+            );
+          }
+        } else if (this.selectedClassProperty) {
+          if (
+            this.selectedClassProperty.property.genericType.value
+              .rawType instanceof Class
+          ) {
+            this.addClassView(
+              this.selectedClassProperty.property.genericType.value.rawType,
+              this.selectedClassProperty.selectionPoint,
+            );
+          }
+          this.selectedClassProperty = undefined;
+        }
+      }
+    }
+
+    // Add supertypes of selected classes to the diagram
+    else if ('ArrowUp' === e.key) {
+      const views = this.getSuperTypeLevels(
+        this.selectedClasses,
+        this.diagram,
+        0,
+        1,
+      );
+      const res = this.layoutTaxonomy(views, this.diagram, false, true);
+      res[0].forEach((cv) => this.diagram.addClassView(cv));
+      res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
+
+      this.drawScreen();
+    }
+
+    // Add subtypes of selected classes to the diagram
+    else if ('ArrowDown' === e.key) {
+      const views = uniqBy(
+        this.selectedClasses.flatMap((x) =>
+          x.class.value._subClasses.flatMap(
+            (c) =>
+              new ClassView(
+                this.diagram,
+                uuid(),
+                PackageableElementExplicitReference.create(c),
+              ),
+          ),
+        ),
+        (cv) => cv.class.value,
+      );
+
+      if (views.length > 0) {
+        views.forEach((classView) =>
+          this.ensureClassViewMeetMinDimensions(classView),
+        );
+
+        const res = this.layoutTaxonomy(
+          [views, this.selectedClasses],
+          this.diagram,
+          false,
+          false,
+        );
+        res[0].forEach((cv) => this.diagram.addClassView(cv));
+        res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
+      }
+
+      this.drawScreen();
     }
   }
 
   mouseup(e: MouseEvent): void {
-    this.selectionStart = undefined;
     if (!this.isReadOnly) {
-      this.diagram.generalizationViews.forEach((generalizationView) =>
-        generalizationView.possiblyFlattenPath(),
-      );
-      this.diagram.associationViews.forEach((associationView) =>
-        associationView.possiblyFlattenPath(),
-      );
-      this.diagram.propertyViews.forEach((propertyView) =>
-        propertyView.possiblyFlattenPath(),
-      );
+      switch (this.interactionMode) {
+        case DIAGRAM_INTERACTION_MODE.LAYOUT: {
+          this.diagram.generalizationViews.forEach((generalizationView) =>
+            generalizationView.possiblyFlattenPath(),
+          );
+          this.diagram.associationViews.forEach((associationView) =>
+            associationView.possiblyFlattenPath(),
+          );
+          this.diagram.propertyViews.forEach((propertyView) =>
+            propertyView.possiblyFlattenPath(),
+          );
+          break;
+        }
+        case DIAGRAM_INTERACTION_MODE.ADD_CLASS: {
+          const eventPointInModelCoordinate =
+            this.canvasCoordinateToModelCoordinate(
+              this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y)),
+            );
+          this.onAddClassViewClick(eventPointInModelCoordinate);
+          this.changeMode(
+            DIAGRAM_INTERACTION_MODE.LAYOUT,
+            DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+          );
+          break;
+        }
+        case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
+          // Rounding up the current zoom level to make sure floating point precision
+          // does not come into play when comparing with recommended zoom levels:
+          // e.g. in Javascript, 110 === 110.000000000000001
+          const currentZoomLevel = Math.round(this.zoom * 100);
+          let nextZoomLevel: number;
+          // NOTE: below the smallest recommended zoom level, we will start decrement by 10
+          // and increment by 100 beyond the largest recommended zoom level.
+          if (currentZoomLevel <= DIAGRAM_ZOOM_LEVELS[0] - 10) {
+            nextZoomLevel = Math.floor(currentZoomLevel / 10) * 10 + 10;
+          } else if (
+            currentZoomLevel >=
+            DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1]
+          ) {
+            nextZoomLevel = Math.floor(currentZoomLevel / 100) * 100 + 100;
+          } else {
+            nextZoomLevel = guaranteeNonNullable(
+              DIAGRAM_ZOOM_LEVELS.find(
+                (zoomLevel) => zoomLevel > currentZoomLevel,
+              ),
+            );
+          }
+          this.zoomPoint(nextZoomLevel / 100, new Point(e.x, e.y));
+          break;
+        }
+        case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
+          const currentZoomLevel = Math.round(this.zoom * 100);
+          let nextZoomLevel: number;
+          if (currentZoomLevel <= DIAGRAM_ZOOM_LEVELS[0]) {
+            nextZoomLevel = Math.ceil(currentZoomLevel / 10) * 10 - 10;
+          } else if (
+            currentZoomLevel >=
+            DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] + 100
+          ) {
+            nextZoomLevel = Math.ceil(currentZoomLevel / 100) * 100 - 100;
+          } else {
+            nextZoomLevel = guaranteeNonNullable(
+              findLast(
+                DIAGRAM_ZOOM_LEVELS,
+                (zoomLevel) => zoomLevel < currentZoomLevel,
+              ),
+            );
+          }
+          this.zoomPoint(nextZoomLevel / 100, new Point(e.x, e.y));
+          break;
+        }
+        case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
+          if (
+            this.startClassView &&
+            this.selectionStart &&
+            this.addRelationshipToDiagramFn
+          ) {
+            const eventPointInModelCoordinate =
+              this.canvasCoordinateToModelCoordinate(
+                this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y)),
+              );
+            for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
+              if (
+                this.diagram.classViews[i].contains(
+                  eventPointInModelCoordinate.x,
+                  eventPointInModelCoordinate.y,
+                )
+              ) {
+                const targetClassView = this.diagram.classViews[i];
+
+                const gview = this.addRelationshipToDiagramFn(
+                  this.startClassView,
+                  this.diagram.classViews[i],
+                );
+
+                if (gview) {
+                  gview.from.setOffsetX(
+                    -(
+                      this.startClassView.position.x +
+                      this.startClassView.rectangle.width / 2 -
+                      this.selectionStart.x
+                    ),
+                  );
+                  gview.from.setOffsetY(
+                    -(
+                      this.startClassView.position.y +
+                      this.startClassView.rectangle.height / 2 -
+                      this.selectionStart.y
+                    ),
+                  );
+                  gview.to.setOffsetX(
+                    -(
+                      targetClassView.position.x +
+                      targetClassView.rectangle.width / 2 -
+                      eventPointInModelCoordinate.x
+                    ),
+                  );
+                  gview.to.setOffsetY(
+                    -(
+                      targetClassView.position.y +
+                      targetClassView.rectangle.height / 2 -
+                      eventPointInModelCoordinate.y
+                    ),
+                  );
+                }
+              }
+            }
+            this.changeMode(
+              DIAGRAM_INTERACTION_MODE.LAYOUT,
+              DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+            );
+          }
+          break;
+        }
+        default:
+          break;
+      }
     }
-    this.leftClick = false;
-    this.rightClick = false;
-    this.redraw();
+    this.setLeftClick(false);
+    this.setMiddleClick(false);
+    this.setRightClick(false);
+
+    this.setSelectedClassCorner(undefined);
+    this.setSelectionStart(undefined);
+    this.drawScreen();
   }
 
   /**
    * Reorder will move the class view to the top of the class view array of the diagram,
    * This will bring it to front.
    */
-  reorderDiagramDomain(firstClass: ClassView, diagram: Diagram): ClassView[] {
+  private reorderDiagramDomain(
+    firstClass: ClassView,
+    diagram: Diagram,
+  ): ClassView[] {
     const newClasses = diagram.classViews.filter(
       (classView) => classView !== firstClass,
     );
@@ -1774,8 +2422,8 @@ export class DiagramRenderer {
     return newClasses;
   }
 
-  // DOC ???
-  potentiallyShiftRelationships(
+  // TODO: add doc
+  private potentiallyShiftRelationships(
     assoViews: RelationshipView[],
     selectedClasses: ClassView[],
     newMovingDeltaX: number,
@@ -1796,201 +2444,302 @@ export class DiagramRenderer {
     });
   }
 
-  mousedblclick(e: MouseEvent): boolean {
-    const divPos = this.divPosition;
-    const correctedX =
-      e.x - divPos.x + this.div.scrollLeft - this.screenOffset.x * this.zoom;
-    const correctedY =
-      e.y - divPos.y + this.div.scrollTop - this.screenOffset.y * this.zoom;
+  mousedblclick(e: MouseEvent): void {
+    if (
+      [
+        DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+        DIAGRAM_INTERACTION_MODE.ADD_CLASS,
+        DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+        DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+      ].includes(this.interactionMode)
+    ) {
+      return;
+    }
+
+    const eventPointInModelCoordinate = this.canvasCoordinateToModelCoordinate(
+      this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y)),
+    );
+
+    // Check double click on class property
+    if (this.mouseOverClassProperty) {
+      this.editProperty(
+        this.mouseOverClassProperty,
+        eventPointInModelCoordinate,
+        undefined,
+      );
+      return;
+    }
+
+    // Check double click on class name
+    if (this.mouseOverClassName) {
+      this.editClassName(this.mouseOverClassName, eventPointInModelCoordinate);
+      return;
+    }
+
+    // Check double click on class view
     const selectedClass = this.diagram.classViews.find((classView) =>
       classView.contains(
-        (correctedX - this.canvasCenter.x) / this.zoom + this.canvasCenter.x,
-        (correctedY - this.canvasCenter.y) / this.zoom + this.canvasCenter.y,
+        eventPointInModelCoordinate.x,
+        eventPointInModelCoordinate.y,
       ),
     );
-    // Click on a class view
     if (selectedClass) {
-      this.onClassViewClick(selectedClass);
+      this.editClassView(selectedClass);
+      return;
     }
-    // Click outside of a classview
-    if (!selectedClass) {
-      this.onBackgroundDoubleClick(e);
+
+    // Check double click on line property label
+    if (this.mouseOverPropertyHolderViewLabel) {
+      this.editProperty(
+        this.mouseOverPropertyHolderViewLabel.property.value,
+        eventPointInModelCoordinate,
+        this.mouseOverPropertyHolderViewLabel,
+      );
+      return;
     }
-    return false;
+
+    // Check double click on background
+    this.onBackgroundDoubleClick(eventPointInModelCoordinate);
+    return;
   }
 
-  mousedown(e: MouseEvent): boolean {
-    this.selectionStart = undefined;
+  mousedown(e: MouseEvent): void {
+    this.setSelectionStart(undefined);
+    this.setSelectedClassCorner(undefined);
+    this.setSelectedPropertyOrAssociation(undefined);
+    this.setSelectedInheritance(undefined);
     this.selection = undefined;
-    this.selectedClassCorner = undefined;
+    this.selectedClassProperty = undefined;
     this.selectedPoint = undefined;
-    this.selectedPropertyOrAssociation = undefined;
-    this.selectedInheritance = undefined;
+    this.startClassView = undefined;
 
+    // left click
     if (e.button === 0) {
-      this.leftClick = true;
-      const divPos = this.divPosition;
-      const xInCanvas = e.x - divPos.x + this.div.scrollLeft;
-      const yInCanvas = e.y - divPos.y + this.div.scrollTop;
-      const correctedX = xInCanvas - this.screenOffset.x * this.zoom;
-      const correctedY = yInCanvas - this.screenOffset.y * this.zoom;
-      const x =
-        (correctedX - this.canvasCenter.x) / this.zoom + this.canvasCenter.x;
-      const y =
-        (correctedY - this.canvasCenter.y) / this.zoom + this.canvasCenter.y;
+      this.setLeftClick(true);
+      const eventPointInCanvasCoordinate =
+        this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y));
+      const eventPointInModelCoordinate =
+        this.canvasCoordinateToModelCoordinate(eventPointInCanvasCoordinate);
 
-      // Check if the selection lies within the bottom right corner box of a box (so we can do resize of box here)
-      // NOTE: Traverse backwards the class views to preserve z-index buffer
-      for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
-        if (
-          this.diagram.classViews[i].buildBottomRightCornerBox().contains(x, y)
-        ) {
-          this.selectedClasses = [];
-          this.selectedClassCorner = this.diagram.classViews[i];
-          if (!this.isReadOnly) {
-            // Bring the class view to front
-            this.diagram.setClassViews(
-              this.reorderDiagramDomain(this.selectedClassCorner, this.diagram),
+      switch (this.interactionMode) {
+        case DIAGRAM_INTERACTION_MODE.PAN: {
+          e.returnValue = false;
+          this.positionBeforeLastMove = new Point(e.x, e.y);
+          return;
+        }
+        case DIAGRAM_INTERACTION_MODE.LAYOUT: {
+          // Check if the selection lies within the bottom right corner box of a box (so we can do resize of box here)
+          // NOTE: Traverse backwards the class views to preserve z-index buffer
+          for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
+            if (
+              this.diagram.classViews[i]
+                .buildBottomRightCornerBox()
+                .contains(
+                  eventPointInModelCoordinate.x,
+                  eventPointInModelCoordinate.y,
+                )
+            ) {
+              this.setSelectedClasses([]);
+              this.setSelectedClassCorner(this.diagram.classViews[i]);
+              if (!this.isReadOnly) {
+                // Bring the class view to front
+                this.diagram.setClassViews(
+                  this.reorderDiagramDomain(
+                    guaranteeNonNullable(this.selectedClassCorner),
+                    this.diagram,
+                  ),
+                );
+              }
+              break;
+            }
+          }
+
+          if (!this.selectedClassCorner) {
+            if (this.mouseOverClassProperty) {
+              // Check for selection of property within a class view
+              this.selectedClassProperty = {
+                property: this.mouseOverClassProperty,
+                selectionPoint: eventPointInModelCoordinate,
+              };
+              this.setSelectedClasses([]);
+            } else {
+              // Check for selection of class view(s)
+
+              let anyClassesSelected = false;
+              // Traverse backwards the class views to preserve z-index buffer
+              for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
+                if (
+                  this.diagram.classViews[i].contains(
+                    eventPointInModelCoordinate.x,
+                    eventPointInModelCoordinate.y,
+                  )
+                ) {
+                  if (
+                    this.selectedClasses.length === 0 ||
+                    this.selectedClasses.indexOf(this.diagram.classViews[i]) ===
+                      -1
+                  ) {
+                    this.setSelectedClasses([this.diagram.classViews[i]]);
+                  }
+                  if (!this.isReadOnly) {
+                    // Bring the class view to front
+                    this.diagram.setClassViews(
+                      this.reorderDiagramDomain(
+                        this.selectedClasses[0],
+                        this.diagram,
+                      ),
+                    );
+                  }
+                  this.clickX =
+                    eventPointInCanvasCoordinate.x / this.zoom -
+                    this.screenOffset.x;
+                  this.clickY =
+                    eventPointInCanvasCoordinate.y / this.zoom -
+                    this.screenOffset.y;
+                  // Set this here so we can keep moving the classviews
+                  // NOTE: in the past we tried to reset this every time after we reset `this.selectedClasses`
+                  // and that causes the selected classviews janks and jumps to a weird position during zoom.
+                  this._selectedClassesInitialPositions =
+                    this.selectedClasses.map((cv) => ({
+                      classView: cv,
+                      oldPos: new Point(cv.position.x, cv.position.y),
+                    }));
+                  anyClassesSelected = true;
+                  break;
+                }
+              }
+              if (!anyClassesSelected) {
+                this.setSelectedClasses([]);
+              }
+
+              if (!this.selectedClasses.length) {
+                // NOTE: we start checking for the selected point to decide
+                // whether or not to set a selection (selected inheritance view, property view, etc.)
+                // the order really matters here as each selection does set the selection point
+                // which causes the next selection to not happen
+
+                // check for selection of inheritance view
+                for (const generalizationView of this.diagram
+                  .generalizationViews) {
+                  const val = generalizationView.findOrBuildPoint(
+                    eventPointInModelCoordinate.x,
+                    eventPointInModelCoordinate.y,
+                    this.zoom,
+                    !this.isReadOnly,
+                  );
+                  if (val) {
+                    this.selectedPoint = val;
+                    this.setSelectedInheritance(generalizationView);
+                    break;
+                  }
+                }
+
+                // check for selection of association view
+                if (!this.selectedPoint) {
+                  for (const associationView of this.diagram.associationViews) {
+                    const val = associationView.findOrBuildPoint(
+                      eventPointInModelCoordinate.x,
+                      eventPointInModelCoordinate.y,
+                      this.zoom,
+                      !this.isReadOnly,
+                    );
+                    if (val) {
+                      this.selectedPoint = val;
+                      this.setSelectedPropertyOrAssociation(associationView);
+                      break;
+                    }
+                  }
+                }
+
+                // check for selection of property view
+                if (!this.selectedPoint) {
+                  for (const propertyView of this.diagram.propertyViews) {
+                    const val = propertyView.findOrBuildPoint(
+                      eventPointInModelCoordinate.x,
+                      eventPointInModelCoordinate.y,
+                      this.zoom,
+                      !this.isReadOnly,
+                    );
+                    if (val) {
+                      this.selectedPoint = val;
+                      this.setSelectedPropertyOrAssociation(propertyView);
+                      break;
+                    }
+                  }
+                }
+
+                // if the selected point is not identified then it is consider the start of a selection
+                if (!this.selectedPoint) {
+                  this.setSelectionStart(eventPointInModelCoordinate);
+                }
+              }
+            }
+          }
+          break;
+        }
+        case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
+          this.setSelectionStart(eventPointInModelCoordinate);
+          this.startClassView = undefined;
+          for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
+            if (
+              this.diagram.classViews[i].contains(
+                eventPointInModelCoordinate.x,
+                eventPointInModelCoordinate.y,
+              )
+            ) {
+              this.startClassView = this.diagram.classViews[i];
+            }
+          }
+          if (!this.startClassView) {
+            this.changeMode(
+              DIAGRAM_INTERACTION_MODE.LAYOUT,
+              DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
             );
           }
           break;
         }
-      }
-
-      if (!this.selectedClassCorner) {
-        let selected = false;
-        // Traverse backwards the class views to preserve z-index buffer
-        for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
-          if (this.diagram.classViews[i].contains(x, y)) {
-            if (
-              this.selectedClasses.length === 0 ||
-              this.selectedClasses.indexOf(this.diagram.classViews[i]) === -1
-            ) {
-              this.selectedClasses = [this.diagram.classViews[i]];
-            }
-            if (!this.isReadOnly) {
-              // Bring the class view to front
-              this.diagram.setClassViews(
-                this.reorderDiagramDomain(
-                  this.selectedClasses[0],
-                  this.diagram,
-                ),
-              );
-            }
-            this.clickX = correctedX / this.zoom;
-            this.clickY = correctedY / this.zoom;
-            // Set this here so we can keep moving the classviews
-            // NOTE: in the past we tried to reset this every time after we reset `this.selectedClasses`
-            // and that causes the selected classviews janks and jumps to a weird position.
-            this.selectedClassesOldPos = this.selectedClasses.map((cv) => ({
-              classView: cv,
-              oldPos: new Point(cv.position.x, cv.position.y),
-            }));
-            selected = true;
-            break;
-          }
-        }
-
-        if (!selected) {
-          this.selectedClasses = [];
-        }
-      }
-
-      if (!this.selectedClassCorner && !this.selectedClasses.length) {
-        for (const generalizationView of this.diagram.generalizationViews) {
-          const val = generalizationView.findOrBuildPoint(
-            (correctedX - this.canvasCenter.x) / this.zoom +
-              this.canvasCenter.x,
-            (correctedY - this.canvasCenter.y) / this.zoom +
-              this.canvasCenter.y,
-            this.zoom,
-            !this.isReadOnly,
-          );
-          if (val) {
-            this.selectedPoint = val;
-            this.selectedInheritance = generalizationView;
-            break;
-          }
-        }
-      }
-
-      if (
-        !this.selectedClassCorner &&
-        !this.selectedClasses.length &&
-        !this.selectedPoint
-      ) {
-        for (const associationView of this.diagram.associationViews) {
-          const val = associationView.findOrBuildPoint(
-            (correctedX - this.canvasCenter.x) / this.zoom +
-              this.canvasCenter.x,
-            (correctedY - this.canvasCenter.y) / this.zoom +
-              this.canvasCenter.y,
-            this.zoom,
-            !this.isReadOnly,
-          );
-          if (val) {
-            this.selectedPoint = val;
-            this.selectedPropertyOrAssociation = associationView;
-            break;
-          }
-        }
-      }
-
-      if (
-        !this.selectedClassCorner &&
-        !this.selectedClasses.length &&
-        !this.selectedPoint
-      ) {
-        for (const propertyView of this.diagram.propertyViews) {
-          const val = propertyView.findOrBuildPoint(
-            (correctedX - this.canvasCenter.x) / this.zoom +
-              this.canvasCenter.x,
-            (correctedY - this.canvasCenter.y) / this.zoom +
-              this.canvasCenter.y,
-            this.zoom,
-            !this.isReadOnly,
-          );
-          if (val) {
-            this.selectedPoint = val;
-            this.selectedPropertyOrAssociation = propertyView;
-            break;
-          }
-        }
-      }
-
-      // if the selected point is not identified then it is consider the start of a selection
-      if (
-        !this.selectedClassCorner &&
-        !this.selectedClasses.length &&
-        !this.selectedPoint
-      ) {
-        this.selectionStart = new Point(x, y);
+        default:
+          break;
       }
     }
 
-    if (e.button === 2) {
+    // NOTE: right now, in any mode, we allow to use middle click and
+    // right click to move the diagram. However, if we support context menu
+    // using right click in the future, we need to adjust to only allow
+    // middle click to move here.
+    else if (e.button === 1) {
       e.returnValue = false;
-      this.rightClick = true;
+      this.setMiddleClick(true);
       this.positionBeforeLastMove = new Point(e.x, e.y);
-      return false;
+      return;
+    }
+    // right click
+    else if (e.button === 2) {
+      e.returnValue = false;
+      this.setRightClick(true);
+      this.positionBeforeLastMove = new Point(e.x, e.y);
+      return;
     }
     this.clearScreen();
     this.drawAll();
-
-    return true;
   }
 
   mousewheel(e: WheelEvent): void {
-    // NOTE: scroll down to zoom in and up to zoom out
-    this.zoom = this.zoom - (e.deltaY / 120) * 0.05;
-    this.clearScreen();
-    this.drawAll();
+    // scroll down to zoom in and up to zoom out
+    const newZoomLevel = this.zoom - (e.deltaY / 120) * 0.05;
+    this.executeZoom(newZoomLevel, new Point(e.x, e.y));
     e.returnValue = false;
   }
 
   mousemove(e: MouseEvent): void {
     this.cursorPosition = new Point(e.x, e.y);
-    if (this.rightClick) {
+
+    // Pan/Move
+    if (
+      this.rightClick ||
+      this.middleClick ||
+      (this.leftClick && this.interactionMode === DIAGRAM_INTERACTION_MODE.PAN)
+    ) {
       this.screenOffset = new Point(
         this.screenOffset.x + (e.x - this.positionBeforeLastMove.x) / this.zoom,
         this.screenOffset.y + (e.y - this.positionBeforeLastMove.y) / this.zoom,
@@ -1999,236 +2748,293 @@ export class DiagramRenderer {
       this.clearScreen();
       this.drawAll();
     } else if (this.leftClick) {
-      // Resize class view
-      if (this.selectedClassCorner) {
-        const divPos = this.divPosition;
-        const correctedX =
-          e.x -
-          divPos.x +
-          this.div.scrollLeft -
-          this.screenOffset.x * this.zoom;
-        const correctedY =
-          e.y - divPos.y + this.div.scrollTop - this.screenOffset.y * this.zoom;
-        const newMovingX =
-          (correctedX - this.canvasCenter.x) / this.zoom + this.canvasCenter.x;
-        const newMovingY =
-          (correctedY - this.canvasCenter.y) / this.zoom + this.canvasCenter.y;
-        // Make sure width and height are in range!
-        this.selectedClassCorner.setRectangle(
-          new Rectangle(
-            newMovingX - this.selectedClassCorner.position.x,
-            newMovingY - this.selectedClassCorner.position.y,
-          ),
-        );
-        // Refresh hash since ClassView rectangle is not observable
-        this.selectedClassCorner.forceRefreshHash();
-        this.drawClassView(this.selectedClassCorner);
-        this.redraw();
-      }
+      const eventPointInCanvasCoordinate =
+        this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y));
+      const eventPointInModelCoordinate =
+        this.canvasCoordinateToModelCoordinate(eventPointInCanvasCoordinate);
 
-      // Move class view
-      if (!this.selectionStart && this.selectedClasses.length) {
-        if (!this.isReadOnly) {
-          const divPos = this.divPosition;
-          const correctedX =
-            e.x -
-            divPos.x +
-            this.div.scrollLeft -
-            this.screenOffset.x * this.zoom;
-          const correctedY =
-            e.y -
-            divPos.y +
-            this.div.scrollTop -
-            this.screenOffset.y * this.zoom;
-          let newMovingDeltaX = 0;
-          let newMovingDeltaY = 0;
-          this.selectedClasses.forEach((selectedClass, idx) => {
-            const selectedClassOldPos =
-              this.selectedClassesOldPos.length > idx
-                ? this.selectedClassesOldPos[idx]
-                : undefined;
-            if (selectedClassOldPos) {
-              const newMovingX =
-                correctedX / this.zoom -
-                (this.clickX - selectedClassOldPos.oldPos.x);
-              const newMovingY =
-                correctedY / this.zoom -
-                (this.clickY - selectedClassOldPos.oldPos.y);
-              newMovingDeltaX = selectedClass.position.x - newMovingX;
-              newMovingDeltaY = selectedClass.position.y - newMovingY;
-              selectedClass.setPosition(new Point(newMovingX, newMovingY));
-              // Refresh hash since ClassView position is not observable
-              selectedClass.forceRefreshHash();
-            }
-          });
-          this.potentiallyShiftRelationships(
-            this.diagram.associationViews,
-            this.selectedClasses,
-            newMovingDeltaX,
-            newMovingDeltaY,
-          );
-          this.potentiallyShiftRelationships(
-            this.diagram.propertyViews,
-            this.selectedClasses,
-            newMovingDeltaX,
-            newMovingDeltaY,
-          );
-          this.potentiallyShiftRelationships(
-            this.diagram.generalizationViews,
-            this.selectedClasses,
-            newMovingDeltaX,
-            newMovingDeltaY,
-          );
-          this.redraw();
-        }
-      }
-
-      // Change line (add a new point to the line)
-      if (this.selectedPoint) {
-        const divPos = this.divPosition;
-        const correctedX =
-          e.x -
-          divPos.x +
-          this.div.scrollLeft -
-          this.screenOffset.x * this.zoom;
-        const correctedY =
-          e.y - divPos.y + this.div.scrollTop - this.screenOffset.y * this.zoom;
-        const updatedSelectedPoint = new Point(
-          (correctedX - this.canvasCenter.x) / this.zoom + this.canvasCenter.x,
-          (correctedY - this.canvasCenter.y) / this.zoom + this.canvasCenter.y,
-        );
-        if (this.selectedPropertyOrAssociation) {
-          this.selectedPropertyOrAssociation.changePoint(
-            this.selectedPoint,
-            updatedSelectedPoint,
-          );
-        } else if (this.selectedInheritance) {
-          this.selectedInheritance.changePoint(
-            this.selectedPoint,
-            updatedSelectedPoint,
-          );
-        }
-        this.selectedPoint = updatedSelectedPoint;
-        this.redraw();
-      }
-
-      // Draw selection box
-      if (this.selectionStart) {
-        this.clearScreen();
-        this.drawAll();
-        const divPos = this.divPosition;
-        const correctedX = e.x - divPos.x;
-        const correctedY = e.y - divPos.y;
-        const startX =
-          (this.selectionStart.x - this.canvasCenter.x + this.screenOffset.x) *
-            this.zoom +
-          this.canvasCenter.x;
-        const startY =
-          (this.selectionStart.y - this.canvasCenter.y + this.screenOffset.y) *
-            this.zoom +
-          this.canvasCenter.y;
-        this.ctx.fillStyle = this.selectionBoxBorderColor;
-        this.ctx.fillRect(
-          startX,
-          startY,
-          correctedX - startX,
-          correctedY - startY,
-        );
-        this.ctx.strokeRect(
-          startX,
-          startY,
-          correctedX - startX,
-          correctedY - startY,
-        );
-        this.selection = new PositionedRectangle(
-          new Point(this.selectionStart.x, this.selectionStart.y),
-          new Rectangle(
-            (correctedX - startX) / this.zoom,
-            (correctedY - startY) / this.zoom,
-          ),
-        );
-        this.selectedClasses = [];
-        for (const classView of this.diagram.classViews) {
-          if (
-            this.selection.boxContains(classView) ||
-            classView.boxContains(this.selection)
-          ) {
-            this.selectedClasses = [...this.selectedClasses, classView];
+      switch (this.interactionMode) {
+        case DIAGRAM_INTERACTION_MODE.LAYOUT: {
+          // Resize class view
+          if (this.selectedClassCorner) {
+            // Make sure width and height are in range!
+            this.selectedClassCorner.setRectangle(
+              new Rectangle(
+                eventPointInModelCoordinate.x -
+                  this.selectedClassCorner.position.x,
+                eventPointInModelCoordinate.y -
+                  this.selectedClassCorner.position.y,
+              ),
+            );
+            // Refresh hash since ClassView rectangle is not observable
+            this.selectedClassCorner.forceRefreshHash();
+            this.drawClassView(this.selectedClassCorner);
+            this.drawScreen();
           }
+
+          // Move class view
+          if (!this.selectionStart && this.selectedClasses.length) {
+            if (!this.isReadOnly) {
+              let newMovingDeltaX = 0;
+              let newMovingDeltaY = 0;
+              this.selectedClasses.forEach((selectedClass, idx) => {
+                const selectedClassOldPosition =
+                  this._selectedClassesInitialPositions.length > idx
+                    ? this._selectedClassesInitialPositions[idx]
+                    : undefined;
+
+                if (selectedClassOldPosition) {
+                  const newMovingX =
+                    eventPointInCanvasCoordinate.x / this.zoom -
+                    this.screenOffset.x -
+                    (this.clickX - selectedClassOldPosition.oldPos.x);
+                  const newMovingY =
+                    eventPointInCanvasCoordinate.y / this.zoom -
+                    this.screenOffset.y -
+                    (this.clickY - selectedClassOldPosition.oldPos.y);
+                  newMovingDeltaX = selectedClass.position.x - newMovingX;
+                  newMovingDeltaY = selectedClass.position.y - newMovingY;
+                  selectedClass.setPosition(new Point(newMovingX, newMovingY));
+                  // Refresh hash since ClassView position is not observable
+                  selectedClass.forceRefreshHash();
+                }
+              });
+              this.potentiallyShiftRelationships(
+                this.diagram.associationViews,
+                this.selectedClasses,
+                newMovingDeltaX,
+                newMovingDeltaY,
+              );
+              this.potentiallyShiftRelationships(
+                this.diagram.propertyViews,
+                this.selectedClasses,
+                newMovingDeltaX,
+                newMovingDeltaY,
+              );
+              this.potentiallyShiftRelationships(
+                this.diagram.generalizationViews,
+                this.selectedClasses,
+                newMovingDeltaX,
+                newMovingDeltaY,
+              );
+              this.drawScreen();
+            }
+          }
+
+          // Change line (add a new point to the line)
+          if (this.selectedPoint) {
+            if (this.selectedPropertyOrAssociation) {
+              this.selectedPropertyOrAssociation.changePoint(
+                this.selectedPoint,
+                eventPointInModelCoordinate,
+              );
+            } else if (this.selectedInheritance) {
+              this.selectedInheritance.changePoint(
+                this.selectedPoint,
+                eventPointInModelCoordinate,
+              );
+            }
+            this.selectedPoint = eventPointInModelCoordinate;
+            this.drawScreen();
+          }
+
+          // Draw selection box
+          if (this.selectionStart) {
+            this.clearScreen();
+            this.drawAll();
+            const selectionStartPointInCanvasCoordinate =
+              this.modelCoordinateToCanvasCoordinate(this.selectionStart);
+            this.ctx.fillStyle = this.selectionBoxBorderColor;
+            this.ctx.fillRect(
+              selectionStartPointInCanvasCoordinate.x,
+              selectionStartPointInCanvasCoordinate.y,
+              eventPointInCanvasCoordinate.x -
+                selectionStartPointInCanvasCoordinate.x,
+              eventPointInCanvasCoordinate.y -
+                selectionStartPointInCanvasCoordinate.y,
+            );
+            this.ctx.strokeRect(
+              selectionStartPointInCanvasCoordinate.x,
+              selectionStartPointInCanvasCoordinate.y,
+              eventPointInCanvasCoordinate.x -
+                selectionStartPointInCanvasCoordinate.x,
+              eventPointInCanvasCoordinate.y -
+                selectionStartPointInCanvasCoordinate.y,
+            );
+            const selectionBoxWidth =
+              (eventPointInCanvasCoordinate.x -
+                selectionStartPointInCanvasCoordinate.x) /
+              this.zoom;
+            const selectionBoxHeight =
+              (eventPointInCanvasCoordinate.y -
+                selectionStartPointInCanvasCoordinate.y) /
+              this.zoom;
+            this.selection = new PositionedRectangle(
+              new Point(
+                selectionBoxWidth > 0
+                  ? this.selectionStart.x
+                  : this.selectionStart.x + selectionBoxWidth,
+                selectionBoxHeight > 0
+                  ? this.selectionStart.y
+                  : this.selectionStart.y + selectionBoxHeight,
+              ),
+              new Rectangle(
+                Math.abs(selectionBoxWidth),
+                Math.abs(selectionBoxHeight),
+              ),
+            );
+            this.setSelectedClasses([]);
+            for (const classView of this.diagram.classViews) {
+              if (
+                this.selection.boxContains(classView) ||
+                classView.boxContains(this.selection)
+              ) {
+                this.setSelectedClasses([...this.selectedClasses, classView]);
+              }
+            }
+          }
+          break;
         }
+        case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
+          if (this.selectionStart && this.startClassView) {
+            this.clearScreen();
+            this.drawBoundingBox();
+            const selectionStartPointInCanvasCoordinate =
+              this.modelCoordinateToCanvasCoordinate(this.selectionStart);
+
+            // Draw Line ------
+            this.ctx.moveTo(
+              selectionStartPointInCanvasCoordinate.x,
+              selectionStartPointInCanvasCoordinate.y,
+            );
+            this.ctx.lineTo(
+              eventPointInCanvasCoordinate.x,
+              eventPointInCanvasCoordinate.y,
+            );
+            this.ctx.stroke();
+            // Draw Line ------
+
+            this.drawDiagram();
+          }
+          break;
+        }
+        default:
+          break;
       }
     } else {
-      this.manageVirtualScreen();
-      this.clearScreen();
-      this.drawAll();
+      this.drawScreen();
 
-      const divPos = this.divPosition;
-      const correctedX =
-        e.x - divPos.x + this.div.scrollLeft - this.screenOffset.x * this.zoom;
-      const correctedY =
-        e.y - divPos.y + this.div.scrollTop - this.screenOffset.y * this.zoom;
+      const eventPointInCanvasCoordinate =
+        this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y));
+      const eventPointInModelCoordinate =
+        this.canvasCoordinateToModelCoordinate(eventPointInCanvasCoordinate);
 
-      const cX =
-        (correctedX - this.canvasCenter.x) / this.zoom + this.canvasCenter.x;
-      const cY =
-        (correctedY - this.canvasCenter.y) / this.zoom + this.canvasCenter.y;
-      this.mouseOverClassView = undefined;
-      this.mouseOverProperty = undefined;
+      // Check for hovering state
+      this.setMouseOverClassView(undefined);
+      this.setMouseOverClassName(undefined);
+      this.setMouseOverClassCorner(undefined);
+      this.setMouseOverClassProperty(undefined);
+      this.setMouseOverPropertyHolderViewLabel(undefined);
+
       for (const classView of this.diagram.classViews.slice().reverse()) {
-        if (classView.contains(cX, cY)) {
-          this.mouseOverClassView = classView;
-          const sX = correctedX + this.screenOffset.x * this.zoom;
-          const sY = correctedY + this.screenOffset.y * this.zoom;
+        if (
+          classView.contains(
+            eventPointInModelCoordinate.x,
+            eventPointInModelCoordinate.y,
+          )
+        ) {
+          this.setMouseOverClassView(classView);
 
+          // Check hover class corner
+          if (
+            classView
+              .buildBottomRightCornerBox()
+              .contains(
+                eventPointInModelCoordinate.x,
+                eventPointInModelCoordinate.y,
+              )
+          ) {
+            this.setMouseOverClassCorner(classView);
+          }
+
+          // TODO: we probably should make this a shared function so we don't need to maintain
+          // this computation in both places: here and when we draw class view properties
           const _class = classView.class.value;
-          const startX = classView.position.x;
-          const startY = classView.position.y;
-          let cursorY = startY + this.lineHeight + this.classViewSpaceY * 2;
+          let cursorY = classView.position.y + this.classViewSpaceY;
 
+          // account for height of stereotypes
           cursorY =
             cursorY +
             (classView.hideStereotypes
               ? 0
               : _class.stereotypes.length * this.fontSize);
+
+          // Check hover class name
+          const classNameWidth = this.computeClassNameWidth(classView);
+          if (
+            new PositionedRectangle(
+              this.modelCoordinateToCanvasCoordinate(
+                new Point(
+                  classView.position.x +
+                    (classView.rectangle.width - classNameWidth) / 2,
+                  cursorY,
+                ),
+              ),
+              // cursorY
+              new Rectangle(
+                classNameWidth,
+                this.lineHeight, // class name takes 1 line
+              ),
+            ).contains(
+              eventPointInCanvasCoordinate.x,
+              eventPointInCanvasCoordinate.y,
+            )
+          ) {
+            this.setMouseOverClassName(classView);
+          }
+
+          // account for height of class name
+          cursorY += this.lineHeight;
+
+          // account for height of tagged values
           cursorY =
             cursorY +
             (classView.hideTaggedValues
               ? 0
               : _class.taggedValues.length * this.fontSize);
+          cursorY += this.classViewSpaceY;
 
+          // Check hover class property
           for (const property of _class.getAllOwnedProperties()) {
             if (!this.hasPropertyView(classView, property)) {
-              const propX =
-                (startX +
-                  this.screenOffset.x +
-                  this.classViewSpaceX -
-                  this.canvasCenter.x) *
-                  this.zoom +
-                this.canvasCenter.x;
-              const propY =
-                (cursorY + this.screenOffset.y - this.canvasCenter.y) *
-                  this.zoom +
-                this.canvasCenter.y;
               this.ctx.font = `${(this.fontSize - 1) * this.zoom}px ${
                 this.fontFamily
               }`;
-              const propertyName = this.propertyName(property);
-              const txtMeasure = this.ctx.measureText(
-                `${propertyName} : `,
-              ).width;
-              const typeMeasure = this.ctx.measureText(
-                property.genericType.value.rawType.name,
-              ).width;
               if (
                 new PositionedRectangle(
-                  new Point(propX, propY),
-                  new Rectangle(
-                    txtMeasure + typeMeasure,
-                    this.fontSize * this.zoom,
+                  this.modelCoordinateToCanvasCoordinate(
+                    new Point(
+                      classView.position.x + this.classViewSpaceX,
+                      cursorY,
+                    ),
                   ),
-                ).contains(sX, sY)
+                  new Rectangle(
+                    this.drawClassViewProperty(
+                      classView,
+                      property,
+                      // these dimensions mean nothing since we only measure here
+                      0,
+                      0,
+                      true,
+                    ) * this.zoom,
+                    this.fontSize * this.zoom, // property takes 1 line
+                  ),
+                ).contains(
+                  eventPointInCanvasCoordinate.x,
+                  eventPointInCanvasCoordinate.y,
+                )
               ) {
-                this.mouseOverProperty = property;
+                this.setMouseOverClassProperty(property);
               }
               cursorY = cursorY + this.fontSize;
             }
@@ -2236,6 +3042,176 @@ export class DiagramRenderer {
           break;
         }
       }
+
+      const propertyHolderViews: PropertyHolderView[] = [
+        ...this.diagram.propertyViews,
+        ...this.diagram.associationViews,
+      ];
+      for (const propertyHolderView of propertyHolderViews) {
+        let fullPath = propertyHolderView.buildFullPath();
+        fullPath = manageInsidePointsDynamically(
+          fullPath,
+          propertyHolderView.from.classView.value,
+          propertyHolderView.to.classView.value,
+        );
+        const propertyInfoBox = this.drawLinePropertyText(
+          fullPath[fullPath.length - 2],
+          fullPath[fullPath.length - 1],
+          propertyHolderView.to.classView.value,
+          propertyHolderView.property.value,
+          false,
+        );
+        if (
+          propertyInfoBox.contains(
+            eventPointInModelCoordinate.x,
+            eventPointInModelCoordinate.y,
+          )
+        ) {
+          this.setMouseOverPropertyHolderViewLabel(propertyHolderView);
+          break;
+        }
+      }
     }
+  }
+
+  //---------------------
+  // Inheritance helpers
+  //---------------------
+
+  getSuperTypeLevels(
+    classViews: ClassView[],
+    diagram: Diagram,
+    currentDepth: number,
+    recurseMaxDepth: number,
+  ): ClassView[][] {
+    if (classViews.length) {
+      const res = uniqBy(
+        classViews.flatMap((classView) =>
+          classView.class.value.generalizations.map(
+            (generation) =>
+              new ClassView(
+                diagram,
+                uuid(),
+                PackageableElementExplicitReference.create(
+                  generation.value.getRawType(Class),
+                ),
+              ),
+          ),
+        ),
+        (a: ClassView) => a.class.value,
+      );
+      res.forEach((classView) =>
+        this.ensureClassViewMeetMinDimensions(classView),
+      );
+      if (recurseMaxDepth === -1 || currentDepth < recurseMaxDepth) {
+        const rec = this.getSuperTypeLevels(
+          res,
+          diagram,
+          currentDepth + 1,
+          recurseMaxDepth,
+        );
+        rec.push(classViews);
+        return rec;
+      } else {
+        return [classViews];
+      }
+    }
+    return [];
+  }
+
+  layoutTaxonomy(
+    classViewLevels: ClassView[][],
+    diagram: Diagram,
+    positionInitialClass: boolean,
+    superType: boolean,
+  ): [ClassView[], GeneralizationView[]] {
+    //Offsets
+    const spaceY = 30;
+    const spaceX = 10;
+
+    classViewLevels.reverse();
+
+    const classViews = classViewLevels.flatMap((level, currentLevelIndex) => {
+      // Get the bounding box of the precedent level
+      let precedentTotalWidth = 0;
+      let precedentTotalHeight = 0;
+      let precedentX = 0;
+      let precedentY = 0;
+      if (currentLevelIndex > 0) {
+        const precedentByX = [...classViewLevels[currentLevelIndex - 1]].sort(
+          (a, b) => a.position.x - b.position.x,
+        );
+        precedentX = precedentByX[0].position.x;
+        precedentTotalWidth =
+          precedentByX[precedentByX.length - 1].position.x +
+          precedentByX[precedentByX.length - 1].rectangle.width -
+          precedentByX[0].position.x;
+
+        const precedentByY = [...classViewLevels[currentLevelIndex - 1]].sort(
+          (a, b) => a.position.y - b.position.y,
+        );
+        precedentY = precedentByY[0].position.y;
+        precedentTotalHeight =
+          precedentByY[precedentByY.length - 1].position.y +
+          precedentByY[precedentByY.length - 1].rectangle.height -
+          precedentByY[0].position.y;
+      }
+
+      // Get the bounding box of current Level
+      const maxHeight = Math.max(
+        ...level.map((classView) => classView.rectangle.height),
+      );
+
+      const totalWidth = level
+        .map((classView) => classView.rectangle.width)
+        .reduce((a, b) => a + b + spaceX);
+
+      // Get the starting position
+      const startX = precedentX + precedentTotalWidth / 2 - totalWidth / 2;
+      const currentLevelY = superType
+        ? precedentY - maxHeight - spaceY
+        : precedentY + precedentTotalHeight + spaceY;
+
+      // Set layout of current level
+      if (positionInitialClass || currentLevelIndex > 0) {
+        level[0].setPosition(new Point(startX, currentLevelY));
+        level.forEach((view, index) => {
+          if (index > 0) {
+            const precedent = level[index - 1];
+            view.setPosition(
+              new Point(
+                precedent.position.x + precedent.rectangle.width + spaceX,
+                currentLevelY,
+              ),
+            );
+          }
+        });
+      }
+      return level;
+    });
+
+    const generalizationViews = (
+      superType ? classViewLevels : classViewLevels.reverse()
+    )
+      .slice(0, classViewLevels.length - 1)
+      .flatMap((level, i) =>
+        level.flatMap((fromClassView) =>
+          classViewLevels[i + 1].flatMap((toClassView) => {
+            if (
+              fromClassView.class.value.generalizations
+                .map((g) => g.value.rawType)
+                .includes(toClassView.class.value)
+            ) {
+              return new GeneralizationView(
+                diagram,
+                fromClassView,
+                toClassView,
+              );
+            }
+            return [];
+          }),
+        ),
+      );
+    return [classViews, generalizationViews];
   }
 }

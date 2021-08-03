@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { flow } from 'mobx';
+import { flow, flowResult, makeObservable } from 'mobx';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   assertErrorThrown,
@@ -97,6 +97,23 @@ export class V1_Engine {
   config: EngineConfig;
 
   constructor(clientConfig: ServerClientConfig, logger: Logger) {
+    makeObservable<V1_Engine, 'pureCodeToPureModelContextDataJson'>(this, {
+      pureModelContextDataToPureCode: flow,
+      pureCodeToPureModelContextData: flow,
+      pureCodeToPureModelContextDataJson: flow,
+      transformLambdasToCode: flow,
+      transformCodeToLambda: flow,
+      transformRelationalOperationElementsToPureCode: flow,
+      transformPureCodeToRelationalOperationElement: flow,
+      compilePureModelContextData: flow,
+      compileText: flow,
+      getLambdaReturnType: flow,
+      transformExternalFormatToProtocol: flow,
+      getAvailableImportConfigurationDescriptions: flow,
+      getAvailableGenerationConfigurationDescriptions: flow,
+      generateFile: flow,
+      runServiceTests: flow,
+    });
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
     this.config = new EngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
@@ -125,31 +142,27 @@ export class V1_Engine {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  pureModelContextDataToPureCode = flow(function* (
-    this: V1_Engine,
+  *pureModelContextDataToPureCode(
     graph: V1_PureModelContextData,
   ): GeneratorFn<string> {
     const result = (yield this.engineServerClient.transformJSONToGrammar({
       modelDataContext: this.serializePureModelContextData(graph),
     })) as V1_GrammarToJsonInput;
     return result.code ?? '';
-  });
+  }
 
-  pureCodeToPureModelContextData = flow(function* (
-    this: V1_Engine,
+  *pureCodeToPureModelContextData(
     code: string,
     options?: { onError?: () => void },
   ): GeneratorFn<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
-      (yield this.pureCodeToPureModelContextDataJson(
-        code,
-        options,
+      (yield flowResult(
+        this.pureCodeToPureModelContextDataJson(code, options),
       )) as PlainObject<V1_PureModelContextData>,
     );
-  });
+  }
 
-  private pureCodeToPureModelContextDataJson = flow(function* (
-    this: V1_Engine,
+  private *pureCodeToPureModelContextDataJson(
     code: string,
     options?: { onError?: () => void },
   ): GeneratorFn<PlainObject<V1_PureModelContextData>> {
@@ -167,10 +180,9 @@ export class V1_Engine {
     return guaranteeNonNullable(
       parsingResult.modelDataContext,
     ) as PlainObject<V1_PureModelContextData>;
-  });
+  }
 
-  transformLambdasToCode = flow(function* (
-    this: V1_Engine,
+  *transformLambdasToCode(
     inputLambdas: Map<string, RawLambda>,
     pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
     pretty?: boolean,
@@ -193,10 +205,9 @@ export class V1_Engine {
       })) as PlainObject<V1_GrammarToJsonInput>,
     );
     return result.isolatedLambdas ?? new Map<string, string>();
-  });
+  }
 
-  transformCodeToLambda = flow(function* (
-    this: V1_Engine,
+  *transformCodeToLambda(
     lambda: string,
     lambdaId: string,
   ): GeneratorFn<V1_RawLambda | undefined> {
@@ -211,10 +222,9 @@ export class V1_Engine {
       throw parserError.build();
     }
     return lambdaResult.lambdas?.get(lambdaId);
-  });
+  }
 
-  transformRelationalOperationElementsToPureCode = flow(function* (
-    this: V1_Engine,
+  *transformRelationalOperationElementsToPureCode(
     inputOperations: Map<string, RawRelationalOperationElement>,
   ): GeneratorFn<Map<string, string>> {
     const operations: Record<
@@ -234,10 +244,9 @@ export class V1_Engine {
         )) as PlainObject<V1_RelationalOperationElementGrammarToJsonInput>,
       );
     return result.operations;
-  });
+  }
 
-  transformPureCodeToRelationalOperationElement = flow(function* (
-    this: V1_Engine,
+  *transformPureCodeToRelationalOperationElement(
     operation: string,
     operationId: string,
   ): GeneratorFn<V1_RawRelationalOperationElement | undefined> {
@@ -254,12 +263,11 @@ export class V1_Engine {
       throw parserError.build();
     }
     return result.operations.get(operationId);
-  });
+  }
 
   // ------------------------------------------- Compile -------------------------------------------
 
-  compilePureModelContextData = flow(function* (
-    this: V1_Engine,
+  *compilePureModelContextData(
     model: V1_PureModelContextData,
     options?: { onError?: () => void },
   ): GeneratorFn<undefined> {
@@ -281,17 +289,15 @@ export class V1_Engine {
       }
       throw error;
     }
-  });
+  }
 
-  compileText = flow(function* (
-    this: V1_Engine,
+  *compileText(
     graphText: string,
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void },
   ): GeneratorFn<V1_PureModelContextData> {
-    const mainGraph = (yield this.pureCodeToPureModelContextDataJson(
-      graphText,
-      options,
+    const mainGraph = (yield flowResult(
+      this.pureCodeToPureModelContextDataJson(graphText, options),
     )) as PlainObject<V1_PureModelContextData>;
     const pureModelContextDataJson = compileContext
       ? mergeObjects(
@@ -316,10 +322,9 @@ export class V1_Engine {
       }
       throw error;
     }
-  });
+  }
 
-  getLambdaReturnType = flow(function* (
-    this: V1_Engine,
+  *getLambdaReturnType(
     lambda: V1_RawLambda,
     model: V1_PureModelContextData,
   ): GeneratorFn<string> {
@@ -341,12 +346,11 @@ export class V1_Engine {
       }
       throw error;
     }
-  });
+  }
 
   // ------------------------------------------- Schema Import -------------------------------------------
 
-  transformExternalFormatToProtocol = flow(function* (
-    this: V1_Engine,
+  *transformExternalFormatToProtocol(
     externalFormat: string,
     type: string,
     mode: ImportMode,
@@ -358,11 +362,11 @@ export class V1_Engine {
         mode,
       )) as PlainObject<V1_PureModelContextData>,
     );
-  });
+  }
 
-  getAvailableImportConfigurationDescriptions = flow(function* (
-    this: V1_Engine,
-  ): GeneratorFn<ImportConfigurationDescription[]> {
+  *getAvailableImportConfigurationDescriptions(): GeneratorFn<
+    ImportConfigurationDescription[]
+  > {
     const schemaImportDescriptions = (
       (yield this.engineServerClient.getAvailableSchemaImportDescriptions()) as PlainObject<V1_ImportConfigurationDescription>[]
     ).map((gen) => ({ ...gen, modelImportMode: ImportMode.SCHEMA_IMPORT }));
@@ -375,13 +379,13 @@ export class V1_Engine {
           .fromJson(description)
           .build(),
     );
-  });
+  }
 
   // ------------------------------------------- File Generation -------------------------------------------
 
-  getAvailableGenerationConfigurationDescriptions = flow(function* (
-    this: V1_Engine,
-  ): GeneratorFn<GenerationConfigurationDescription[]> {
+  *getAvailableGenerationConfigurationDescriptions(): GeneratorFn<
+    GenerationConfigurationDescription[]
+  > {
     const schemaGenerationDescriptions = (
       (yield this.engineServerClient.getAvailableSchemaGenerationDescriptions()) as PlainObject<V1_GenerationConfigurationDescription>[]
     ).map((gen) => ({
@@ -400,10 +404,9 @@ export class V1_Engine {
           .fromJson(description)
           .build(),
     );
-  });
+  }
 
-  generateFile = flow(function* (
-    this: V1_Engine,
+  *generateFile(
     configs: Record<PropertyKey, unknown>,
     type: string,
     generationMode: GenerationMode,
@@ -417,12 +420,11 @@ export class V1_Engine {
         V1_GenerateFileInput.serialization.toJson(input),
       )) as PlainObject<V1_GenerationOutput>[]
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
-  });
+  }
 
   // ------------------------------------------- Service -------------------------------------------
 
-  runServiceTests = flow(function* (
-    this: V1_Engine,
+  *runServiceTests(
     servicePath: string,
     model: V1_PureModelContextData,
   ): GeneratorFn<V1_ServiceTestResult[]> {
@@ -431,5 +433,5 @@ export class V1_Engine {
         V1_serializePureModelContextData(model),
       )) as PlainObject<V1_ServiceTestResult>[]
     ).map((result) => V1_ServiceTestResult.serialization.fromJson(result));
-  });
+  }
 }

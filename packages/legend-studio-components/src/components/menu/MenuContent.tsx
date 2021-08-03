@@ -29,7 +29,7 @@ export const MenuContent = forwardRef<
   );
 });
 
-MenuContent.displayName = 'MenuContentItem';
+MenuContent.displayName = 'MenuContent';
 
 export const MenuContentItem: React.FC<{
   className?: string;
@@ -45,6 +45,13 @@ export const MenuContentItem: React.FC<{
       {children}
     </div>
   );
+};
+
+export const MenuContentDivider: React.FC<{
+  className?: string;
+}> = (props) => {
+  const { className, ...otherProps } = props;
+  return <div className={clsx('menu__divider', className)} {...otherProps} />;
 };
 
 export const MenuContentItemIcon: React.FC<{

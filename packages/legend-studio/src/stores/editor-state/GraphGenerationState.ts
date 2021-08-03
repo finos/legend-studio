@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { observable, flow, action, computed, makeObservable } from 'mobx';
+import {
+  observable,
+  flow,
+  action,
+  computed,
+  makeObservable,
+  flowResult,
+} from 'mobx';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
@@ -88,6 +95,12 @@ export class GraphGenerationState {
       onTreeNodeSelect: action,
       setSelectedNode: action,
       emptyFileGeneration: action,
+      fetchAvailableFileGenerationDescriptions: flow,
+      globalGenerate: flow,
+      generateModels: flow,
+      generateFiles: flow,
+      clearGenerations: flow,
+      generateGenerationElement: flow,
     });
 
     this.editorStore = editorStore;
@@ -134,12 +147,11 @@ export class GraphGenerationState {
     );
   }
 
-  fetchAvailableFileGenerationDescriptions = flow(function* (
-    this: GraphGenerationState,
-  ) {
+  *fetchAvailableFileGenerationDescriptions(): GeneratorFn<void> {
     try {
-      const availableFileGenerationDescriptions =
-        (yield this.editorStore.graphState.graphManager.getAvailableGenerationConfigurationDescriptions()) as unknown as GenerationConfigurationDescription[];
+      const availableFileGenerationDescriptions = (yield flowResult(
+        this.editorStore.graphState.graphManager.getAvailableGenerationConfigurationDescriptions(),
+      )) as GenerationConfigurationDescription[];
       this.setFileGenerationConfigurations(availableFileGenerationDescriptions);
       this.editorStore.elementGenerationStates =
         this.fileGenerationConfigurations.map(
@@ -153,13 +165,13 @@ export class GraphGenerationState {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  });
+  }
 
   /**
    * Global generation is tied to the generation specification of the project. Every time a generation element
    * is added, they will be added to the generation specification
    */
-  globalGenerate = flow(function* (this: GraphGenerationState) {
+  *globalGenerate(): GeneratorFn<void> {
     if (
       this.editorStore.graphState.checkIfApplicationUpdateOperationIsRunning()
     ) {
@@ -167,8 +179,8 @@ export class GraphGenerationState {
     }
     this.isRunningGlobalGenerate = true;
     try {
-      yield this.generateModels();
-      yield this.generateFiles();
+      yield flowResult(this.generateModels());
+      yield flowResult(this.generateFiles());
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
@@ -181,13 +193,13 @@ export class GraphGenerationState {
     } finally {
       this.isRunningGlobalGenerate = false;
     }
-  });
+  }
 
-  generateModels = flow(function* (this: GraphGenerationState) {
+  *generateModels(): GeneratorFn<void> {
     try {
       this.generatedEntities = new Map<string, Entity[]>(); // reset the map of generated entities
       const generationSpecs =
-        this.editorStore.graphState.graph.generationSpecifications;
+        this.editorStore.graphState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -201,9 +213,9 @@ export class GraphGenerationState {
         const node = generationNodes[i];
         let generatedEntities: Entity[] = [];
         try {
-          generatedEntities = (yield this.generateGenerationElement(
-            node.generationElement.value,
-          )) as unknown as Entity[];
+          generatedEntities = (yield flowResult(
+            this.generateGenerationElement(node.generationElement.value),
+          )) as Entity[];
         } catch (error: unknown) {
           assertErrorThrown(error);
           throw new Error(
@@ -218,7 +230,9 @@ export class GraphGenerationState {
           node.generationElement.value.path,
           generatedEntities,
         );
-        yield this.editorStore.graphState.updateGenerationGraphAndApplication();
+        yield flowResult(
+          this.editorStore.graphState.updateGenerationGraphAndApplication(),
+        );
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
@@ -230,18 +244,18 @@ export class GraphGenerationState {
         `${error.message}`,
       );
     }
-  });
+  }
 
   /**
-   * Generated File Generation
-   * This method does not update graph and application. the files generated
+   * Generated file generations in the graph.
+   * NOTE: This method does not update graph and application only the files are generated.
    */
-  generateFiles = flow(function* (this: GraphGenerationState) {
+  *generateFiles(): GeneratorFn<void> {
     try {
       this.emptyFileGeneration();
       const generationResultMap = new Map<string, GenerationOutput[]>();
       const generationSpecs =
-        this.editorStore.graphState.graph.generationSpecifications;
+        this.editorStore.graphState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -259,10 +273,12 @@ export class GraphGenerationState {
             this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
               fileGeneration.value.type,
             ).generationMode;
-          result = (yield this.editorStore.graphState.graphManager.generateFile(
-            fileGeneration.value,
-            mode,
-            this.editorStore.graphState.graph,
+          result = (yield flowResult(
+            this.editorStore.graphState.graphManager.generateFile(
+              fileGeneration.value,
+              mode,
+              this.editorStore.graphState.graph,
+            ),
           )) as GenerationOutput[];
         } catch (error: unknown) {
           assertErrorThrown(error);
@@ -283,31 +299,34 @@ export class GraphGenerationState {
         `${error.message}`,
       );
     }
-  });
+  }
 
   /**
    * Used to clear generation entities as well as the generation model
    */
-  clearGenerations = flow(function* (this: GraphGenerationState) {
+  *clearGenerations(): GeneratorFn<void> {
     this.isClearingGenerationEntities = true;
     this.generatedEntities = new Map<string, Entity[]>();
     this.emptyFileGeneration();
-    yield this.editorStore.graphState.updateGenerationGraphAndApplication();
+    yield flowResult(
+      this.editorStore.graphState.updateGenerationGraphAndApplication(),
+    );
     this.isClearingGenerationEntities = false;
-  });
+  }
 
   /**
    * Method takes a generation element, defined as a packageable element that generates another model, and returns generated entities
    */
-  generateGenerationElement = flow(function* (
-    this: GraphGenerationState,
+  *generateGenerationElement(
     generationElement: PackageableElement,
   ): GeneratorFn<Entity[]> {
-    return (yield this.editorStore.graphState.graphManager.generateModel(
-      generationElement,
-      this.editorStore.graphState.graph,
+    return (yield flowResult(
+      this.editorStore.graphState.graphManager.generateModel(
+        generationElement,
+        this.editorStore.graphState.graph,
+      ),
     )) as Entity[];
-  });
+  }
 
   /**
    * Method adds generation specification if
@@ -315,7 +334,7 @@ export class GraphGenerationState {
    * 2. there exists a generation element
    */
   addMissingGenerationSpecifications(): void {
-    if (!this.editorStore.graphState.graph.generationSpecifications.length) {
+    if (!this.editorStore.graphState.graph.ownGenerationSpecifications.length) {
       const modelGenerationElements =
         this.editorStore.applicationStore.pluginManager
           .getPureGraphManagerPlugins()
@@ -326,7 +345,8 @@ export class GraphGenerationState {
               ).getExtraModelGenerationElementGetters?.() ?? [],
           )
           .flatMap((getter) => getter(this.editorStore.graphState.graph));
-      const fileGenerations = this.editorStore.graphState.graph.fileGenerations;
+      const fileGenerations =
+        this.editorStore.graphState.graph.ownFileGenerations;
       if (modelGenerationElements.length || fileGenerations.length) {
         const generationSpec = new GenerationSpecification(
           DEFAULT_GENERATION_SPECIFICATION_NAME,

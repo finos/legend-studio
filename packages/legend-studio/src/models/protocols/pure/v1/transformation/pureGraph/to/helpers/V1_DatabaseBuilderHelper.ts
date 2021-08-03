@@ -158,7 +158,7 @@ export const V1_findRelation = (
 ): Relation | undefined => {
   const relations: Relation[] = [];
   getAllIncludedDbs(database).forEach((db) => {
-    const schema = db.schemas.find((schema) => schema.name === schemaName);
+    const schema = db.schemas.find((_schema) => _schema.name === schemaName);
     if (schema) {
       let relation: Relation | undefined = schema.tables.find(
         (table) => table.name === tableName,
@@ -541,6 +541,9 @@ export const V1_buildDatabaseJoin = (
         ) as Column | undefined;
       }
       assertNonNullable(col, `Can't find column '${columnName}' in the table`);
+      // NOTE: this should be `implicit` because we do some inferencing
+      // but we need to test the impact of changing it to `implicit`.
+      // This might cause bugs in the future.
       selfJoinTarget.column = ColumnExplicitReference.create(col);
     });
   }

@@ -17,7 +17,6 @@
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
-import Dialog from '@material-ui/core/Dialog';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
@@ -42,7 +41,7 @@ import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import {
   IllegalStateError,
   isNonNullable,
@@ -67,6 +66,7 @@ import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
+import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -105,8 +105,8 @@ const MappingTestQueryEditor = observer(
     const changeClassMapping = useCallback(
       (setImplementation: SetImplementation | undefined): void => {
         // do all the necessary updates
-        queryState
-          .updateLamba(
+        flowResult(
+          queryState.updateLamba(
             setImplementation
               ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
                   guaranteeType(
@@ -115,8 +115,8 @@ const MappingTestQueryEditor = observer(
                   ),
                 )
               : RawLambda.createStub(),
-          )
-          .catch(applicationStore.alertIllegalUnhandledError);
+          ),
+        ).catch(applicationStore.alertIllegalUnhandledError);
         hideClassMappingSelectorModal();
 
         // Attempt to generate data for input data panel as we pick the class mapping
@@ -169,9 +169,9 @@ const MappingTestQueryEditor = observer(
     );
 
     const clearQuery = (): Promise<void> =>
-      testState.queryState
-        .updateLamba(RawLambda.createStub())
-        .catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(
+        testState.queryState.updateLamba(RawLambda.createStub()),
+      ).catch(applicationStore.alertIllegalUnhandledError);
 
     return (
       <div className="panel mapping-test-editor__query-panel">
@@ -567,16 +567,11 @@ export const MappingTestEditor = observer(
     const runTest = applicationStore.guaranteeSafeAction(() =>
       flowResult(testState.runTest()),
     );
-
     // Plan
-    const closePlanViewer = (): void => testState.setExecutionPlan(undefined);
+    const executionPlanState = testState.executionPlanState;
     const generatePlan = applicationStore.guaranteeSafeAction(() =>
       flowResult(testState.generatePlan()),
     );
-    const planText = testState.executionPlan
-      ? JSON.stringify(testState.executionPlan, undefined, TAB_SIZE)
-      : '';
-
     // Test Result
     let testResult = '';
     switch (testState.result) {
@@ -678,37 +673,7 @@ export const MappingTestEditor = observer(
             </div>
           )}
         </div>
-        <Dialog
-          open={Boolean(testState.executionPlan)}
-          onClose={closePlanViewer}
-          classes={{
-            root: 'editor-modal__root-container',
-            container: 'editor-modal__container',
-            paper: 'editor-modal__content',
-          }}
-        >
-          <div className="modal modal--dark editor-modal execution-plan-viewer">
-            <div className="modal__header">
-              <div className="modal__title">Execution Plan</div>
-            </div>
-            <div className="modal__body">
-              <TextInputEditor
-                inputValue={planText}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.JSON}
-                showMiniMap={true}
-              />
-            </div>
-            <div className="modal__footer">
-              <button
-                className="btn execution-plan-viewer__close-btn"
-                onClick={closePlanViewer}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Dialog>
+        <ExecutionPlanViewer executionPlanState={executionPlanState} />
       </div>
     );
   },

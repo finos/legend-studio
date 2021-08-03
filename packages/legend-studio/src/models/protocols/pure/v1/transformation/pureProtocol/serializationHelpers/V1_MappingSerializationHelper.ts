@@ -907,7 +907,7 @@ const enumValueMappingModelSchema = createModelSchema(V1_EnumValueMapping, {
     custom(serializeEnumValueMappingSourceValue, (value, context) =>
       V1_deserializeEnumValueMappingSourceValue(
         value,
-        context as unknown as { args?: V1_EnumerationMapping },
+        context as { args?: V1_EnumerationMapping },
       ),
     ),
   ), //TODO look into why args is private in context

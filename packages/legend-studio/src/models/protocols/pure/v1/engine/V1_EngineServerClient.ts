@@ -36,7 +36,6 @@ import type { V1_GenerationConfigurationDescription } from './generation/V1_Gene
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
 import type { V1_ExecuteInput } from './execution/V1_ExecuteInput';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
-import type { V1_Store } from '../model/packageableElements/store/V1_Store';
 import type {
   ServerClientConfig,
   TraceData,
@@ -45,22 +44,30 @@ import { AbstractServerClient } from '@finos/legend-studio-network';
 import type { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
 import type { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
+import type { V1_Query } from './query/V1_Query';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
   JSON_TO_GRAMMAR = 'transform protocol to Pure code',
+
   EXTERNAL_FORMAT_TO_PROTOCOL = 'transform external format code to protocol',
   GENERATE_FILE = 'generate file',
+
   COMPILE = 'compile',
   COMPILE_GRAMMAR = 'compile grammar',
   GET_LAMBDA_RETURN_TYPE = 'get lambda return type',
+
   EXECUTE = 'execute',
   GENERATE_EXECUTION_PLAN = 'generate execution plan',
+
   REGISTER_SERVICE = 'register service',
   GET_SERVICE_VERSION = 'get service version',
   ACTIVATE_SERVICE_GENERATION_ID = 'activate service generation id',
   RUN_SERVICE_TESTS = 'run service tests',
   GENERATE_TEST_DATA_WITH_DEFAULT_SEED = 'generate test data with default seed',
+
+  CREATE_QUERY = 'create query',
+  UPDATE_QUERY = 'update query',
 }
 
 export class V1_EngineServerClient extends AbstractServerClient {
@@ -100,8 +107,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
   });
 
   _pure = (): string => `${this.networkClient.baseUrl}/pure/${this.version}`;
-
-  _store = (): string => `${this.networkClient.baseUrl}/store/${this.version}`;
 
   // ------------------------------------------- Server -------------------------------------------
 
@@ -278,14 +283,17 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  // ------------------------------------------- Store -------------------------------------------
+  // ------------------------------------------- Utilities -------------------------------------------
 
-  generateStore = (
+  _utilities = (): string => `${this._pure()}/utilities`;
+  _databaseUtilities = (): string => `${this._utilities()}/database`;
+
+  buildDatabase = (
     input: PlainObject<V1_ExecuteInput>,
-  ): Promise<PlainObject<V1_Store>> =>
+  ): Promise<PlainObject<V1_PureModelContextData>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_EXECUTION_PLAN),
-      `${this._store()}/store`,
+      `${this._databaseUtilities()}/schemaExploration`,
       input,
     );
 
@@ -362,5 +370,39 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { Accept: ContentType.TEXT_PLAIN },
       undefined,
       { enableCompression: true },
+    );
+
+  // ------------------------------------------- Query -------------------------------------------
+
+  _query = (queryId?: string): string =>
+    `${this.networkClient.baseUrl}/query/${this.version}${
+      queryId ? `/${encodeURIComponent(queryId)}` : ''
+    }`;
+  getQueries = (
+    projectId: string,
+    versionId: string,
+    limit: number | undefined,
+  ): Promise<PlainObject<V1_Query>[]> =>
+    this.get(this._query(), undefined, undefined, {
+      projectId,
+      versionId,
+      limit,
+    });
+  getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
+    this.get(this._query(queryId));
+  createQuery = (query: V1_Query): Promise<PlainObject<V1_Query>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.CREATE_QUERY),
+      this._query(),
+      query,
+    );
+  updateQuery = (
+    queryId: string,
+    query: V1_Query,
+  ): Promise<PlainObject<V1_Query>> =>
+    this.putWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.CREATE_QUERY),
+      this._query(queryId),
+      query,
     );
 }

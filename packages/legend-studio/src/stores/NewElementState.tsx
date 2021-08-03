@@ -87,7 +87,7 @@ export const resolvePackageAndElementName = (
     index === -1 ? name : name.substring(index + 2, name.length);
   const additionalPackageName = index === -1 ? '' : name.substring(0, index);
   const selectedPackageName = isPackageRoot ? '' : _package.path;
-  const packageName =
+  const packagePath =
     !selectedPackageName && !additionalPackageName
       ? ''
       : selectedPackageName
@@ -97,7 +97,7 @@ export const resolvePackageAndElementName = (
             : ''
         }`
       : additionalPackageName;
-  return [packageName, elementName];
+  return [packagePath, elementName];
 };
 
 export abstract class NewElementDriver<T extends PackageableElement> {
@@ -124,7 +124,7 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
       isValid: computed,
     });
 
-    const mappings = this.editorStore.graphState.graph.mappings;
+    const mappings = this.editorStore.graphState.graph.ownMappings;
     if (mappings.length) {
       this.mapping = mappings[0];
     }
@@ -174,7 +174,7 @@ export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureM
       isValid: computed,
     });
 
-    const classes = this.editorStore.graphState.graph.classes;
+    const classes = this.editorStore.graphState.graph.ownClasses;
     if (classes.length) {
       this.class = classes[0];
     }
@@ -236,7 +236,7 @@ export class NewRelationalDbConnectionDriver extends NewConnectionValueDriver<Re
     if (store instanceof Database) {
       selectedStore = store;
     } else {
-      const dbs = this.editorStore.graphState.graph.databases;
+      const dbs = this.editorStore.graphState.graph.ownDatabases;
       selectedStore = dbs.length ? dbs[0] : Database.createStub();
     }
     return new RelationalDatabaseConnection(
@@ -387,7 +387,7 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
   }
 
   get isValid(): boolean {
-    return !this.editorStore.graphState.graph.generationSpecifications;
+    return !this.editorStore.graphState.graph.ownGenerationSpecifications;
   }
 
   createElement(name: string): GenerationSpecification {
@@ -427,7 +427,7 @@ export class NewElementState {
   get elementAndPackageName(): [string, string] {
     return resolvePackageAndElementName(
       this.selectedPackage,
-      this.editorStore.graphState.graph.isRoot(this._package),
+      this._package === this.editorStore.graphState.graph.root,
       this.name,
     );
   }
@@ -527,11 +527,10 @@ export class NewElementState {
 
   save(): void {
     if (this.name && this.isValid) {
-      const [packageName, elementName] = this.elementAndPackageName;
+      const [packagePath, elementName] = this.elementAndPackageName;
       if (
-        this.editorStore.graphState.graph.isRoot(
-          this.editorStore.graphState.graph.getNullablePackage(packageName),
-        ) &&
+        this.editorStore.graphState.graph.getNullablePackage(packagePath) ===
+          this.editorStore.graphState.graph.root &&
         this.type !== PACKAGEABLE_ELEMENT_TYPE.PACKAGE
       ) {
         throw new IllegalStateError(
@@ -539,10 +538,8 @@ export class NewElementState {
         );
       } else {
         const element = this.createElement(elementName);
-        (packageName
-          ? this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-              packageName,
-            )
+        (packagePath
+          ? this.editorStore.graphState.graph.getOrCreatePackage(packagePath)
           : this.editorStore.graphState.graph.root
         ).addElement(element);
         this.editorStore.graphState.graph.addElement(element);
@@ -565,7 +562,7 @@ export class NewElementState {
     ) {
       const generationElement = element;
       const generationSpecifications =
-        this.editorStore.graphState.graph.generationSpecifications;
+        this.editorStore.graphState.graph.ownGenerationSpecifications;
       let generationSpec: GenerationSpecification;
       if (generationSpecifications.length) {
         // TODO? handle case when more than one generation specification
@@ -634,7 +631,7 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
         const service = new Service(name);
         const mapping = Mapping.createStub(); // since it does not really make sense to start with the first available mapping, we start with a stub
-        const runtimes = this.editorStore.graphState.graph.runtimes.filter(
+        const runtimes = this.editorStore.graphState.graph.ownRuntimes.filter(
           (runtime) =>
             runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
         );

@@ -16,6 +16,8 @@
 
 import { guaranteeType } from '@finos/legend-studio-shared';
 import { Database } from '../../../../packageableElements/store/relational/model/Database';
+import type { Schema } from '../../../../packageableElements/store/relational/model/Schema';
+import type { Table } from '../../../../packageableElements/store/relational/model/Table';
 
 const collectIncludedDBs = (
   results: Set<Database>,
@@ -47,4 +49,26 @@ export const getAllIncludedDbs = (db: Database): Set<Database> => {
     ),
   );
   return results;
+};
+
+export const getDbNullableSchema = (
+  name: string,
+  db: Database,
+): Schema | undefined => db.schemas.find((schema) => schema.name === name);
+
+export const getSchemaNullableTable = (
+  name: string,
+  schema: Schema,
+): Table | undefined => schema.tables.find((table) => table.name === name);
+
+export const getDbNullableTable = (
+  _table: string,
+  _schema: string,
+  db: Database,
+): Table | undefined => {
+  const schema = getDbNullableSchema(_schema, db);
+  if (schema) {
+    return getSchemaNullableTable(_table, schema);
+  }
+  return undefined;
 };

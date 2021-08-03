@@ -19,37 +19,29 @@ import {
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/ConnectionEditorState';
-import type {
-  GenerateStoreState,
-  RelationalDatabaseConnectionValueState,
-} from '../../../../stores/editor-state/element-editor-state/ConnectionEditorState';
+} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+import type { RelationalDatabaseConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { useState } from 'react';
 import { MdModeEdit } from 'react-icons/md';
-import Dialog from '@material-ui/core/Dialog';
 import { VscError } from 'react-icons/vsc';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
   clsx,
-  PanelLoadingIndicator,
   CustomSelectorInput,
   CheckSquareIcon,
   SquareIcon,
   TimesIcon,
-  SaveIcon,
-  FireIcon,
 } from '@finos/legend-studio-components';
 import { capitalize, prettyCONSTName } from '@finos/legend-studio-shared';
 import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { DatabaseType } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import {
-  DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   DeltaLakeAuthenticationStrategy,
-  TestDatabaseAuthenticationStrategy,
+  UserPasswordAuthenticationStrategy,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   EmbeddedH2DatasourceSpecification,
@@ -57,16 +49,18 @@ import {
   SnowflakeDatasourceSpecification,
   DeltaLakeDatasourceSpecification,
   StaticDatasourceSpecification,
+  BigQueryDatasourceSpecification,
+  RedshiftDatasourceSpecification,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { runInAction } from 'mobx';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { Store } from '../../../../models/metamodels/pure/model/packageableElements/store/Store';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
-import { StorePattern } from '../../../../models/metamodels/pure/action/generation/GenerateStoreInput';
 import type { EditorPlugin } from '../../../../stores/EditorPlugin';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { DatabaseBuilder } from './DatabaseBuilder';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -491,7 +485,7 @@ const DeltaLakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.shard}
-          propertyName={'shard'}
+          propertyName="shard"
           update={(value: string | undefined): void =>
             sourceSpec.setShard(value ?? '')
           }
@@ -499,7 +493,7 @@ const DeltaLakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.httpPath}
-          propertyName={'httpPath'}
+          propertyName="httpPath"
           update={(value: string | undefined): void =>
             sourceSpec.setHttpPath(value ?? '')
           }
@@ -520,7 +514,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.accountName}
-          propertyName={'account'}
+          propertyName="account"
           update={(value: string | undefined): void =>
             sourceSpec.setAccountName(value ?? '')
           }
@@ -528,7 +522,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.region}
-          propertyName={'region'}
+          propertyName="region"
           update={(value: string | undefined): void =>
             sourceSpec.setRegion(value ?? '')
           }
@@ -536,7 +530,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.warehouseName}
-          propertyName={'warehouse'}
+          propertyName="warehouse"
           update={(value: string | undefined): void =>
             sourceSpec.setWarehouseName(value ?? '')
           }
@@ -544,7 +538,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          propertyName={'database'}
+          propertyName="database"
           update={(value: string | undefined): void =>
             sourceSpec.setDatabaseName(value ?? '')
           }
@@ -552,7 +546,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.cloudType}
-          propertyName={'cloud type'}
+          propertyName="cloud type"
           update={(value: string | undefined): void =>
             sourceSpec.setCloudType(value)
           }
@@ -561,10 +555,85 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_BooleanEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.quotedIdentifiersIgnoreCase}
-          propertyName={'quoted identifiers ignore case'}
-          description={'Set this when account has this flag set as true'}
+          propertyName="quoted identifiers ignore case"
+          description="Controls whether Snowflake will treat alphabetic characters in double-quoted identifiers as uppercase"
           update={(value: boolean | undefined): void =>
             sourceSpec.setQuotedIdentifiersIgnoreCase(Boolean(value))
+          }
+        />
+      </>
+    );
+  },
+);
+
+const RedshiftDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: RedshiftDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    const changePort: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      const val = event.target.value;
+      sourceSpec.setPort(parseInt(val, 10));
+    };
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.databaseName}
+          propertyName="database"
+          update={(value: string | undefined): void =>
+            sourceSpec.setDatabaseName(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.endpoint}
+          propertyName="endpoint"
+          update={(value: string | undefined): void =>
+            sourceSpec.setEndpoint(value ?? '')
+          }
+        />
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            port
+          </div>
+          <input
+            className="panel__content__form__section__input panel__content__form__section__number-input"
+            spellCheck={false}
+            type="number"
+            disabled={isReadOnly}
+            value={sourceSpec.port}
+            onChange={changePort}
+          />
+        </div>
+      </>
+    );
+  },
+);
+
+const BigQueryDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: BigQueryDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.projectId}
+          propertyName={'project id'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setProjectId(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.defaultDataset}
+          propertyName={'default dataset'}
+          update={(value: string | undefined): void =>
+            sourceSpec.setDefaultDataset(value ?? '')
           }
         />
       </>
@@ -593,10 +662,6 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
       </>
     );
   },
-);
-
-const DefaultH2AuthenticationStrategyEditor = observer(
-  (props: { authSpec: DefaultH2AuthenticationStrategy }) => null,
 );
 
 const DeltaLakeAuthenticationStrategyEditor = observer(
@@ -657,8 +722,33 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
   },
 );
 
-const TestDatabaseAuthenticationStrategyEditor = observer(
-  (props: { authSpec: TestDatabaseAuthenticationStrategy }) => null,
+const UserPasswordAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: UserPasswordAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.userName}
+          propertyName={'userName'}
+          update={(value: string | undefined): void =>
+            authSpec.setUserName(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.passwordVaultReference}
+          propertyName={'passwordVaultReference'}
+          update={(value: string | undefined): void =>
+            authSpec.setPasswordVaultReference(value ?? '')
+          }
+        />
+      </>
+    );
+  },
 );
 
 const OAuthAuthenticationStrategyEditor = observer(
@@ -687,310 +777,6 @@ const OAuthAuthenticationStrategyEditor = observer(
   },
 );
 
-const StorePatternsEditor = observer(
-  (props: { generateStoreState: GenerateStoreState; isReadOnly: boolean }) => {
-    const { generateStoreState, isReadOnly } = props;
-    const patterns = generateStoreState.patterns;
-    const [showEditInput, setShowEditInput] = useState<boolean | StorePattern>(
-      false,
-    );
-    const [stateSchemaPattern, setStateSchemaPattern] = useState<string>('');
-    const [tableStatePattern, setStateTablePattern] = useState<string>('');
-    const showAddItemInput = (): void => setShowEditInput(true);
-    const showEditItemInput =
-      (pattern: StorePattern): (() => void) =>
-      (): void => {
-        setStateSchemaPattern(pattern.schemaPattern);
-        setStateTablePattern(pattern.tablePattern);
-        setShowEditInput(pattern);
-      };
-    const hideAddOrEditItemInput = (): void => {
-      setShowEditInput(false);
-      setStateSchemaPattern('');
-      setStateTablePattern('');
-    };
-    const changeSchemaPattern: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => setStateSchemaPattern(event.target.value);
-    const changeTablePatten: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => setStateTablePattern(event.target.value);
-    const addValue = (): void => {
-      if (tableStatePattern && stateSchemaPattern && !isReadOnly) {
-        const pattern = new StorePattern();
-        pattern.setSchemaPattern(stateSchemaPattern);
-        pattern.setTablePattern(tableStatePattern);
-        generateStoreState.addPattern(pattern);
-      }
-      hideAddOrEditItemInput();
-    };
-    const updateValue =
-      (pattern: StorePattern): (() => void) =>
-      (): void => {
-        if (!isReadOnly && stateSchemaPattern && tableStatePattern) {
-          pattern.setSchemaPattern(stateSchemaPattern);
-          pattern.setTablePattern(tableStatePattern);
-        }
-        hideAddOrEditItemInput();
-      };
-    const deleteValue =
-      (pattern: StorePattern): (() => void) =>
-      (): void => {
-        if (!isReadOnly) {
-          generateStoreState.deletePattern(pattern);
-        }
-      };
-    return (
-      <div className="panel__content__form__section">
-        <div className="panel__content__form__section__header__label">
-          Patterns
-        </div>
-        <div className="panel__content__form__section__header__prompt">
-          Used to specify the schemas and tables regex pattern to generate from
-          store (schema.table)
-        </div>
-        <div className="panel__content__form__section__list">
-          <div className="panel__content__form__section__list__items">
-            {patterns.map((pattern) => (
-              // NOTE: since the key must be unique, we will use it to generate the key
-              <div
-                key={pattern.uuid}
-                className={
-                  showEditInput === pattern
-                    ? 'panel__content__form__section__list__new-item'
-                    : 'panel__content__form__section__list__item'
-                }
-              >
-                {showEditInput === pattern ? (
-                  <>
-                    <input
-                      className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                      spellCheck={false}
-                      disabled={isReadOnly}
-                      value={stateSchemaPattern}
-                      onChange={changeSchemaPattern}
-                      placeholder={'schema pattern'}
-                    />
-                    <input
-                      className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                      spellCheck={false}
-                      disabled={isReadOnly}
-                      value={tableStatePattern}
-                      onChange={changeTablePatten}
-                      placeholder={'table pattern'}
-                    />
-                    <div className="panel__content__form__section__list__new-item__actions">
-                      <button
-                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                        disabled={isReadOnly}
-                        onClick={updateValue(pattern)}
-                        tabIndex={-1}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                        disabled={isReadOnly}
-                        onClick={hideAddOrEditItemInput}
-                        tabIndex={-1}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="panel__content__form__section__list__item__value panel__content__form__section__list__item__value__map-item">
-                      <span className="panel__content__form__section__list__item__value__map-item__key">
-                        {pattern.schemaPattern}
-                      </span>
-                      <span className="panel__content__form__section__list__item__value__map-item__separator">
-                        .
-                      </span>
-                      <span className="panel__content__form__section__list__item__value__map-item__value">
-                        {pattern.tablePattern}
-                      </span>
-                    </div>
-                    <div className="panel__content__form__section__list__item__actions">
-                      <button
-                        className="panel__content__form__section__list__item__edit-btn"
-                        disabled={isReadOnly}
-                        onClick={showEditItemInput(pattern)}
-                        tabIndex={-1}
-                      >
-                        <MdModeEdit />
-                      </button>
-                      <button
-                        className="panel__content__form__section__list__item__remove-btn"
-                        disabled={isReadOnly}
-                        onClick={deleteValue(pattern)}
-                        tabIndex={-1}
-                      >
-                        <TimesIcon />
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-            {/* ADD NEW VALUE */}
-            {showEditInput === true && (
-              <div className="panel__content__form__section__list__new-item">
-                <input
-                  className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={stateSchemaPattern}
-                  onChange={changeSchemaPattern}
-                />
-                <input
-                  className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={tableStatePattern}
-                  onChange={changeTablePatten}
-                />
-                <div className="panel__content__form__section__list__new-item__actions">
-                  <button
-                    className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                    disabled={isReadOnly}
-                    onClick={addValue}
-                    tabIndex={-1}
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                    disabled={isReadOnly}
-                    onClick={hideAddOrEditItemInput}
-                    tabIndex={-1}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          {showEditInput !== true && (
-            <div className="panel__content__form__section__list__new-item__add">
-              <button
-                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                disabled={isReadOnly}
-                onClick={showAddItemInput}
-                tabIndex={-1}
-              >
-                Add Value
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  },
-);
-
-// store
-const GenerateStoreEditor = observer(
-  (props: { generateStoreState: GenerateStoreState; isReadOnly: boolean }) => {
-    const { generateStoreState, isReadOnly } = props;
-
-    const generateStore = (): Promise<void> =>
-      generateStoreState.generateStore();
-    const saveStore = (): Promise<void> => generateStoreState.saveStore();
-    const closeModal = (): void => {
-      generateStoreState.setModal(false);
-    };
-    const updateStoreGrammar = (val: string): void =>
-      generateStoreState.setStoreGrammar(val);
-    const isExecutingAction =
-      generateStoreState.isGeneratingStore || generateStoreState.isSavingStore;
-    return (
-      <Dialog
-        open={generateStoreState.modal}
-        onClose={closeModal}
-        classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-      >
-        <div className="modal modal--dark generate-store-editor">
-          <div className="generate-store-editor__heading">
-            <div className="generate-store-editor__heading__label">
-              Generate Store
-            </div>
-          </div>
-          <div className="generate-store-editor__content">
-            <PanelLoadingIndicator isLoading={isExecutingAction} />
-            <ReflexContainer orientation="vertical">
-              <ReflexElement size={450} minSize={0}>
-                <div className="relational-connection-editor__auth">
-                  <div className="panel__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__label">configs</div>
-                    </div>
-                  </div>
-                  <div className="panel__content relational-connection-editor__auth__content">
-                    <ConnectionEditor_StringEditor
-                      isReadOnly={isReadOnly}
-                      value={generateStoreState.targetStorePath}
-                      propertyName={'target store path'}
-                      update={(value: string | undefined): void =>
-                        generateStoreState.setTargetStorePath(value ?? '')
-                      }
-                    />
-                    <StorePatternsEditor
-                      generateStoreState={generateStoreState}
-                      isReadOnly={isReadOnly}
-                    />
-                  </div>
-                </div>
-              </ReflexElement>
-              <ReflexSplitter />
-              <ReflexElement>
-                <div className="relational-connection-editor__source">
-                  <div className="panel__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__label">
-                        generation
-                      </div>
-                    </div>
-                    <div className="panel__header__actions">
-                      <button
-                        className="panel__header__action"
-                        disabled={isReadOnly || isExecutingAction}
-                        tabIndex={-1}
-                        onClick={generateStore}
-                        title={'Generate store...'}
-                      >
-                        <FireIcon />
-                      </button>
-                      <button
-                        className="panel__header__action"
-                        disabled={isReadOnly || isExecutingAction}
-                        tabIndex={-1}
-                        onClick={saveStore}
-                        title={'Save store...'}
-                      >
-                        <SaveIcon />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="panel__content">
-                    <TextInputEditor
-                      language={EDITOR_LANGUAGE.PURE}
-                      inputValue={generateStoreState.storeGrammar}
-                      updateInput={updateStoreGrammar}
-                    />
-                  </div>
-                </div>
-              </ReflexElement>
-            </ReflexContainer>
-          </div>
-        </div>
-      </Dialog>
-    );
-  },
-);
-
 const RelationalConnectionStoreEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
@@ -998,7 +784,7 @@ const RelationalConnectionStoreEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly } = props;
     const connection = connectionValueState.connection;
-    const generateStoreState = connectionValueState.generateStoreState;
+    const databaseBuilderState = connectionValueState.databaseBuilderState;
     // store
     const isStoreEmpty = connectionValueState.storeValidationResult;
     const noStoreLabel = (
@@ -1012,7 +798,7 @@ const RelationalConnectionStoreEditor = observer(
         <VscError />
       </div>
     );
-    const stores = connectionValueState.editorStore.graphState.graph.stores;
+    const stores = connectionValueState.editorStore.graphState.graph.ownStores;
     const options = stores.map((e) => e.selectOption);
     const store = connection.store.value;
     const selectedStore = {
@@ -1028,7 +814,7 @@ const RelationalConnectionStoreEditor = observer(
         );
       }
     };
-    const openGenerateStore = (): void => generateStoreState.setModal(true);
+    const openDatabaseBuilder = (): void => databaseBuilderState.setModal(true);
 
     return (
       <div className="relational-connection-editor">
@@ -1047,13 +833,13 @@ const RelationalConnectionStoreEditor = observer(
             />
           </div>
           <div>
-            <button className="btn--dark" onClick={openGenerateStore}>
-              Generate Store
+            <button className="btn--dark" onClick={openDatabaseBuilder}>
+              Build Database
             </button>
           </div>
         </div>
-        <GenerateStoreEditor
-          generateStoreState={generateStoreState}
+        <DatabaseBuilder
+          databaseBuilderState={databaseBuilderState}
           isReadOnly={isReadOnly}
         />
       </div>
@@ -1091,6 +877,20 @@ const renderDatasourceSpecificationEditor = (
   } else if (sourceSpec instanceof SnowflakeDatasourceSpecification) {
     return (
       <SnowflakeDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (sourceSpec instanceof BigQueryDatasourceSpecification) {
+    return (
+      <BigQueryDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (sourceSpec instanceof RedshiftDatasourceSpecification) {
+    return (
+      <RedshiftDatasourceSpecificationEditor
         sourceSpec={sourceSpec}
         isReadOnly={isReadOnly}
       />
@@ -1147,10 +947,13 @@ const renderAuthenticationStrategyEditor = (
         isReadOnly={isReadOnly}
       />
     );
-  } else if (authSpec instanceof TestDatabaseAuthenticationStrategy) {
-    return <TestDatabaseAuthenticationStrategyEditor authSpec={authSpec} />;
-  } else if (authSpec instanceof DefaultH2AuthenticationStrategy) {
-    return <DefaultH2AuthenticationStrategyEditor authSpec={authSpec} />;
+  } else if (authSpec instanceof UserPasswordAuthenticationStrategy) {
+    return (
+      <UserPasswordAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else if (authSpec instanceof OAuthAuthenticationStrategy) {
     return (
       <OAuthAuthenticationStrategyEditor
@@ -1282,7 +1085,7 @@ const RelationalConnectionGeneralEditor = observer(
                   isReadOnly={isReadOnly}
                   value={connection.quoteIdentifiers}
                   propertyName="Quote identifiers"
-                  description="Use this to quote SQL identifiers"
+                  description="Specifies whether to use double-quotes for SQL identifiers"
                   update={(value?: boolean): void =>
                     connection.setQuoteIdentifiers(Boolean(value))
                   }

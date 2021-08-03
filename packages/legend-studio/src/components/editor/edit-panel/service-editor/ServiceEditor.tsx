@@ -420,7 +420,7 @@ export const ServiceEditor = observer(() => {
               <button
                 className="panel__header__action"
                 disabled={
-                  serviceState.registrationState.registeringState.isInProgress
+                  serviceState.registrationState.registrationState.isInProgress
                 }
                 tabIndex={-1}
                 onClick={serviceModal}

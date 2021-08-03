@@ -14,21 +14,32 @@
  * limitations under the License.
  */
 
-import { getTestApplicationConfig, Studio } from '@finos/legend-studio';
-import { Dummy_Preset } from '@finos/legend-studio-preset-dummy';
+import { getTestApplicationConfig, LegendStudio } from '@finos/legend-studio';
+import type { AbstractPluginManager } from '@finos/legend-studio-shared';
 import {
+  AbstractPreset,
   integrationTest,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-studio-shared';
 import studioConfig from '../../studio.config';
 
+class Dummy_Preset extends AbstractPreset {
+  constructor() {
+    super('dummy', '0.0.0');
+  }
+
+  install(pluginManager: AbstractPluginManager): void {
+    return;
+  }
+}
+
 test(integrationTest('Application can start with a dummy preset'), async () => {
-  const application = Studio.create();
+  const application = LegendStudio.create();
 
   MOBX__enableSpyOrMock();
   jest
-    .spyOn(application, 'fetchConfiguration')
+    .spyOn(application, 'fetchApplicationConfiguration')
     .mockResolvedValue([getTestApplicationConfig(), {}]);
   MOBX__disableSpyOrMock();
 

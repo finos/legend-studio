@@ -17,16 +17,11 @@
 import { action, makeAutoObservable } from 'mobx';
 import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-studio-shared';
 import type {
+  AbstractPropertyExpression,
   EditorStore,
+  PureModel,
   SimpleFunctionExpression,
   ValueSpecification,
-} from '@finos/legend-studio';
-import {
-  CORE_ELEMENT_PATH,
-  FunctionType,
-  LambdaFunction,
-  LambdaFunctionInstanceValue,
-  TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-studio';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
@@ -34,6 +29,7 @@ import type {
   QueryBuilderProjectionColumnState,
   QueryBuilderProjectionState,
 } from './QueryBuilderProjectionState';
+import { QueryBuilderSimpleProjectionColumnState } from './QueryBuilderProjectionState';
 
 export abstract class QueryBuilderAggregateOperator {
   uuid = uuid();
@@ -47,8 +43,24 @@ export abstract class QueryBuilderAggregateOperator {
   ): boolean;
 
   abstract buildAggregateExpression(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    propertyExpression: AbstractPropertyExpression | undefined,
+    variableName: string,
+    graph: PureModel,
   ): ValueSpecification;
+
+  buildAggregateExpressionFromState(
+    aggregateColumnState: QueryBuilderAggregateColumnState,
+  ): ValueSpecification {
+    return this.buildAggregateExpression(
+      aggregateColumnState.projectionColumnState instanceof
+        QueryBuilderSimpleProjectionColumnState
+        ? aggregateColumnState.projectionColumnState.propertyExpressionState
+            .propertyExpression
+        : undefined,
+      aggregateColumnState.lambdaParameterName,
+      aggregateColumnState.editorStore.graphState.graph,
+    );
+  }
 
   abstract buildAggregateColumnState(
     expression: SimpleFunctionExpression,
@@ -56,34 +68,6 @@ export abstract class QueryBuilderAggregateOperator {
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): QueryBuilderAggregateColumnState | undefined;
 }
-
-export const buildAggregateLambda = (
-  aggregateColumnState: QueryBuilderAggregateColumnState,
-): LambdaFunctionInstanceValue => {
-  const multiplicityOne =
-    aggregateColumnState.editorStore.graphState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  const typeAny = aggregateColumnState.editorStore.graphState.graph.getType(
-    CORE_ELEMENT_PATH.ANY,
-  );
-  const aggregateLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-  const colLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-  colLambdaFunctionType.parameters.push(
-    new VariableExpression(
-      aggregateColumnState.lambdaParameterName,
-      multiplicityOne,
-    ),
-  );
-  const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-  colLambdaFunction.expressionSequence.push(
-    aggregateColumnState.operator.buildAggregateExpression(
-      aggregateColumnState,
-    ),
-  );
-  aggregateLambda.values.push(colLambdaFunction);
-  return aggregateLambda;
-};
 
 export class QueryBuilderAggregateColumnState {
   uuid = uuid();
@@ -103,6 +87,7 @@ export class QueryBuilderAggregateColumnState {
       uuid: false,
       editorStore: false,
       aggregationState: false,
+      setColumnState: action,
       setLambdaParameterName: action,
       setOperator: action,
     });
@@ -111,6 +96,10 @@ export class QueryBuilderAggregateColumnState {
     this.aggregationState = aggregationState;
     this.projectionColumnState = projectionColumnState;
     this.operator = operator;
+  }
+
+  setColumnState(val: QueryBuilderProjectionColumnState): void {
+    this.projectionColumnState = val;
   }
 
   setLambdaParameterName(val: string): void {

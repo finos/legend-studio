@@ -36,6 +36,7 @@ import {
   tryToFormatLosslessJSONString,
 } from '@finos/legend-studio-shared';
 import { useApplicationStore } from '../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 export const TextDiffView = observer(
   (props: { language: EDITOR_LANGUAGE; from?: string; to?: string }) => {
@@ -61,25 +62,25 @@ export const TextDiffView = observer(
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
           ...baseTextEditorSettings,
-          theme: EDITOR_THEME.STUDIO,
+          theme: EDITOR_THEME.LEGEND,
           readOnly: true,
         });
         _editor.getOriginalEditor().onKeyDown((event) => {
           if (event.keyCode === KeyCode.F8) {
             event.preventDefault();
             event.stopPropagation();
-            editorStore
-              .toggleTextMode()
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(editorStore.toggleTextMode()).catch(
+              applicationStore.alertIllegalUnhandledError,
+            );
           }
         });
         _editor.getModifiedEditor().onKeyDown((event) => {
           if (event.keyCode === KeyCode.F8) {
             event.preventDefault();
             event.stopPropagation();
-            editorStore
-              .toggleTextMode()
-              .catch(applicationStore.alertIllegalUnhandledError);
+            flowResult(editorStore.toggleTextMode()).catch(
+              applicationStore.alertIllegalUnhandledError,
+            );
           }
         });
         disableEditorHotKeys(_editor);

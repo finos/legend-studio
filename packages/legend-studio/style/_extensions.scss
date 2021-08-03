@@ -35,6 +35,8 @@
   --color-relational: var(--color-blue-500);
   --color-file-generation: var(--color-blue-50);
   --color-database: var(--color-orange-100);
+  --color-schema: var(--color-medium-green-500);
+  --color-table: var(--color-light-blue-200);
   --color-association: var(--color-light-grey-400);
   --color-service: var(--color-blue-40);
   --color-runtime: var(--color-red-180);
@@ -113,6 +115,14 @@
 
   &--database {
     color: var(--color-database);
+  }
+
+  &--table {
+    color: var(--color-table);
+  }
+
+  &--schema {
+    color: var(--color-schema);
   }
 
   &--service {

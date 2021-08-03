@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import {
+  observable,
+  action,
+  flow,
+  computed,
+  makeObservable,
+  flowResult,
+} from 'mobx';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   assertNonNullable,
   guaranteeNonNullable,
@@ -92,6 +100,8 @@ export class EntityDiffViewState extends EntityDiffEditorState {
       setToGrammarText: action,
       setFromGrammarText: action,
       refresh: action,
+      getFromGrammar: flow,
+      getToGrammar: flow,
     });
 
     this.fromEntityPath = fromEntityPath;
@@ -170,13 +180,14 @@ export class EntityDiffViewState extends EntityDiffEditorState {
       : this.toEntity;
   }
 
-  getFromGrammar = flow(function* (this: EntityDiffViewState) {
+  *getFromGrammar(): GeneratorFn<void> {
     if (this.fromEntity) {
       try {
-        const elementGrammar =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+        const elementGrammar = (yield flowResult(
+          this.editorStore.graphState.graphManager.entitiesToPureCode([
             this.fromEntity,
-          ])) as string;
+          ]),
+        )) as string;
         this.setFromGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(
@@ -190,15 +201,16 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     } else {
       this.setFromGrammarText('');
     }
-  });
+  }
 
-  getToGrammar = flow(function* (this: EntityDiffViewState) {
+  *getToGrammar(): GeneratorFn<void> {
     if (this.toEntity) {
       try {
-        const elementGrammar =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+        const elementGrammar = (yield flowResult(
+          this.editorStore.graphState.graphManager.entitiesToPureCode([
             this.toEntity,
-          ])) as string;
+          ]),
+        )) as string;
         this.setToGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(
@@ -212,5 +224,5 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     } else {
       this.setToGrammarText('');
     }
-  });
+  }
 }

@@ -16,9 +16,17 @@
 
 import type { EditorStore } from '../../EditorStore';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
-import { observable, action, flow, computed, makeObservable } from 'mobx';
+import {
+  observable,
+  action,
+  flow,
+  computed,
+  makeObservable,
+  flowResult,
+} from 'mobx';
 import { ELEMENT_NATIVE_VIEW_MODE, TAB_SIZE } from '../../EditorConfig';
 import { EditorState } from '../../editor-state/EditorState';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { assertErrorThrown } from '@finos/legend-studio-shared';
 import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
@@ -50,6 +58,7 @@ export abstract class ElementEditorState extends EditorState {
       setEditMode: action,
       setGenerationViewMode: action,
       generateElementProtocol: action,
+      generateElementGrammar: flow,
     });
 
     this.element = element;
@@ -98,17 +107,18 @@ export abstract class ElementEditorState extends EditorState {
     }
   }
 
-  generateElementGrammar = flow(function* (this: ElementEditorState) {
+  *generateElementGrammar(): GeneratorFn<void> {
     try {
       const elementEntity =
         this.editorStore.graphState.graphManager.elementToEntity(
           this.element,
           false,
         );
-      const grammar =
-        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+      const grammar = (yield flowResult(
+        this.editorStore.graphState.graphManager.entitiesToPureCode([
           elementEntity,
-        ])) as string;
+        ]),
+      )) as string;
       this.setTextContent(grammar);
     } catch (error: unknown) {
       assertErrorThrown(error);
@@ -123,7 +133,7 @@ export abstract class ElementEditorState extends EditorState {
         error,
       );
     }
-  });
+  }
 
   /**
    * Takes the compilation and based on its source information, attempts to reveal the error

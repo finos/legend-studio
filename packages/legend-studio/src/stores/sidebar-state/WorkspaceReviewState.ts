@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { flow, action, makeAutoObservable } from 'mobx';
+import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { CORE_LOG_EVENT } from '../../utils/Logger';
@@ -32,7 +32,7 @@ import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { generateSetupRoute } from '../Router';
+import { generateSetupRoute } from '../LegendStudioRouter';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;
@@ -109,7 +109,7 @@ export class WorkspaceReviewState {
     );
   }
 
-  refreshWorkspaceChanges = flow(function* (this: WorkspaceReviewState) {
+  *refreshWorkspaceChanges(): GeneratorFn<void> {
     const startTime = Date.now();
     this.isRefreshingWorkspaceChangesDetector = true;
     try {
@@ -146,7 +146,7 @@ export class WorkspaceReviewState {
     } finally {
       this.isRefreshingWorkspaceChangesDetector = false;
     }
-  });
+  }
 
   *fetchCurrentWorkspaceReview(): GeneratorFn<void> {
     try {
@@ -195,9 +195,7 @@ export class WorkspaceReviewState {
     }
   }
 
-  recreateWorkspaceAfterCommittingReview = flow(function* (
-    this: WorkspaceReviewState,
-  ) {
+  *recreateWorkspaceAfterCommittingReview(): GeneratorFn<void> {
     try {
       this.isRecreatingWorkspaceAfterCommittingReview = true;
       this.editorStore.setBlockingAlert({
@@ -220,9 +218,9 @@ export class WorkspaceReviewState {
       this.editorStore.setBlockingAlert(undefined);
       this.isRecreatingWorkspaceAfterCommittingReview = false;
     }
-  });
+  }
 
-  closeWorkspaceReview = flow(function* (this: WorkspaceReviewState) {
+  *closeWorkspaceReview(): GeneratorFn<void> {
     if (!this.workspaceReview) {
       return;
     }
@@ -242,27 +240,26 @@ export class WorkspaceReviewState {
     } finally {
       this.isClosingWorkspaceReview = false;
     }
-  });
+  }
 
   /**
    * Below functions will be specific to properties on the project such as reviews, tags, etc..
    */
-  createWorkspaceReview = flow(function* (
-    this: WorkspaceReviewState,
+  *createWorkspaceReview(
     title: string,
     description?: string,
-  ) {
+  ): GeneratorFn<void> {
     this.isCreatingWorkspaceReview = true;
     try {
       this.workspaceReview = Review.serialization.fromJson(
-        yield this.sdlcState.sdlcClient.createReview(
+        (yield this.sdlcState.sdlcClient.createReview(
           this.sdlcState.currentProjectId,
           {
             workspaceId: this.sdlcState.currentWorkspaceId,
             title,
             description: description ?? '',
           },
-        ),
+        )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
@@ -273,18 +270,16 @@ export class WorkspaceReviewState {
     } finally {
       this.isCreatingWorkspaceReview = false;
     }
-  });
+  }
 
-  commitWorkspaceReview = flow(function* (
-    this: WorkspaceReviewState,
-    review: Review,
-  ) {
+  *commitWorkspaceReview(review: Review): GeneratorFn<void> {
     this.isCommittingWorkspaceReview = true;
 
     // check if the workspace is in conflict resolution mode
     try {
-      const isInConflictResolutionMode =
-        (yield this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode()) as boolean;
+      const isInConflictResolutionMode = (yield flowResult(
+        this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
+      )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
@@ -315,7 +310,7 @@ export class WorkspaceReviewState {
           {
             label: 'Create new workspace',
             handler: (): Promise<void> =>
-              this.recreateWorkspaceAfterCommittingReview(),
+              flowResult(this.recreateWorkspaceAfterCommittingReview()),
             type: ActionAlertActionType.PROCEED,
           },
           {
@@ -341,5 +336,5 @@ export class WorkspaceReviewState {
     } finally {
       this.isCommittingWorkspaceReview = false;
     }
-  });
+  }
 }

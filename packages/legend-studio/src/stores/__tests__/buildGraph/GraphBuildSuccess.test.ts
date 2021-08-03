@@ -19,7 +19,7 @@ import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import { PRIMITIVE_TYPE } from '../../../models/MetaModelConst';
 import { fromElementPathToMappingElementId } from '../../../models/MetaModelUtils';
 import { unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../StoreTestUtils';
 import type { PureInstanceSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import type { OperationSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { Enum } from '../../../models/metamodels/pure/model/packageableElements/domain/Enum';
@@ -28,16 +28,12 @@ import type { Class } from '../../../models/metamodels/pure/model/packageableEle
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    m2mGraphEntities as Entity[],
-  );
+  await buildGraphBasic(m2mGraphEntities as Entity[], editorStore);
 });
 
 test(unitTest('Graph has been initialized properly'), () => {
   const graph = editorStore.graphState.graph;
-  expect(graph.isBuilt).toBeTruthy();
+  expect(graph.buildState.hasSucceeded).toBeTruthy();
   expect(
     Array.from(editorStore.graphState.coreModel.multiplicitiesIndex.values())
       .length,

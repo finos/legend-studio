@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, makeObservable } from 'mobx';
+import { observable, action, flow, makeObservable, flowResult } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   losslessStringify,
   tryToFormatLosslessJSONString,
@@ -54,6 +55,7 @@ import { PackageableElementExplicitReference } from '../../../../models/metamode
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -131,14 +133,13 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', LAMBDA_START);
+
     makeObservable(this, {
       execution: observable,
       isInitializingLambda: observable,
       setIsInitializingLambda: action,
       setLambda: action,
-      convertLambdaObjectToGrammarString: action,
-      convertLambdaGrammarStringToObject: action,
-      updateLamba: action,
+      updateLamba: flow,
     });
 
     this.editorStore = editorStore;
@@ -164,18 +165,12 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     this.execution.setFunction(val);
   }
 
-  updateLamba = flow(function* (
-    this: ServicePureExecutionQueryState,
-    val: RawLambda,
-  ) {
+  *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.setLambda(val);
-    yield this.convertLambdaObjectToGrammarString(true);
-  });
+    yield flowResult(this.convertLambdaObjectToGrammarString(true));
+  }
 
-  convertLambdaObjectToGrammarString = flow(function* (
-    this: ServicePureExecutionQueryState,
-    pretty?: boolean,
-  ) {
+  *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
     if (this.execution.func.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -186,11 +181,12 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             this.execution.func.body,
           ),
         );
-        const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas = (yield flowResult(
+          this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          )) as Map<string, string>;
+          ),
+        )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -208,10 +204,10 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
       this.clearErrors();
       this.setLambdaString('');
     }
-  });
+  }
 
   // NOTE: since we don't allow edition in text mode, we don't need to implement this
-  convertLambdaGrammarStringToObject(): Promise<void> {
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
 }
@@ -226,8 +222,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   isExecuting = false;
   isGeneratingPlan = false;
   isOpeningQueryEditor = false;
-  executionPlan?: object;
   executionResultText?: string; // NOTE: stored as lossless JSON string
+  executionPlanState: ExecutionPlanState;
 
   constructor(
     editorStore: EditorStore,
@@ -244,10 +240,9 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       isExecuting: observable,
       isGeneratingPlan: observable,
       isOpeningQueryEditor: observable,
-      executionPlan: observable.ref,
       executionResultText: observable,
+      executionPlanState: observable,
       setExecutionResultText: action,
-      setExecutionPlan: action,
       closeRuntimeEditor: action,
       openRuntimeEditor: action,
       useCustomRuntime: action,
@@ -255,6 +250,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       autoSelectRuntimeOnMappingChange: action,
       updateExecutionQuery: action,
       setOpeningQueryEditor: action,
+      generatePlan: flow,
+      execute: flow,
     });
 
     this.execution = execution;
@@ -264,6 +261,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       this.editorStore,
       execution,
     );
+    this.executionPlanState = new ExecutionPlanState(this.editorStore);
   }
 
   setOpeningQueryEditor(val: boolean): void {
@@ -272,29 +270,24 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   setExecutionResultText = (executionResult: string | undefined): void => {
     this.executionResultText = executionResult;
   };
-  setExecutionPlan = (executionPlan: object | undefined): void => {
-    this.executionPlan = executionPlan;
-  };
   setQueryState = (queryState: ServicePureExecutionQueryState): void => {
     this.queryState = queryState;
   };
 
-  generatePlan = flow(function* (this: ServicePureExecutionState) {
+  *generatePlan(): GeneratorFn<void> {
     if (!this.selectedExecutionConfiguration || this.isGeneratingPlan) {
       return;
     }
     try {
       this.isGeneratingPlan = true;
       const query = this.queryState.query;
-      const plan =
-        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
-          this.editorStore.graphState.graph,
+      yield flowResult(
+        this.executionPlanState.generatePlan(
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
-          CLIENT_VERSION.VX_X_X,
-        )) as unknown as object;
-      this.setExecutionPlan(plan);
+        ),
+      );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.EXECUTION_PROBLEM,
@@ -304,24 +297,25 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     } finally {
       this.isGeneratingPlan = false;
     }
-  });
+  }
 
-  execute = flow(function* (this: ServicePureExecutionState) {
+  *execute(): GeneratorFn<void> {
     if (!this.selectedExecutionConfiguration || this.isExecuting) {
       return;
     }
     try {
       this.isExecuting = true;
       const query = this.queryState.query;
-      const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.executeMapping(
           this.editorStore.graphState.graph,
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
           CLIENT_VERSION.VX_X_X,
           true,
-        )) as unknown as ExecutionResult;
+        ),
+      )) as ExecutionResult;
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );
@@ -334,7 +328,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     } finally {
       this.isExecuting = false;
     }
-  });
+  }
 
   get serviceExecutionParameters():
     | { query: RawLambda; mapping: Mapping; runtime: Runtime }
@@ -385,7 +379,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
 
   autoSelectRuntimeOnMappingChange(mapping: Mapping): void {
     if (this.selectedExecutionConfiguration) {
-      const runtimes = this.editorStore.graphState.graph.runtimes.filter(
+      const runtimes = this.editorStore.graphState.graph.ownRuntimes.filter(
         (runtime) =>
           runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
       );

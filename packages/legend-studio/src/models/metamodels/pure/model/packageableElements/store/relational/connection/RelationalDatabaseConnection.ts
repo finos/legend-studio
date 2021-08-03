@@ -38,6 +38,8 @@ export enum DatabaseType {
   Snowflake = 'Snowflake',
   DeltaLake = 'DeltaLake',
   Presto = 'Presto',
+  Redshift = 'Redshift',
+  BigQuery = 'BigQuery',
 }
 
 export abstract class DatabaseConnection extends Connection {

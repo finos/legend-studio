@@ -22,7 +22,9 @@ import { EditorStore } from './EditorStore';
 import { createBrowserHistory } from 'history';
 import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { PluginManager } from '../application/PluginManager';
-import { URL_PATH_PLACEHOLDER } from './Router';
+import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
+import { flowResult } from 'mobx';
+import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
 
 export const testApplicationConfigData = {
   appName: 'test-app',
@@ -133,17 +135,29 @@ export const ensureObjectFieldsAreSortedAlphabetically = (
   checkObjectFieldsAreSortedAlphabetically(obj);
 };
 
+export const buildGraphBasic = async (
+  entities: Entity[],
+  editorStore: EditorStore,
+  options?: GraphBuilderOptions,
+): Promise<void> => {
+  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(
+    editorStore.graphState.graphManager.buildGraph(
+      editorStore.graphState.graph,
+      entities,
+      options,
+    ),
+  );
+};
+
 export const checkBuildingElementsRoundtrip = async (
   entities: Entity[],
   editorStore = getTestEditorStore(),
 ): Promise<void> => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    entities,
-    { TEMPORARY__keepSectionIndex: true },
-  );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  await buildGraphBasic(entities, editorStore, {
+    TEMPORARY__keepSectionIndex: true,
+  });
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   // ensure that transformed entities have all fields ordered alphabetically
@@ -155,15 +169,18 @@ export const checkBuildingElementsRoundtrip = async (
     excludeSectionIndex(entities),
   );
   // check hash
-  await editorStore.graphState.graph.precomputeHashes(
-    editorStore.applicationStore.logger,
+  await flowResult(
+    editorStore.graphState.graph.precomputeHashes(
+      editorStore.applicationStore.logger,
+    ),
   );
-  const protocolHashesIndex =
-    await editorStore.graphState.graphManager.buildHashesIndex(entities);
+  const protocolHashesIndex = await flowResult(
+    editorStore.graphState.graphManager.buildHashesIndex(entities),
+  );
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
-  await editorStore.changeDetectionState.computeLocalChanges(true);
+  await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   // TODO: avoid listing section index as part of change detection for now
   expect(
     editorStore.changeDetectionState.workspaceLatestRevisionState.changes.filter(
@@ -179,12 +196,8 @@ export const checkBuildingResolvedElements = async (
   resolvedEntities: Entity[],
   editorStore = getTestEditorStore(),
 ): Promise<void> => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    entities,
-  );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  await buildGraphBasic(entities, editorStore);
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   // ensure that transformed entities have all fields ordered alphabetically
@@ -196,13 +209,16 @@ export const checkBuildingResolvedElements = async (
     excludeSectionIndex(resolvedEntities),
   );
   // check hash
-  await editorStore.graphState.graph.precomputeHashes(
-    editorStore.applicationStore.logger,
+  await flowResult(
+    editorStore.graphState.graph.precomputeHashes(
+      editorStore.applicationStore.logger,
+    ),
   );
-  const protocolHashesIndex =
-    await editorStore.graphState.graphManager.buildHashesIndex(entities);
+  const protocolHashesIndex = await flowResult(
+    editorStore.graphState.graphManager.buildHashesIndex(entities),
+  );
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
-  await editorStore.changeDetectionState.computeLocalChanges(true);
+  await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
 };

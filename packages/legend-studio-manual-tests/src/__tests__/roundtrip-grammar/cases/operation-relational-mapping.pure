@@ -1,0 +1,70 @@
+###Relational
+Database model::relational::tests::mapping::inheritance::myDB
+(
+  Table Unleaded
+  (
+    ID INTEGER PRIMARY KEY,
+    combustionId INTEGER,
+    octaneLevel INTEGER,
+    description VARCHAR(200)
+  )
+  Table CombustionCharacteristics
+  (
+    ID INTEGER PRIMARY KEY,
+    idealCompression INTEGER
+  )
+
+  Join UnleadedCombustionCharacteristics(Unleaded.combustionId = CombustionCharacteristics.ID)
+)
+
+
+###Pure
+Class model::relational::tests::model::inheritance::CombustionCharacteristics
+{
+  idealCompression: Integer[1];
+}
+
+Class model::relational::tests::model::inheritance::Fuel
+{
+  description: String[1];
+}
+
+Class model::relational::tests::model::inheritance::Gasoline extends model::relational::tests::model::inheritance::Fuel
+{
+  octaneLevel: Integer[1];
+  combustionCharacteristics: model::relational::tests::model::inheritance::CombustionCharacteristics[1];
+}
+
+Class model::relational::tests::model::inheritance::Unleaded extends model::relational::tests::model::inheritance::Gasoline
+{
+}
+
+
+###Mapping
+Mapping model::relational::tests::mapping::inheritance::inheritanceMain
+(
+  model::relational::tests::model::inheritance::Unleaded: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::mapping::inheritance::myDB]Unleaded.ID
+    )
+    ~mainTable [model::relational::tests::mapping::inheritance::myDB]Unleaded
+    octaneLevel: [model::relational::tests::mapping::inheritance::myDB]Unleaded.octaneLevel,
+    description: [model::relational::tests::mapping::inheritance::myDB]Unleaded.description,
+    combustionCharacteristics[model_relational_tests_model_inheritance_CombustionCharacteristics]: [model::relational::tests::mapping::inheritance::myDB]@UnleadedCombustionCharacteristics
+  }
+  model::relational::tests::model::inheritance::CombustionCharacteristics: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::mapping::inheritance::myDB]CombustionCharacteristics.ID
+    )
+    ~mainTable [model::relational::tests::mapping::inheritance::myDB]CombustionCharacteristics
+    idealCompression: [model::relational::tests::mapping::inheritance::myDB]CombustionCharacteristics.idealCompression
+  }
+  model::relational::tests::model::inheritance::Gasoline: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+)

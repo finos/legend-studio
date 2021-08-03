@@ -65,7 +65,7 @@ import type {
   QueryBuilderExplorerTreePropertyNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import {
-  getPropertyExpression,
+  buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryBuilderExplorerState';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
@@ -73,11 +73,7 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { assertErrorThrown } from '@finos/legend-studio-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
-import {
-  TYPICAL_MULTIPLICITY_TYPE,
-  useApplicationStore,
-  useEditorStore,
-} from '@finos/legend-studio';
+import { useApplicationStore } from '@finos/legend-studio';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -175,13 +171,11 @@ const QueryBuilderFilterConditionEditor = observer(
       propertyNode: QueryBuilderExplorerTreePropertyNodeData,
     ): void =>
       node.condition.changeProperty(
-        getPropertyExpression(
+        buildPropertyExpressionFromExplorerTreeNodeData(
           node.condition.filterState.queryBuilderState.explorerState
             .nonNullableTreeData,
           propertyNode,
-          node.condition.filterState.editorStore.graphState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
+          node.condition.filterState.editorStore.graphState.graph,
         ),
       );
 
@@ -195,7 +189,7 @@ const QueryBuilderFilterConditionEditor = observer(
         <div className="query-builder-filter-tree__condition-node">
           <div className="query-builder-filter-tree__condition-node__property">
             <QueryBuilderPropertyExpressionBadge
-              propertyEditorState={node.condition.propertyEditorState}
+              propertyExpressionState={node.condition.propertyExpressionState}
               onPropertyExpressionChange={changeProperty}
             />
           </div>
@@ -237,7 +231,7 @@ const QueryBuilderFilterConditionEditor = observer(
                 valueSpecification={node.condition.value}
                 graph={node.condition.editorStore.graphState.graph}
                 expectedType={
-                  node.condition.propertyEditorState.propertyExpression.func
+                  node.condition.propertyExpressionState.propertyExpression.func
                     .genericType.value.rawType
                 }
               />
@@ -296,38 +290,24 @@ const QueryBuilderFilterConditionContextMenu = observer(
     };
 
     return (
-      <div ref={ref} className="query-builder-tree__context-menu">
+      <MenuContent ref={ref}>
         {node instanceof QueryBuilderFilterTreeGroupNodeData && (
-          <div
-            className="query-builder-tree__context-menu__item"
-            onClick={createCondition}
-          >
+          <MenuContentItem onClick={createCondition}>
             Add New Condition
-          </div>
+          </MenuContentItem>
         )}
         {node instanceof QueryBuilderFilterTreeGroupNodeData && (
-          <div
-            className="query-builder-tree__context-menu__item"
-            onClick={createGroupCondition}
-          >
+          <MenuContentItem onClick={createGroupCondition}>
             Add New Logical Group
-          </div>
+          </MenuContentItem>
         )}
         {node instanceof QueryBuilderFilterTreeConditionNodeData && (
-          <div
-            className="query-builder-tree__context-menu__item"
-            onClick={newGroupWithCondition}
-          >
+          <MenuContentItem onClick={newGroupWithCondition}>
             Form a New Logical Group
-          </div>
+          </MenuContentItem>
         )}
-        <div
-          className="query-builder-tree__context-menu__item"
-          onClick={removeNode}
-        >
-          Remove
-        </div>
-      </div>
+        <MenuContentItem onClick={removeNode}>Remove</MenuContentItem>
+      </MenuContent>
     );
   },
   { forwardRef: true },
@@ -347,7 +327,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
     const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
@@ -370,12 +350,10 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             filterConditionState = new FilterConditionState(
               editorStore,
               filterState,
-              getPropertyExpression(
+              buildPropertyExpressionFromExplorerTreeNodeData(
                 filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 dropNode,
-                filterState.editorStore.graphState.graph.getTypicalMultiplicity(
-                  TYPICAL_MULTIPLICITY_TYPE.ONE,
-                ),
+                filterState.editorStore.graphState.graph,
               ),
             );
           } catch (error: unknown) {
@@ -632,7 +610,7 @@ const QueryBuilderFilterTree = observer(
 export const QueryBuilderFilterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
     const rootNode = filterState.getRootNode();
@@ -690,12 +668,10 @@ export const QueryBuilderFilterPanel = observer(
           filterConditionState = new FilterConditionState(
             editorStore,
             filterState,
-            getPropertyExpression(
+            buildPropertyExpressionFromExplorerTreeNodeData(
               filterState.queryBuilderState.explorerState.nonNullableTreeData,
               (item as QueryBuilderExplorerTreeDragSource).node,
-              filterState.editorStore.graphState.graph.getTypicalMultiplicity(
-                TYPICAL_MULTIPLICITY_TYPE.ONE,
-              ),
+              filterState.editorStore.graphState.graph,
             ),
           );
         } catch (error: unknown) {

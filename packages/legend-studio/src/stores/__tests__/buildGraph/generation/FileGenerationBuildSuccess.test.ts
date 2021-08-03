@@ -17,28 +17,24 @@
 import fileGenerationTestData from './FileGenerationTestData.json';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { PackageableElementReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    fileGenerationTestData as Entity[],
-  );
+  await buildGraphBasic(fileGenerationTestData as Entity[], editorStore);
 });
 
 test(unitTest('File Generation Graph Success'), () => {
   const graph = editorStore.graphState.graph;
-  expect(graph.classes).toHaveLength(3);
-  expect(graph.enumerations).toHaveLength(1);
-  expect(graph.profiles).toHaveLength(1);
-  expect(graph.functions).toHaveLength(1);
-  expect(graph.fileGenerations).toHaveLength(3);
+  expect(graph.ownClasses).toHaveLength(3);
+  expect(graph.ownEnumerations).toHaveLength(1);
+  expect(graph.ownProfiles).toHaveLength(1);
+  expect(graph.ownFunctions).toHaveLength(1);
+  expect(graph.ownFileGenerations).toHaveLength(3);
   const fileGeneration = graph.getFileGeneration('model::MyProtobuf');
-  expect(graph.generationSpecifications).toHaveLength(1);
+  expect(graph.ownGenerationSpecifications).toHaveLength(1);
   const scope = fileGeneration.scopeElements;
   expect(scope).toHaveLength(1);
   const otherPackage = guaranteeType(

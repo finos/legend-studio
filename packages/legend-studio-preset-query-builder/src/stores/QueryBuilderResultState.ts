@@ -94,23 +94,24 @@ export class QueryBuilderResultState {
           'Lambda is required to execute query',
         );
       }
-      const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.executeMapping(
           this.editorStore.graphState.graph,
           mapping,
           query,
           runtime,
           CLIENT_VERSION.VX_X_X,
           false,
-        )) as ExecutionResult;
+        ),
+      )) as ExecutionResult;
       this.setExecutionResult(result);
-      this.isExecutingQuery = false;
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.EXECUTION_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
+    } finally {
       this.isExecutingQuery = false;
     }
   }
@@ -124,14 +125,15 @@ export class QueryBuilderResultState {
       );
       const runtime = this.queryBuilderState.querySetupState.runtime;
       const query = this.queryBuilderState.getQuery();
-      const result =
-        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
+      const result = (yield flowResult(
+        this.editorStore.graphState.graphManager.generateExecutionPlan(
           this.editorStore.graphState.graph,
           mapping,
           query,
           runtime,
           CLIENT_VERSION.VX_X_X,
-        )) as ExecutionResult;
+        ),
+      )) as ExecutionResult;
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;
     } catch (error: unknown) {
@@ -145,7 +147,7 @@ export class QueryBuilderResultState {
   }
 
   *promoteToService(
-    packageName: string,
+    packagePath: string,
     serviceName: string,
   ): GeneratorFn<void> {
     try {
@@ -166,9 +168,7 @@ export class QueryBuilderResultState {
         ),
       );
       const servicePackage =
-        this.editorStore.graphState.graph.getOrCreatePackageWithPackageName(
-          packageName,
-        );
+        this.editorStore.graphState.graph.getOrCreatePackage(packagePath);
       servicePackage.addElement(service);
       this.editorStore.graphState.graph.addElement(service);
       this.editorStore.openElement(service);

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, makeAutoObservable } from 'mobx';
+import { action, computed, flowResult, makeAutoObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
+import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
-  createObservableActionState,
+  ActionState,
   prettyCONSTName,
   assertNonEmptyString,
   guaranteeNonNullable,
@@ -58,7 +59,7 @@ export class ServiceRegistrationState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   modal = false;
-  registeringState = createObservableActionState();
+  registrationState = ActionState.create();
   serviceEnv?: string;
   serviceExecutionMode?: ServiceExecutionMode;
   projectVersion?: Version | string;
@@ -187,9 +188,9 @@ export class ServiceRegistrationState {
     return undefined;
   }
 
-  registerService = flow(function* (this: ServiceRegistrationState) {
+  *registerService(): GeneratorFn<void> {
     try {
-      this.registeringState.inProgress();
+      this.registrationState.inProgress();
       this.validateServiceForRegistration();
       const serverUrl = guaranteeNonNullable(
         this.options.find((info) => info.env === this.serviceEnv),
@@ -199,19 +200,22 @@ export class ServiceRegistrationState {
           ? this.projectVersion.id.id
           : undefined;
       const projectId = this.editorStore.sdlcState.currentProjectId;
-      const serviceRegistrationResult =
-        (yield this.editorStore.graphState.graphManager.registerService(
+      const serviceRegistrationResult = (yield flowResult(
+        this.editorStore.graphState.graphManager.registerService(
           this.editorStore.graphState.graph,
           this.serviceEditorState.service,
           projectId,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
           versionInput,
-        )) as ServiceRegistrationResult;
+        ),
+      )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
-        yield this.editorStore.graphState.graphManager.activateService(
-          serverUrl,
-          serviceRegistrationResult.serviceInstanceId,
+        yield flowResult(
+          this.editorStore.graphState.graphManager.activateService(
+            serverUrl,
+            serviceRegistrationResult.serviceInstanceId,
+          ),
         );
       }
       this.setModal(false);
@@ -229,9 +233,9 @@ export class ServiceRegistrationState {
       );
       this.editorStore.applicationStore.notifyError(error, undefined, null);
     } finally {
-      this.registeringState.reset();
+      this.registrationState.reset();
     }
-  });
+  }
 
   validateServiceForRegistration(): void {
     assertTrue(

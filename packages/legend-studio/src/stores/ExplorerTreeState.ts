@@ -22,6 +22,7 @@ import {
   isNonNullable,
   UnsupportedOperationError,
   guaranteeNonNullable,
+  ActionState,
 } from '@finos/legend-studio-shared';
 import {
   getPackableElementTreeData,
@@ -56,7 +57,8 @@ export class ExplorerTreeState {
   dependencyTreeData?: TreeData<PackageTreeNodeData>;
   selectedNode?: PackageTreeNodeData;
   fileGenerationTreeData?: TreeData<GenerationTreeNodeData>;
-  isBuilt = false;
+  elementToRename?: PackageableElement;
+  buildState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -67,7 +69,7 @@ export class ExplorerTreeState {
       dependencyTreeData: observable.ref,
       selectedNode: observable.ref,
       fileGenerationTreeData: observable.ref,
-      isBuilt: observable,
+      elementToRename: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -75,6 +77,7 @@ export class ExplorerTreeState {
       setDependencyTreeData: action,
       setFileGenerationTreeData: action,
       setSelectedNode: action,
+      setElementToRename: action,
       build: action,
       buildImmutableModelTrees: action,
       reprocess: action,
@@ -102,7 +105,7 @@ export class ExplorerTreeState {
       default:
         treeData = this.treeData;
     }
-    if (!treeData || !this.isBuilt) {
+    if (!treeData || !this.buildState.hasCompleted) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
         `Can't get explorer tree data for root package '${rootPackageName}' as it hasn't been initialized`,
@@ -142,6 +145,9 @@ export class ExplorerTreeState {
   setFileGenerationTreeData(data: TreeData<GenerationTreeNodeData>): void {
     this.fileGenerationTreeData = data;
   }
+  setElementToRename(val: PackageableElement | undefined): void {
+    this.elementToRename = val;
+  }
 
   setSelectedNode(node: PackageTreeNodeData | undefined): void {
     if (this.selectedNode) {
@@ -154,7 +160,7 @@ export class ExplorerTreeState {
   }
 
   build(): void {
-    this.isBuilt = false;
+    this.buildState.reset();
     this.treeData = getPackableElementTreeData(
       this.editorStore,
       this.editorStore.graphState.graph.root,
@@ -170,7 +176,7 @@ export class ExplorerTreeState {
       ExplorerTreeRootPackageLabel.FILE_GENERATION,
     );
     this.setSelectedNode(undefined);
-    this.isBuilt = true;
+    this.buildState.complete();
   }
 
   buildImmutableModelTrees(): void {
@@ -196,7 +202,7 @@ export class ExplorerTreeState {
    */
   /* @MARKER: MEMORY-SENSITIVE */
   reprocess(): void {
-    this.isBuilt = false;
+    this.buildState.reset();
     if (!this.systemTreeData) {
       this.systemTreeData = getPackableElementTreeData(
         this.editorStore,
@@ -252,7 +258,7 @@ export class ExplorerTreeState {
       const openElements = new Set(
         openedTreeNodeIds
           .map((id) =>
-            this.editorStore.graphState.graph.generationModel.getNullableElement(
+            this.editorStore.graphState.graph.generationModel.getOwnNullableElement(
               id,
               true,
             ),
@@ -296,7 +302,7 @@ export class ExplorerTreeState {
     }
     this.setTreeData({ ...this.treeData });
     this.setGenerationTreeData({ ...this.generationTreeData });
-    this.isBuilt = true;
+    this.buildState.complete();
   }
 
   onTreeNodeSelect = (
@@ -341,14 +347,14 @@ export class ExplorerTreeState {
         element,
       );
     }
-    const packageName = element.getRoot().path;
+    const packagePath = element.getRoot().path;
     let opened = false;
-    if (packageName === ROOT_PACKAGE_NAME.MAIN && this.treeData) {
+    if (packagePath === ROOT_PACKAGE_NAME.MAIN && this.treeData) {
       const openingNode = openNode(this.editorStore, element, this.treeData);
       this.setSelectedNode(openingNode);
       opened = true;
     } else if (
-      packageName === ROOT_PACKAGE_NAME.MODEL_GENERATION &&
+      packagePath === ROOT_PACKAGE_NAME.MODEL_GENERATION &&
       this.generationTreeData
     ) {
       const openingNode = openNode(
@@ -359,7 +365,7 @@ export class ExplorerTreeState {
       this.setSelectedNode(openingNode);
       opened = true;
     } else if (
-      packageName === ROOT_PACKAGE_NAME.SYSTEM &&
+      packagePath === ROOT_PACKAGE_NAME.SYSTEM &&
       this.systemTreeData
     ) {
       const openingNode = openNode(
@@ -370,7 +376,7 @@ export class ExplorerTreeState {
       this.setSelectedNode(openingNode);
       opened = true;
     } else if (
-      packageName === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT &&
+      packagePath === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT &&
       this.dependencyTreeData
     ) {
       const openingNode = openNode(
@@ -384,7 +390,7 @@ export class ExplorerTreeState {
     if (!opened) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.PACKAGE_TREE_PROBLEM,
-        `Can't open package tree node for element '${element.path}' with package root '${packageName}'`,
+        `Can't open package tree node for element '${element.path}' with package root '${packagePath}'`,
       );
     }
   }

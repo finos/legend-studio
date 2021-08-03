@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, makeAutoObservable } from 'mobx';
+import { action, computed, flowResult, makeAutoObservable } from 'mobx';
 import { CORE_LOG_EVENT } from '../utils/Logger';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
@@ -125,6 +125,7 @@ export class GraphState {
       getSetImplementationType: false,
       isInstanceSetImplementation: false,
       hasCompilationError: computed,
+      resetGraph: action,
       clearCompilationError: action,
     });
 
@@ -144,6 +145,10 @@ export class GraphState {
       this.editorStore.applicationStore.logger,
     );
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
+  }
+
+  resetGraph(): void {
+    this.graph = this.createEmptyGraph();
   }
 
   private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {
@@ -186,6 +191,14 @@ export class GraphState {
     );
   }
 
+  createEmptyGraph(): PureModel {
+    return new PureModel(
+      this.coreModel,
+      this.systemModel,
+      this.getPureGraphExtensionElementClasses(),
+    );
+  }
+
   checkIfApplicationUpdateOperationIsRunning(): boolean {
     if (this.isRunningGlobalGenerate) {
       this.editorStore.applicationStore.notifyWarning(
@@ -225,19 +238,21 @@ export class GraphState {
    * Right now the essential profiles have been extracted from Pure to load the minimum system models.
    * We might add more system entities as needed until the SDLC project is setup.
    */
-  initializeSystem = flow(function* (this: GraphState) {
+  *initializeSystem(): GeneratorFn<void> {
     try {
-      yield this.graphManager.buildSystem(this.coreModel, this.systemModel);
+      yield flowResult(
+        this.graphManager.buildSystem(this.coreModel, this.systemModel),
+      );
       this.systemModel.initializeAutoImports();
     } catch (error: unknown) {
-      this.graph.setFailedToBuild(true);
+      this.graph.buildState.fail();
       // no recovery if system models cannot be built
       this.editorStore.setBlockingAlert({
         message: `Can't initialize system models`,
       });
       throw error;
     }
-  });
+  }
 
   /**
    * Create a lean/read-only view of the project:
@@ -245,10 +260,7 @@ export class GraphState {
    * - No project viewer
    * - No text mode support
    */
-  buildGraphForViewerMode = flow(function* (
-    this: GraphState,
-    entities: Entity[],
-  ) {
+  *buildGraphForViewerMode(entities: Entity[]): GeneratorFn<void> {
     try {
       this.isInitializingGraph = true;
       const startTime = Date.now();
@@ -259,36 +271,34 @@ export class GraphState {
       );
       // reset
       this.editorStore.changeDetectionState.stop();
-      this.graph = new PureModel(
-        this.coreModel,
-        this.systemModel,
-        this.getPureGraphExtensionElementClasses(),
-      );
+      this.resetGraph();
       // build compile context
       this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(
-          yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
             this.editorStore.sdlcState.currentProjectId,
             undefined,
-          ),
+          )) as PlainObject<ProjectConfiguration>,
         ),
       );
       const dependencyManager = new DependencyManager(
         this.getPureGraphExtensionElementClasses(),
       );
-      yield this.graphManager.buildDependencies(
-        this.coreModel,
-        this.systemModel,
-        dependencyManager,
-        (yield this.getProjectDependencyEntities()) as unknown as Map<
-          string,
-          ProjectDependencyMetadata
-        >,
+      yield flowResult(
+        this.graphManager.buildDependencies(
+          this.coreModel,
+          this.systemModel,
+          dependencyManager,
+          (yield flowResult(this.getProjectDependencyEntities())) as Map<
+            string,
+            ProjectDependencyMetadata
+          >,
+        ),
       );
       this.graph.setDependencyManager(dependencyManager);
       this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // build graph
-      yield this.graphManager.buildGraph(this.graph, entities);
+      yield flowResult(this.graphManager.buildGraph(this.graph, entities));
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.GRAPH_INITIALIZED,
         '[TOTAL]',
@@ -302,53 +312,55 @@ export class GraphState {
         CORE_LOG_EVENT.GRAPH_PROBLEM,
         error,
       );
-      this.graph.setFailedToBuild(true);
+      this.graph.buildState.fail();
       this.editorStore.applicationStore.notifyError(
         `Can't build graph. Error: ${error.message}`,
       );
     } finally {
       this.isInitializingGraph = false;
     }
-  });
+  }
 
-  buildGraph = flow(function* (this: GraphState, entities: Entity[]) {
+  *buildGraph(entities: Entity[]): GeneratorFn<void> {
     try {
       this.isInitializingGraph = true;
       const startTime = Date.now();
       // reset
-      this.graph = new PureModel(
-        this.coreModel,
-        this.systemModel,
-        this.getPureGraphExtensionElementClasses(),
-      );
+      this.resetGraph();
       // build compile context
       const dependencyManager = new DependencyManager(
         this.getPureGraphExtensionElementClasses(),
       );
-      yield this.graphManager.buildDependencies(
-        this.coreModel,
-        this.systemModel,
-        dependencyManager,
-        (yield this.getProjectDependencyEntities()) as unknown as Map<
-          string,
-          ProjectDependencyMetadata
-        >,
+      yield flowResult(
+        this.graphManager.buildDependencies(
+          this.coreModel,
+          this.systemModel,
+          dependencyManager,
+          (yield flowResult(this.getProjectDependencyEntities())) as Map<
+            string,
+            ProjectDependencyMetadata
+          >,
+        ),
       );
       this.graph.setDependencyManager(dependencyManager);
       this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // build graph
-      yield this.graphManager.buildGraph(this.graph, entities, {
-        TEMPORARY__keepSectionIndex:
-          this.editorStore.applicationStore.config.options
-            .EXPERIMENTAL__enableFullGrammarImportSupport,
-        TEMPORARY__disableRawLambdaResolver:
-          this.editorStore.applicationStore.config.options
-            .TEMPORARY__disableRawLambdaResolver,
-      });
+      yield flowResult(
+        this.graphManager.buildGraph(this.graph, entities, {
+          TEMPORARY__keepSectionIndex:
+            this.editorStore.applicationStore.config.options
+              .EXPERIMENTAL__enableFullGrammarImportSupport,
+          TEMPORARY__disableRawLambdaResolver:
+            this.editorStore.applicationStore.config.options
+              .TEMPORARY__disableRawLambdaResolver,
+        }),
+      );
       // build generations
-      yield this.graphManager.buildGenerations(
-        this.graph,
-        this.graphGenerationState.generatedEntities,
+      yield flowResult(
+        this.graphManager.buildGenerations(
+          this.graph,
+          this.graphGenerationState.generatedEntities,
+        ),
       );
 
       // NOTE: we will see that: (time for fetching entities + time for building graph) < time for instantiating graph
@@ -369,7 +381,7 @@ export class GraphState {
         error,
       );
       if (error instanceof DependencyGraphProcessingError) {
-        this.graph.setFailedToBuild(true);
+        this.graph.buildState.fail();
         // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
         this.editorStore.setBlockingAlert({
@@ -379,7 +391,7 @@ export class GraphState {
         // if something goes wrong with de-serialization, redirect to model loader to fix
         this.redirectToModelLoaderForDebugging(error);
       } else if (error instanceof NetworkClientError) {
-        this.graph.setFailedToBuild(true);
+        this.graph.buildState.fail();
         this.editorStore.applicationStore.notifyWarning(
           `Can't build graph. Error: ${error.message}`,
         );
@@ -389,11 +401,13 @@ export class GraphState {
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
         try {
-          const editorGrammar = (yield this.graphManager.entitiesToPureCode(
-            entities,
+          const editorGrammar = (yield flowResult(
+            this.graphManager.entitiesToPureCode(entities),
           )) as string;
-          yield this.editorStore.grammarTextEditorState.setGraphGrammarText(
-            editorGrammar,
+          yield flowResult(
+            this.editorStore.grammarTextEditorState.setGraphGrammarText(
+              editorGrammar,
+            ),
           );
         } catch (error2: unknown) {
           assertErrorThrown(error2);
@@ -408,16 +422,18 @@ export class GraphState {
           }
         }
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
-        yield this.globalCompileInTextMode({
-          ignoreBlocking: true,
-          suppressCompilationFailureMessage: true,
-        });
+        yield flowResult(
+          this.globalCompileInTextMode({
+            ignoreBlocking: true,
+            suppressCompilationFailureMessage: true,
+          }),
+        );
       }
       throw error;
     } finally {
       this.isInitializingGraph = false;
     }
-  });
+  }
 
   private redirectToModelLoaderForDebugging(error: Error): void {
     if (this.editorStore.isInConflictResolutionMode) {
@@ -449,7 +465,7 @@ export class GraphState {
           .entityHashesIndex;
     const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
     const entityChanges: EntityChange[] = [];
-    this.graph.allElements.forEach((element) => {
+    this.graph.allOwnElements.forEach((element) => {
       const elementPath = element.path;
       if (baseHashesIndex.get(elementPath) !== element.hashCode) {
         const entity = this.graphManager.elementToEntity(element, true);
@@ -499,9 +515,11 @@ export class GraphState {
       // so that the form parts where the user interacted with (i.e. where the lamdbas source
       // information are populated), can reveal compilation error. If compilation errors
       // show up in other parts, the user will get redirected to text-mode
-      yield this.graphManager.compileGraph(this.graph, {
-        keepSourceInformation: true,
-      });
+      yield flowResult(
+        this.graphManager.compileGraph(this.graph, {
+          keepSourceInformation: true,
+        }),
+      );
       if (!options?.disableNotificationOnSuccess) {
         this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       }
@@ -549,8 +567,8 @@ export class GraphState {
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
         );
         try {
-          const code = (yield this.graphManager.graphToPureCode(
-            this.graph,
+          const code = (yield flowResult(
+            this.graphManager.graphToPureCode(this.graph),
           )) as string;
           this.editorStore.grammarTextEditorState.setGraphGrammarText(code);
         } catch (error2: unknown) {
@@ -561,10 +579,12 @@ export class GraphState {
           return;
         }
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
-        yield this.globalCompileInTextMode({
-          ignoreBlocking: true,
-          suppressCompilationFailureMessage: true,
-        });
+        yield flowResult(
+          this.globalCompileInTextMode({
+            ignoreBlocking: true,
+            suppressCompilationFailureMessage: true,
+          }),
+        );
       } else {
         this.editorStore.applicationStore.notifyWarning(
           `Compilation failed: ${error.message}`,
@@ -577,14 +597,11 @@ export class GraphState {
 
   // FIXME: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
   // we can show the transition between form mode and text mode warning and the compilation failure warning at the same time
-  globalCompileInTextMode = flow(function* (
-    this: GraphState,
-    options?: {
-      ignoreBlocking?: boolean;
-      suppressCompilationFailureMessage?: boolean;
-      openConsole?: boolean;
-    },
-  ): GeneratorFn<void> {
+  *globalCompileInTextMode(options?: {
+    ignoreBlocking?: boolean;
+    suppressCompilationFailureMessage?: boolean;
+    openConsole?: boolean;
+  }): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInGrammarTextMode,
       'Editor must be in text mode to call this method',
@@ -601,12 +618,14 @@ export class GraphState {
       if (options?.openConsole) {
         this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
       }
-      const entities = (yield this.graphManager.compileText(
-        this.editorStore.grammarTextEditorState.graphGrammarText,
-        this.graph,
+      const entities = (yield flowResult(
+        this.graphManager.compileText(
+          this.editorStore.grammarTextEditorState.graphGrammarText,
+          this.graph,
+        ),
       )) as Entity[];
       this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
-      yield this.updateGraphAndApplication(entities);
+      yield flowResult(this.updateGraphAndApplication(entities));
     } catch (error: unknown) {
       assertErrorThrown(error);
       if (error instanceof EngineError) {
@@ -628,9 +647,9 @@ export class GraphState {
     } finally {
       this.isRunningGlobalCompile = false;
     }
-  });
+  }
 
-  leaveTextMode = flow(function* (this: GraphState): GeneratorFn<void> {
+  *leaveTextMode(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInGrammarTextMode,
       'Editor must be in text mode to call this method',
@@ -646,19 +665,21 @@ export class GraphState {
         showLoading: true,
       });
       try {
-        const entities = (yield this.graphManager.compileText(
-          this.editorStore.grammarTextEditorState.graphGrammarText,
-          this.graph,
-          // surpress the modal to reveal error properly in the text editor
-          // if the blocking modal is not dismissed, the edior will not be able to gain focus as modal has a focus trap
-          // therefore, the editor will not be able to get the focus
-          { onError: () => this.editorStore.setBlockingAlert(undefined) },
+        const entities = (yield flowResult(
+          this.graphManager.compileText(
+            this.editorStore.grammarTextEditorState.graphGrammarText,
+            this.graph,
+            // surpress the modal to reveal error properly in the text editor
+            // if the blocking modal is not dismissed, the edior will not be able to gain focus as modal has a focus trap
+            // therefore, the editor will not be able to get the focus
+            { onError: () => this.editorStore.setBlockingAlert(undefined) },
+          ),
         )) as Entity[];
         this.editorStore.setBlockingAlert({
           message: 'Leaving text mode and rebuilding graph...',
           showLoading: true,
         });
-        yield this.updateGraphAndApplication(entities);
+        yield flowResult(this.updateGraphAndApplication(entities));
         this.editorStore.grammarTextEditorState.setGraphGrammarText('');
         this.editorStore.grammarTextEditorState.resetCurrentElementLabelRegexString();
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.FORM);
@@ -675,7 +696,7 @@ export class GraphState {
           'Compilation failed:',
           error,
         );
-        if (this.graph.failedToBuild) {
+        if (this.graph.buildState.hasFailed) {
           // FIXME when we support showing multiple notification, we can split this into 2 messages
           this.editorStore.applicationStore.notifyWarning(
             `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
@@ -716,30 +737,31 @@ export class GraphState {
       this.isApplicationLeavingTextMode = false;
       this.editorStore.setBlockingAlert(undefined);
     }
-  });
+  }
 
   /**
    * This function is used in lambda editor in form mode when user try to do an action that involves the lambda being edited, it takes an action
    * and proceeds with a parsing check for the current lambda before executing the action. This prevents case where user quickly type something
    * that does not parse and hit compile or generate right away.
    */
-  checkLambdaParsingError = flow(function* (
-    this: GraphState,
+  *checkLambdaParsingError(
     lambdaHolderElement: LambdaEditorState,
     checkParsingError: boolean,
     onSuccess: () => Promise<void>,
-  ) {
+  ): GeneratorFn<void> {
     this.clearCompilationError();
     lambdaHolderElement.clearErrors();
     if (checkParsingError) {
-      yield lambdaHolderElement.convertLambdaGrammarStringToObject();
+      yield flowResult(
+        lambdaHolderElement.convertLambdaGrammarStringToObject(),
+      );
       // abort action if parser error occurred
       if (lambdaHolderElement.parserError) {
         return;
       }
     }
     yield onSuccess();
-  });
+  }
 
   /**
    * NOTE: IMPORTANT! This method is both a savior and a sinner. It helps reprocessing the graph state to use a new graph
@@ -775,10 +797,7 @@ export class GraphState {
    * (note that since we disallow stacking multiple compilation and graph update, we have simplify the detection a lot)
    * See https://auth0.com/blog/four-types-of-leaks-in-your-javascript-code-and-how-to-get-rid-of-them/
    */
-  private updateGraphAndApplication = flow(function* (
-    this: GraphState,
-    entities: Entity[],
-  ) {
+  private *updateGraphAndApplication(entities: Entity[]): GeneratorFn<void> {
     this.editorStore.applicationStore.logger.info(
       CORE_LOG_EVENT.GRAPH_REBUILDING,
       '...',
@@ -787,37 +806,34 @@ export class GraphState {
     this.isUpdatingApplication = true;
     this.isUpdatingGraph = true;
     try {
-      const newGraph = new PureModel(
-        this.coreModel,
-        this.systemModel,
-        this.getPureGraphExtensionElementClasses(),
-      );
-
+      const newGraph = this.createEmptyGraph();
       /* @MARKER: MEMORY-SENSITIVE */
       // NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
       // e.g. sub-classes analytics on the immutable class, etc.
-      if (this.graph.isDependenciesLoaded) {
+      if (this.graph.dependencyManager.buildState.hasSucceeded) {
         newGraph.setDependencyManager(this.graph.dependencyManager);
       } else {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
           ProjectConfiguration.serialization.fromJson(
-            yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+            (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
               this.editorStore.sdlcState.currentProjectId,
               this.editorStore.sdlcState.currentWorkspaceId,
-            ),
+            )) as PlainObject<ProjectConfiguration>,
           ),
         );
         const dependencyManager = new DependencyManager(
           this.getPureGraphExtensionElementClasses(),
         );
-        yield this.graphManager.buildDependencies(
-          this.coreModel,
-          this.systemModel,
-          dependencyManager,
-          (yield this.getProjectDependencyEntities()) as unknown as Map<
-            string,
-            ProjectDependencyMetadata
-          >,
+        yield flowResult(
+          this.graphManager.buildDependencies(
+            this.coreModel,
+            this.systemModel,
+            dependencyManager,
+            (yield flowResult(this.getProjectDependencyEntities())) as Map<
+              string,
+              ProjectDependencyMetadata
+            >,
+          ),
         );
         newGraph.setDependencyManager(dependencyManager);
       }
@@ -840,22 +856,28 @@ export class GraphState {
 
       /* @MARKER: MEMORY-SENSITIVE */
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
-      yield this.graph.dispose(this.editorStore.applicationStore.logger);
+      yield flowResult(
+        this.graph.dispose(this.editorStore.applicationStore.logger),
+      );
 
-      yield this.graphManager.buildGraph(newGraph, entities, {
-        quiet: true,
-        TEMPORARY__keepSectionIndex:
-          this.editorStore.applicationStore.config.options
-            .EXPERIMENTAL__enableFullGrammarImportSupport,
-        TEMPORARY__disableRawLambdaResolver:
-          this.editorStore.applicationStore.config.options
-            .TEMPORARY__disableRawLambdaResolver,
-      });
+      yield flowResult(
+        this.graphManager.buildGraph(newGraph, entities, {
+          quiet: true,
+          TEMPORARY__keepSectionIndex:
+            this.editorStore.applicationStore.config.options
+              .EXPERIMENTAL__enableFullGrammarImportSupport,
+          TEMPORARY__disableRawLambdaResolver:
+            this.editorStore.applicationStore.config.options
+              .TEMPORARY__disableRawLambdaResolver,
+        }),
+      );
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
-      yield this.graphManager.buildGenerations(
-        newGraph,
-        this.graphGenerationState.generatedEntities,
+      yield flowResult(
+        this.graphManager.buildGenerations(
+          newGraph,
+          this.graphGenerationState.generatedEntities,
+        ),
       );
       this.graph = newGraph;
       /* @MARKER: MEMORY-SENSITIVE */
@@ -893,11 +915,13 @@ export class GraphState {
 
       // ======= (RE)START CHANGE DETECTION =======
       /* @MARKER: MEMORY-SENSITIVE */
-      yield this.graph.precomputeHashes(
-        this.editorStore.applicationStore.logger,
+      yield flowResult(
+        this.graph.precomputeHashes(this.editorStore.applicationStore.logger),
       );
       this.editorStore.changeDetectionState.start();
-      yield this.editorStore.changeDetectionState.computeLocalChanges(true);
+      yield flowResult(
+        this.editorStore.changeDetectionState.computeLocalChanges(true),
+      );
       this.editorStore.applicationStore.logger.info(
         CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         '[ASYNC]',
@@ -917,15 +941,16 @@ export class GraphState {
     } finally {
       this.isUpdatingApplication = false;
     }
-  });
+  }
 
   /**
    * Used to update generation model and generation graph using the generated entities
    * does not alter the main or dependency model
    */
-  updateGenerationGraphAndApplication = flow(function* (this: GraphState) {
+  *updateGenerationGraphAndApplication(): GeneratorFn<void> {
     assertTrue(
-      this.graph.isBuilt && this.graph.isDependenciesLoaded,
+      this.graph.buildState.hasSucceeded &&
+        this.graph.dependencyManager.buildState.hasSucceeded,
       'Both main model and dependencies must be processed to built generation graph',
     );
     this.isUpdatingApplication = true;
@@ -938,16 +963,20 @@ export class GraphState {
       this.editorStore.setCurrentEditorState(undefined);
 
       /* @MARKER: MEMORY-SENSITIVE */
-      yield this.graph.generationModel.dispose(
-        this.editorStore.applicationStore.logger,
+      yield flowResult(
+        this.graph.generationModel.dispose(
+          this.editorStore.applicationStore.logger,
+        ),
       );
       // we reset the generation model
       this.graph.generationModel = new GenerationModel(
         this.getPureGraphExtensionElementClasses(),
       );
-      yield this.graphManager.buildGenerations(
-        this.graph,
-        this.graphGenerationState.generatedEntities,
+      yield flowResult(
+        this.graphManager.buildGenerations(
+          this.graph,
+          this.graphGenerationState.generatedEntities,
+        ),
       );
 
       /* @MARKER: MEMORY-SENSITIVE */
@@ -978,9 +1007,11 @@ export class GraphState {
     } finally {
       this.isUpdatingApplication = false;
     }
-  });
+  }
 
-  getProjectDependencyEntities = flow(function* (this: GraphState) {
+  *getProjectDependencyEntities(): GeneratorFn<
+    Map<string, ProjectDependencyMetadata>
+  > {
     const projectDependencyMetadataMap = new Map<
       string,
       ProjectDependencyMetadata
@@ -1002,7 +1033,7 @@ export class GraphState {
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
           (yield metadataClient.getDependencyEntities(
-            directDependencies as unknown as PlainObject<ProjectVersion>[],
+            directDependencies as PlainObject<ProjectVersion>[],
             true,
             true,
           )) as PlainObject<ProjectVersionEntities>[];
@@ -1053,7 +1084,7 @@ export class GraphState {
       throw new DependencyGraphProcessingError(error);
     }
     return projectDependencyMetadataMap;
-  });
+  }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------
   /**

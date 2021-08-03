@@ -16,7 +16,7 @@
 
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import { unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../StoreTestUtils';
 import { simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
 
 type RoundtripTestCase = [
@@ -40,12 +40,9 @@ describe(unitTest('Execution plan processing roundtrip test'), () => {
     const { entities } = context;
     // setup
     const editorStore = getTestEditorStore();
-    await editorStore.graphState.initializeSystem();
-    await editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      entities,
-      { TEMPORARY__keepSectionIndex: true },
-    );
+    await buildGraphBasic(entities, editorStore, {
+      TEMPORARY__keepSectionIndex: true,
+    });
     // roundtrip check
     const executionPlan =
       editorStore.graphState.graphManager.buildExecutionPlan(
@@ -53,7 +50,7 @@ describe(unitTest('Execution plan processing roundtrip test'), () => {
         editorStore.graphState.graph,
       );
     const _executionPlanJson =
-      editorStore.graphState.graphManager.transformExecutionPlan(executionPlan);
+      editorStore.graphState.graphManager.serializeExecutionPlan(executionPlan);
     expect(_executionPlanJson).toEqual(executionPlanJson);
   });
 });

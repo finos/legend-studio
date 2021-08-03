@@ -29,8 +29,7 @@ import {
   SortColumnState,
 } from '../stores/QueryResultSetModifierState';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type { ProjectionColumnOption } from '../stores/QueryBuilderProjectionState';
-import { useEditorStore } from '@finos/legend-studio';
+import type { QueryBuilderProjectionColumnState } from '../stores/QueryBuilderProjectionState';
 
 const ColumnSortEditor = observer(
   (props: {
@@ -40,12 +39,24 @@ const ColumnSortEditor = observer(
     const { queryBuilderState, columnSort } = props;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
-    const projectionOptions = projectionState.columnOptions;
+    const sortColumns = queryBuilderState.resultSetModifierState.sortColumns;
+    const projectionOptions = projectionState.columns
+      .filter(
+        (projectionCol) =>
+          projectionCol === columnSort.columnState ||
+          !sortColumns.some((sortCol) => sortCol.columnState === projectionCol),
+      )
+      .map((projectionCol) => ({
+        label: projectionCol.columnName,
+        value: projectionCol,
+      }));
     const value = {
       label: columnSort.columnState.columnName,
       value: columnSort,
     };
-    const onChange = (val: ProjectionColumnOption | null): void => {
+    const onChange = (
+      val: { label: string; value: QueryBuilderProjectionColumnState } | null,
+    ): void => {
       if (val !== null) {
         columnSort.setColumnState(val.value);
       }
@@ -65,6 +76,7 @@ const ColumnSortEditor = observer(
         <CustomSelectorInput
           className="query-builder__projection__options__sort__dropdown"
           options={projectionOptions}
+          disabled={projectionOptions.length <= 1}
           onChange={onChange}
           value={value}
           darkMode={true}
@@ -96,18 +108,25 @@ const ColumnSortEditor = observer(
 const ColumnsSortEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = useEditorStore();
+    const editorStore = queryBuilderState.editorStore;
     const resultModifier = queryBuilderState.resultSetModifierState;
     const sortColumns = resultModifier.sortColumns;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
-    const projectionOptions = projectionState.columnOptions;
-    const projectionColumns = projectionState.columns;
+    const projectionOptions = projectionState.columns
+      .filter(
+        (projectionCol) =>
+          !sortColumns.some((sortCol) => sortCol.columnState === projectionCol),
+      )
+      .map((projectionCol) => ({
+        label: projectionCol.columnName,
+        value: projectionCol,
+      }));
     const addValue = (): void => {
-      if (projectionColumns.length > 0) {
+      if (projectionOptions.length > 0) {
         const sortColumn = new SortColumnState(
           editorStore,
-          projectionColumns[0],
+          projectionOptions[0].value,
         );
         resultModifier.addSortColumn(sortColumn);
       }
@@ -123,6 +142,7 @@ const ColumnsSortEditor = observer(
         </div>
         <div className="panel__content__form__section__list">
           <div className="panel__content__form__section__list__items">
+            {/* TODO: support DnD sorting */}
             {sortColumns.map((value) => (
               <ColumnSortEditor
                 key={value.columnState.uuid}
@@ -220,10 +240,7 @@ export const QueryResultModifierModal = observer(
             </div>
           </div>
           <div className="modal__footer">
-            <button
-              className="btn execution-plan-viewer__close-btn"
-              onClick={close}
-            >
+            <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
           </div>

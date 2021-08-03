@@ -41,13 +41,14 @@ import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import { flowResult } from 'mobx';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   (props: {}, ref: React.Ref<HTMLDivElement>) => {
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
-      editorStore.toggleTextMode(),
+      flowResult(editorStore.toggleTextMode()),
     );
 
     return (
@@ -78,7 +79,7 @@ export const GrammarTextEditor = observer(() => {
   const textEditorRef = useRef<HTMLDivElement>(null);
 
   const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
-    editorStore.toggleTextMode(),
+    flowResult(editorStore.toggleTextMode()),
   );
 
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
@@ -95,7 +96,7 @@ export const GrammarTextEditor = observer(() => {
       const _editor = monacoEditorAPI.create(element, {
         ...baseTextEditorSettings,
         language: EDITOR_LANGUAGE.PURE,
-        theme: EDITOR_THEME.STUDIO,
+        theme: EDITOR_THEME.LEGEND,
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(_editor.getValue());
@@ -108,15 +109,15 @@ export const GrammarTextEditor = observer(() => {
         if (event.keyCode === KeyCode.F9) {
           event.preventDefault();
           event.stopPropagation();
-          editorStore.graphState
-            .globalCompileInTextMode()
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(editorStore.graphState.globalCompileInTextMode()).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         } else if (event.keyCode === KeyCode.F8) {
           event.preventDefault();
           event.stopPropagation();
-          editorStore
-            .toggleTextMode()
-            .catch(applicationStore.alertIllegalUnhandledError);
+          flowResult(editorStore.toggleTextMode()).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
         }
       });
       disableEditorHotKeys(_editor);
@@ -190,6 +191,8 @@ export const GrammarTextEditor = observer(() => {
         monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
       }
     }
+    // Disable editing if user is in viewer mode
+    editor.updateOptions({ readOnly: editorStore.isInViewerMode });
   }
 
   /**

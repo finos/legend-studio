@@ -23,6 +23,7 @@ import {
   optional,
   list,
   custom,
+  alias,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -87,59 +88,62 @@ export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
 export const V1_rawInstanceValueSchema = createModelSchema(
   V1_RawInstanceValue,
   {
-    _type: custom(
-      (val) => {
-        switch (val) {
-          case PRIMITIVE_TYPE.INTEGER:
-            return V1_RawValueSpecificationType.CINTEGER;
-          case PRIMITIVE_TYPE.DECIMAL:
-            return V1_RawValueSpecificationType.CDECIMAL;
-          case PRIMITIVE_TYPE.STRING:
-            return V1_RawValueSpecificationType.CSTRING;
-          case PRIMITIVE_TYPE.BOOLEAN:
-            return V1_RawValueSpecificationType.CBOOLEAN;
-          case PRIMITIVE_TYPE.FLOAT:
-            return V1_RawValueSpecificationType.CFLOAT;
-          case PRIMITIVE_TYPE.DATETIME:
-            return V1_RawValueSpecificationType.CDATETIME;
-          case PRIMITIVE_TYPE.STRICTDATE:
-            return V1_RawValueSpecificationType.CSTRICTDATE;
-          case PRIMITIVE_TYPE.STRICTTIME:
-            return V1_RawValueSpecificationType.CSTRICTTIME;
-          case PRIMITIVE_TYPE.LATESTDATE:
-            return V1_RawValueSpecificationType.CLATESTDATE;
-          default:
-            throw new UnsupportedOperationError(
-              `Can't serialize raw instance value type '${val}'`,
-            );
-        }
-      },
-      (val) => {
-        switch (val) {
-          case V1_RawValueSpecificationType.CINTEGER:
-            return PRIMITIVE_TYPE.INTEGER;
-          case V1_RawValueSpecificationType.CDECIMAL:
-            return PRIMITIVE_TYPE.DECIMAL;
-          case V1_RawValueSpecificationType.CSTRING:
-            return PRIMITIVE_TYPE.STRING;
-          case V1_RawValueSpecificationType.CBOOLEAN:
-            return PRIMITIVE_TYPE.BOOLEAN;
-          case V1_RawValueSpecificationType.CFLOAT:
-            return PRIMITIVE_TYPE.FLOAT;
-          case V1_RawValueSpecificationType.CDATETIME:
-            return PRIMITIVE_TYPE.DATETIME;
-          case V1_RawValueSpecificationType.CSTRICTDATE:
-            return PRIMITIVE_TYPE.STRICTDATE;
-          case V1_RawValueSpecificationType.CSTRICTTIME:
-            return PRIMITIVE_TYPE.STRICTTIME;
-          case V1_RawValueSpecificationType.CLATESTDATE:
-            return PRIMITIVE_TYPE.LATESTDATE;
-          default:
-            throw new UnsupportedOperationError(
-              `Can't deserialize raw value instance value type '${val}'`,
-            );
-        }
-      },
+    type: alias(
+      '_type',
+      custom(
+        (val) => {
+          switch (val) {
+            case PRIMITIVE_TYPE.INTEGER:
+              return V1_RawValueSpecificationType.CINTEGER;
+            case PRIMITIVE_TYPE.DECIMAL:
+              return V1_RawValueSpecificationType.CDECIMAL;
+            case PRIMITIVE_TYPE.STRING:
+              return V1_RawValueSpecificationType.CSTRING;
+            case PRIMITIVE_TYPE.BOOLEAN:
+              return V1_RawValueSpecificationType.CBOOLEAN;
+            case PRIMITIVE_TYPE.FLOAT:
+              return V1_RawValueSpecificationType.CFLOAT;
+            case PRIMITIVE_TYPE.DATETIME:
+              return V1_RawValueSpecificationType.CDATETIME;
+            case PRIMITIVE_TYPE.STRICTDATE:
+              return V1_RawValueSpecificationType.CSTRICTDATE;
+            case PRIMITIVE_TYPE.STRICTTIME:
+              return V1_RawValueSpecificationType.CSTRICTTIME;
+            case PRIMITIVE_TYPE.LATESTDATE:
+              return V1_RawValueSpecificationType.CLATESTDATE;
+            default:
+              throw new UnsupportedOperationError(
+                `Can't serialize raw instance value type '${val}'`,
+              );
+          }
+        },
+        (val) => {
+          switch (val) {
+            case V1_RawValueSpecificationType.CINTEGER:
+              return PRIMITIVE_TYPE.INTEGER;
+            case V1_RawValueSpecificationType.CDECIMAL:
+              return PRIMITIVE_TYPE.DECIMAL;
+            case V1_RawValueSpecificationType.CSTRING:
+              return PRIMITIVE_TYPE.STRING;
+            case V1_RawValueSpecificationType.CBOOLEAN:
+              return PRIMITIVE_TYPE.BOOLEAN;
+            case V1_RawValueSpecificationType.CFLOAT:
+              return PRIMITIVE_TYPE.FLOAT;
+            case V1_RawValueSpecificationType.CDATETIME:
+              return PRIMITIVE_TYPE.DATETIME;
+            case V1_RawValueSpecificationType.CSTRICTDATE:
+              return PRIMITIVE_TYPE.STRICTDATE;
+            case V1_RawValueSpecificationType.CSTRICTTIME:
+              return PRIMITIVE_TYPE.STRICTTIME;
+            case V1_RawValueSpecificationType.CLATESTDATE:
+              return PRIMITIVE_TYPE.LATESTDATE;
+            default:
+              throw new UnsupportedOperationError(
+                `Can't deserialize raw value instance value type '${val}'`,
+              );
+          }
+        },
+      ),
     ),
     multiplicity: usingModelSchema(V1_multiplicitySchema),
     values: optional(list(primitive())),
@@ -192,7 +196,7 @@ export function V1_deserializeRawValueSpecification(
     case V1_RawValueSpecificationType.CSTRICTDATE:
     case V1_RawValueSpecificationType.CSTRICTTIME:
     case V1_RawValueSpecificationType.CLATESTDATE:
-      return deserialize(V1_rawVariableModelSchema, json);
+      return deserialize(V1_rawInstanceValueSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize raw value specification of type '${json._type}'`,

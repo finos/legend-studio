@@ -27,24 +27,21 @@ import {
   FaUser,
   FaRegWindowMaximize,
 } from 'react-icons/fa';
-import { NotificationSnackbar } from '../shared/NotificationSnackbar';
-import {
-  ACTIVITY_MODE,
-  SIDE_BAR_RESIZE_SNAP_THRESHOLD,
-  DEFAULT_SIDE_BAR_SIZE,
-} from '../../stores/EditorConfig';
+import { NotificationSnackbar } from '../application/NotificationSnackbar';
+import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
-import type { ReviewRouteParams } from '../../stores/Router';
+import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateViewProjectRoute,
   generateEditorRoute,
-} from '../../stores/Router';
+} from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
@@ -139,30 +136,24 @@ const ReviewExplorer = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const snapSideBar = (newSize: number | undefined): void => {
+  const resizeSideBar = (newSize: number | undefined): void => {
     if (newSize !== undefined) {
-      editorStore.setSideBarSize(
-        newSize < SIDE_BAR_RESIZE_SNAP_THRESHOLD
-          ? editorStore.sideBarSize > 0
-            ? 0
-            : DEFAULT_SIDE_BAR_SIZE
-          : newSize,
-      );
+      editorStore.sideBarDisplayState.setSize(newSize);
     }
   };
 
   useEffect(() => {
-    reviewStore
-      .fetchReviewComparison()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(reviewStore.fetchReviewComparison()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, reviewStore]);
 
   return (
     <SplitPane
       className="review-explorer__content"
       split="vertical"
-      onDragFinished={snapSideBar}
-      size={editorStore.sideBarSize}
+      onDragFinished={resizeSideBar}
+      size={editorStore.sideBarDisplayState.size}
       minSize={0}
       maxSize={-600}
     >
@@ -173,7 +164,7 @@ const ReviewExplorer = observer(() => {
 });
 
 const ReviewInner = observer(() => {
-  const params = useParams<ReviewRouteParams>();
+  const params = useParams<ReviewPathParams>();
   const projectId = params.projectId;
   const reviewId = params.reviewId;
   const reviewStore = useReviewStore();
@@ -186,11 +177,15 @@ const ReviewInner = observer(() => {
 
   useEffect(() => {
     reviewStore.setProjectIdAndReviewId(projectId, reviewId);
-    reviewStore.init().catch(applicationStore.alertIllegalUnhandledError);
-    reviewStore.getReview().catch(applicationStore.alertIllegalUnhandledError);
-    reviewStore
-      .fetchProject()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(reviewStore.init()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+    flowResult(reviewStore.getReview()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+    flowResult(reviewStore.fetchProject()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, reviewStore, projectId, reviewId]);
 
   return (

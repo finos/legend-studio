@@ -64,21 +64,29 @@ export const matchFunctionName = (
  * This method concatenate 2 fully-qualified elementh paths to form a single one
  * and then extracts the name and package part from it.
  */
-export const resolvePackageNameAndElementName = (
-  defaultPath: string,
+export const resolvePackagePathAndElementName = (
   path: string,
+  defaultPath?: string,
 ): [string, string] => {
   const index = path.lastIndexOf(ELEMENT_PATH_DELIMITER);
-  const elementName =
-    index === -1
-      ? path
-      : path.substring(index + ELEMENT_PATH_DELIMITER.length, path.length);
-  const packageName = index === -1 ? defaultPath : path.substring(0, index);
-  return [packageName, elementName];
+  if (index === -1) {
+    return [defaultPath ?? '', path];
+  }
+  return [
+    path.substring(0, index),
+    path.substring(index + ELEMENT_PATH_DELIMITER.length, path.length),
+  ];
 };
 
+export const createPath = (packagePath: string, name: string): string =>
+  `${packagePath ? `${packagePath}${ELEMENT_PATH_DELIMITER}` : ''}${name}`;
+// TODO: we might need to support quoted identifier in the future
+export const isValidPathIdentifier = (val: string): boolean =>
+  Boolean(val.match(/^\w[\w$_-]*$/));
 export const isValidFullPath = (fullPath: string): boolean =>
-  fullPath.split(ELEMENT_PATH_DELIMITER).filter(Boolean).length > 1;
+  Boolean(fullPath.match(/^(?:\w[\w$_-]*)(?:::\w[\w$_-]*)+$/));
+export const isValidPath = (path: string): boolean =>
+  Boolean(path.match(/^(?:\w[\w$_-]*)(?:::\w[\w$_-]*)*$/));
 
 // TODO: this is over-simplification as there could be other fields used for source information
 export const hashObjectWithoutSourceInformation = (val: object): string =>

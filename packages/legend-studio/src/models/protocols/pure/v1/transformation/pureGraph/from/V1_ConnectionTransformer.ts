@@ -32,9 +32,11 @@ import type { AuthenticationStrategy } from '../../../../../../metamodels/pure/m
 import {
   DefaultH2AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  GCPApplicationDefaultCredentialsAuthenticationStrategy,
   DeltaLakeAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
+  UserPasswordAuthenticationStrategy,
   OAuthAuthenticationStrategy,
 } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { DatasourceSpecification } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
@@ -44,6 +46,8 @@ import {
   EmbeddedH2DatasourceSpecification,
   DeltaLakeDatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  RedshiftDatasourceSpecification,
+  BigQueryDatasourceSpecification,
 } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { ModelChainConnection } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import {
@@ -56,13 +60,17 @@ import {
   V1_LocalH2DataSourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
+  V1_BigQueryDatasourceSpecification,
   V1_DeltaLakeDatasourceSpecification,
   V1_StaticDatasourceSpecification,
+  V1_RedshiftDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
   V1_DefaultH2AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
+  V1_UserPasswordAuthenticationStrategy,
+  V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_DeltaLakeAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
@@ -122,6 +130,25 @@ const transformSnowflakeDatasourceSpecification = (
   return source;
 };
 
+const transformRedshiftDatasourceSpecification = (
+  metamodel: RedshiftDatasourceSpecification,
+): V1_RedshiftDatasourceSpecification => {
+  const source = new V1_RedshiftDatasourceSpecification();
+  source.databaseName = metamodel.databaseName;
+  source.endpoint = metamodel.endpoint;
+  source.port = metamodel.port;
+  return source;
+};
+
+const transformBigQueryDatasourceSpecification = (
+  metamodel: BigQueryDatasourceSpecification,
+): V1_BigQueryDatasourceSpecification => {
+  const source = new V1_BigQueryDatasourceSpecification();
+  source.projectId = metamodel.projectId;
+  source.defaultDataset = metamodel.defaultDataset;
+  return source;
+};
+
 const transformDatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: V1_GraphTransformerContext,
@@ -134,11 +161,15 @@ const transformDatasourceSpecification = (
     return transformDeltaLakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof BigQueryDatasourceSpecification) {
+    return transformBigQueryDatasourceSpecification(metamodel);
   } else if (metamodel instanceof LocalH2DatasourceSpecification) {
     const protocol = new V1_LocalH2DataSourceSpecification();
     protocol.testDataSetupCsv = metamodel.testDataSetupCsv;
     protocol.testDataSetupSqls = metamodel.testDataSetupSqls;
     return protocol;
+  } else if (metamodel instanceof RedshiftDatasourceSpecification) {
+    return transformRedshiftDatasourceSpecification(metamodel);
   }
   const extraConnectionDatasourceSpecificationTransformers =
     context.plugins.flatMap(
@@ -192,6 +223,17 @@ const transformAuthenticationStrategy = (
     auth.passPhraseVaultReference = metamodel.passPhraseVaultReference;
     auth.publicUserName = metamodel.publicUserName;
     return auth;
+  } else if (metamodel instanceof UserPasswordAuthenticationStrategy) {
+    const auth = new V1_UserPasswordAuthenticationStrategy();
+    auth.userName = metamodel.userName;
+    auth.passwordVaultReference = metamodel.passwordVaultReference;
+    return auth;
+  } else if (
+    metamodel instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
+  ) {
+    const auth =
+      new V1_GCPApplicationDefaultCredentialsAuthenticationStrategy();
+    return auth;
   }
   const extraConnectionAuthenticationStrategyTransformers =
     context.plugins.flatMap(
@@ -212,7 +254,7 @@ const transformAuthenticationStrategy = (
   );
 };
 
-const transformRelationalDatabaseConnection = (
+export const V1_transformRelationalDatabaseConnection = (
   metamodel: RelationalDatabaseConnection,
   context: V1_GraphTransformerContext,
 ): V1_RelationalDatabaseConnection => {
@@ -315,7 +357,7 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): V1_Connection {
-    return transformRelationalDatabaseConnection(connection, this.context);
+    return V1_transformRelationalDatabaseConnection(connection, this.context);
   }
 }
 

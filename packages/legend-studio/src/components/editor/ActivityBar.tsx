@@ -29,7 +29,7 @@ import {
   GoCloudDownload,
 } from 'react-icons/go';
 import { useEditorStore } from '../../stores/EditorStore';
-import { ACTIVITY_MODE, AUX_PANEL_MODE } from '../../stores/EditorConfig';
+import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { CORE_TEST_ID } from '../../const';
 import { CheckIcon } from '../shared/Icon';
 import {
@@ -46,15 +46,6 @@ const SettingsMenu = observer(
     const editorStore = useEditorStore();
     const toggleDevTool = (): void => {
       editorStore.setDevTool(!editorStore.isDevToolEnabled);
-      if (editorStore.isDevToolEnabled) {
-        editorStore.openAuxPanel(AUX_PANEL_MODE.DEV_TOOL, true);
-      } else if (
-        editorStore.auxPanelSize &&
-        editorStore.activeAuxPanelMode === AUX_PANEL_MODE.DEV_TOOL
-      ) {
-        editorStore.toggleAuxPanel();
-        editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
-      }
     };
 
     return (
@@ -90,7 +81,7 @@ export const ActivityBar = observer(() => {
       .length;
   const localChangesDisplayLabel = localChanges > 99 ? '99+' : localChanges;
   const localChangesIndicatorStatusIcon =
-    editorStore.graphState.graph.failedToBuild ||
+    editorStore.graphState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop ? (
       <div />
     ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
@@ -268,7 +259,7 @@ export const ActivityBar = observer(() => {
             key={activity.mode}
             className={clsx('activity-bar__item', {
               'activity-bar__item--active':
-                editorStore.sideBarSize &&
+                editorStore.sideBarDisplayState.isOpen &&
                 editorStore.activeActivity === activity.mode,
             })}
             onClick={changeActivity(activity.mode)}

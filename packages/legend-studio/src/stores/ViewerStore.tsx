@@ -15,7 +15,7 @@
  */
 
 import { useContext, createContext } from 'react';
-import { flow, action, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
 import {
@@ -24,27 +24,28 @@ import {
 } from '../models/sdlc/models/revision/Revision';
 import { Version } from '../models/sdlc/models/version/Version';
 import { CORE_LOG_EVENT } from '../utils/Logger';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   IllegalStateError,
   guaranteeNonNullable,
-  createObservableActionState,
+  ActionState,
 } from '@finos/legend-studio-shared';
 import { Workspace } from '../models/sdlc/models/workspace/Workspace';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { GraphError } from '../models/MetaModelUtils';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
-import type { ViewerRouteParams } from './Router';
+import type { ViewerPathParams } from './LegendStudioRouter';
 import {
   generateViewVersionRoute,
   generateVieweRevisionRoute,
   generateViewProjectRoute,
-} from './Router';
+} from './LegendStudioRouter';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ViewerStore {
   editorStore: EditorStore;
-  initState = createObservableActionState();
+  initState = ActionState.create();
   currentRevision?: Revision;
   latestVersion?: Version;
   revision?: Revision;
@@ -80,7 +81,7 @@ export class ViewerStore {
    *  2. if the elemnt is not found
    * in either case, the most suitable behavior at the moment is to internalize/swallow up the entity path param
    */
-  internalizeEntityPath(params: ViewerRouteParams): void {
+  internalizeEntityPath(params: ViewerPathParams): void {
     if (params.entityPath) {
       this.elementPath = params.entityPath;
       this.editorStore.applicationStore.historyApiClient.replace(
@@ -104,43 +105,44 @@ export class ViewerStore {
     }
   }
 
-  init = flow(function* (
-    this: ViewerStore,
+  *init(
     projectId: string,
     versionId: string | undefined,
     revisionId: string | undefined,
-  ) {
+  ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       return;
     }
     this.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
-      this.initState.conclude(hasBuildSucceeded);
+      this.initState.complete(hasBuildSucceeded);
     };
 
     try {
       // fetch basic SDLC infos
-      yield this.editorStore.sdlcState.fetchCurrentProject(projectId);
+      yield flowResult(
+        this.editorStore.sdlcState.fetchCurrentProject(projectId),
+      );
       this.editorStore.sdlcState.setCurrentWorkspace(
         Workspace.createProjectLatestViewerWorkspace(projectId),
       );
 
       // get current revision so we can show how "outdated" the `current view` of the project is
       this.currentRevision = Revision.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
           this.editorStore.sdlcState.currentProjectId,
           undefined,
           RevisionAlias.CURRENT,
-        ),
+        )) as PlainObject<Revision>,
       );
       this.latestVersion = Version.serialization.fromJson(
-        yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestVersion(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestVersion(
           this.editorStore.sdlcState.currentProjectId,
-        ),
+        )) as PlainObject<Version>,
       );
 
       // fetch project versions
-      yield this.editorStore.sdlcState.fetchProjectVersions();
+      yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
 
       // ensure only either version or revision is specified
       if (versionId && revisionId) {
@@ -155,10 +157,10 @@ export class ViewerStore {
         this.version =
           versionId !== this.latestVersion.id.id
             ? Version.serialization.fromJson(
-                yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersion(
+                (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersion(
                   this.editorStore.sdlcState.currentProjectId,
                   versionId,
-                ),
+                )) as PlainObject<Version>,
               )
             : this.latestVersion;
         entities =
@@ -173,11 +175,11 @@ export class ViewerStore {
         this.revision =
           revisionId !== this.currentRevision.id
             ? Revision.serialization.fromJson(
-                yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+                (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
                   this.editorStore.sdlcState.currentProjectId,
                   undefined,
                   revisionId,
-                ),
+                )) as PlainObject<Revision>,
               )
             : this.currentRevision;
         entities =
@@ -196,38 +198,48 @@ export class ViewerStore {
             undefined,
           )) as Entity[];
       }
-      // init engine
-      yield this.editorStore.graphState.graphManager.setupEngine(
-        this.editorStore.applicationStore.pluginManager,
-        {
-          env: this.editorStore.applicationStore.config.env,
-          tabSize: TAB_SIZE,
-          clientConfig: {
-            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-            enableCompression: true,
-            authenticationUrl: SDLCServerClient.authenticationUrl(
-              this.editorStore.applicationStore.config.sdlcServerUrl,
-            ),
+      // setup engine
+      yield flowResult(
+        this.editorStore.graphState.graphManager.setupEngine(
+          this.editorStore.applicationStore.pluginManager,
+          {
+            env: this.editorStore.applicationStore.config.env,
+            tabSize: TAB_SIZE,
+            clientConfig: {
+              baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+              enableCompression: true,
+              authenticationUrl: SDLCServerClient.authenticationUrl(
+                this.editorStore.applicationStore.config.sdlcServerUrl,
+              ),
+            },
           },
-        },
+        ),
       );
       // init graph
-      yield this.editorStore.graphState.initializeSystem();
-      yield this.editorStore.graphState.buildGraphForViewerMode(entities);
+      yield flowResult(this.editorStore.graphState.initializeSystem());
+      yield flowResult(
+        this.editorStore.graphState.buildGraphForViewerMode(entities),
+      );
 
       // fetch available file generation descriptions
-      yield this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions();
+      yield flowResult(
+        this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      );
 
       // generate
-      if (this.editorStore.graphState.graph.generationSpecifications.length) {
-        yield this.editorStore.graphState.graphGenerationState.globalGenerate();
+      if (
+        this.editorStore.graphState.graph.ownGenerationSpecifications.length
+      ) {
+        yield flowResult(
+          this.editorStore.graphState.graphGenerationState.globalGenerate(),
+        );
       }
 
       // open element if provided an element path
       if (
-        this.editorStore.graphState.graph.isBuilt &&
+        this.editorStore.graphState.graph.buildState.hasSucceeded &&
         this.editorStore.sdlcState.currentProject &&
-        this.editorStore.explorerTreeState.isBuilt &&
+        this.editorStore.explorerTreeState.buildState.hasCompleted &&
         this.elementPath
       ) {
         try {
@@ -252,7 +264,7 @@ export class ViewerStore {
       this.editorStore.applicationStore.notifyError(error);
       onLeave(false);
     }
-  });
+  }
 }
 
 const ViewerStoreContext = createContext<ViewerStore | undefined>(undefined);

@@ -60,6 +60,7 @@ import { TextDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { flowResult } from 'mobx';
 
 const getConflictSummaryText = (
   conflictEditorState: EntityChangeConflictEditorState,
@@ -191,7 +192,7 @@ const MergeConflictEditor = observer(
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
           ...baseTextEditorSettings,
-          theme: EDITOR_THEME.STUDIO,
+          theme: EDITOR_THEME.LEGEND,
           language: EDITOR_LANGUAGE.PURE,
           minimap: { enabled: false },
           formatOnType: true,
@@ -640,13 +641,13 @@ export const EntityChangeConflictEditor = observer(() => {
   };
   // resolutions
   const markAsResolved = applicationStore.guaranteeSafeAction(() =>
-    conflictEditorState.markAsResolved(),
+    flowResult(conflictEditorState.markAsResolved()),
   );
   const useTheirs = applicationStore.guaranteeSafeAction(() =>
-    conflictEditorState.useIncomingChanges(),
+    flowResult(conflictEditorState.useIncomingChanges()),
   );
   const useYours = applicationStore.guaranteeSafeAction(() =>
-    conflictEditorState.useCurrentChanges(),
+    flowResult(conflictEditorState.useCurrentChanges()),
   );
   // mode
   const currentMode = conflictEditorState.currentMode;
@@ -657,9 +658,9 @@ export const EntityChangeConflictEditor = observer(() => {
   }): void => conflictEditorState.setCurrentMode(val.value);
 
   useEffect(() => {
-    conflictEditorState
-      .refresh()
-      .catch(applicationStore.alertIllegalUnhandledError);
+    flowResult(conflictEditorState.refresh()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
   }, [applicationStore, conflictEditorState]);
 
   useEffect(() => {

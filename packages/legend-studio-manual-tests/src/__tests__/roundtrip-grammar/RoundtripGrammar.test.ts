@@ -45,8 +45,13 @@ import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import type { V1_PackageableElement } from '@finos/legend-studio';
-import { EntityChangeType, getTestEditorStore } from '@finos/legend-studio';
+import {
+  EntityChangeType,
+  getTestEditorStore,
+  buildGraphBasic,
+} from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-studio-shared';
+import { flowResult } from 'mobx';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -83,13 +88,10 @@ const checkGrammarRoundtrip = async (
     JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
 
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
-    entities,
-    { TEMPORARY__keepSectionIndex: true },
-  );
-  const transformedEntities = editorStore.graphState.graph.allElements.map(
+  await buildGraphBasic(entities, editorStore, {
+    TEMPORARY__keepSectionIndex: true,
+  });
+  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
 
@@ -110,15 +112,18 @@ const checkGrammarRoundtrip = async (
   );
 
   // check hash computation
-  await editorStore.graphState.graph.precomputeHashes(
-    editorStore.applicationStore.logger,
+  await flowResult(
+    editorStore.graphState.graph.precomputeHashes(
+      editorStore.applicationStore.logger,
+    ),
   );
-  const protocolHashesIndex =
-    await editorStore.graphState.graphManager.buildHashesIndex(entities);
+  const protocolHashesIndex = await flowResult(
+    editorStore.graphState.graphManager.buildHashesIndex(entities),
+  );
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
-  await editorStore.changeDetectionState.computeLocalChanges(true);
+  await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
 
   // TODO: avoid listing section index as part of change detection for now
   expect(

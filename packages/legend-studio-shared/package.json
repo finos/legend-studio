@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-shared",
-  "version": "0.0.16",
+  "version": "0.0.24",
   "description": "Legend Studio shared utilities and helpers",
   "keywords": [
     "legend",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@types/lodash-es": "4.17.4",
-    "@types/lossless-json": "1.0.0",
+    "@types/lossless-json": "1.0.1",
     "@types/object-hash": "2.1.1",
     "@types/pako": "1.0.2",
     "@types/seedrandom": "3.0.1",
@@ -45,7 +45,7 @@
     "hash.js": "1.1.7",
     "http-status-codes": "2.1.4",
     "lodash-es": "4.17.21",
-    "lossless-json": "1.0.4",
+    "lossless-json": "1.0.5",
     "mobx": "6.3.2",
     "object-hash": "2.2.0",
     "pako": "2.0.3",
@@ -58,7 +58,7 @@
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "7.30.0",
+    "eslint": "7.31.0",
     "jest": "27.0.6",
     "lodash": "4.17.21",
     "rimraf": "3.0.2",

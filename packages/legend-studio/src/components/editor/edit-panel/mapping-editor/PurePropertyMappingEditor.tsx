@@ -301,7 +301,7 @@ export const PurePropertyMappingEditor = observer(
       isReadOnly,
     } = props;
     const disableEditingTransform =
-      pureInstanceSetImplementationState.isConvertingTransformObjects ||
+      pureInstanceSetImplementationState.isConvertingTransformLambdaObjects ||
       isReadOnly;
     // DnD
     const handleDrop = useCallback(

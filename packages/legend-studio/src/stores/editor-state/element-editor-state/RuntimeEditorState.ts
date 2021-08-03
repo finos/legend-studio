@@ -28,7 +28,7 @@ import {
 import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';
-import { ConnectionEditorState } from './ConnectionEditorState';
+import { ConnectionEditorState } from './connection/ConnectionEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PackageableRuntime } from '../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
 import {
@@ -421,8 +421,9 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
   }
 
   get packageableConnections(): PackageableConnection[] {
-    return this.editorStore.graphState.graph.connections.filter((connection) =>
-      isConnectionForStore(connection.connectionValue, this.store),
+    return this.editorStore.graphState.graph.ownConnections.filter(
+      (connection) =>
+        isConnectionForStore(connection.connectionValue, this.store),
     );
   }
 
@@ -507,11 +508,12 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
   }
 
   get packageableConnections(): PackageableConnection[] {
-    return this.editorStore.graphState.graph.connections.filter((connection) =>
-      isConnectionForModelStoreWithClass(
-        connection.connectionValue,
-        this.class,
-      ),
+    return this.editorStore.graphState.graph.ownConnections.filter(
+      (connection) =>
+        isConnectionForModelStoreWithClass(
+          connection.connectionValue,
+          this.class,
+        ),
     );
   }
 

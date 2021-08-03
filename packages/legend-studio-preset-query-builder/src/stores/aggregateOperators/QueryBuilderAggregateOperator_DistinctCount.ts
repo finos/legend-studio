@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { ValueSpecification } from '@finos/legend-studio';
+import type {
+  AbstractPropertyExpression,
+  PureModel,
+  ValueSpecification,
+} from '@finos/legend-studio';
 import {
   SimpleFunctionExpression,
   VariableExpression,
@@ -44,7 +48,7 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
       const propertyType =
-        projectionColumnState.propertyEditorState.propertyExpression.func
+        projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return (
         [
@@ -64,21 +68,19 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
   }
 
   buildAggregateExpression(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
+    propertyExpression: AbstractPropertyExpression | undefined,
+    variableName: string,
+    graph: PureModel,
   ): ValueSpecification {
-    const multiplicityOne =
-      aggregateColumnState.editorStore.graphState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
+    const multiplicityOne = graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
     const distinctExpression = new SimpleFunctionExpression(
       extractElementNameFromPath(SUPPORTED_FUNCTIONS.DISTINCT),
       multiplicityOne,
     );
     distinctExpression.parametersValues.push(
-      new VariableExpression(
-        aggregateColumnState.lambdaParameterName,
-        multiplicityOne,
-      ),
+      new VariableExpression(variableName, multiplicityOne),
     );
     const distinctCountExpression = new SimpleFunctionExpression(
       extractElementNameFromPath(SUPPORTED_FUNCTIONS.COUNT),

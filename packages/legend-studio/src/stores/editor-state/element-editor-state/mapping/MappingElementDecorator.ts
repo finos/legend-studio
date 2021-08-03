@@ -413,7 +413,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         });
         return ePropertyMapping;
       } else if (propertyType instanceof Class) {
-        let propertyMappings: PropertyMapping[] = [];
+        let classPropertyMappings: PropertyMapping[] = [];
         // TODO: should we try to get leaf implementation here from the root
         // or should we just simply find all class mappings for the target class
         // as we should not try to `understand` operation class mapping union?
@@ -423,7 +423,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           );
         // if there are no root-resolved set implementations for the class, return empty array
         if (resolvedLeafSetImps) {
-          propertyMappings = resolvedLeafSetImps
+          classPropertyMappings = resolvedLeafSetImps
             // from root of the class property, resolve leaf set implementations and add property mappings for them
             // NOTE: here we actually remove existing property mapping if it no longer part of resolved
             // leaf set implementation of the class property
@@ -454,7 +454,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
             );
         }
         // add the embedded property mapping to the end of the list
-        return propertyMappings.concat(
+        return classPropertyMappings.concat(
           existingPropertyMappings.filter(
             (pm) => pm instanceof EmbeddedRelationalInstanceSetImplementation,
           ),

@@ -18,7 +18,7 @@ import { relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { unitTest, guaranteeType } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
-import { getTestEditorStore } from '../../../StoreTestUtils';
+import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
@@ -27,17 +27,16 @@ import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/mo
 const editorStore = getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphState.initializeSystem();
-  await editorStore.graphState.graphManager.buildGraph(
-    editorStore.graphState.graph,
+  await buildGraphBasic(
     relationalCompleteGraphEntities as Entity[],
+    editorStore,
   );
 });
 
 test(unitTest('Relational database is loaded properly'), () => {
   const graph = editorStore.graphState.graph;
-  expect(graph.stores).toHaveLength(3);
-  expect(graph.databases).toHaveLength(2);
+  expect(graph.ownStores).toHaveLength(3);
+  expect(graph.ownDatabases).toHaveLength(2);
   // db
   const db = graph.getDatabase('meta::relational::tests::db');
   expect(db.schemas).toHaveLength(2);
@@ -65,7 +64,7 @@ test(unitTest('Relational database is loaded properly'), () => {
 
 test(unitTest('Relational Mapping is loaded properly'), () => {
   const graph = editorStore.graphState.graph;
-  expect(graph.mappings).toHaveLength(2);
+  expect(graph.ownMappings).toHaveLength(2);
   const simpleRelationalMapping = graph.getMapping(
     'meta::relational::tests::simpleRelationalMapping',
   );

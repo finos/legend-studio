@@ -1,5 +1,65 @@
 # @finos/legend-studio-components
 
+## 0.0.28
+
+### Patch Changes
+
+- Updated dependencies [[`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523), [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523)]:
+  - @finos/legend-studio-shared@0.0.24
+
+## 0.0.27
+
+### Patch Changes
+
+- Updated dependencies [[`7f9fbbe`](https://github.com/finos/legend-studio/commit/7f9fbbe72dee6cb8fd2c9a7d128cc117ce8ba5eb)]:
+  - @finos/legend-studio-shared@0.0.23
+
+## 0.0.26
+
+### Patch Changes
+
+- Updated dependencies [[`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e)]:
+  - @finos/legend-studio-shared@0.0.22
+
+## 0.0.25
+
+### Patch Changes
+
+- [#349](https://github.com/finos/legend-studio/pull/349) [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3) Thanks [@akphi](https://github.com/akphi)! - Add `PanelDisplayState` that holds and organizes panel size and size-related interactions, such as `open`, `close`, `toggle`, `maxmize`, `snap`, etc.
+
+- Updated dependencies [[`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8)]:
+  - @finos/legend-studio-shared@0.0.21
+
+## 0.0.24
+
+### Patch Changes
+
+- [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! -
+
+- Updated dependencies [[`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb), [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb)]:
+  - @finos/legend-studio-shared@0.0.20
+
+## 0.0.23
+
+### Patch Changes
+
+- Updated dependencies [[`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2)]:
+  - @finos/legend-studio-shared@0.0.19
+
+## 0.0.22
+
+### Patch Changes
+
+- Updated dependencies [[`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371), [`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371)]:
+  - @finos/legend-studio-shared@0.0.18
+
+## 0.0.21
+
+### Patch Changes
+
+- Updated dependencies [[`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502)]:
+  - @finos/legend-studio-shared@0.0.17
+
 ## 0.0.20
 
 ### Patch Changes
