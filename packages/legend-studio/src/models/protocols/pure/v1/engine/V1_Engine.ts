@@ -15,6 +15,7 @@
  */
 
 import type { PlainObject } from '@finos/legend-studio-shared';
+import { losslessParse } from '@finos/legend-studio-shared';
 import {
   assertErrorThrown,
   guaranteeNonNullable,
@@ -41,6 +42,7 @@ import { V1_GrammarToJsonInput } from '../engine/grammar/V1_GrammarToJson';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
 import {
   V1_deserializePureModelContextData,
+  V1_serializePureModelContext,
   V1_serializePureModelContextData,
 } from '../transformation/pureProtocol/V1_PureProtocolSerialization';
 import { V1_ServiceTestResult } from '../engine/service/V1_ServiceTestResult';
@@ -65,8 +67,19 @@ import {
   V1_buildImportConfigurationDescription,
   V1_buildParserError,
 } from './V1_EngineHelper';
+import { V1_Query } from './query/V1_Query';
+import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
+import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
+import { V1_ExecuteInput } from './execution/V1_ExecuteInput';
+import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
+import type { V1_ExecutionResult } from './execution/V1_ExecutionResult';
+import { V1_serializeExecutionResult } from './execution/V1_ExecutionResult';
+import { V1_ServiceStorage } from './service/V1_ServiceStorage';
+import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
+import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
+import { ServiceExecutionMode } from '../../../../metamodels/pure/action/service/ServiceExecutionMode';
 
-class EngineConfig extends AbstractEngineConfig {
+class V1_EngineConfig extends AbstractEngineConfig {
   private engine: V1_Engine;
 
   override setEnv(val: string | undefined): void {
@@ -96,6 +109,12 @@ class EngineConfig extends AbstractEngineConfig {
   }
 }
 
+interface V1_EngineSetupConfig {
+  env: string;
+  tabSize: number;
+  clientConfig: ServerClientConfig;
+}
+
 /**
  * This class defines what the engine is capable of.
  * Right now for most engine operations, we make network calls to the engine backend.
@@ -103,13 +122,13 @@ class EngineConfig extends AbstractEngineConfig {
  * to Studio. As such, we want to encapsulate engine client within this class.
  */
 export class V1_Engine {
-  engineServerClient: V1_EngineServerClient;
+  private engineServerClient: V1_EngineServerClient;
   logger: Logger;
-  config: EngineConfig;
+  config: V1_EngineConfig;
 
   constructor(clientConfig: ServerClientConfig, logger: Logger) {
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
-    this.config = new EngineConfig(this);
+    this.config = new V1_EngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
     this.config.setUseClientRequestPayloadCompression(
       this.engineServerClient.enableCompression,
@@ -138,6 +157,18 @@ export class V1_Engine {
    */
   getEngineServerClient(): V1_EngineServerClient {
     return this.engineServerClient;
+  }
+
+  async setup(config: V1_EngineSetupConfig): Promise<void> {
+    this.config.setEnv(config.env);
+    this.config.setTabSize(config.tabSize);
+    try {
+      this.config.setCurrentUserId(
+        await this.engineServerClient.getCurrentUserId(),
+      );
+    } catch {
+      // do nothing
+    }
   }
 
   // ------------------------------------------- Grammar -------------------------------------------
@@ -356,36 +387,36 @@ export class V1_Engine {
     }
   }
 
-  // ------------------------------------------- Schema Import -------------------------------------------
+  // --------------------------------------------- Execution ---------------------------------------------
 
-  async transformExternalFormatToProtocol(
-    externalFormat: string,
-    type: string,
-    mode: ImportMode,
-  ): Promise<V1_PureModelContextData> {
-    return V1_deserializePureModelContextData(
-      await this.engineServerClient.transformExternalFormatToProtocol(
-        JSON.parse(externalFormat),
-        type,
-        mode,
-      ),
+  async executeMapping(
+    input: V1_ExecuteInput,
+    useLosslessParse: boolean,
+  ): Promise<V1_ExecutionResult> {
+    const executionResultInText = await (
+      (await this.engineServerClient.execute(
+        V1_ExecuteInput.serialization.toJson(input),
+        true,
+      )) as Response
+    ).text();
+    return V1_serializeExecutionResult(
+      useLosslessParse
+        ? losslessParse(executionResultInText)
+        : JSON.parse(executionResultInText),
     );
   }
 
-  async getAvailableImportConfigurationDescriptions(): Promise<
-    ImportConfigurationDescription[]
-  > {
-    const schemaImportDescriptions = (
-      await this.engineServerClient.getAvailableSchemaImportDescriptions()
-    ).map((gen) => ({ ...gen, modelImportMode: ImportMode.SCHEMA_IMPORT }));
-    const codeImportDescriptions = (
-      await this.engineServerClient.getAvailableCodeImportDescriptions()
-    ).map((gen) => ({ ...gen, modelImportMode: ImportMode.CODE_IMPORT }));
-    return [...schemaImportDescriptions, ...codeImportDescriptions].map(
-      (description) =>
-        V1_buildImportConfigurationDescription(
-          V1_ImportConfigurationDescription.serialization.fromJson(description),
-        ),
+  generateExecutionPlan(
+    input: V1_ExecuteInput,
+  ): Promise<PlainObject<V1_ExecutionPlan>> {
+    return this.engineServerClient.generatePlan(
+      V1_ExecuteInput.serialization.toJson(input),
+    );
+  }
+
+  generateMappingTestData(input: V1_ExecuteInput): Promise<string> {
+    return this.engineServerClient.generateTestDataWithDefaultSeed(
+      V1_ExecuteInput.serialization.toJson(input),
     );
   }
 
@@ -433,7 +464,44 @@ export class V1_Engine {
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
   }
 
+  // ------------------------------------------- Schema Import -------------------------------------------
+
+  async transformExternalFormatToProtocol(
+    externalFormat: string,
+    type: string,
+    mode: ImportMode,
+  ): Promise<V1_PureModelContextData> {
+    return V1_deserializePureModelContextData(
+      await this.engineServerClient.transformExternalFormatToProtocol(
+        JSON.parse(externalFormat),
+        type,
+        mode,
+      ),
+    );
+  }
+
+  async getAvailableImportConfigurationDescriptions(): Promise<
+    ImportConfigurationDescription[]
+  > {
+    const schemaImportDescriptions = (
+      await this.engineServerClient.getAvailableSchemaImportDescriptions()
+    ).map((gen) => ({ ...gen, modelImportMode: ImportMode.SCHEMA_IMPORT }));
+    const codeImportDescriptions = (
+      await this.engineServerClient.getAvailableCodeImportDescriptions()
+    ).map((gen) => ({ ...gen, modelImportMode: ImportMode.CODE_IMPORT }));
+    return [...schemaImportDescriptions, ...codeImportDescriptions].map(
+      (description) =>
+        V1_buildImportConfigurationDescription(
+          V1_ImportConfigurationDescription.serialization.fromJson(description),
+        ),
+    );
+  }
+
   // ------------------------------------------- Service -------------------------------------------
+
+  async getServerServiceInfo(): Promise<V1_ServiceConfigurationInfo> {
+    return (await this.engineServerClient.getServerServiceInfo()) as unknown as V1_ServiceConfigurationInfo;
+  }
 
   async runServiceTests(
     model: V1_PureModelContextData,
@@ -443,5 +511,86 @@ export class V1_Engine {
         V1_serializePureModelContextData(model),
       )
     ).map((result) => V1_ServiceTestResult.serialization.fromJson(result));
+  }
+
+  async registerService(
+    input: V1_PureModelContext,
+    server: string,
+    executionMode: ServiceExecutionMode,
+  ): Promise<V1_ServiceRegistrationResult> {
+    return V1_ServiceRegistrationResult.serialization.fromJson(
+      await this.engineServerClient.registerService(
+        V1_serializePureModelContext(input),
+        server,
+        executionMode === ServiceExecutionMode.FULL_INTERACTIVE
+          ? 'fullInteractive'
+          : executionMode === ServiceExecutionMode.SEMI_INTERACTIVE
+          ? 'semiInteractive'
+          : undefined,
+      ),
+    );
+  }
+
+  async getServiceVersionInfo(
+    serviceUrl: string,
+    serviceId: string,
+  ): Promise<V1_ServiceStorage> {
+    return V1_ServiceStorage.serialization.fromJson(
+      await this.engineServerClient.getServiceVersionInfo(
+        serviceUrl,
+        serviceId,
+      ),
+    );
+  }
+
+  async activateServiceGeneration(
+    serviceUrl: string,
+    generationId: string,
+  ): Promise<void> {
+    await this.engineServerClient.activateGenerationId(
+      serviceUrl,
+      generationId,
+    );
+  }
+
+  // ------------------------------------------- Query -------------------------------------------
+
+  async getQueries(
+    isOwner: boolean,
+    limit: number | undefined,
+  ): Promise<V1_Query[]> {
+    return (await this.engineServerClient.getQueries(isOwner, limit)).map(
+      (query) => V1_Query.serialization.fromJson(query),
+    );
+  }
+
+  async getQuery(queryId: string): Promise<V1_Query> {
+    return V1_Query.serialization.fromJson(
+      await this.engineServerClient.getQuery(queryId),
+    );
+  }
+
+  async createQuery(query: V1_Query): Promise<void> {
+    await this.engineServerClient.createQuery(query);
+  }
+
+  async updateQuery(query: V1_Query): Promise<void> {
+    await this.engineServerClient.updateQuery(query.id, query);
+  }
+
+  async deleteQuery(queryId: string): Promise<void> {
+    await this.engineServerClient.deleteQuery(queryId);
+  }
+
+  // --------------------------------------------- Utilities ---------------------------------------------
+
+  async buildDatabase(
+    input: V1_DatabaseBuilderInput,
+  ): Promise<V1_PureModelContextData> {
+    return V1_deserializePureModelContextData(
+      await this.engineServerClient.buildDatabase(
+        V1_DatabaseBuilderInput.serialization.toJson(input),
+      ),
+    );
   }
 }

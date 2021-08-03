@@ -45,6 +45,7 @@ import type { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/
 import type { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
 import type { V1_Query } from './query/V1_Query';
+import type { V1_ServiceStorage } from './service/V1_ServiceStorage';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -68,6 +69,7 @@ enum CORE_ENGINE_TRACER_SPAN {
 
   CREATE_QUERY = 'create query',
   UPDATE_QUERY = 'update query',
+  DELETE_QUERY = 'delete query',
 }
 
 export class V1_EngineServerClient extends AbstractServerClient {
@@ -255,13 +257,14 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Execute -------------------------------------------
 
+  _execution = (): string => `${this._pure()}/execution`;
   execute = (
     input: PlainObject<V1_ExecuteInput>,
     returnResultAsText?: boolean,
-  ): Promise<PlainObject<V1_ExecutionResult>> =>
+  ): Promise<PlainObject<V1_ExecutionResult> | Response> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.EXECUTE),
-      `${this._pure()}/execution/execute`,
+      `${this._execution()}/execute`,
       input,
       {},
       undefined,
@@ -275,10 +278,24 @@ export class V1_EngineServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_ExecutionPlan>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_EXECUTION_PLAN),
-      `${this._pure()}/execution/generatePlan`,
+      `${this._execution()}/generatePlan`,
       input,
       {},
       undefined,
+      undefined,
+      { enableCompression: true },
+    );
+  generateTestDataWithDefaultSeed = (
+    input: PlainObject<V1_ExecuteInput>,
+  ): Promise<string> =>
+    this.postWithTracing(
+      this.getTraceData(
+        CORE_ENGINE_TRACER_SPAN.GENERATE_TEST_DATA_WITH_DEFAULT_SEED,
+      ),
+      `${this._execution()}/testDataGeneration/generateTestData_WithDefaultSeed`,
+      input,
+      {},
+      { Accept: ContentType.TEXT_PLAIN },
       undefined,
       { enableCompression: true },
     );
@@ -299,20 +316,21 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Service -------------------------------------------
 
-  _service = (server?: string): string =>
-    `${server ?? this.networkClient.baseUrl}/service/${this.version}`;
-  serverServiceInfo = (): Promise<PlainObject<V1_ServiceConfigurationInfo>> =>
-    this.networkClient.get(`${this._server()}/info/services`);
+  _service = (serviceServerUrl?: string): string =>
+    `${serviceServerUrl ?? this.networkClient.baseUrl}/service/${this.version}`;
+  getServerServiceInfo = (): Promise<
+    PlainObject<V1_ServiceConfigurationInfo>
+  > => this.networkClient.get(`${this._server()}/info/services`);
   registerService = (
     graphModelData: PlainObject<V1_PureModelContext>,
-    serverUrl: string,
-    endingUrl: string,
+    serviceServerUrl: string,
+    serviceExecutionMode: string | undefined,
   ): Promise<PlainObject<V1_ServiceRegistrationResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.REGISTER_SERVICE),
-      `${this._service(
-        `${window.location.protocol}//${serverUrl}`,
-      )}/register${endingUrl}`,
+      `${this._service(serviceServerUrl)}/register${
+        serviceExecutionMode ? `_${serviceExecutionMode}` : ''
+      }`,
       graphModelData,
       {},
       undefined,
@@ -320,23 +338,21 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
   getServiceVersionInfo = (
-    serverUrl: string,
+    serviceServerUrl: string,
     serviceId: string,
-  ): Promise<PlainObject<V1_ServiceRegistrationResult>> =>
+  ): Promise<PlainObject<V1_ServiceStorage>> =>
     this.getWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.GET_SERVICE_VERSION),
-      `${this._service(
-        `${window.location.protocol}//${serverUrl}`,
-      )}/id/${serviceId}`,
+      `${this._service(serviceServerUrl)}/id/${serviceId}`,
     );
   activateGenerationId = (
-    serverUrl: string,
+    serviceServerUrl: string,
     generationId: string,
   ): Promise<Response> =>
     this.putWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.ACTIVATE_SERVICE_GENERATION_ID),
       `${this._service(
-        `${window.location.protocol}//${serverUrl}`,
+        serviceServerUrl,
       )}/generation/setActive/id/${generationId}`,
       {},
       {},
@@ -354,20 +370,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
       model,
       {},
       undefined,
-      undefined,
-      { enableCompression: true },
-    );
-  generateTestDataWithDefaultSeed = (
-    input: PlainObject<V1_ExecuteInput>,
-  ): Promise<string> =>
-    this.postWithTracing(
-      this.getTraceData(
-        CORE_ENGINE_TRACER_SPAN.GENERATE_TEST_DATA_WITH_DEFAULT_SEED,
-      ),
-      `${this._pure()}/execution/testDataGeneration/generateTestData_WithDefaultSeed`,
-      input,
-      {},
-      { Accept: ContentType.TEXT_PLAIN },
       undefined,
       { enableCompression: true },
     );
@@ -399,8 +401,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
     query: V1_Query,
   ): Promise<PlainObject<V1_Query>> =>
     this.putWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.CREATE_QUERY),
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.UPDATE_QUERY),
       this._query(queryId),
       query,
+    );
+  deleteQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
+    this.deleteWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.DELETE_QUERY),
+      this._query(queryId),
     );
 }

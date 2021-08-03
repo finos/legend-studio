@@ -262,12 +262,6 @@ export abstract class AbstractPureGraphManager {
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
-  // ------------------------------------------- Database -------------------------------------------
-
-  abstract buildDatabase(
-    databaseBuilderInput: DatabaseBuilderInput,
-  ): Promise<Entity[]>;
-
   // ------------------------------------------- Service -------------------------------------------
 
   abstract registerService(
@@ -297,6 +291,12 @@ export abstract class AbstractPureGraphManager {
   abstract getQuery(queryId: string, graph: PureModel): Promise<Query>;
   abstract createQuery(query: Query): Promise<void>;
   abstract updateQuery(query: Query): Promise<void>;
+
+  // ------------------------------------------- Utilities -------------------------------------------
+
+  abstract buildDatabase(
+    databaseBuilderInput: DatabaseBuilderInput,
+  ): Promise<Entity[]>;
 
   // ------------------------------------------- Change detection -------------------------------------------
 

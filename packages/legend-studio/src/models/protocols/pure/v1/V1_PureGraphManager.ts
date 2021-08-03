@@ -29,7 +29,6 @@ import type {
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
-  losslessParse,
   getClass,
   guaranteeNonNullable,
   UnsupportedOperationError,
@@ -96,7 +95,6 @@ import {
   V1_deserializePureModelContextData,
   V1_setupPureModelContextDataSerialization,
 } from './transformation/pureProtocol/V1_PureProtocolSerialization';
-import type { V1_ServiceConfigurationInfo } from './engine/service/V1_ServiceConfiguration';
 import { V1_PureModelContextData } from './model/context/V1_PureModelContextData';
 import type {
   V1_PackageableElement,
@@ -124,12 +122,10 @@ import {
 } from './transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 import { V1_transformRuntime } from './transformation/pureGraph/from/V1_RuntimeTransformer';
 import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda';
-import { V1_ServiceRegistrationResult } from './engine/service/V1_ServiceRegistrationResult';
 import { V1_ExecuteInput } from './engine/execution/V1_ExecuteInput';
 import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput';
 import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 import { V1_ValueSpecificationTransformer } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
-import { V1_serializeExecutionResult } from './engine/execution/V1_ExecutionResult';
 import { V1_Profile } from './model/packageableElements/domain/V1_Profile';
 import { V1_Class } from './model/packageableElements/domain/V1_Class';
 import { V1_Enumeration } from './model/packageableElements/domain/V1_Enumeration';
@@ -150,7 +146,6 @@ import { V1_AlloySdlc } from './model/context/V1_AlloySdlc';
 import { V1_Protocol } from './model/V1_Protocol';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
 import type { PluginManager } from '../../../../application/PluginManager';
-import { V1_ServiceStorage } from './engine/service/V1_ServiceStorage';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
 import { V1_GraphBuilderExtensions } from './transformation/pureGraph/to/V1_GraphBuilderExtensions';
 import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin';
@@ -194,7 +189,6 @@ import {
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
 import type { Query } from '../../../metamodels/pure/action/query/Query';
-import { V1_Query } from './engine/query/V1_Query';
 import {
   V1_buildQuery,
   V1_buildServiceTestResult,
@@ -203,6 +197,7 @@ import {
   V1_buildGenerationOutput,
 } from './engine/V1_EngineHelper';
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
+import type { ServerClientConfig } from '@finos/legend-studio-network';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -358,6 +353,12 @@ interface V1_GraphBuilderInput {
   parentElementPath?: string;
 }
 
+export interface V1_EngineSetupConfig {
+  env: string;
+  tabSize: number;
+  clientConfig: ServerClientConfig;
+}
+
 export class V1_PureGraphManager extends AbstractPureGraphManager {
   engine!: V1_Engine;
   logger: Logger;
@@ -425,20 +426,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     config: EngineSetupConfig,
   ): GeneratorFn<void> {
     this.engine = new V1_Engine(config.clientConfig, this.logger);
-    // register plugin
-    this.engine.engineServerClient.registerTracerServicePlugins(
-      pluginManager.getTracerServicePlugins(),
-    );
-    // setup the engine client
-    this.engine.config.setEnv(config.env);
-    this.engine.config.setTabSize(config.tabSize);
-    try {
-      this.engine.config.setCurrentUserId(
-        (yield this.engine.engineServerClient.getCurrentUserId()) as string,
-      );
-    } catch {
-      // do nothing
-    }
+    this.engine
+      .getEngineServerClient()
+      .registerTracerServicePlugins(pluginManager.getTracerServicePlugins());
+    yield this.engine.setup(config);
   }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
@@ -1754,7 +1745,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async entitiesToPureProtocolText(entities: Entity[]): Promise<string> {
     return JSON.stringify(
       V1_serializePureModelContext(
-        await flowResult(this.entitiesToPureModelContextData(entities)),
+        await this.entitiesToPureModelContextData(entities),
       ),
       undefined,
       this.engine.config.tabSize,
@@ -1838,23 +1829,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-    lossless: boolean,
+    useLosslessParse: boolean,
   ): Promise<ExecutionResult> {
-    const executeInput = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      clientVersion,
-    );
-    const result = (await this.engine.engineServerClient.execute(
-      V1_ExecuteInput.serialization.toJson(executeInput),
-      true,
-    )) as unknown as Response;
-    const resultTest = await result.text();
     return V1_buildExecutionResult(
-      V1_serializeExecutionResult(
-        lossless ? losslessParse(resultTest) : JSON.parse(resultTest),
+      await this.engine.executeMapping(
+        this.createExecutionInput(
+          graph,
+          mapping,
+          lambda,
+          runtime,
+          clientVersion,
+        ),
+        useLosslessParse,
       ),
     );
   }
@@ -1866,15 +1852,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runtime: Runtime,
     clientVersion: string,
   ): Promise<string> {
-    const executeInput = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      clientVersion,
-    );
-    return this.engine.engineServerClient.generateTestDataWithDefaultSeed(
-      V1_ExecuteInput.serialization.toJson(executeInput),
+    return this.engine.generateMappingTestData(
+      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
     );
   }
 
@@ -1885,15 +1864,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runtime: Runtime,
     clientVersion: string,
   ): Promise<RawExecutionPlan> {
-    const executeInput = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      clientVersion,
-    );
-    return this.engine.engineServerClient.generatePlan(
-      V1_ExecuteInput.serialization.toJson(executeInput),
+    return this.engine.generateExecutionPlan(
+      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
     );
   }
 
@@ -1938,43 +1910,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  // --------------------------------------------- Store ---------------------------------------------
-
-  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
-    const dbBuilderInput = new V1_DatabaseBuilderInput();
-    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
-      input.connection,
-      new V1_GraphTransformerContextBuilder(
-        this.pureProtocolProcessorPlugins,
-      ).build(),
-    );
-    const targetDatabase = new V1_TargetDatabase();
-    targetDatabase.package = input.targetDatabase.package;
-    targetDatabase.name = input.targetDatabase.name;
-    dbBuilderInput.targetDatabase = targetDatabase;
-    const config = new V1_DatabaseBuilderConfig();
-    config.maxTables = input.config.maxTables;
-    config.enrichTables = input.config.enrichTables;
-    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
-    config.enrichColumns = input.config.enrichColumns;
-    config.patterns = input.config.patterns.map(
-      (storePattern: DatabasePattern): V1_DatabasePattern => {
-        const pattern = new V1_DatabasePattern();
-        pattern.schemaPattern = storePattern.schemaPattern;
-        pattern.tablePattern = storePattern.tablePattern;
-        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
-        pattern.escapeTablePattern = storePattern.escapeTablePattern;
-        return pattern;
-      },
-    );
-    dbBuilderInput.config = config;
-    const jsonGraph = await this.engine.engineServerClient.buildDatabase(
-      V1_DatabaseBuilderInput.serialization.toJson(dbBuilderInput),
-    );
-    const graph = V1_deserializePureModelContextData(jsonGraph);
-    return this.pureModelContextDataToEntities(graph);
-  }
-
   // --------------------------------------------- Service ---------------------------------------------
 
   async runServiceTests(
@@ -2005,17 +1940,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     executionMode: ServiceExecutionMode,
     version: string | undefined,
   ): Promise<ServiceRegistrationResult> {
-    const serverServiceInfo =
-      (await this.engine.engineServerClient.serverServiceInfo()) as unknown as V1_ServiceConfigurationInfo;
-    // end url
-    let endUrl = '';
-    if (executionMode !== ServiceExecutionMode.PROD) {
-      endUrl = `_${
-        executionMode === ServiceExecutionMode.FULL_INTERACTIVE
-          ? 'fullInteractive'
-          : 'semiInteractive'
-      }`;
-    }
+    const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
     let input: V1_PureModelContext;
     const protocol = new V1_Protocol(
@@ -2024,11 +1949,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     switch (executionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE: {
-        const data = this.createServiceRegistrationInput(
-          graph,
-          service,
-          serverServiceInfo,
-        );
+        const data = this.createServiceRegistrationInput(graph, service);
         data.origin = new V1_PureModelContextPointer(protocol);
         input = data;
         break;
@@ -2040,7 +1961,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const data = new V1_PureModelContextData();
         data.origin = new V1_PureModelContextPointer(protocol);
         data.elements = [this.elementToProtocol<V1_Service>(service)];
-        // sdlc info
+        // SDLC info
         const execution = service.execution;
         if (execution instanceof PureSingleExecution) {
           sdlcInfo.packageableElementPointers = [
@@ -2078,33 +1999,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
     }
     return V1_buildServiceRegistrationResult(
-      V1_ServiceRegistrationResult.serialization.fromJson(
-        await this.engine.engineServerClient.registerService(
-          V1_serializePureModelContext(input),
-          server,
-          endUrl,
-        ),
-      ),
+      await this.engine.registerService(input, server, executionMode),
     );
   }
 
   async activateService(serviceUrl: string, serviceId: string): Promise<void> {
-    const serviceStoreg = V1_ServiceStorage.serialization.fromJson(
-      await this.engine.engineServerClient.getServiceVersionInfo(
-        serviceUrl,
-        serviceId,
-      ),
-    );
-    await this.engine.engineServerClient.activateGenerationId(
+    const serviceStorage = await this.engine.getServiceVersionInfo(
       serviceUrl,
-      serviceStoreg.getGenerationId(),
+      serviceId,
+    );
+    await this.engine.activateServiceGeneration(
+      serviceUrl,
+      serviceStorage.getGenerationId(),
     );
   }
 
   private createServiceRegistrationInput = (
     graph: PureModel,
     service: Service,
-    serverServiceInfo: V1_ServiceConfigurationInfo,
   ): V1_PureModelContextData => {
     const graphData = this.getFullGraphModelData(graph);
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
@@ -2133,29 +2045,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     limit: number | undefined,
     graph: PureModel,
   ): Promise<Query[]> {
-    return (await this.engine.engineServerClient.getQueries(isOwner, limit))
-      .map((query) => V1_Query.serialization.fromJson(query))
-      .map((protocol) => V1_buildQuery(protocol, graph));
+    return (await this.engine.getQueries(isOwner, limit)).map((protocol) =>
+      V1_buildQuery(protocol, graph),
+    );
   }
 
   async getQuery(queryId: string, graph: PureModel): Promise<Query> {
-    return V1_buildQuery(
-      V1_Query.serialization.fromJson(
-        await this.engine.engineServerClient.getQuery(queryId),
-      ),
-      graph,
-    );
+    return V1_buildQuery(await this.engine.getQuery(queryId), graph);
   }
 
   async createQuery(query: Query): Promise<void> {
-    await this.engine.engineServerClient.createQuery(V1_transformQuery(query));
+    await this.engine.createQuery(V1_transformQuery(query));
   }
 
   async updateQuery(query: Query): Promise<void> {
-    await this.engine.engineServerClient.updateQuery(
-      query.id,
-      V1_transformQuery(query),
-    );
+    await this.engine.updateQuery(V1_transformQuery(query));
+  }
+
+  async deleteQuery(queryId: string): Promise<void> {
+    await this.engine.deleteQuery(queryId);
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------
@@ -2316,40 +2224,42 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   };
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  private getElementClassiferPath = (el: V1_PackageableElement): string => {
-    if (el instanceof V1_Association) {
+  private getElementClassiferPath = (
+    protocol: V1_PackageableElement,
+  ): string => {
+    if (protocol instanceof V1_Association) {
       return CORE_ELEMENT_CLASSIFIER_PATH.ASSOCIATION;
-    } else if (el instanceof V1_Class) {
+    } else if (protocol instanceof V1_Class) {
       return CORE_ELEMENT_CLASSIFIER_PATH.CLASS;
-    } else if (el instanceof V1_Enumeration) {
+    } else if (protocol instanceof V1_Enumeration) {
       return CORE_ELEMENT_CLASSIFIER_PATH.ENUMERATION;
-    } else if (el instanceof V1_ConcreteFunctionDefinition) {
+    } else if (protocol instanceof V1_ConcreteFunctionDefinition) {
       return CORE_ELEMENT_CLASSIFIER_PATH.FUNCTION;
-    } else if (el instanceof V1_Profile) {
+    } else if (protocol instanceof V1_Profile) {
       return CORE_ELEMENT_CLASSIFIER_PATH.PROFILE;
-    } else if (el instanceof V1_Measure) {
+    } else if (protocol instanceof V1_Measure) {
       return CORE_ELEMENT_CLASSIFIER_PATH.MEASURE;
-    } else if (el instanceof V1_Mapping) {
+    } else if (protocol instanceof V1_Mapping) {
       return CORE_ELEMENT_CLASSIFIER_PATH.MAPPING;
-    } else if (el instanceof V1_PackageableConnection) {
+    } else if (protocol instanceof V1_PackageableConnection) {
       return CORE_ELEMENT_CLASSIFIER_PATH.CONNECTION;
-    } else if (el instanceof V1_PackageableRuntime) {
+    } else if (protocol instanceof V1_PackageableRuntime) {
       return CORE_ELEMENT_CLASSIFIER_PATH.RUNTIME;
-    } else if (el instanceof V1_SectionIndex) {
+    } else if (protocol instanceof V1_SectionIndex) {
       return CORE_ELEMENT_CLASSIFIER_PATH.SECTION_INDEX;
-    } else if (el instanceof V1_FlatData) {
+    } else if (protocol instanceof V1_FlatData) {
       return CORE_ELEMENT_CLASSIFIER_PATH.FLAT_DATA;
-    } else if (el instanceof V1_Database) {
+    } else if (protocol instanceof V1_Database) {
       return CORE_ELEMENT_CLASSIFIER_PATH.DATABASE;
-    } else if (el instanceof V1_ServiceStore) {
+    } else if (protocol instanceof V1_ServiceStore) {
       return CORE_ELEMENT_CLASSIFIER_PATH.SERVICE_STORE;
-    } else if (el instanceof V1_Service) {
+    } else if (protocol instanceof V1_Service) {
       return CORE_ELEMENT_CLASSIFIER_PATH.SERVICE;
-    } else if (el instanceof V1_Diagram) {
+    } else if (protocol instanceof V1_Diagram) {
       return CORE_ELEMENT_CLASSIFIER_PATH.DIAGRAM;
-    } else if (el instanceof V1_FileGenerationSpecification) {
+    } else if (protocol instanceof V1_FileGenerationSpecification) {
       return CORE_ELEMENT_CLASSIFIER_PATH.FILE_GENERATION;
-    } else if (el instanceof V1_GenerationSpecification) {
+    } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_ELEMENT_CLASSIFIER_PATH.GENERATION_SPECIFICATION;
     }
     const extraElementProtocolClassifierPathGetters =
@@ -2357,13 +2267,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         (plugin) => plugin.V1_getExtraElementClassifierPathGetters?.() ?? [],
       );
     for (const classifierPathGetter of extraElementProtocolClassifierPathGetters) {
-      const classifierPath = classifierPathGetter(el);
+      const classifierPath = classifierPathGetter(protocol);
       if (classifierPath) {
         return classifierPath;
       }
     }
     throw new UnsupportedOperationError(
-      `Can't get classifier path for element '${el.path}': no compatible classifier path getter available from plugins`,
+      `Can't get classifier path for element '${protocol.path}': no compatible classifier path getter available from plugins`,
     );
   };
 
@@ -2406,6 +2316,41 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     return graphData;
   };
+
+  // --------------------------------------------- Utilities ---------------------------------------------
+
+  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
+    const dbBuilderInput = new V1_DatabaseBuilderInput();
+    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
+      input.connection,
+      new V1_GraphTransformerContextBuilder(
+        this.pureProtocolProcessorPlugins,
+      ).build(),
+    );
+    const targetDatabase = new V1_TargetDatabase();
+    targetDatabase.package = input.targetDatabase.package;
+    targetDatabase.name = input.targetDatabase.name;
+    dbBuilderInput.targetDatabase = targetDatabase;
+    const config = new V1_DatabaseBuilderConfig();
+    config.maxTables = input.config.maxTables;
+    config.enrichTables = input.config.enrichTables;
+    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
+    config.enrichColumns = input.config.enrichColumns;
+    config.patterns = input.config.patterns.map(
+      (storePattern: DatabasePattern): V1_DatabasePattern => {
+        const pattern = new V1_DatabasePattern();
+        pattern.schemaPattern = storePattern.schemaPattern;
+        pattern.tablePattern = storePattern.tablePattern;
+        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
+        pattern.escapeTablePattern = storePattern.escapeTablePattern;
+        return pattern;
+      },
+    );
+    dbBuilderInput.config = config;
+    return this.pureModelContextDataToEntities(
+      await this.engine.buildDatabase(dbBuilderInput),
+    );
+  }
 
   // --------------------------------------------- HACKY ---------------------------------------------
 
