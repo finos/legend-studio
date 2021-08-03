@@ -2461,26 +2461,36 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       [
         {
           _type: 'func',
-          function: 'equal',
+          function: 'equalJsonStrings',
           parameters: [
             {
               _type: 'func',
-              function: 'cast',
+              function: 'toString',
               parameters: [
                 {
-                  _type: 'property',
-                  parameters: [{ _type: 'var', name: 'res' }],
-                  property: 'values',
-                },
-                {
-                  _type: 'packageableElementPtr',
-                  fullPath: 'String',
+                  _type: 'func',
+                  function: 'toOne',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'res',
+                        },
+                      ],
+                      property: 'values',
+                    },
+                  ],
                 },
               ],
             },
             {
               _type: 'string',
-              multiplicity: { lowerBound: 1, upperBound: 1 },
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
               values: [assertData],
             },
           ],
