@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import { V1_ValueSpecification } from '../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_ValueSpecificationVisitor } from '../../model/valueSpecification/V1_ValueSpecification';
+import { V1_ValueSpecification } from './V1_ValueSpecification';
+import type { V1_ValueSpecificationVisitor } from './V1_ValueSpecification';
 
-/* @MARKER: INTERNAL SUBTYPE --- this unofficial subtype is used for hold value of types we don't process */
-export class V1_UnknownValue extends V1_ValueSpecification {
+export class V1_INTERNAL__UnknownValueSpecfication extends V1_ValueSpecification {
   content!: object;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_UnknownValue(this);
+    return visitor.visit_INTERNAL__UnknownValueSpecfication(this);
   }
 }

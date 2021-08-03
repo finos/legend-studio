@@ -20,7 +20,7 @@ import {
 } from '@finos/legend-studio-shared';
 import {
   TdsRow,
-  UnknownExecutionResult,
+  INTERNAL__UnknownExecutionResult,
   ClassExecutionResult,
   JsonExecutionResult,
   RelationalExecutionActivity,
@@ -37,7 +37,7 @@ import type {
 import {
   V1_ClassExecutionResult,
   V1_JsonExecutionResult,
-  V1_UnknownExecutionResult,
+  V1_INTERNAL__UnknownExecutionResult,
   V1_TdsExecutionResult,
 } from './execution/V1_ExecutionResult';
 
@@ -136,8 +136,8 @@ export const V1_buildExecutionResult = (
     return buildTDSExecutionResult(protocol);
   } else if (protocol instanceof V1_JsonExecutionResult) {
     return buildJSONExecutionResult(protocol);
-  } else if (protocol instanceof V1_UnknownExecutionResult) {
-    return new UnknownExecutionResult(protocol.content);
+  } else if (protocol instanceof V1_INTERNAL__UnknownExecutionResult) {
+    return new INTERNAL__UnknownExecutionResult(protocol.content);
   }
   throw new UnsupportedOperationError(`Can't build execution result`, protocol);
 };

@@ -115,8 +115,8 @@ import { EnumValueExplicitReference } from '../../../../../../../metamodels/pure
 import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr';
 import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass';
 import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit';
-import type { V1_UnknownValue } from '../../../../model/valueSpecification/V1_UnknownValue';
-import { UnknownValue } from '../../../../../../../metamodels/pure/model/valueSpecification/UnknownValue';
+import type { V1_INTERNAL__UnknownValueSpecfication } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
+import { INTERNAL__UnknownValueSpecification } from '../../../../../../../metamodels/pure/model/valueSpecification/INTERNAL__UnknownValueSpecification';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -149,8 +149,12 @@ export class V1_ValueSpecificationBuilder
     this.openVariables = openVariables;
   }
 
-  visit_UnknownValue(valueSpecification: V1_UnknownValue): ValueSpecification {
-    const metamodel = new UnknownValue(valueSpecification.content);
+  visit_INTERNAL__UnknownValueSpecfication(
+    valueSpecification: V1_INTERNAL__UnknownValueSpecfication,
+  ): ValueSpecification {
+    const metamodel = new INTERNAL__UnknownValueSpecification(
+      valueSpecification.content,
+    );
     return metamodel;
   }
 

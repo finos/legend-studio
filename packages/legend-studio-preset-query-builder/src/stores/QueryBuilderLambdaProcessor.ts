@@ -52,7 +52,7 @@ import type {
   ValueSpecification,
   ValueSpecificationVisitor,
   InstanceValue,
-  UnknownValue,
+  INTERNAL__UnknownValueSpecification,
 } from '@finos/legend-studio';
 import {
   DerivedProperty,
@@ -280,7 +280,9 @@ export class QueryBuilderLambdaProcessor
     this.precedingExpression = precedingExpression;
   }
 
-  visit_UnknownValue(valueSpecification: UnknownValue): void {
+  visit_INTERNAL__UnknownValueSpecification(
+    valueSpecification: INTERNAL__UnknownValueSpecification,
+  ): void {
     assertNonNullable(
       this.precedingExpression,
       `Can't process unknown value: unknown value preceding expression cannot be retrieved`,

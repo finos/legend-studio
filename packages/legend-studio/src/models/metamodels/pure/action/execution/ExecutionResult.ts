@@ -108,8 +108,7 @@ export class ClassExecutionResult extends ExecutionResult {
   override activities: RelationalExecutionActivity[] = [];
 }
 
-/* @MARKER: INTERNAL SUBTYPE --- this unofficial subtype is used for hold value of types we don't process */
-export class UnknownExecutionResult extends ExecutionResult {
+export class INTERNAL__UnknownExecutionResult extends ExecutionResult {
   content: object;
 
   constructor(content: object) {

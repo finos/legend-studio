@@ -18,8 +18,7 @@ import { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 
-/* @MARKER: INTERNAL SUBTYPE --- this unofficial subtype is used for hold value of types we don't process */
-export class UnknownValue extends ValueSpecification {
+export class INTERNAL__UnknownValueSpecification extends ValueSpecification {
   content: object;
 
   constructor(content: object) {
@@ -30,6 +29,6 @@ export class UnknownValue extends ValueSpecification {
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_UnknownValue(this);
+    return visitor.visit_INTERNAL__UnknownValueSpecification(this);
   }
 }

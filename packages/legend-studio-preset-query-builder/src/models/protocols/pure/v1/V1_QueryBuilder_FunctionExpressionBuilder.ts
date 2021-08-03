@@ -25,7 +25,7 @@ import {
   V1_AppliedProperty,
   CollectionInstanceValue,
   Multiplicity,
-  UnknownValue,
+  INTERNAL__UnknownValueSpecification,
   V1_Variable,
   V1_serializeValueSpecification,
   GenericType,
@@ -203,7 +203,10 @@ const buildAggregationExpression = (
         compileContext,
         processingContext,
       ),
-    ) ?? new UnknownValue(V1_serializeValueSpecification(columnLambda));
+    ) ??
+    new INTERNAL__UnknownValueSpecification(
+      V1_serializeValueSpecification(columnLambda),
+    );
 
   // aggregate lambda
   const aggregateLambda = guaranteeType(
@@ -439,7 +442,9 @@ export const V1_buildProjectFunctionExpression = (
       );
     } catch (e: unknown) {
       assertErrorThrown(e);
-      return new UnknownValue(V1_serializeValueSpecification(value));
+      return new INTERNAL__UnknownValueSpecification(
+        V1_serializeValueSpecification(value),
+      );
     }
   });
 
@@ -556,7 +561,9 @@ export const V1_buildGroupByFunctionExpression = (
       );
     } catch (e: unknown) {
       assertErrorThrown(e);
-      return new UnknownValue(V1_serializeValueSpecification(value));
+      return new INTERNAL__UnknownValueSpecification(
+        V1_serializeValueSpecification(value),
+      );
     }
   });
 

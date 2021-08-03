@@ -79,8 +79,8 @@ import { Class } from '../../../../../../metamodels/pure/model/packageableElemen
 import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
 import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
-import type { UnknownValue } from '../../../../../../metamodels/pure/model/valueSpecification/UnknownValue';
-import { V1_UnknownValue } from '../../../model/valueSpecification/V1_UnknownValue';
+import type { INTERNAL__UnknownValueSpecification } from '../../../../../../metamodels/pure/model/valueSpecification/INTERNAL__UnknownValueSpecification';
+import { V1_INTERNAL__UnknownValueSpecfication } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
 
 export class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -102,8 +102,10 @@ export class V1_ValueSpecificationTransformer
     this.useAppliedFunction = useAppliedFunction;
   }
 
-  visit_UnknownValue(valueSpecification: UnknownValue): V1_ValueSpecification {
-    const protocol = new V1_UnknownValue();
+  visit_INTERNAL__UnknownValueSpecification(
+    valueSpecification: INTERNAL__UnknownValueSpecification,
+  ): V1_ValueSpecification {
+    const protocol = new V1_INTERNAL__UnknownValueSpecfication();
     protocol.content = valueSpecification.content;
     return protocol;
   }

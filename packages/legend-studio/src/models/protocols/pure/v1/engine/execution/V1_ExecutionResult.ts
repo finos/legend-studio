@@ -22,14 +22,7 @@ import {
 } from '@finos/legend-studio-shared';
 import { BuilderType } from '../../../../../metamodels/pure/action/execution/ExecutionResult';
 
-// ------------------------------------------------------------------------------------------------------------------
-//   TODO: when we move these models out into ../models. We should have serialization and building logic separated
-//   out of the protocol models.
-// ------------------------------------------------------------------------------------------------------------------
-
 export class V1_ResultBuilder {
-  _type!: string; // to be removed when we handle this the same way as other protocol models
-
   static readonly builderSerialization = new SerializationFactory(
     createModelSchema(V1_ResultBuilder, {
       _type: primitive(),
@@ -37,12 +30,9 @@ export class V1_ResultBuilder {
   );
 }
 
-export abstract class V1_ExecutionActivity {
-  _type!: string; // to be removed when we handle this the same way as other protocol models
-}
+export abstract class V1_ExecutionActivity {}
 
 export abstract class V1_ExecutionResult {
-  _type!: string; // to be removed when we handle this the same way as other protocol models
   builder!: V1_ResultBuilder;
   activities?: V1_ExecutionActivity[];
 }
@@ -130,8 +120,7 @@ export class V1_ClassExecutionResult extends V1_ExecutionResult {
   );
 }
 
-/* @MARKER: INTERNAL SUBTYPE --- this unofficial subtype is used for hold value of types we don't process */
-export class V1_UnknownExecutionResult extends V1_ExecutionResult {
+export class V1_INTERNAL__UnknownExecutionResult extends V1_ExecutionResult {
   content: object;
 
   constructor(content: object) {
@@ -151,6 +140,6 @@ export const V1_serializeExecutionResult = (
     case BuilderType.JSON_BUILDER:
       return V1_JsonExecutionResult.serialization.fromJson(value);
     default:
-      return new V1_UnknownExecutionResult(value as object);
+      return new V1_INTERNAL__UnknownExecutionResult(value);
   }
 };

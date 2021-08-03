@@ -37,7 +37,7 @@ import type {
   SimpleFunctionExpression,
   AbstractPropertyExpression,
 } from './SimpleFunctionExpression';
-import type { UnknownValue } from './UnknownValue';
+import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownValueSpecification';
 import type { VariableExpression } from './VariableExpression';
 
 export interface ValueSpecificationVisitor<T> {
@@ -69,7 +69,10 @@ export interface ValueSpecificationVisitor<T> {
     valueSpecification: AbstractPropertyExpression,
   ): T;
   visit_InstanceValue(valueSpecification: InstanceValue): T;
-  visit_UnknownValue(valueSpecification: UnknownValue): T;
+
+  visit_INTERNAL__UnknownValueSpecification(
+    valueSpecification: INTERNAL__UnknownValueSpecification,
+  ): T;
 }
 
 export abstract class ValueSpecification {

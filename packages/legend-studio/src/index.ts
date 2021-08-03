@@ -61,7 +61,7 @@ export type { AbstractProperty } from './models/metamodels/pure/model/packageabl
 export { DerivedProperty } from './models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
 export { Property } from './models/metamodels/pure/model/packageableElements/domain/Property';
 export { RawLambda } from './models/metamodels/pure/model/rawValueSpecification/RawLambda';
-export { UnknownValue } from './models/metamodels/pure/model/valueSpecification/UnknownValue';
+export { INTERNAL__UnknownValueSpecification } from './models/metamodels/pure/model/valueSpecification/INTERNAL__UnknownValueSpecification';
 export { VariableExpression } from './models/metamodels/pure/model/valueSpecification/VariableExpression';
 export {
   AbstractPropertyExpression,
