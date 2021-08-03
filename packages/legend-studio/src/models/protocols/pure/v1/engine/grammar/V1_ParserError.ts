@@ -19,9 +19,7 @@ import {
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
-import { ParserError } from '../../../../../metamodels/pure/action/EngineError';
 import { V1_EngineError } from '../../engine/V1_EngineError';
-import { V1_buildSourceInformation } from '../../transformation/pureGraph/to/helpers/V1_CoreBuilderHelper';
 import { V1_sourceInformationSerialization } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 
 export class V1_ParserError extends V1_EngineError {
@@ -34,13 +32,4 @@ export class V1_ParserError extends V1_EngineError {
       ),
     }),
   );
-
-  override build(): ParserError {
-    const error = new ParserError();
-    error.message = this.message;
-    error.sourceInformation = this.sourceInformation
-      ? V1_buildSourceInformation(this.sourceInformation)
-      : undefined;
-    return error;
-  }
 }

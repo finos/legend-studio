@@ -21,7 +21,6 @@ export enum BuilderType {
   CLASS_BUILDER = 'classBuilder',
   TDS_BUILDER = 'tdsBuilder',
   JSON_BUILDER = 'json',
-  NO_BUILDER = 'noBuilder', // this is something we create only for Studio
 }
 
 enum ExecutionActivityType {
@@ -47,17 +46,14 @@ export abstract class ExecutionActivity {
 export abstract class ExecutionResult {
   builder!: ResultBuilder;
   activities?: ExecutionActivity[];
-  values: object;
-
-  constructor(values: object) {
-    this.values = values;
-  }
+  values!: object;
 }
 
 // Model
 export class JsonBuilder {
   _type = BuilderType.JSON_BUILDER;
 }
+
 export class JsonExecutionResult extends ExecutionResult {
   getResultObject(): object {
     return this.values;
@@ -73,20 +69,15 @@ export class RelationalExecutionActivity extends ExecutionActivity {
   }
 }
 export class TDSColumn {
-  name: string;
-  type: string;
-  relationalType: string;
+  name!: string;
+  type?: string;
+  relationalType?: string;
   doc?: string;
-
-  constructor(name: string, type: string, relationalType: string) {
-    this.name = name;
-    this.type = type;
-    this.relationalType = relationalType;
-  }
 }
 
 export class TdsBuilder extends ResultBuilder {
   columns: TDSColumn[] = [];
+
   constructor() {
     super(BuilderType.TDS_BUILDER);
   }
@@ -108,7 +99,6 @@ export class TdsExecutionResult extends ExecutionResult {
   result = new TabularDataSet();
 }
 
-// Class
 export class ClassBuilder extends ResultBuilder {
   override _type = BuilderType.CLASS_BUILDER;
 }
@@ -118,7 +108,12 @@ export class ClassExecutionResult extends ExecutionResult {
   override activities: RelationalExecutionActivity[] = [];
 }
 
-// No Builder - this is something we create only for Studio
-export class OtherExecutionResult extends ExecutionResult {
-  override builder = new ResultBuilder(BuilderType.NO_BUILDER);
+/* @MARKER: INTERNAL SUBTYPE --- this unofficial subtype is used for hold value of types we don't process */
+export class UnknownExecutionResult extends ExecutionResult {
+  content: object;
+
+  constructor(content: object) {
+    super();
+    this.content = content;
+  }
 }

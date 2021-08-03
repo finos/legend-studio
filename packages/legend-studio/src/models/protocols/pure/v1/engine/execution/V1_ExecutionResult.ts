@@ -14,24 +14,13 @@
  * limitations under the License.
  */
 
-import { createModelSchema, list, primitive, raw } from 'serializr';
+import { createModelSchema, list, optional, primitive, raw } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
-import {
-  TdsRow,
-  OtherExecutionResult,
-  ClassExecutionResult,
-  JsonExecutionResult,
-  RelationalExecutionActivity,
-  TdsExecutionResult,
-  TdsBuilder,
-  TDSColumn,
-  BuilderType,
-} from '../../../../../metamodels/pure/action/execution/ExecutionResult';
-import type { ExecutionResult } from '../../../../../metamodels/pure/action/execution/ExecutionResult';
+import { BuilderType } from '../../../../../metamodels/pure/action/execution/ExecutionResult';
 
 // ------------------------------------------------------------------------------------------------------------------
 //   TODO: when we move these models out into ../models. We should have serialization and building logic separated
@@ -56,11 +45,8 @@ export abstract class V1_ExecutionResult {
   _type!: string; // to be removed when we handle this the same way as other protocol models
   builder!: V1_ResultBuilder;
   activities?: V1_ExecutionActivity[];
-
-  abstract build(): ExecutionResult;
 }
 
-// JSON
 export class V1_JsonExecutionResult extends V1_ExecutionResult {
   values!: object;
 
@@ -71,47 +57,33 @@ export class V1_JsonExecutionResult extends V1_ExecutionResult {
       values: raw(),
     }),
   );
-
-  build(): JsonExecutionResult {
-    const result = new JsonExecutionResult(this.values);
-    return result;
-  }
 }
 
-// V1_RelationalExecutionActivity
 export class V1_RelationalExecutionActivity extends V1_ExecutionActivity {
   sql!: string;
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_RelationalExecutionActivity, {
       _type: primitive(),
       sql: primitive(),
     }),
   );
-
-  build(): RelationalExecutionActivity {
-    const result = new RelationalExecutionActivity();
-    result.sql = this.sql;
-    return result;
-  }
 }
 
-// TDS
 export class V1_TDSColumn {
   name!: string;
-  type!: string;
-  relationalType!: string;
+  doc?: string;
+  type?: string;
+  relationalType?: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_TDSColumn, {
       name: primitive(),
-      type: primitive(),
-      relationalType: primitive(),
+      doc: optional(primitive()),
+      type: optional(primitive()),
+      relationalType: optional(primitive()),
     }),
   );
-
-  build(): TDSColumn {
-    return new TDSColumn(this.name, this.type, this.relationalType);
-  }
 }
 
 export class V1_TdsBuilder extends V1_ResultBuilder {
@@ -123,12 +95,6 @@ export class V1_TdsBuilder extends V1_ResultBuilder {
       columns: list(usingModelSchema(V1_TDSColumn.serialization.schema)),
     }),
   );
-
-  build(): TdsBuilder {
-    const result = new TdsBuilder();
-    result.columns = this.columns.map((e) => e.build());
-    return result;
-  }
 }
 
 export class V1_TdsExecutionResult extends V1_ExecutionResult {
@@ -146,30 +112,8 @@ export class V1_TdsExecutionResult extends V1_ExecutionResult {
       result: raw(),
     }),
   );
-
-  build(): TdsExecutionResult {
-    const tdsExecutionResult = new TdsExecutionResult(this.result);
-    tdsExecutionResult.builder = this.builder.build();
-    tdsExecutionResult.activities = this.activities.map((e) => e.build());
-    tdsExecutionResult.result.columns = (
-      this.result as {
-        columns: string[];
-      }
-    ).columns;
-    tdsExecutionResult.result.rows = (
-      this.result as {
-        rows: { values: (string | number)[] }[];
-      }
-    ).rows.map((r) => {
-      const val = new TdsRow();
-      val.values = r.values;
-      return val;
-    });
-    return tdsExecutionResult;
-  }
 }
 
-// Class
 export class V1_ClassExecutionResult extends V1_ExecutionResult {
   override activities: V1_RelationalExecutionActivity[] = [];
   objects!: object;
@@ -184,24 +128,15 @@ export class V1_ClassExecutionResult extends V1_ExecutionResult {
       objects: raw(),
     }),
   );
-
-  build(): ClassExecutionResult {
-    const result = new ClassExecutionResult(this.objects);
-    result.activities = this.activities.map((e) => e.build());
-    return result;
-  }
 }
 
-// Other
-class V1_OtherExecutionResult extends V1_ExecutionResult {
-  values: object;
-  constructor(values: object) {
-    super();
-    this.values = values;
-  }
+/* @MARKER: INTERNAL SUBTYPE --- this unofficial subtype is used for hold value of types we don't process */
+export class V1_UnknownExecutionResult extends V1_ExecutionResult {
+  content: object;
 
-  build(): OtherExecutionResult {
-    return new OtherExecutionResult(this.values);
+  constructor(content: object) {
+    super();
+    this.content = content;
   }
 }
 
@@ -216,6 +151,6 @@ export const V1_serializeExecutionResult = (
     case BuilderType.JSON_BUILDER:
       return V1_JsonExecutionResult.serialization.fromJson(value);
     default:
-      return new V1_OtherExecutionResult(value as object);
+      return new V1_UnknownExecutionResult(value as object);
   }
 };

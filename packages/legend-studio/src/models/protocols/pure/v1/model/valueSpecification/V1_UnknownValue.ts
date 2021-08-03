@@ -17,6 +17,7 @@
 import { V1_ValueSpecification } from '../../model/valueSpecification/V1_ValueSpecification';
 import type { V1_ValueSpecificationVisitor } from '../../model/valueSpecification/V1_ValueSpecification';
 
+/* @MARKER: INTERNAL SUBTYPE --- this unofficial subtype is used for hold value of types we don't process */
 export class V1_UnknownValue extends V1_ValueSpecification {
   content!: object;
 

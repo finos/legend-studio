@@ -198,7 +198,14 @@ import {
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
 import type { Query } from '../../../metamodels/pure/action/query/Query';
 import { V1_Query } from './engine/query/V1_Query';
-import { V1_buildQuery, V1_transformQuery } from './engine/V1_EngineHelper';
+import {
+  V1_buildQuery,
+  V1_buildServiceTestResult,
+  V1_buildServiceRegistrationResult,
+  V1_transformQuery,
+  V1_buildGenerationOutput,
+} from './engine/V1_EngineHelper';
+import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1664,7 +1671,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       )) as PlainObject<V1_GenerationOutput>[]
     ).map((output) =>
-      V1_GenerationOutput.serialization.fromJson(output).build(),
+      V1_buildGenerationOutput(
+        V1_GenerationOutput.serialization.fromJson(output),
+      ),
     );
   }
 
@@ -1914,9 +1923,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       true,
     )) as Response;
     const resultTest = (yield result.text()) as string;
-    return V1_serializeExecutionResult(
-      lossless ? losslessParse(resultTest) : JSON.parse(resultTest),
-    ).build();
+    return V1_buildExecutionResult(
+      V1_serializeExecutionResult(
+        lossless ? losslessParse(resultTest) : JSON.parse(resultTest),
+      ),
+    );
   }
 
   *generateTestData(
@@ -2056,7 +2067,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       (yield flowResult(
         this.engine.runServiceTests(service.path, protocolGraph),
       )) as V1_ServiceTestResult[]
-    ).map((result) => result.build());
+    ).map(V1_buildServiceTestResult);
   }
 
   *registerService(
@@ -2139,15 +2150,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
     }
-    return V1_ServiceRegistrationResult.serialization
-      .fromJson(
+    return V1_buildServiceRegistrationResult(
+      V1_ServiceRegistrationResult.serialization.fromJson(
         (yield this.engine.engineServerClient.registerService(
           V1_serializePureModelContext(input),
           server,
           endUrl,
         )) as PlainObject<V1_ServiceRegistrationResult>,
-      )
-      .build();
+      ),
+    );
   }
 
   *activateService(serviceUrl: string, serviceId: string): GeneratorFn<void> {

@@ -18,15 +18,7 @@ import { list, primitive, createModelSchema } from 'serializr';
 import {
   SerializationFactory,
   usingModelSchema,
-  guaranteeNonNullable,
 } from '@finos/legend-studio-shared';
-import { getGenerationMode } from '../../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import {
-  GenerationProperty,
-  GenerationPropertyItem,
-  GenerationConfigurationDescription,
-  getGenerationPropertyItemType,
-} from '../../../../../metamodels/pure/action/generation/GenerationConfigurationDescription';
 
 export class V1_GenerationPropertyItem {
   types: string[] = [];
@@ -38,13 +30,6 @@ export class V1_GenerationPropertyItem {
       enums: list(primitive()),
     }),
   );
-
-  build(): GenerationPropertyItem {
-    const item = new GenerationPropertyItem();
-    item.types = this.types.map(getGenerationPropertyItemType);
-    item.enums = this.enums;
-    return item;
-  }
 }
 
 export class V1_GenerationProperty {
@@ -65,25 +50,6 @@ export class V1_GenerationProperty {
       required: primitive(),
     }),
   );
-
-  build(): GenerationProperty {
-    const generationProperty = new GenerationProperty();
-    generationProperty.name = guaranteeNonNullable(
-      this.name,
-      'Generation property name is missing',
-    );
-    generationProperty.description = guaranteeNonNullable(
-      this.description,
-      'Generation description is missing',
-    );
-    generationProperty.type = getGenerationPropertyItemType(
-      guaranteeNonNullable(this.type, 'Generation type is missing'),
-    );
-    generationProperty.items = this.items ? this.items.build() : undefined;
-    generationProperty.defaultValue = this.defaultValue;
-    generationProperty.required = this.required;
-    return generationProperty;
-  }
 }
 
 export class V1_GenerationConfigurationDescription {
@@ -100,26 +66,4 @@ export class V1_GenerationConfigurationDescription {
       generationMode: primitive(),
     }),
   );
-
-  build(): GenerationConfigurationDescription {
-    const generationDescription = new GenerationConfigurationDescription();
-    generationDescription.key = guaranteeNonNullable(
-      this.key,
-      'Generation configuration description key is missing',
-    );
-    generationDescription.label = guaranteeNonNullable(
-      this.label,
-      'Generation configuration description label is missing',
-    );
-    generationDescription.properties = this.properties.map(
-      (generationProperty) => generationProperty.build(),
-    );
-    generationDescription.generationMode = getGenerationMode(
-      guaranteeNonNullable(
-        this.generationMode,
-        'Generation configuration description mode is missing',
-      ),
-    );
-    return generationDescription;
-  }
 }

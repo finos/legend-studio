@@ -18,10 +18,7 @@ import { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 
-/**
- * This is not an official value specification metamodel. It is used
- * to hold part of the value specification tree that we don't process.
- */
+/* @MARKER: INTERNAL SUBTYPE --- this unofficial subtype is used for hold value of types we don't process */
 export class UnknownValue extends ValueSpecification {
   content: object;
 

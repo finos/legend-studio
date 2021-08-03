@@ -15,14 +15,7 @@
  */
 
 import { createModelSchema, primitive } from 'serializr';
-import {
-  guaranteeNonNullable,
-  SerializationFactory,
-} from '@finos/legend-studio-shared';
-import {
-  getImportMode,
-  ImportConfigurationDescription,
-} from '../../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
+import { SerializationFactory } from '@finos/legend-studio-shared';
 
 export class V1_ImportConfigurationDescription {
   key!: string;
@@ -36,23 +29,4 @@ export class V1_ImportConfigurationDescription {
       modelImportMode: primitive(),
     }),
   );
-
-  build(): ImportConfigurationDescription {
-    const generationDescription = new ImportConfigurationDescription();
-    generationDescription.key = guaranteeNonNullable(
-      this.key,
-      'Generation configuration description name is missing',
-    );
-    generationDescription.label = guaranteeNonNullable(
-      this.label,
-      'Generation configuration description label is missing',
-    );
-    generationDescription.modelImportMode = getImportMode(
-      guaranteeNonNullable(
-        this.modelImportMode,
-        'Generation configuration description mode is missing',
-      ),
-    );
-    return generationDescription;
-  }
 }

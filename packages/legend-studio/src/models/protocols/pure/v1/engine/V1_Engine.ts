@@ -60,6 +60,12 @@ import { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_Re
 import { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
 import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext';
 import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin';
+import {
+  V1_buildCompilationError,
+  V1_buildGenerationConfigurationDescription,
+  V1_buildImportConfigurationDescription,
+  V1_buildParserError,
+} from './V1_EngineHelper';
 
 class EngineConfig extends AbstractEngineConfig {
   private engine: V1_Engine;
@@ -173,9 +179,11 @@ export class V1_Engine {
     )) as PlainObject<V1_JsonToGrammarInput>;
     if (parsingResult.codeError) {
       options?.onError?.();
-      throw V1_ParserError.serialization
-        .fromJson(parsingResult.codeError as PlainObject<V1_ParserError>)
-        .build();
+      throw V1_buildParserError(
+        V1_ParserError.serialization.fromJson(
+          parsingResult.codeError as PlainObject<V1_ParserError>,
+        ),
+      );
     }
     return guaranteeNonNullable(
       parsingResult.modelDataContext,
@@ -219,7 +227,7 @@ export class V1_Engine {
     const lambdaResult = guaranteeNonNullable(result.isolatedLambdas);
     const parserError = lambdaResult.lambdaErrors?.get(lambdaId);
     if (parserError) {
-      throw parserError.build();
+      throw V1_buildParserError(parserError);
     }
     return lambdaResult.lambdas?.get(lambdaId);
   }
@@ -260,7 +268,7 @@ export class V1_Engine {
       );
     const parserError = result.operationErrors?.get(operationId);
     if (parserError) {
-      throw parserError.build();
+      throw V1_buildParserError(parserError);
     }
     return result.operations.get(operationId);
   }
@@ -283,9 +291,11 @@ export class V1_Engine {
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.BAD_REQUEST
       ) {
-        throw V1_CompilationError.serialization
-          .fromJson(error.payload as PlainObject<V1_CompilationError>)
-          .build();
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
       }
       throw error;
     }
@@ -316,9 +326,11 @@ export class V1_Engine {
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.BAD_REQUEST
       ) {
-        throw V1_CompilationError.serialization
-          .fromJson(error.payload as PlainObject<V1_CompilationError>)
-          .build();
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
       }
       throw error;
     }
@@ -340,9 +352,11 @@ export class V1_Engine {
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.BAD_REQUEST
       ) {
-        throw V1_CompilationError.serialization
-          .fromJson(error.payload as PlainObject<V1_CompilationError>)
-          .build();
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
       }
       throw error;
     }
@@ -375,9 +389,9 @@ export class V1_Engine {
     ).map((gen) => ({ ...gen, modelImportMode: ImportMode.CODE_IMPORT }));
     return [...schemaImportDescriptions, ...codeImportDescriptions].map(
       (description) =>
-        V1_ImportConfigurationDescription.serialization
-          .fromJson(description)
-          .build(),
+        V1_buildImportConfigurationDescription(
+          V1_ImportConfigurationDescription.serialization.fromJson(description),
+        ),
     );
   }
 
@@ -400,9 +414,11 @@ export class V1_Engine {
     }));
     return [...schemaGenerationDescriptions, ...codeGenerationDescriptions].map(
       (description) =>
-        V1_GenerationConfigurationDescription.serialization
-          .fromJson(description)
-          .build(),
+        V1_buildGenerationConfigurationDescription(
+          V1_GenerationConfigurationDescription.serialization.fromJson(
+            description,
+          ),
+        ),
     );
   }
 
