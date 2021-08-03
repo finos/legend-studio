@@ -34,10 +34,12 @@ export enum SQL_DISPLAY_TABS {
   RESULT_COLUMNS = 'RESULT_COLUMNS',
   DATABASE_CONNECTION = 'DATABASE_CONNECTION',
 }
+
 export enum EXECUTION_PLAN_VIEW_MODE {
   FORM = 'Form',
   JSON = 'JSON',
 }
+
 export class ExecutionPlanState {
   editorStore: EditorStore;
   displayDataJson: object = {};
@@ -48,7 +50,8 @@ export class ExecutionPlanState {
     | undefined = undefined;
   sqlSelectedTab: SQL_DISPLAY_TABS = SQL_DISPLAY_TABS.SQL_QUERY;
   viewMode: EXECUTION_PLAN_VIEW_MODE = EXECUTION_PLAN_VIEW_MODE.FORM;
-  plan?: ExecutionPlan | object;
+  rawPlan?: object;
+  plan?: ExecutionPlan;
   isGenerating = false;
 
   constructor(editorStore: EditorStore) {
@@ -58,13 +61,15 @@ export class ExecutionPlanState {
       sqlSelectedTab: observable,
       viewMode: observable,
       isGenerating: observable,
+      rawPlan: observable,
       plan: observable,
       setExecutionPlanDisplayData: action,
       setExecutionPlanDisplayDataJson: action,
       transformMetaDataToProtocolJson: action,
       setSelectedNode: action,
       setSqlSelectedTab: action,
-      setExecutionPlan: action,
+      setRawPlan: action,
+      setPlan: action,
       setViewMode: action,
       generatePlan: flow,
     });
@@ -75,12 +80,16 @@ export class ExecutionPlanState {
     this.sqlSelectedTab = tab;
   }
 
-  setViewMode(mode: EXECUTION_PLAN_VIEW_MODE): void {
-    this.viewMode = mode;
+  setViewMode(val: EXECUTION_PLAN_VIEW_MODE): void {
+    this.viewMode = val;
   }
 
-  setExecutionPlan = (plan: ExecutionPlan | object | undefined): void => {
-    this.plan = plan;
+  setRawPlan = (val: ExecutionPlan | object | undefined): void => {
+    this.rawPlan = val;
+  };
+
+  setPlan = (val: ExecutionPlan | undefined): void => {
+    this.plan = val;
   };
 
   setSelectedNode(
@@ -154,14 +163,14 @@ export class ExecutionPlanState {
 
   buildExecutionPlan(rawPlan: object): void {
     try {
-      this.setExecutionPlan(rawPlan);
+      this.setRawPlan(rawPlan);
       const plan = this.editorStore.graphState.graphManager.buildExecutionPlan(
         rawPlan,
         this.editorStore.graphState.graph,
       );
-      this.setExecutionPlan(plan);
-    } catch (error: unknown) {
-      // Ignore
+      this.setPlan(plan);
+    } catch {
+      // do nothing
     }
   }
 }
