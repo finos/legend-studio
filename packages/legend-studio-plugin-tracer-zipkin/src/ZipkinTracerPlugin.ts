@@ -45,11 +45,11 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
     const configData = _configData as ZipkinTracerPluginConfigData;
     assertNonEmptyString(
       configData.url,
-      `Zipkin tracer: Malformed configuration data: 'url' field is missing or empty`,
+      `Can't configure Zipkin tracer: Malformed configuration data: 'url' field is missing or empty`,
     );
     assertNonEmptyString(
       configData.serviceName,
-      `Zipkin tracer: Malformed configuration data: 'serviceName' field is missing or empty`,
+      `Can't configure Zipkin tracer: Malformed configuration data: 'serviceName' field is missing or empty`,
     );
     this._spanBuilder = new SpanBuilder({
       recorder: new BatchRecorder({
@@ -89,7 +89,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
   get spanBuilder(): SpanBuilder {
     return guaranteeNonNullable(
       this._spanBuilder,
-      `Zipkin tracer: Tracer service has not been configured`,
+      `Can't configure Zipkin tracer: Tracer service has not been configured`,
     );
   }
 

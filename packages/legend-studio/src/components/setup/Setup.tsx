@@ -31,7 +31,7 @@ import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import Dialog from '@material-ui/core/Dialog';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { ProjectType } from '../../models/sdlc/models/project/Project';
-import { isNumber, ACTION_STATE } from '@finos/legend-studio-shared';
+import { isNumber } from '@finos/legend-studio-shared';
 import { MdModeEdit } from 'react-icons/md';
 import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {
@@ -72,8 +72,8 @@ const CreateProjectModal = observer(() => {
   const [itemValue, setItemValue] = useState<string>('');
   const [tagsArray, setTagsArray] = useState<Array<string>>([]);
   const dispatchingActions =
-    setupStore.createOrImportProjectState === ACTION_STATE.IN_PROGRESS ||
-    setupStore.createWorkspaceState === ACTION_STATE.IN_PROGRESS;
+    setupStore.createOrImportProjectState.isInProgress ||
+    setupStore.createWorkspaceState.isInProgress;
   const closeModal = (): void => {
     setupStore.setCreateProjectModal(false);
     setupStore.setImportProjectSuccessReport(undefined);
@@ -202,9 +202,7 @@ const CreateProjectModal = observer(() => {
         </div>
         <form onSubmit={handleSubmit}>
           <PanelLoadingIndicator
-            isLoading={
-              setupStore.createOrImportProjectState === ACTION_STATE.IN_PROGRESS
-            }
+            isLoading={setupStore.createOrImportProjectState.isInProgress}
           />
           <div className="setup-create__form">
             <div className="panel__content__form">
@@ -472,7 +470,7 @@ const CreateWorkspaceModal = observer(() => {
     createWorkspaceState,
     showCreateWorkspaceModal,
   } = setupStore;
-  const isFetchingProjects = loadProjectsState === ACTION_STATE.IN_PROGRESS;
+  const isFetchingProjects = loadProjectsState.isInProgress;
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceNameInputRef = useRef<HTMLInputElement>(null);
   const [currentProjectId, setCurrentProjectId] = useState<string | undefined>(
@@ -483,8 +481,8 @@ const CreateWorkspaceModal = observer(() => {
   const selectedOption =
     projectOptions.find((option) => option.value === currentProjectId) ?? null;
   const dispatchingActions =
-    createWorkspaceState === ACTION_STATE.IN_PROGRESS ||
-    createOrImportProjectState === ACTION_STATE.IN_PROGRESS;
+    createWorkspaceState.isInProgress ||
+    createOrImportProjectState.isInProgress;
   const onSelectionChange = (val: ProjectSelectOption | null): void => {
     if (
       (val !== null || selectedOption !== null) &&
@@ -496,7 +494,7 @@ const CreateWorkspaceModal = observer(() => {
   };
   const projectSelectorPlaceholder = isFetchingProjects
     ? 'Loading projects'
-    : loadProjectsState === ACTION_STATE.FAILED
+    : loadProjectsState.hasFailed
     ? 'Error fetching projects'
     : projectOptions.length
     ? 'Choose an existing project'
@@ -541,9 +539,7 @@ const CreateWorkspaceModal = observer(() => {
         <div className="modal__title">Create Workspace</div>
         <form onSubmit={handleSubmit}>
           <PanelLoadingIndicator
-            isLoading={
-              setupStore.createWorkspaceState === ACTION_STATE.IN_PROGRESS
-            }
+            isLoading={setupStore.createWorkspaceState.isInProgress}
           />
           <div className="setup-create__form setup-create__form__workspace">
             <CustomSelectorInput
@@ -593,10 +589,9 @@ const SetupSelection = observer(() => {
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
   const proceedButtonRef = useRef<HTMLButtonElement>(null);
-  const isCreatingWorkspace =
-    setupStore.createWorkspaceState === ACTION_STATE.IN_PROGRESS;
+  const isCreatingWorkspace = setupStore.createWorkspaceState.isInProgress;
   const isCreatingOrImportingProject =
-    setupStore.createOrImportProjectState === ACTION_STATE.IN_PROGRESS;
+    setupStore.createOrImportProjectState.isInProgress;
   const disableProceedButton =
     !setupStore.currentProjectId ||
     !setupStore.currentWorkspaceId ||

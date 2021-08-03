@@ -23,7 +23,6 @@ import type { WorkspaceSelectOption } from '../../models/sdlc/models/workspace/W
 import { FaPlus } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
-import { ACTION_STATE } from '@finos/legend-studio-shared';
 
 export const WorkspaceSelector = observer(
   (
@@ -41,8 +40,8 @@ export const WorkspaceSelector = observer(
     const selectedOption =
       options.find((option) => option.value === currentWorkspaceId) ?? null;
     const isLoadingOptions =
-      setupStore.loadProjectsState === ACTION_STATE.IN_PROGRESS ||
-      setupStore.loadWorkspacesState === ACTION_STATE.IN_PROGRESS;
+      setupStore.loadProjectsState.isInProgress ||
+      setupStore.loadWorkspacesState.isInProgress;
 
     const onSelectionChange = (val: WorkspaceSelectOption | null): void => {
       if (
