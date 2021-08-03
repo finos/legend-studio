@@ -48,7 +48,7 @@
     "lossless-json": "1.0.5",
     "mobx": "6.3.2",
     "object-hash": "2.2.0",
-    "pako": "2.0.3",
+    "pako": "2.0.4",
     "pretty-format": "27.0.6",
     "query-string": "7.0.1",
     "seedrandom": "3.0.5",
@@ -58,7 +58,7 @@
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "7.31.0",
+    "eslint": "7.32.0",
     "jest": "27.0.6",
     "lodash": "4.17.21",
     "rimraf": "3.0.2",
