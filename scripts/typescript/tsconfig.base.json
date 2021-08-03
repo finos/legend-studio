@@ -23,10 +23,11 @@
     // See https://stackoverflow.com/questions/56238356/understanding-esmoduleinterop-in-tsconfig-file
     "esModuleInterop": true, // enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports
     "allowSyntheticDefaultImports": true,
-    // This option is needed for `mobx` decorator in constructor to work properly with uninitialized class attributes
+    // `useDefineForClassFields: true` is needed for `mobx` decorator in constructor to work properly with uninitialized class attributes.
+    // This is set by default with `target: "esnext"`.
     // See https://github.com/mobxjs/mobx/issues/2486
     // See https://mobx.js.org/installation.html#use-spec-compliant-transpilation-for-class-properties
-    "useDefineForClassFields": true,
+    // "useDefineForClassFields": true,
     // Other settings
     "noImplicitOverride": true,
     "strict": true,
