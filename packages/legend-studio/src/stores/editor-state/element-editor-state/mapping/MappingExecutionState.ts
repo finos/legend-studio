@@ -141,12 +141,11 @@ export class MappingExecutionQueryState extends LambdaEditorState {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
             lambdas,
             pretty,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -632,16 +631,15 @@ export class MappingExecutionState {
         !this.isExecuting
       ) {
         this.isExecuting = true;
-        const result = (yield flowResult(
-          this.editorStore.graphState.graphManager.executeMapping(
+        const result =
+          (yield this.editorStore.graphState.graphManager.executeMapping(
             this.editorStore.graphState.graph,
             this.mappingEditorState.mapping,
             query,
             runtime,
             CLIENT_VERSION.VX_X_X,
             true,
-          ),
-        )) as ExecutionResult;
+          )) as ExecutionResult;
         this.setExecutionResultText(
           losslessStringify(result.values, undefined, TAB_SIZE),
         );

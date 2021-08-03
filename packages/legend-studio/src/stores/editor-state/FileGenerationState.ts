@@ -103,13 +103,12 @@ export class FileGenerationState {
         this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
           this.fileGeneration.type,
         ).generationMode;
-      const result = (yield flowResult(
-        this.editorStore.graphState.graphManager.generateFile(
+      const result =
+        (yield this.editorStore.graphState.graphManager.generateFile(
           this.fileGeneration,
           mode,
           this.editorStore.graphState.graph,
-        ),
-      )) as GenerationOutput[];
+        )) as GenerationOutput[];
       this.processGenerationResult(result);
     } catch (error: unknown) {
       this.selectedNode = undefined;

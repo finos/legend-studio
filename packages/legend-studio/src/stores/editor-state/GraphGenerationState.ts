@@ -53,7 +53,6 @@ import type { EditorState } from './EditorState';
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
 import type { GenerationConfigurationDescription } from '../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import {
   DEFAULT_GENERATION_SPECIFICATION_NAME,
   GenerationSpecification,
@@ -100,7 +99,6 @@ export class GraphGenerationState {
       generateModels: flow,
       generateFiles: flow,
       clearGenerations: flow,
-      generateGenerationElement: flow,
     });
 
     this.editorStore = editorStore;
@@ -149,9 +147,8 @@ export class GraphGenerationState {
 
   *fetchAvailableFileGenerationDescriptions(): GeneratorFn<void> {
     try {
-      const availableFileGenerationDescriptions = (yield flowResult(
-        this.editorStore.graphState.graphManager.getAvailableGenerationConfigurationDescriptions(),
-      )) as GenerationConfigurationDescription[];
+      const availableFileGenerationDescriptions =
+        (yield this.editorStore.graphState.graphManager.getAvailableGenerationConfigurationDescriptions()) as GenerationConfigurationDescription[];
       this.setFileGenerationConfigurations(availableFileGenerationDescriptions);
       this.editorStore.elementGenerationStates =
         this.fileGenerationConfigurations.map(
@@ -213,9 +210,11 @@ export class GraphGenerationState {
         const node = generationNodes[i];
         let generatedEntities: Entity[] = [];
         try {
-          generatedEntities = (yield flowResult(
-            this.generateGenerationElement(node.generationElement.value),
-          )) as Entity[];
+          generatedEntities =
+            (yield this.editorStore.graphState.graphManager.generateModel(
+              node.generationElement.value,
+              this.editorStore.graphState.graph,
+            )) as Entity[];
         } catch (error: unknown) {
           assertErrorThrown(error);
           throw new Error(
@@ -273,12 +272,10 @@ export class GraphGenerationState {
             this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
               fileGeneration.value.type,
             ).generationMode;
-          result = (yield flowResult(
-            this.editorStore.graphState.graphManager.generateFile(
-              fileGeneration.value,
-              mode,
-              this.editorStore.graphState.graph,
-            ),
+          result = (yield this.editorStore.graphState.graphManager.generateFile(
+            fileGeneration.value,
+            mode,
+            this.editorStore.graphState.graph,
           )) as GenerationOutput[];
         } catch (error: unknown) {
           assertErrorThrown(error);
@@ -312,20 +309,6 @@ export class GraphGenerationState {
       this.editorStore.graphState.updateGenerationGraphAndApplication(),
     );
     this.isClearingGenerationEntities = false;
-  }
-
-  /**
-   * Method takes a generation element, defined as a packageable element that generates another model, and returns generated entities
-   */
-  *generateGenerationElement(
-    generationElement: PackageableElement,
-  ): GeneratorFn<Entity[]> {
-    return (yield flowResult(
-      this.editorStore.graphState.graphManager.generateModel(
-        generationElement,
-        this.editorStore.graphState.graph,
-      ),
-    )) as Entity[];
   }
 
   /**

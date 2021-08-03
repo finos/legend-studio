@@ -397,9 +397,10 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     entity: Entity | undefined,
   ): GeneratorFn<string> {
     if (entity) {
-      const elementGrammar = (yield flowResult(
-        this.editorStore.graphState.graphManager.entitiesToPureCode([entity]),
-      )) as string;
+      const elementGrammar =
+        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
+          entity,
+        ])) as string;
       return elementGrammar;
     }
     return '';
@@ -407,11 +408,10 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
 
   *markAsResolved(): GeneratorFn<void> {
     try {
-      const entities = (yield flowResult(
-        this.editorStore.graphState.graphManager.pureCodeToEntities(
+      const entities =
+        (yield this.editorStore.graphState.graphManager.pureCodeToEntities(
           this.mergedText ?? '',
-        ),
-      )) as Entity[];
+        )) as Entity[];
       if (!entities.length) {
         this.editorStore.changeDetectionState.resolutions.push(
           new EntityChangeConflictResolution(this.entityPath, undefined),

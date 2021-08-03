@@ -352,12 +352,10 @@ export class QueryBuilderState extends EditorExtensionState {
           this.queryTextEditorState.setCompilationError(undefined);
           // NOTE: retain the source information on the lambda in order to be able
           // to pin-point compilation issue in form mode
-          (yield flowResult(
-            this.editorStore.graphState.graphManager.getLambdaReturnType(
-              this.getQuery({ keepSourceInformation: true }),
-              this.editorStore.graphState.graph,
-              { keepSourceInformation: true },
-            ),
+          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+            this.getQuery({ keepSourceInformation: true }),
+            this.editorStore.graphState.graph,
+            { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(
             'Compiled sucessfully',
@@ -402,12 +400,10 @@ export class QueryBuilderState extends EditorExtensionState {
         this.isCompiling = true;
         try {
           this.queryTextEditorState.setCompilationError(undefined);
-          (yield flowResult(
-            this.editorStore.graphState.graphManager.getLambdaReturnType(
-              this.queryTextEditorState.rawLambdaState.lambda,
-              this.editorStore.graphState.graph,
-              { keepSourceInformation: true },
-            ),
+          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+            this.queryTextEditorState.rawLambdaState.lambda,
+            this.editorStore.graphState.graph,
+            { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(
             'Compiled sucessfully',

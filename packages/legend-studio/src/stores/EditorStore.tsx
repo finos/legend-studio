@@ -1188,9 +1188,10 @@ export class EditorStore {
         showLoading: true,
       });
       try {
-        const graphGrammar = (yield flowResult(
-          this.graphState.graphManager.graphToPureCode(this.graphState.graph),
-        )) as string;
+        const graphGrammar =
+          (yield this.graphState.graphManager.graphToPureCode(
+            this.graphState.graph,
+          )) as string;
         yield flowResult(
           this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
         );

@@ -15,7 +15,8 @@
  */
 
 import type { EditorStore } from './EditorStore';
-import { observable, action, makeObservable, flowResult, flow } from 'mobx';
+import { observable, action, makeObservable, flow } from 'mobx';
+import type { RawExecutionPlan } from '../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import { ExecutionPlan } from '../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import { ExecutionNode } from '../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import type {
@@ -50,7 +51,7 @@ export class ExecutionPlanState {
     | undefined = undefined;
   sqlSelectedTab: SQL_DISPLAY_TABS = SQL_DISPLAY_TABS.SQL_QUERY;
   viewMode: EXECUTION_PLAN_VIEW_MODE = EXECUTION_PLAN_VIEW_MODE.FORM;
-  rawPlan?: object;
+  rawPlan?: RawExecutionPlan;
   plan?: ExecutionPlan;
   isGenerating = false;
 
@@ -84,7 +85,7 @@ export class ExecutionPlanState {
     this.viewMode = val;
   }
 
-  setRawPlan = (val: ExecutionPlan | object | undefined): void => {
+  setRawPlan = (val: RawExecutionPlan | undefined): void => {
     this.rawPlan = val;
   };
 
@@ -140,15 +141,14 @@ export class ExecutionPlanState {
   ): GeneratorFn<void> {
     try {
       this.isGenerating = true;
-      const rawPlan = (yield flowResult(
-        this.editorStore.graphState.graphManager.generateExecutionPlan(
+      const rawPlan =
+        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
           this.editorStore.graphState.graph,
           mapping,
           lambda,
           runtime,
           CLIENT_VERSION.VX_X_X,
-        ),
-      )) as object;
+        )) as object;
       this.buildExecutionPlan(rawPlan);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(

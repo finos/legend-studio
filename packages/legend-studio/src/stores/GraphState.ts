@@ -401,8 +401,8 @@ export class GraphState {
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
         try {
-          const editorGrammar = (yield flowResult(
-            this.graphManager.entitiesToPureCode(entities),
+          const editorGrammar = (yield this.graphManager.entitiesToPureCode(
+            entities,
           )) as string;
           yield flowResult(
             this.editorStore.grammarTextEditorState.setGraphGrammarText(
@@ -515,11 +515,9 @@ export class GraphState {
       // so that the form parts where the user interacted with (i.e. where the lamdbas source
       // information are populated), can reveal compilation error. If compilation errors
       // show up in other parts, the user will get redirected to text-mode
-      yield flowResult(
-        this.graphManager.compileGraph(this.graph, {
-          keepSourceInformation: true,
-        }),
-      );
+      yield this.graphManager.compileGraph(this.graph, {
+        keepSourceInformation: true,
+      });
       if (!options?.disableNotificationOnSuccess) {
         this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       }
@@ -567,8 +565,8 @@ export class GraphState {
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
         );
         try {
-          const code = (yield flowResult(
-            this.graphManager.graphToPureCode(this.graph),
+          const code = (yield this.graphManager.graphToPureCode(
+            this.graph,
           )) as string;
           this.editorStore.grammarTextEditorState.setGraphGrammarText(code);
         } catch (error2: unknown) {
@@ -618,11 +616,9 @@ export class GraphState {
       if (options?.openConsole) {
         this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
       }
-      const entities = (yield flowResult(
-        this.graphManager.compileText(
-          this.editorStore.grammarTextEditorState.graphGrammarText,
-          this.graph,
-        ),
+      const entities = (yield this.graphManager.compileText(
+        this.editorStore.grammarTextEditorState.graphGrammarText,
+        this.graph,
       )) as Entity[];
       this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
       yield flowResult(this.updateGraphAndApplication(entities));
@@ -665,15 +661,13 @@ export class GraphState {
         showLoading: true,
       });
       try {
-        const entities = (yield flowResult(
-          this.graphManager.compileText(
-            this.editorStore.grammarTextEditorState.graphGrammarText,
-            this.graph,
-            // surpress the modal to reveal error properly in the text editor
-            // if the blocking modal is not dismissed, the edior will not be able to gain focus as modal has a focus trap
-            // therefore, the editor will not be able to get the focus
-            { onError: () => this.editorStore.setBlockingAlert(undefined) },
-          ),
+        const entities = (yield this.graphManager.compileText(
+          this.editorStore.grammarTextEditorState.graphGrammarText,
+          this.graph,
+          // surpress the modal to reveal error properly in the text editor
+          // if the blocking modal is not dismissed, the edior will not be able to gain focus as modal has a focus trap
+          // therefore, the editor will not be able to get the focus
+          { onError: () => this.editorStore.setBlockingAlert(undefined) },
         )) as Entity[];
         this.editorStore.setBlockingAlert({
           message: 'Leaving text mode and rebuilding graph...',

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { flow, flowResult, makeObservable } from 'mobx';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-studio-shared';
 import {
   assertErrorThrown,
   guaranteeNonNullable,
@@ -72,54 +71,43 @@ class EngineConfig extends AbstractEngineConfig {
 
   override setEnv(val: string | undefined): void {
     super.setEnv(val);
-    this.engine.engineServerClient.setEnv(val);
+    this.engine.getEngineServerClient().setEnv(val);
   }
 
   override setCurrentUserId(val: string | undefined): void {
     super.setCurrentUserId(val);
-    this.engine.engineServerClient.setCurrentUserId(val);
+    this.engine.getEngineServerClient().setCurrentUserId(val);
   }
 
   override setBaseUrl(val: string | undefined): void {
     super.setBaseUrl(val);
-    this.engine.engineServerClient.setBaseUrl(val);
+    this.engine.getEngineServerClient().setBaseUrl(val);
   }
 
   override setUseClientRequestPayloadCompression(val: boolean): void {
     super.setUseClientRequestPayloadCompression(val);
-    this.engine.engineServerClient.setCompression(val);
+    this.engine.getEngineServerClient().setCompression(val);
   }
 
   constructor(engine: V1_Engine) {
     super();
     this.engine = engine;
-    this.baseUrl = this.engine.engineServerClient.baseUrl;
+    this.baseUrl = this.engine.getEngineServerClient().baseUrl;
   }
 }
 
+/**
+ * This class defines what the engine is capable of.
+ * Right now for most engine operations, we make network calls to the engine backend.
+ * However, this might change in the future if we ever bring some engine functionalities
+ * to Studio. As such, we want to encapsulate engine client within this class.
+ */
 export class V1_Engine {
   engineServerClient: V1_EngineServerClient;
   logger: Logger;
   config: EngineConfig;
 
   constructor(clientConfig: ServerClientConfig, logger: Logger) {
-    makeObservable<V1_Engine, 'pureCodeToPureModelContextDataJson'>(this, {
-      pureModelContextDataToPureCode: flow,
-      pureCodeToPureModelContextData: flow,
-      pureCodeToPureModelContextDataJson: flow,
-      transformLambdasToCode: flow,
-      transformCodeToLambda: flow,
-      transformRelationalOperationElementsToPureCode: flow,
-      transformPureCodeToRelationalOperationElement: flow,
-      compilePureModelContextData: flow,
-      compileText: flow,
-      getLambdaReturnType: flow,
-      transformExternalFormatToProtocol: flow,
-      getAvailableImportConfigurationDescriptions: flow,
-      getAvailableGenerationConfigurationDescriptions: flow,
-      generateFile: flow,
-      runServiceTests: flow,
-    });
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
     this.config = new EngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
@@ -142,41 +130,46 @@ export class V1_Engine {
     return serializedGraph;
   };
 
+  /**
+   * NOTE: ideally, we would not want to leak engine server client like this,
+   * since the communication with engine client should only be done in this class
+   * alone. However, we need to expose the client for plugins, tests, and dev tool
+   * configurations.
+   */
   getEngineServerClient(): V1_EngineServerClient {
     return this.engineServerClient;
   }
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  *pureModelContextDataToPureCode(
+  async pureModelContextDataToPureCode(
     graph: V1_PureModelContextData,
-  ): GeneratorFn<string> {
-    const result = (yield this.engineServerClient.transformJSONToGrammar({
-      modelDataContext: this.serializePureModelContextData(graph),
-    })) as V1_GrammarToJsonInput;
-    return result.code ?? '';
-  }
-
-  *pureCodeToPureModelContextData(
-    code: string,
-    options?: { onError?: () => void },
-  ): GeneratorFn<V1_PureModelContextData> {
-    return V1_deserializePureModelContextData(
-      (yield flowResult(
-        this.pureCodeToPureModelContextDataJson(code, options),
-      )) as PlainObject<V1_PureModelContextData>,
+  ): Promise<string> {
+    return (
+      ((
+        await this.engineServerClient.transformJSONToGrammar({
+          modelDataContext: this.serializePureModelContextData(graph),
+        })
+      ).code as string | undefined) ?? ''
     );
   }
 
-  private *pureCodeToPureModelContextDataJson(
+  async pureCodeToPureModelContextData(
     code: string,
     options?: { onError?: () => void },
-  ): GeneratorFn<PlainObject<V1_PureModelContextData>> {
-    const parsingResult = (yield this.engineServerClient.transformGrammarToJSON(
-      {
-        code,
-      },
-    )) as PlainObject<V1_JsonToGrammarInput>;
+  ): Promise<V1_PureModelContextData> {
+    return V1_deserializePureModelContextData(
+      await this.pureCodeToPureModelContextDataJson(code, options),
+    );
+  }
+
+  private async pureCodeToPureModelContextDataJson(
+    code: string,
+    options?: { onError?: () => void },
+  ): Promise<PlainObject<V1_PureModelContextData>> {
+    const parsingResult = await this.engineServerClient.transformGrammarToJSON({
+      code,
+    });
     if (parsingResult.codeError) {
       options?.onError?.();
       throw V1_buildParserError(
@@ -190,11 +183,11 @@ export class V1_Engine {
     ) as PlainObject<V1_PureModelContextData>;
   }
 
-  *transformLambdasToCode(
+  async transformLambdasToCode(
     inputLambdas: Map<string, RawLambda>,
     pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
     pretty?: boolean,
-  ): GeneratorFn<Map<string, string>> {
+  ): Promise<Map<string, string>> {
     const lambdas: Record<string, PlainObject<V1_RawLambda>> = {};
     inputLambdas.forEach((inputLambda, key) => {
       lambdas[key] = V1_serializeRawValueSpecification(
@@ -207,22 +200,22 @@ export class V1_Engine {
       );
     });
     const result = V1_GrammarToJsonInput.serialization.fromJson(
-      (yield this.engineServerClient.transformJSONToGrammar({
+      await this.engineServerClient.transformJSONToGrammar({
         isolatedLambdas: { lambdas },
         renderStyle: pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
-      })) as PlainObject<V1_GrammarToJsonInput>,
+      }),
     );
     return result.isolatedLambdas ?? new Map<string, string>();
   }
 
-  *transformCodeToLambda(
+  async transformCodeToLambda(
     lambda: string,
     lambdaId: string,
-  ): GeneratorFn<V1_RawLambda | undefined> {
+  ): Promise<V1_RawLambda | undefined> {
     const result = V1_JsonToGrammarInput.serialization.fromJson(
-      (yield this.engineServerClient.transformGrammarToJSON({
+      await this.engineServerClient.transformGrammarToJSON({
         isolatedLambdas: { [lambdaId]: lambda },
-      })) as PlainObject<V1_JsonToGrammarInput>,
+      }),
     );
     const lambdaResult = guaranteeNonNullable(result.isolatedLambdas);
     const parserError = lambdaResult.lambdaErrors?.get(lambdaId);
@@ -232,9 +225,9 @@ export class V1_Engine {
     return lambdaResult.lambdas?.get(lambdaId);
   }
 
-  *transformRelationalOperationElementsToPureCode(
+  async transformRelationalOperationElementsToPureCode(
     inputOperations: Map<string, RawRelationalOperationElement>,
-  ): GeneratorFn<Map<string, string>> {
+  ): Promise<Map<string, string>> {
     const operations: Record<
       string,
       PlainObject<V1_RawRelationalOperationElement>
@@ -245,26 +238,26 @@ export class V1_Engine {
     });
     const result =
       V1_RelationalOperationElementGrammarToJsonInput.serialization.fromJson(
-        (yield this.engineServerClient.transformRelationalOperationElementJSONToGrammar(
+        await this.engineServerClient.transformRelationalOperationElementJSONToGrammar(
           {
             operations,
           },
-        )) as PlainObject<V1_RelationalOperationElementGrammarToJsonInput>,
+        ),
       );
     return result.operations;
   }
 
-  *transformPureCodeToRelationalOperationElement(
+  async transformPureCodeToRelationalOperationElement(
     operation: string,
     operationId: string,
-  ): GeneratorFn<V1_RawRelationalOperationElement | undefined> {
+  ): Promise<V1_RawRelationalOperationElement | undefined> {
     const result =
       V1_RelationalOperationElementJsonToGrammarInput.serialization.fromJson(
-        (yield this.engineServerClient.transformRelationalOperationElementGrammarToJSON(
+        await this.engineServerClient.transformRelationalOperationElementGrammarToJSON(
           {
             operations: { [operationId]: operation },
           },
-        )) as PlainObject<V1_RelationalOperationElementJsonToGrammarInput>,
+        ),
       );
     const parserError = result.operationErrors?.get(operationId);
     if (parserError) {
@@ -275,15 +268,14 @@ export class V1_Engine {
 
   // ------------------------------------------- Compile -------------------------------------------
 
-  *compilePureModelContextData(
+  async compilePureModelContextData(
     model: V1_PureModelContextData,
     options?: { onError?: () => void },
-  ): GeneratorFn<undefined> {
+  ): Promise<void> {
     try {
-      yield this.engineServerClient.compile(
+      await this.engineServerClient.compile(
         this.serializePureModelContextData(model),
       );
-      return undefined;
     } catch (error: unknown) {
       assertErrorThrown(error);
       options?.onError?.();
@@ -301,14 +293,15 @@ export class V1_Engine {
     }
   }
 
-  *compileText(
+  async compileText(
     graphText: string,
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void },
-  ): GeneratorFn<V1_PureModelContextData> {
-    const mainGraph = (yield flowResult(
-      this.pureCodeToPureModelContextDataJson(graphText, options),
-    )) as PlainObject<V1_PureModelContextData>;
+  ): Promise<V1_PureModelContextData> {
+    const mainGraph = await this.pureCodeToPureModelContextDataJson(
+      graphText,
+      options,
+    );
     const pureModelContextDataJson = compileContext
       ? mergeObjects(
           this.serializePureModelContextData(compileContext),
@@ -317,7 +310,7 @@ export class V1_Engine {
         )
       : mainGraph;
     try {
-      yield this.engineServerClient.compile(pureModelContextDataJson);
+      await this.engineServerClient.compile(pureModelContextDataJson);
       return V1_deserializePureModelContextData(mainGraph);
     } catch (error: unknown) {
       assertErrorThrown(error);
@@ -336,16 +329,17 @@ export class V1_Engine {
     }
   }
 
-  *getLambdaReturnType(
+  async getLambdaReturnType(
     lambda: V1_RawLambda,
     model: V1_PureModelContextData,
-  ): GeneratorFn<string> {
+  ): Promise<string> {
     try {
-      const lambdaReturnType = (yield this.engineServerClient.lambdaReturnType(
-        V1_serializeRawValueSpecification(lambda),
-        this.serializePureModelContextData(model),
-      )) as V1_LambdaReturnTypeResult;
-      return lambdaReturnType.returnType;
+      return (
+        (await this.engineServerClient.lambdaReturnType(
+          V1_serializeRawValueSpecification(lambda),
+          this.serializePureModelContextData(model),
+        )) as unknown as V1_LambdaReturnTypeResult
+      ).returnType;
     } catch (error: unknown) {
       assertErrorThrown(error);
       if (
@@ -364,28 +358,28 @@ export class V1_Engine {
 
   // ------------------------------------------- Schema Import -------------------------------------------
 
-  *transformExternalFormatToProtocol(
+  async transformExternalFormatToProtocol(
     externalFormat: string,
     type: string,
     mode: ImportMode,
-  ): GeneratorFn<V1_PureModelContextData> {
+  ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
-      (yield this.engineServerClient.transformExternalFormatToProtocol(
+      await this.engineServerClient.transformExternalFormatToProtocol(
         JSON.parse(externalFormat),
         type,
         mode,
-      )) as PlainObject<V1_PureModelContextData>,
+      ),
     );
   }
 
-  *getAvailableImportConfigurationDescriptions(): GeneratorFn<
+  async getAvailableImportConfigurationDescriptions(): Promise<
     ImportConfigurationDescription[]
   > {
     const schemaImportDescriptions = (
-      (yield this.engineServerClient.getAvailableSchemaImportDescriptions()) as PlainObject<V1_ImportConfigurationDescription>[]
+      await this.engineServerClient.getAvailableSchemaImportDescriptions()
     ).map((gen) => ({ ...gen, modelImportMode: ImportMode.SCHEMA_IMPORT }));
     const codeImportDescriptions = (
-      (yield this.engineServerClient.getAvailableCodeImportDescriptions()) as PlainObject<V1_ImportConfigurationDescription>[]
+      await this.engineServerClient.getAvailableCodeImportDescriptions()
     ).map((gen) => ({ ...gen, modelImportMode: ImportMode.CODE_IMPORT }));
     return [...schemaImportDescriptions, ...codeImportDescriptions].map(
       (description) =>
@@ -397,17 +391,17 @@ export class V1_Engine {
 
   // ------------------------------------------- File Generation -------------------------------------------
 
-  *getAvailableGenerationConfigurationDescriptions(): GeneratorFn<
+  async getAvailableGenerationConfigurationDescriptions(): Promise<
     GenerationConfigurationDescription[]
   > {
     const schemaGenerationDescriptions = (
-      (yield this.engineServerClient.getAvailableSchemaGenerationDescriptions()) as PlainObject<V1_GenerationConfigurationDescription>[]
+      await this.engineServerClient.getAvailableSchemaGenerationDescriptions()
     ).map((gen) => ({
       ...gen,
       generationMode: GenerationMode.SCHEMA_GENERATION,
     }));
     const codeGenerationDescriptions = (
-      (yield this.engineServerClient.getAvailableCodeGenerationDescriptions()) as PlainObject<V1_GenerationConfigurationDescription>[]
+      await this.engineServerClient.getAvailableCodeGenerationDescriptions()
     ).map((gen) => ({
       ...gen,
       generationMode: GenerationMode.CODE_GENERATION,
@@ -422,32 +416,32 @@ export class V1_Engine {
     );
   }
 
-  *generateFile(
+  async generateFile(
     configs: Record<PropertyKey, unknown>,
     type: string,
     generationMode: GenerationMode,
     model: V1_PureModelContextData,
-  ): GeneratorFn<V1_GenerationOutput[]> {
-    const input = new V1_GenerateFileInput(model, configs);
+  ): Promise<V1_GenerationOutput[]> {
     return (
-      (yield this.engineServerClient.generateFile(
+      await this.engineServerClient.generateFile(
         generationMode,
         type,
-        V1_GenerateFileInput.serialization.toJson(input),
-      )) as PlainObject<V1_GenerationOutput>[]
+        V1_GenerateFileInput.serialization.toJson(
+          new V1_GenerateFileInput(model, configs),
+        ),
+      )
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
   }
 
   // ------------------------------------------- Service -------------------------------------------
 
-  *runServiceTests(
-    servicePath: string,
+  async runServiceTests(
     model: V1_PureModelContextData,
-  ): GeneratorFn<V1_ServiceTestResult[]> {
+  ): Promise<V1_ServiceTestResult[]> {
     return (
-      (yield this.engineServerClient.runServiceTests(
+      await this.engineServerClient.runServiceTests(
         V1_serializePureModelContextData(model),
-      )) as PlainObject<V1_ServiceTestResult>[]
+      )
     ).map((result) => V1_ServiceTestResult.serialization.fromJson(result));
   }
 }

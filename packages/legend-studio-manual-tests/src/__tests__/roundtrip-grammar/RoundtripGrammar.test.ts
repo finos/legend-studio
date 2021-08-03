@@ -118,9 +118,8 @@ const checkGrammarRoundtrip = async (
       editorStore.applicationStore.logger,
     ),
   );
-  const protocolHashesIndex = await flowResult(
-    editorStore.graphState.graphManager.buildHashesIndex(entities),
-  );
+  const protocolHashesIndex =
+    await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
