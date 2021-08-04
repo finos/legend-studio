@@ -111,6 +111,9 @@ const QueryExport = observer(() => {
 
 const QueryEditorInner = observer(() => {
   const queryStore = useQueryStore();
+  if (!queryStore.editorStore.graphState.graph.buildState.hasCompleted) {
+    return <PanelLoadingIndicator isLoading={true} />;
+  }
   return (
     <>
       <QueryExport />
