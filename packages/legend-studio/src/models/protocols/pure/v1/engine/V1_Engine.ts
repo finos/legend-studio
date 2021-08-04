@@ -67,7 +67,7 @@ import {
   V1_buildImportConfigurationDescription,
   V1_buildParserError,
 } from './V1_EngineHelper';
-import { V1_Query } from './query/V1_Query';
+import { V1_LightQuery, V1_Query } from './query/V1_Query';
 import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
 import { V1_ExecuteInput } from './execution/V1_ExecuteInput';
@@ -556,12 +556,12 @@ export class V1_Engine {
   // ------------------------------------------- Query -------------------------------------------
 
   async getQueries(
-    isOwner: boolean,
+    showOwnQueryOnly: boolean | undefined,
     limit: number | undefined,
-  ): Promise<V1_Query[]> {
-    return (await this.engineServerClient.getQueries(isOwner, limit)).map(
-      (query) => V1_Query.serialization.fromJson(query),
-    );
+  ): Promise<V1_LightQuery[]> {
+    return (
+      await this.engineServerClient.getQueries(showOwnQueryOnly, limit)
+    ).map((query) => V1_LightQuery.serialization.fromJson(query));
   }
 
   async getQuery(queryId: string): Promise<V1_Query> {

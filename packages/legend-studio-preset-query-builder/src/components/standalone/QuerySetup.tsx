@@ -15,6 +15,7 @@
  */
 
 import type {
+  LightQuery,
   Mapping,
   PackageableElementSelectOption,
   PackageableRuntime,
@@ -40,6 +41,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { FaQuestionCircle } from 'react-icons/fa';
 import {
   generateCreateQueryRoute,
+  generateExistingQueryRoute,
   generateServiceQueryRoute,
 } from '../../stores/LegendQueryRouter';
 import type { ServiceExecutionOption } from '../../stores/QuerySetupStore';
@@ -52,9 +54,117 @@ import {
 } from '../../stores/QuerySetupStore';
 import {
   CreateQueryInfoState,
+  ExistingQueryInfoState,
   ServiceQueryInfoState,
   useQueryStore,
 } from '../../stores/QueryStore';
+
+type QueryOption = { label: string; value: string };
+const buildQueryOption = (query: LightQuery): QueryOption => ({
+  label: query.name,
+  value: query.id,
+});
+
+const ExistingQuerySetup = observer(
+  (props: { querySetupState: ExistingQuerySetupState }) => {
+    const { querySetupState } = props;
+    const applicationStore = useApplicationStore();
+    const setupStore = useQuerySetupStore();
+    const queryStore = useQueryStore();
+    const back = (): void => {
+      setupStore.setSetupState(undefined);
+      querySetupState.setCurrentQuery(undefined);
+      setupStore.queryStore.editorStore.graphState.resetGraph();
+    };
+    const next = (): void => {
+      if (querySetupState.currentQuery) {
+        queryStore.setQueryInfoState(
+          new ExistingQueryInfoState(
+            querySetupState.queryStore,
+            querySetupState.currentQuery,
+          ),
+        );
+        applicationStore.historyApiClient.push(
+          generateExistingQueryRoute(querySetupState.currentQuery.id),
+        );
+      }
+      setupStore.setSetupState(undefined);
+    };
+    const canProceed = querySetupState.currentQuery;
+
+    // project
+    const queryOptions = querySetupState.queries.map(buildQueryOption);
+    const selectedQueryOption = querySetupState.currentQuery
+      ? buildQueryOption(querySetupState.currentQuery)
+      : null;
+    const querySelectorPlaceholder = querySetupState.loadQueriesState
+      .isInProgress
+      ? 'Loading queries'
+      : querySetupState.loadQueriesState.hasFailed
+      ? 'Error fetching queries'
+      : querySetupState.queries.length
+      ? 'Choose a query'
+      : 'You have no queries';
+    const onQueryOptionChange = (option: QueryOption | null): void => {
+      if (option?.value !== querySetupState.currentQuery?.id) {
+        querySetupState.setCurrentQuery(option?.value);
+      }
+    };
+
+    useEffect(() => {
+      flowResult(querySetupState.loadQueries());
+    }, [querySetupState]);
+
+    return (
+      <div className="query-setup__wizard query-setup__existing-query">
+        <div className="query-setup__wizard__header query-setup__existing-query__header">
+          <button
+            className="query-setup__wizard__header__btn"
+            onClick={back}
+            title="Back to Main Menu"
+          >
+            <ArrowLeftIcon />
+          </button>
+          <div className="query-setup__wizard__header__title">
+            Loading an existing query...
+          </div>
+          <button
+            className={clsx('query-setup__wizard__header__btn', {
+              'query-setup__wizard__header__btn--ready': canProceed,
+            })}
+            onClick={next}
+            disabled={!canProceed}
+            title="Proceed"
+          >
+            <ArrowRightIcon />
+          </button>
+        </div>
+        <div className="query-setup__wizard__content">
+          <div className="query-setup__existing-query__project">
+            <div className="query-setup__wizard__group">
+              <div className="query-setup__wizard__group__title">Query</div>
+              <CustomSelectorInput
+                className="query-setup__wizard__selector"
+                options={queryOptions}
+                disabled={
+                  querySetupState.loadQueriesState.isInProgress ||
+                  !queryOptions.length
+                }
+                isLoading={querySetupState.loadQueriesState.isInProgress}
+                onChange={onQueryOptionChange}
+                value={selectedQueryOption}
+                placeholder={querySelectorPlaceholder}
+                isClearable={true}
+                escapeClearsValue={true}
+                darkMode={true}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
 
 type ProjectOption = { label: string; value: ProjectMetadata };
 const buildProjectOption = (project: ProjectMetadata): ProjectOption => ({
@@ -661,7 +771,7 @@ const QuerySetupLandingPage = observer(() => {
       </div>
       <div className="query-setup__landing-page__options">
         <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--edit"
+          className="query-setup__landing-page__option query-setup__landing-page__option--load-existing"
           onClick={editQuery}
         >
           <div className="query-setup__landing-page__option__icon">
@@ -706,7 +816,7 @@ const QuerySetupInner = observer(() => {
     <div className="query-setup">
       {!querySetupState && <QuerySetupLandingPage />}
       {querySetupState instanceof ExistingQuerySetupState && (
-        <QuerySetupLandingPage />
+        <ExistingQuerySetup querySetupState={querySetupState} />
       )}
       {querySetupState instanceof ServiceQuerySetupState && (
         <ServiceQuerySetup querySetupState={querySetupState} />

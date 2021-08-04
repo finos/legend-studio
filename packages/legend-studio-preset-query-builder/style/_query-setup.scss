@@ -65,7 +65,7 @@
     background: var(--color-light-grey-300);
     user-select: none;
 
-    &--edit:hover {
+    &--load-existing:hover {
       background: var(--color-magenta-50);
     }
 
@@ -147,6 +147,35 @@
 
   &__header {
     background: var(--color-blue-50);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem 0;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 8.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+}
+
+.query-setup__existing-query {
+  height: 32.2rem;
+
+  &__header {
+    background: var(--color-magenta-50);
   }
 
   &__project {

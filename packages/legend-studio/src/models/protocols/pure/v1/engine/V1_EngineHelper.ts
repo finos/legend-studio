@@ -15,7 +15,11 @@
  */
 
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
-import { Query } from '../../../../metamodels/pure/action/query/Query';
+import {
+  LightQuery,
+  Query,
+} from '../../../../metamodels/pure/action/query/Query';
+import type { V1_LightQuery } from './query/V1_Query';
 import { V1_Query } from './query/V1_Query';
 import type { PureModel } from '../../../../metamodels/pure/graph/PureModel';
 import { PackageableElementExplicitReference } from '../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
@@ -47,6 +51,13 @@ import {
 import type { V1_SourceInformation } from '../model/V1_SourceInformation';
 import { SourceInformation } from '../../../../metamodels/pure/action/SourceInformation';
 
+export const V1_buildLightQuery = (protocol: V1_LightQuery): LightQuery => {
+  const metamodel = new LightQuery();
+  metamodel.name = guaranteeNonNullable(protocol.name, `Query name is missing`);
+  metamodel.id = guaranteeNonNullable(protocol.id, `Query ID is missing`);
+  return metamodel;
+};
+
 export const V1_buildQuery = (protocol: V1_Query, graph: PureModel): Query => {
   const metamodel = new Query();
   metamodel.name = guaranteeNonNullable(protocol.name, `Query name is missing`);
@@ -73,6 +84,7 @@ export const V1_buildQuery = (protocol: V1_Query, graph: PureModel): Query => {
     protocol.content,
     `Query content is missing`,
   );
+  metamodel.owners = protocol.owners;
   return metamodel;
 };
 
@@ -86,6 +98,7 @@ export const V1_transformQuery = (metamodel: Query): V1_Query => {
   protocol.mapping = metamodel.mapping.valueForSerialization;
   protocol.runtime = metamodel.runtime.valueForSerialization;
   protocol.content = metamodel.content;
+  protocol.owners = metamodel.owners;
   return protocol;
 };
 

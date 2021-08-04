@@ -44,7 +44,7 @@ import { AbstractServerClient } from '@finos/legend-studio-network';
 import type { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
 import type { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
-import type { V1_Query } from './query/V1_Query';
+import type { V1_LightQuery, V1_Query } from './query/V1_Query';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage';
 
 enum CORE_ENGINE_TRACER_SPAN {
@@ -377,15 +377,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Query -------------------------------------------
 
   _query = (queryId?: string): string =>
-    `${this.networkClient.baseUrl}/query/${this.version}${
-      queryId ? `/${encodeURIComponent(queryId)}` : ''
-    }`;
+    `${this._pure()}/query/${queryId ? `/${encodeURIComponent(queryId)}` : ''}`;
   getQueries = (
-    isOwner: boolean,
+    showOwnQueryOnly: boolean | undefined,
     limit: number | undefined,
-  ): Promise<PlainObject<V1_Query>[]> =>
+  ): Promise<PlainObject<V1_LightQuery>[]> =>
     this.get(this._query(), undefined, undefined, {
-      isOwner,
+      showOwnQueryOnly,
       limit,
     });
   getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>

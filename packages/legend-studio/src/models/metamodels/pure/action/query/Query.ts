@@ -25,6 +25,14 @@ export class Query {
   versionId!: string;
   mapping!: PackageableElementReference<Mapping>;
   runtime!: PackageableElementReference<PackageableRuntime>;
+  owners: string[] = [];
   // NOTE: we decide to store the query in text because text format is more compact and stable than JSON
   content!: string;
+}
+
+export class LightQuery {
+  name!: string;
+  id!: string;
+  projectId!: string;
+  versionId!: string;
 }

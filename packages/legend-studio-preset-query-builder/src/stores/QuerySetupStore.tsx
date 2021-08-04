@@ -19,6 +19,7 @@ import {
   action,
   computed,
   flow,
+  flowResult,
   makeAutoObservable,
   makeObservable,
   observable,
@@ -31,6 +32,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-studio-shared';
 import type {
+  LightQuery,
   Mapping,
   PackageableElementSelectOption,
   PackageableRuntime,
@@ -55,7 +57,63 @@ export abstract class QuerySetupState {
   }
 }
 
-export class ExistingQuerySetupState extends QuerySetupState {}
+export class ExistingQuerySetupState extends QuerySetupState {
+  queries: LightQuery[] = [];
+  loadQueriesState = ActionState.create();
+  loadQueryState = ActionState.create();
+  currentQuery?: LightQuery;
+
+  constructor(queryStore: QueryStore) {
+    super(queryStore);
+
+    makeObservable(this, {
+      queries: observable,
+      currentQuery: observable,
+      setCurrentQuery: flow,
+      loadQueries: flow,
+    });
+  }
+
+  *setCurrentQuery(queryId: string | undefined): GeneratorFn<void> {
+    if (queryId) {
+      try {
+        this.loadQueryState.inProgress();
+        this.currentQuery =
+          (yield this.queryStore.editorStore.graphState.graphManager.getLightQuery(
+            queryId,
+          )) as LightQuery;
+      } catch (error: unknown) {
+        assertErrorThrown(error);
+        this.queryStore.editorStore.applicationStore.notifyError(error);
+      } finally {
+        this.loadQueryState.reset();
+      }
+    } else {
+      this.currentQuery = undefined;
+    }
+  }
+
+  *loadQueries(): GeneratorFn<void> {
+    if (this.queryStore.initGraphState.isInInitialState) {
+      yield flowResult(this.queryStore.initGraph());
+    } else if (this.queryStore.initGraphState.isInProgress) {
+      return;
+    }
+    this.loadQueriesState.inProgress();
+    try {
+      this.queries =
+        (yield this.queryStore.editorStore.graphState.graphManager.getQueries(
+          undefined,
+          undefined,
+        )) as LightQuery[];
+      this.loadQueriesState.pass();
+    } catch (error: unknown) {
+      assertErrorThrown(error);
+      this.loadQueriesState.fail();
+      this.queryStore.editorStore.applicationStore.notifyError(error);
+    }
+  }
+}
 
 export class CreateQuerySetupState extends QuerySetupState {
   projectMetadatas: ProjectMetadata[] = [];
@@ -83,8 +141,6 @@ export class CreateQuerySetupState extends QuerySetupState {
       loadProjects: flow,
       loadProjectVersions: flow,
     });
-
-    this.queryStore = queryStore;
   }
 
   setCurrentProjectMetadata(val: ProjectMetadata | undefined): void {
@@ -200,8 +256,6 @@ export class ServiceQuerySetupState extends QuerySetupState {
       loadProjects: flow,
       loadProjectVersions: flow,
     });
-
-    this.queryStore = queryStore;
   }
 
   setCurrentProjectMetadata(val: ProjectMetadata | undefined): void {

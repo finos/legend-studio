@@ -32,8 +32,11 @@ import {
 } from '@finos/legend-studio-shared';
 import type {
   Entity,
+  LightQuery,
   Mapping,
   PackageableRuntime,
+  Query,
+  RawLambda,
   Service,
 } from '@finos/legend-studio';
 import {
@@ -127,10 +130,12 @@ export class ServiceQueryInfoState extends QueryInfoState {
 }
 
 export class ExistingQueryInfoState extends QueryInfoState {
-  // query: Query;
-  // constructor(queryStore: QueryStore) {
-  //   this.queryStore = queryStore;
-  // }
+  query: LightQuery;
+
+  constructor(queryStore: QueryStore, query: LightQuery) {
+    super(queryStore);
+    this.query = query;
+  }
 }
 
 export class QueryStore {
@@ -160,7 +165,42 @@ export class QueryStore {
   *setupExistingQueryInfoState(
     params: ExistingQueryPathParams,
   ): GeneratorFn<void> {
-    // TODO
+    const { queryId } = params;
+
+    let queryInfoState: ExistingQueryInfoState;
+    if (this.queryInfoState instanceof ExistingQueryInfoState) {
+      assertTrue(this.queryInfoState.query.id === queryId);
+      queryInfoState = this.queryInfoState;
+    } else {
+      const lightQuery =
+        (yield this.editorStore.graphState.graphManager.getLightQuery(
+          queryId,
+        )) as LightQuery;
+      // TODO: handle error here more gracefully
+      // TODO: fix this when we use metadata server
+      const projectMetadata = new ProjectMetadata();
+      projectMetadata.projectId = lightQuery.projectId;
+      projectMetadata.setVersions([lightQuery.versionId]);
+      yield flowResult(this.buildGraph(projectMetadata, lightQuery.versionId));
+      queryInfoState = new ExistingQueryInfoState(this, lightQuery);
+      this.setQueryInfoState(queryInfoState);
+    }
+    const query = (yield this.editorStore.graphState.graphManager.getQuery(
+      queryId,
+      this.editorStore.graphState.graph,
+    )) as Query;
+    this.queryBuilderState.querySetupState.mapping = query.mapping.value;
+    this.queryBuilderState.querySetupState.runtime = new RuntimePointer(
+      PackageableElementExplicitReference.create(query.runtime.value),
+    );
+    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
+    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+    this.queryBuilderState.buildStateFromRawLambda(
+      (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+        query.content,
+        'query-lambda',
+      )) as RawLambda,
+    );
   }
 
   *setupServiceQueryInfoState(

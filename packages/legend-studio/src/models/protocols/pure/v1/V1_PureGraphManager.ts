@@ -188,13 +188,17 @@ import {
   V1_serializeExecutionPlan,
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
-import type { Query } from '../../../metamodels/pure/action/query/Query';
+import type {
+  LightQuery,
+  Query,
+} from '../../../metamodels/pure/action/query/Query';
 import {
   V1_buildQuery,
   V1_buildServiceTestResult,
   V1_buildServiceRegistrationResult,
   V1_transformQuery,
   V1_buildGenerationOutput,
+  V1_buildLightQuery,
 } from './engine/V1_EngineHelper';
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
 import type { ServerClientConfig } from '@finos/legend-studio-network';
@@ -2041,13 +2045,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // --------------------------------------------- Query ---------------------------------------------
 
   async getQueries(
-    isOwner: boolean,
+    showOwnQueryOnly: boolean | undefined,
     limit: number | undefined,
-    graph: PureModel,
-  ): Promise<Query[]> {
-    return (await this.engine.getQueries(isOwner, limit)).map((protocol) =>
-      V1_buildQuery(protocol, graph),
+  ): Promise<LightQuery[]> {
+    return (await this.engine.getQueries(showOwnQueryOnly, limit)).map(
+      (protocol) => V1_buildLightQuery(protocol),
     );
+  }
+
+  async getLightQuery(queryId: string): Promise<LightQuery> {
+    return V1_buildLightQuery(await this.engine.getQuery(queryId));
   }
 
   async getQuery(queryId: string, graph: PureModel): Promise<Query> {

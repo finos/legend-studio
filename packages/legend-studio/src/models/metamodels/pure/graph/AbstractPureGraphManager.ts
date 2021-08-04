@@ -53,7 +53,7 @@ import type {
 } from '../model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import type { Query } from '../action/query/Query';
+import type { LightQuery, Query } from '../action/query/Query';
 
 export interface EngineSetupConfig {
   env: string;
@@ -284,10 +284,10 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Query -------------------------------------------
 
   abstract getQueries(
-    isOwner: boolean,
+    showOwnQueryOnly: boolean | undefined,
     limit: number | undefined,
-    graph: PureModel,
-  ): Promise<Query[]>;
+  ): Promise<LightQuery[]>;
+  abstract getLightQuery(queryId: string): Promise<LightQuery>;
   abstract getQuery(queryId: string, graph: PureModel): Promise<Query>;
   abstract createQuery(query: Query): Promise<void>;
   abstract updateQuery(query: Query): Promise<void>;
