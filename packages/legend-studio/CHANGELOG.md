@@ -1,5 +1,19 @@
 # @finos/legend-studio
 
+## 0.2.5
+
+### Patch Changes
+
+- [#384](https://github.com/finos/legend-studio/pull/384) [`56481ff`](https://github.com/finos/legend-studio/commit/56481ffa9efceff47cfb11e3bb9a11103e6c17cc) Thanks [@kshradhan](https://github.com/kshradhan)! - Pre-format function body grammar text in function editor.
+
+* [#388](https://github.com/finos/legend-studio/pull/388) [`6815fcf`](https://github.com/finos/legend-studio/commit/6815fcfba58d0123dbed0e188224eeeda35d4ea9) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Fix service test parameters property name to `parametersValues`.
+
+- [#392](https://github.com/finos/legend-studio/pull/392) [`fece600`](https://github.com/finos/legend-studio/commit/fece600d582fd4bb8185d31235d60c2d1d2e46b8) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Remove editor for review description and add default description.
+
+* [#385](https://github.com/finos/legend-studio/pull/385) [`13fe9da`](https://github.com/finos/legend-studio/commit/13fe9dace3aa5aa54a936710e32a46a35a4971c3) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Change `HACKY_createServiceTestAssertLambda` to assert equality on json strings to avoid failure on white spaces and extra lines.
+
+- [#391](https://github.com/finos/legend-studio/pull/391) [`f01f274`](https://github.com/finos/legend-studio/commit/f01f2741c7df7528dec8593bfb87692497b5f56b) Thanks [@akphi](https://github.com/akphi)! - Allow specifying description when creating a new review.
+
 ## 0.2.4
 
 ### Patch Changes
