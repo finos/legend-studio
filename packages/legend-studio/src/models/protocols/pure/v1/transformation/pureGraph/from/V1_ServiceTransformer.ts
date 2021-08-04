@@ -118,7 +118,7 @@ const transformTestContainer = (
   container.assert = element.assert.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
-  container.parameterValues = element.parameterValues;
+  container.parametersValues = element.parametersValues;
   return container;
 };
 
