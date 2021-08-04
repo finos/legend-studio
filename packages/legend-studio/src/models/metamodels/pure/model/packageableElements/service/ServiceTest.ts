@@ -38,13 +38,13 @@ export abstract class ServiceTest implements Hashable {
 
 export class TestContainer implements Hashable {
   uuid = uuid();
-  parameterValues: unknown[] = []; // Any[*]; // ValueSpecification?
+  parametersValues: unknown[] = []; // Any[*]; // ValueSpecification?
   assert: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   singleExecutionTestParent: SingleExecutionTest;
 
   constructor(assert: RawLambda, parent: SingleExecutionTest) {
     makeObservable(this, {
-      parameterValues: observable,
+      parametersValues: observable,
       assert: observable,
       singleExecutionTestParent: observable,
       hashCode: computed,

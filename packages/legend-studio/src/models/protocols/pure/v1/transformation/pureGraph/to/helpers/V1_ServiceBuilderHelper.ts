@@ -85,7 +85,7 @@ export const V1_buildServiceTest = (
         ),
         singleTest,
       );
-      testContainer.parameterValues = assert.parameterValues;
+      testContainer.parametersValues = assert.parametersValues;
       return testContainer;
     });
     return singleTest;
@@ -131,7 +131,7 @@ export const V1_buildServiceTest = (
           ),
           keyedTest,
         );
-        testContaier.parameterValues = assert.parameterValues;
+        testContaier.parametersValues = assert.parametersValues;
         return testContaier;
       });
       return keyedTest;

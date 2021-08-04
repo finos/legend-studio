@@ -171,7 +171,7 @@ const V1_deserializeServiceExecution = (
 
 const testContainerModelSchema = createModelSchema(V1_TestContainer, {
   assert: usingModelSchema(V1_rawLambdaModelSchema),
-  parameterValues: custom(
+  parametersValues: custom(
     (values) => serializeArray(values, (value) => value, true),
     (values) => deserializeArray(values, (v) => v, false),
   ),

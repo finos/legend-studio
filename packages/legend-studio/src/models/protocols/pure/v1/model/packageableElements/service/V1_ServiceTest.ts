@@ -26,7 +26,7 @@ export abstract class V1_ServiceTest implements Hashable {
 }
 
 export class V1_TestContainer implements Hashable {
-  parameterValues: unknown[] = []; // ValueSpecification?
+  parametersValues: unknown[] = []; // ValueSpecification?
   assert!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
