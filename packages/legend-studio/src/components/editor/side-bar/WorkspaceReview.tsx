@@ -106,14 +106,6 @@ export const WorkspaceReview = observer(() => {
       workspaceReviewState.setReviewTitle(event.target.value);
     }
   };
-  // Review Description
-  const editReviewDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
-    event,
-  ) => {
-    if (!workspaceReview) {
-      workspaceReviewState.setReviewDescription(event.target.value);
-    }
-  };
   const isDispatchingAction =
     workspaceReviewState.isCreatingWorkspaceReview ||
     workspaceReviewState.isFetchingCurrentWorkspaceReview ||
@@ -181,7 +173,6 @@ export const WorkspaceReview = observer(() => {
       flowResult(
         workspaceReviewState.createWorkspaceReview(
           workspaceReviewState.reviewTitle,
-          workspaceReviewState.reviewDescription,
         ),
       ).catch(applicationStore.alertIllegalUnhandledError);
     }
@@ -272,16 +263,6 @@ export const WorkspaceReview = observer(() => {
                   <FaPlus />
                 </button>
               </form>
-              <div className="workspace-review__description">
-                <textarea
-                  className="panel__content__form__section__textarea workspace-review__description__input"
-                  title="Description"
-                  placeholder="Description"
-                  spellCheck={false}
-                  value={workspaceReviewState.reviewDescription}
-                  onChange={editReviewDescription}
-                />
-              </div>
             </>
           )}
           {workspaceReview && (
