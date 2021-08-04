@@ -97,7 +97,7 @@ export class DerivedPropertyState extends LambdaEditorState {
           ),
         );
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -178,7 +178,7 @@ export class ConstraintState extends LambdaEditorState {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.constraint.functionDefinition);
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -320,7 +320,7 @@ export class ClassState {
       this.isConvertingConstraintLambdaObjects = true;
       try {
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
@@ -357,7 +357,7 @@ export class ClassState {
       this.isConvertingDerivedPropertyLambdaObjects = true;
       try {
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {

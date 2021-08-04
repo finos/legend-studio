@@ -377,7 +377,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Query -------------------------------------------
 
   _query = (queryId?: string): string =>
-    `${this._pure()}/query/${queryId ? `/${encodeURIComponent(queryId)}` : ''}`;
+    `${this._pure()}/query${queryId ? `/${encodeURIComponent(queryId)}` : ''}`;
   getQueries = (
     showOwnQueryOnly: boolean | undefined,
     limit: number | undefined,

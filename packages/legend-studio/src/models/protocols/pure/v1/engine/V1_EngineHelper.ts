@@ -55,6 +55,14 @@ export const V1_buildLightQuery = (protocol: V1_LightQuery): LightQuery => {
   const metamodel = new LightQuery();
   metamodel.name = guaranteeNonNullable(protocol.name, `Query name is missing`);
   metamodel.id = guaranteeNonNullable(protocol.id, `Query ID is missing`);
+  metamodel.projectId = guaranteeNonNullable(
+    protocol.projectId,
+    `Query project ID is missing`,
+  );
+  metamodel.versionId = guaranteeNonNullable(
+    protocol.versionId,
+    `Query version ID is missing`,
+  );
   return metamodel;
 };
 

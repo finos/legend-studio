@@ -44,11 +44,15 @@ export class V1_Query {
 export class V1_LightQuery {
   name!: string;
   id!: string;
+  projectId!: string;
+  versionId!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
       id: primitive(),
       name: primitive(),
+      projectId: primitive(),
+      versionId: primitive(),
     }),
   );
 }

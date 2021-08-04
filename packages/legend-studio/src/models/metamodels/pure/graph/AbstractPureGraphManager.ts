@@ -140,9 +140,14 @@ export abstract class AbstractPureGraphManager {
   abstract entitiesToPureCode(entities: Entity[]): Promise<string>;
   abstract pureCodeToLambda(
     lambda: string,
-    lambdaId: string,
+    lambdaId?: string,
   ): Promise<RawLambda | undefined>;
   abstract lambdaToPureCode(
+    lambda: RawLambda,
+    lambdaId?: string,
+    pretty?: boolean,
+  ): Promise<string>;
+  abstract lambdasToPureCode(
     lambdas: Map<string, RawLambda>,
     pretty?: boolean,
   ): Promise<Map<string, string>>;

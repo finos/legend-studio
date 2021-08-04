@@ -15,9 +15,12 @@
  */
 
 import { RuntimePointer, useApplicationStore } from '@finos/legend-studio';
+import { PanelLoadingIndicator } from '@finos/legend-studio-components';
 import { getQueryParameters } from '@finos/legend-studio-shared';
+import { Dialog } from '@material-ui/core';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useParams } from 'react-router';
@@ -28,15 +31,95 @@ import type {
   ServiceQueryQueryParams,
 } from '../../stores/LegendQueryRouter';
 import { generateCreateQueryRoute } from '../../stores/LegendQueryRouter';
+import type { QueryExportState } from '../../stores/QueryStore';
 import { CreateQueryInfoState, useQueryStore } from '../../stores/QueryStore';
 import { QueryBuilder } from '../QueryBuilder';
 
-export const QueryEditorInner = observer(() => {
+const QueryExportInner = observer(
+  (props: { queryExportState: QueryExportState }) => {
+    const { queryExportState } = props;
+    const applicationStore = useApplicationStore();
+
+    const allowSave = queryExportState.allowSave;
+    const save = applicationStore.guaranteeSafeAction(() =>
+      flowResult(queryExportState.saveQuery()),
+    );
+
+    // name
+    const nameInputRef = useRef<HTMLInputElement>(null);
+    const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+      queryExportState.setQueryName(event.target.value);
+
+    useEffect(() => {
+      nameInputRef.current?.focus();
+    }, []);
+
+    return (
+      <>
+        <div className="modal__body">
+          <PanelLoadingIndicator
+            isLoading={queryExportState.saveQueryState.isInProgress}
+          />
+          <input
+            ref={nameInputRef}
+            className="input input--dark"
+            spellCheck={false}
+            value={queryExportState.queryName}
+            onChange={changeName}
+          />
+        </div>
+        <div className="modal__footer">
+          <button
+            className="btn modal__footer__close-btn btn--dark"
+            disabled={!allowSave}
+            onClick={save}
+          >
+            Save
+          </button>
+        </div>
+      </>
+    );
+  },
+);
+
+const QueryExport = observer(() => {
   const queryStore = useQueryStore();
-  return <QueryBuilder queryBuilderState={queryStore.queryBuilderState} />;
+  const queryExportState = queryStore.queryExportState;
+  const close = (): void => queryStore.setQueryExportState(undefined);
+
+  return (
+    <Dialog
+      open={Boolean(queryExportState)}
+      onClose={close}
+      classes={{
+        root: 'editor-modal__root-container',
+        container: 'editor-modal__container',
+        paper: 'editor-modal__content',
+      }}
+    >
+      <div className="modal modal--dark query-export">
+        <div className="modal__header">
+          <div className="modal__title">Save Query</div>
+        </div>
+        {queryExportState && (
+          <QueryExportInner queryExportState={queryExportState} />
+        )}
+      </div>
+    </Dialog>
+  );
 });
 
-export const QueryEditor: React.FC<{}> = () => (
+const QueryEditorInner = observer(() => {
+  const queryStore = useQueryStore();
+  return (
+    <>
+      <QueryExport />
+      <QueryBuilder queryBuilderState={queryStore.queryBuilderState} />
+    </>
+  );
+});
+
+const QueryEditor: React.FC<{}> = () => (
   <DndProvider backend={HTML5Backend}>
     <QueryEditorInner />
   </DndProvider>

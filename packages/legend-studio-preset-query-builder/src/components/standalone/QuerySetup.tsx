@@ -140,25 +140,23 @@ const ExistingQuerySetup = observer(
           </button>
         </div>
         <div className="query-setup__wizard__content">
-          <div className="query-setup__existing-query__project">
-            <div className="query-setup__wizard__group">
-              <div className="query-setup__wizard__group__title">Query</div>
-              <CustomSelectorInput
-                className="query-setup__wizard__selector"
-                options={queryOptions}
-                disabled={
-                  querySetupState.loadQueriesState.isInProgress ||
-                  !queryOptions.length
-                }
-                isLoading={querySetupState.loadQueriesState.isInProgress}
-                onChange={onQueryOptionChange}
-                value={selectedQueryOption}
-                placeholder={querySelectorPlaceholder}
-                isClearable={true}
-                escapeClearsValue={true}
-                darkMode={true}
-              />
-            </div>
+          <div className="query-setup__wizard__group">
+            <div className="query-setup__wizard__group__title">Query</div>
+            <CustomSelectorInput
+              className="query-setup__wizard__selector"
+              options={queryOptions}
+              disabled={
+                querySetupState.loadQueriesState.isInProgress ||
+                !queryOptions.length
+              }
+              isLoading={querySetupState.loadQueriesState.isInProgress}
+              onChange={onQueryOptionChange}
+              value={selectedQueryOption}
+              placeholder={querySelectorPlaceholder}
+              isClearable={true}
+              escapeClearsValue={true}
+              darkMode={true}
+            />
           </div>
         </div>
       </div>

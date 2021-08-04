@@ -98,7 +98,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
         );
         lambdas.set(this.lambdaId, functionLamba);
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdaToPureCode(
+          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;

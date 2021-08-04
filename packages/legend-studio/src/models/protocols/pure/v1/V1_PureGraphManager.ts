@@ -1501,13 +1501,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async pureCodeToLambda(
     lambda: string,
-    lambdaId: string,
+    lambdaId = 'stub_lambdaId',
   ): Promise<RawLambda | undefined> {
     const result = await this.engine.transformCodeToLambda(lambda, lambdaId);
     return result ? new RawLambda(result.parameters, result.body) : undefined;
   }
 
-  lambdaToPureCode(
+  async lambdaToPureCode(
+    lambda: RawLambda,
+    lambdaId = 'stub_lambdaId',
+    pretty?: boolean,
+  ): Promise<string> {
+    const lambdas = new Map<string, RawLambda>();
+    lambdas.set(lambdaId, lambda);
+    return guaranteeNonNullable(
+      (await this.lambdasToPureCode(lambdas, pretty)).get(lambdaId),
+    );
+  }
+
+  lambdasToPureCode(
     lambdas: Map<string, RawLambda>,
     pretty?: boolean,
   ): Promise<Map<string, string>> {
