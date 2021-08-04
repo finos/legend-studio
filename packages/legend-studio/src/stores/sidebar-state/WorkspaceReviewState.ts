@@ -38,6 +38,7 @@ export class WorkspaceReviewState {
   editorStore: EditorStore;
   sdlcState: EditorSdlcState;
   reviewTitle = '';
+  reviewDescription = '';
   isUpdatingWorkspace = false;
   isRefreshingWorkspaceUpdater = false;
   committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
@@ -54,6 +55,7 @@ export class WorkspaceReviewState {
       editorStore: false,
       sdlcState: false,
       setReviewTitle: action,
+      setReviewDescription: action,
       openReviewChange: action,
     });
 
@@ -63,6 +65,10 @@ export class WorkspaceReviewState {
 
   setReviewTitle = (val: string): void => {
     this.reviewTitle = val;
+  };
+
+  setReviewDescription = (val: string): void => {
+    this.reviewDescription = val;
   };
 
   openReviewChange(diff: EntityDiff): void {
@@ -247,7 +253,7 @@ export class WorkspaceReviewState {
    */
   *createWorkspaceReview(
     title: string,
-    description?: string,
+    description: string,
   ): GeneratorFn<void> {
     this.isCreatingWorkspaceReview = true;
     try {
@@ -257,7 +263,7 @@ export class WorkspaceReviewState {
           {
             workspaceId: this.sdlcState.currentWorkspaceId,
             title,
-            description: description ?? '',
+            description,
           },
         )) as PlainObject<Review>,
       );

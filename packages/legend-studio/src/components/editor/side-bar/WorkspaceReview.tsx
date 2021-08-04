@@ -106,6 +106,14 @@ export const WorkspaceReview = observer(() => {
       workspaceReviewState.setReviewTitle(event.target.value);
     }
   };
+  // Review Description
+  const editReviewDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
+    event,
+  ) => {
+    if (!workspaceReview) {
+      workspaceReviewState.setReviewDescription(event.target.value);
+    }
+  };
   const isDispatchingAction =
     workspaceReviewState.isCreatingWorkspaceReview ||
     workspaceReviewState.isFetchingCurrentWorkspaceReview ||
@@ -173,6 +181,7 @@ export const WorkspaceReview = observer(() => {
       flowResult(
         workspaceReviewState.createWorkspaceReview(
           workspaceReviewState.reviewTitle,
+          workspaceReviewState.reviewDescription,
         ),
       ).catch(applicationStore.alertIllegalUnhandledError);
     }
@@ -232,36 +241,48 @@ export const WorkspaceReview = observer(() => {
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div className="panel workspace-review">
           {!workspaceReview && (
-            <form
-              className="workspace-review__title"
-              onSubmit={(e): void => {
-                e.preventDefault();
-              }}
-            >
-              <div className="workspace-review__title__content">
-                <input
-                  className="workspace-review__title__content__input input--dark"
-                  ref={reviewTitleInputRef}
+            <>
+              <form
+                className="workspace-review__title"
+                onSubmit={(e): void => {
+                  e.preventDefault();
+                }}
+              >
+                <div className="workspace-review__title__content">
+                  <input
+                    className="workspace-review__title__content__input input--dark"
+                    ref={reviewTitleInputRef}
+                    spellCheck={false}
+                    value={workspaceReviewState.reviewTitle}
+                    disabled={Boolean(workspaceReview)}
+                    onChange={editReviewTitle}
+                    placeholder={'Title'}
+                  />
+                </div>
+                <button
+                  className="btn--dark btn--sm"
+                  onClick={createReview}
+                  disabled={
+                    isDispatchingAction ||
+                    Boolean(workspaceReview) ||
+                    !workspaceReviewState.reviewTitle
+                  }
+                  title={'Create review'}
+                >
+                  <FaPlus />
+                </button>
+              </form>
+              <div className="workspace-review__description">
+                <textarea
+                  className="panel__content__form__section__textarea workspace-review__description__input"
+                  title="Description"
+                  placeholder="Description"
                   spellCheck={false}
-                  value={workspaceReviewState.reviewTitle}
-                  disabled={Boolean(workspaceReview)}
-                  onChange={editReviewTitle}
-                  placeholder={'Title'}
+                  value={workspaceReviewState.reviewDescription}
+                  onChange={editReviewDescription}
                 />
               </div>
-              <button
-                className="btn--dark btn--sm"
-                onClick={createReview}
-                disabled={
-                  isDispatchingAction ||
-                  Boolean(workspaceReview) ||
-                  !workspaceReviewState.reviewTitle
-                }
-                title={'Create review'}
-              >
-                <FaPlus />
-              </button>
-            </form>
+            </>
           )}
           {workspaceReview && (
             <>
