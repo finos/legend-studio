@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import type { IDisposable, IKeyboardEvent } from 'monaco-editor';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
@@ -42,7 +42,6 @@ import type { EngineError } from '../../models/metamodels/pure/action/EngineErro
 import { ParserError } from '../../models/metamodels/pure/action/EngineError';
 import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { flowResult } from 'mobx';
-import { useCallback } from 'react';
 
 export type LambdaEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;

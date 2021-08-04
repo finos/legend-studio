@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import { observable, action, makeAutoObservable, flowResult } from 'mobx';
+import { observable, action, makeAutoObservable } from 'mobx';
 import { CORE_LOG_EVENT } from '../../utils/Logger';
 import type { TreeData } from '@finos/legend-studio-components';
 import type {

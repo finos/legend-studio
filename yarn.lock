@@ -2045,7 +2045,7 @@ __metadata:
     react-select: 4.3.1
     react-window: 1.8.6
     rimraf: 3.0.2
-    sass: 1.37.2
+    sass: 1.37.5
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
@@ -2085,7 +2085,7 @@ __metadata:
     jest-watch-typeahead: 0.6.4
     jsonc-parser: 3.0.0
     micromatch: 4.0.4
-    mini-css-extract-plugin: 2.1.0
+    mini-css-extract-plugin: 2.2.0
     monaco-editor: 0.26.1
     monaco-editor-webpack-plugin: 4.1.1
     postcss: 8.3.6
@@ -2093,7 +2093,7 @@ __metadata:
     react-refresh: 0.10.0
     resolve: 1.20.0
     rimraf: 3.0.2
-    sass: 1.37.2
+    sass: 1.37.5
     sass-loader: 12.1.0
     strip-ansi: 7.0.0
     text-table: 0.2.0
@@ -2157,7 +2157,7 @@ __metadata:
     react-icons: 4.2.0
     react-router-dom: 5.2.0
     rimraf: 3.0.2
-    sass: 1.37.2
+    sass: 1.37.5
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
@@ -2203,7 +2203,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.37.2
+    sass: 1.37.5
     serializr: 2.0.5
     typescript: 4.3.5
   peerDependencies:
@@ -2262,7 +2262,7 @@ __metadata:
     react-router: 5.2.0
     react-router-dom: 5.2.0
     rimraf: 3.0.2
-    sass: 1.37.2
+    sass: 1.37.5
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
@@ -2340,7 +2340,7 @@ __metadata:
     react-router-dom: 5.2.0
     react-split-pane: 0.1.92
     rimraf: 3.0.2
-    sass: 1.37.2
+    sass: 1.37.5
     serializr: 2.0.5
     sql-formatter: 4.0.2
     typescript: 4.3.5
@@ -3213,10 +3213,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.4.10":
-  version: 16.4.10
-  resolution: "@types/node@npm:16.4.10"
-  checksum: b2b550c2330df479a41b2c166814df6f1be45a62535742ad88a42bc0739897b79c1b2fef716635ae0ccd77c42af9a5e1e7c891215e909e10980c469bceebbfdc
+"@types/node@npm:16.4.12":
+  version: 16.4.12
+  resolution: "@types/node@npm:16.4.12"
+  checksum: 1489aeba890629ca2ed9b8f04fb77f185123810afd3d518cf87c2a18a43a43f7d954550ae3572f3dac7e634f7db67e259ceb7ca25cb584ba0bcc023b0bfca2c9
   languageName: node
   linkType: hard
 
@@ -9642,7 +9642,7 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 26.0.24
-    "@types/node": 16.4.10
+    "@types/node": 16.4.12
     chalk: 4.1.2
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -10321,14 +10321,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:2.1.0":
-  version: 2.1.0
-  resolution: "mini-css-extract-plugin@npm:2.1.0"
+"mini-css-extract-plugin@npm:2.2.0":
+  version: 2.2.0
+  resolution: "mini-css-extract-plugin@npm:2.2.0"
   dependencies:
-    schema-utils: ^3.0.0
+    schema-utils: ^3.1.0
   peerDependencies:
     webpack: ^5.0.0
-  checksum: d9d61c6bb40328806c8f4dd874a5e2e77ad7d452720fe1b48ad9fbdf84f2619f1063ce2370da48a4859318e5c865da128dc6ca1ea03fde556aea214576108cc5
+  checksum: 783b5a8c1c6f0f67f1cf3bd289c7072fb0356a0c1f5ccd78c868d6c8fd9bd7c0e48d73b1827ca34cef35d79dd65fd95be6208dc40984cc32bc17c62a38ecf9e3
   languageName: node
   linkType: hard
 
@@ -13069,14 +13069,14 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"sass@npm:1.37.2":
-  version: 1.37.2
-  resolution: "sass@npm:1.37.2"
+"sass@npm:1.37.5":
+  version: 1.37.5
+  resolution: "sass@npm:1.37.5"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
   bin:
     sass: sass.js
-  checksum: c501f3a0ab52576f581d46b8ae1972c38392c815f41de27b4fc9e0ef9654b8bd93bbc65f5f5335e19638c4ecc38e0a32549b028434e2da98e53197d924cfc9f9
+  checksum: 301925e66ea8ac402fedc8e9b938fc000b8ae683ffeae474ed05bf34ee8a4b7a2e1a42a37a1bf2fbb7a5a9e88df5c0175bdbb3866cedc3bedde41a4270514d75
   languageName: node
   linkType: hard
 

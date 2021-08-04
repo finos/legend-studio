@@ -15,8 +15,8 @@
  */
 
 import type { PlainObject } from '@finos/legend-studio-shared';
-import { losslessParse } from '@finos/legend-studio-shared';
 import {
+  losslessParse,
   assertErrorThrown,
   guaranteeNonNullable,
   mergeObjects,

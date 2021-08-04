@@ -112,8 +112,10 @@ const ExistingQuerySetup = observer(
     };
 
     useEffect(() => {
-      flowResult(querySetupState.loadQueries());
-    }, [querySetupState]);
+      flowResult(querySetupState.loadQueries()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [querySetupState, applicationStore]);
 
     return (
       <div className="query-setup__wizard query-setup__existing-query">
@@ -316,8 +318,10 @@ const ServiceQuerySetup = observer(
     };
 
     useEffect(() => {
-      flowResult(querySetupState.loadProjects());
-    }, [querySetupState]);
+      flowResult(querySetupState.loadProjects()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [querySetupState, applicationStore]);
 
     return (
       <div className="query-setup__wizard query-setup__service-query">
@@ -601,8 +605,10 @@ const CreateQuerySetup = observer(
     };
 
     useEffect(() => {
-      flowResult(querySetupState.loadProjects());
-    }, [querySetupState]);
+      flowResult(querySetupState.loadProjects()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [querySetupState, applicationStore]);
 
     return (
       <div className="query-setup__wizard query-setup__create-query">

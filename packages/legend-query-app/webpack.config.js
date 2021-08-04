@@ -16,7 +16,7 @@
 
 import { resolve, dirname } from 'path';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import appConfig from './studio.config.js';
+import appConfig from './query.config.js';
 import {
   getEnvInfo,
   getWebAppBaseWebpackConfig,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, flowResult, makeAutoObservable } from 'mobx';
+import { action, computed, makeAutoObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
