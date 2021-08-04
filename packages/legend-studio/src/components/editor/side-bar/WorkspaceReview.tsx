@@ -173,6 +173,8 @@ export const WorkspaceReview = observer(() => {
       flowResult(
         workspaceReviewState.createWorkspaceReview(
           workspaceReviewState.reviewTitle,
+          // use review title for description until a UI input box is provided
+          workspaceReviewState.reviewTitle,
         ),
       ).catch(applicationStore.alertIllegalUnhandledError);
     }
