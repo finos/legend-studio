@@ -24,7 +24,10 @@ import {
   assertTrue,
 } from '@finos/legend-studio-shared';
 import { Database } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
-import { getAllIncludedDbs } from '../../../../../../../metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
+import {
+  getAllIncludedDbs,
+  getDatabaseNullableFilter,
+} from '../../../../../../../metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
 import { Schema } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Schema';
 import { Table } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { Column } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Column';
@@ -117,6 +120,10 @@ import type { V1_JoinPointer } from '../../../../model/packageableElements/store
 import type { V1_Filter } from '../../../../model/packageableElements/store/relational/model/V1_Filter';
 import { V1_buildMilestoning } from './V1_MilestoningBuilderHelper';
 import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../../../../MetaModelConst';
+import { FilterMapping } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/FilterMapping';
+import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
+import { FilterImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/FilterReference';
+import { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 
 const _schemaExists = (
   db: Database,
@@ -176,6 +183,20 @@ export const V1_findRelation = (
     `Found multiple relations with name '${tableName}' in schema '${schemaName}' of database '${database.path}'`,
   );
   return relations.length === 0 ? undefined : relations[0];
+};
+
+const V1_findFilter = (
+  database: Database,
+  filterName: string,
+): Filter | undefined => {
+  let filter: Filter | undefined;
+  const dbs = getAllIncludedDbs(database).values();
+  let db = dbs.next();
+  while (!filter && !db.done) {
+    filter = getDatabaseNullableFilter(filterName, db.value);
+    db = dbs.next();
+  }
+  return filter;
 };
 
 export const V1_getRelation = (
@@ -426,6 +447,34 @@ const buildViewFirstPass = (srcView: V1_View, schema: Schema): View => {
   );
   return view;
 };
+
+const processFilterMapping = (
+  srcFilterMapping: V1_FilterMapping,
+  ownerDb: Database,
+  context: V1_GraphBuilderContext,
+): FilterMapping | undefined => {
+  const srcFilter = srcFilterMapping.filter;
+  const filter = guaranteeNonNullable(V1_findFilter(ownerDb, srcFilter.name));
+  const filterMapping = new FilterMapping(
+    ownerDb,
+    srcFilter.name,
+    FilterImplicitReference.create(
+      PackageableElementImplicitReference.create(
+        filter.owner,
+        srcFilter.db ?? '',
+      ),
+      filter,
+    ),
+  );
+  if (srcFilterMapping.joins) {
+    filterMapping.joinTreeNode = V1_buildElementWithJoinsJoinTreeNode(
+      srcFilterMapping.joins,
+      context,
+    );
+  }
+  return filterMapping;
+};
+
 const buildViewSecondPass = (
   srcView: V1_View,
   context: V1_GraphBuilderContext,
@@ -452,6 +501,13 @@ const buildViewSecondPass = (
       [],
     ),
   );
+  if (srcView.filter) {
+    const filterPtr = srcView.filter.filter;
+    const db = filterPtr.db
+      ? context.resolveDatabase(filterPtr.db).value
+      : view.schema.owner;
+    view.filter = processFilterMapping(srcView.filter, db, context);
+  }
   if (groupByColumns.length) {
     const groupBy = new GroupByMapping();
     groupBy.columns = groupByColumns;

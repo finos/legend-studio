@@ -35,7 +35,7 @@ export class V1_View {
       CORE_HASH_STRUCTURE.DATBASE_VIEW,
       this.name,
       Boolean(this.distinct).toString(),
-      this.filter?.hashCode ?? '',
+      this.filter ?? '',
       hashArray(this.primaryKey),
       hashArray(this.columnMappings),
       hashArray(this.groupBy),

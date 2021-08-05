@@ -833,12 +833,10 @@ const transformRootRelationalSetImpl = (
   );
   if (element.filter) {
     const filter = new V1_FilterMapping();
-
     const filterPointer = new V1_FilterPointer();
     filterPointer.db = element.filter.database.path;
     filterPointer.name = element.filter.filterName;
     filter.filter = filterPointer;
-
     filter.joins = element.filter.joinTreeNode
       ? extractLine(element.filter.joinTreeNode).map((node) => {
           const joinPtr = new V1_JoinPointer();
@@ -848,7 +846,6 @@ const transformRootRelationalSetImpl = (
           return joinPtr;
         })
       : [];
-
     classMapping.filter = filter;
   }
   classMapping.propertyMappings = transformClassMappingPropertyMappings(

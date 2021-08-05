@@ -16,6 +16,7 @@
 
 import { guaranteeType } from '@finos/legend-studio-shared';
 import { Database } from '../../../../packageableElements/store/relational/model/Database';
+import type { Filter } from '../../../../packageableElements/store/relational/model/Filter';
 import type { Schema } from '../../../../packageableElements/store/relational/model/Schema';
 import type { Table } from '../../../../packageableElements/store/relational/model/Table';
 
@@ -60,6 +61,12 @@ export const getSchemaNullableTable = (
   name: string,
   schema: Schema,
 ): Table | undefined => schema.tables.find((table) => table.name === name);
+
+export const getDatabaseNullableFilter = (
+  filterName: string,
+  db: Database,
+): Filter | undefined =>
+  db.filters.find((filter) => filter.name === filterName);
 
 export const getDbNullableTable = (
   _table: string,

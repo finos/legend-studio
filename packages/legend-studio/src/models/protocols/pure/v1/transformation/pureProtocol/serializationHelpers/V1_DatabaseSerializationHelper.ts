@@ -317,7 +317,7 @@ export const V1_tablePtrModelSchema = createModelSchema(V1_TablePtr, {
 });
 
 const V1_filterPointerModelSchema = createModelSchema(V1_FilterPointer, {
-  db: primitive(),
+  db: optional(primitive()),
   name: primitive(),
 });
 
