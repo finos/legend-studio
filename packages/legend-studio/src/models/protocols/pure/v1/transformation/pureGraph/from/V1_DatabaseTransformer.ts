@@ -102,6 +102,8 @@ import { V1_Schema } from '../../../model/packageableElements/store/relational/m
 import { V1_Table } from '../../../model/packageableElements/store/relational/model/V1_Table';
 import { V1_transformMilestoning } from './V1_MilestoningTransformer';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
+import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
 
 const transformRelationalDataType = (type: DataType): V1_RelationalDataType => {
   if (type instanceof VarChar) {
@@ -330,6 +332,22 @@ const transformView = (
     transformColumnMapping(columnMapping, context),
   );
   view.groupBy = V1_transformGroupByMapping(element.groupBy, context);
+  if (element.filter) {
+    const filter = new V1_FilterMapping();
+    const filterPointer = new V1_FilterPointer();
+    filterPointer.name = element.filter.filterName;
+    filter.filter = filterPointer;
+    filter.joins = element.filter.joinTreeNode
+      ? extractLine(element.filter.joinTreeNode).map((node) => {
+          const joinPtr = new V1_JoinPointer();
+          joinPtr.db = node.join.ownerReference.valueForSerialization;
+          joinPtr.joinType = node.joinType;
+          joinPtr.name = node.join.value.name;
+          return joinPtr;
+        })
+      : [];
+    view.filter = filter;
+  }
   return view;
 };
 

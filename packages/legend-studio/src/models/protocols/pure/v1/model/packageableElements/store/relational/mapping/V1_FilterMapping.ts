@@ -26,7 +26,7 @@ export class V1_FilterMapping implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FILTER_MAPPING,
-      this.filter.db,
+      this.filter.db ?? '',
       this.filter.name,
       hashArray(this.joins ?? []),
     ]);

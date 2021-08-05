@@ -1,4 +1,30 @@
 ###Relational
+Database store::relational::tests::dbIncWithStoreFilter
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+
+  View PersonView
+  (
+    ~filter PersonFilter
+    ID: personTable.ID PRIMARY KEY,
+    FIRSTNAME: personTable.FIRSTNAME,
+    LASTNAME: personTable.LASTNAME,
+    AGE: personTable.AGE
+  )
+
+  Filter PersonFilter(personTable.AGE > 110)
+  Filter personMappingFilter(PersonView.AGE < 200)
+)
+
 Database model::realtional::test::PersonDB
 (
   Schema PersonSchema
