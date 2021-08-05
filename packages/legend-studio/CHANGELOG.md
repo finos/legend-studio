@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.2.6
+
+### Patch Changes
+
+- [#383](https://github.com/finos/legend-studio/pull/383) [`19274f5`](https://github.com/finos/legend-studio/commit/19274f50c5bcb7aec5e2a94c35be3c74f5b3c5e1) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add processing support for filters in database views.
+
 ## 0.2.5
 
 ### Patch Changes
