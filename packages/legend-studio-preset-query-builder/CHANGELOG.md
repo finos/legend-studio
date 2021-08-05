@@ -1,5 +1,12 @@
 # @finos/legend-studio-preset-query-builder
 
+## 0.0.28
+
+### Patch Changes
+
+- Updated dependencies [[`19274f5`](https://github.com/finos/legend-studio/commit/19274f50c5bcb7aec5e2a94c35be3c74f5b3c5e1)]:
+  - @finos/legend-studio@0.2.6
+
 ## 0.0.27
 
 ### Patch Changes
