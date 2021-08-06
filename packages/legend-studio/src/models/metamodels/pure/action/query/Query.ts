@@ -25,8 +25,11 @@ export class Query {
   versionId!: string;
   mapping!: PackageableElementReference<Mapping>;
   runtime!: PackageableElementReference<PackageableRuntime>;
-  owners: string[] = [];
-  // NOTE: we decide to store the query in text because text format is more compact and stable than JSON
+  // We enforce a single owner, for collaboration on query, use Studio
+  // if not owner is specified, any user can own the query
+  // NOTE: the owner is managed automatically by the backend
+  owner?: string;
+  // Store query in text to be more compact and stable
   content!: string;
 }
 

@@ -179,6 +179,66 @@
   .query-setup__wizard__content {
     padding: 2rem 3rem 3rem 3rem;
   }
+
+  .query-setup__wizard__selector {
+    width: 46.7rem;
+  }
+
+  &__input {
+    @include flexVCenter;
+
+    width: 50rem;
+  }
+
+  &__query-option {
+    @include flexVCenter;
+
+    &__label {
+      width: calc(100% - 5rem);
+    }
+
+    &__action {
+      @include flexCenter;
+
+      width: 5rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      color: var(--color-dark-grey-500);
+
+      &:hover {
+        background: var(--color-magenta-50);
+        color: var(--color-dark-shade-800);
+      }
+    }
+  }
+
+  &__btn {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 2.8rem;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-250);
+    margin-left: 0.5rem;
+    border-radius: 0.2rem;
+
+    svg {
+      color: var(--color-dark-grey-500);
+    }
+
+    &--active {
+      background: var(--color-magenta-50);
+      border: none;
+
+      svg {
+        color: var(--color-dark-shade-300);
+      }
+    }
+  }
 }
 
 .query-setup__wizard {

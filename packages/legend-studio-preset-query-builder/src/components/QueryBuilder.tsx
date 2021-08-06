@@ -156,8 +156,8 @@ export const QueryBuilder = observer(
         className="query-builder"
       >
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-          <QueryBuilderHeader queryBuilderState={queryBuilderState} />
           <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
+          <QueryBuilderHeader queryBuilderState={queryBuilderState} />
           <div className="query-builder__content">
             <ReflexContainer orientation="horizontal">
               <ReflexElement minSize={132}>

@@ -15,25 +15,29 @@
  */
 
 import { SerializationFactory } from '@finos/legend-studio-shared';
-import { createModelSchema, list, primitive } from 'serializr';
+import { createModelSchema, optional, primitive } from 'serializr';
 
 export class V1_Query {
   name!: string;
   id!: string;
   projectId!: string;
+  // groupId!: string;
+  // artifactId!: string;
   versionId!: string;
   mapping!: string;
   runtime!: string;
   content!: string;
-  owners: string[] = [];
+  owner?: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
+      // artifactId: primitive(),
       content: primitive(),
       id: primitive(),
+      // groupId: primitive(),
       mapping: primitive(),
       name: primitive(),
-      owners: list(primitive()),
+      owner: optional(primitive()),
       projectId: primitive(),
       runtime: primitive(),
       versionId: primitive(),
@@ -45,11 +49,15 @@ export class V1_LightQuery {
   name!: string;
   id!: string;
   projectId!: string;
+  // groupId!: string;
+  // artifactId!: string;
   versionId!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
+      // artifactId: primitive(),
       id: primitive(),
+      // groupId: primitive(),
       name: primitive(),
       projectId: primitive(),
       versionId: primitive(),

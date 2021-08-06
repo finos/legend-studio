@@ -61,7 +61,7 @@ export const V1_buildLightQuery = (protocol: V1_LightQuery): LightQuery => {
   );
   metamodel.versionId = guaranteeNonNullable(
     protocol.versionId,
-    `Query version ID is missing`,
+    `Query version is missing`,
   );
   return metamodel;
 };
@@ -76,7 +76,7 @@ export const V1_buildQuery = (protocol: V1_Query, graph: PureModel): Query => {
   );
   metamodel.versionId = guaranteeNonNullable(
     protocol.versionId,
-    `Query version ID is missing`,
+    `Query version is missing`,
   );
   metamodel.mapping = PackageableElementExplicitReference.create(
     graph.getMapping(
@@ -92,21 +92,21 @@ export const V1_buildQuery = (protocol: V1_Query, graph: PureModel): Query => {
     protocol.content,
     `Query content is missing`,
   );
-  metamodel.owners = protocol.owners;
+  metamodel.owner = protocol.owner;
   return metamodel;
 };
 
 export const V1_transformQuery = (metamodel: Query): V1_Query => {
   const protocol = new V1_Query();
   protocol.name = metamodel.name;
-  protocol.id = metamodel.name;
+  protocol.id = metamodel.id;
   protocol.name = metamodel.name;
   protocol.projectId = metamodel.projectId;
   protocol.versionId = metamodel.versionId;
   protocol.mapping = metamodel.mapping.valueForSerialization;
   protocol.runtime = metamodel.runtime.valueForSerialization;
   protocol.content = metamodel.content;
-  protocol.owners = metamodel.owners;
+  protocol.owner = metamodel.owner;
   return protocol;
 };
 

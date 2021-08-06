@@ -63,6 +63,7 @@ import type {
   ExistingQueryPathParams,
   ServiceQueryPathParams,
 } from './LegendQueryRouter';
+import { generateExistingQueryRoute } from './LegendQueryRouter';
 
 export abstract class QueryInfoState {
   queryStore: QueryStore;
@@ -235,11 +236,16 @@ export class QueryExportState {
       return;
     }
     try {
-      yield this.queryStore.editorStore.graphState.graphManager.createQuery(
-        query,
-      );
+      const newQuery =
+        (yield this.queryStore.editorStore.graphState.graphManager.createQuery(
+          query,
+          this.queryStore.editorStore.graphState.graph,
+        )) as Query;
       this.queryStore.editorStore.applicationStore.notifySuccess(
         `Sucessfully created query!`,
+      );
+      this.queryStore.editorStore.applicationStore.historyApiClient.push(
+        generateExistingQueryRoute(newQuery.id),
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
@@ -265,16 +271,26 @@ export class QueryStore {
 
   buildGraphState = ActionState.create();
   initGraphState = ActionState.create();
+  editorInitState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
       editorStore: false,
+      reset: action,
       setQueryInfoState: action,
       setQueryExportState: action,
     });
 
     this.editorStore = editorStore;
     this.queryBuilderState = new QueryBuilderState(editorStore);
+  }
+
+  reset(): void {
+    this.setQueryInfoState(undefined);
+    this.queryBuilderState = new QueryBuilderState(this.editorStore);
+    this.editorStore.graphState.resetGraph();
+    this.buildGraphState.reset();
+    this.editorInitState.reset();
   }
 
   setQueryInfoState(val: QueryInfoState | undefined): void {
@@ -291,6 +307,7 @@ export class QueryStore {
     const { queryId } = params;
 
     try {
+      this.editorInitState.inProgress();
       if (this.initGraphState.isInInitialState) {
         yield flowResult(this.initGraph());
       } else if (this.initGraphState.isInProgress) {
@@ -352,6 +369,8 @@ export class QueryStore {
         message: `Can't initialize query editor`,
         prompt: `Reload the application or navigate to the setup page`,
       });
+    } finally {
+      this.editorInitState.complete();
     }
   }
 
@@ -361,8 +380,9 @@ export class QueryStore {
   ): GeneratorFn<void> {
     const { projectId, versionId, servicePath } = params;
 
-    let queryInfoState: ServiceQueryInfoState;
     try {
+      this.editorInitState.inProgress();
+      let queryInfoState: ServiceQueryInfoState;
       if (this.queryInfoState instanceof ServiceQueryInfoState) {
         assertTrue(this.queryInfoState.projectMetadata.projectId === projectId);
         assertTrue(this.queryInfoState.versionId === versionId);
@@ -429,12 +449,15 @@ export class QueryStore {
         message: `Can't initialize query editor`,
         prompt: `Reload the application or navigate to the setup page`,
       });
+    } finally {
+      this.editorInitState.complete();
     }
   }
 
   *setupCreateQueryInfoState(params: CreateQueryPathParams): GeneratorFn<void> {
     const { projectId, versionId, mappingPath, runtimePath } = params;
     try {
+      this.editorInitState.inProgress();
       let queryInfoState: CreateQueryInfoState;
       if (this.queryInfoState instanceof CreateQueryInfoState) {
         assertTrue(this.queryInfoState.projectMetadata.projectId === projectId);
@@ -498,6 +521,8 @@ export class QueryStore {
         message: `Can't initialize query editor`,
         prompt: `Reload the application or navigate to the setup page`,
       });
+    } finally {
+      this.editorInitState.complete();
     }
   }
 

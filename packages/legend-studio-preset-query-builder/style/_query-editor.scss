@@ -16,6 +16,43 @@
 
 @use './mixins' as *;
 
+.query-editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
+  &__header {
+    height: 2.8rem;
+    background: var(--color-dark-grey-200);
+
+    &__back-btn {
+      @include flexCenter;
+
+      height: 100%;
+      width: 5rem;
+      border-right: 0.1rem solid var(--color-dark-grey-300);
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-dark-grey-400);
+      }
+
+      &:not([disabled]):hover {
+        svg {
+          color: var(--color-dark-grey-500);
+        }
+      }
+    }
+  }
+
+  &__content {
+    height: calc(100% - 2.8rem);
+    width: 100%;
+    border-top: 0.1rem solid var(--color-dark-grey-300);
+  }
+}
+
 .query-export {
   width: 50vw;
   padding: 0;

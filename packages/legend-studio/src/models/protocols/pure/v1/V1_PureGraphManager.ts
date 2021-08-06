@@ -2057,12 +2057,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // --------------------------------------------- Query ---------------------------------------------
 
   async getQueries(
-    showOwnQueryOnly: boolean | undefined,
+    search: string | undefined,
+    showCurrentUserQueriesOnly: boolean | undefined,
     limit: number | undefined,
   ): Promise<LightQuery[]> {
-    return (await this.engine.getQueries(showOwnQueryOnly, limit)).map(
-      (protocol) => V1_buildLightQuery(protocol),
-    );
+    return (
+      await this.engine.getQueries(search, showCurrentUserQueriesOnly, limit)
+    ).map((protocol) => V1_buildLightQuery(protocol));
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
@@ -2073,12 +2074,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(await this.engine.getQuery(queryId), graph);
   }
 
-  async createQuery(query: Query): Promise<void> {
-    await this.engine.createQuery(V1_transformQuery(query));
+  async createQuery(query: Query, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.createQuery(V1_transformQuery(query)),
+      graph,
+    );
   }
 
-  async updateQuery(query: Query): Promise<void> {
-    await this.engine.updateQuery(V1_transformQuery(query));
+  async updateQuery(query: Query, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.updateQuery(V1_transformQuery(query)),
+      graph,
+    );
   }
 
   async deleteQuery(queryId: string): Promise<void> {

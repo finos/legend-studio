@@ -65,13 +65,24 @@
   }
 }
 
+.query-builder__activity-bar {
+  width: 5rem;
+  background: var(--color-dark-grey-80);
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
 .query-builder {
   height: 100%;
   width: 100%;
 
   &__content {
+    display: flex;
     height: calc(100% - 6rem);
-    width: 100%;
+    // width: calc(100% - 5rem);
+    background: var(--color-dark-grey-80);
+    // flex: 1 0 auto;
   }
 
   &__header {

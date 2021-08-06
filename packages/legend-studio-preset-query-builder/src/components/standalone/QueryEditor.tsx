@@ -15,7 +15,10 @@
  */
 
 import { RuntimePointer, useApplicationStore } from '@finos/legend-studio';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  ArrowLeftIcon,
+  PanelLoadingIndicator,
+} from '@finos/legend-studio-components';
 import { getQueryParameters } from '@finos/legend-studio-shared';
 import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';
@@ -30,6 +33,7 @@ import type {
   ServiceQueryPathParams,
   ServiceQueryQueryParams,
 } from '../../stores/LegendQueryRouter';
+import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { generateCreateQueryRoute } from '../../stores/LegendQueryRouter';
 import type { QueryExportState } from '../../stores/QueryStore';
 import { CreateQueryInfoState, useQueryStore } from '../../stores/QueryStore';
@@ -109,16 +113,41 @@ const QueryExport = observer(() => {
   );
 });
 
+const QueryEditorHeader = observer(() => {
+  const queryStore = useQueryStore();
+  const applicationStore = useApplicationStore();
+  const backToMainMenu = (): void =>
+    applicationStore.historyApiClient.push(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
+
+  return (
+    <div className="query-editor__header">
+      <button
+        className="query-editor__header__back-btn"
+        onClick={backToMainMenu}
+        title="Back to Main Menu"
+      >
+        <ArrowLeftIcon />
+      </button>
+    </div>
+  );
+});
+
 const QueryEditorInner = observer(() => {
   const queryStore = useQueryStore();
-  if (!queryStore.editorStore.graphState.graph.buildState.hasCompleted) {
-    return <PanelLoadingIndicator isLoading={true} />;
-  }
+  const isLoadingEditor =
+    !queryStore.editorStore.graphState.graph.buildState.hasCompleted ||
+    !queryStore.editorInitState.hasCompleted;
   return (
-    <>
+    <div className="query-editor">
       <QueryExport />
-      <QueryBuilder queryBuilderState={queryStore.queryBuilderState} />
-    </>
+      <QueryEditorHeader />
+      <div className="query-editor__content">
+        <PanelLoadingIndicator isLoading={isLoadingEditor} />
+        {!isLoadingEditor && (
+          <QueryBuilder queryBuilderState={queryStore.queryBuilderState} />
+        )}
+      </div>
+    </div>
   );
 });
 

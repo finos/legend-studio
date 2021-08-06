@@ -32,10 +32,12 @@ import {
   PencilIcon,
   PlusIcon,
   RobotIcon,
+  UserIcon,
 } from '@finos/legend-studio-components';
+import { debounce } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { FaQuestionCircle } from 'react-icons/fa';
@@ -71,6 +73,7 @@ const ExistingQuerySetup = observer(
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
     const queryStore = useQueryStore();
+    const [searchText, setSearchText] = useState('');
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentQuery(undefined);
@@ -92,27 +95,82 @@ const ExistingQuerySetup = observer(
     };
     const canProceed = querySetupState.currentQuery;
 
-    // project
+    // show current user queries only
+    const toggleShowCurrentUserQueriesOnly = (): void => {
+      querySetupState.setShowCurrentUserQueriesOnly(
+        !querySetupState.showCurrentUserQueriesOnly,
+      );
+      flowResult(querySetupState.loadQueries(searchText)).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    };
+
+    // query
     const queryOptions = querySetupState.queries.map(buildQueryOption);
     const selectedQueryOption = querySetupState.currentQuery
       ? buildQueryOption(querySetupState.currentQuery)
       : null;
-    const querySelectorPlaceholder = querySetupState.loadQueriesState
-      .isInProgress
-      ? 'Loading queries'
-      : querySetupState.loadQueriesState.hasFailed
-      ? 'Error fetching queries'
-      : querySetupState.queries.length
-      ? 'Choose a query'
-      : 'You have no queries';
     const onQueryOptionChange = (option: QueryOption | null): void => {
       if (option?.value !== querySetupState.currentQuery?.id) {
         querySetupState.setCurrentQuery(option?.value);
       }
     };
+    const formatQueryOptionLabel = (option: QueryOption): React.ReactNode => {
+      const deleteQuery: React.MouseEventHandler<HTMLButtonElement> = (
+        event,
+      ) => {
+        event.preventDefault();
+        event.stopPropagation();
+        queryStore.editorStore.graphState.graphManager
+          .deleteQuery(option.value)
+          .then(() =>
+            flowResult(querySetupState.loadQueries('')).catch(
+              applicationStore.alertIllegalUnhandledError,
+            ),
+          )
+          .catch(applicationStore.alertIllegalUnhandledError);
+      };
+      if (option.value === querySetupState.currentQuery?.id) {
+        return option.label;
+      }
+      return (
+        <div className="query-setup__existing-query__query-option">
+          <div className="query-setup__existing-query__query-option__label">
+            {option.label}
+          </div>
+          {querySetupState.showCurrentUserQueriesOnly && (
+            <button
+              className="query-setup__existing-query__query-option__action"
+              tabIndex={-1}
+              onClick={deleteQuery}
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      );
+    };
+
+    // search text
+    const debouncedLoadQueries = useMemo(
+      () =>
+        debounce((input: string): void => {
+          flowResult(querySetupState.loadQueries(input)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
+        }, 500),
+      [applicationStore, querySetupState],
+    );
+    const onSearchTextChange = (value: string): void => {
+      if (value !== searchText) {
+        setSearchText(value);
+        debouncedLoadQueries.cancel();
+        debouncedLoadQueries(value);
+      }
+    };
 
     useEffect(() => {
-      flowResult(querySetupState.loadQueries()).catch(
+      flowResult(querySetupState.loadQueries('')).catch(
         applicationStore.alertIllegalUnhandledError,
       );
     }, [querySetupState, applicationStore]);
@@ -144,21 +202,35 @@ const ExistingQuerySetup = observer(
         <div className="query-setup__wizard__content">
           <div className="query-setup__wizard__group">
             <div className="query-setup__wizard__group__title">Query</div>
-            <CustomSelectorInput
-              className="query-setup__wizard__selector"
-              options={queryOptions}
-              disabled={
-                querySetupState.loadQueriesState.isInProgress ||
-                !queryOptions.length
-              }
-              isLoading={querySetupState.loadQueriesState.isInProgress}
-              onChange={onQueryOptionChange}
-              value={selectedQueryOption}
-              placeholder={querySelectorPlaceholder}
-              isClearable={true}
-              escapeClearsValue={true}
-              darkMode={true}
-            />
+            <div className="query-setup__existing-query__input">
+              <CustomSelectorInput
+                className="query-setup__wizard__selector"
+                options={queryOptions}
+                isLoading={querySetupState.loadQueriesState.isInProgress}
+                onInputChange={onSearchTextChange}
+                inputValue={searchText}
+                onChange={onQueryOptionChange}
+                value={selectedQueryOption}
+                placeholder="Enter your query name..."
+                isClearable={true}
+                escapeClearsValue={true}
+                darkMode={true}
+                formatOptionLabel={formatQueryOptionLabel}
+              />
+              <button
+                className={clsx('query-setup__existing-query__btn', {
+                  'query-setup__existing-query__btn--active':
+                    querySetupState.showCurrentUserQueriesOnly,
+                })}
+                tabIndex={-1}
+                title={`[${
+                  querySetupState.showCurrentUserQueriesOnly ? 'on' : 'off'
+                }] Toggle show only queries of current user`}
+                onClick={toggleShowCurrentUserQueriesOnly}
+              >
+                <UserIcon />
+              </button>
+            </div>
           </div>
         </div>
       </div>

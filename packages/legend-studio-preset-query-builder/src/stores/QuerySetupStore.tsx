@@ -62,6 +62,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
   loadQueriesState = ActionState.create();
   loadQueryState = ActionState.create();
   currentQuery?: LightQuery;
+  showCurrentUserQueriesOnly = false;
 
   constructor(queryStore: QueryStore) {
     super(queryStore);
@@ -69,9 +70,15 @@ export class ExistingQuerySetupState extends QuerySetupState {
     makeObservable(this, {
       queries: observable,
       currentQuery: observable,
+      showCurrentUserQueriesOnly: observable,
+      setShowCurrentUserQueriesOnly: action,
       setCurrentQuery: flow,
       loadQueries: flow,
     });
+  }
+
+  setShowCurrentUserQueriesOnly(val: boolean): void {
+    this.showCurrentUserQueriesOnly = val;
   }
 
   *setCurrentQuery(queryId: string | undefined): GeneratorFn<void> {
@@ -93,18 +100,20 @@ export class ExistingQuerySetupState extends QuerySetupState {
     }
   }
 
-  *loadQueries(): GeneratorFn<void> {
+  *loadQueries(searchText: string): GeneratorFn<void> {
     if (this.queryStore.initGraphState.isInInitialState) {
       yield flowResult(this.queryStore.initGraph());
     } else if (this.queryStore.initGraphState.isInProgress) {
       return;
     }
+    const isValidSearchString = searchText.length >= 3;
     this.loadQueriesState.inProgress();
     try {
       this.queries =
         (yield this.queryStore.editorStore.graphState.graphManager.getQueries(
-          undefined,
-          undefined,
+          isValidSearchString ? searchText : undefined,
+          this.showCurrentUserQueriesOnly,
+          10,
         )) as LightQuery[];
       this.loadQueriesState.pass();
     } catch (error: unknown) {
@@ -374,8 +383,7 @@ export class QuerySetupStore {
   }
 
   *init(): GeneratorFn<void> {
-    this.queryStore.setQueryInfoState(undefined);
-    this.queryStore.editorStore.graphState.resetGraph();
+    this.queryStore.reset();
   }
 }
 

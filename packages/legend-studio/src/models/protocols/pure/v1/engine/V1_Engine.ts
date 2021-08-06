@@ -556,11 +556,16 @@ export class V1_Engine {
   // ------------------------------------------- Query -------------------------------------------
 
   async getQueries(
-    showOwnQueryOnly: boolean | undefined,
+    search: string | undefined,
+    showCurrentUserQueriesOnly: boolean | undefined,
     limit: number | undefined,
   ): Promise<V1_LightQuery[]> {
     return (
-      await this.engineServerClient.getQueries(showOwnQueryOnly, limit)
+      await this.engineServerClient.getQueries(
+        search,
+        showCurrentUserQueriesOnly,
+        limit,
+      )
     ).map((query) => V1_LightQuery.serialization.fromJson(query));
   }
 
@@ -570,12 +575,16 @@ export class V1_Engine {
     );
   }
 
-  async createQuery(query: V1_Query): Promise<void> {
-    await this.engineServerClient.createQuery(query);
+  async createQuery(query: V1_Query): Promise<V1_Query> {
+    return V1_Query.serialization.fromJson(
+      await this.engineServerClient.createQuery(query),
+    );
   }
 
-  async updateQuery(query: V1_Query): Promise<void> {
-    await this.engineServerClient.updateQuery(query.id, query);
+  async updateQuery(query: V1_Query): Promise<V1_Query> {
+    return V1_Query.serialization.fromJson(
+      await this.engineServerClient.updateQuery(query.id, query),
+    );
   }
 
   async deleteQuery(queryId: string): Promise<void> {
