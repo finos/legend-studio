@@ -16,7 +16,10 @@
 
 import { observable, action, makeObservable } from 'mobx';
 import { createModelSchema, primitive } from 'serializr';
-import { assertTrue, SerializationFactory } from '@finos/legend-studio-shared';
+import {
+  assertNonEmptyString,
+  SerializationFactory,
+} from '@finos/legend-studio-shared';
 
 export enum VERSION_TYPE {
   MAJOR = 'MAJOR',
@@ -50,14 +53,19 @@ export class CreateVersionCommand {
   setRevisionId = (revisionId: string): void => {
     this.revisionId = revisionId;
   };
+
   setNotes = (notes: string): void => {
     this.notes = notes;
   };
 
   validate(): void {
-    assertTrue(
-      Boolean(this.revisionId) && Boolean(this.notes),
-      `Invalid version input`,
+    assertNonEmptyString(
+      this.revisionId,
+      `Can't create new release: version ID is empty`,
+    );
+    assertNonEmptyString(
+      this.notes,
+      `Can't create new release: release notes is empty`,
     );
   }
 }

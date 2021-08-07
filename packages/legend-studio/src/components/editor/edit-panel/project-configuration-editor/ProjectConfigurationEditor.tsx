@@ -35,11 +35,7 @@ import type {
   VersionSelectOption,
 } from '../../../../models/sdlc/models/version/Version';
 import type { SelectComponent } from '@finos/legend-studio-components';
-import {
-  clsx,
-  BlankPanelContent,
-  CustomSelectorInput,
-} from '@finos/legend-studio-components';
+import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
 import type { ProjectSelectOption } from '../../../../models/sdlc/models/project/Project';
 import {
   useApplicationStore,
@@ -349,9 +345,6 @@ export const ProjectConfigurationEditor = observer(() => {
   const sdlcState = editorStore.sdlcState;
   const selectedTab = configurationEditorState.selectedTab;
   const isReadOnly = configurationEditorState.isReadOnly;
-  const isInitialVersion =
-    configurationEditorState.projectConfiguration?.projectStructureVersion
-      .isInitialVersion;
   const tabs = [
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
@@ -447,86 +440,69 @@ export const ProjectConfigurationEditor = observer(() => {
               {sdlcState.currentProject?.name ?? '(unknown)'}
             </div>
           </div>
-          {!isInitialVersion && (
-            <button
-              // TODO: remove this ugly button when we integrate project configuration into change detection flow
-              className="project-configuration-editor__update-btn"
-              disabled={
-                isReadOnly ||
-                currentProjectConfiguration.hashCode ===
-                  configurationEditorState.originalConfig.hashCode
-              }
-              onClick={updateConfigs}
-              tabIndex={-1}
-            >
-              Update
-            </button>
-          )}
+          <button
+            // TODO: remove this ugly button when we integrate project configuration into change detection flow
+            className="project-configuration-editor__update-btn"
+            disabled={
+              isReadOnly ||
+              currentProjectConfiguration.hashCode ===
+                configurationEditorState.originalConfig.hashCode
+            }
+            onClick={updateConfigs}
+            tabIndex={-1}
+          >
+            Update
+          </button>
         </div>
-        {isInitialVersion && (
-          // TODO: put a link to the review for initial project configuration
-          <div className="project-configuration-editor__content--not-initialized">
-            <BlankPanelContent>
-              Project configuration has not been initialized
-            </BlankPanelContent>
+        <div className="panel__header project-configuration-editor__tabs__header">
+          <div className="project-configuration-editor__tabs">
+            {tabs.map((tab) => (
+              <div
+                key={tab}
+                onClick={changeTab(tab)}
+                className={clsx('project-configuration-editor__tab', {
+                  'project-configuration-editor__tab--active':
+                    tab === selectedTab,
+                })}
+              >
+                {prettyCONSTName(tab)}
+              </div>
+            ))}
           </div>
-        )}
-        {!isInitialVersion && (
-          <>
-            <div className="panel__header project-configuration-editor__tabs__header">
-              <div className="project-configuration-editor__tabs">
-                {tabs.map((tab) => (
-                  <div
-                    key={tab}
-                    onClick={changeTab(tab)}
-                    className={clsx('project-configuration-editor__tab', {
-                      'project-configuration-editor__tab--active':
-                        tab === selectedTab,
-                    })}
-                  >
-                    {prettyCONSTName(tab)}
-                  </div>
-                ))}
-              </div>
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action"
-                  disabled={disableAddButton}
-                  tabIndex={-1}
-                  onClick={addValue}
-                  title={addButtonTitle}
-                >
-                  <FaPlus />
-                </button>
-              </div>
-            </div>
-            <div className="panel__content project-configuration-editor__content">
-              {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE && (
-                <div className="panel__content__lists">
-                  <ProjectStructureEditor
-                    projectConfig={currentProjectConfiguration}
+          <div className="panel__header__actions">
+            <button
+              className="panel__header__action"
+              disabled={disableAddButton}
+              tabIndex={-1}
+              onClick={addValue}
+              title={addButtonTitle}
+            >
+              <FaPlus />
+            </button>
+          </div>
+        </div>
+        <div className="panel__content project-configuration-editor__content">
+          {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE && (
+            <ProjectStructureEditor
+              projectConfig={currentProjectConfiguration}
+              isReadOnly={isReadOnly}
+            />
+          )}
+          {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
+            <div className="panel__content__lists">
+              {currentProjectConfiguration.projectDependencies.map(
+                (projectDependency) => (
+                  <ProjectDependencyEditor
+                    key={projectDependency.uuid}
+                    projectDependency={projectDependency}
+                    deleteValue={deleteProjectDependency(projectDependency)}
                     isReadOnly={isReadOnly}
                   />
-                </div>
-              )}
-              {selectedTab ===
-                CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
-                <div className="panel__content__lists">
-                  {currentProjectConfiguration.projectDependencies.map(
-                    (projectDependency) => (
-                      <ProjectDependencyEditor
-                        key={projectDependency.uuid}
-                        projectDependency={projectDependency}
-                        deleteValue={deleteProjectDependency(projectDependency)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ),
-                  )}
-                </div>
+                ),
               )}
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
