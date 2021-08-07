@@ -2063,21 +2063,34 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<LightQuery[]> {
     return (
       await this.engine.getQueries(search, showCurrentUserQueriesOnly, limit)
-    ).map((protocol) => V1_buildLightQuery(protocol));
+    ).map((protocol) =>
+      V1_buildLightQuery(
+        protocol,
+        this.engine.getEngineServerClient().currentUserId,
+      ),
+    );
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
-    return V1_buildLightQuery(await this.engine.getQuery(queryId));
+    return V1_buildLightQuery(
+      await this.engine.getQuery(queryId),
+      this.engine.getEngineServerClient().currentUserId,
+    );
   }
 
   async getQuery(queryId: string, graph: PureModel): Promise<Query> {
-    return V1_buildQuery(await this.engine.getQuery(queryId), graph);
+    return V1_buildQuery(
+      await this.engine.getQuery(queryId),
+      graph,
+      this.engine.getEngineServerClient().currentUserId,
+    );
   }
 
   async createQuery(query: Query, graph: PureModel): Promise<Query> {
     return V1_buildQuery(
       await this.engine.createQuery(V1_transformQuery(query)),
       graph,
+      this.engine.getEngineServerClient().currentUserId,
     );
   }
 
@@ -2085,6 +2098,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.updateQuery(V1_transformQuery(query)),
       graph,
+      this.engine.getEngineServerClient().currentUserId,
     );
   }
 

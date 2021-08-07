@@ -246,7 +246,7 @@ const ProjectStructureEditor = observer(
               className="panel__content__form__section__input"
               spellCheck={false}
               disabled={isReadOnly}
-              value={projectConfig.groupId ?? ''}
+              value={projectConfig.groupId}
               onChange={changeGroupId}
             />
           </div>

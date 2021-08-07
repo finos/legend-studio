@@ -44,9 +44,14 @@ const QueryExportInner = observer(
     const { queryExportState } = props;
     const applicationStore = useApplicationStore();
 
-    const allowSave = queryExportState.allowSave;
+    const allowCreate = queryExportState.allowPersist;
+    const allowSave =
+      queryExportState.allowPersist && queryExportState.allowUpdate;
+    const create = applicationStore.guaranteeSafeAction(() =>
+      flowResult(queryExportState.persistQuery(true)),
+    );
     const save = applicationStore.guaranteeSafeAction(() =>
-      flowResult(queryExportState.saveQuery()),
+      flowResult(queryExportState.persistQuery(false)),
     );
 
     // name
@@ -62,7 +67,7 @@ const QueryExportInner = observer(
       <>
         <div className="modal__body">
           <PanelLoadingIndicator
-            isLoading={queryExportState.saveQueryState.isInProgress}
+            isLoading={queryExportState.persistQueryState.isInProgress}
           />
           <input
             ref={nameInputRef}
@@ -73,12 +78,20 @@ const QueryExportInner = observer(
           />
         </div>
         <div className="modal__footer">
+          {allowSave && (
+            <button
+              className="btn modal__footer__close-btn btn--dark"
+              onClick={save}
+            >
+              Save
+            </button>
+          )}
           <button
             className="btn modal__footer__close-btn btn--dark"
-            disabled={!allowSave}
-            onClick={save}
+            disabled={!allowCreate}
+            onClick={create}
           >
-            Save
+            Create
           </button>
         </div>
       </>

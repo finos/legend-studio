@@ -61,10 +61,10 @@ import {
   useQueryStore,
 } from '../../stores/QueryStore';
 
-type QueryOption = { label: string; value: string };
+type QueryOption = { label: string; value: LightQuery };
 const buildQueryOption = (query: LightQuery): QueryOption => ({
   label: query.name,
-  value: query.id,
+  value: query,
 });
 
 const ExistingQuerySetup = observer(
@@ -112,7 +112,7 @@ const ExistingQuerySetup = observer(
       : null;
     const onQueryOptionChange = (option: QueryOption | null): void => {
       if (option?.value !== querySetupState.currentQuery?.id) {
-        querySetupState.setCurrentQuery(option?.value);
+        querySetupState.setCurrentQuery(option?.value.id);
       }
     };
     const formatQueryOptionLabel = (option: QueryOption): React.ReactNode => {
@@ -122,7 +122,7 @@ const ExistingQuerySetup = observer(
         event.preventDefault();
         event.stopPropagation();
         queryStore.editorStore.graphState.graphManager
-          .deleteQuery(option.value)
+          .deleteQuery(option.value.id)
           .then(() =>
             flowResult(querySetupState.loadQueries('')).catch(
               applicationStore.alertIllegalUnhandledError,
@@ -130,7 +130,7 @@ const ExistingQuerySetup = observer(
           )
           .catch(applicationStore.alertIllegalUnhandledError);
       };
-      if (option.value === querySetupState.currentQuery?.id) {
+      if (option.value.id === querySetupState.currentQuery?.id) {
         return option.label;
       }
       return (
@@ -147,6 +147,20 @@ const ExistingQuerySetup = observer(
               Delete
             </button>
           )}
+          {!querySetupState.showCurrentUserQueriesOnly &&
+            Boolean(option.value.owner) && (
+              <div
+                className={clsx(
+                  'query-setup__existing-query__query-option__user',
+                  {
+                    'query-setup__existing-query__query-option__user--mine':
+                      option.value.isCurrentUserQuery,
+                  },
+                )}
+              >
+                {option.value.isCurrentUserQuery ? 'mine' : option.value.owner}
+              </div>
+            )}
         </div>
       );
     };
@@ -211,7 +225,7 @@ const ExistingQuerySetup = observer(
                 inputValue={searchText}
                 onChange={onQueryOptionChange}
                 value={selectedQueryOption}
-                placeholder="Enter your query name..."
+                placeholder="Search for query by name..."
                 isClearable={true}
                 escapeClearsValue={true}
                 darkMode={true}

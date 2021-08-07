@@ -20,9 +20,12 @@ import { createModelSchema, optional, primitive } from 'serializr';
 export class V1_Query {
   name!: string;
   id!: string;
+  /**
+   * @deprecated
+   */
   projectId!: string;
-  // groupId!: string;
-  // artifactId!: string;
+  groupId!: string;
+  artifactId!: string;
   versionId!: string;
   mapping!: string;
   runtime!: string;
@@ -31,10 +34,10 @@ export class V1_Query {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
-      // artifactId: primitive(),
+      artifactId: primitive(),
       content: primitive(),
       id: primitive(),
-      // groupId: primitive(),
+      groupId: primitive(),
       mapping: primitive(),
       name: primitive(),
       owner: optional(primitive()),
@@ -49,16 +52,18 @@ export class V1_LightQuery {
   name!: string;
   id!: string;
   projectId!: string;
-  // groupId!: string;
-  // artifactId!: string;
+  groupId!: string;
+  owner?: string;
+  artifactId!: string;
   versionId!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
-      // artifactId: primitive(),
+      artifactId: primitive(),
       id: primitive(),
-      // groupId: primitive(),
+      groupId: primitive(),
       name: primitive(),
+      owner: optional(primitive()),
       projectId: primitive(),
       versionId: primitive(),
     }),

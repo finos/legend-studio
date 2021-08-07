@@ -18,7 +18,6 @@ import { createContext, useContext } from 'react';
 import {
   action,
   computed,
-  flow,
   flowResult,
   makeAutoObservable,
   makeObservable,
@@ -112,6 +111,7 @@ export class CreateQueryInfoState extends QueryInfoState {
   }
 
   decorateQuery(query: Query): void {
+    query.id = uuid();
     query.projectId = this.projectMetadata.projectId;
     query.versionId = this.versionId;
   }
@@ -139,6 +139,7 @@ export class ServiceQueryInfoState extends QueryInfoState {
   }
 
   decorateQuery(query: Query): void {
+    query.id = uuid();
     query.projectId = this.projectMetadata.projectId;
     query.versionId = this.versionId;
   }
@@ -153,6 +154,7 @@ export class ExistingQueryInfoState extends QueryInfoState {
   }
 
   decorateQuery(query: Query): void {
+    query.id = this.query.id;
     query.projectId = this.query.projectId;
     query.versionId = this.query.versionId;
   }
@@ -161,37 +163,35 @@ export class ExistingQueryInfoState extends QueryInfoState {
 export class QueryExportState {
   queryStore: QueryStore;
   lambda: RawLambda;
-  saveQueryState = ActionState.create();
-  existingQuery?: LightQuery;
+  persistQueryState = ActionState.create();
   queryName = 'My New Query';
+  allowUpdate = false;
 
   constructor(
     queryStore: QueryStore,
     lambda: RawLambda,
-    existingQuery: LightQuery | undefined,
+    allowUpdate: boolean,
+    queryName: string | undefined,
   ) {
     makeObservable(this, {
       queryName: observable,
-      allowSave: computed,
+      allowPersist: computed,
       setQueryName: action,
-      saveQuery: flow,
     });
 
     this.queryStore = queryStore;
     this.lambda = lambda;
-    this.existingQuery = existingQuery;
-    if (this.existingQuery) {
-      this.queryName = this.existingQuery.name;
-    }
+    this.allowUpdate = allowUpdate;
+    this.queryName = queryName ?? 'My New Query';
   }
 
   setQueryName(val: string): void {
     this.queryName = val;
   }
 
-  get allowSave(): boolean {
+  get allowPersist(): boolean {
     return (
-      !this.saveQueryState.isInProgress &&
+      !this.persistQueryState.isInProgress &&
       Boolean(this.queryStore.queryInfoState) &&
       Boolean(this.queryStore.queryBuilderState.querySetupState.mapping) &&
       this.queryStore.queryBuilderState.querySetupState.runtime instanceof
@@ -199,7 +199,7 @@ export class QueryExportState {
     );
   }
 
-  *saveQuery(): GeneratorFn<void> {
+  async persistQuery(createNew: boolean): Promise<void> {
     if (
       !this.queryStore.queryInfoState ||
       !this.queryStore.queryBuilderState.querySetupState.mapping ||
@@ -210,10 +210,9 @@ export class QueryExportState {
     ) {
       return;
     }
-    this.saveQueryState.inProgress();
+    this.persistQueryState.inProgress();
     const query = new Query();
     query.name = this.queryName;
-    query.id = this.existingQuery?.id ?? uuid();
     query.mapping = PackageableElementExplicitReference.create(
       this.queryStore.queryBuilderState.querySetupState.mapping,
     );
@@ -222,9 +221,9 @@ export class QueryExportState {
     this.queryStore.queryInfoState.decorateQuery(query);
     try {
       query.content =
-        (yield this.queryStore.editorStore.graphState.graphManager.lambdaToPureCode(
+        await this.queryStore.editorStore.graphState.graphManager.lambdaToPureCode(
           this.lambda,
-        )) as string;
+        );
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.queryStore.editorStore.applicationStore.logger.error(
@@ -232,21 +231,36 @@ export class QueryExportState {
         error,
       );
       this.queryStore.editorStore.applicationStore.notifyError(error);
-      this.saveQueryState.reset();
+      this.persistQueryState.reset();
       return;
     }
+    // TODO: remove this when we use metadata server
+    query.groupId =
+      this.queryStore.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
+    query.artifactId =
+      this.queryStore.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
     try {
-      const newQuery =
-        (yield this.queryStore.editorStore.graphState.graphManager.createQuery(
+      if (createNew) {
+        const newQuery =
+          await this.queryStore.editorStore.graphState.graphManager.createQuery(
+            query,
+            this.queryStore.editorStore.graphState.graph,
+          );
+        this.queryStore.editorStore.applicationStore.notifySuccess(
+          `Sucessfully created query!`,
+        );
+        this.queryStore.editorStore.applicationStore.historyApiClient.push(
+          generateExistingQueryRoute(newQuery.id),
+        );
+      } else {
+        await this.queryStore.editorStore.graphState.graphManager.updateQuery(
           query,
           this.queryStore.editorStore.graphState.graph,
-        )) as Query;
-      this.queryStore.editorStore.applicationStore.notifySuccess(
-        `Sucessfully created query!`,
-      );
-      this.queryStore.editorStore.applicationStore.historyApiClient.push(
-        generateExistingQueryRoute(newQuery.id),
-      );
+        );
+        this.queryStore.editorStore.applicationStore.notifySuccess(
+          `Sucessfully updated query!`,
+        );
+      }
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.queryStore.editorStore.applicationStore.logger.error(
@@ -255,7 +269,7 @@ export class QueryExportState {
       );
       this.queryStore.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.saveQueryState.reset();
+      this.persistQueryState.reset();
       this.queryStore.setQueryExportState(undefined);
     }
   }
@@ -354,7 +368,12 @@ export class QueryStore {
       this.queryBuilderState.querySetupState.setOnSaveQuery(
         async (lambda: RawLambda) => {
           this.setQueryExportState(
-            new QueryExportState(this, lambda, queryInfoState.query),
+            new QueryExportState(
+              this,
+              lambda,
+              queryInfoState.query.isCurrentUserQuery,
+              queryInfoState.query.name,
+            ),
           );
         },
       );
@@ -434,7 +453,7 @@ export class QueryStore {
       this.queryBuilderState.querySetupState.setOnSaveQuery(
         async (lambda: RawLambda) => {
           this.setQueryExportState(
-            new QueryExportState(this, lambda, undefined),
+            new QueryExportState(this, lambda, false, undefined),
           );
         },
       );
@@ -506,7 +525,7 @@ export class QueryStore {
       this.queryBuilderState.querySetupState.setOnSaveQuery(
         async (lambda: RawLambda) => {
           this.setQueryExportState(
-            new QueryExportState(this, lambda, undefined),
+            new QueryExportState(this, lambda, false, undefined),
           );
         },
       );

@@ -21,8 +21,13 @@ import type { PackageableRuntime } from '../../model/packageableElements/runtime
 export class Query {
   name!: string;
   id!: string;
+  /**
+   * @deprecated
+   */
   projectId!: string;
   versionId!: string;
+  groupId!: string;
+  artifactId!: string;
   mapping!: PackageableElementReference<Mapping>;
   runtime!: PackageableElementReference<PackageableRuntime>;
   // We enforce a single owner, for collaboration on query, use Studio
@@ -31,6 +36,8 @@ export class Query {
   owner?: string;
   // Store query in text to be more compact and stable
   content!: string;
+
+  isCurrentUserQuery = false;
 }
 
 export class LightQuery {
@@ -38,4 +45,9 @@ export class LightQuery {
   id!: string;
   projectId!: string;
   versionId!: string;
+  groupId!: string;
+  artifactId!: string;
+  owner?: string;
+
+  isCurrentUserQuery = false;
 }

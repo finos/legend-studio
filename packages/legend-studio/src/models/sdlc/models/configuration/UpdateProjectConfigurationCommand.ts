@@ -23,16 +23,16 @@ import {
 } from '@finos/legend-studio-shared';
 
 export class UpdateProjectConfigurationCommand {
-  artifactId?: string;
-  groupId?: string;
+  artifactId: string;
+  groupId: string;
   message: string;
   projectDependenciesToAdd?: ProjectDependency[];
   projectDependenciesToRemove?: ProjectDependency[];
   projectStructureVersion: ProjectStructureVersion;
 
   constructor(
-    groupId: string | undefined,
-    artifactId: string | undefined,
+    groupId: string,
+    artifactId: string,
     projectStructureVersion: ProjectStructureVersion,
     message: string,
   ) {

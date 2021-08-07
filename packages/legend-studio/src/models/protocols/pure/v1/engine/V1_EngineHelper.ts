@@ -51,7 +51,10 @@ import {
 import type { V1_SourceInformation } from '../model/V1_SourceInformation';
 import { SourceInformation } from '../../../../metamodels/pure/action/SourceInformation';
 
-export const V1_buildLightQuery = (protocol: V1_LightQuery): LightQuery => {
+export const V1_buildLightQuery = (
+  protocol: V1_LightQuery,
+  currentUserId: string | undefined,
+): LightQuery => {
   const metamodel = new LightQuery();
   metamodel.name = guaranteeNonNullable(protocol.name, `Query name is missing`);
   metamodel.id = guaranteeNonNullable(protocol.id, `Query ID is missing`);
@@ -63,10 +66,25 @@ export const V1_buildLightQuery = (protocol: V1_LightQuery): LightQuery => {
     protocol.versionId,
     `Query version is missing`,
   );
+  metamodel.groupId = guaranteeNonNullable(
+    protocol.groupId,
+    `Query project group ID is missing`,
+  );
+  metamodel.artifactId = guaranteeNonNullable(
+    protocol.artifactId,
+    `Query project artifact ID is missing`,
+  );
+  metamodel.owner = protocol.owner;
+  metamodel.isCurrentUserQuery =
+    currentUserId !== undefined && protocol.owner === currentUserId;
   return metamodel;
 };
 
-export const V1_buildQuery = (protocol: V1_Query, graph: PureModel): Query => {
+export const V1_buildQuery = (
+  protocol: V1_Query,
+  graph: PureModel,
+  currentUserId: string | undefined,
+): Query => {
   const metamodel = new Query();
   metamodel.name = guaranteeNonNullable(protocol.name, `Query name is missing`);
   metamodel.id = guaranteeNonNullable(protocol.id, `Query ID is missing`);
@@ -77,6 +95,14 @@ export const V1_buildQuery = (protocol: V1_Query, graph: PureModel): Query => {
   metamodel.versionId = guaranteeNonNullable(
     protocol.versionId,
     `Query version is missing`,
+  );
+  metamodel.groupId = guaranteeNonNullable(
+    protocol.groupId,
+    `Query project group ID is missing`,
+  );
+  metamodel.artifactId = guaranteeNonNullable(
+    protocol.artifactId,
+    `Query project artifact ID is missing`,
   );
   metamodel.mapping = PackageableElementExplicitReference.create(
     graph.getMapping(
@@ -93,6 +119,8 @@ export const V1_buildQuery = (protocol: V1_Query, graph: PureModel): Query => {
     `Query content is missing`,
   );
   metamodel.owner = protocol.owner;
+  metamodel.isCurrentUserQuery =
+    currentUserId !== undefined && protocol.owner === currentUserId;
   return metamodel;
 };
 
@@ -103,6 +131,8 @@ export const V1_transformQuery = (metamodel: Query): V1_Query => {
   protocol.name = metamodel.name;
   protocol.projectId = metamodel.projectId;
   protocol.versionId = metamodel.versionId;
+  protocol.groupId = metamodel.groupId;
+  protocol.artifactId = metamodel.artifactId;
   protocol.mapping = metamodel.mapping.valueForSerialization;
   protocol.runtime = metamodel.runtime.valueForSerialization;
   protocol.content = metamodel.content;
