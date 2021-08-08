@@ -46,3 +46,15 @@ export class LightQuery {
 
   isCurrentUserQuery = false;
 }
+
+export const toLightQuery = (query: Query): LightQuery => {
+  const lightQuery = new LightQuery();
+  lightQuery.name = query.name;
+  lightQuery.id = query.id;
+  lightQuery.groupId = query.groupId;
+  lightQuery.artifactId = query.artifactId;
+  lightQuery.versionId = query.versionId;
+  lightQuery.owner = query.owner;
+  lightQuery.isCurrentUserQuery = query.isCurrentUserQuery;
+  return lightQuery;
+};

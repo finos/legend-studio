@@ -34,14 +34,15 @@ import {
   ActionState,
 } from '@finos/legend-studio-shared';
 import type {
-  Entity,
   LightQuery,
+  Entity,
   Mapping,
   PackageableRuntime,
   RawLambda,
   Service,
 } from '@finos/legend-studio';
 import {
+  toLightQuery,
   Query,
   PureExecution,
   PureMultiExecution,
@@ -154,7 +155,17 @@ export class ExistingQueryInfoState extends QueryInfoState {
 
   constructor(queryStore: QueryStore, query: LightQuery) {
     super(queryStore);
+
+    makeObservable(this, {
+      query: observable,
+      setQuery: action,
+    });
+
     this.query = query;
+  }
+
+  setQuery(val: LightQuery): void {
+    this.query = val;
   }
 
   decorateQuery(query: Query): void {
@@ -254,10 +265,13 @@ export class QueryExportState {
           generateExistingQueryRoute(newQuery.id),
         );
       } else {
-        await this.queryStore.editorStore.graphState.graphManager.updateQuery(
-          query,
-          this.queryStore.editorStore.graphState.graph,
-        );
+        assertType(this.queryStore.queryInfoState, ExistingQueryInfoState);
+        const newQuery =
+          await this.queryStore.editorStore.graphState.graphManager.updateQuery(
+            query,
+            this.queryStore.editorStore.graphState.graph,
+          );
+        this.queryStore.queryInfoState.setQuery(toLightQuery(newQuery));
         this.queryStore.editorStore.applicationStore.notifySuccess(
           `Sucessfully updated query!`,
         );

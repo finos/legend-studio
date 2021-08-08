@@ -100,7 +100,7 @@ export {
   RootGraphFetchTreeInstanceValue,
 } from './models/metamodels/pure/model/valueSpecification/GraphFetchTree';
 export * from './models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-export { Query, LightQuery } from './models/metamodels/pure/action/query/Query';
+export * from './models/metamodels/pure/action/query/Query';
 
 // protocols
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
