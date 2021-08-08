@@ -58,10 +58,6 @@ export const V1_buildLightQuery = (
   const metamodel = new LightQuery();
   metamodel.name = guaranteeNonNullable(protocol.name, `Query name is missing`);
   metamodel.id = guaranteeNonNullable(protocol.id, `Query ID is missing`);
-  metamodel.projectId = guaranteeNonNullable(
-    protocol.projectId,
-    `Query project ID is missing`,
-  );
   metamodel.versionId = guaranteeNonNullable(
     protocol.versionId,
     `Query version is missing`,
@@ -88,10 +84,6 @@ export const V1_buildQuery = (
   const metamodel = new Query();
   metamodel.name = guaranteeNonNullable(protocol.name, `Query name is missing`);
   metamodel.id = guaranteeNonNullable(protocol.id, `Query ID is missing`);
-  metamodel.projectId = guaranteeNonNullable(
-    protocol.projectId,
-    `Query project ID is missing`,
-  );
   metamodel.versionId = guaranteeNonNullable(
     protocol.versionId,
     `Query version is missing`,
@@ -129,7 +121,6 @@ export const V1_transformQuery = (metamodel: Query): V1_Query => {
   protocol.name = metamodel.name;
   protocol.id = metamodel.id;
   protocol.name = metamodel.name;
-  protocol.projectId = metamodel.projectId;
   protocol.versionId = metamodel.versionId;
   protocol.groupId = metamodel.groupId;
   protocol.artifactId = metamodel.artifactId;

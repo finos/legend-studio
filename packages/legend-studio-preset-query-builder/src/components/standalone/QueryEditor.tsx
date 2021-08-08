@@ -246,7 +246,8 @@ export const CreateQueryLoader = observer(() => {
       ) {
         applicationStore.historyApiClient.push(
           generateCreateQueryRoute(
-            queryStore.queryInfoState.projectMetadata.projectId,
+            queryStore.queryInfoState.project.groupId,
+            queryStore.queryInfoState.project.artifactId,
             queryStore.queryInfoState.versionId,
             currentMapping.path,
             currentRuntime.path,

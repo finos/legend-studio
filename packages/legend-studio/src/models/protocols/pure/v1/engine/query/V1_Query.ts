@@ -20,10 +20,6 @@ import { createModelSchema, optional, primitive } from 'serializr';
 export class V1_Query {
   name!: string;
   id!: string;
-  /**
-   * @deprecated
-   */
-  projectId!: string;
   groupId!: string;
   artifactId!: string;
   versionId!: string;
@@ -41,7 +37,6 @@ export class V1_Query {
       mapping: primitive(),
       name: primitive(),
       owner: optional(primitive()),
-      projectId: primitive(),
       runtime: primitive(),
       versionId: primitive(),
     }),
@@ -51,7 +46,6 @@ export class V1_Query {
 export class V1_LightQuery {
   name!: string;
   id!: string;
-  projectId!: string;
   groupId!: string;
   owner?: string;
   artifactId!: string;
@@ -64,7 +58,6 @@ export class V1_LightQuery {
       groupId: primitive(),
       name: primitive(),
       owner: optional(primitive()),
-      projectId: primitive(),
       versionId: primitive(),
     }),
   );

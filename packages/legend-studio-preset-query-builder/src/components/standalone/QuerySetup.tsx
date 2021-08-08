@@ -19,7 +19,7 @@ import type {
   Mapping,
   PackageableElementSelectOption,
   PackageableRuntime,
-  ProjectMetadata,
+  ProjectData,
 } from '@finos/legend-studio';
 import { useApplicationStore } from '@finos/legend-studio';
 import {
@@ -57,6 +57,8 @@ import {
 import {
   CreateQueryInfoState,
   ExistingQueryInfoState,
+  LATEST_SNAPSHOT_VERSION_ALIAS,
+  LATEST_VERSION_ALIAS,
   ServiceQueryInfoState,
   useQueryStore,
 } from '../../stores/QueryStore';
@@ -252,9 +254,9 @@ const ExistingQuerySetup = observer(
   },
 );
 
-type ProjectOption = { label: string; value: ProjectMetadata };
-const buildProjectOption = (project: ProjectMetadata): ProjectOption => ({
-  label: project.projectId,
+type ProjectOption = { label: string; value: ProjectData };
+const buildProjectOption = (project: ProjectData): ProjectOption => ({
+  label: `${project.groupId}.${project.artifactId}`,
   value: project,
 });
 
@@ -273,19 +275,19 @@ const ServiceQuerySetup = observer(
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
-      querySetupState.setCurrentProjectMetadata(undefined);
+      querySetupState.setCurrentProject(undefined);
       setupStore.queryStore.editorStore.graphState.resetGraph();
     };
     const next = (): void => {
       if (
-        querySetupState.currentProjectMetadata &&
+        querySetupState.currentProject &&
         querySetupState.currentVersionId &&
         querySetupState.currentService
       ) {
         queryStore.setQueryInfoState(
           new ServiceQueryInfoState(
             querySetupState.queryStore,
-            querySetupState.currentProjectMetadata,
+            querySetupState.currentProject,
             querySetupState.currentVersionId,
             querySetupState.currentService,
             querySetupState.currentServiceExecutionKey,
@@ -293,7 +295,8 @@ const ServiceQuerySetup = observer(
         );
         applicationStore.historyApiClient.push(
           generateServiceQueryRoute(
-            querySetupState.currentProjectMetadata.projectId,
+            querySetupState.currentProject.groupId,
+            querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
             querySetupState.currentService.path,
             querySetupState.currentServiceExecutionKey,
@@ -303,57 +306,46 @@ const ServiceQuerySetup = observer(
       setupStore.setSetupState(undefined);
     };
     const canProceed =
-      querySetupState.currentProjectMetadata &&
+      querySetupState.currentProject &&
       querySetupState.currentVersionId &&
       queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
       !queryStore.editorStore.graphState.isInitializingGraph &&
       querySetupState.currentService;
 
     // project
-    const projectOptions =
-      querySetupState.projectMetadatas.map(buildProjectOption);
-    const selectedProjectOption = querySetupState.currentProjectMetadata
-      ? buildProjectOption(querySetupState.currentProjectMetadata)
+    const projectOptions = querySetupState.projects.map(buildProjectOption);
+    const selectedProjectOption = querySetupState.currentProject
+      ? buildProjectOption(querySetupState.currentProject)
       : null;
-    const projectSelectorPlaceholder = querySetupState.loadProjectMetadataState
+    const projectSelectorPlaceholder = querySetupState.loadProjectsState
       .isInProgress
       ? 'Loading projects'
-      : querySetupState.loadProjectMetadataState.hasFailed
+      : querySetupState.loadProjectsState.hasFailed
       ? 'Error fetching projects'
-      : querySetupState.projectMetadatas.length
+      : querySetupState.projects.length
       ? 'Choose a project'
       : 'You have no projects, please create or acquire access for at least one';
     const onProjectOptionChange = (option: ProjectOption | null): void => {
-      if (option?.value !== querySetupState.currentProjectMetadata) {
-        querySetupState.setCurrentProjectMetadata(option?.value);
+      if (option?.value !== querySetupState.currentProject) {
+        querySetupState.setCurrentProject(option?.value);
         // cascade
         querySetupState.setCurrentVersionId(undefined);
         querySetupState.setCurrentServiceExecution(undefined, undefined);
-        if (querySetupState.currentProjectMetadata) {
-          flowResult(querySetupState.loadProjectVersions()).catch(
-            applicationStore.alertIllegalUnhandledError,
-          );
-        }
       }
     };
 
     // version
-    const versionOptions = (
-      querySetupState.currentProjectMetadata?.versions ?? []
-    ).map(buildVersionOption);
+    const versionOptions = [
+      LATEST_VERSION_ALIAS,
+      LATEST_SNAPSHOT_VERSION_ALIAS,
+      ...(querySetupState.currentProject?.versions ?? []),
+    ].map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
       ? buildVersionOption(querySetupState.currentVersionId)
       : null;
-    const versionSelectorPlaceholder = querySetupState.loadVersionsState
-      .isInProgress
-      ? 'Loading versions'
-      : !querySetupState.currentProjectMetadata
+    const versionSelectorPlaceholder = !querySetupState.currentProject
       ? 'No project selected'
-      : querySetupState.loadVersionsState.hasFailed
-      ? 'Error fetching versions'
-      : querySetupState.currentProjectMetadata.versions.length
-      ? 'Choose a version'
-      : 'The specified project has no published version';
+      : 'Choose a version';
     const onVersionOptionChange = (option: VersionOption | null): void => {
       if (option?.value !== querySetupState.currentVersionId) {
         querySetupState.setCurrentVersionId(option?.value);
@@ -361,12 +353,12 @@ const ServiceQuerySetup = observer(
         queryStore.editorStore.graphState.resetGraph();
         querySetupState.setCurrentServiceExecution(undefined, undefined);
         if (
-          querySetupState.currentProjectMetadata &&
+          querySetupState.currentProject &&
           querySetupState.currentVersionId
         ) {
           flowResult(
             queryStore.buildGraph(
-              querySetupState.currentProjectMetadata,
+              querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
           ).catch(applicationStore.alertIllegalUnhandledError);
@@ -441,12 +433,10 @@ const ServiceQuerySetup = observer(
                 className="query-setup__wizard__selector"
                 options={projectOptions}
                 disabled={
-                  querySetupState.loadProjectMetadataState.isInProgress ||
+                  querySetupState.loadProjectsState.isInProgress ||
                   !projectOptions.length
                 }
-                isLoading={
-                  querySetupState.loadProjectMetadataState.isInProgress
-                }
+                isLoading={querySetupState.loadProjectsState.isInProgress}
                 onChange={onProjectOptionChange}
                 value={selectedProjectOption}
                 placeholder={projectSelectorPlaceholder}
@@ -460,12 +450,7 @@ const ServiceQuerySetup = observer(
               <CustomSelectorInput
                 className="query-setup__wizard__selector"
                 options={versionOptions}
-                disabled={
-                  !querySetupState.currentProjectMetadata ||
-                  querySetupState.loadVersionsState.isInProgress ||
-                  !versionOptions.length
-                }
-                isLoading={querySetupState.loadVersionsState.isInProgress}
+                disabled={!querySetupState.currentProject}
                 onChange={onVersionOptionChange}
                 value={selectedVersionOption}
                 placeholder={versionSelectorPlaceholder}
@@ -476,7 +461,7 @@ const ServiceQuerySetup = observer(
             </div>
           </div>
           <div className="query-setup__service-query__graph">
-            {(!querySetupState.currentProjectMetadata ||
+            {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
               !queryStore.editorStore.graphState.graph.buildState
                 .hasSucceeded ||
@@ -484,7 +469,7 @@ const ServiceQuerySetup = observer(
               <div className="query-setup__service-query__graph__loader">
                 <PanelLoadingIndicator
                   isLoading={
-                    Boolean(querySetupState.currentProjectMetadata) &&
+                    Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
                     !queryStore.editorStore.graphState.graph.buildState
                       .hasSucceeded &&
@@ -500,7 +485,7 @@ const ServiceQuerySetup = observer(
                 </BlankPanelContent>
               </div>
             )}
-            {querySetupState.currentProjectMetadata &&
+            {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
               queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
               !queryStore.editorStore.graphState.isInitializingGraph && (
@@ -539,12 +524,12 @@ const CreateQuerySetup = observer(
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
-      querySetupState.setCurrentProjectMetadata(undefined);
+      querySetupState.setCurrentProject(undefined);
       setupStore.queryStore.editorStore.graphState.resetGraph();
     };
     const next = (): void => {
       if (
-        querySetupState.currentProjectMetadata &&
+        querySetupState.currentProject &&
         querySetupState.currentVersionId &&
         querySetupState.currentMapping &&
         querySetupState.currentRuntime
@@ -552,7 +537,7 @@ const CreateQuerySetup = observer(
         queryStore.setQueryInfoState(
           new CreateQueryInfoState(
             querySetupState.queryStore,
-            querySetupState.currentProjectMetadata,
+            querySetupState.currentProject,
             querySetupState.currentVersionId,
             querySetupState.currentMapping,
             querySetupState.currentRuntime,
@@ -560,7 +545,8 @@ const CreateQuerySetup = observer(
         );
         applicationStore.historyApiClient.push(
           generateCreateQueryRoute(
-            querySetupState.currentProjectMetadata.projectId,
+            querySetupState.currentProject.groupId,
+            querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
             querySetupState.currentMapping.path,
             querySetupState.currentRuntime.path,
@@ -570,7 +556,7 @@ const CreateQuerySetup = observer(
       setupStore.setSetupState(undefined);
     };
     const canProceed =
-      querySetupState.currentProjectMetadata &&
+      querySetupState.currentProject &&
       querySetupState.currentVersionId &&
       queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
       !queryStore.editorStore.graphState.isInitializingGraph &&
@@ -578,51 +564,40 @@ const CreateQuerySetup = observer(
       querySetupState.currentRuntime;
 
     // project
-    const projectOptions =
-      querySetupState.projectMetadatas.map(buildProjectOption);
-    const selectedProjectOption = querySetupState.currentProjectMetadata
-      ? buildProjectOption(querySetupState.currentProjectMetadata)
+    const projectOptions = querySetupState.projects.map(buildProjectOption);
+    const selectedProjectOption = querySetupState.currentProject
+      ? buildProjectOption(querySetupState.currentProject)
       : null;
-    const projectSelectorPlaceholder = querySetupState.loadProjectMetadataState
+    const projectSelectorPlaceholder = querySetupState.loadProjectsState
       .isInProgress
       ? 'Loading projects'
-      : querySetupState.loadProjectMetadataState.hasFailed
+      : querySetupState.loadProjectsState.hasFailed
       ? 'Error fetching projects'
-      : querySetupState.projectMetadatas.length
+      : querySetupState.projects.length
       ? 'Choose a project'
       : 'You have no projects, please create or acquire access for at least one';
     const onProjectOptionChange = (option: ProjectOption | null): void => {
-      if (option?.value !== querySetupState.currentProjectMetadata) {
-        querySetupState.setCurrentProjectMetadata(option?.value);
+      if (option?.value !== querySetupState.currentProject) {
+        querySetupState.setCurrentProject(option?.value);
         // cascade
         querySetupState.setCurrentVersionId(undefined);
         querySetupState.setCurrentMapping(undefined);
         querySetupState.setCurrentRuntime(undefined);
-        if (querySetupState.currentProjectMetadata) {
-          flowResult(querySetupState.loadProjectVersions()).catch(
-            applicationStore.alertIllegalUnhandledError,
-          );
-        }
       }
     };
 
     // version
-    const versionOptions = (
-      querySetupState.currentProjectMetadata?.versions ?? []
-    ).map(buildVersionOption);
+    const versionOptions = [
+      LATEST_VERSION_ALIAS,
+      LATEST_SNAPSHOT_VERSION_ALIAS,
+      ...(querySetupState.currentProject?.versions ?? []),
+    ].map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
       ? buildVersionOption(querySetupState.currentVersionId)
       : null;
-    const versionSelectorPlaceholder = querySetupState.loadVersionsState
-      .isInProgress
-      ? 'Loading versions'
-      : !querySetupState.currentProjectMetadata
+    const versionSelectorPlaceholder = !querySetupState.currentProject
       ? 'No project selected'
-      : querySetupState.loadVersionsState.hasFailed
-      ? 'Error fetching versions'
-      : querySetupState.currentProjectMetadata.versions.length
-      ? 'Choose a version'
-      : 'The specified project has no published version';
+      : 'Choose a version';
     const onVersionOptionChange = (option: VersionOption | null): void => {
       if (option?.value !== querySetupState.currentVersionId) {
         querySetupState.setCurrentVersionId(option?.value);
@@ -631,12 +606,12 @@ const CreateQuerySetup = observer(
         querySetupState.setCurrentMapping(undefined);
         querySetupState.setCurrentRuntime(undefined);
         if (
-          querySetupState.currentProjectMetadata &&
+          querySetupState.currentProject &&
           querySetupState.currentVersionId
         ) {
           flowResult(
             queryStore.buildGraph(
-              querySetupState.currentProjectMetadata,
+              querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
           ).catch(applicationStore.alertIllegalUnhandledError);
@@ -728,12 +703,10 @@ const CreateQuerySetup = observer(
                 className="query-setup__wizard__selector"
                 options={projectOptions}
                 disabled={
-                  querySetupState.loadProjectMetadataState.isInProgress ||
+                  querySetupState.loadProjectsState.isInProgress ||
                   !projectOptions.length
                 }
-                isLoading={
-                  querySetupState.loadProjectMetadataState.isInProgress
-                }
+                isLoading={querySetupState.loadProjectsState.isInProgress}
                 onChange={onProjectOptionChange}
                 value={selectedProjectOption}
                 placeholder={projectSelectorPlaceholder}
@@ -747,12 +720,7 @@ const CreateQuerySetup = observer(
               <CustomSelectorInput
                 className="query-setup__wizard__selector"
                 options={versionOptions}
-                disabled={
-                  !querySetupState.currentProjectMetadata ||
-                  querySetupState.loadVersionsState.isInProgress ||
-                  !versionOptions.length
-                }
-                isLoading={querySetupState.loadVersionsState.isInProgress}
+                disabled={!querySetupState.currentProject}
                 onChange={onVersionOptionChange}
                 value={selectedVersionOption}
                 placeholder={versionSelectorPlaceholder}
@@ -763,7 +731,7 @@ const CreateQuerySetup = observer(
             </div>
           </div>
           <div className="query-setup__create-query__graph">
-            {(!querySetupState.currentProjectMetadata ||
+            {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
               !queryStore.editorStore.graphState.graph.buildState
                 .hasSucceeded ||
@@ -771,7 +739,7 @@ const CreateQuerySetup = observer(
               <div className="query-setup__create-query__graph__loader">
                 <PanelLoadingIndicator
                   isLoading={
-                    Boolean(querySetupState.currentProjectMetadata) &&
+                    Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
                     !queryStore.editorStore.graphState.graph.buildState
                       .hasSucceeded &&
@@ -787,7 +755,7 @@ const CreateQuerySetup = observer(
                 </BlankPanelContent>
               </div>
             )}
-            {querySetupState.currentProjectMetadata &&
+            {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
               queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
               !queryStore.editorStore.graphState.isInitializingGraph && (

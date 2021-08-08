@@ -21,10 +21,6 @@ import type { PackageableRuntime } from '../../model/packageableElements/runtime
 export class Query {
   name!: string;
   id!: string;
-  /**
-   * @deprecated
-   */
-  projectId!: string;
   versionId!: string;
   groupId!: string;
   artifactId!: string;
@@ -43,7 +39,6 @@ export class Query {
 export class LightQuery {
   name!: string;
   id!: string;
-  projectId!: string;
   versionId!: string;
   groupId!: string;
   artifactId!: string;

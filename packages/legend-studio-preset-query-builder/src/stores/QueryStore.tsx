@@ -24,7 +24,7 @@ import {
   observable,
 } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   assertErrorThrown,
   uuid,
@@ -42,18 +42,16 @@ import type {
   Service,
 } from '@finos/legend-studio';
 import {
-  ProjectConfiguration,
   Query,
   PureExecution,
   PureMultiExecution,
   PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
-  ProjectMetadata,
+  ProjectData,
   SDLCServerClient,
   TAB_SIZE,
   CORE_LOG_EVENT,
-  Project,
   EditorStore,
   useApplicationStore,
 } from '@finos/legend-studio';
@@ -79,14 +77,14 @@ export abstract class QueryInfoState {
 }
 
 export class CreateQueryInfoState extends QueryInfoState {
-  projectMetadata: ProjectMetadata;
+  project: ProjectData;
   versionId: string;
   mapping: Mapping;
   runtime: PackageableRuntime;
 
   constructor(
     queryStore: QueryStore,
-    projectMetadata: ProjectMetadata,
+    project: ProjectData,
     versionId: string,
     mapping: Mapping,
     runtime: PackageableRuntime,
@@ -100,7 +98,7 @@ export class CreateQueryInfoState extends QueryInfoState {
       setRuntime: action,
     });
 
-    this.projectMetadata = projectMetadata;
+    this.project = project;
     this.versionId = versionId;
     this.mapping = mapping;
     this.runtime = runtime;
@@ -116,27 +114,28 @@ export class CreateQueryInfoState extends QueryInfoState {
 
   decorateQuery(query: Query): void {
     query.id = uuid();
-    query.projectId = this.projectMetadata.projectId;
+    query.groupId = this.project.groupId;
+    query.artifactId = this.project.artifactId;
     query.versionId = this.versionId;
   }
 }
 
 export class ServiceQueryInfoState extends QueryInfoState {
-  projectMetadata: ProjectMetadata;
+  project: ProjectData;
   versionId: string;
   service: Service;
   key?: string;
 
   constructor(
     queryStore: QueryStore,
-    projectMetadata: ProjectMetadata,
+    project: ProjectData,
     versionId: string,
     service: Service,
     key: string | undefined,
   ) {
     super(queryStore);
 
-    this.projectMetadata = projectMetadata;
+    this.project = project;
     this.versionId = versionId;
     this.service = service;
     this.key = key;
@@ -144,7 +143,8 @@ export class ServiceQueryInfoState extends QueryInfoState {
 
   decorateQuery(query: Query): void {
     query.id = uuid();
-    query.projectId = this.projectMetadata.projectId;
+    query.groupId = this.project.groupId;
+    query.artifactId = this.project.artifactId;
     query.versionId = this.versionId;
   }
 }
@@ -159,7 +159,8 @@ export class ExistingQueryInfoState extends QueryInfoState {
 
   decorateQuery(query: Query): void {
     query.id = this.query.id;
-    query.projectId = this.query.projectId;
+    query.groupId = this.query.groupId;
+    query.artifactId = this.query.artifactId;
     query.versionId = this.query.versionId;
   }
 }
@@ -239,34 +240,6 @@ export class QueryExportState {
       return;
     }
 
-    // TODO: remove this when we use metadata server
-    let currentProjectConfiguration: ProjectConfiguration;
-    if (query.versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
-      currentProjectConfiguration = ProjectConfiguration.serialization.fromJson(
-        await this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
-          query.projectId,
-          undefined,
-        ),
-      );
-    } else if (query.versionId === LATEST_VERSION_ALIAS) {
-      // NOTE: this is not quite correct, we don't currently have a way to do this in SDLC server
-      currentProjectConfiguration = ProjectConfiguration.serialization.fromJson(
-        await this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
-          query.projectId,
-          undefined,
-        ),
-      );
-    } else {
-      currentProjectConfiguration = ProjectConfiguration.serialization.fromJson(
-        await this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getConfigurationByVersion(
-          query.projectId,
-          query.versionId,
-        ),
-      );
-    }
-    query.groupId = currentProjectConfiguration.groupId;
-    query.artifactId = currentProjectConfiguration.artifactId;
-
     try {
       if (createNew) {
         const newQuery =
@@ -308,9 +281,6 @@ export class QueryStore {
   queryInfoState?: QueryInfoState;
   queryBuilderState: QueryBuilderState;
   queryExportState?: QueryExportState;
-
-  useSDLC = true; // TODO: remove this when metadata server is enabled by default
-
   buildGraphState = ActionState.create();
   initGraphState = ActionState.create();
   editorInitState = ActionState.create();
@@ -369,13 +339,16 @@ export class QueryStore {
         this.setQueryInfoState(queryInfoState);
       }
 
-      // TODO: handle error here more gracefully
-      // TODO: fix this when we use metadata server
-      const projectMetadata = new ProjectMetadata();
-      projectMetadata.projectId = queryInfoState.query.projectId;
-      projectMetadata.setVersions([queryInfoState.query.versionId]);
+      const project = ProjectData.serialization.fromJson(
+        (yield flowResult(
+          this.editorStore.applicationStore.networkClientManager.metadataClient.getProject(
+            queryInfoState.query.groupId,
+            queryInfoState.query.artifactId,
+          ),
+        )) as PlainObject<ProjectData>,
+      );
       yield flowResult(
-        this.buildGraph(projectMetadata, queryInfoState.query.versionId),
+        this.buildGraph(project, queryInfoState.query.versionId),
       );
 
       const query = (yield this.editorStore.graphState.graphManager.getQuery(
@@ -425,29 +398,34 @@ export class QueryStore {
     params: ServiceQueryPathParams,
     serviceExecutionKey: string | undefined,
   ): GeneratorFn<void> {
-    const { projectId, versionId, servicePath } = params;
+    const { groupId, artifactId, versionId, servicePath } = params;
 
     try {
       this.editorInitState.inProgress();
       let queryInfoState: ServiceQueryInfoState;
       if (this.queryInfoState instanceof ServiceQueryInfoState) {
-        assertTrue(this.queryInfoState.projectMetadata.projectId === projectId);
+        assertTrue(this.queryInfoState.project.groupId === groupId);
+        assertTrue(this.queryInfoState.project.artifactId === artifactId);
         assertTrue(this.queryInfoState.versionId === versionId);
         assertTrue(this.queryInfoState.service.path === servicePath);
         assertTrue(this.queryInfoState.key === serviceExecutionKey);
         queryInfoState = this.queryInfoState;
       } else {
-        // TODO: handle error here more gracefully
-        // TODO: fix this when we use metadata server
-        const projectMetadata = new ProjectMetadata();
-        projectMetadata.projectId = projectId;
-        projectMetadata.setVersions([versionId]);
-        yield flowResult(this.buildGraph(projectMetadata, versionId));
+        const project = ProjectData.serialization.fromJson(
+          (yield flowResult(
+            this.editorStore.applicationStore.networkClientManager.metadataClient.getProject(
+              groupId,
+              artifactId,
+            ),
+          )) as PlainObject<ProjectData>,
+        );
+        yield flowResult(this.buildGraph(project, versionId));
+
         const currentService =
           this.editorStore.graphState.graph.getService(servicePath);
         queryInfoState = new ServiceQueryInfoState(
           this,
-          projectMetadata,
+          project,
           versionId,
           currentService,
           serviceExecutionKey,
@@ -502,12 +480,13 @@ export class QueryStore {
   }
 
   *setupCreateQueryInfoState(params: CreateQueryPathParams): GeneratorFn<void> {
-    const { projectId, versionId, mappingPath, runtimePath } = params;
+    const { groupId, artifactId, versionId, mappingPath, runtimePath } = params;
     try {
       this.editorInitState.inProgress();
       let queryInfoState: CreateQueryInfoState;
       if (this.queryInfoState instanceof CreateQueryInfoState) {
-        assertTrue(this.queryInfoState.projectMetadata.projectId === projectId);
+        assertTrue(this.queryInfoState.project.groupId === groupId);
+        assertTrue(this.queryInfoState.project.artifactId === artifactId);
         assertTrue(this.queryInfoState.versionId === versionId);
         this.queryInfoState.setMapping(
           this.editorStore.graphState.graph.getMapping(mappingPath),
@@ -517,19 +496,22 @@ export class QueryStore {
         );
         queryInfoState = this.queryInfoState;
       } else {
-        // TODO: handle error here more gracefully
-        // TODO: fix this when we use metadata server
-        const projectMetadata = new ProjectMetadata();
-        projectMetadata.projectId = projectId;
-        projectMetadata.setVersions([versionId]);
-        yield flowResult(this.buildGraph(projectMetadata, versionId));
+        const project = ProjectData.serialization.fromJson(
+          (yield flowResult(
+            this.editorStore.applicationStore.networkClientManager.metadataClient.getProject(
+              groupId,
+              artifactId,
+            ),
+          )) as PlainObject<ProjectData>,
+        );
+        yield flowResult(this.buildGraph(project, versionId));
         const currentMapping =
           this.editorStore.graphState.graph.getMapping(mappingPath);
         const currentRuntime =
           this.editorStore.graphState.graph.getRuntime(runtimePath);
         queryInfoState = new CreateQueryInfoState(
           this,
-          projectMetadata,
+          project,
           versionId,
           currentMapping,
           currentRuntime,
@@ -609,10 +591,7 @@ export class QueryStore {
     }
   }
 
-  *buildGraph(
-    projectMetadata: ProjectMetadata,
-    versionId: string,
-  ): GeneratorFn<void> {
+  *buildGraph(project: ProjectData, versionId: string): GeneratorFn<void> {
     if (this.initGraphState.isInInitialState) {
       yield flowResult(this.initGraph());
     } else if (this.initGraphState.isInProgress) {
@@ -623,40 +602,23 @@ export class QueryStore {
 
     try {
       let entities: Entity[] = [];
-      if (this.useSDLC) {
-        if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
-          entities =
-            (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
-              projectMetadata.projectId,
-              undefined,
-            )) as Entity[];
-        } else if (versionId === LATEST_VERSION_ALIAS) {
-          // NOTE: this is not quite correct, we don't currently have a way to do this in SDLC server
-          entities =
-            (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
-              projectMetadata.projectId,
-              undefined,
-            )) as Entity[];
-        } else {
-          entities =
-            (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByVersion(
-              projectMetadata.projectId,
-              versionId,
-            )) as Entity[];
-        }
+
+      if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+        entities =
+          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getLatestRevisionEntities(
+            project.groupId,
+            project.artifactId,
+          )) as Entity[];
       } else {
-        // TODO: handler aliases
         entities =
           (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getVersionEntities(
-            projectMetadata.projectId,
-            versionId,
+            project.groupId,
+            project.artifactId,
+            versionId === LATEST_VERSION_ALIAS
+              ? project.latestVersion
+              : versionId,
           )) as Entity[];
       }
-
-      // TODO: remove this when metadata server is enabled by default
-      const project = new Project();
-      project.projectId = projectMetadata.projectId;
-      this.editorStore.sdlcState.setCurrentProject(project);
 
       // build graph
       this.editorStore.graphState.resetGraph();

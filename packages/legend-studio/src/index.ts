@@ -153,7 +153,7 @@ export { SDLCServerClient } from './models/sdlc/SDLCServerClient';
 export { ProjectConfiguration } from './models/sdlc/models/configuration/ProjectConfiguration';
 
 // Metadata
-export { ProjectMetadata } from './models/metadata/models/ProjectMetadata';
+export { ProjectData } from './models/metadata/models/ProjectData';
 
 // stores
 export * from './stores/EditorPlugin';
