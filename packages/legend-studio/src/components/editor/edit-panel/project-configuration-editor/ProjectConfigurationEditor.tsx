@@ -265,7 +265,7 @@ const ProjectStructureEditor = observer(
               className="panel__content__form__section__input"
               spellCheck={false}
               disabled={isReadOnly}
-              value={projectConfig.artifactId ?? ''}
+              value={projectConfig.artifactId}
               onChange={changeArtifactId}
             />
           </div>

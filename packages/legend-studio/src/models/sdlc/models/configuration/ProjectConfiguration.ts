@@ -86,7 +86,7 @@ export class ProjectConfiguration implements Hashable {
   }
 
   get dependencyKey(): string {
-    return `${(this.groupId ?? '').replace(
+    return `${this.groupId.replace(
       /\./g,
       ENTITY_PATH_DELIMITER,
     )}${ENTITY_PATH_DELIMITER}${this.artifactId}`;
