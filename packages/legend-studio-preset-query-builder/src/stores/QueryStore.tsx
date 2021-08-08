@@ -613,8 +613,15 @@ export class QueryStore {
       const project = new Project();
       project.projectId = projectMetadata.projectId;
       this.editorStore.sdlcState.setCurrentProject(project);
+
+      // build graph
+      this.editorStore.graphState.resetGraph();
+      // TODO: build dependencies
       yield flowResult(
-        this.editorStore.graphState.buildGraphForViewerMode(entities),
+        this.editorStore.graphState.graphManager.buildGraph(
+          this.editorStore.graphState.graph,
+          entities,
+        ),
       );
 
       this.buildGraphState.pass();
