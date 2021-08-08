@@ -150,6 +150,7 @@ export { Build, BuildStatus } from './models/sdlc/models/build/Build';
 export { Project, ProjectType } from './models/sdlc/models/project/Project';
 export { Version } from './models/sdlc/models/version/Version';
 export { SDLCServerClient } from './models/sdlc/SDLCServerClient';
+export { ProjectConfiguration } from './models/sdlc/models/configuration/ProjectConfiguration';
 
 // Metadata
 export { ProjectMetadata } from './models/metadata/models/ProjectMetadata';

@@ -42,6 +42,7 @@ import type {
   Service,
 } from '@finos/legend-studio';
 import {
+  ProjectConfiguration,
   Query,
   PureExecution,
   PureMultiExecution,
@@ -63,6 +64,9 @@ import type {
   ServiceQueryPathParams,
 } from './LegendQueryRouter';
 import { generateExistingQueryRoute } from './LegendQueryRouter';
+
+export const LATEST_VERSION_ALIAS = 'latest';
+export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
 
 export abstract class QueryInfoState {
   queryStore: QueryStore;
@@ -234,11 +238,35 @@ export class QueryExportState {
       this.persistQueryState.reset();
       return;
     }
+
     // TODO: remove this when we use metadata server
-    query.groupId =
-      this.queryStore.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
-    query.artifactId =
-      this.queryStore.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
+    let currentProjectConfiguration: ProjectConfiguration;
+    if (query.versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+      currentProjectConfiguration = ProjectConfiguration.serialization.fromJson(
+        await this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+          query.projectId,
+          undefined,
+        ),
+      );
+    } else if (query.versionId === LATEST_VERSION_ALIAS) {
+      // NOTE: this is not quite correct, we don't currently have a way to do this in SDLC server
+      currentProjectConfiguration = ProjectConfiguration.serialization.fromJson(
+        await this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+          query.projectId,
+          undefined,
+        ),
+      );
+    } else {
+      currentProjectConfiguration = ProjectConfiguration.serialization.fromJson(
+        await this.queryStore.editorStore.applicationStore.networkClientManager.sdlcClient.getConfigurationByVersion(
+          query.projectId,
+          query.versionId,
+        ),
+      );
+    }
+    query.groupId = currentProjectConfiguration.groupId;
+    query.artifactId = currentProjectConfiguration.artifactId;
+
     try {
       if (createNew) {
         const newQuery =
@@ -596,12 +624,28 @@ export class QueryStore {
     try {
       let entities: Entity[] = [];
       if (this.useSDLC) {
-        entities =
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByVersion(
-            projectMetadata.projectId,
-            versionId,
-          )) as Entity[];
+        if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+          entities =
+            (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
+              projectMetadata.projectId,
+              undefined,
+            )) as Entity[];
+        } else if (versionId === LATEST_VERSION_ALIAS) {
+          // NOTE: this is not quite correct, we don't currently have a way to do this in SDLC server
+          entities =
+            (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
+              projectMetadata.projectId,
+              undefined,
+            )) as Entity[];
+        } else {
+          entities =
+            (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByVersion(
+              projectMetadata.projectId,
+              versionId,
+            )) as Entity[];
+        }
       } else {
+        // TODO: handler aliases
         entities =
           (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getVersionEntities(
             projectMetadata.projectId,

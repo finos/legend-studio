@@ -47,7 +47,11 @@ import {
   Version,
 } from '@finos/legend-studio';
 import type { QueryStore } from './QueryStore';
-import { useQueryStore } from './QueryStore';
+import {
+  LATEST_SNAPSHOT_VERSION_ALIAS,
+  LATEST_VERSION_ALIAS,
+  useQueryStore,
+} from './QueryStore';
 
 export abstract class QuerySetupState {
   queryStore: QueryStore;
@@ -225,7 +229,11 @@ export class CreateQuerySetupState extends QuerySetupState {
             this.currentProjectMetadata.projectId,
           )) as PlainObject<Version>[]
         ).map((project) => Version.serialization.fromJson(project).id.id);
-        this.currentProjectMetadata.setVersions(versionIds);
+        this.currentProjectMetadata.setVersions([
+          LATEST_VERSION_ALIAS,
+          LATEST_SNAPSHOT_VERSION_ALIAS,
+          ...versionIds,
+        ]);
       }
       this.loadVersionsState.pass();
     } catch (error: unknown) {
@@ -354,7 +362,11 @@ export class ServiceQuerySetupState extends QuerySetupState {
             this.currentProjectMetadata.projectId,
           )) as PlainObject<Version>[]
         ).map((project) => Version.serialization.fromJson(project).id.id);
-        this.currentProjectMetadata.setVersions(versionIds);
+        this.currentProjectMetadata.setVersions([
+          LATEST_VERSION_ALIAS,
+          LATEST_SNAPSHOT_VERSION_ALIAS,
+          ...versionIds,
+        ]);
       }
       this.loadVersionsState.pass();
     } catch (error: unknown) {
