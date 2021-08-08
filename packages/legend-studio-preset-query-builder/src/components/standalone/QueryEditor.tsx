@@ -155,7 +155,7 @@ const QueryEditorHeader = observer(() => {
       )}
       {queryInfoState instanceof ServiceQueryInfoState && (
         <div className="query-editor__header__tab query-editor__header__tab--service-query">
-          <RobotIcon className="query-editor__header__tab__icon" />
+          <RobotIcon className="query-editor__header__tab--service-query__icon" />
           {queryInfoState.service.name}
         </div>
       )}

@@ -46,7 +46,7 @@
     "@finos/legend-studio-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
     "@types/papaparse": "5.2.6",
-    "@types/react": "17.0.15",
+    "@types/react": "17.0.16",
     "@types/react-dom": "17.0.9",
     "@types/react-router-dom": "5.1.8",
     "date-fns": "2.23.0",
