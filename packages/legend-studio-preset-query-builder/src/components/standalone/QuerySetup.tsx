@@ -861,7 +861,7 @@ const QuerySetupLandingPage = observer(() => {
       </div>
       <div className="query-setup__landing-page__options">
         <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--load-existing"
+          className="query-setup__landing-page__option query-setup__landing-page__option--existing-query"
           onClick={editQuery}
         >
           <div className="query-setup__landing-page__option__icon">
@@ -872,7 +872,7 @@ const QuerySetupLandingPage = observer(() => {
           </div>
         </button>
         <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--load-service"
+          className="query-setup__landing-page__option query-setup__landing-page__option--service-query"
           onClick={loadServiceQuery}
         >
           <div className="query-setup__landing-page__option__icon">
@@ -883,7 +883,7 @@ const QuerySetupLandingPage = observer(() => {
           </div>
         </button>
         <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--create"
+          className="query-setup__landing-page__option query-setup__landing-page__option--create-query"
           onClick={createQuery}
         >
           <div className="query-setup__landing-page__option__icon">

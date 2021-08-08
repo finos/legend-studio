@@ -18,6 +18,7 @@ import { RuntimePointer, useApplicationStore } from '@finos/legend-studio';
 import {
   ArrowLeftIcon,
   PanelLoadingIndicator,
+  RobotIcon,
 } from '@finos/legend-studio-components';
 import { getQueryParameters } from '@finos/legend-studio-shared';
 import { Dialog } from '@material-ui/core';
@@ -36,7 +37,12 @@ import type {
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { generateCreateQueryRoute } from '../../stores/LegendQueryRouter';
 import type { QueryExportState } from '../../stores/QueryStore';
-import { CreateQueryInfoState, useQueryStore } from '../../stores/QueryStore';
+import {
+  ExistingQueryInfoState,
+  ServiceQueryInfoState,
+  CreateQueryInfoState,
+  useQueryStore,
+} from '../../stores/QueryStore';
 import { QueryBuilder } from '../QueryBuilder';
 
 const QueryExportInner = observer(
@@ -128,6 +134,7 @@ const QueryExport = observer(() => {
 
 const QueryEditorHeader = observer(() => {
   const queryStore = useQueryStore();
+  const queryInfoState = queryStore.queryInfoState;
   const applicationStore = useApplicationStore();
   const backToMainMenu = (): void =>
     applicationStore.historyApiClient.push(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
@@ -141,6 +148,22 @@ const QueryEditorHeader = observer(() => {
       >
         <ArrowLeftIcon />
       </button>
+      {queryInfoState instanceof CreateQueryInfoState && (
+        <div className="query-editor__header__tab query-editor__header__tab--create-query">
+          New Query
+        </div>
+      )}
+      {queryInfoState instanceof ServiceQueryInfoState && (
+        <div className="query-editor__header__tab query-editor__header__tab--service-query">
+          <RobotIcon className="query-editor__header__tab__icon" />
+          {queryInfoState.service.name}
+        </div>
+      )}
+      {queryInfoState instanceof ExistingQueryInfoState && (
+        <div className="query-editor__header__tab query-editor__header__tab--existing-query">
+          {queryInfoState.query.name}
+        </div>
+      )}
     </div>
   );
 });

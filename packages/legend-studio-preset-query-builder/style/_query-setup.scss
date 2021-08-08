@@ -65,15 +65,15 @@
     background: var(--color-light-grey-300);
     user-select: none;
 
-    &--load-existing:hover {
+    &--existing-query:hover {
       background: var(--color-magenta-50);
     }
 
-    &--load-service:hover {
+    &--service-query:hover {
       background: var(--color-blue-50);
     }
 
-    &--create:hover {
+    &--create-query:hover {
       background: var(--color-lime-75);
     }
   }
