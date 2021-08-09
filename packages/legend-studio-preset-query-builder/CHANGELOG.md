@@ -1,5 +1,18 @@
 # @finos/legend-studio-preset-query-builder
 
+## 0.0.29
+
+### Patch Changes
+
+- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) Thanks [@akphi](https://github.com/akphi)! - Support loading existing queries and service query in standalone query editor.
+
+* [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) Thanks [@akphi](https://github.com/akphi)! - Improve the UX of Legend Query. Use metadata server instead of SDLC server for fetching projects and entities.
+
+* Updated dependencies [[`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb), [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb), [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb)]:
+  - @finos/legend-studio@0.2.7
+  - @finos/legend-studio-components@0.0.29
+  - @finos/legend-studio-shared@0.0.25
+
 ## 0.0.28
 
 ### Patch Changes
