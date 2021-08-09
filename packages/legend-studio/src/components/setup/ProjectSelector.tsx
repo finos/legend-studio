@@ -23,7 +23,6 @@ import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
-import { ACTION_STATE } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
 
 const formatOptionLabel = (option: ProjectSelectOption): React.ReactNode => (
@@ -55,8 +54,7 @@ export const ProjectSelector = observer(
     const options = setupStore.projectOptions;
     const selectedOption =
       options.find((option) => option.value === currentProjectId) ?? null;
-    const isLoadingOptions =
-      setupStore.loadProjectsState === ACTION_STATE.IN_PROGRESS;
+    const isLoadingOptions = setupStore.loadProjectsState.isInProgress;
 
     const onSelectionChange = (val: ProjectSelectOption | null): void => {
       if (
@@ -100,10 +98,10 @@ export const ProjectSelector = observer(
       onChange,
     ]);
 
-    const projectSelectorPlaceHolder = isLoadingOptions
+    const projectSelectorPlaceholder = isLoadingOptions
       ? 'Loading projects'
-      : setupStore.loadProjectsState === ACTION_STATE.FAILED
-      ? 'Error fetching Projects'
+      : setupStore.loadProjectsState.hasFailed
+      ? 'Error fetching projects'
       : options.length
       ? 'Choose an existing project'
       : 'You have no projects, please create or acquire access for at least one';
@@ -130,7 +128,7 @@ export const ProjectSelector = observer(
           isLoading={isLoadingOptions}
           onChange={onSelectionChange}
           value={selectedOption}
-          placeholder={projectSelectorPlaceHolder}
+          placeholder={projectSelectorPlaceholder}
           isClearable={true}
           escapeClearsValue={true}
           darkMode={true}

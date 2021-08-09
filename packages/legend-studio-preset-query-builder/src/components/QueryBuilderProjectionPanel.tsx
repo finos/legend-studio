@@ -53,8 +53,9 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState';
-import { LambdaEditor, useApplicationStore } from '@finos/legend-studio';
+import { useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
+import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -194,8 +195,11 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           { backdrop__element: hasParserError },
         )}
       >
-        <LambdaEditor
+        <QueryBuilderLambdaEditor
           className="query-builder__lambda-editor"
+          queryBuilderState={
+            projectionColumnState.projectionState.queryBuilderState
+          }
           disabled={
             projectionColumnState.projectionState
               .isConvertDerivationProjectionObjects

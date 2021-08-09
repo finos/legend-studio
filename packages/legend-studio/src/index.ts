@@ -61,7 +61,7 @@ export type { AbstractProperty } from './models/metamodels/pure/model/packageabl
 export { DerivedProperty } from './models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
 export { Property } from './models/metamodels/pure/model/packageableElements/domain/Property';
 export { RawLambda } from './models/metamodels/pure/model/rawValueSpecification/RawLambda';
-export { UnknownValue } from './models/metamodels/pure/model/valueSpecification/UnknownValue';
+export { INTERNAL__UnknownValueSpecification } from './models/metamodels/pure/model/valueSpecification/INTERNAL__UnknownValueSpecification';
 export { VariableExpression } from './models/metamodels/pure/model/valueSpecification/VariableExpression';
 export {
   AbstractPropertyExpression,
@@ -100,6 +100,7 @@ export {
   RootGraphFetchTreeInstanceValue,
 } from './models/metamodels/pure/model/valueSpecification/GraphFetchTree';
 export * from './models/metamodels/pure/model/packageableElements/domain/PropertyReference';
+export * from './models/metamodels/pure/action/query/Query';
 
 // protocols
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
@@ -149,9 +150,10 @@ export { Build, BuildStatus } from './models/sdlc/models/build/Build';
 export { Project, ProjectType } from './models/sdlc/models/project/Project';
 export { Version } from './models/sdlc/models/version/Version';
 export { SDLCServerClient } from './models/sdlc/SDLCServerClient';
+export { ProjectConfiguration } from './models/sdlc/models/configuration/ProjectConfiguration';
 
 // Metadata
-export { ProjectMetadata } from './models/metadata/models/ProjectMetadata';
+export { ProjectData } from './models/metadata/models/ProjectData';
 
 // stores
 export * from './stores/EditorPlugin';
@@ -177,6 +179,7 @@ export * from './components/shared/Icon'; // TODO: we might want to move all of 
 export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
 export { getElementIcon, getElementTypeIcon } from './components/shared/Icon';
 export { TypeTree } from './components/shared/TypeTree';
+export type { LambdaEditorOnKeyDownEventHandler } from './components/shared/LambdaEditor';
 export { LambdaEditor } from './components/shared/LambdaEditor';
 export { LegendMaterialUITheme } from './components/LegendStudioApplication';
 export { BlockingAlert } from './components/application/BlockingAlert';

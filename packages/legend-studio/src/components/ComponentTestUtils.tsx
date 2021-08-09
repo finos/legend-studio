@@ -53,7 +53,6 @@ import type { GenerationConfigurationDescription } from '../models/metamodels/pu
 import { PluginManager } from '../application/PluginManager';
 import type { ApplicationConfig } from '../stores/ApplicationConfig';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { flowResult } from 'mobx';
 
 export const SDLC_TestData = {
   project: {
@@ -288,13 +287,13 @@ export const setUpEditor = async (
       mockedEditorStore.graphState.graphManager,
       'getAvailableGenerationConfigurationDescriptions',
     )
-    .mockResolvedValue(flowResult(availableGenerationDescriptions));
+    .mockResolvedValue(availableGenerationDescriptions);
   jest
     .spyOn(
       mockedEditorStore.graphState.graphManager,
       'getAvailableImportConfigurationDescriptions',
     )
-    .mockResolvedValue(flowResult(availableImportDescriptions));
+    .mockResolvedValue(availableImportDescriptions);
   // skip font loader (as we have no network access in test)
   mockedEditorStore.preloadTextEditorFont = jest.fn();
   // mock change detections (since we do not test them now)

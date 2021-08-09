@@ -21,7 +21,7 @@ import {
 import type { Class, ValueSpecification } from '@finos/legend-studio';
 import {
   Multiplicity,
-  UnknownValue,
+  INTERNAL__UnknownValueSpecification,
   V1_GraphTransformerContextBuilder,
   V1_serializeRawValueSpecification,
   V1_transformRawLambda,
@@ -179,7 +179,7 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderDerivationProjectionColumnState
           ) {
-            columnLambda = new UnknownValue(
+            columnLambda = new INTERNAL__UnknownValueSpecification(
               V1_serializeRawValueSpecification(
                 V1_transformRawLambda(
                   projectionColumnState.lambda,
@@ -283,7 +283,7 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderDerivationProjectionColumnState
           ) {
-            columnLambda = new UnknownValue(
+            columnLambda = new INTERNAL__UnknownValueSpecification(
               V1_serializeRawValueSpecification(
                 V1_transformRawLambda(
                   projectionColumnState.lambda,

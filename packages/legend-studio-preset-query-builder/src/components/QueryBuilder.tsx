@@ -16,14 +16,14 @@
 
 import { observer } from 'mobx-react-lite';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { FaUserSecret, FaRobot, FaSave } from 'react-icons/fa';
+import { FaUserSecret, FaSave } from 'react-icons/fa';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { clsx, HammerIcon } from '@finos/legend-studio-components';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
 import { QueryBuilderResultPanel } from './QueryBuilderResultPanel';
-import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
+import { QueryBuilderTextEditor } from './QueryBuilderTextEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
@@ -91,13 +91,13 @@ const QueryBuilderHeader = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const promoteToService = (): void =>
-      queryBuilderState.resultState.setShowServicePathModal(true);
+    // const promoteToService = (): void =>
+    //   queryBuilderState.resultState.setShowServicePathModal(true);
     const saveQuery = (): Promise<void> =>
       queryBuilderState
         .saveQuery()
         .catch(applicationStore.alertIllegalUnhandledError);
-    const disablePromoteToService = !queryBuilderState.querySetupState.mapping;
+    // const disablePromoteToService = !queryBuilderState.querySetupState.mapping;
 
     return (
       <div className="query-builder__header">
@@ -105,7 +105,7 @@ const QueryBuilderHeader = observer(
           <div className="query-builder__header__title"></div>
           <div className="query-builder__header__actions">
             <div className="query-builder__header__action">
-              <button
+              {/* <button
                 className="panel__header__action"
                 onClick={promoteToService}
                 disabled={disablePromoteToService}
@@ -113,7 +113,7 @@ const QueryBuilderHeader = observer(
                 title="Promote to Service"
               >
                 <FaRobot />
-              </button>
+              </button> */}
               <button
                 className="panel__header__action"
                 onClick={saveQuery}
@@ -156,11 +156,8 @@ export const QueryBuilder = observer(
         className="query-builder"
       >
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
+          <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
           <QueryBuilderHeader queryBuilderState={queryBuilderState} />
-          <Backdrop
-            className="backdrop"
-            open={queryBuilderState.editorStore.backdrop}
-          />
           <div className="query-builder__content">
             <ReflexContainer orientation="horizontal">
               <ReflexElement minSize={132}>
@@ -203,7 +200,7 @@ export const QueryBuilder = observer(
           </div>
           <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
           {queryBuilderState.queryTextEditorState.mode && (
-            <QueryBuilderLambdaEditor queryBuilderState={queryBuilderState} />
+            <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
         </GlobalHotKeys>
       </div>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { list, createModelSchema, primitive, optional } from 'serializr';
+import { list, createModelSchema, primitive } from 'serializr';
 import { observable, action, computed, makeObservable } from 'mobx';
 import type { ProjectType } from '../project/Project';
 import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion';
@@ -34,9 +34,8 @@ const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';
 export class ProjectConfiguration implements Hashable {
   projectId!: string;
   projectType!: ProjectType;
-  // TODO: check why these 2 fields are optional, they are not in SDLC server
-  groupId?: string;
-  artifactId?: string;
+  groupId!: string;
+  artifactId!: string;
   projectStructureVersion!: ProjectStructureVersion;
   projectDependencies: ProjectDependency[] = [];
 
@@ -57,8 +56,8 @@ export class ProjectConfiguration implements Hashable {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(ProjectConfiguration, {
-      artifactId: optional(primitive()),
-      groupId: optional(primitive()),
+      artifactId: primitive(),
+      groupId: primitive(),
       projectDependencies: list(
         usingModelSchema(ProjectDependency.serialization.schema),
       ),
@@ -70,21 +69,24 @@ export class ProjectConfiguration implements Hashable {
     }),
   );
 
-  setGroupId(val: string | undefined): void {
+  setGroupId(val: string): void {
     this.groupId = val;
   }
-  setArtifactId(val: string | undefined): void {
+
+  setArtifactId(val: string): void {
     this.artifactId = val;
   }
+
   deleteProjectDependency(val: ProjectDependency): void {
     deleteEntry(this.projectDependencies, val);
   }
+
   addProjectDependency(val: ProjectDependency): void {
     addUniqueEntry(this.projectDependencies, val);
   }
 
   get dependencyKey(): string {
-    return `${(this.groupId ?? '').replace(
+    return `${this.groupId.replace(
       /\./g,
       ENTITY_PATH_DELIMITER,
     )}${ENTITY_PATH_DELIMITER}${this.artifactId}`;
@@ -93,8 +95,8 @@ export class ProjectConfiguration implements Hashable {
   get hashCode(): string {
     return hashArray([
       PROJECT_CONFIGURATION_HASH_STRUCTURE,
-      this.groupId ?? '',
-      this.artifactId ?? '',
+      this.groupId,
+      this.artifactId,
       this.projectType,
       this.projectStructureVersion.version.toString(),
       this.projectStructureVersion.extensionVersion?.toString() ?? '',

@@ -18,19 +18,14 @@ import { list, createModelSchema, primitive } from 'serializr';
 import { SerializationFactory } from '@finos/legend-studio-shared';
 import { action, makeObservable, observable } from 'mobx';
 
-export interface ProjectVersion {
-  projectId: string;
-  versionId: string;
-}
-
-export class ProjectMetadata {
+export class ProjectData {
   id!: string;
   projectId!: string;
   groupId!: string;
   artifactId!: string;
   versions!: string[];
-  // dependencies
-  // properties
+  // TODO?: dependencies
+  // TODO?: properties
   latestVersion!: string;
 
   constructor() {
@@ -45,7 +40,7 @@ export class ProjectMetadata {
   }
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProjectMetadata, {
+    createModelSchema(ProjectData, {
       artifactId: primitive(),
       groupId: primitive(),
       id: primitive(),

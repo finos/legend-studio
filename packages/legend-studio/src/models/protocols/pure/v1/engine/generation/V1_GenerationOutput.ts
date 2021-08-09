@@ -15,11 +15,7 @@
  */
 
 import { createModelSchema, optional, primitive } from 'serializr';
-import {
-  guaranteeNonNullable,
-  SerializationFactory,
-} from '@finos/legend-studio-shared';
-import { GenerationOutput } from '../../../../../metamodels/pure/action/generation/GenerationOutput';
+import { SerializationFactory } from '@finos/legend-studio-shared';
 
 export class V1_GenerationOutput {
   content!: string;
@@ -33,18 +29,4 @@ export class V1_GenerationOutput {
       format: optional(primitive()),
     }),
   );
-
-  build(): GenerationOutput {
-    const output = new GenerationOutput();
-    output.content = guaranteeNonNullable(
-      this.content,
-      'Generation output content is missing',
-    );
-    output.fileName = guaranteeNonNullable(
-      this.fileName,
-      'Generation output file name is missing',
-    );
-    output.format = this.format;
-    return output;
-  }
 }

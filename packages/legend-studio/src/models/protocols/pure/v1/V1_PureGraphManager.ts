@@ -29,7 +29,6 @@ import type {
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
-  losslessParse,
   getClass,
   guaranteeNonNullable,
   UnsupportedOperationError,
@@ -96,7 +95,6 @@ import {
   V1_deserializePureModelContextData,
   V1_setupPureModelContextDataSerialization,
 } from './transformation/pureProtocol/V1_PureProtocolSerialization';
-import type { V1_ServiceConfigurationInfo } from './engine/service/V1_ServiceConfiguration';
 import { V1_PureModelContextData } from './model/context/V1_PureModelContextData';
 import type {
   V1_PackageableElement,
@@ -124,14 +122,10 @@ import {
 } from './transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 import { V1_transformRuntime } from './transformation/pureGraph/from/V1_RuntimeTransformer';
 import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda';
-import type { V1_ServiceTestResult } from './engine/service/V1_ServiceTestResult';
-import { V1_ServiceRegistrationResult } from './engine/service/V1_ServiceRegistrationResult';
 import { V1_ExecuteInput } from './engine/execution/V1_ExecuteInput';
-import { V1_GenerationOutput } from './engine/generation/V1_GenerationOutput';
 import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput';
 import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 import { V1_ValueSpecificationTransformer } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
-import { V1_serializeExecutionResult } from './engine/execution/V1_ExecutionResult';
 import { V1_Profile } from './model/packageableElements/domain/V1_Profile';
 import { V1_Class } from './model/packageableElements/domain/V1_Class';
 import { V1_Enumeration } from './model/packageableElements/domain/V1_Enumeration';
@@ -152,7 +146,6 @@ import { V1_AlloySdlc } from './model/context/V1_AlloySdlc';
 import { V1_Protocol } from './model/V1_Protocol';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
 import type { PluginManager } from '../../../../application/PluginManager';
-import { V1_ServiceStorage } from './engine/service/V1_ServiceStorage';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
 import { V1_GraphBuilderExtensions } from './transformation/pureGraph/to/V1_GraphBuilderExtensions';
 import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin';
@@ -177,7 +170,6 @@ import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariabl
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import type { V1_RawRelationalOperationElement } from './model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
 import type {
   ExecutionPlan,
@@ -196,6 +188,20 @@ import {
   V1_serializeExecutionPlan,
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
+import type {
+  LightQuery,
+  Query,
+} from '../../../metamodels/pure/action/query/Query';
+import {
+  V1_buildQuery,
+  V1_buildServiceTestResult,
+  V1_buildServiceRegistrationResult,
+  V1_transformQuery,
+  V1_buildGenerationOutput,
+  V1_buildLightQuery,
+} from './engine/V1_EngineHelper';
+import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
+import type { ServerClientConfig } from '@finos/legend-studio-network';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -351,6 +357,12 @@ interface V1_GraphBuilderInput {
   parentElementPath?: string;
 }
 
+export interface V1_EngineSetupConfig {
+  env: string;
+  tabSize: number;
+  clientConfig: ServerClientConfig;
+}
+
 export class V1_PureGraphManager extends AbstractPureGraphManager {
   engine!: V1_Engine;
   logger: Logger;
@@ -371,14 +383,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       | 'buildStores'
       | 'buildMappings'
       | 'buildConnectionsAndRuntimes'
+      | 'buildSectionIndex'
+      | 'buildOtherElements'
       | 'buildServices'
       | 'buildDiagrams'
       | 'buildFileGenerations'
       | 'buildGenerationSpecificationss'
-      | 'buildSectionIndex'
-      | 'buildOtherElements'
-      | 'pureCodeToPureModelContextData'
-      | 'entitiesToPureModelContextData'
     >(this, {
       setupEngine: flow,
       buildSystem: flow,
@@ -391,38 +401,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildStores: flow,
       buildMappings: flow,
       buildConnectionsAndRuntimes: flow,
+      buildSectionIndex: flow,
+      buildOtherElements: flow,
       buildServices: flow,
       buildDiagrams: flow,
       buildFileGenerations: flow,
       buildGenerationSpecificationss: flow,
-      buildSectionIndex: flow,
-      buildOtherElements: flow,
-      graphToPureCode: flow,
-      pureCodeToPureModelContextData: flow,
-      entitiesToPureCode: flow,
-      pureCodeToEntities: flow,
-      pureCodeToLambda: flow,
-      lambdaToPureCode: flow,
-      pureCodeToRelationalOperationElement: flow,
-      relationalOperationElementToPureCode: flow,
-      compileGraph: flow,
-      compileText: flow,
-      getLambdaReturnType: flow,
-      getAvailableGenerationConfigurationDescriptions: flow,
-      generateFile: flow,
-      generateModel: flow,
-      getAvailableImportConfigurationDescriptions: flow,
-      externalFormatTextToEntities: flow,
-      entitiesToPureProtocolText: flow,
-      executeMapping: flow,
-      generateTestData: flow,
-      generateExecutionPlan: flow,
-      buildDatabase: flow,
-      runServiceTests: flow,
-      registerService: flow,
-      activateService: flow,
-      buildHashesIndex: flow,
-      entitiesToPureModelContextData: flow,
     });
 
     this.logger = logger;
@@ -446,20 +430,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     config: EngineSetupConfig,
   ): GeneratorFn<void> {
     this.engine = new V1_Engine(config.clientConfig, this.logger);
-    // register plugin
-    this.engine.engineServerClient.registerTracerServicePlugins(
-      pluginManager.getTracerServicePlugins(),
-    );
-    // setup the engine client
-    this.engine.config.setEnv(config.env);
-    this.engine.config.setTabSize(config.tabSize);
-    try {
-      this.engine.config.setCurrentUserId(
-        (yield this.engine.engineServerClient.getCurrentUserId()) as string,
-      );
-    } catch {
-      // do nothing
-    }
+    this.engine
+      .getEngineServerClient()
+      .registerTracerServicePlugins(pluginManager.getTracerServicePlugins());
+    yield this.engine.setup(config);
   }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
@@ -1492,12 +1466,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Grammar ---------------------------------------------
 
-  *graphToPureCode(graph: PureModel): GeneratorFn<string> {
+  async graphToPureCode(graph: PureModel): Promise<string> {
     const startTime = Date.now();
     const graphData = this.graphToPureModelContextData(graph);
-    const grammarToJson = (yield flowResult(
-      this.engine.pureModelContextDataToPureCode(graphData),
-    )) as string;
+    const grammarToJson = await this.engine.pureModelContextDataToPureCode(
+      graphData,
+    );
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
       Date.now() - startTime,
@@ -1506,23 +1480,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return grammarToJson;
   }
 
-  private *pureCodeToPureModelContextData(
-    code: string,
-    options?: { onError?: () => void },
-  ): GeneratorFn<V1_PureModelContextData> {
-    return (yield flowResult(
-      this.engine.pureCodeToPureModelContextData(code, options),
-    )) as V1_PureModelContextData;
-  }
-
-  *entitiesToPureCode(entities: Entity[]): GeneratorFn<string> {
-    const graphData = (yield flowResult(
-      this.entitiesToPureModelContextData(entities),
-    )) as V1_PureModelContextData;
+  async entitiesToPureCode(entities: Entity[]): Promise<string> {
     const startTime = Date.now();
-    const grammarToJson = (yield flowResult(
-      this.engine.pureModelContextDataToPureCode(graphData),
-    )) as string;
+    const grammarToJson = await this.engine.pureModelContextDataToPureCode(
+      await this.entitiesToPureModelContextData(entities),
+    );
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
       Date.now() - startTime,
@@ -1531,140 +1493,139 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return grammarToJson;
   }
 
-  *pureCodeToEntities(code: string): GeneratorFn<Entity[]> {
-    const graphData = (yield flowResult(
-      this.pureCodeToPureModelContextData(code),
-    )) as V1_PureModelContextData;
-    return this.pureModelContextDataToEntities(graphData);
+  async pureCodeToEntities(code: string): Promise<Entity[]> {
+    return this.pureModelContextDataToEntities(
+      await this.engine.pureCodeToPureModelContextData(code),
+    );
   }
 
-  *pureCodeToLambda(
+  async pureCodeToLambda(
     lambda: string,
-    lambdaId: string,
-  ): GeneratorFn<RawLambda | undefined> {
-    const result = (yield flowResult(
-      this.engine.transformCodeToLambda(lambda, lambdaId),
-    )) as V1_RawLambda | undefined;
+    lambdaId = 'stub_lambdaId',
+  ): Promise<RawLambda | undefined> {
+    const result = await this.engine.transformCodeToLambda(lambda, lambdaId);
     return result ? new RawLambda(result.parameters, result.body) : undefined;
   }
 
-  *lambdaToPureCode(
+  async lambdaToPureCode(
+    lambda: RawLambda,
+    lambdaId = 'stub_lambdaId',
+    pretty?: boolean,
+  ): Promise<string> {
+    const lambdas = new Map<string, RawLambda>();
+    lambdas.set(lambdaId, lambda);
+    return guaranteeNonNullable(
+      (await this.lambdasToPureCode(lambdas, pretty)).get(lambdaId),
+    );
+  }
+
+  lambdasToPureCode(
     lambdas: Map<string, RawLambda>,
     pretty?: boolean,
-  ): GeneratorFn<Map<string, string>> {
-    return (yield flowResult(
-      this.engine.transformLambdasToCode(
-        lambdas,
-        this.pureProtocolProcessorPlugins,
-        pretty,
-      ),
-    )) as Map<string, string>;
+  ): Promise<Map<string, string>> {
+    return this.engine.transformLambdasToCode(
+      lambdas,
+      this.pureProtocolProcessorPlugins,
+      pretty,
+    );
   }
 
-  *pureCodeToRelationalOperationElement(
+  pureCodeToRelationalOperationElement(
     operation: string,
     operationId: string,
-  ): GeneratorFn<RawRelationalOperationElement | undefined> {
-    return (yield flowResult(
-      this.engine.transformPureCodeToRelationalOperationElement(
-        operation,
-        operationId,
-      ),
-    )) as V1_RawRelationalOperationElement | undefined;
+  ): Promise<RawRelationalOperationElement | undefined> {
+    return this.engine.transformPureCodeToRelationalOperationElement(
+      operation,
+      operationId,
+    );
   }
 
-  *relationalOperationElementToPureCode(
+  relationalOperationElementToPureCode(
     operations: Map<string, RawRelationalOperationElement>,
-  ): GeneratorFn<Map<string, string>> {
-    return (yield flowResult(
-      this.engine.transformRelationalOperationElementsToPureCode(operations),
-    )) as Map<string, string>;
+  ): Promise<Map<string, string>> {
+    return this.engine.transformRelationalOperationElementsToPureCode(
+      operations,
+    );
   }
 
   // ------------------------------------------- Compile -------------------------------------------
 
-  *compileGraph(
+  async compileGraph(
     graph: PureModel,
     options?: { onError?: () => void; keepSourceInformation?: boolean },
-  ): GeneratorFn<void> {
-    const fullModel = this.getFullGraphModelData(graph, {
-      keepSourceInformation: options?.keepSourceInformation,
-    });
-    yield flowResult(
-      this.engine.compilePureModelContextData(fullModel, {
-        onError: options?.onError,
+  ): Promise<void> {
+    await this.engine.compilePureModelContextData(
+      this.getFullGraphModelData(graph, {
+        keepSourceInformation: options?.keepSourceInformation,
       }),
+      {
+        onError: options?.onError,
+      },
     );
   }
 
-  *compileText(
+  async compileText(
     graphGrammar: string,
     graph: PureModel,
     options?: { onError?: () => void },
-  ): GeneratorFn<Entity[]> {
-    const compileContext = this.getGraphCompileContext(graph);
-    const pureModelContextData = (yield flowResult(
-      this.engine.compileText(graphGrammar, compileContext, options),
-    )) as V1_PureModelContextData;
-    return this.pureModelContextDataToEntities(pureModelContextData);
+  ): Promise<Entity[]> {
+    return this.pureModelContextDataToEntities(
+      await this.engine.compileText(
+        graphGrammar,
+        this.getGraphCompileContext(graph),
+        options,
+      ),
+    );
   }
 
-  *getLambdaReturnType(
+  getLambdaReturnType(
     lambda: RawLambda,
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
-  ): GeneratorFn<string> {
-    return (yield flowResult(
-      this.engine.getLambdaReturnType(
-        lambda.accept_RawValueSpecificationVisitor(
-          new V1_RawValueSpecificationTransformer(
-            new V1_GraphTransformerContextBuilder(
-              this.pureProtocolProcessorPlugins,
+  ): Promise<string> {
+    return this.engine.getLambdaReturnType(
+      lambda.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(
+          new V1_GraphTransformerContextBuilder(
+            this.pureProtocolProcessorPlugins,
+          )
+            .withKeepSourceInformationFlag(
+              Boolean(options?.keepSourceInformation),
             )
-              .withKeepSourceInformationFlag(
-                Boolean(options?.keepSourceInformation),
-              )
-              .build(),
-          ),
-        ) as V1_RawLambda,
-        this.getFullGraphModelData(graph),
-      ),
-    )) as string;
+            .build(),
+        ),
+      ) as V1_RawLambda,
+      this.getFullGraphModelData(graph),
+    );
   }
 
   // ------------------------------------------- Generation -------------------------------------------
 
-  *getAvailableGenerationConfigurationDescriptions(): GeneratorFn<
+  getAvailableGenerationConfigurationDescriptions(): Promise<
     GenerationConfigurationDescription[]
   > {
-    return (yield flowResult(
-      this.engine.getAvailableGenerationConfigurationDescriptions(),
-    )) as GenerationConfigurationDescription[];
+    return this.engine.getAvailableGenerationConfigurationDescriptions();
   }
 
-  *generateFile(
+  async generateFile(
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,
     graph: PureModel,
-  ): GeneratorFn<GenerationOutput[]> {
+  ): Promise<GenerationOutput[]> {
     return (
-      (yield flowResult(
-        this.engine.generateFile(
-          fileGeneration.createConfig(),
-          fileGeneration.type,
-          generationMode,
-          this.getFullGraphModelData(graph),
-        ),
-      )) as PlainObject<V1_GenerationOutput>[]
-    ).map((output) =>
-      V1_GenerationOutput.serialization.fromJson(output).build(),
-    );
+      await this.engine.generateFile(
+        fileGeneration.createConfig(),
+        fileGeneration.type,
+        generationMode,
+        this.getFullGraphModelData(graph),
+      )
+    ).map(V1_buildGenerationOutput);
   }
 
-  *generateModel(
+  async generateModel(
     generationElement: PackageableElement,
     graph: PureModel,
-  ): GeneratorFn<Entity[]> {
+  ): Promise<Entity[]> {
     const model = this.getFullGraphModelData(graph);
     let generatedModel: V1_PureModelContextData | undefined = undefined;
     const extraModelGenerators = this.pureProtocolProcessorPlugins.flatMap(
@@ -1674,11 +1635,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ).V1_getExtraModelGenerators?.() ?? [],
     );
     for (const generator of extraModelGenerators) {
-      const _model = (yield generator(
-        generationElement,
-        model,
-        this.engine,
-      )) as V1_PureModelContextData | undefined;
+      const _model = await generator(generationElement, model, this.engine);
       if (_model) {
         generatedModel = _model;
         break;
@@ -1761,23 +1718,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ------------------------------------------- Import -------------------------------------------
 
-  *getAvailableImportConfigurationDescriptions(): GeneratorFn<
+  getAvailableImportConfigurationDescriptions(): Promise<
     ImportConfigurationDescription[]
   > {
-    return (yield flowResult(
-      this.engine.getAvailableImportConfigurationDescriptions(),
-    )) as ImportConfigurationDescription[];
+    return this.engine.getAvailableImportConfigurationDescriptions();
   }
 
-  *externalFormatTextToEntities(
+  async externalFormatTextToEntities(
     code: string,
     type: string,
     mode: ImportMode,
-  ): GeneratorFn<Entity[]> {
-    const graphData = (yield flowResult(
-      this.engine.transformExternalFormatToProtocol(code, type, mode),
-    )) as V1_PureModelContextData;
-    return this.pureModelContextDataToEntities(graphData);
+  ): Promise<Entity[]> {
+    return this.pureModelContextDataToEntities(
+      await this.engine.transformExternalFormatToProtocol(code, type, mode),
+    );
   }
 
   getExamplePureProtocolText(): string {
@@ -1804,12 +1758,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  *entitiesToPureProtocolText(entities: Entity[]): GeneratorFn<string> {
+  async entitiesToPureProtocolText(entities: Entity[]): Promise<string> {
     return JSON.stringify(
       V1_serializePureModelContext(
-        (yield flowResult(
-          this.entitiesToPureModelContextData(entities),
-        )) as V1_PureModelContextData,
+        await this.entitiesToPureModelContextData(entities),
       ),
       undefined,
       this.engine.config.tabSize,
@@ -1823,7 +1775,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Execution ---------------------------------------------
 
-  createExecutionInput = (
+  private createExecutionInput = (
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
@@ -1848,7 +1800,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
     const extraExecutionElements = this.pureProtocolProcessorPlugins
-      .flatMap((e) => e.V1_getExtraExecutionInputGetters?.() ?? [])
+      .flatMap((element) => element.V1_getExtraExecutionInputGetters?.() ?? [])
       .flatMap((getter) => getter(graph, mapping, runtime, graphData));
     prunedGraphData.elements = graphData.elements
       .filter(
@@ -1887,67 +1839,50 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return executeInput;
   };
 
-  *executeMapping(
+  async executeMapping(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-    lossless: boolean,
-  ): GeneratorFn<ExecutionResult> {
-    const executeInput = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      clientVersion,
+    useLosslessParse: boolean,
+  ): Promise<ExecutionResult> {
+    return V1_buildExecutionResult(
+      await this.engine.executeMapping(
+        this.createExecutionInput(
+          graph,
+          mapping,
+          lambda,
+          runtime,
+          clientVersion,
+        ),
+        useLosslessParse,
+      ),
     );
-    const result = (yield this.engine.engineServerClient.execute(
-      V1_ExecuteInput.serialization.toJson(executeInput),
-      true,
-    )) as Response;
-    const resultTest = (yield result.text()) as string;
-    return V1_serializeExecutionResult(
-      lossless ? losslessParse(resultTest) : JSON.parse(resultTest),
-    ).build();
   }
 
-  *generateTestData(
+  generateMappingTestData(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-  ): GeneratorFn<string> {
-    const executeInput = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      clientVersion,
+  ): Promise<string> {
+    return this.engine.generateMappingTestData(
+      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
     );
-    return (yield this.engine.engineServerClient.generateTestDataWithDefaultSeed(
-      V1_ExecuteInput.serialization.toJson(executeInput),
-    )) as string;
   }
 
-  *generateExecutionPlan(
+  generateExecutionPlan(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-  ): GeneratorFn<RawExecutionPlan> {
-    const executeInput = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      clientVersion,
+  ): Promise<RawExecutionPlan> {
+    return this.engine.generateExecutionPlan(
+      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
     );
-    return (yield this.engine.engineServerClient.generatePlan(
-      V1_ExecuteInput.serialization.toJson(executeInput),
-    )) as RawExecutionPlan;
   }
 
   buildExecutionPlan(
@@ -1991,86 +1926,37 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  // --------------------------------------------- V1_Store ---------------------------------------------
+  // --------------------------------------------- Service ---------------------------------------------
 
-  *buildDatabase(input: DatabaseBuilderInput): GeneratorFn<Entity[]> {
-    const dbBuilderInput = new V1_DatabaseBuilderInput();
-    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
-      input.connection,
-      new V1_GraphTransformerContextBuilder(
-        this.pureProtocolProcessorPlugins,
-      ).build(),
-    );
-    const targetDatabase = new V1_TargetDatabase();
-    targetDatabase.package = input.targetDatabase.package;
-    targetDatabase.name = input.targetDatabase.name;
-    dbBuilderInput.targetDatabase = targetDatabase;
-    const config = new V1_DatabaseBuilderConfig();
-    config.maxTables = input.config.maxTables;
-    config.enrichTables = input.config.enrichTables;
-    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
-    config.enrichColumns = input.config.enrichColumns;
-    config.patterns = input.config.patterns.map(
-      (storePattern: DatabasePattern): V1_DatabasePattern => {
-        const pattern = new V1_DatabasePattern();
-        pattern.schemaPattern = storePattern.schemaPattern;
-        pattern.tablePattern = storePattern.tablePattern;
-        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
-        pattern.escapeTablePattern = storePattern.escapeTablePattern;
-        return pattern;
-      },
-    );
-    dbBuilderInput.config = config;
-    const jsonGraph = (yield this.engine.engineServerClient.buildDatabase(
-      V1_DatabaseBuilderInput.serialization.toJson(dbBuilderInput),
-    )) as PlainObject<V1_PureModelContextData>;
-    const graph = V1_deserializePureModelContextData(jsonGraph);
-    return this.pureModelContextDataToEntities(graph);
-  }
-
-  // --------------------------------------------- V1_Service ---------------------------------------------
-
-  *runServiceTests(
+  async runServiceTests(
     service: Service,
     graph: PureModel,
-  ): GeneratorFn<ServiceTestResult[]> {
+  ): Promise<ServiceTestResult[]> {
     const protocolGraph = this.getFullGraphModelData(graph);
     const targetService = guaranteeNonNullable(
       protocolGraph
         .getElementsOfType(V1_Service)
-        .find((s) => s.path === service.path),
-      `Service element '${service.path}' not found to run tests`,
+        .find((element) => element.path === service.path),
+      `Can't run service test: service '${service.path}' not found`,
     );
     protocolGraph.elements = protocolGraph.elements.filter(
-      (e) => !(e instanceof V1_Service),
+      (element) => !(element instanceof V1_Service),
     );
     protocolGraph.elements.push(targetService);
-    return (
-      (yield flowResult(
-        this.engine.runServiceTests(service.path, protocolGraph),
-      )) as V1_ServiceTestResult[]
-    ).map((result) => result.build());
+    return (await this.engine.runServiceTests(protocolGraph)).map(
+      V1_buildServiceTestResult,
+    );
   }
 
-  *registerService(
+  async registerService(
     graph: PureModel,
     service: Service,
     projectId: string,
     server: string,
     executionMode: ServiceExecutionMode,
     version: string | undefined,
-  ): GeneratorFn<ServiceRegistrationResult> {
-    const serverServiceInfo =
-      (yield this.engine.engineServerClient.serverServiceInfo()) as V1_ServiceConfigurationInfo;
-    // end url
-    let endUrl = '';
-    if (executionMode !== ServiceExecutionMode.PROD) {
-      endUrl = `_${
-        executionMode === ServiceExecutionMode.FULL_INTERACTIVE
-          ? 'fullInteractive'
-          : 'semiInteractive'
-      }`;
-    }
+  ): Promise<ServiceRegistrationResult> {
+    const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
     let input: V1_PureModelContext;
     const protocol = new V1_Protocol(
@@ -2079,11 +1965,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     switch (executionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE: {
-        const data = this.createServiceRegistrationInput(
-          graph,
-          service,
-          serverServiceInfo,
-        );
+        const data = this.createServiceRegistrationInput(graph, service);
         data.origin = new V1_PureModelContextPointer(protocol);
         input = data;
         break;
@@ -2095,7 +1977,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const data = new V1_PureModelContextData();
         data.origin = new V1_PureModelContextPointer(protocol);
         data.elements = [this.elementToProtocol<V1_Service>(service)];
-        // sdlc info
+        // SDLC info
         const execution = service.execution;
         if (execution instanceof PureSingleExecution) {
           sdlcInfo.packageableElementPointers = [
@@ -2132,34 +2014,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
     }
-    return V1_ServiceRegistrationResult.serialization
-      .fromJson(
-        (yield this.engine.engineServerClient.registerService(
-          V1_serializePureModelContext(input),
-          server,
-          endUrl,
-        )) as PlainObject<V1_ServiceRegistrationResult>,
-      )
-      .build();
+    return V1_buildServiceRegistrationResult(
+      await this.engine.registerService(input, server, executionMode),
+    );
   }
 
-  *activateService(serviceUrl: string, serviceId: string): GeneratorFn<void> {
-    const serviceStoreg = V1_ServiceStorage.serialization.fromJson(
-      (yield this.engine.engineServerClient.getServiceVersionInfo(
-        serviceUrl,
-        serviceId,
-      )) as PlainObject<V1_ServiceStorage>,
-    );
-    yield this.engine.engineServerClient.activateGenerationId(
+  async activateService(serviceUrl: string, serviceId: string): Promise<void> {
+    const serviceStorage = await this.engine.getServiceVersionInfo(
       serviceUrl,
-      serviceStoreg.getGenerationId(),
+      serviceId,
+    );
+    await this.engine.activateServiceGeneration(
+      serviceUrl,
+      serviceStorage.getGenerationId(),
     );
   }
 
   private createServiceRegistrationInput = (
     graph: PureModel,
     service: Service,
-    serverServiceInfo: V1_ServiceConfigurationInfo,
   ): V1_PureModelContextData => {
     const graphData = this.getFullGraphModelData(graph);
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
@@ -2181,17 +2054,69 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return prunedGraphData;
   };
 
+  // --------------------------------------------- Query ---------------------------------------------
+
+  async getQueries(
+    search: string | undefined,
+    showCurrentUserQueriesOnly: boolean | undefined,
+    limit: number | undefined,
+  ): Promise<LightQuery[]> {
+    return (
+      await this.engine.getQueries(search, showCurrentUserQueriesOnly, limit)
+    ).map((protocol) =>
+      V1_buildLightQuery(
+        protocol,
+        this.engine.getEngineServerClient().currentUserId,
+      ),
+    );
+  }
+
+  async getLightQuery(queryId: string): Promise<LightQuery> {
+    return V1_buildLightQuery(
+      await this.engine.getQuery(queryId),
+      this.engine.getEngineServerClient().currentUserId,
+    );
+  }
+
+  async getQuery(queryId: string, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.getQuery(queryId),
+      graph,
+      this.engine.getEngineServerClient().currentUserId,
+    );
+  }
+
+  async createQuery(query: Query, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.createQuery(V1_transformQuery(query)),
+      graph,
+      this.engine.getEngineServerClient().currentUserId,
+    );
+  }
+
+  async updateQuery(query: Query, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.updateQuery(V1_transformQuery(query)),
+      graph,
+      this.engine.getEngineServerClient().currentUserId,
+    );
+  }
+
+  async deleteQuery(queryId: string): Promise<void> {
+    await this.engine.deleteQuery(queryId);
+  }
+
   // --------------------------------------------- Change Detection ---------------------------------------------
 
-  *buildHashesIndex(entities: Entity[]): GeneratorFn<Map<string, string>> {
+  async buildHashesIndex(entities: Entity[]): Promise<Map<string, string>> {
     const hashMap = new Map<string, string>();
     const pureModelContextData = new V1_PureModelContextData();
-    yield V1_entitiesToPureModelContextData(
+    await V1_entitiesToPureModelContextData(
       entities,
       pureModelContextData,
       this.pureProtocolProcessorPlugins,
     );
-    yield Promise.all(
+    await Promise.all(
       pureModelContextData.elements.map((element) =>
         promisify(() =>
           runInAction(() => hashMap.set(element.path, element.hashCode)),
@@ -2201,7 +2126,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return hashMap;
   }
 
-  // ------------------------------------------- Raw V1_Protocol Handling -------------------------------------------
+  // ------------------------------------------- Raw Protocol Handling -------------------------------------------
 
   /**
    * As mentioned, this method is needed because sometimes we want to parse and store protocol from grammar
@@ -2261,11 +2186,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- SHARED ---------------------------------------------
 
-  private *entitiesToPureModelContextData(
+  private async entitiesToPureModelContextData(
     entities: Entity[],
-  ): GeneratorFn<V1_PureModelContextData> {
+  ): Promise<V1_PureModelContextData> {
     const graphData = new V1_PureModelContextData();
-    yield V1_entitiesToPureModelContextData(
+    await V1_entitiesToPureModelContextData(
       entities,
       graphData,
       this.pureProtocolProcessorPlugins,
@@ -2306,7 +2231,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private pureModelContextDataToEntities = (
     graphProtocol: V1_PureModelContextData,
   ): Entity[] =>
-    graphProtocol.elements.map((e) => this.elementProtocolToEntity(e));
+    graphProtocol.elements.map((element) =>
+      this.elementProtocolToEntity(element),
+    );
 
   private elementProtocolToEntity = (
     elementProtocol: V1_PackageableElement,
@@ -2337,40 +2264,42 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   };
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-  private getElementClassiferPath = (el: V1_PackageableElement): string => {
-    if (el instanceof V1_Association) {
+  private getElementClassiferPath = (
+    protocol: V1_PackageableElement,
+  ): string => {
+    if (protocol instanceof V1_Association) {
       return CORE_ELEMENT_CLASSIFIER_PATH.ASSOCIATION;
-    } else if (el instanceof V1_Class) {
+    } else if (protocol instanceof V1_Class) {
       return CORE_ELEMENT_CLASSIFIER_PATH.CLASS;
-    } else if (el instanceof V1_Enumeration) {
+    } else if (protocol instanceof V1_Enumeration) {
       return CORE_ELEMENT_CLASSIFIER_PATH.ENUMERATION;
-    } else if (el instanceof V1_ConcreteFunctionDefinition) {
+    } else if (protocol instanceof V1_ConcreteFunctionDefinition) {
       return CORE_ELEMENT_CLASSIFIER_PATH.FUNCTION;
-    } else if (el instanceof V1_Profile) {
+    } else if (protocol instanceof V1_Profile) {
       return CORE_ELEMENT_CLASSIFIER_PATH.PROFILE;
-    } else if (el instanceof V1_Measure) {
+    } else if (protocol instanceof V1_Measure) {
       return CORE_ELEMENT_CLASSIFIER_PATH.MEASURE;
-    } else if (el instanceof V1_Mapping) {
+    } else if (protocol instanceof V1_Mapping) {
       return CORE_ELEMENT_CLASSIFIER_PATH.MAPPING;
-    } else if (el instanceof V1_PackageableConnection) {
+    } else if (protocol instanceof V1_PackageableConnection) {
       return CORE_ELEMENT_CLASSIFIER_PATH.CONNECTION;
-    } else if (el instanceof V1_PackageableRuntime) {
+    } else if (protocol instanceof V1_PackageableRuntime) {
       return CORE_ELEMENT_CLASSIFIER_PATH.RUNTIME;
-    } else if (el instanceof V1_SectionIndex) {
+    } else if (protocol instanceof V1_SectionIndex) {
       return CORE_ELEMENT_CLASSIFIER_PATH.SECTION_INDEX;
-    } else if (el instanceof V1_FlatData) {
+    } else if (protocol instanceof V1_FlatData) {
       return CORE_ELEMENT_CLASSIFIER_PATH.FLAT_DATA;
-    } else if (el instanceof V1_Database) {
+    } else if (protocol instanceof V1_Database) {
       return CORE_ELEMENT_CLASSIFIER_PATH.DATABASE;
-    } else if (el instanceof V1_ServiceStore) {
+    } else if (protocol instanceof V1_ServiceStore) {
       return CORE_ELEMENT_CLASSIFIER_PATH.SERVICE_STORE;
-    } else if (el instanceof V1_Service) {
+    } else if (protocol instanceof V1_Service) {
       return CORE_ELEMENT_CLASSIFIER_PATH.SERVICE;
-    } else if (el instanceof V1_Diagram) {
+    } else if (protocol instanceof V1_Diagram) {
       return CORE_ELEMENT_CLASSIFIER_PATH.DIAGRAM;
-    } else if (el instanceof V1_FileGenerationSpecification) {
+    } else if (protocol instanceof V1_FileGenerationSpecification) {
       return CORE_ELEMENT_CLASSIFIER_PATH.FILE_GENERATION;
-    } else if (el instanceof V1_GenerationSpecification) {
+    } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_ELEMENT_CLASSIFIER_PATH.GENERATION_SPECIFICATION;
     }
     const extraElementProtocolClassifierPathGetters =
@@ -2378,13 +2307,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         (plugin) => plugin.V1_getExtraElementClassifierPathGetters?.() ?? [],
       );
     for (const classifierPathGetter of extraElementProtocolClassifierPathGetters) {
-      const classifierPath = classifierPathGetter(el);
+      const classifierPath = classifierPathGetter(protocol);
       if (classifierPath) {
         return classifierPath;
       }
     }
     throw new UnsupportedOperationError(
-      `Can't get classifier path for element '${el.path}': no compatible classifier path getter available from plugins`,
+      `Can't get classifier path for element '${protocol.path}': no compatible classifier path getter available from plugins`,
     );
   };
 
@@ -2395,8 +2324,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): V1_PureModelContextData => {
     const startTime = Date.now();
     const graphData = new V1_PureModelContextData();
-    graphData.elements = graph.allOwnElements.map((e) =>
-      this.elementToProtocol(e, {
+    graphData.elements = graph.allOwnElements.map((element) =>
+      this.elementToProtocol(element, {
         keepSourceInformation: options?.keepSourceInformation,
       }),
     );
@@ -2419,7 +2348,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graphData.elements = [
       ...dependencyManager.allElements,
       ...generatedModel.allOwnElements,
-    ].map((e) => this.elementToProtocol(e));
+    ].map((element) => this.elementToProtocol(element));
     this.logger.info(
       CORE_LOG_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED,
       Date.now() - startTime,
@@ -2427,6 +2356,41 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     return graphData;
   };
+
+  // --------------------------------------------- Utilities ---------------------------------------------
+
+  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
+    const dbBuilderInput = new V1_DatabaseBuilderInput();
+    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
+      input.connection,
+      new V1_GraphTransformerContextBuilder(
+        this.pureProtocolProcessorPlugins,
+      ).build(),
+    );
+    const targetDatabase = new V1_TargetDatabase();
+    targetDatabase.package = input.targetDatabase.package;
+    targetDatabase.name = input.targetDatabase.name;
+    dbBuilderInput.targetDatabase = targetDatabase;
+    const config = new V1_DatabaseBuilderConfig();
+    config.maxTables = input.config.maxTables;
+    config.enrichTables = input.config.enrichTables;
+    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
+    config.enrichColumns = input.config.enrichColumns;
+    config.patterns = input.config.patterns.map(
+      (storePattern: DatabasePattern): V1_DatabasePattern => {
+        const pattern = new V1_DatabasePattern();
+        pattern.schemaPattern = storePattern.schemaPattern;
+        pattern.tablePattern = storePattern.tablePattern;
+        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
+        pattern.escapeTablePattern = storePattern.escapeTablePattern;
+        return pattern;
+      },
+    );
+    dbBuilderInput.config = config;
+    return this.pureModelContextDataToEntities(
+      await this.engine.buildDatabase(dbBuilderInput),
+    );
+  }
 
   // --------------------------------------------- HACKY ---------------------------------------------
 

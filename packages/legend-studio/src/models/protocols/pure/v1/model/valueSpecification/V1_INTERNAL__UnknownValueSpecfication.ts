@@ -14,25 +14,15 @@
  * limitations under the License.
  */
 
-import { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { ValueSpecificationVisitor } from './ValueSpecification';
-import { ValueSpecification } from './ValueSpecification';
+import { V1_ValueSpecification } from './V1_ValueSpecification';
+import type { V1_ValueSpecificationVisitor } from './V1_ValueSpecification';
 
-/**
- * This is not an official value specification metamodel. It is used
- * to hold part of the value specification tree that we don't process.
- */
-export class UnknownValue extends ValueSpecification {
-  content: object;
-
-  constructor(content: object) {
-    super(new Multiplicity(0, 0));
-    this.content = content;
-  }
+export class V1_INTERNAL__UnknownValueSpecfication extends V1_ValueSpecification {
+  content!: object;
 
   accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
+    visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_UnknownValue(this);
+    return visitor.visit_INTERNAL__UnknownValueSpecfication(this);
   }
 }

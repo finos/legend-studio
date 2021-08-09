@@ -15,11 +15,7 @@
  */
 
 import { createModelSchema, primitive } from 'serializr';
-import {
-  guaranteeNonNullable,
-  SerializationFactory,
-} from '@finos/legend-studio-shared';
-import { ServiceRegistrationResult } from '../../../../../metamodels/pure/action/service/ServiceRegistrationResult';
+import { SerializationFactory } from '@finos/legend-studio-shared';
 
 export class V1_ServiceRegistrationResult {
   serverURL!: string;
@@ -39,24 +35,4 @@ export class V1_ServiceRegistrationResult {
       status: primitive(),
     }),
   );
-
-  build(): ServiceRegistrationResult {
-    guaranteeNonNullable(
-      this.serverURL,
-      'Service registration result server URL is missing',
-    );
-    guaranteeNonNullable(
-      this.pattern,
-      'Service registration result pattern is missing',
-    );
-    guaranteeNonNullable(
-      this.serviceInstanceId,
-      'Service registration serviceInstanceId is missing',
-    );
-    return new ServiceRegistrationResult(
-      this.serverURL,
-      this.pattern,
-      this.serviceInstanceId,
-    );
-  }
 }

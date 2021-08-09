@@ -19,9 +19,7 @@ import {
   BasicSerializationFactory,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
-import { EngineError } from '../../../../metamodels/pure/action/EngineError';
 import type { V1_SourceInformation } from '../model/V1_SourceInformation';
-import { V1_buildSourceInformation } from '../transformation/pureGraph/to/helpers/V1_CoreBuilderHelper';
 import { V1_sourceInformationSerialization } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 
 export enum V1_EngineErrorType {
@@ -43,13 +41,4 @@ export class V1_EngineError {
       ),
     }),
   );
-
-  build(): EngineError {
-    const error = new EngineError();
-    error.message = this.message;
-    error.sourceInformation = this.sourceInformation
-      ? V1_buildSourceInformation(this.sourceInformation)
-      : undefined;
-    return error;
-  }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, makeObservable, flowResult } from 'mobx';
+import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import { LambdaEditorState } from './LambdaEditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
@@ -62,12 +62,11 @@ export class FunctionBodyEditorState extends LambdaEditorState {
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     if (this.lambdaString) {
       try {
-        const lambda = (yield flowResult(
-          this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda =
+          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          ),
-        )) as RawLambda | undefined;
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.functionElement.body = lambda ? (lambda.body as object[]) : [];
       } catch (error: unknown) {
@@ -98,12 +97,11 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           this.functionElement.body as object,
         );
         lambdas.set(this.lambdaId, functionLamba);
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         if (grammarText) {
           let grammarString = this.extractLambdaString(grammarText);

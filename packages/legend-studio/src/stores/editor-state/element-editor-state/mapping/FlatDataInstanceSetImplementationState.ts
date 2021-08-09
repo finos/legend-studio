@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, flowResult } from 'mobx';
+import { observable, action, computed, makeObservable } from 'mobx';
 import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
@@ -77,12 +77,11 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda = (yield flowResult(
-          this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda =
+          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          ),
-        )) as RawLambda | undefined;
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof FlatDataPropertyMapping) {
           this.propertyMapping.transform = lambda ?? emptyLambda;
@@ -110,12 +109,11 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         try {
           const lambdas = new Map<string, RawLambda>();
           lambdas.set(this.lambdaId, this.propertyMapping.transform);
-          const isolatedLambdas = (yield flowResult(
-            this.editorStore.graphState.graphManager.lambdaToPureCode(
+          const isolatedLambdas =
+            (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
               lambdas,
               pretty,
-            ),
-          )) as Map<string, string>;
+            )) as Map<string, string>;
           const grammarText = isolatedLambdas.get(this.lambdaId);
           this.setLambdaString(
             grammarText !== undefined
@@ -217,9 +215,10 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
     if (lambdas.size) {
       this.isConvertingTransformLambdaObjects = true;
       try {
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+            lambdas,
+          )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const flatDataPropertyMappingState = propertyMappingStates.get(key);
           flatDataPropertyMappingState?.setLambdaString(

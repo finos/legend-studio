@@ -15,14 +15,46 @@
  */
 
 import type { Mapping } from '../../model/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../model/packageableElements/runtime/Runtime';
+import type { PackageableElementReference } from '../../model/packageableElements/PackageableElementReference';
+import type { PackageableRuntime } from '../../model/packageableElements/runtime/PackageableRuntime';
 
 export class Query {
   name!: string;
   id!: string;
-  projectId!: string;
   versionId!: string;
-  mapping!: Mapping;
-  runtime!: Runtime;
+  groupId!: string;
+  artifactId!: string;
+  mapping!: PackageableElementReference<Mapping>;
+  runtime!: PackageableElementReference<PackageableRuntime>;
+  // We enforce a single owner, for collaboration on query, use Studio
+  // if not owner is specified, any user can own the query
+  // NOTE: the owner is managed automatically by the backend
+  owner?: string;
+  // Store query in text to be more compact and stable
   content!: string;
+
+  isCurrentUserQuery = false;
 }
+
+export class LightQuery {
+  name!: string;
+  id!: string;
+  versionId!: string;
+  groupId!: string;
+  artifactId!: string;
+  owner?: string;
+
+  isCurrentUserQuery = false;
+}
+
+export const toLightQuery = (query: Query): LightQuery => {
+  const lightQuery = new LightQuery();
+  lightQuery.name = query.name;
+  lightQuery.id = query.id;
+  lightQuery.groupId = query.groupId;
+  lightQuery.artifactId = query.artifactId;
+  lightQuery.versionId = query.versionId;
+  lightQuery.owner = query.owner;
+  lightQuery.isCurrentUserQuery = query.isCurrentUserQuery;
+  return lightQuery;
+};

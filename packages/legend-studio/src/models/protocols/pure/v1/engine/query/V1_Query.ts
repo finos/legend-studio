@@ -14,13 +14,51 @@
  * limitations under the License.
  */
 
+import { SerializationFactory } from '@finos/legend-studio-shared';
+import { createModelSchema, optional, primitive } from 'serializr';
+
 export class V1_Query {
   name!: string;
   id!: string;
-  projectId!: string;
+  groupId!: string;
+  artifactId!: string;
   versionId!: string;
   mapping!: string;
   runtime!: string;
-  // NOTE: we decide to store the query in text because text format is more compact and stable than JSON
   content!: string;
+  owner?: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_Query, {
+      artifactId: primitive(),
+      content: primitive(),
+      id: primitive(),
+      groupId: primitive(),
+      mapping: primitive(),
+      name: primitive(),
+      owner: optional(primitive()),
+      runtime: primitive(),
+      versionId: primitive(),
+    }),
+  );
+}
+
+export class V1_LightQuery {
+  name!: string;
+  id!: string;
+  groupId!: string;
+  owner?: string;
+  artifactId!: string;
+  versionId!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_Query, {
+      artifactId: primitive(),
+      id: primitive(),
+      groupId: primitive(),
+      name: primitive(),
+      owner: optional(primitive()),
+      versionId: primitive(),
+    }),
+  );
 }

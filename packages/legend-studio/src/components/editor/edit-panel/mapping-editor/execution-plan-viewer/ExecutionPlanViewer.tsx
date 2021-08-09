@@ -30,7 +30,7 @@ import {
 
 import { ExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
-import { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
+import type { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
 import { addUniqueEntry, isNonNullable } from '@finos/legend-studio-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
@@ -323,17 +323,19 @@ export const ExecutionPlanViewer = observer(
   (props: { executionPlanState: ExecutionPlanState }) => {
     const { executionPlanState } = props;
     const closePlanViewer = (): void => {
-      executionPlanState.setExecutionPlan(undefined);
+      executionPlanState.setRawPlan(undefined);
+      executionPlanState.setPlan(undefined);
       executionPlanState.setExecutionPlanDisplayData('');
       executionPlanState.setSelectedNode(undefined);
     };
+    const rawPlan = executionPlanState.rawPlan;
     const plan = executionPlanState.plan;
-    if (!plan) {
+    if (!rawPlan) {
       return null;
     }
     return (
       <Dialog
-        open={Boolean(executionPlanState.plan)}
+        open={Boolean(executionPlanState.rawPlan)}
         onClose={closePlanViewer}
         classes={{
           root: 'editor-modal__root-container',
@@ -345,7 +347,7 @@ export const ExecutionPlanViewer = observer(
           <div className="modal__header">
             <div className="modal__title">Execution Plan</div>
           </div>
-          {plan instanceof ExecutionPlan ? (
+          {plan ? (
             <div className="modal__body">
               <SplitPane
                 className="review-explorer__content"
@@ -378,7 +380,7 @@ export const ExecutionPlanViewer = observer(
           ) : (
             <div className="modal__body">
               <TextInputEditor
-                inputValue={JSON.stringify(plan, undefined, TAB_SIZE)}
+                inputValue={JSON.stringify(rawPlan, undefined, TAB_SIZE)}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.JSON}
                 showMiniMap={true}

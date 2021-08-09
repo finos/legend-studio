@@ -1188,9 +1188,10 @@ export class EditorStore {
         showLoading: true,
       });
       try {
-        const graphGrammar = (yield flowResult(
-          this.graphState.graphManager.graphToPureCode(this.graphState.graph),
-        )) as string;
+        const graphGrammar =
+          (yield this.graphState.graphManager.graphToPureCode(
+            this.graphState.graph,
+          )) as string;
         yield flowResult(
           this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
         );
@@ -1323,6 +1324,21 @@ export class EditorStore {
     return this.graphState.graph.ownMappings
       .concat(this.graphState.graph.dependencyManager.mappings)
       .map((a) => a.selectOption as PackageableElementSelectOption<Mapping>);
+  }
+
+  get runtimeOptions(): PackageableElementSelectOption<PackageableRuntime>[] {
+    return this.graphState.graph.ownRuntimes
+      .concat(this.graphState.graph.dependencyManager.runtimes)
+      .map(
+        (a) =>
+          a.selectOption as PackageableElementSelectOption<PackageableRuntime>,
+      );
+  }
+
+  get serviceOptions(): PackageableElementSelectOption<Service>[] {
+    return this.graphState.graph.ownServices
+      .concat(this.graphState.graph.dependencyManager.services)
+      .map((a) => a.selectOption as PackageableElementSelectOption<Service>);
   }
 
   get storeOptions(): PackageableElementSelectOption<Store>[] {

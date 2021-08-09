@@ -31,7 +31,7 @@ import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { LambdaEditor } from '../../../../shared/LambdaEditor';
+import { StudioLambdaEditor } from '../../../../shared/LambdaEditor';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import type { MappingElement } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Enumeration } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
@@ -56,7 +56,7 @@ const SimplePropertyMappingEditor = observer(
     return (
       <div className="property-mapping-editor__entry__container">
         <div ref={drop} className="property-mapping-editor__entry">
-          <LambdaEditor
+          <StudioLambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}
@@ -139,7 +139,7 @@ const EnumerationPropertyMappingEditor = observer(
               <FaArrowAltCircleRight />
             </button>
           </div>
-          <LambdaEditor
+          <StudioLambdaEditor
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
             )}
@@ -212,7 +212,7 @@ const ClassPropertyMappingEditor = observer(
               <FaArrowAltCircleRight />
             </button>
           </div>
-          <LambdaEditor
+          <StudioLambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}

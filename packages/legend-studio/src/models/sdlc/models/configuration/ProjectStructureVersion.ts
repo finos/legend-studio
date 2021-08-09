@@ -28,7 +28,6 @@ export class ProjectStructureVersion {
       extensionVersion: observable,
       setVersion: action,
       setExtensionVersion: action,
-      isInitialVersion: computed,
       fullVersion: computed,
     });
   }
@@ -43,13 +42,11 @@ export class ProjectStructureVersion {
   setVersion(version: number): void {
     this.version = version;
   }
+
   setExtensionVersion(extensionVersion: number): void {
     this.extensionVersion = extensionVersion;
   }
 
-  get isInitialVersion(): boolean {
-    return this.version === 0 && this.extensionVersion !== undefined;
-  }
   get fullVersion(): string {
     return `${this.version}.${this.extensionVersion ?? 0}`;
   }

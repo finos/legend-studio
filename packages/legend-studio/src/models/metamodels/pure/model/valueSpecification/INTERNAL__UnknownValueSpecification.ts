@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-import { V1_ValueSpecification } from '../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_ValueSpecificationVisitor } from '../../model/valueSpecification/V1_ValueSpecification';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity';
+import type { ValueSpecificationVisitor } from './ValueSpecification';
+import { ValueSpecification } from './ValueSpecification';
 
-export class V1_UnknownValue extends V1_ValueSpecification {
-  content!: object;
+export class INTERNAL__UnknownValueSpecification extends ValueSpecification {
+  content: object;
+
+  constructor(content: object) {
+    super(new Multiplicity(0, 0));
+    this.content = content;
+  }
 
   accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
+    visitor: ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_UnknownValue(this);
+    return visitor.visit_INTERNAL__UnknownValueSpecification(this);
   }
 }

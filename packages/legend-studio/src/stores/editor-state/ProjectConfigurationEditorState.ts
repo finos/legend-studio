@@ -99,9 +99,11 @@ export class ProjectConfigurationEditorState extends EditorState {
   ): void {
     this.originalProjectConfiguration = projectConfiguration;
   }
+
   setProjectConfiguration(projectConfiguration: ProjectConfiguration): void {
     this.projectConfiguration = projectConfiguration;
   }
+
   setSelectedTab(tab: CONFIGURATION_EDITOR_TAB): void {
     this.selectedTab = tab;
   }
@@ -109,18 +111,21 @@ export class ProjectConfigurationEditorState extends EditorState {
   get headerName(): string {
     return 'config';
   }
+
   get currentProjectConfiguration(): ProjectConfiguration {
     return guaranteeNonNullable(
       this.projectConfiguration,
       'Project configuration must exist',
     );
   }
+
   get originalConfig(): ProjectConfiguration {
     return guaranteeNonNullable(
       this.originalProjectConfiguration,
       'Original project configuration is not set',
     );
   }
+
   get projectOptions(): ProjectSelectOption[] {
     return Array.from(this.projects.values())
       .map((p) => p.selectOption)

@@ -83,7 +83,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
   ): void => {
     registrationState.setProjectVersion(val?.value);
   };
-  const versionPlaceHolder =
+  const versionPlaceholder =
     registrationState.versionOptions === undefined
       ? `Only valid for ${prettyCONSTName(
           ServiceExecutionMode.SEMI_INTERACTIVE,
@@ -210,7 +210,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
                   value={selectedVersion}
                   darkMode={true}
                   disabled={registrationState.versionOptions === undefined}
-                  placeholder={versionPlaceHolder}
+                  placeholder={versionPlaceholder}
                   isLoading={editorStore.sdlcState.isFetchingProjectVersions}
                 />
               </div>

@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  observable,
-  action,
-  flow,
-  computed,
-  makeObservable,
-  flowResult,
-} from 'mobx';
+import { observable, action, flow, computed, makeObservable } from 'mobx';
 import { CORE_LOG_EVENT } from '../../../utils/Logger';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
@@ -183,11 +176,10 @@ export class EntityDiffViewState extends EntityDiffEditorState {
   *getFromGrammar(): GeneratorFn<void> {
     if (this.fromEntity) {
       try {
-        const elementGrammar = (yield flowResult(
-          this.editorStore.graphState.graphManager.entitiesToPureCode([
+        const elementGrammar =
+          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
             this.fromEntity,
-          ]),
-        )) as string;
+          ])) as string;
         this.setFromGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(
@@ -206,11 +198,10 @@ export class EntityDiffViewState extends EntityDiffEditorState {
   *getToGrammar(): GeneratorFn<void> {
     if (this.toEntity) {
       try {
-        const elementGrammar = (yield flowResult(
-          this.editorStore.graphState.graphManager.entitiesToPureCode([
+        const elementGrammar =
+          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
             this.toEntity,
-          ]),
-        )) as string;
+          ])) as string;
         this.setToGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(

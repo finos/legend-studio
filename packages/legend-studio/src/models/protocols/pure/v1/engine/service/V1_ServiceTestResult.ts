@@ -15,12 +15,7 @@
  */
 
 import { createModelSchema, primitive } from 'serializr';
-import {
-  guaranteeNonNullable,
-  SerializationFactory,
-} from '@finos/legend-studio-shared';
-
-import { ServiceTestResult } from '../../../../../metamodels/pure/action/service/ServiceTestResult';
+import { SerializationFactory } from '@finos/legend-studio-shared';
 
 export class V1_ServiceTestResult {
   name!: string;
@@ -32,17 +27,4 @@ export class V1_ServiceTestResult {
       result: primitive(),
     }),
   );
-
-  build(): ServiceTestResult {
-    const result = new ServiceTestResult();
-    result.name = guaranteeNonNullable(
-      this.name,
-      'Service test result test name is missing',
-    );
-    result.result = guaranteeNonNullable(
-      this.result,
-      'Service test result result is missing',
-    );
-    return result;
-  }
 }

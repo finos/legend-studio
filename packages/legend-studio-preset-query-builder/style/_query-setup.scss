@@ -61,22 +61,25 @@
 
     height: 3.4rem;
     width: 25rem;
-    margin-top: 0.5rem;
     border-radius: 0.2rem;
     background: var(--color-light-grey-300);
     user-select: none;
 
-    &--edit:hover {
+    &--existing-query:hover {
       background: var(--color-magenta-50);
     }
 
-    &--load-service:hover {
+    &--service-query:hover {
       background: var(--color-blue-50);
     }
 
-    &--create:hover {
+    &--create-query:hover {
       background: var(--color-lime-75);
     }
+  }
+
+  &__option + &__option {
+    margin-top: 0.5rem;
   }
 
   &__option__icon {
@@ -111,32 +114,212 @@
 }
 
 .query-setup__create-query {
+  height: 38.2rem;
+
+  &__header {
+    background: var(--color-lime-75);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem 0;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 13.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+}
+
+.query-setup__service-query {
+  height: 32.2rem;
+
+  &__header {
+    background: var(--color-blue-50);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem 0;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 8.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+}
+
+.query-setup__existing-query {
+  &__header {
+    background: var(--color-magenta-50);
+  }
+
+  .query-setup__wizard__content {
+    padding: 2rem 3rem 3rem 3rem;
+  }
+
+  .query-setup__wizard__selector {
+    width: 46.7rem;
+  }
+
+  &__input {
+    @include flexVCenter;
+
+    width: 50rem;
+  }
+
+  &__query-option {
+    @include flexVCenter;
+
+    &__label {
+      width: calc(100% - 5rem);
+    }
+
+    &__action {
+      @include flexCenter;
+
+      width: 5rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      color: var(--color-dark-grey-500);
+
+      &:hover {
+        background: var(--color-magenta-50);
+        color: var(--color-dark-shade-800);
+      }
+    }
+
+    &__user {
+      @include flexCenter;
+
+      width: 5rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      color: var(--color-dark-grey-500);
+
+      &--mine {
+        background: var(--color-magenta-50);
+        color: var(--color-dark-shade-800);
+      }
+    }
+  }
+
+  &__btn {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 2.8rem;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-250);
+    margin-left: 0.5rem;
+    border-radius: 0.2rem;
+
+    svg {
+      color: var(--color-dark-grey-500);
+    }
+
+    &--active {
+      background: var(--color-magenta-50);
+      border: none;
+
+      svg {
+        color: var(--color-dark-shade-300);
+      }
+    }
+  }
+}
+
+.query-setup__wizard {
   display: flex;
   flex-direction: column;
-  height: 40rem;
   width: 60rem;
   background: var(--color-dark-grey-80);
   border-radius: 0.2rem;
 
   &__header {
-    @include flexCenter;
+    @include flexVCenter;
 
     height: 3.4rem;
-    background: var(--color-lime-75);
     border-radius: 0.2rem 0.2rem 0 0;
 
+    &__btn {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      width: 5rem;
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-dark-shade-250);
+      }
+
+      &:not([disabled]):hover {
+        svg {
+          color: var(--color-dark-shade-800);
+        }
+      }
+
+      &--ready svg {
+        color: var(--color-dark-shade-800);
+        animation: nudge-horizontal 0.5s infinite ease;
+      }
+
+      &[disabled] {
+        background: var(--color-dark-grey-80);
+        cursor: not-allowed;
+
+        svg {
+          color: var(--color-dark-grey-280);
+        }
+      }
+    }
+
     &__title {
-      width: 50rem;
-      font-family: 'Roboto Mono', monospace;
+      @include flexVCenter;
+
+      height: 100%;
+      width: calc(100% - 10rem);
+      padding: 0 2rem;
       color: var(--color-dark-shade-800);
+      font-family: 'Roboto Mono', monospace;
       font-size: 1.3rem;
-      font-weight: 500;
-      user-select: none;
+      border-left: 0.1rem solid var(--color-dark-shade-250);
+      cursor: default;
     }
   }
 
   &__content {
-    @include flexCenter;
+    @include flexVCenter;
 
     flex-direction: column;
     height: calc(100% - 3.4rem);
@@ -158,12 +341,17 @@
     margin-top: 1rem;
   }
 
-  &__graph {
-    height: 12.4rem;
-    margin-top: 1rem;
-  }
-
   &__selector {
     width: 50rem;
+  }
+}
+
+@keyframes nudge-horizontal {
+  from {
+    transform: translateX(0.1rem);
+  }
+
+  to {
+    transform: translateX(-0.1rem);
   }
 }

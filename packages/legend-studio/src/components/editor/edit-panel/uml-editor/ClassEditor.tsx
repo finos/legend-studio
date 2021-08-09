@@ -21,7 +21,7 @@ import { observer } from 'mobx-react-lite';
 import SplitPane from 'react-split-pane';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { LambdaEditor } from '../../../shared/LambdaEditor';
+import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
 import { useDrop } from 'react-dnd';
 import type {
   ElementDragSource,
@@ -595,7 +595,7 @@ const DerivedPropertyBasicEditor = observer(
             </button>
           )}
         </div>
-        <LambdaEditor
+        <StudioLambdaEditor
           disabled={
             editorState.classState.isConvertingDerivedPropertyLambdaObjects ||
             isInheritedProperty ||
@@ -690,7 +690,7 @@ const ConstraintEditor = observer(
             </button>
           )}
         </div>
-        <LambdaEditor
+        <StudioLambdaEditor
           disabled={
             editorState.classState.isConvertingConstraintLambdaObjects ||
             isReadOnly ||

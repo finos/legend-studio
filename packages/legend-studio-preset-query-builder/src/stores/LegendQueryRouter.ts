@@ -14,46 +14,82 @@
  * limitations under the License.
  */
 
+import { generatePath } from 'react-router-dom';
+
 export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
-  PROJECT_ID = 'projectId',
+  GROUP_ID = 'groupId',
+  ARTIFACT_ID = 'artifactId',
   VERSION_ID = 'versionId',
   QUERY_ID = 'queryId',
+  MAPPING_PATH = 'mappingPath',
+  RUNTIME_PATH = 'runtimePath',
   SERVICE_PATH = 'servicePath',
 }
 
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
   SERVICE_KEY = 'key',
-  MAPPING_PATH = 'mappingPath',
-  RUNTIME_PATH = 'runtimePath',
 }
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
-  LOAD_SERVICE_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
-  CREATE_NEW_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/new`,
-  EDIT_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
   SETUP: '/setup',
+  CREATE_QUERY: `/create/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
+  SERVICE_QUERY: `/service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
+  EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
 
-export interface EditServiceQueryPathParams {
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID]: string;
+export const generateCreateQueryRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  mappingPath: string,
+  runtimePath: string,
+): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY, {
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: groupId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: artifactId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: versionId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: mappingPath,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
+  });
+
+export const generateServiceQueryRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  servicePath: string,
+  key?: string,
+): string =>
+  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY, {
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: groupId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: artifactId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: versionId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
+  })}${key ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_KEY}=${key}` : ''}`;
+
+export const generateExistingQueryRoute = (queryId: string): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY, {
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
+  });
+
+export interface ServiceQueryPathParams {
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
 }
 
-export interface EditServiceQueryQueryParams {
+export interface CreateQueryPathParams {
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: string;
+}
+
+export interface ServiceQueryQueryParams {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_KEY]?: string;
 }
 
-export interface EditQueryPathParams {
+export interface ExistingQueryPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: string;
-}
-
-export interface CreateNewQueryPathParams {
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.PROJECT_ID]: string;
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: string;
-}
-
-export interface CreateNewQueryQueryParams {
-  [LEGEND_QUERY_QUERY_PARAM_TOKEN.MAPPING_PATH]: string;
-  [LEGEND_QUERY_QUERY_PARAM_TOKEN.RUNTIME_PATH]?: string;
 }

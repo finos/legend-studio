@@ -16,7 +16,7 @@
 
 import { action, makeAutoObservable } from 'mobx';
 
-export enum ACTION_STATE {
+enum ACTION_STATE {
   INITIAL = 'INITIAL',
   IN_PROGRESS = 'IN_PROGRESS',
   SUCCEEDED = 'SUCEEDED',
@@ -26,8 +26,8 @@ export enum ACTION_STATE {
 export class ActionState {
   state: ACTION_STATE;
 
-  private constructor(initialState: ACTION_STATE) {
-    this.state = initialState;
+  private constructor() {
+    this.state = ACTION_STATE.INITIAL;
   }
 
   reset(): ActionState {
@@ -83,8 +83,8 @@ export class ActionState {
     return this.hasFailed || this.hasSucceeded;
   }
 
-  static create(initialState = ACTION_STATE.INITIAL): ActionState {
-    return makeAutoObservable(new ActionState(initialState), {
+  static create(): ActionState {
+    return makeAutoObservable(new ActionState(), {
       reset: action,
       inProgress: action,
       pass: action,

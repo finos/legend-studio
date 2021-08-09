@@ -10,7 +10,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.json",
-    "studio.config.js"
+    "query.config.js"
   ],
   "references": [
     { "path": "../legend-studio" },

@@ -34,10 +34,10 @@ import {
 } from '../models/sdlc/models/workspace/Workspace';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  ActionState,
   assertNonNullable,
   guaranteeNonNullable,
   compareLabelFn,
-  ACTION_STATE,
 } from '@finos/legend-studio-shared';
 import { Review } from '../models/sdlc/models/review/Review';
 import { generateSetupRoute } from './LegendStudioRouter';
@@ -54,10 +54,10 @@ export class SetupStore {
   currentWorkspaceId?: string;
   projects?: Map<string, Project>;
   workspacesByProject = new Map<string, Map<string, Workspace>>();
-  loadWorkspacesState = ACTION_STATE.INITIAL;
-  createWorkspaceState = ACTION_STATE.INITIAL;
-  createOrImportProjectState = ACTION_STATE.INITIAL;
-  loadProjectsState = ACTION_STATE.INITIAL;
+  loadWorkspacesState = ActionState.create();
+  createWorkspaceState = ActionState.create();
+  createOrImportProjectState = ActionState.create();
+  loadProjectsState = ActionState.create();
   showCreateProjectModal = false;
   showCreateWorkspaceModal = false;
   importProjectSuccessReport?: ImportProjectSuccessReport;
@@ -110,7 +110,7 @@ export class SetupStore {
   }
 
   *fetchProjects(): GeneratorFn<void> {
-    this.loadProjectsState = ACTION_STATE.IN_PROGRESS;
+    this.loadProjectsState.inProgress();
     try {
       const projects = (
         (yield Promise.all(
@@ -149,11 +149,11 @@ export class SetupStore {
       const projectMap = observable<string, Project>(new Map());
       projects.forEach((project) => projectMap.set(project.projectId, project));
       this.projects = projectMap;
-      this.loadProjectsState = ACTION_STATE.SUCCEEDED;
+      this.loadProjectsState.pass();
     } catch (error: unknown) {
       this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.applicationStore.notifyError(error);
-      this.loadProjectsState = ACTION_STATE.FAILED;
+      this.loadProjectsState.fail();
     }
   }
 
@@ -168,7 +168,7 @@ export class SetupStore {
     artifactId: string,
     tags: string[] = [],
   ): GeneratorFn<void> {
-    this.createOrImportProjectState = ACTION_STATE.IN_PROGRESS;
+    this.createOrImportProjectState.inProgress();
     try {
       const createdProject = Project.serialization.fromJson(
         (yield this.applicationStore.networkClientManager.sdlcClient.createProject(
@@ -197,7 +197,7 @@ export class SetupStore {
     } catch (error: unknown) {
       this.applicationStore.notifyError(error);
     } finally {
-      this.createOrImportProjectState = ACTION_STATE.INITIAL;
+      this.createOrImportProjectState.reset();
     }
   }
 
@@ -206,7 +206,7 @@ export class SetupStore {
     groupId: string,
     artifactId: string,
   ): GeneratorFn<void> {
-    this.createOrImportProjectState = ACTION_STATE.IN_PROGRESS;
+    this.createOrImportProjectState.inProgress();
     try {
       const report = ImportProjectReport.serialization.fromJson(
         (yield this.applicationStore.networkClientManager.sdlcClient.importProject(
@@ -235,7 +235,7 @@ export class SetupStore {
     } catch (error: unknown) {
       this.applicationStore.notifyError(error);
     } finally {
-      this.createOrImportProjectState = ACTION_STATE.INITIAL;
+      this.createOrImportProjectState.reset();
     }
   }
 
@@ -269,7 +269,7 @@ export class SetupStore {
   }
 
   *fetchWorkspaces(projectId: string): GeneratorFn<void> {
-    this.loadWorkspacesState = ACTION_STATE.IN_PROGRESS;
+    this.loadWorkspacesState.inProgress();
     try {
       const workspacesInConflictResolutionIds = (
         (yield this.applicationStore.networkClientManager.sdlcClient.getWorkspacesInConflictResolutionMode(
@@ -298,12 +298,12 @@ export class SetupStore {
       // TODO handle error when fetching workspaces for an individual project
       this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
     } finally {
-      this.loadWorkspacesState = ACTION_STATE.INITIAL;
+      this.loadWorkspacesState.reset();
     }
   }
 
   *createWorkspace(projectId: string, workspaceId?: string): GeneratorFn<void> {
-    this.createWorkspaceState = ACTION_STATE.IN_PROGRESS;
+    this.createWorkspaceState.inProgress();
     try {
       assertNonNullable(workspaceId, 'workspace ID is required');
       const workspace = Workspace.serialization.fromJson(
@@ -327,11 +327,11 @@ export class SetupStore {
       this.setCurrentProjectId(projectId);
       this.setCurrentWorkspaceId(workspaceId);
       this.setCreateWorkspaceModal(false);
-      this.createWorkspaceState = ACTION_STATE.SUCCEEDED;
+      this.createWorkspaceState.pass();
     } catch (error: unknown) {
       this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.applicationStore.notifyError(error);
-      this.createWorkspaceState = ACTION_STATE.FAILED;
+      this.createWorkspaceState.fail();
     }
   }
 }

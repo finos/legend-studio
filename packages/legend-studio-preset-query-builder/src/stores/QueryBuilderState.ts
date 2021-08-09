@@ -85,7 +85,6 @@ export class QueryBuilderState extends EditorExtensionState {
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
-  openQueryBuilder = false;
   filterOperators: QueryBuilderFilterOperator[] = [
     new QueryBuilderFilterOperator_Equal(),
     new QueryBuilderFilterOperator_NotEqual(),
@@ -104,7 +103,9 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderFilterOperator_IsEmpty(),
     new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
+  openQueryBuilder = false;
   isCompiling = false;
+  backdrop = false;
 
   constructor(editorStore: EditorStore) {
     super();
@@ -120,12 +121,14 @@ export class QueryBuilderState extends EditorExtensionState {
       queryUnsupportedState: observable,
       openQueryBuilder: observable,
       isCompiling: observable,
-      setOpenQueryBuilder: flow,
-      compileQuery: flow,
+      backdrop: observable,
       reset: action,
       resetData: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
+      setBackdrop: action,
+      setOpenQueryBuilder: flow,
+      compileQuery: flow,
     });
 
     this.editorStore = editorStore;
@@ -150,6 +153,10 @@ export class QueryBuilderState extends EditorExtensionState {
       editorStore,
       this,
     );
+  }
+
+  setBackdrop(val: boolean): void {
+    this.backdrop = val;
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
@@ -200,6 +207,7 @@ export class QueryBuilderState extends EditorExtensionState {
     }
   }
 
+  // TODO: consider removing this method since it's not encapsulated to within Legend Query
   reset(): void {
     changeEntry(
       this.editorStore.editorExtensionStates,
@@ -344,12 +352,10 @@ export class QueryBuilderState extends EditorExtensionState {
           this.queryTextEditorState.setCompilationError(undefined);
           // NOTE: retain the source information on the lambda in order to be able
           // to pin-point compilation issue in form mode
-          (yield flowResult(
-            this.editorStore.graphState.graphManager.getLambdaReturnType(
-              this.getQuery({ keepSourceInformation: true }),
-              this.editorStore.graphState.graph,
-              { keepSourceInformation: true },
-            ),
+          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+            this.getQuery({ keepSourceInformation: true }),
+            this.editorStore.graphState.graph,
+            { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(
             'Compiled sucessfully',
@@ -394,12 +400,10 @@ export class QueryBuilderState extends EditorExtensionState {
         this.isCompiling = true;
         try {
           this.queryTextEditorState.setCompilationError(undefined);
-          (yield flowResult(
-            this.editorStore.graphState.graphManager.getLambdaReturnType(
-              this.queryTextEditorState.rawLambdaState.lambda,
-              this.editorStore.graphState.graph,
-              { keepSourceInformation: true },
-            ),
+          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+            this.queryTextEditorState.rawLambdaState.lambda,
+            this.editorStore.graphState.graph,
+            { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(
             'Compiled sucessfully',

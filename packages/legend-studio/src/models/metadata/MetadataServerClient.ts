@@ -17,7 +17,7 @@
 import { AbstractServerClient } from '@finos/legend-studio-network';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
-import type { ProjectMetadata } from './models/ProjectMetadata';
+import type { ProjectData } from './models/ProjectData';
 import type {
   ProjectVersion,
   ProjectVersionEntities,
@@ -34,28 +34,47 @@ export class MetadataServerClient extends AbstractServerClient {
     });
   }
 
-  // ------------------------------------------- Project -------------------------------------------
+  // ------------------------------------------- Projects -------------------------------------------
 
   private _projects = (): string => `${this.networkClient.baseUrl}/projects`;
-  private _project = (projectId: string): string =>
-    `${this._projects()}/${encodeURIComponent(projectId)}`;
+  private _project = (groupId: string, artifactId: string): string =>
+    `${this._projects()}/${encodeURIComponent(groupId)}/${encodeURIComponent(
+      artifactId,
+    )}`;
 
-  // TODO: use Metadata model
-  getProjects = (): Promise<PlainObject<ProjectMetadata>[]> =>
+  getProjects = (): Promise<PlainObject<ProjectData>[]> =>
     this.get(this._projects());
+  getProject = (
+    groupId: string,
+    artifactId: string,
+  ): Promise<PlainObject<ProjectData>[]> =>
+    this.get(this._project(groupId, artifactId));
 
-  // ------------------------------------------- Version -------------------------------------------
+  // ------------------------------------------- Entities -------------------------------------------
 
-  private _versions = (projectId: string): string =>
-    `${this._project(projectId)}/versions`;
-  private _version = (projectId: string, versionId: string): string =>
-    `${this._project(projectId)}/versions/${encodeURIComponent(versionId)}`;
+  private _versions = (groupId: string, artifactId: string): string =>
+    `${this._project(groupId, artifactId)}/versions`;
+  private _revisions = (groupId: string, artifactId: string): string =>
+    `${this._project(groupId, artifactId)}/revisions`;
+  private _version = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+  ): string =>
+    `${this._versions(groupId, artifactId)}/${encodeURIComponent(versionId)}`;
 
   getVersionEntities = (
-    projectId: string,
+    groupId: string,
+    artifactId: string,
     versionId: string,
   ): Promise<PlainObject<Entity>[]> =>
-    this.get(this._version(projectId, versionId));
+    this.get(this._version(groupId, artifactId, versionId));
+
+  getLatestRevisionEntities = (
+    groupId: string,
+    artifactId: string,
+  ): Promise<PlainObject<Entity>[]> =>
+    this.get(`${this._revisions(groupId, artifactId)}/latest`);
 
   // ------------------------------------------- Dependencies -------------------------------------------
 

@@ -17,7 +17,7 @@
 import clsx from 'clsx';
 
 export const LegendLogo: React.FC<{
-  className: string;
+  className?: string;
 }> = (props) => {
   const { className } = props;
   return (
