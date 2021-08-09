@@ -34,8 +34,10 @@ import type {
   ServiceQueryPathParams,
   ServiceQueryQueryParams,
 } from '../../stores/LegendQueryRouter';
-import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
-import { generateCreateQueryRoute } from '../../stores/LegendQueryRouter';
+import {
+  LEGEND_QUERY_ROUTE_PATTERN,
+  generateCreateQueryRoute,
+} from '../../stores/LegendQueryRouter';
 import type { QueryExportState } from '../../stores/QueryStore';
 import {
   ExistingQueryInfoState,
