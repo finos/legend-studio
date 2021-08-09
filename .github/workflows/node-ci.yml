@@ -33,7 +33,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.3.0
+        uses: actions/setup-node@v2.4.0
         with:
           node-version: 14.x
       - name: Install dependencies
@@ -61,7 +61,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.3.0
+        uses: actions/setup-node@v2.4.0
         with:
           node-version: 14.x
       - name: Install dependencies
@@ -95,7 +95,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.3.0
+        uses: actions/setup-node@v2.4.0
         with:
           node-version: 14.x
       - name: Install dependencies
@@ -131,7 +131,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.3.0
+        uses: actions/setup-node@v2.4.0
         with:
           node-version: 14.x
       - name: Install dependencies
