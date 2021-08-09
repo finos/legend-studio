@@ -1,5 +1,16 @@
 # @finos/legend-studio
 
+## 0.2.7
+
+### Patch Changes
+
+- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) Thanks [@akphi](https://github.com/akphi)! - Genericize `LambdaEditor` so it nolonger depends on `EditorStore` and can be used between different Legend applications.
+
+- Updated dependencies [[`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb), [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb)]:
+  - @finos/legend-studio-components@0.0.29
+  - @finos/legend-studio-network@0.0.27
+  - @finos/legend-studio-shared@0.0.25
+
 ## 0.2.6
 
 ### Patch Changes
