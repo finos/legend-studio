@@ -259,7 +259,7 @@ export class QueryExportState {
             this.queryStore.editorStore.graphState.graph,
           );
         this.queryStore.editorStore.applicationStore.notifySuccess(
-          `Sucessfully created query!`,
+          `Successfully created query!`,
         );
         this.queryStore.editorStore.applicationStore.historyApiClient.push(
           generateExistingQueryRoute(newQuery.id),
@@ -273,7 +273,7 @@ export class QueryExportState {
           );
         this.queryStore.queryInfoState.setQuery(toLightQuery(newQuery));
         this.queryStore.editorStore.applicationStore.notifySuccess(
-          `Sucessfully updated query!`,
+          `Successfully updated query!`,
         );
       }
     } catch (error: unknown) {

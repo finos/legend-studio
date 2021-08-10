@@ -162,13 +162,13 @@ const preparePublishContent = async () => {
     );
     console.log(
       chalk.green(
-        `Sucessfully prepared publish content for workspace '${workspaceName}'!\n`,
+        `Successfully prepared publish content for workspace '${workspaceName}'!\n`,
       ),
     );
   } catch (e) {
     console.log(
       chalk.red(
-        `\u2A2F Failed to prepare publish content for workspace '${workspaceName}'.\n`,
+        `\u2A2F Failed to prepare publish content for workspace '${workspaceName}'\n`,
       ),
     );
     throw e;

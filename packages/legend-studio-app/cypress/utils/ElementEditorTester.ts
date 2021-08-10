@@ -134,7 +134,7 @@ export class ElementEditorTester extends EndToEndTester {
       .get('[title="Compile (F9)"]')
       .click();
     cy.wait('@compile').its('status').should('eq', 200);
-    cy.contains('Compiled sucessfully');
+    cy.contains('Compiled successfully');
   };
 
   createReview = (title: string): void => {

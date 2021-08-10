@@ -288,7 +288,7 @@ describe('UML End to End Test', () => {
       .get('[title="Compile (F9)"]')
       .click();
     cy.wait('@compile').its('status').should('eq', 200);
-    cy.contains('Compiled sucessfully');
+    cy.contains('Compiled successfully');
 
     const INCORRECT_TEXT = "$person.firstName + ' ' + $person.lastN";
     tester.setTextToGraphText(INCORRECT_TEXT, 0);
@@ -329,6 +329,6 @@ describe('UML End to End Test', () => {
       .get('[title="Compile (F9)"]')
       .click();
     cy.wait('@compile').its('status').should('eq', 200);
-    cy.contains('Compiled sucessfully');
+    cy.contains('Compiled successfully');
   });
 });
