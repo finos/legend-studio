@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
 import { ThemeProvider } from '@material-ui/core/styles';
 import type { ApplicationConfig, PluginManager } from '@finos/legend-studio';
 import {
@@ -26,7 +24,6 @@ import {
   BlockingAlert,
   LegendMaterialUITheme,
   NotificationSnackbar,
-  useApplicationStore,
 } from '@finos/legend-studio';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
@@ -36,55 +33,44 @@ import {
   ExistingQueryLoader,
   ServiceQueryLoader,
 } from './QueryEditor';
-import { flowResult } from 'mobx';
 
-export const LegendQueryApplicationRoot = observer(() => {
-  const applicationStore = useApplicationStore();
+export const LegendQueryApplicationRoot = observer(() => (
+  // TODO: when `ApplicationStore` nolonger depends on SDLC, we can get rid of this
+  // useEffect(() => {
+  // flowResult(applicationStore.init()).catch(
+  //   applicationStore.alertIllegalUnhandledError,
+  // );
+  // }, [applicationStore]);
 
-  useEffect(() => {
-    flowResult(applicationStore.init()).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
-  }, [applicationStore]);
-
-  return (
-    <div className="app">
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationSnackbar />
-      {!applicationStore.isSDLCAuthorized && (
-        <div className="app__page">
-          <PanelLoadingIndicator isLoading={true} />
-        </div>
-      )}
-      {applicationStore.isSDLCAuthorized && (
-        <Switch>
-          <Route
-            exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
-            component={ExistingQueryLoader}
-          />
-          <Route
-            exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
-            component={ServiceQueryLoader}
-          />
-          <Route
-            exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
-            component={CreateQueryLoader}
-          />
-          <Route
-            exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-            component={QuerySetup}
-          />
-          <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
-        </Switch>
-      )}
-    </div>
-  );
-});
+  <div className="app">
+    <BlockingAlert />
+    <ActionAlert />
+    <NotificationSnackbar />
+    <Switch>
+      <Route
+        exact={true}
+        path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
+        component={ExistingQueryLoader}
+      />
+      <Route
+        exact={true}
+        path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
+        component={ServiceQueryLoader}
+      />
+      <Route
+        exact={true}
+        path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
+        component={CreateQueryLoader}
+      />
+      <Route
+        exact={true}
+        path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
+        component={QuerySetup}
+      />
+      <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
+    </Switch>
+  </div>
+));
 
 export const LegendQueryApplication = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
