@@ -265,7 +265,7 @@ describe('SDLC Demo Script Test', () => {
     cy.url().should('include', `/studio/${demoTest.projectId}`);
   });
 
-  it('sucessfully clear project', () => {
+  it('successfully clear project', () => {
     const TITLE = demoTest._domTitles;
     //Cleaning workspace committed changes
     demoTest.initEditorWithWorkspace();

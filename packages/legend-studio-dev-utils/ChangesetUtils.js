@@ -172,7 +172,7 @@ export async function generateChangeset(cwd, message, sinceRef) {
   const changesetID = await writeChangeset.default(newChangeset, cwd);
   log(
     chalk.green(
-      'Sucessfully generated changeset! If you want to modify or expand on the changeset summary, you can find it here:',
+      'Successfully generated changeset! If you want to modify or expand on the changeset summary, you can find it here:',
     ),
   );
   info(chalk.blue(resolve(resolve(cwd, '.changeset'), `${changesetID}.md`)));

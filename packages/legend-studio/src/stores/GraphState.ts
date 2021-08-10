@@ -519,7 +519,9 @@ export class GraphState {
         keepSourceInformation: true,
       });
       if (!options?.disableNotificationOnSuccess) {
-        this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
+        this.editorStore.applicationStore.notifySuccess(
+          'Compiled successfully',
+        );
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
@@ -620,7 +622,7 @@ export class GraphState {
         this.editorStore.grammarTextEditorState.graphGrammarText,
         this.graph,
       )) as Entity[];
-      this.editorStore.applicationStore.notifySuccess('Compiled sucessfully');
+      this.editorStore.applicationStore.notifySuccess('Compiled successfully');
       yield flowResult(this.updateGraphAndApplication(entities));
     } catch (error: unknown) {
       assertErrorThrown(error);
@@ -702,7 +704,7 @@ export class GraphState {
           this.editorStore.setActionAltertInfo({
             message: 'Project is not in a compiled state',
             prompt:
-              'All changes made since the last time the graph was built sucessfully will be lost',
+              'All changes made since the last time the graph was built successfully will be lost',
             type: ActionAlertType.CAUTION,
             onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
             onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),

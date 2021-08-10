@@ -358,7 +358,7 @@ export class QueryBuilderState extends EditorExtensionState {
             { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(
-            'Compiled sucessfully',
+            'Compiled successfully',
           );
         } catch (error: unknown) {
           assertErrorThrown(error);
@@ -406,7 +406,7 @@ export class QueryBuilderState extends EditorExtensionState {
             { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(
-            'Compiled sucessfully',
+            'Compiled successfully',
           );
         } catch (error: unknown) {
           assertErrorThrown(error);
