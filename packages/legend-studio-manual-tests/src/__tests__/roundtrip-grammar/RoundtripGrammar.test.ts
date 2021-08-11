@@ -71,7 +71,7 @@ const EXCLUDED_CASE_FILES: string[] = [
   'relational-mapping-filter.pure',
   'connection.pure',
   // this is causing flaky test
-  'relational-database-with-filters-and-joins',
+  'relational-database-with-filters-and-joins.pure',
 ];
 
 const checkGrammarRoundtrip = async (

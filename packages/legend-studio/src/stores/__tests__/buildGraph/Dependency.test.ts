@@ -29,7 +29,7 @@ import { getTestEditorStore } from '../../StoreTestUtils';
 import { simpleCoreModelData } from './CoreTestData';
 import { DependencyManager } from '../../../models/metamodels/pure/graph/DependencyManager';
 import { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { ProjectVersionEntities } from '../../../models/metadata/models/ProjectVersionEntities';
+import { DeprecatedProjectVersionEntities } from '../../../models/metadata/models/ProjectVersionEntities';
 import { flowResult } from 'mobx';
 
 const testDependingOnDifferentProjectVersions = [
@@ -146,11 +146,11 @@ const buildFileGenerationDepentOnDependencyElements = (
 
 const testDependencyElements = async (
   entities: Entity[],
-  dependencyEntities: PlainObject<ProjectVersionEntities>[],
+  dependencyEntities: PlainObject<DeprecatedProjectVersionEntities>[],
   includeDependencyInFileGenerationScopeElements?: boolean,
 ): Promise<void> => {
   const projectVersionEntities = dependencyEntities.map((e) =>
-    ProjectVersionEntities.serialization.fromJson(e),
+    DeprecatedProjectVersionEntities.serialization.fromJson(e),
   );
   const keys = projectVersionEntities.map((e) => e.projectId);
   const dependencyElementPaths = projectVersionEntities
@@ -171,13 +171,13 @@ const testDependencyElements = async (
       guaranteeNonNullable(
         editorStore.applicationStore.networkClientManager.metadataClient,
       ),
-      'getDependencyEntities',
+      'getProjectVersionsDependencyEntities',
     )
     .mockResolvedValue(dependencyEntities);
   await flowResult(editorStore.graphState.initializeSystem());
   const dependencyManager = new DependencyManager([]);
   const dependencyMap = await flowResult(
-    editorStore.graphState.getProjectDependencyEntities(),
+    editorStore.graphState.getConfigurationProjectDependencyEntities(),
   );
   editorStore.graphState.graph.setDependencyManager(dependencyManager);
   await flowResult(
@@ -263,7 +263,7 @@ const testDependencyElements = async (
 
 const buildProjectVersionEntities = (
   entities: Entity[],
-): PlainObject<ProjectVersionEntities>[] => [
+): PlainObject<DeprecatedProjectVersionEntities>[] => [
   {
     projectId: TEST_DEPENDENCY_PROJECT_ID,
     versionId: '1.0.0',

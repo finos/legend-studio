@@ -99,7 +99,7 @@ import type { PropertyMapping } from '../models/metamodels/pure/model/packageabl
 import { AssociationImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { ProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
-import { ProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
+import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
 
 export class GraphState {
   editorStore: EditorStore;
@@ -289,10 +289,9 @@ export class GraphState {
           this.coreModel,
           this.systemModel,
           dependencyManager,
-          (yield flowResult(this.getProjectDependencyEntities())) as Map<
-            string,
-            ProjectDependencyMetadata
-          >,
+          (yield flowResult(
+            this.getConfigurationProjectDependencyEntities(),
+          )) as Map<string, ProjectDependencyMetadata>,
         ),
       );
       this.graph.setDependencyManager(dependencyManager);
@@ -336,10 +335,9 @@ export class GraphState {
           this.coreModel,
           this.systemModel,
           dependencyManager,
-          (yield flowResult(this.getProjectDependencyEntities())) as Map<
-            string,
-            ProjectDependencyMetadata
-          >,
+          (yield flowResult(
+            this.getConfigurationProjectDependencyEntities(),
+          )) as Map<string, ProjectDependencyMetadata>,
         ),
       );
       this.graph.setDependencyManager(dependencyManager);
@@ -825,10 +823,9 @@ export class GraphState {
             this.coreModel,
             this.systemModel,
             dependencyManager,
-            (yield flowResult(this.getProjectDependencyEntities())) as Map<
-              string,
-              ProjectDependencyMetadata
-            >,
+            (yield flowResult(
+              this.getConfigurationProjectDependencyEntities(),
+            )) as Map<string, ProjectDependencyMetadata>,
           ),
         );
         newGraph.setDependencyManager(dependencyManager);
@@ -1005,7 +1002,7 @@ export class GraphState {
     }
   }
 
-  *getProjectDependencyEntities(): GeneratorFn<
+  *getConfigurationProjectDependencyEntities(): GeneratorFn<
     Map<string, ProjectDependencyMetadata>
   > {
     const projectDependencyMetadataMap = new Map<
@@ -1028,13 +1025,13 @@ export class GraphState {
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield metadataClient.getDependencyEntities(
+          (yield metadataClient.getProjectVersionsDependencyEntities(
             directDependencies as PlainObject<ProjectVersion>[],
             true,
             true,
-          )) as PlainObject<ProjectVersionEntities>[];
+          )) as PlainObject<DeprecatedProjectVersionEntities>[];
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
-          ProjectVersionEntities.serialization.fromJson(e),
+          DeprecatedProjectVersionEntities.serialization.fromJson(e),
         );
         const dependencyProjects = new Set<string>();
         dependencyEntities.forEach((dependencyInfo) => {

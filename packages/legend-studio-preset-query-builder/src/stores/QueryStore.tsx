@@ -24,7 +24,11 @@ import {
   observable,
 } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type {
+  Clazz,
+  GeneratorFn,
+  PlainObject,
+} from '@finos/legend-studio-shared';
 import {
   assertErrorThrown,
   uuid,
@@ -40,6 +44,8 @@ import type {
   PackageableRuntime,
   RawLambda,
   Service,
+  ProjectDependencyMetadata,
+  PackageableElement,
 } from '@finos/legend-studio';
 import {
   toLightQuery,
@@ -55,6 +61,8 @@ import {
   CORE_LOG_EVENT,
   EditorStore,
   useApplicationStore,
+  ProjectVersionEntities,
+  DependencyManager,
 } from '@finos/legend-studio';
 import { QueryBuilderState } from './QueryBuilderState';
 import type {
@@ -636,7 +644,21 @@ export class QueryStore {
 
       // build graph
       this.editorStore.graphState.resetGraph();
-      // TODO: build dependencies
+      // build dependencies
+      const dependencyManager = new DependencyManager(
+        this.getPureGraphExtensionElementClasses(),
+      );
+      yield flowResult(
+        this.editorStore.graphState.graphManager.buildDependencies(
+          this.editorStore.graphState.coreModel,
+          this.editorStore.graphState.systemModel,
+          dependencyManager,
+          (yield flowResult(
+            this.getProjectDependencyEntities(project, versionId),
+          )) as Map<string, ProjectDependencyMetadata>,
+        ),
+      );
+      // build Graph
       yield flowResult(
         this.editorStore.graphState.graphManager.buildGraph(
           this.editorStore.graphState.graph,
@@ -653,6 +675,68 @@ export class QueryStore {
       this.editorStore.applicationStore.notifyError(error);
       this.buildGraphState.fail();
     }
+  }
+
+  *getProjectDependencyEntities(
+    project: ProjectData,
+    versionId: string,
+  ): GeneratorFn<Map<string, ProjectDependencyMetadata>> {
+    this.buildGraphState.inProgress();
+    const projectDependencyMetadataMap = new Map<
+      string,
+      ProjectDependencyMetadata
+    >();
+    try {
+      let dependencyEntitiesJson: PlainObject<ProjectVersionEntities>[] = [];
+      if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+        dependencyEntitiesJson =
+          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getLatestDependencyEntities(
+            project.groupId,
+            project.artifactId,
+            true,
+            true,
+          )) as PlainObject<ProjectVersionEntities>[];
+      } else {
+        dependencyEntitiesJson =
+          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getDependencyEntities(
+            project.groupId,
+            project.artifactId,
+            versionId === LATEST_VERSION_ALIAS
+              ? project.latestVersion
+              : versionId,
+            true,
+            true,
+          )) as PlainObject<ProjectVersionEntities>[];
+        dependencyEntitiesJson
+          .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+          .forEach((dependencyInfo) => {
+            const projectDependenciesMetadata = {
+              entities: dependencyInfo.entities,
+              projectVersion: dependencyInfo.projectVersion,
+            };
+            projectDependencyMetadataMap.set(
+              dependencyInfo.id,
+              projectDependenciesMetadata,
+            );
+          });
+      }
+    } catch (error: unknown) {
+      this.editorStore.applicationStore.logger.error(
+        CORE_LOG_EVENT.SDLC_PROBLEM,
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+      this.buildGraphState.fail();
+    }
+    return projectDependencyMetadataMap;
+  }
+
+  private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {
+    const pureGraphManagerPlugins =
+      this.editorStore.applicationStore.pluginManager.getPureGraphManagerPlugins();
+    return pureGraphManagerPlugins.flatMap(
+      (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+    );
   }
 }
 

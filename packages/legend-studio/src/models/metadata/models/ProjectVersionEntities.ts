@@ -23,13 +23,13 @@ export interface ProjectVersion {
   versionId: string;
 }
 
-export class ProjectVersionEntities {
+export class DeprecatedProjectVersionEntities {
   projectId!: string;
   versionId!: string;
   entities: Entity[] = [];
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProjectVersionEntities, {
+    createModelSchema(DeprecatedProjectVersionEntities, {
       projectId: primitive(),
       versionId: primitive(),
       entities: list(raw()),
@@ -41,5 +41,31 @@ export class ProjectVersionEntities {
       projectId: this.projectId,
       versionId: this.versionId,
     };
+  }
+}
+
+export class ProjectVersionEntities {
+  groupId!: string;
+  artifactId!: string;
+  versionId!: string;
+  entities: Entity[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(ProjectVersionEntities, {
+      groupId: primitive(),
+      artifactId: primitive(),
+      versionId: primitive(),
+      entities: list(raw()),
+    }),
+  );
+  get projectVersion(): ProjectVersion {
+    return {
+      projectId: `${this.id}`,
+      versionId: this.versionId,
+    };
+  }
+
+  get id(): string {
+    return `${this.groupId}:${this.artifactId}`;
   }
 }
