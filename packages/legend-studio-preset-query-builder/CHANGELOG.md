@@ -1,5 +1,16 @@
 # @finos/legend-studio-preset-query-builder
 
+## 0.0.30
+
+### Patch Changes
+
+- [#396](https://github.com/finos/legend-studio/pull/396) [`44748ea`](https://github.com/finos/legend-studio/commit/44748eaaee6062211d5607109fd0834d92f6cc91) Thanks [@akphi](https://github.com/akphi)! - Avoid initializing application store in Query, as it will try to authenticate against SDLC.
+
+- Updated dependencies [[`44748ea`](https://github.com/finos/legend-studio/commit/44748eaaee6062211d5607109fd0834d92f6cc91)]:
+  - @finos/legend-studio@0.2.8
+  - @finos/legend-studio-components@0.0.29
+  - @finos/legend-studio-shared@0.0.25
+
 ## 0.0.29
 
 ### Patch Changes
