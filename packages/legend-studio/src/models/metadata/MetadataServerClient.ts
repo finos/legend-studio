@@ -20,6 +20,7 @@ import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { ProjectData } from './models/ProjectData';
 import type {
   ProjectVersion,
+  DeprecatedProjectVersionEntities,
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities';
 
@@ -77,8 +78,54 @@ export class MetadataServerClient extends AbstractServerClient {
     this.get(`${this._revisions(groupId, artifactId)}/latest`);
 
   // ------------------------------------------- Dependencies -------------------------------------------
-
   getDependencyEntities = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    /**
+     * Flag indicating if transitive dependencies should be returned.
+     */
+    transitive: boolean,
+    /**
+     * Flag indicating whether to return the root of the dependency tree.
+     */
+    includeOrigin: boolean,
+  ): Promise<PlainObject<ProjectVersionEntities>[]> =>
+    this.get(
+      `${this._version(groupId, artifactId, versionId)}/dependencies`,
+      undefined,
+      undefined,
+      {
+        transitive,
+        includeOrigin,
+        versioned: false, // we don't need to add version prefix to entity path
+      },
+    );
+
+  getLatestDependencyEntities = (
+    groupId: string,
+    artifactId: string,
+    /**
+     * Flag indicating if transitive dependencies should be returned.
+     */
+    transitive: boolean,
+    /**
+     * Flag indicating whether to return the root of the dependency tree.
+     */
+    includeOrigin: boolean,
+  ): Promise<PlainObject<ProjectVersionEntities>[]> =>
+    this.get(
+      `${this._revisions(groupId, artifactId)}/latest/dependants`,
+      undefined,
+      undefined,
+      {
+        transitive,
+        includeOrigin,
+        versioned: false, // we don't need to add version prefix to entity path
+      },
+    );
+
+  getProjectVersionsDependencyEntities = (
     /**
      * List of (direct) dependencies.
      */
@@ -91,7 +138,7 @@ export class MetadataServerClient extends AbstractServerClient {
      * Flag indicating whether to return the root of the dependency tree.
      */
     includeOrigin: boolean,
-  ): Promise<PlainObject<ProjectVersionEntities>[]> =>
+  ): Promise<PlainObject<DeprecatedProjectVersionEntities>[]> =>
     this.post(
       `${this._projects()}/versions/dependencies`,
       dependencies,

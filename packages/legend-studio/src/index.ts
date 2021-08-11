@@ -28,6 +28,7 @@ export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
 export * from './models/metamodels/pure/graph/PureGraphExtension';
 export * from './models/metamodels/pure/graph/PureGraphManagerPlugin';
 export * from './models/MetaModelUtils';
+export { DependencyManager } from './models/metamodels/pure/graph/DependencyManager';
 export {
   PRIMITIVE_TYPE,
   CLIENT_VERSION,
@@ -151,9 +152,11 @@ export { Project, ProjectType } from './models/sdlc/models/project/Project';
 export { Version } from './models/sdlc/models/version/Version';
 export { SDLCServerClient } from './models/sdlc/SDLCServerClient';
 export { ProjectConfiguration } from './models/sdlc/models/configuration/ProjectConfiguration';
+export type { ProjectDependencyMetadata } from './models/sdlc/models/configuration/ProjectDependency';
 
 // Metadata
 export { ProjectData } from './models/metadata/models/ProjectData';
+export { ProjectVersionEntities } from './models/metadata/models/ProjectVersionEntities';
 
 // stores
 export * from './stores/EditorPlugin';
