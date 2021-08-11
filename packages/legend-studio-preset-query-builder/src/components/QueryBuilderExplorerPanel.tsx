@@ -53,7 +53,6 @@ import {
   buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import { useDrag, useDragLayer } from 'react-dnd';
-import { prettyCamelCase } from '@finos/legend-studio-shared';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
@@ -73,6 +72,7 @@ import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTre
 import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState';
 import { flowResult } from 'mobx';
 import { Dialog } from '@material-ui/core';
+import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState';
 
 const QueryBuilderExplorerPreviewDataModal = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -93,7 +93,7 @@ const QueryBuilderExplorerPreviewDataModal = observer(
         <div className="modal modal--dark editor-modal query-builder__explorer__preview-data-modal">
           <div className="modal__header">
             <div className="modal__title">
-              {prettyCamelCase(previewDataState.propertyName)}
+              {prettyPropertyName(previewDataState.propertyName)}
             </div>
           </div>
           <div className="modal__body query-builder__explorer__preview-data-modal__body">
@@ -173,7 +173,7 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
           }
         >
           {explorerState.humanizePropertyName
-            ? prettyCamelCase(item.node.label)
+            ? prettyPropertyName(item.node.label)
             : item.node.label}
         </div>
       </div>
@@ -480,7 +480,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 )}
               >
                 {explorerState.humanizePropertyName
-                  ? prettyCamelCase(node.label)
+                  ? prettyPropertyName(node.label)
                   : node.label}
                 {isDerivedProperty && (
                   <div

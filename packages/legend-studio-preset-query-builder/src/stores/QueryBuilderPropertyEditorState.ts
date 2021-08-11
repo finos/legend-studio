@@ -18,7 +18,9 @@ import { action, makeAutoObservable } from 'mobx';
 import {
   getNullableFirstElement,
   guaranteeType,
+  isCamelCase,
   prettyCamelCase,
+  prettyCONSTName,
 } from '@finos/legend-studio-shared';
 import type {
   AbstractProperty,
@@ -41,6 +43,9 @@ import {
 } from '@finos/legend-studio';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 
+export const prettyPropertyName = (value: string): string =>
+  isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
+
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
 ): string => {
@@ -54,7 +59,7 @@ export const getPropertyChainName = (
       propertyNameChain.unshift(currentExpression.func.name);
     }
   }
-  return propertyNameChain.map(prettyCamelCase).join('/');
+  return propertyNameChain.map(prettyPropertyName).join('/');
 };
 
 export const getPropertyPath = (
