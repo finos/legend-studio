@@ -25,6 +25,7 @@ import {
   toGrammarString,
   toTitleCase,
   TITLE_CASE_EXCEPTION_WORDS,
+  isCamelCase,
 } from '../FormatterUtils';
 import { unitTest } from '../TestUtils';
 
@@ -61,6 +62,19 @@ test(unitTest('Prettify CONST name'), () => {
   expect(prettyCONSTName(undefined)).toEqual('');
   expect(prettyCONSTName('TOM')).toEqual('Tom');
   expect(prettyCONSTName('TOM_TOM')).toEqual('Tom Tom');
+});
+
+test(unitTest('Camel/Pascal case check'), () => {
+  expect(isCamelCase('aSomething')).toBe(true);
+  expect(isCamelCase('Something')).toBe(true);
+  expect(isCamelCase('SomethingSomething')).toBe(true);
+  expect(isCamelCase(undefined)).toBe(false);
+  expect(isCamelCase('')).toBe(false);
+  expect(isCamelCase('a')).toBe(false);
+  expect(isCamelCase('abcd')).toBe(false);
+  expect(isCamelCase('AAAAA_AAAA')).toBe(false);
+  expect(isCamelCase('AABASD')).toBe(false);
+  expect(isCamelCase('AAasd')).toBe(false);
 });
 
 test(unitTest('Minify JSON string'), () => {

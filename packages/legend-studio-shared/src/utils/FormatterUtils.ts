@@ -69,6 +69,11 @@ export const prettyCONSTName = (value: string | undefined): string =>
     .replace(/_/gu, ' ')
     .trim();
 
+export const isCamelCase = (value: string | undefined): boolean =>
+  value !== undefined &&
+  value !== '' &&
+  Boolean(value.match(/^(?:[a-z])*(?:[A-Z][a-z]+)+$/u));
+
 export const prettyCamelCase = (value: string | undefined): string =>
   toSentenceCase(value)
     .replace(/(?:[A-Z])/gu, (val) => ` ${val}`)
