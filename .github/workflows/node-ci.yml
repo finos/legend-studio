@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Check typings
-        run: yarn build:tsc
+        run: yarn check:tsc
       - name: Run lint
         run: yarn lint:ci
 
