@@ -1,5 +1,14 @@
 # @finos/legend-query-app
 
+## 0.0.8
+
+### Patch Changes
+
+- Updated dependencies [[`8303f1b`](https://github.com/finos/legend-studio/commit/8303f1bdfed2d46bd0425b45d727a9b203cec229), [`8303f1b`](https://github.com/finos/legend-studio/commit/8303f1bdfed2d46bd0425b45d727a9b203cec229), [`3175301`](https://github.com/finos/legend-studio/commit/3175301a3919d25557a2d975df75f95886d11a53)]:
+  - @finos/legend-studio@0.2.9
+  - @finos/legend-studio-preset-query-builder@0.0.31
+  - @finos/legend-studio-preset-dsl-text@0.0.46
+
 ## 0.0.7
 
 ### Patch Changes
