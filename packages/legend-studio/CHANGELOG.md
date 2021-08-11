@@ -1,5 +1,16 @@
 # @finos/legend-studio
 
+## 0.2.9
+
+### Patch Changes
+
+- [#400](https://github.com/finos/legend-studio/pull/400) [`8303f1b`](https://github.com/finos/legend-studio/commit/8303f1bdfed2d46bd0425b45d727a9b203cec229) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! -
+
+- Updated dependencies [[`3175301`](https://github.com/finos/legend-studio/commit/3175301a3919d25557a2d975df75f95886d11a53)]:
+  - @finos/legend-studio-shared@0.0.26
+  - @finos/legend-studio-components@0.0.30
+  - @finos/legend-studio-network@0.0.28
+
 ## 0.2.8
 
 ### Patch Changes

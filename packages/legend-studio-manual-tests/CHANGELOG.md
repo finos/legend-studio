@@ -1,5 +1,13 @@
 # @finos/legend-studio-manual-tests
 
+## 0.0.27
+
+### Patch Changes
+
+- Updated dependencies [[`8303f1b`](https://github.com/finos/legend-studio/commit/8303f1bdfed2d46bd0425b45d727a9b203cec229), [`3175301`](https://github.com/finos/legend-studio/commit/3175301a3919d25557a2d975df75f95886d11a53)]:
+  - @finos/legend-studio@0.2.9
+  - @finos/legend-studio-shared@0.0.26
+
 ## 0.0.26
 
 ### Patch Changes
