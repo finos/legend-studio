@@ -281,7 +281,7 @@ export const setUpEditor = async (
     )
     .mockResolvedValue(latestProjectStructureVersion);
   // TODO: we need to think of how we will mock these calls when we modularize
-  mockedEditorStore.graphState.graphManager.setupEngine = jest.fn();
+  mockedEditorStore.graphState.graphManager.initialize = jest.fn();
   jest
     .spyOn(
       mockedEditorStore.graphState.graphManager,

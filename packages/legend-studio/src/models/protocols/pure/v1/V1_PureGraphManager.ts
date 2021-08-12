@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { flow, flowResult, makeObservable, runInAction } from 'mobx';
+import { computed, flow, flowResult, makeObservable, runInAction } from 'mobx';
 import type { Logger } from '../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import type { Entity } from '../../../sdlc/models/entity/Entity';
@@ -30,6 +30,7 @@ import type {
 } from '@finos/legend-studio-shared';
 import {
   getClass,
+  ActionState,
   guaranteeNonNullable,
   UnsupportedOperationError,
   recursiveOmit,
@@ -43,9 +44,9 @@ import {
   SystemGraphProcessingError,
   DependencyGraphProcessingError,
 } from '../../../MetaModelUtils';
-import type { AbstractEngineConfig } from '../../../metamodels/pure/action/AbstractEngineConfiguration';
+import type { TEMP__AbstractEngineConfig } from '../../../metamodels/pure/action/TEMP__AbstractEngineConfig';
 import type {
-  EngineSetupConfig,
+  TEMP__EngineSetupConfig,
   GraphBuilderOptions,
 } from '../../../metamodels/pure/graph/AbstractPureGraphManager';
 import { AbstractPureGraphManager } from '../../../metamodels/pure/graph/AbstractPureGraphManager';
@@ -367,6 +368,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   engine!: V1_Engine;
   logger: Logger;
   extensions: V1_GraphBuilderExtensions;
+  initState = ActionState.create();
 
   constructor(
     pureGraphManagerPlugins: PureGraphManagerPlugin[],
@@ -390,7 +392,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       | 'buildFileGenerations'
       | 'buildGenerationSpecificationss'
     >(this, {
-      setupEngine: flow,
+      initialize: flow,
       buildSystem: flow,
       buildDependencies: flow,
       buildGraph: flow,
@@ -407,6 +409,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildDiagrams: flow,
       buildFileGenerations: flow,
       buildGenerationSpecificationss: flow,
+      isInitialized: computed,
     });
 
     this.logger = logger;
@@ -421,19 +424,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     V1_setupDatabaseSerialization(this.pureProtocolProcessorPlugins);
   }
 
-  getEngineConfig(): AbstractEngineConfig {
+  TEMP__getEngineConfig(): TEMP__AbstractEngineConfig {
     return this.engine.config;
   }
 
-  *setupEngine(
+  *initialize(
     pluginManager: PluginManager,
-    config: EngineSetupConfig,
+    config: TEMP__EngineSetupConfig,
   ): GeneratorFn<void> {
     this.engine = new V1_Engine(config.clientConfig, this.logger);
     this.engine
       .getEngineServerClient()
       .registerTracerServicePlugins(pluginManager.getTracerServicePlugins());
     yield this.engine.setup(config);
+    this.initState.complete();
+  }
+
+  get isInitialized(): boolean {
+    return this.initState.hasCompleted;
   }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------

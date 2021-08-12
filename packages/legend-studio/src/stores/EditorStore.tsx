@@ -652,7 +652,7 @@ export class EditorStore {
       this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
       this.preloadTextEditorFont(),
       this.graphState.initializeSystem(), // this can be moved inside of `setupEngine`
-      this.graphState.graphManager.setupEngine(
+      this.graphState.graphManager.initialize(
         this.applicationStore.pluginManager,
         {
           env: this.applicationStore.config.env,

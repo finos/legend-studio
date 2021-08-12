@@ -257,7 +257,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
       'Model-to-model mapping execution test data is not a valid JSON string',
     );
     const engineConfig =
-      this.editorStore.graphState.graphManager.getEngineConfig();
+      this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
     return createRuntimeForExecution(
       this.mapping,
       new JsonModelConnection(
@@ -317,7 +317,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphState.graphManager.getEngineConfig();
+      this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
     return createRuntimeForExecution(
       this.mapping,
       new FlatDataConnection(

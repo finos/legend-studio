@@ -583,7 +583,7 @@ export class QueryStore {
     try {
       this.initGraphState.inProgress();
       yield flowResult(
-        this.editorStore.graphState.graphManager.setupEngine(
+        this.editorStore.graphState.graphManager.initialize(
           this.editorStore.applicationStore.pluginManager,
           {
             env: this.editorStore.applicationStore.config.env,

@@ -30,7 +30,7 @@ import type { ImportConfigurationDescription } from '../../../../metamodels/pure
 import { ImportMode } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import type { RawLambda } from '../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { GenerationConfigurationDescription } from '../../../../metamodels/pure/action/generation/GenerationConfigurationDescription';
-import { AbstractEngineConfig } from '../../../../metamodels/pure/action/AbstractEngineConfiguration';
+import { TEMP__AbstractEngineConfig } from '../../../../metamodels/pure/action/TEMP__AbstractEngineConfig';
 import { V1_EngineServerClient } from './V1_EngineServerClient';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult';
@@ -79,7 +79,7 @@ import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationRe
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../metamodels/pure/action/service/ServiceExecutionMode';
 
-class V1_EngineConfig extends AbstractEngineConfig {
+class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
 
   override setEnv(val: string | undefined): void {

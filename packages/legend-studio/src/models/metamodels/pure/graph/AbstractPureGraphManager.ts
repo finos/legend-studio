@@ -40,7 +40,7 @@ import type { GenerationConfigurationDescription } from '../action/generation/Ge
 import type { ValueSpecification } from '../model/valueSpecification/ValueSpecification';
 import type { RawValueSpecification } from '../model/rawValueSpecification/RawValueSpecification';
 import type { ServiceExecutionMode } from '../action/service/ServiceExecutionMode';
-import type { AbstractEngineConfig } from '../action/AbstractEngineConfiguration';
+import type { TEMP__AbstractEngineConfig } from '../action/TEMP__AbstractEngineConfig';
 import type { PluginManager } from '../../../../application/PluginManager';
 import type { DatabaseBuilderInput } from '../action/generation/DatabaseBuilderInput';
 import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PureProtocolProcessorPlugin';
@@ -55,7 +55,7 @@ import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import type { LightQuery, Query } from '../action/query/Query';
 
-export interface EngineSetupConfig {
+export interface TEMP__EngineSetupConfig {
   env: string;
   tabSize: number;
   clientConfig: ServerClientConfig;
@@ -81,12 +81,21 @@ export abstract class AbstractPureGraphManager {
     this.pureProtocolProcessorPlugins = pureProtocolProcessorPlugins;
   }
 
-  abstract getEngineConfig(): AbstractEngineConfig;
+  /**
+   * TODO: we should not expose a fixed config like this, we probably
+   * should not mention anything about engine because it is an internal construct
+   * used by the graph manager, different graph manager may not need engine.
+   *
+   * As such, we should expose a generic config instead.
+   * See https://github.com/finos/legend-studio/issues/407
+   */
+  abstract TEMP__getEngineConfig(): TEMP__AbstractEngineConfig;
 
-  abstract setupEngine(
+  abstract initialize(
     pluginManager: PluginManager,
-    config: EngineSetupConfig,
+    config: TEMP__EngineSetupConfig,
   ): GeneratorFn<void>;
+  abstract get isInitialized(): boolean;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
