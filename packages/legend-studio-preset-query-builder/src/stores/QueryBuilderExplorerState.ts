@@ -18,6 +18,7 @@ import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
 import {
   guaranteeNonNullable,
   addUniqueEntry,
+  uniq,
 } from '@finos/legend-studio-shared';
 import type {
   AbstractProperty,
@@ -42,6 +43,7 @@ import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
+import { editor } from 'monaco-editor';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -170,6 +172,31 @@ const resolveSetImplementationForPropertyMapping = (
   return undefined;
 };
 
+const resolvePropertyMappingsForSetImpl = (
+  setImpl: SetImplementation,
+  editorStore: EditorStore,
+): PropertyMapping[] => {
+  const propertyMappings =
+    editorStore.graphState.getMappingElementPropertyMappings(setImpl);
+  // Resolve association properties
+  // To resolve we look for all association property mappings which match our setImpl
+  // and their sourceImpl.
+  if (
+    editorStore.graphState.isInstanceSetImplementation(setImpl) &&
+    setImpl.class.value.propertiesFromAssociations.length
+  ) {
+    setImpl.parent.associationMappings
+      .map((am) => am.propertyMappings)
+      .flat()
+      .forEach((pm) => {
+        if (pm.sourceSetImplementation === setImpl) {
+          propertyMappings.push(pm);
+        }
+      });
+  }
+  return uniq(propertyMappings);
+};
+
 const getPropertyMappedData = (
   editorStore: EditorStore,
   property: AbstractProperty,
@@ -179,6 +206,7 @@ const getPropertyMappedData = (
   skipMappingCheck: boolean;
   setImpl?: SetImplementation;
 } => {
+  const parentSetImpl = parentNode.setImpl;
   // For now, derived properties will be considered mapped if its parent class is mapped.
   // NOTE: we don't want to do complex analytics such as to drill down into the body
   // of the derived properties to see if each properties being used are mapped to determine
@@ -191,11 +219,11 @@ const getPropertyMappedData = (
   } else if (property instanceof Property) {
     if (parentNode.skipMappingCheck) {
       return { mapped: true, skipMappingCheck: true };
-    } else if (parentNode.setImpl) {
-      const propertyMappings =
-        editorStore.graphState.getMappingElementPropertyMappings(
-          parentNode.setImpl,
-        );
+    } else if (parentSetImpl) {
+      const propertyMappings = resolvePropertyMappingsForSetImpl(
+        parentSetImpl,
+        editorStore,
+      );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
         .map((p) => p.property.value.name);
