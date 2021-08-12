@@ -113,14 +113,24 @@ const extractMessage = (payload: Payload): string => {
 export const unauthenticated = (response: Response): boolean =>
   response.status === 0 || response.status === HttpStatus.UNAUTHORIZED;
 
-export const authenticate = (authenticationUrl: string): Promise<void> =>
+/**
+ * This is a fairly basic way to attempt re-authentication.
+ * We create an <iframe> to load a re-authentication url
+ * which suppose to silently refresh the authentication cookie
+ * and requires no action from users.
+ *
+ * NOTE: authentication is very specific to the deployment context
+ * i.e. how the servers are being setup, so this way of re-authenticate
+ * should be optional and configurable.
+ */
+export const autoReAuthenticate = (url: string): Promise<void> =>
   new Promise((resolve: Function): void => {
-    const id = 'AUTHENTICATION_IFRAME';
+    const id = 'AUTO_AUTHENTICATION_IFRAME';
     const previous = document.getElementById(id);
     previous?.remove();
     const element = document.createElement('iframe');
     element.id = id;
-    element.src = authenticationUrl;
+    element.src = url;
     element.style.display = 'none';
     element.addEventListener('load', (): void => {
       element.remove();
@@ -188,7 +198,7 @@ const couldBeCORS = (error: Error): boolean =>
 export interface ResponseProcessConfig {
   skipProcessing?: boolean;
   preprocess?: (response: Response) => void;
-  authenticationUrl?: string;
+  autoReAuthenticateUrl?: string;
 }
 
 export interface RequestProcessConfig {
@@ -247,8 +257,8 @@ const retry = async <T>(
   init: RequestInit,
   responseProcessConfig?: ResponseProcessConfig,
 ): Promise<T> => {
-  if (responseProcessConfig?.authenticationUrl) {
-    return authenticate(responseProcessConfig.authenticationUrl)
+  if (responseProcessConfig?.autoReAuthenticateUrl) {
+    return autoReAuthenticate(responseProcessConfig.autoReAuthenticateUrl)
       .then(() => fetch(url, init))
       .then((response) =>
         processResponse(response, init, responseProcessConfig),

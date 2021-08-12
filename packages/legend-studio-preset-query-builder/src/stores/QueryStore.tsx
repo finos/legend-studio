@@ -56,7 +56,6 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
   ProjectData,
-  SDLCServerClient,
   TAB_SIZE,
   CORE_LOG_EVENT,
   EditorStore,
@@ -592,9 +591,9 @@ export class QueryStore {
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
               enableCompression: true,
-              authenticationUrl: SDLCServerClient.authenticationUrl(
-                this.editorStore.applicationStore.config.sdlcServerUrl,
-              ),
+              autoReAuthenticateUrl:
+                this.editorStore.applicationStore.config
+                  .engineAutoReAuthenticationUrl,
             },
           },
         ),

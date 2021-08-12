@@ -41,7 +41,6 @@ import {
   generateVieweRevisionRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
-import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ViewerStore {
   editorStore: EditorStore;
@@ -208,9 +207,9 @@ export class ViewerStore {
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
               enableCompression: true,
-              authenticationUrl: SDLCServerClient.authenticationUrl(
-                this.editorStore.applicationStore.config.sdlcServerUrl,
-              ),
+              autoReAuthenticateUrl:
+                this.editorStore.applicationStore.config
+                  .engineAutoReAuthenticationUrl,
             },
           },
         ),

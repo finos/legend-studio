@@ -26,7 +26,6 @@ import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
 import { Project } from '../models/sdlc/models/project/Project';
 import { EDITOR_MODE, ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
-import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ReviewStore {
   editorStore: EditorStore;
@@ -76,9 +75,9 @@ export class ReviewStore {
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
               enableCompression: true,
-              authenticationUrl: SDLCServerClient.authenticationUrl(
-                this.editorStore.applicationStore.config.sdlcServerUrl,
-              ),
+              autoReAuthenticateUrl:
+                this.editorStore.applicationStore.config
+                  .engineAutoReAuthenticationUrl,
             },
           },
         ),

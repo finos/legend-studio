@@ -53,7 +53,6 @@ import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState
 import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
-import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 import type {
   Clazz,
   GeneratorFn,
@@ -661,9 +660,8 @@ export class EditorStore {
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             enableCompression: true,
-            authenticationUrl: SDLCServerClient.authenticationUrl(
-              this.applicationStore.config.sdlcServerUrl,
-            ),
+            autoReAuthenticateUrl:
+              this.applicationStore.config.engineAutoReAuthenticationUrl,
           },
         },
       ),

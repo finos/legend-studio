@@ -72,7 +72,6 @@ export class SDLCServerClient extends AbstractServerClient {
   constructor(config: SDLCServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
-      authenticationUrl: SDLCServerClient.authenticationUrl(config.serverUrl),
     });
     this.env = config.env;
   }
@@ -95,8 +94,6 @@ export class SDLCServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Authentication -------------------------------------------
 
-  static authenticationUrl = (authenticationServerUrl: string): string =>
-    `${authenticationServerUrl}/auth/authorize`;
   static authorizeCallbackUrl = (
     authenticationServerUrl: string,
     callbackURI: string,
