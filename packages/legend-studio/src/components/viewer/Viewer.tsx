@@ -223,7 +223,7 @@ export const ViewerInner = observer(() => {
   // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
   // on the second call when we remove entity path from the route
   useEffect(() => {
-    flowResult(viewerStore.init(projectId, versionId, revisionId)).catch(
+    flowResult(viewerStore.initialize(projectId, versionId, revisionId)).catch(
       applicationStore.alertIllegalUnhandledError,
     );
   }, [applicationStore, viewerStore, projectId, versionId, revisionId]);

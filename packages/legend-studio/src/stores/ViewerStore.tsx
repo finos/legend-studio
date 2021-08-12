@@ -104,7 +104,7 @@ export class ViewerStore {
     }
   }
 
-  *init(
+  *initialize(
     projectId: string,
     versionId: string | undefined,
     revisionId: string | undefined,

@@ -256,7 +256,7 @@ export class ConflictResolutionState {
     }
   }
 
-  *init(): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',

@@ -95,7 +95,6 @@ export abstract class AbstractPureGraphManager {
     pluginManager: PluginManager,
     config: TEMP__EngineSetupConfig,
   ): GeneratorFn<void>;
-  abstract get isInitialized(): boolean;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 

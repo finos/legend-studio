@@ -295,7 +295,7 @@ export class ApplicationStore {
     return Boolean(this.SDLCServerTermsOfServicesUrlsToView.length);
   }
 
-  *init(): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       this.notifyIllegalState('Application store is re-initialized');
       return;

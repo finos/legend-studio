@@ -145,7 +145,7 @@ export const LegendStudioApplicationRoot = observer(() => {
     });
 
   useEffect(() => {
-    flowResult(applicationStore.init()).catch(
+    flowResult(applicationStore.initialize()).catch(
       applicationStore.alertIllegalUnhandledError,
     );
   }, [applicationStore]);

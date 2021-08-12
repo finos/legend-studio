@@ -63,7 +63,7 @@ export class ReviewStore {
     return guaranteeNonNullable(this.currentReview, 'Review must exist');
   }
 
-  *init(): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     try {
       // setup engine
       yield flowResult(

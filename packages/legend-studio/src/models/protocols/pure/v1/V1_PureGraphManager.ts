@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { computed, flow, flowResult, makeObservable, runInAction } from 'mobx';
+import { flow, flowResult, makeObservable, runInAction } from 'mobx';
 import type { Logger } from '../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import type { Entity } from '../../../sdlc/models/entity/Entity';
@@ -30,7 +30,6 @@ import type {
 } from '@finos/legend-studio-shared';
 import {
   getClass,
-  ActionState,
   guaranteeNonNullable,
   UnsupportedOperationError,
   recursiveOmit,
@@ -368,7 +367,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   engine!: V1_Engine;
   logger: Logger;
   extensions: V1_GraphBuilderExtensions;
-  initState = ActionState.create();
 
   constructor(
     pureGraphManagerPlugins: PureGraphManagerPlugin[],
@@ -409,7 +407,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildDiagrams: flow,
       buildFileGenerations: flow,
       buildGenerationSpecificationss: flow,
-      isInitialized: computed,
     });
 
     this.logger = logger;
@@ -437,11 +434,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .getEngineServerClient()
       .registerTracerServicePlugins(pluginManager.getTracerServicePlugins());
     yield this.engine.setup(config);
-    this.initState.complete();
-  }
-
-  get isInitialized(): boolean {
-    return this.initState.hasCompleted;
   }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------

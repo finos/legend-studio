@@ -494,7 +494,7 @@ export class EditorStore {
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */
-  *init(projectId: string, workspaceId: string): GeneratorFn<void> {
+  *initialize(projectId: string, workspaceId: string): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
        * Since React `fast-refresh` will sometimes cause `Editor` to rerender, this method will be called again
@@ -728,7 +728,7 @@ export class EditorStore {
       ],
     });
     yield Promise.all([
-      this.conflictResolutionState.init(),
+      this.conflictResolutionState.initialize(),
       this.sdlcState.checkIfWorkspaceIsOutdated(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
