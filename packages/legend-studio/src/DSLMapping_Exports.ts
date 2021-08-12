@@ -24,6 +24,7 @@ export {
 } from './models/metamodels/pure/model/packageableElements/runtime/Runtime';
 export { PackageableRuntime } from './models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
 export { SetImplementation } from './models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+export { PureInstanceSetImplementation } from './models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 export { OperationSetImplementation } from './models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 export { PropertyMapping } from './models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 

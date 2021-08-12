@@ -38,12 +38,12 @@ import {
   Enumeration,
   Property,
   VariableExpression,
+  PureInstanceSetImplementation,
 } from '@finos/legend-studio';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
-import { editor } from 'monaco-editor';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -197,6 +197,21 @@ const resolvePropertyMappingsForSetImpl = (
   return uniq(propertyMappings);
 };
 
+const isAutoMappedProperty = (
+  property: AbstractProperty,
+  setImpl: SetImplementation,
+): boolean => {
+  if (setImpl instanceof PureInstanceSetImplementation) {
+    const sourceClass = setImpl.srcClass;
+    return Boolean(
+      sourceClass.value
+        ?.getAllProperties()
+        .find((p) => p.name === property.name),
+    );
+  }
+  return false;
+};
+
 const getPropertyMappedData = (
   editorStore: EditorStore,
   property: AbstractProperty,
@@ -227,7 +242,7 @@ const getPropertyMappedData = (
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
         .map((p) => p.property.value.name);
-      // check if property is mapped
+      // check if property is mapped through defined property mappings
       if (mappedProperties.includes(property.name)) {
         // if class we need to resolve the Set Implementation
         if (property.genericType.value.rawType instanceof Class) {
@@ -248,6 +263,10 @@ const getPropertyMappedData = (
             };
           }
         }
+        return { mapped: true, skipMappingCheck: false };
+      }
+      // check if property is auto mapped
+      if (isAutoMappedProperty(property, parentSetImpl)) {
         return { mapped: true, skipMappingCheck: false };
       }
     }
