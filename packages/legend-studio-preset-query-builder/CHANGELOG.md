@@ -1,5 +1,16 @@
 # @finos/legend-studio-preset-query-builder
 
+## 0.0.33
+
+### Patch Changes
+
+- [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Show mapped association properties in query builder (fixes https://github.com/finos/legend-studio/issues/406).
+
+* [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Show auto mapped properties in query builder (fixes https://github.com/finos/legend-studio/issues/387).
+
+* Updated dependencies [[`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82)]:
+  - @finos/legend-studio@0.2.10
+
 ## 0.0.32
 
 ## 0.0.31

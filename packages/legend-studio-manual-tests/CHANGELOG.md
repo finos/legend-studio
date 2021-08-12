@@ -1,5 +1,14 @@
 # @finos/legend-studio-manual-tests
 
+## 0.0.28
+
+### Patch Changes
+
+- [#412](https://github.com/finos/legend-studio/pull/412) [`5bbf4ef`](https://github.com/finos/legend-studio/commit/5bbf4ef17d0f1a619400ac43b91e287c748c6aaa) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add section to JSONToGrammar transformation to guarantee ordering.
+
+- Updated dependencies [[`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82)]:
+  - @finos/legend-studio@0.2.10
+
 ## 0.0.27
 
 ### Patch Changes
