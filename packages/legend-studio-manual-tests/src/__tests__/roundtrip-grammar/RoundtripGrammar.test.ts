@@ -70,8 +70,6 @@ const EXCLUDED_CASE_FILES: string[] = [
   'nested-embedded-relational-mapping.pure',
   'relational-mapping-filter.pure',
   'connection.pure',
-  // this is causing flaky test
-  'relational-database-with-filters-and-joins.pure',
 ];
 
 const checkGrammarRoundtrip = async (
@@ -140,12 +138,18 @@ const checkGrammarRoundtrip = async (
   // NOTE: this is optional test as `grammar text <-> protocol` test should be covered
   // in engine already.
   // Here, we do it just so we might be able to detect problem in the grammar roundtrip in engine
+  // we include the sections to guarantee the ordering of elements
+  const sectionIndices = editorStore.graphState.graph.ownSectionIndices.map(
+    (element) => editorStore.graphState.graphManager.elementToEntity(element),
+  );
   const transformJsonToGrammarResult = await axios.post(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/transformJsonToGrammar`,
     {
       modelDataContext: {
         _type: 'data',
-        elements: transformedEntities.map((entity) => entity.content),
+        elements: transformedEntities
+          .concat(sectionIndices)
+          .map((entity) => entity.content),
       },
       renderStyle: 'STANDARD',
     },
