@@ -658,6 +658,7 @@ export class QueryStore {
           )) as Map<string, ProjectDependencyMetadata>,
         ),
       );
+      this.editorStore.graphState.graph.setDependencyManager(dependencyManager);
       // build Graph
       yield flowResult(
         this.editorStore.graphState.graphManager.buildGraph(
@@ -694,7 +695,7 @@ export class QueryStore {
             project.groupId,
             project.artifactId,
             true,
-            true,
+            false,
           )) as PlainObject<ProjectVersionEntities>[];
       } else {
         dependencyEntitiesJson =
@@ -705,7 +706,7 @@ export class QueryStore {
               ? project.latestVersion
               : versionId,
             true,
-            true,
+            false,
           )) as PlainObject<ProjectVersionEntities>[];
         dependencyEntitiesJson
           .map((e) => ProjectVersionEntities.serialization.fromJson(e))
