@@ -18,6 +18,7 @@ import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
 import {
   guaranteeNonNullable,
   addUniqueEntry,
+  uniq,
 } from '@finos/legend-studio-shared';
 import type {
   AbstractProperty,
@@ -37,6 +38,7 @@ import {
   Enumeration,
   Property,
   VariableExpression,
+  PureInstanceSetImplementation,
 } from '@finos/legend-studio';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
@@ -170,6 +172,46 @@ const resolveSetImplementationForPropertyMapping = (
   return undefined;
 };
 
+const resolvePropertyMappingsForSetImpl = (
+  setImpl: SetImplementation,
+  editorStore: EditorStore,
+): PropertyMapping[] => {
+  const propertyMappings =
+    editorStore.graphState.getMappingElementPropertyMappings(setImpl);
+  // Resolve association properties
+  // To resolve we look for all association property mappings which match our setImpl
+  // and their sourceImpl.
+  if (
+    editorStore.graphState.isInstanceSetImplementation(setImpl) &&
+    setImpl.class.value.propertiesFromAssociations.length
+  ) {
+    setImpl.parent.associationMappings
+      .map((am) => am.propertyMappings)
+      .flat()
+      .forEach((pm) => {
+        if (pm.sourceSetImplementation === setImpl) {
+          propertyMappings.push(pm);
+        }
+      });
+  }
+  return uniq(propertyMappings);
+};
+
+const isAutoMappedProperty = (
+  property: AbstractProperty,
+  setImpl: SetImplementation,
+): boolean => {
+  if (setImpl instanceof PureInstanceSetImplementation) {
+    const sourceClass = setImpl.srcClass;
+    return Boolean(
+      sourceClass.value
+        ?.getAllProperties()
+        .find((p) => p.name === property.name),
+    );
+  }
+  return false;
+};
+
 const getPropertyMappedData = (
   editorStore: EditorStore,
   property: AbstractProperty,
@@ -179,6 +221,7 @@ const getPropertyMappedData = (
   skipMappingCheck: boolean;
   setImpl?: SetImplementation;
 } => {
+  const parentSetImpl = parentNode.setImpl;
   // For now, derived properties will be considered mapped if its parent class is mapped.
   // NOTE: we don't want to do complex analytics such as to drill down into the body
   // of the derived properties to see if each properties being used are mapped to determine
@@ -191,15 +234,15 @@ const getPropertyMappedData = (
   } else if (property instanceof Property) {
     if (parentNode.skipMappingCheck) {
       return { mapped: true, skipMappingCheck: true };
-    } else if (parentNode.setImpl) {
-      const propertyMappings =
-        editorStore.graphState.getMappingElementPropertyMappings(
-          parentNode.setImpl,
-        );
+    } else if (parentSetImpl) {
+      const propertyMappings = resolvePropertyMappingsForSetImpl(
+        parentSetImpl,
+        editorStore,
+      );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
         .map((p) => p.property.value.name);
-      // check if property is mapped
+      // check if property is mapped through defined property mappings
       if (mappedProperties.includes(property.name)) {
         // if class we need to resolve the Set Implementation
         if (property.genericType.value.rawType instanceof Class) {
@@ -220,6 +263,10 @@ const getPropertyMappedData = (
             };
           }
         }
+        return { mapped: true, skipMappingCheck: false };
+      }
+      // check if property is auto mapped
+      if (isAutoMappedProperty(property, parentSetImpl)) {
         return { mapped: true, skipMappingCheck: false };
       }
     }
