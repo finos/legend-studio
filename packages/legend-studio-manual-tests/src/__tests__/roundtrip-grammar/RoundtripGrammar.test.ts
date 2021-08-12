@@ -139,7 +139,7 @@ const checkGrammarRoundtrip = async (
   // in engine already.
   // Here, we do it just so we might be able to detect problem in the grammar roundtrip in engine
   // we include the sections to guarantee the ordering of elements
-  const sections = editorStore.graphState.graph.ownSectionIndices.map(
+  const sectionIndices = editorStore.graphState.graph.ownSectionIndices.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   const transformJsonToGrammarResult = await axios.post(
@@ -148,7 +148,7 @@ const checkGrammarRoundtrip = async (
       modelDataContext: {
         _type: 'data',
         elements: transformedEntities
-          .concat(sections)
+          .concat(sectionIndices)
           .map((entity) => entity.content),
       },
       renderStyle: 'STANDARD',
