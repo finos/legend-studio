@@ -214,7 +214,7 @@ export class ViewerStore {
           },
         ),
       );
-      // init graph
+      // initialize graph manager
       yield flowResult(this.editorStore.graphState.initializeSystem());
       yield flowResult(
         this.editorStore.graphState.buildGraphForViewerMode(entities),

@@ -247,14 +247,14 @@ export class QueryBuilderState extends EditorExtensionState {
       this,
     );
     this.explorerState.refreshTreeData();
-    this.fetchStructureState.graphFetchTreeState.init();
+    this.fetchStructureState.graphFetchTreeState.initialize();
   }
 
   setQuerySetupState(val: QueryBuilderSetupState): void {
     this.querySetupState = val;
   }
 
-  init(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
+  initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
     try {
       this.buildStateFromRawLambda(rawLambda);
     } catch (error: unknown) {

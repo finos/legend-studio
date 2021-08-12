@@ -59,7 +59,7 @@ export class QueryBuilderGraphFetchTreeState {
     this.isChecked = val;
   }
 
-  init(tree?: RootGraphFetchTree): void {
+  initialize(tree?: RootGraphFetchTree): void {
     if (this.queryBuilderState.fetchStructureState.isGraphFetchMode()) {
       if (tree) {
         this.setGraphFetchTree(buildGraphFetchTreeData(tree));

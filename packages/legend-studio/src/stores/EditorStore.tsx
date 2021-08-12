@@ -506,7 +506,7 @@ export class EditorStore {
       if (process.env.NODE_ENV === 'development') {
         this.applicationStore.logger.info(
           CORE_LOG_EVENT.DEVELOPMENT_MODE,
-          `Fast-refreshing the app - undoing cleanUp() and preventing init() recall in editor store...`,
+          `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
         this._isDisposed = false;

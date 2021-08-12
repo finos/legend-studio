@@ -76,7 +76,7 @@ export class ServiceRegistrationState {
       updateVersion: action,
       setProjectVersion: action,
       openModal: action,
-      init: action,
+      initialize: action,
       updateType: action,
       updateEnv: action,
       setActivatePostRegistration: action,
@@ -105,10 +105,10 @@ export class ServiceRegistrationState {
 
   openModal(): void {
     this.setModal(true);
-    this.init();
+    this.initialize();
   }
 
-  init(): void {
+  initialize(): void {
     this.serviceEnv = getNullableFirstElement(
       this.editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig,
