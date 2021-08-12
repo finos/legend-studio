@@ -98,9 +98,9 @@ export class ExistingQuerySetupState extends QuerySetupState {
   }
 
   *loadQueries(searchText: string): GeneratorFn<void> {
-    if (this.queryStore.initGraphState.isInInitialState) {
-      yield flowResult(this.queryStore.initGraph());
-    } else if (this.queryStore.initGraphState.isInProgress) {
+    if (this.queryStore.initState.isInInitialState) {
+      yield flowResult(this.queryStore.initialize());
+    } else if (this.queryStore.initState.isInProgress) {
       return;
     }
     const isValidSearchString = searchText.length >= 3;
@@ -289,7 +289,7 @@ export class QuerySetupStore {
     this.querySetupState = val;
   }
 
-  *init(): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     this.queryStore.reset();
   }
 }

@@ -815,7 +815,7 @@ const QuerySetupLandingPage = observer(() => {
     setupStore.setSetupState(new CreateQuerySetupState(queryStore));
 
   useEffect(() => {
-    setupStore.init();
+    setupStore.initialize();
   }, [setupStore]);
 
   return (

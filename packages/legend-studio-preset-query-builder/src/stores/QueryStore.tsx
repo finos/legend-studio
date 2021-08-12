@@ -303,7 +303,7 @@ export class QueryStore {
   queryBuilderState: QueryBuilderState;
   queryExportState?: QueryExportState;
   buildGraphState = ActionState.create();
-  initGraphState = ActionState.create();
+  initState = ActionState.create();
   editorInitState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
@@ -341,12 +341,6 @@ export class QueryStore {
 
     try {
       this.editorInitState.inProgress();
-      if (this.initGraphState.isInInitialState) {
-        yield flowResult(this.initGraph());
-      } else if (this.initGraphState.isInProgress) {
-        return;
-      }
-
       let queryInfoState: ExistingQueryInfoState;
       if (this.queryInfoState instanceof ExistingQueryInfoState) {
         assertTrue(this.queryInfoState.query.id === queryId);
@@ -576,12 +570,15 @@ export class QueryStore {
     }
   }
 
-  *initGraph(): GeneratorFn<void> {
-    if (!this.initGraphState.isInInitialState) {
+  *initialize(): GeneratorFn<void> {
+    if (!this.initState.isInInitialState) {
+      this.editorStore.applicationStore.notifyIllegalState(
+        `Query store is already initialized`,
+      );
       return;
     }
     try {
-      this.initGraphState.inProgress();
+      this.initState.inProgress();
       yield flowResult(
         this.editorStore.graphState.graphManager.initialize(
           this.editorStore.applicationStore.pluginManager,
@@ -601,27 +598,22 @@ export class QueryStore {
 
       yield flowResult(this.editorStore.graphState.initializeSystem());
 
-      this.initGraphState.pass();
+      this.initState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
-      this.initGraphState.fail();
+      this.editorStore.applicationStore.setBlockingAlert({
+        message: `Can't initialize Legend Query`,
+      });
+      this.initState.fail();
     }
   }
 
   *buildGraph(project: ProjectData, versionId: string): GeneratorFn<void> {
-    if (this.initGraphState.isInInitialState) {
-      yield flowResult(this.initGraph());
-    } else if (this.initGraphState.isInProgress) {
-      return;
-    }
-
-    this.buildGraphState.inProgress();
-
     try {
+      this.buildGraphState.inProgress();
       let entities: Entity[] = [];
 
       if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
