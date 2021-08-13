@@ -32,7 +32,7 @@ export class JsonModelConnection
   extends PureModelConnection
   implements Hashable
 {
-  public static readonly CONTENT_TYPE = ContentType.APPLICATION_JSON;
+  static readonly CONTENT_TYPE = ContentType.APPLICATION_JSON;
 
   class: PackageableElementReference<Class>;
   url: string;
