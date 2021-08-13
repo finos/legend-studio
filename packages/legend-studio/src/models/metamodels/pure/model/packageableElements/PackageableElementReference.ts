@@ -40,7 +40,11 @@ export abstract class PackageableElementReference<
     this.value = value;
   }
 
-  abstract get valueForSerialization(): string;
+  abstract get valueForSerialization(): string | undefined;
+
+  get hashValue(): string {
+    return this.valueForSerialization ?? '';
+  }
 }
 
 export class PackageableElementExplicitReference<
@@ -60,7 +64,7 @@ export class PackageableElementExplicitReference<
     return new PackageableElementExplicitReference(value);
   }
 
-  get valueForSerialization(): string {
+  get valueForSerialization(): string | undefined {
     return this.value.path;
   }
 }
@@ -80,7 +84,7 @@ export class PackageableElementImplicitReference<
   T extends PackageableElement,
 > extends PackageableElementReference<T> {
   readonly initialResolvedPath: string;
-  readonly input: string;
+  readonly input?: string;
   /**
    * Parent section information is only needed when the reference is resolved
    * by scanning the section imports.
@@ -95,7 +99,7 @@ export class PackageableElementImplicitReference<
 
   private constructor(
     value: T,
-    input: string,
+    input: string | undefined,
     parentSection: Section | undefined,
     skipSectionCheck: boolean | undefined,
   ) {
@@ -113,7 +117,7 @@ export class PackageableElementImplicitReference<
 
   static create<V extends PackageableElement>(
     value: V,
-    input: string,
+    input: string | undefined,
   ): PackageableElementImplicitReference<V> {
     return new PackageableElementImplicitReference(
       value,
@@ -136,7 +140,7 @@ export class PackageableElementImplicitReference<
     );
   }
 
-  get valueForSerialization(): string {
+  get valueForSerialization(): string | undefined {
     const currentElementPath = this.value.path;
     if (this.skipSectionCheck) {
       return this.input;
@@ -245,7 +249,7 @@ export class OptionalPackageableElementImplicitReference<
    */
   static resolveFromSection<V extends PackageableElement>(
     value: V | undefined,
-    input: string,
+    input: string | undefined,
     parentSection: Section | undefined,
   ): OptionalPackageableElementImplicitReference<V> {
     return new OptionalPackageableElementImplicitReference(

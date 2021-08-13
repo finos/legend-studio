@@ -52,7 +52,7 @@ export class RawInstanceValue
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RAW_INSTANCE_VALUE,
-      this.type.valueForSerialization,
+      this.type.hashValue,
       this.multiplicity,
       this.values
         ? hashArray(this.values.map((value) => value.toString()))

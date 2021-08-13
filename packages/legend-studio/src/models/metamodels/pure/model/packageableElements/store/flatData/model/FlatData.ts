@@ -72,7 +72,7 @@ export class FlatData extends Store implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA,
       this.path,
-      hashArray(this.includes.map((include) => include.valueForSerialization)),
+      hashArray(this.includes.map((include) => include.hashValue)),
       hashArray(this.sections),
     ]);
   }

@@ -80,7 +80,7 @@ export class RawVariableExpression
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RAW_VARIABLE,
-      this.type.valueForSerialization,
+      this.type.hashValue,
       this.name,
       this.multiplicity,
     ]);

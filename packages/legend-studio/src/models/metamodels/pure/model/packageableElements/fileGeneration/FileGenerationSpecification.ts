@@ -213,7 +213,7 @@ export class FileGenerationSpecification
       hashArray(
         this.scopeElements.map((element) =>
           element instanceof PackageableElementReference
-            ? element.valueForSerialization
+            ? element.hashValue
             : element,
         ),
       ),

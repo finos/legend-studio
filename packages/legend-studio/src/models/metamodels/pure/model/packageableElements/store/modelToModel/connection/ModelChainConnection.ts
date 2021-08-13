@@ -31,7 +31,7 @@ export class ModelChainConnection extends Connection {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MODEL_CHAIN_CONNECTION,
-      hashArray(this.mappings.map((m) => m.valueForSerialization)),
+      hashArray(this.mappings.map((m) => m.hashValue)),
     ]);
   }
 }

@@ -159,7 +159,8 @@ const transformProperty = (element: Property): V1_Property => {
   property.multiplicity = V1_transformMultiplicity(element.multiplicity);
   property.stereotypes = element.stereotypes.map(transformStereotype);
   property.taggedValues = element.taggedValues.map(transformTaggedValue);
-  property.type = element.genericType.ownerReference.valueForSerialization;
+  property.type =
+    element.genericType.ownerReference.valueForSerialization ?? '';
   return property;
 };
 
@@ -175,7 +176,7 @@ const transformDerviedProperty = (
     element.multiplicity,
   );
   derivedProperty.returnType =
-    element.genericType.ownerReference.valueForSerialization;
+    element.genericType.ownerReference.valueForSerialization ?? '';
   derivedProperty.stereotypes = element.stereotypes.map(transformStereotype);
   derivedProperty.taggedValues = element.taggedValues.map(transformTaggedValue);
   return derivedProperty;
@@ -194,7 +195,7 @@ export const V1_transformClass = (
   _class.stereotypes = element.stereotypes.map(transformStereotype);
   _class.taggedValues = element.taggedValues.map(transformTaggedValue);
   _class.superTypes = element.generalizations.map(
-    (e) => e.ownerReference.valueForSerialization,
+    (e) => e.ownerReference.valueForSerialization ?? '',
   );
   _class.derivedProperties = element.derivedProperties.map((dp) =>
     transformDerviedProperty(dp, context),

@@ -91,7 +91,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     const modelConnection = new ModelChainConnection(
       PackageableElementImplicitReference.create(
         this.context.graph.modelStore,
-        '',
+        connection.store,
       ),
     );
     modelConnection.mappings = connection.mappings.map(
@@ -121,7 +121,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     return new JsonModelConnection(
       PackageableElementImplicitReference.create(
         this.context.graph.modelStore,
-        '',
+        connection.store,
       ),
       this.context.resolveClass(connection.class),
       connection.url,
@@ -149,7 +149,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     return new XmlModelConnection(
       PackageableElementImplicitReference.create(
         this.context.graph.modelStore,
-        '',
+        connection.store,
       ),
       this.context.resolveClass(connection.class),
       connection.url,

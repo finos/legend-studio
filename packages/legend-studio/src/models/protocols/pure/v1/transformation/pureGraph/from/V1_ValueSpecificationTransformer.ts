@@ -231,14 +231,16 @@ export class V1_ValueSpecificationTransformer
       if (valueSpecification.genericType.value.rawType instanceof Unit) {
         const protocol = new V1_HackedUnit();
         protocol.unitType =
-          valueSpecification.genericType.ownerReference.valueForSerialization;
+          valueSpecification.genericType.ownerReference.valueForSerialization ??
+          '';
         return protocol;
       } else if (
         valueSpecification.genericType.value.rawType instanceof Class
       ) {
         const protocol = new V1_HackedClass();
         protocol.fullPath =
-          valueSpecification.genericType.ownerReference.valueForSerialization;
+          valueSpecification.genericType.ownerReference.valueForSerialization ??
+          '';
         return protocol;
       }
     }

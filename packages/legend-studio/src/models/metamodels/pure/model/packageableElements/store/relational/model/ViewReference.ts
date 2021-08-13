@@ -52,7 +52,7 @@ export abstract class ViewReference extends NamedRelationalReference {
   get pointerHashCode(): string {
     return [
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_POINTER,
-      this.ownerReference.valueForSerialization,
+      this.ownerReference.hashValue,
       this.value.schema.name,
       this.value.name,
     ]

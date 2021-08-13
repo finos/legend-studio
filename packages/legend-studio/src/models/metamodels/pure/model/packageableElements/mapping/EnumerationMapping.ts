@@ -124,7 +124,7 @@ export class EnumerationMapping implements Hashable, Stubable {
     return hashArray([
       CORE_HASH_STRUCTURE.ENUMERATION_MAPPING,
       this.id.valueForSerialization ?? '',
-      this.enumeration.valueForSerialization,
+      this.enumeration.hashValue,
       // If there are no enum value mapping, source type means nothing since it's not in the protocol anyway
       this.enumValueMappings.filter(
         (enumValueMapping) => !enumValueMapping.isStub,

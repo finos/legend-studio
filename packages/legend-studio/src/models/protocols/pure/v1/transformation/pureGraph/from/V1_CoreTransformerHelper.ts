@@ -35,7 +35,7 @@ export const V1_transformOptionalElementReference = <
 
 export const V1_transformElementReference = <T extends PackageableElement>(
   ref: PackageableElementReference<T>,
-): string => ref.valueForSerialization;
+): string => ref.valueForSerialization ?? '';
 
 export const V1_transformElementReferencePointer = <
   T extends PackageableElement,
@@ -43,7 +43,10 @@ export const V1_transformElementReferencePointer = <
   pointerType: V1_PackageableElementPointerType,
   ref: PackageableElementReference<T>,
 ): V1_PackageableElementPointer =>
-  new V1_PackageableElementPointer(pointerType, ref.valueForSerialization);
+  new V1_PackageableElementPointer(
+    pointerType,
+    ref.valueForSerialization ?? '',
+  );
 
 export const V1_initPackageableElement = (
   protocolElement: V1_PackageableElement,

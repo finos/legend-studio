@@ -320,9 +320,7 @@ export class Class extends Type implements Hashable, Stubable {
       hashArray(this.properties),
       hashArray(this.derivedProperties),
       hashArray(
-        this.generalizations.map(
-          (gen) => gen.ownerReference.valueForSerialization,
-        ),
+        this.generalizations.map((gen) => gen.ownerReference.hashValue),
       ),
       hashArray(this.constraints),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),

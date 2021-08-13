@@ -71,7 +71,7 @@ export class ClassView extends PositionedRectangle implements Hashable {
       CORE_HASH_STRUCTURE.CLASS_VIEW,
       super.hashCode,
       this.id,
-      this.class.valueForSerialization,
+      this.class.hashValue,
       Boolean(this.hideProperties).toString(),
       Boolean(this.hideTaggedValues).toString(),
       Boolean(this.hideStereotypes).toString(),

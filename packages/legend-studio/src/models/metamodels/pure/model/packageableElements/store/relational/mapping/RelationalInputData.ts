@@ -86,7 +86,7 @@ export class RelationalInputData extends InputData implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_INPUT_DATA,
-      this.database.valueForSerialization,
+      this.database.hashValue,
       this.data,
       this.inputType,
     ]);

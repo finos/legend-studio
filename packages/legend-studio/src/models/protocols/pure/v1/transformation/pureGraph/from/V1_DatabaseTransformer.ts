@@ -165,7 +165,8 @@ export const V1_transformTableAliasToTablePointer = (
   tableAlias: TableAlias,
 ): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
-  tablePtr.database = tableAlias.relation.ownerReference.valueForSerialization;
+  tablePtr.database =
+    tableAlias.relation.ownerReference.valueForSerialization ?? '';
   /* @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph */
   tablePtr.mainTableDb = tablePtr.database;
   tablePtr.schema = tableAlias.isSelfJoinTarget
@@ -227,7 +228,7 @@ export const V1_transformRelationalOperationElement = (
     elementWithJoin.joins = operation.joinTreeNode
       ? extractLine(operation.joinTreeNode).map((node) => {
           const joinPtr = new V1_JoinPointer();
-          joinPtr.db = node.join.ownerReference.valueForSerialization;
+          joinPtr.db = node.join.ownerReference.valueForSerialization ?? '';
           joinPtr.joinType = node.joinType;
           joinPtr.name = node.join.value.name;
           return joinPtr;
@@ -340,7 +341,7 @@ const transformView = (
     filter.joins = element.filter.joinTreeNode
       ? extractLine(element.filter.joinTreeNode).map((node) => {
           const joinPtr = new V1_JoinPointer();
-          joinPtr.db = node.join.ownerReference.valueForSerialization;
+          joinPtr.db = node.join.ownerReference.valueForSerialization ?? '';
           joinPtr.joinType = node.joinType;
           joinPtr.name = node.join.value.name;
           return joinPtr;
