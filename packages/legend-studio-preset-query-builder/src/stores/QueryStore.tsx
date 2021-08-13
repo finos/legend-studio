@@ -57,7 +57,7 @@ import {
   RuntimePointer,
   ProjectData,
   TAB_SIZE,
-  CORE_LOG_EVENT,
+  SDLC_LOG_EVENT,
   EditorStore,
   useApplicationStore,
   ProjectVersionEntities,
@@ -70,6 +70,7 @@ import type {
   ServiceQueryPathParams,
 } from './LegendQueryRouter';
 import { generateExistingQueryRoute } from './LegendQueryRouter';
+import { QUERY_LOG_EVENT } from '../QueryLogEvent';
 
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
@@ -250,7 +251,7 @@ export class QueryExportState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.queryStore.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+        QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
       this.queryStore.editorStore.applicationStore.notifyError(error);
@@ -286,7 +287,7 @@ export class QueryExportState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.queryStore.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+        QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
       this.queryStore.editorStore.applicationStore.notifyError(error);
@@ -396,7 +397,7 @@ export class QueryStore {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+        QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -481,7 +482,7 @@ export class QueryStore {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+        QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -557,7 +558,7 @@ export class QueryStore {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+        QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -601,7 +602,7 @@ export class QueryStore {
       this.initState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.setBlockingAlert({
@@ -661,7 +662,7 @@ export class QueryStore {
       this.buildGraphState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -714,7 +715,7 @@ export class QueryStore {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

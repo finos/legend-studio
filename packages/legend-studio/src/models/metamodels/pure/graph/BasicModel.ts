@@ -15,7 +15,7 @@
  */
 
 import { observable, computed, action, flow, makeObservable } from 'mobx';
-import type { Clazz, GeneratorFn } from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn, Logger } from '@finos/legend-studio-shared';
 import {
   ActionState,
   assertNonEmptyString,
@@ -27,7 +27,6 @@ import {
 } from '@finos/legend-studio-shared';
 import type { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import { ELEMENT_PATH_DELIMITER } from '../../../MetaModelConst';
-import type { Logger } from '../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import { Package } from '../model/packageableElements/domain/Package';
 import { Type } from '../model/packageableElements/domain/Type';

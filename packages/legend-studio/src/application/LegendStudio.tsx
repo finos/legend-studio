@@ -43,7 +43,7 @@ import {
   assertNonNullable,
   NetworkClient,
 } from '@finos/legend-studio-shared';
-import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
+import { BrowserConsole, APPLICATION_LOG_EVENT } from '../utils/Logger';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { PluginManager } from './PluginManager';
 import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';
@@ -173,14 +173,17 @@ export abstract class LegendApplication {
     baseUrl: string,
   ): Promise<[ApplicationConfig, Record<PropertyKey, object>]> {
     const client = new NetworkClient();
-    const logger = new Logger();
+    const logger = new BrowserConsole();
     let configData: ConfigurationData | undefined;
     try {
       configData = await client.get<ConfigurationData>(
         `${window.location.origin}${baseUrl}config.json`,
       );
     } catch (error: unknown) {
-      logger.error(CORE_LOG_EVENT.CONFIG_CONFIGURATION_FETCHING_PROBLEM, error);
+      logger.error(
+        APPLICATION_LOG_EVENT.CONFIG_CONFIGURATION_FETCHING_PROBLEM,
+        error,
+      );
     }
     assertNonNullable(
       configData,
@@ -192,7 +195,10 @@ export abstract class LegendApplication {
         `${window.location.origin}${baseUrl}version.json`,
       );
     } catch (error: unknown) {
-      logger.error(CORE_LOG_EVENT.CONFIG_VERSION_INFO_FETCHING_PROBLEM, error);
+      logger.error(
+        APPLICATION_LOG_EVENT.CONFIG_VERSION_INFO_FETCHING_PROBLEM,
+        error,
+      );
     }
     assertNonNullable(versionData, `Can't fetch Legend application version`);
     return [
@@ -208,7 +214,7 @@ export abstract class LegendApplication {
       this._isConfigured,
       'Legend application has not been configured properly. Make sure to run setup() before start()',
     );
-    const logger = new Logger();
+    const logger = new BrowserConsole();
     try {
       // Fetch application config
       const [appConfig, pluginConfigData] =
@@ -223,12 +229,12 @@ export abstract class LegendApplication {
       await this.loadApplication();
 
       logger.info(
-        CORE_LOG_EVENT.APPLICATION_LOADED,
+        APPLICATION_LOG_EVENT.APPLICATION_LOADED,
         'Legend application loaded',
       );
     } catch (error: unknown) {
       logger.error(
-        CORE_LOG_EVENT.APPLICATION_LOAD_FAILED,
+        APPLICATION_LOG_EVENT.APPLICATION_LOAD_FAILED,
         'Failed to load Legend application',
       );
       throw error;

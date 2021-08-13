@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { EDITOR_LOG_EVENT } from '../utils/Logger';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { ApplicationStore } from './ApplicationStore';
 import { useApplicationStore } from './ApplicationStore';
@@ -135,7 +135,7 @@ export class SetupStore {
                 } projects: ${error.message}`,
               );
               this.applicationStore.logger.error(
-                CORE_LOG_EVENT.SETUP_PROBLEM,
+                EDITOR_LOG_EVENT.SETUP_PROBLEM,
                 wrappedError,
               );
               this.applicationStore.notifyError(wrappedError);
@@ -151,7 +151,7 @@ export class SetupStore {
       this.projects = projectMap;
       this.loadProjectsState.pass();
     } catch (error: unknown) {
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
       this.applicationStore.notifyError(error);
       this.loadProjectsState.fail();
     }
@@ -296,7 +296,7 @@ export class SetupStore {
       this.workspacesByProject.set(projectId, workspaceMap);
     } catch (error: unknown) {
       // TODO handle error when fetching workspaces for an individual project
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
     } finally {
       this.loadWorkspacesState.reset();
     }
@@ -329,7 +329,7 @@ export class SetupStore {
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
     } catch (error: unknown) {
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
       this.applicationStore.notifyError(error);
       this.createWorkspaceState.fail();
     }

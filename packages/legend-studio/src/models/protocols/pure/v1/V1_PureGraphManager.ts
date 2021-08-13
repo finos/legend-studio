@@ -15,7 +15,6 @@
  */
 
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
-import type { Logger } from '../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import type { Entity } from '../../../sdlc/models/entity/Entity';
 import {
@@ -26,6 +25,7 @@ import {
 import type {
   Clazz,
   GeneratorFn,
+  Logger,
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {

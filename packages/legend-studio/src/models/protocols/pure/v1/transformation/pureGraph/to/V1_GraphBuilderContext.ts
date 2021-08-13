@@ -18,6 +18,7 @@ import {
   PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../../MetaModelConst';
+import type { Logger } from '@finos/legend-studio-shared';
 import {
   uniq,
   assertNonEmptyString,
@@ -71,7 +72,6 @@ import type { V1_FilterPointer } from '../../../model/packageableElements/store/
 import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
 import type { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr';
 import { V1_getRelation } from './helpers/V1_DatabaseBuilderHelper';
-import type { Logger } from '../../../../../../../utils/Logger';
 import type { BasicModel } from '../../../../../../metamodels/pure/graph/BasicModel';
 import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graph/AbstractPureGraphManager';

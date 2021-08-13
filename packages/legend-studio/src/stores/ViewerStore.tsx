@@ -23,7 +23,7 @@ import {
   RevisionAlias,
 } from '../models/sdlc/models/revision/Revision';
 import { Version } from '../models/sdlc/models/version/Version';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { SDLC_LOG_EVENT } from '../utils/Logger';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   IllegalStateError,
@@ -259,7 +259,7 @@ export class ViewerStore {
       onLeave(true);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

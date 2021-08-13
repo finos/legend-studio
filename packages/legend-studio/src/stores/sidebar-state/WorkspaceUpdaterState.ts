@@ -19,7 +19,7 @@ import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { WorkspaceUpdateReport } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
 import { WORKSPACE_UPDATE_REPORT_STATUS } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { CORE_LOG_EVENT, SDLC_LOG_EVENT } from '../../utils/Logger';
 import {
   Revision,
   RevisionAlias,
@@ -219,7 +219,7 @@ export class WorkspaceUpdaterState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -268,7 +268,7 @@ export class WorkspaceUpdaterState {
           this.sdlcState.currentWorkspaceId,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.SDLC_UPDATE_WORKSPACE,
+        SDLC_LOG_EVENT.SDLC_UPDATE_WORKSPACE,
         Date.now() - startTime,
         'ms',
       );
@@ -285,7 +285,7 @@ export class WorkspaceUpdaterState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -340,7 +340,7 @@ export class WorkspaceUpdaterState {
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -15,7 +15,6 @@
  */
 
 import { action, flow, observable, makeObservable } from 'mobx';
-import type { Logger } from '../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
   PRIMITIVE_TYPE,
@@ -23,7 +22,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../../../MetaModelConst';
-import type { Clazz, GeneratorFn } from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn, Logger } from '@finos/legend-studio-shared';
 import {
   guaranteeNonNullable,
   guaranteeType,

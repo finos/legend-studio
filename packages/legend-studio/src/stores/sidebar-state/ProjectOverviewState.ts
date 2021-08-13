@@ -23,7 +23,7 @@ import {
   Revision,
   RevisionAlias,
 } from '../../models/sdlc/models/revision/Revision';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../utils/Logger';
 import { Version } from '../../models/sdlc/models/version/Version';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { Workspace } from '../../models/sdlc/models/workspace/Workspace';
@@ -80,7 +80,7 @@ export class ProjectOverviewState {
       ).map((workspace) => Workspace.serialization.fromJson(workspace));
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
     } finally {
@@ -113,7 +113,7 @@ export class ProjectOverviewState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
     } finally {
@@ -220,7 +220,7 @@ export class ProjectOverviewState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
     } finally {
@@ -242,7 +242,7 @@ export class ProjectOverviewState {
       yield flowResult(this.fetchLatestProjectVersion());
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

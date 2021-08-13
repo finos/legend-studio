@@ -17,6 +17,7 @@
 import { createContext, useContext } from 'react';
 import type {
   GeneratorFn,
+  Logger,
   PlainObject,
   SuperGenericFunction,
 } from '@finos/legend-studio-shared';
@@ -28,7 +29,11 @@ import {
   ActionState,
 } from '@finos/legend-studio-shared';
 import { makeAutoObservable, action } from 'mobx';
-import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
+import {
+  BrowserConsole,
+  CORE_LOG_EVENT,
+  EDITOR_LOG_EVENT,
+} from '../utils/Logger';
 import type { ApplicationConfig } from './application/ApplicationConfig';
 import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { useLocalObservable } from 'mobx-react-lite';
@@ -163,7 +168,7 @@ export class ApplicationStore {
     this.pluginManager = pluginManager;
     this.navigator = navigator;
     this.networkClientManager = new NetworkClientManager(config);
-    this.logger = new Logger();
+    this.logger = new BrowserConsole();
     // Register plugins
     this.networkClientManager.sdlcClient.registerTracerServicePlugins(
       this.pluginManager.getTracerServicePlugins(),
@@ -326,7 +331,7 @@ export class ApplicationStore {
       this.currentSDLCUser = currentUser;
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
       this.notifyWarning(error.message);
     }
   }
@@ -342,7 +347,7 @@ export class ApplicationStore {
                 if (mode !== SdlcMode.PROD) {
                   // if there is an issue with an endpoint in a non prod env, we return authorized as true
                   // but notify the user of the error
-                  this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+                  this.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
                   this.notifyError(error);
                   return true;
                 }
@@ -391,7 +396,7 @@ export class ApplicationStore {
         }
       }
     } catch (error: unknown) {
-      this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
       this.notifyError(error);
     }
   }

@@ -26,6 +26,7 @@ import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
+import { SilentLogger } from '../utils/Logger';
 
 export const testApplicationConfigData = {
   appName: 'test-app',
@@ -74,7 +75,7 @@ export const getTestEditorStore = (
     applicationConfig,
     pluginManager,
   );
-  applicationStore.logger.mute();
+  applicationStore.logger = new SilentLogger();
   return new EditorStore(applicationStore);
 };
 

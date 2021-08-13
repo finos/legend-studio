@@ -31,7 +31,7 @@ import {
   openNodes,
   populatePackageTreeNodeChildren,
 } from './shared/PackageTreeUtil';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { CORE_LOG_EVENT, EDITOR_LOG_EVENT } from '../utils/Logger';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';
 import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
@@ -389,7 +389,7 @@ export class ExplorerTreeState {
     }
     if (!opened) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.PACKAGE_TREE_PROBLEM,
+        EDITOR_LOG_EVENT.PACKAGE_TREE_PROBLEM,
         `Can't open package tree node for element '${element.path}' with package root '${packagePath}'`,
       );
     }

@@ -82,7 +82,7 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { CORE_LOG_EVENT, EDITOR_LOG_EVENT } from '../utils/Logger';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
@@ -505,7 +505,7 @@ export class EditorStore {
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
         this.applicationStore.logger.info(
-          CORE_LOG_EVENT.DEVELOPMENT_MODE,
+          undefined,
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
@@ -595,7 +595,7 @@ export class EditorStore {
           this.applicationStore.navigator.reload();
         } catch (error: unknown) {
           this.applicationStore.logger.error(
-            CORE_LOG_EVENT.SETUP_PROBLEM,
+            EDITOR_LOG_EVENT.SETUP_PROBLEM,
             error,
           );
           this.applicationStore.notifyError(error);
@@ -1230,7 +1230,7 @@ export class EditorStore {
         if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
           monacoEditorAPI.remeasureFonts();
           this.applicationStore.logger.info(
-            CORE_LOG_EVENT.EDITOR_FONT_LOADED,
+            EDITOR_LOG_EVENT.EDITOR_FONT_LOADED,
             `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
           );
         } else {

@@ -16,7 +16,7 @@
 
 import { unitTest } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
-import { Logger } from '../../../../../../../../utils/Logger';
+import { SilentLogger } from '../../../../../../../../utils/Logger';
 import {
   CoreModel,
   PureModel,
@@ -53,8 +53,7 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
     const { entities } = context;
     const { errorMessage } = result;
     const graph = new PureModel(new CoreModel([]), new SystemModel([]), []);
-    const logger = new Logger();
-    logger.mute();
+    const logger = new SilentLogger();
     // setup
     const graphManager = new V1_PureGraphManager([], [], logger);
     await flowResult(

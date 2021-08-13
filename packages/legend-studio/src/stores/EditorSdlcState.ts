@@ -23,7 +23,7 @@ import {
   assertTrue,
 } from '@finos/legend-studio-shared';
 import type { PlainObject, GeneratorFn } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { CORE_LOG_EVENT, SDLC_LOG_EVENT } from '../utils/Logger';
 import { Project, ProjectType } from '../models/sdlc/models/project/Project';
 import {
   Workspace,
@@ -113,7 +113,7 @@ export class EditorSdlcState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       if (!options?.suppressNotification) {
@@ -146,7 +146,7 @@ export class EditorSdlcState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       if (!options?.suppressNotification) {
@@ -165,7 +165,7 @@ export class EditorSdlcState {
       ).map((version) => Version.serialization.fromJson(version));
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
     } finally {
@@ -200,7 +200,7 @@ export class EditorSdlcState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -221,7 +221,7 @@ export class EditorSdlcState {
           )) as boolean);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -288,7 +288,7 @@ export class EditorSdlcState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -315,7 +315,7 @@ export class EditorSdlcState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -340,7 +340,7 @@ export class EditorSdlcState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -358,7 +358,7 @@ export class EditorSdlcState {
       ).map((build) => Build.serialization.fromJson(build));
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

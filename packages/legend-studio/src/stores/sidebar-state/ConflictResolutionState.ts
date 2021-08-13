@@ -16,7 +16,7 @@
 
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { CORE_LOG_EVENT, SDLC_LOG_EVENT } from '../../utils/Logger';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -247,7 +247,7 @@ export class ConflictResolutionState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -334,7 +334,7 @@ export class ConflictResolutionState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -378,7 +378,7 @@ export class ConflictResolutionState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -409,7 +409,7 @@ export class ConflictResolutionState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -474,7 +474,7 @@ export class ConflictResolutionState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -528,7 +528,7 @@ export class ConflictResolutionState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -582,7 +582,7 @@ export class ConflictResolutionState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

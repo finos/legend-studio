@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type { Logger } from '../../../utils/Logger';
 import type { AbstractPureGraphManager } from '../../metamodels/pure/graph/AbstractPureGraphManager';
 import { V1_PureGraphManager } from './v1/V1_PureGraphManager';
 import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from '../../metamodels/pure/graph/PureGraphManagerPlugin';
+import type { Logger } from '@finos/legend-studio-shared';
 
 export const getGraphManager = (
   pureGraphManagerPlugins: PureGraphManagerPlugin[],

@@ -15,7 +15,7 @@
  */
 
 import { makeAutoObservable } from 'mobx';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../utils/Logger';
 import { Build } from '../../models/sdlc/models/build/Build';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
@@ -52,7 +52,7 @@ export class WorkspaceBuildsState {
       ).map((build) => Build.serialization.fromJson(build));
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

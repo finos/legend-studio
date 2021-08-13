@@ -27,7 +27,7 @@ import {
   getNullableFirstElement,
   assertTrue,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { EDITOR_LOG_EVENT } from '../../../../utils/Logger';
 import { Version } from '../../../../models/sdlc/models/version/Version';
 import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
@@ -225,7 +225,7 @@ export class ServiceRegistrationState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+        EDITOR_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, null);

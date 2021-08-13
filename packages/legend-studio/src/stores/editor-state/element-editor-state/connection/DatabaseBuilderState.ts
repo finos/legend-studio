@@ -41,7 +41,7 @@ import {
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { EDITOR_LOG_EVENT } from '../../../../utils/Logger';
 import type { EditorStore } from '../../../EditorStore';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
@@ -250,7 +250,7 @@ export class DatabaseBuilderState {
       this.setTreeData(treeData);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+        EDITOR_LOG_EVENT.DATABASE_BUILDER_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -295,7 +295,7 @@ export class DatabaseBuilderState {
       this.setTreeData({ ...treeData });
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+        EDITOR_LOG_EVENT.DATABASE_BUILDER_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -335,7 +335,7 @@ export class DatabaseBuilderState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+        EDITOR_LOG_EVENT.DATABASE_BUILDER_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -455,7 +455,7 @@ export class DatabaseBuilderState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+        EDITOR_LOG_EVENT.DATABASE_BUILDER_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -562,7 +562,7 @@ export class DatabaseBuilderState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+        EDITOR_LOG_EVENT.DATABASE_BUILDER_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);

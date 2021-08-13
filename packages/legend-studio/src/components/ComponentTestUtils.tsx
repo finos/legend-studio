@@ -48,6 +48,7 @@ import type { GenerationConfigurationDescription } from '../models/metamodels/pu
 import { PluginManager } from '../application/PluginManager';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
+import { SilentLogger } from '../utils/Logger';
 
 export const SDLC_TestData = {
   project: {
@@ -139,7 +140,7 @@ export const getMockedApplicationStore = (
     PluginManager.create(),
   );
   const MockedApplicationStore = require('../stores/ApplicationStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  mockedApplicationStore.logger.mute();
+  mockedApplicationStore.logger = new SilentLogger();
   MockedApplicationStore.useApplicationStore = jest.fn();
   MockedApplicationStore.useApplicationStore.mockReturnValue(
     mockedApplicationStore,

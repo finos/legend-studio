@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
+import { Logger } from '@finos/legend-studio-shared';
+
 export enum CORE_LOG_EVENT {
-  // APPLICATION
-  APPLICATION_LOADED = 'APPLICATION_LOADED',
-  APPLICATION_LOAD_FAILED = 'APPLICATION_LOAD_FAILED',
-  // CONFIG
-  CONFIG_CONFIGURATION_FETCHING_PROBLEM = 'CONFIG_CONFIGURATION_FETCHING_PROBLEM',
-  CONFIG_VERSION_INFO_FETCHING_PROBLEM = 'CONFIG_VERSION_INFO_FETCHING_PROBLEM',
-  CONFIG_USER_ID_FETCHING_PROBLEM = 'CONFIG_USER_ID_FETCHING_PROBLEM',
-  CONFIG_UNKNOWN_FEATURE_FLAG_PROBLEM = 'CONFIG_UNKNOWN_FEATURE_FLAG_PROBLEM',
   // GRAPH
   GRAPH_PROBLEM = 'GRAPH_PROBLEM',
   GRAPH_SYSTEM_BUILT = 'GRAPH_SYSTEM_BUILT',
@@ -63,6 +57,7 @@ export enum CORE_LOG_EVENT {
   GRAPH_BUILD_GENERATION_TREE_BUILT = 'GRAPH_BUILD_GENERATION_TREE_BUILT',
   GRAPH_BUILD_OTHER_ELEMENTS_BUILT = 'GRAPH_BUILD_OTHER_ELEMENTS_BUILT',
   GRAPH_BUILD_SERVICES_BUILT = 'GRAPH_BUILD_SERVICES_BUILT',
+
   // CHANGE DETECTION
   CHANGE_DETECTION_RESTARTED = 'CHANGE_DETECTION_RESTARTED',
   CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT = 'CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT',
@@ -70,116 +65,85 @@ export enum CORE_LOG_EVENT {
   CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT = 'CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT',
   CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED = 'CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED',
   CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED = 'CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED',
-  // SDLC
-  SDLC_UPDATE_WORKSPACE = 'SDLC_UPDATE_WORKSPACE',
-  SDLC_SYNC_WORKSPACE = 'SDLC_SYNC_WORKSPACE',
+  CHANGE_DETECTION_PROBLEM = 'CHANGE_DETECTION_PROBLEM',
+
   // GENERATION
   GENERATED_MODEL = 'GENERATED_MODEL',
-  // PROBLEM
-  SERVICE_REGISTRATION_PROBLEM = 'SERVICE_REGISTRATION_PROBLEM',
-  GENERATION_PROBLEM = 'GENERATION_PROBLEM',
-  MODEL_LOADER_PROBLEM = 'MODEL_LOADER_PROBLEM',
+
+  // Project dependency
   PROJECT_DEPENDENCY_PROBLEM = 'PROJECT_DEPENDENCY_PROBLEM',
+
+  // PROBLEM
+  GENERATION_PROBLEM = 'GENERATION_PROBLEM',
   EXECUTION_PROBLEM = 'EXECUTION_PROBLEM',
+  CODE_GENERATION_PROBLEM = 'CODE_GENERATION_PROBLEM',
+  SERVICE_TEST_PROBLEM = 'SERVICE_TEST_PROBLEM',
+
   COMPILATION_PROBLEM = 'COMPILATION_PROBLEM',
   PARSING_PROBLEM = 'PARSING_PROBLEM',
-  CHANGE_DETECTION_PROBLEM = 'CHANGE_DETECTION_PROBLEM',
-  SETUP_PROBLEM = 'SETUP_PROBLEM',
-  SDLC_PROBLEM = 'SDLC_PROBLEM',
-  QUERY_PROBLEM = 'QUERY_PROBLEM',
-  CODE_GENERATION_PROBLEM = 'CODE_GENERATION_PROBLEM',
-  PACKAGE_TREE_PROBLEM = 'PACKAGE_TREE_PROBLEM',
-  SERVICE_TEST_PROBLEM = 'SERVICE_TEST_PROBLEM',
   UNSUPPORTED_ENTITY_DETECTED = 'UNSUPPORTED_ENTITY_DETECTED',
   ILLEGAL_APPLICATION_STATE_OCCURRED = 'ILLEGAL_APPLICATION_STATE_OCCURRED',
-  // OTHER
-  EDITOR_FONT_LOADED = 'EDITOR_FONT_LOADED',
-  DEVELOPMENT_MODE = '[DEVELOPMENT]',
-  NONE = 'NONE',
 }
 
-// We use numeric enum here for because we want to do comparison
-// In order to retrieve the name of the enum we can do reverse mapping, for example: LogLevel[LogLevel.INFO] -> INFO
-// https://www.typescriptlang.org/docs/handbook/enums.html#reverse-mappings
-export enum LOG_LEVEL {
-  DEBUG = 1,
-  INFO,
-  WARN,
-  ERROR,
-  SILENT,
+export enum SDLC_LOG_EVENT {
+  SDLC_UPDATE_WORKSPACE = 'SDLC_UPDATE_WORKSPACE',
+  SDLC_SYNC_WORKSPACE = 'SDLC_SYNC_WORKSPACE',
+  SDLC_PROBLEM = 'SDLC_PROBLEM',
+}
+
+export enum EDITOR_LOG_EVENT {
+  EDITOR_FONT_LOADED = 'EDITOR_FONT_LOADED',
+  PACKAGE_TREE_PROBLEM = 'PACKAGE_TREE_PROBLEM',
+  MODEL_LOADER_PROBLEM = 'MODEL_LOADER_PROBLEM',
+  SETUP_PROBLEM = 'SETUP_PROBLEM',
+  SERVICE_REGISTRATION_PROBLEM = 'SERVICE_REGISTRATION_PROBLEM',
+  DATABASE_BUILDER_PROBLEM = 'DATABASE_BUILDER_PROBLEM',
+}
+
+export enum APPLICATION_LOG_EVENT {
+  CONFIG_CONFIGURATION_FETCHING_PROBLEM = 'CONFIG_CONFIGURATION_FETCHING_PROBLEM',
+  CONFIG_VERSION_INFO_FETCHING_PROBLEM = 'CONFIG_VERSION_INFO_FETCHING_PROBLEM',
+  CONFIG_USER_ID_FETCHING_PROBLEM = 'CONFIG_USER_ID_FETCHING_PROBLEM',
+  CONFIG_UNKNOWN_FEATURE_FLAG_PROBLEM = 'CONFIG_UNKNOWN_FEATURE_FLAG_PROBLEM',
+
+  APPLICATION_LOADED = 'APPLICATION_LOADED',
+  APPLICATION_LOAD_FAILED = 'APPLICATION_LOAD_FAILED',
+}
+
+export class SilentLogger extends Logger {
+  _debug(): void {
+    // do nothing
+  }
+
+  _info(): void {
+    // do nothing
+  }
+
+  _warn(): void {
+    // do nothing
+  }
+
+  _error(): void {
+    // do nothing
+  }
 }
 
 const { debug, info, warn, error } = console;
 
-export class Logger {
-  level: LOG_LEVEL = LOG_LEVEL.DEBUG;
-  previousLevelBeforeMuting: LOG_LEVEL = LOG_LEVEL.DEBUG;
-
-  setLogLevel(level: LOG_LEVEL): void {
-    this.level = level;
+export class BrowserConsole extends Logger {
+  _debug(event: string | undefined, ...data: unknown[]): void {
+    debug(event ? (data.length ? `${event}:` : event) : '', ...data);
   }
 
-  /**
-   * Mute logging, if a level is specified, mute all event of lower severity than that level
-   */
-  mute(level?: LOG_LEVEL): void {
-    this.previousLevelBeforeMuting = this.level;
-    this.level = level ?? LOG_LEVEL.SILENT;
+  _info(event: string | undefined, ...data: unknown[]): void {
+    info(event ? (data.length ? `${event}:` : event) : '', ...data);
   }
 
-  unmute(): void {
-    this.level = this.previousLevelBeforeMuting;
+  _warn(event: string | undefined, ...data: unknown[]): void {
+    warn(event ? (data.length ? `${event}:` : event) : '', ...data);
   }
 
-  debug(event: string, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.DEBUG
-      ? undefined
-      : debug(
-          event !== CORE_LOG_EVENT.NONE
-            ? data.length
-              ? `${event}:`
-              : event
-            : '',
-          ...data,
-        );
-  }
-
-  info(event: string, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.INFO
-      ? undefined
-      : info(
-          event !== CORE_LOG_EVENT.NONE
-            ? data.length
-              ? `${event}:`
-              : event
-            : '',
-          ...data,
-        );
-  }
-
-  warn(event: string, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.WARN
-      ? undefined
-      : warn(
-          event !== CORE_LOG_EVENT.NONE
-            ? data.length
-              ? `${event}:`
-              : event
-            : '',
-          ...data,
-        );
-  }
-
-  error(event: string, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.ERROR
-      ? undefined
-      : error(
-          event !== CORE_LOG_EVENT.NONE
-            ? data.length
-              ? `${event}:`
-              : event
-            : '',
-          ...data,
-        );
+  _error(event: string | undefined, ...data: unknown[]): void {
+    error(event ? (data.length ? `${event}:` : event) : '', ...data);
   }
 }

@@ -31,7 +31,7 @@ import {
   guaranteeNonNullable,
   compareLabelFn,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../utils/Logger';
 import { UpdateProjectConfigurationCommand } from '../../models/sdlc/models/configuration/UpdateProjectConfigurationCommand';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { Project, ProjectType } from '../../models/sdlc/models/project/Project';
@@ -148,7 +148,7 @@ export class ProjectConfigurationEditorState extends EditorState {
             })
             .catch((e) => {
               this.editorStore.applicationStore.logger.error(
-                CORE_LOG_EVENT.SDLC_PROBLEM,
+                SDLC_LOG_EVENT.SDLC_PROBLEM,
                 e,
               );
             }),
@@ -167,7 +167,7 @@ export class ProjectConfigurationEditorState extends EditorState {
             })
             .catch((e) => {
               this.editorStore.applicationStore.logger.error(
-                CORE_LOG_EVENT.SDLC_PROBLEM,
+                SDLC_LOG_EVENT.SDLC_PROBLEM,
                 e,
               );
             }),
@@ -187,7 +187,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -229,7 +229,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -257,7 +257,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         this.queryHistory.add(query);
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.SDLC_PROBLEM,
+          SDLC_LOG_EVENT.SDLC_PROBLEM,
           error,
         );
         this.editorStore.applicationStore.notifyError(error);
@@ -280,7 +280,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.versionsByProject.set(projectId, versionMap);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -299,7 +299,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         yield flowResult(this.updateProjectConfiguration(updateCommand));
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.SDLC_PROBLEM,
+          SDLC_LOG_EVENT.SDLC_PROBLEM,
           error,
         );
         this.editorStore.applicationStore.notifyError(error);
@@ -337,7 +337,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_PROBLEM,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -358,7 +358,7 @@ export class ProjectConfigurationEditorState extends EditorState {
           );
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.SDLC_PROBLEM,
+          SDLC_LOG_EVENT.SDLC_PROBLEM,
           error,
         );
         this.editorStore.applicationStore.notifyError(error);

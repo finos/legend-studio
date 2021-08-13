@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { Logger, PlainObject } from '@finos/legend-studio-shared';
 import {
   losslessParse,
   assertErrorThrown,
@@ -23,7 +23,6 @@ import {
   HttpStatus,
   NetworkClientError,
 } from '@finos/legend-studio-shared';
-import type { Logger } from '../../../../../utils/Logger';
 import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
 import { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportConfigurationDescription } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
