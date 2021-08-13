@@ -66,7 +66,10 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
   }
 
   generateLocation(location: string): string {
-    return window.location.origin + this.historyApiClient.createHref(location);
+    return (
+      window.location.origin +
+      this.historyApiClient.createHref({ pathname: location })
+    );
   }
 }
 
