@@ -459,10 +459,7 @@ const processFilterMapping = (
     ownerDb,
     srcFilter.name,
     FilterImplicitReference.create(
-      PackageableElementImplicitReference.create(
-        filter.owner,
-        srcFilter.db ?? '',
-      ),
+      PackageableElementImplicitReference.create(filter.owner, srcFilter.db),
       filter,
     ),
   );
