@@ -23,16 +23,15 @@ import {
 import { waitFor } from '@testing-library/dom';
 import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
 import {
-  getApplicationNavigator,
   getMockedApplicationStore,
+  TEST__ApplicationStoreProvider,
 } from '../ComponentTestUtils';
 import type { ApplicationStore } from '../../stores/ApplicationStore';
-import { ApplicationStoreProvider } from '../../stores/ApplicationStore';
 import { SDLCServerClient } from '../../models/sdlc/SDLCServerClient';
 import { render } from '@testing-library/react';
-import { PluginManager } from '../../application/PluginManager';
-import { WebApplicationNavigatorProvider } from '../../stores/application/WebApplicationNavigator';
-import { Router } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
+import { WebApplicationNavigator } from '../../stores/application/WebApplicationNavigator';
+import { createMemoryHistory } from 'history';
 
 let applicationStore: ApplicationStore;
 
@@ -56,19 +55,12 @@ test(integrationTest('App header is displayed properly'), async () => {
     .mockResolvedValue([]);
   MOBX__disableSpyOrMock();
 
-  const navigator = getApplicationNavigator();
   const { queryByText } = render(
-    <Router history={navigator.historyApiClient}>
-      <WebApplicationNavigatorProvider>
-        <ApplicationStoreProvider
-          config={getTestApplicationConfig()}
-          navigator={navigator}
-          pluginManager={PluginManager.create()}
-        >
-          <LegendStudioApplicationRoot />
-        </ApplicationStoreProvider>
-      </WebApplicationNavigatorProvider>
-    </Router>,
+    <MemoryRouter>
+      <TEST__ApplicationStoreProvider>
+        <LegendStudioApplicationRoot />
+      </TEST__ApplicationStoreProvider>
+    </MemoryRouter>,
   );
 
   expect(
@@ -84,7 +76,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   jest
     .spyOn(applicationStore.networkClientManager.sdlcClient, 'isAuthorized')
     .mockResolvedValueOnce(false);
-  const navigator = getApplicationNavigator();
+  const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
   const jumpToSpy = jest.spyOn(navigator, 'jumpTo').mockImplementation();
   jest
@@ -93,15 +85,11 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   MOBX__disableSpyOrMock();
 
   render(
-    <Router history={navigator.historyApiClient}>
-      <ApplicationStoreProvider
-        config={getTestApplicationConfig()}
-        navigator={navigator}
-        pluginManager={PluginManager.create()}
-      >
+    <MemoryRouter>
+      <TEST__ApplicationStoreProvider>
         <LegendStudioApplicationRoot />
-      </ApplicationStoreProvider>
-    </Router>,
+      </TEST__ApplicationStoreProvider>
+    </MemoryRouter>,
   );
 
   await waitFor(() =>
@@ -133,17 +121,12 @@ test(
       .mockResolvedValue([]);
     MOBX__disableSpyOrMock();
 
-    const navigator = getApplicationNavigator();
     const { queryByText } = render(
-      <Router history={navigator.historyApiClient}>
-        <ApplicationStoreProvider
-          config={getTestApplicationConfig()}
-          navigator={navigator}
-          pluginManager={PluginManager.create()}
-        >
+      <MemoryRouter>
+        <TEST__ApplicationStoreProvider>
           <LegendStudioApplicationRoot />
-        </ApplicationStoreProvider>
-      </Router>,
+        </TEST__ApplicationStoreProvider>
+      </MemoryRouter>,
     );
 
     await waitFor(() =>

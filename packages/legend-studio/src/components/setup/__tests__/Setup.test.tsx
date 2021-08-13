@@ -22,15 +22,12 @@ import {
   MOBX__enableSpyOrMock,
 } from '@finos/legend-studio-shared';
 import {
-  getApplicationNavigator,
   getMockedApplicationStore,
   SDLC_TestData,
+  TEST__ApplicationStoreProvider,
 } from '../../ComponentTestUtils';
 import type { ApplicationStore } from '../../../stores/ApplicationStore';
-import { ApplicationStoreProvider } from '../../../stores/ApplicationStore';
-import { getTestApplicationConfig } from '../../../stores/StoreTestUtils';
-import { Router } from 'react-router-dom';
-import { PluginManager } from '../../../application/PluginManager';
+import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 
 let applicationStore: ApplicationStore;
@@ -50,17 +47,12 @@ test(
       .mockResolvedValueOnce([]);
     MOBX__disableSpyOrMock();
 
-    const navigator = getApplicationNavigator();
     const { queryByText } = render(
-      <Router history={navigator.historyApiClient}>
-        <ApplicationStoreProvider
-          config={getTestApplicationConfig()}
-          navigator={navigator}
-          pluginManager={PluginManager.create()}
-        >
+      <MemoryRouter>
+        <TEST__ApplicationStoreProvider>
           <Setup />
-        </ApplicationStoreProvider>
-      </Router>,
+        </TEST__ApplicationStoreProvider>
+      </MemoryRouter>,
     );
 
     // NOTE: react-select is not like a normal input box where we could set the placeholder, so we just
@@ -80,17 +72,12 @@ test(
       .mockResolvedValue([]);
     MOBX__disableSpyOrMock();
 
-    const navigator = getApplicationNavigator();
     const { queryByText } = render(
-      <Router history={navigator.historyApiClient}>
-        <ApplicationStoreProvider
-          config={getTestApplicationConfig()}
-          navigator={navigator}
-          pluginManager={PluginManager.create()}
-        >
+      <MemoryRouter>
+        <TEST__ApplicationStoreProvider>
           <Setup />
-        </ApplicationStoreProvider>
-      </Router>,
+        </TEST__ApplicationStoreProvider>
+      </MemoryRouter>,
     );
 
     await waitFor(() =>

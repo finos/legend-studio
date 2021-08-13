@@ -32,7 +32,7 @@ interface ApplicationNavigator<T> {
 }
 
 export class WebApplicationNavigator implements ApplicationNavigator<string> {
-  historyApiClient: History;
+  private readonly historyAPI: History;
 
   private get window(): Window {
     return guaranteeNonNullable(
@@ -42,7 +42,7 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
   }
 
   constructor(historyApiClient: History) {
-    this.historyApiClient = historyApiClient;
+    this.historyAPI = historyApiClient;
   }
 
   reload(): void {
@@ -50,7 +50,7 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
   }
 
   goTo(location: string): void {
-    this.historyApiClient.push(location);
+    this.historyAPI.push(location);
   }
 
   jumpTo(location: string): void {
@@ -68,7 +68,7 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
   generateLocation(location: string): string {
     return (
       window.location.origin +
-      this.historyApiClient.createHref({ pathname: location })
+      this.historyAPI.createHref({ pathname: location })
     );
   }
 }

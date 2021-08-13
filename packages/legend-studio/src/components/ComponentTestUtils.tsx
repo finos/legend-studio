@@ -33,10 +33,7 @@ import type { Entity } from '../models/sdlc/models/entity/Entity';
 import type { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { Revision } from '../models/sdlc/models/revision/Revision';
-import {
-  generateEditorRoute,
-  URL_PATH_PLACEHOLDER,
-} from '../stores/LegendStudioRouter';
+import { generateEditorRoute } from '../stores/LegendStudioRouter';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -119,14 +116,19 @@ export const SDLC_TestData = {
   ],
 };
 
-export const getApplicationNavigator = (
-  initialRoute?: string,
-): WebApplicationNavigator =>
-  new WebApplicationNavigator(
-    createMemoryHistory({
-      initialEntries: [initialRoute ?? `/${URL_PATH_PLACEHOLDER}/`],
-    }),
-  );
+export const TEST__ApplicationStoreProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement => (
+  <ApplicationStoreProvider
+    config={getTestApplicationConfig()}
+    navigator={new WebApplicationNavigator(createMemoryHistory())}
+    pluginManager={PluginManager.create()}
+  >
+    {children}
+  </ApplicationStoreProvider>
+);
 
 export const getMockedApplicationStore = (
   config = getTestApplicationConfig(),
@@ -316,22 +318,25 @@ export const setUpEditor = async (
   mockedEditorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
     jest.fn();
   MOBX__disableSpyOrMock();
-  const navigator = getApplicationNavigator(
-    generateEditorRoute(
-      mockedEditorStore.applicationStore.config.sdlcServerKey,
-      (workspace as unknown as Workspace).projectId,
-      (workspace as unknown as Workspace).workspaceId,
-    ),
+
+  const history = createMemoryHistory({
+    initialEntries: [
+      generateEditorRoute(
+        mockedEditorStore.applicationStore.config.sdlcServerKey,
+        (workspace as unknown as Workspace).projectId,
+        (workspace as unknown as Workspace).workspaceId,
+      ),
+    ],
+  });
+  mockedEditorStore.applicationStore.navigator = new WebApplicationNavigator(
+    history,
   );
+
   const renderResult = render(
-    <Router history={navigator.historyApiClient}>
-      <ApplicationStoreProvider
-        config={getTestApplicationConfig()}
-        navigator={navigator}
-        pluginManager={PluginManager.create()}
-      >
+    <Router history={history}>
+      <TEST__ApplicationStoreProvider>
         <Editor />
-      </ApplicationStoreProvider>
+      </TEST__ApplicationStoreProvider>
     </Router>,
   );
   // assert project/workspace have been set
