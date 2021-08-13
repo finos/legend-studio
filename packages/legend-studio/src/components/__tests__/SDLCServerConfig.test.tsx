@@ -20,18 +20,20 @@ import {
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
 } from '@finos/legend-studio-shared';
-import { MemoryRouter, Router } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import {
   testApplicationConfigData,
   testApplicationVersionData,
 } from '../../stores/StoreTestUtils';
-import { getMockedApplicationStore } from '../ComponentTestUtils';
+import {
+  getMockedApplicationStore,
+  getMockedWebApplicationNavigator,
+} from '../ComponentTestUtils';
 import type { ApplicationStore } from '../../stores/ApplicationStore';
 import { PluginManager } from '../../application/PluginManager';
 import { ApplicationConfig } from '../../stores/application/ApplicationConfig';
-import { createMemoryHistory } from 'history';
 import {
   generateSetupRoute,
   URL_PATH_PLACEHOLDER,
@@ -80,21 +82,25 @@ test(
     });
 
     setupMockedApplicationStoreForSuccessfulLoadding();
-    const history = createMemoryHistory({ initialEntries: ['/something/'] });
+
+    const navigator = getMockedWebApplicationNavigator();
+    MOBX__enableSpyOrMock();
+    const goToSpy = jest.spyOn(navigator, 'goTo').mockImplementation();
+    MOBX__disableSpyOrMock();
 
     render(
-      <Router history={history}>
+      <MemoryRouter initialEntries={['/something/']}>
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
             pluginManager={PluginManager.create()}
           />
         </WebApplicationNavigatorProvider>
-      </Router>,
+      </MemoryRouter>,
     );
 
     await waitFor(() =>
-      expect(history.location.pathname).toEqual(
+      expect(goToSpy).toHaveBeenCalledWith(
         generateSetupRoute(URL_PATH_PLACEHOLDER, undefined),
       ),
     );
@@ -226,53 +232,26 @@ test(
     });
 
     setupMockedApplicationStoreForSuccessfulLoadding();
-    const history = createMemoryHistory({ initialEntries: ['/something/'] });
+
+    const navigator = getMockedWebApplicationNavigator();
+    MOBX__enableSpyOrMock();
+    const goToSpy = jest.spyOn(navigator, 'goTo').mockImplementation();
+    MOBX__disableSpyOrMock();
 
     render(
-      <Router history={history}>
+      <MemoryRouter initialEntries={['/something/']}>
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
             pluginManager={PluginManager.create()}
           />
         </WebApplicationNavigatorProvider>
-      </Router>,
+      </MemoryRouter>,
     );
 
     await waitFor(() =>
-      expect(history.location.pathname).toEqual(
+      expect(goToSpy).toHaveBeenCalledWith(
         generateSetupRoute('server1', undefined),
-      ),
-    );
-  },
-);
-
-test(
-  integrationTest(
-    'URL is properly reset with configured SDLC when only one server is specified in the config (legacy SDLC config form)',
-  ),
-  async () => {
-    const config = getTestApplicationConfigWithMultiSDLCServer({
-      sdlc: { url: 'https://testSdlcUrl1' },
-    });
-
-    setupMockedApplicationStoreForSuccessfulLoadding();
-    const history = createMemoryHistory({ initialEntries: ['/something/'] });
-
-    render(
-      <Router history={history}>
-        <WebApplicationNavigatorProvider>
-          <LegendStudioApplication
-            config={config}
-            pluginManager={PluginManager.create()}
-          />
-        </WebApplicationNavigatorProvider>
-      </Router>,
-    );
-
-    await waitFor(() =>
-      expect(history.location.pathname).toEqual(
-        generateSetupRoute(URL_PATH_PLACEHOLDER, undefined),
       ),
     );
   },

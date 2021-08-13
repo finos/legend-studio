@@ -145,6 +145,16 @@ export const getMockedApplicationStore = (
   return mockedApplicationStore;
 };
 
+export const getMockedWebApplicationNavigator = (
+  history = createMemoryHistory(),
+): WebApplicationNavigator => {
+  const mock = new WebApplicationNavigator(history);
+  const MockWebApplicationNavigator = require('../stores/application/WebApplicationNavigator'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MockWebApplicationNavigator.useWebApplicationNavigator = jest.fn();
+  MockWebApplicationNavigator.useWebApplicationNavigator.mockReturnValue(mock);
+  return mock;
+};
+
 export const getMockedEditorStore = (
   applicationStore?: ApplicationStore,
 ): EditorStore => {
