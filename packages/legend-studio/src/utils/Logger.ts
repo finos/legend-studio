@@ -98,8 +98,6 @@ export enum CORE_LOG_EVENT {
   NONE = 'NONE',
 }
 
-export const SKIP_LOGGING_INFO = Symbol('SKIP_LOGGING_INFO');
-
 // We use numeric enum here for because we want to do comparison
 // In order to retrieve the name of the enum we can do reverse mapping, for example: LogLevel[LogLevel.INFO] -> INFO
 // https://www.typescriptlang.org/docs/handbook/enums.html#reverse-mappings
@@ -111,78 +109,77 @@ export enum LOG_LEVEL {
   SILENT,
 }
 
+const { debug, info, warn, error } = console;
+
 export class Logger {
   level: LOG_LEVEL = LOG_LEVEL.DEBUG;
   previousLevelBeforeMuting: LOG_LEVEL = LOG_LEVEL.DEBUG;
 
-  setLogLevel = (level: LOG_LEVEL): void => {
+  setLogLevel(level: LOG_LEVEL): void {
     this.level = level;
-  };
+  }
+
   /**
    * Mute logging, if a level is specified, mute all event of lower severity than that level
    */
-  mute = (level?: LOG_LEVEL): void => {
+  mute(level?: LOG_LEVEL): void {
     this.previousLevelBeforeMuting = this.level;
     this.level = level ?? LOG_LEVEL.SILENT;
-  };
-  unmute = (): void => {
-    this.level = this.previousLevelBeforeMuting;
-  };
-  runInSilent = (fn: Function, level?: LOG_LEVEL): void => {
-    this.mute(level);
-    fn();
-    this.unmute();
-  };
+  }
 
-  debug = (eventType: CORE_LOG_EVENT, ...info: unknown[]): void =>
+  unmute(): void {
+    this.level = this.previousLevelBeforeMuting;
+  }
+
+  debug(event: string, ...data: unknown[]): void {
     this.level > LOG_LEVEL.DEBUG
       ? undefined
-      : // eslint-disable-next-line no-console
-        console.debug(
-          eventType !== CORE_LOG_EVENT.NONE
-            ? info.filter((i) => i !== SKIP_LOGGING_INFO).length
-              ? `${eventType}:`
-              : eventType
+      : debug(
+          event !== CORE_LOG_EVENT.NONE
+            ? data.length
+              ? `${event}:`
+              : event
             : '',
-          ...info.filter((i) => i !== SKIP_LOGGING_INFO),
+          ...data,
         );
+  }
 
-  info = (eventType: CORE_LOG_EVENT, ...info: unknown[]): void =>
+  info(event: string, ...data: unknown[]): void {
     this.level > LOG_LEVEL.INFO
       ? undefined
-      : // eslint-disable-next-line no-console
-        console.info(
-          eventType !== CORE_LOG_EVENT.NONE
-            ? info.filter((i) => i !== SKIP_LOGGING_INFO).length
-              ? `${eventType}:`
-              : eventType
+      : info(
+          event !== CORE_LOG_EVENT.NONE
+            ? data.length
+              ? `${event}:`
+              : event
             : '',
-          ...info.filter((i) => i !== SKIP_LOGGING_INFO),
+          ...data,
         );
+  }
 
-  warn = (eventType: CORE_LOG_EVENT, ...info: unknown[]): void =>
+  warn(event: string, ...data: unknown[]): void {
     this.level > LOG_LEVEL.WARN
       ? undefined
-      : // eslint-disable-next-line no-console
-        console.warn(
-          eventType !== CORE_LOG_EVENT.NONE
-            ? info.filter((i) => i !== SKIP_LOGGING_INFO).length
-              ? `${eventType}:`
-              : eventType
+      : warn(
+          event !== CORE_LOG_EVENT.NONE
+            ? data.length
+              ? `${event}:`
+              : event
             : '',
-          ...info.filter((i) => i !== SKIP_LOGGING_INFO),
+          ...data,
         );
+  }
 
-  error = (eventType: CORE_LOG_EVENT, ...info: unknown[]): void =>
+  error(event: string, ...data: unknown[]): void {
     this.level > LOG_LEVEL.ERROR
       ? undefined
-      : // eslint-disable-next-line no-console
-        console.error(
-          eventType !== CORE_LOG_EVENT.NONE
-            ? info.filter((i) => i !== SKIP_LOGGING_INFO).length
-              ? `${eventType}:`
-              : eventType
+      : error(
+          event !== CORE_LOG_EVENT.NONE
+            ? data.length
+              ? `${event}:`
+              : event
             : '',
-          ...info.filter((i) => i !== SKIP_LOGGING_INFO),
+          ...data,
         );
+  }
 }
