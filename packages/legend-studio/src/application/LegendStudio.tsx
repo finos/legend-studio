@@ -176,7 +176,9 @@ export abstract class LegendApplication {
     const logger = new Logger();
     let configData: ConfigurationData | undefined;
     try {
-      configData = await client.get<ConfigurationData>(`${baseUrl}config.json`);
+      configData = await client.get<ConfigurationData>(
+        `${window.location.origin}${baseUrl}config.json`,
+      );
     } catch (error: unknown) {
       logger.error(CORE_LOG_EVENT.CONFIG_CONFIGURATION_FETCHING_PROBLEM, error);
     }
@@ -187,7 +189,7 @@ export abstract class LegendApplication {
     let versionData;
     try {
       versionData = await client.get<LegendApplicationVersionData>(
-        `${baseUrl}version.json`,
+        `${window.location.origin}${baseUrl}version.json`,
       );
     } catch (error: unknown) {
       logger.error(CORE_LOG_EVENT.CONFIG_VERSION_INFO_FETCHING_PROBLEM, error);

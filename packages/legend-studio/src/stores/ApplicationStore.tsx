@@ -25,7 +25,6 @@ import {
   guaranteeNonNullable,
   isString,
   ApplicationError,
-  NetworkClient,
   ActionState,
 } from '@finos/legend-studio-shared';
 import { makeAutoObservable, action } from 'mobx';
@@ -109,12 +108,10 @@ export class Notification {
 }
 
 export class NetworkClientManager {
-  coreClient!: NetworkClient;
   sdlcClient!: SDLCServerClient;
   metadataClient!: MetadataServerClient;
 
   constructor(config: ApplicationConfig) {
-    this.coreClient = new NetworkClient();
     this.sdlcClient = new SDLCServerClient({
       env: config.env,
       serverUrl: config.sdlcServerUrl,

@@ -27,6 +27,7 @@ import {
   parse as _getQueryParams,
   parseUrl as _getQueryParamsFromUrl,
 } from 'query-string';
+import { returnUndefOnError } from './ErrorUtils';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms
@@ -168,10 +169,15 @@ export class NetworkClientError extends Error {
 
 export const makeUrl = (
   baseUrl: string | undefined,
-  relativeUrl: string,
+  url: string,
   parameters: Parameters,
 ): string => {
-  const url = new URL(relativeUrl, baseUrl);
+  if (!baseUrl && !returnUndefOnError(() => new URL(url))) {
+    throw new Error(
+      `Can't build URL string: base URL is not specified and the provided URL '${url}' is not absolute`,
+    );
+  }
+  const fullUrl = new URL(url, baseUrl);
   if (parameters instanceof Object) {
     Object.entries(parameters).forEach(([name, value]) => {
       if (value !== undefined) {
@@ -180,15 +186,15 @@ export const makeUrl = (
           value
             .filter(isNonNullable)
             .forEach((subVal) =>
-              url.searchParams.append(name, subVal.toString()),
+              fullUrl.searchParams.append(name, subVal.toString()),
             );
         } else {
-          url.searchParams.append(name, value.toString());
+          fullUrl.searchParams.append(name, value.toString());
         }
       }
     });
   }
-  return url.toString();
+  return fullUrl.toString();
 };
 
 // NOTE: in case of missing CORS headers, failed authentication manifests itself as CORS error
