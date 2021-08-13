@@ -24,19 +24,19 @@ import { MemoryRouter, Router } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import {
-  getTestApplicationConfig,
   testApplicationConfigData,
   testApplicationVersionData,
 } from '../../stores/StoreTestUtils';
 import { getMockedApplicationStore } from '../ComponentTestUtils';
 import type { ApplicationStore } from '../../stores/ApplicationStore';
 import { PluginManager } from '../../application/PluginManager';
-import { ApplicationConfig } from '../../stores/ApplicationConfig';
+import { ApplicationConfig } from '../../stores/application/ApplicationConfig';
 import { createMemoryHistory } from 'history';
 import {
   generateSetupRoute,
   URL_PATH_PLACEHOLDER,
 } from '../../stores/LegendStudioRouter';
+import { WebApplicationNavigatorProvider } from '../../stores/application/WebApplicationNavigator';
 
 let applicationStore: ApplicationStore;
 
@@ -53,7 +53,7 @@ const getTestApplicationConfigWithMultiSDLCServer = (
   );
 
 const setupMockedApplicationStoreForSuccessfulLoadding = (): void => {
-  applicationStore = getMockedApplicationStore(getTestApplicationConfig());
+  applicationStore = getMockedApplicationStore();
   MOBX__enableSpyOrMock();
   jest
     .spyOn(applicationStore.networkClientManager.sdlcClient, 'isAuthorized')
@@ -84,10 +84,12 @@ test(
 
     render(
       <Router history={history}>
-        <LegendStudioApplication
-          config={config}
-          pluginManager={PluginManager.create()}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendStudioApplication
+            config={config}
+            pluginManager={PluginManager.create()}
+          />
+        </WebApplicationNavigatorProvider>
       </Router>,
     );
 
@@ -123,10 +125,12 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/something/']}>
-        <LegendStudioApplication
-          config={config}
-          pluginManager={PluginManager.create()}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendStudioApplication
+            config={config}
+            pluginManager={PluginManager.create()}
+          />
+        </WebApplicationNavigatorProvider>
       </MemoryRouter>,
     );
 
@@ -161,10 +165,12 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/server1/']}>
-        <LegendStudioApplication
-          config={config}
-          pluginManager={PluginManager.create()}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendStudioApplication
+            config={config}
+            pluginManager={PluginManager.create()}
+          />
+        </WebApplicationNavigatorProvider>
       </MemoryRouter>,
     );
 
@@ -191,10 +197,12 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/server1/']}>
-        <LegendStudioApplication
-          config={config}
-          pluginManager={PluginManager.create()}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendStudioApplication
+            config={config}
+            pluginManager={PluginManager.create()}
+          />
+        </WebApplicationNavigatorProvider>
       </MemoryRouter>,
     );
 
@@ -222,10 +230,12 @@ test(
 
     render(
       <Router history={history}>
-        <LegendStudioApplication
-          config={config}
-          pluginManager={PluginManager.create()}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendStudioApplication
+            config={config}
+            pluginManager={PluginManager.create()}
+          />
+        </WebApplicationNavigatorProvider>
       </Router>,
     );
 
@@ -251,10 +261,12 @@ test(
 
     render(
       <Router history={history}>
-        <LegendStudioApplication
-          config={config}
-          pluginManager={PluginManager.create()}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendStudioApplication
+            config={config}
+            pluginManager={PluginManager.create()}
+          />
+        </WebApplicationNavigatorProvider>
       </Router>,
     );
 

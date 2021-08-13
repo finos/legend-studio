@@ -187,7 +187,7 @@ export class SetupStore {
       );
       yield flowResult(this.fetchProjects());
       this.projects?.set(createdProject.projectId, createdProject);
-      this.applicationStore.historyApiClient.push(
+      this.applicationStore.navigator.goTo(
         generateSetupRoute(
           this.applicationStore.config.sdlcServerKey,
           createdProject.projectId,

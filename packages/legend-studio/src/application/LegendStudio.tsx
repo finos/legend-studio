@@ -31,8 +31,8 @@ import { EDITOR_THEME, EDITOR_LANGUAGE } from '../stores/EditorConfig';
 import type {
   ConfigurationData,
   LegendApplicationVersionData,
-} from '../stores/ApplicationConfig';
-import { ApplicationConfig } from '../stores/ApplicationConfig';
+} from '../stores/application/ApplicationConfig';
+import { ApplicationConfig } from '../stores/application/ApplicationConfig';
 import type {
   AbstractPlugin,
   AbstractPluginManager,
@@ -47,6 +47,7 @@ import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { PluginManager } from './PluginManager';
 import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';
+import { WebApplicationNavigatorProvider } from '../stores/application/WebApplicationNavigator';
 
 // This is not considered side-effect that hinders tree-shaking because the effectful calls
 // are embedded in the function
@@ -261,10 +262,12 @@ export class LegendStudio extends LegendApplication {
       // concurrency yet, we would have to wait until @next become official
       // See https://github.com/mobxjs/mobx-react-lite/issues/53
       <BrowserRouter basename={this.baseUrl}>
-        <LegendStudioApplication
-          config={this.appConfig}
-          pluginManager={this.pluginManager}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendStudioApplication
+            config={this.appConfig}
+            pluginManager={this.pluginManager}
+          />
+        </WebApplicationNavigatorProvider>
       </BrowserRouter>,
       root,
     );

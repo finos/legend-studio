@@ -31,7 +31,7 @@ import {
   SerializationFactory,
 } from '@finos/legend-studio-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
+import { URL_PATH_PLACEHOLDER } from '../LegendStudioRouter';
 
 export class ServiceRegistrationEnvInfo {
   env!: string;

@@ -17,7 +17,12 @@
 // application
 export * from './application/LegendStudio';
 export * from './application/PluginManager';
-export { ApplicationConfig } from './stores/ApplicationConfig';
+export { ApplicationConfig } from './stores/application/ApplicationConfig';
+export {
+  WebApplicationNavigator,
+  WebApplicationNavigatorProvider,
+  useWebApplicationNavigator,
+} from './stores/application/WebApplicationNavigator';
 
 // network
 export * from './stores/network/Telemetry';

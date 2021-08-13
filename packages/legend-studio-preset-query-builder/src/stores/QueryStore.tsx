@@ -268,7 +268,7 @@ export class QueryExportState {
         this.queryStore.editorStore.applicationStore.notifySuccess(
           `Successfully created query!`,
         );
-        this.queryStore.editorStore.applicationStore.historyApiClient.push(
+        this.queryStore.editorStore.applicationStore.navigator.goTo(
           generateExistingQueryRoute(newQuery.id),
         );
       } else {

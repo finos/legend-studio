@@ -22,7 +22,7 @@ import {
   MOBX__enableSpyOrMock,
 } from '@finos/legend-studio-shared';
 import {
-  getApplicationNavigationHistory,
+  getApplicationNavigator,
   getMockedApplicationStore,
   SDLC_TestData,
 } from '../../ComponentTestUtils';
@@ -33,9 +33,9 @@ import { Router } from 'react-router-dom';
 import { PluginManager } from '../../../application/PluginManager';
 import { render } from '@testing-library/react';
 
-let appStore: ApplicationStore;
+let applicationStore: ApplicationStore;
 beforeEach(() => {
-  appStore = getMockedApplicationStore(getTestApplicationConfig());
+  applicationStore = getMockedApplicationStore();
 });
 
 test(
@@ -45,22 +45,22 @@ test(
   async () => {
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(appStore.networkClientManager.sdlcClient, 'getProjects')
+      .spyOn(applicationStore.networkClientManager.sdlcClient, 'getProjects')
       .mockResolvedValueOnce([SDLC_TestData.project])
       .mockResolvedValueOnce([]);
     MOBX__disableSpyOrMock();
 
-    const history = getApplicationNavigationHistory();
+    const navigator = getApplicationNavigator();
     const { queryByText } = render(
-      <ApplicationStoreProvider
-        config={getTestApplicationConfig()}
-        history={history}
-        pluginManager={PluginManager.create()}
-      >
-        <Router history={history}>
+      <Router history={navigator.historyApiClient}>
+        <ApplicationStoreProvider
+          config={getTestApplicationConfig()}
+          navigator={navigator}
+          pluginManager={PluginManager.create()}
+        >
           <Setup />
-        </Router>
-      </ApplicationStoreProvider>,
+        </ApplicationStoreProvider>
+      </Router>,
     );
 
     // NOTE: react-select is not like a normal input box where we could set the placeholder, so we just
@@ -76,21 +76,21 @@ test(
   async () => {
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(appStore.networkClientManager.sdlcClient, 'getProjects')
+      .spyOn(applicationStore.networkClientManager.sdlcClient, 'getProjects')
       .mockResolvedValue([]);
     MOBX__disableSpyOrMock();
 
-    const history = getApplicationNavigationHistory();
+    const navigator = getApplicationNavigator();
     const { queryByText } = render(
-      <ApplicationStoreProvider
-        config={getTestApplicationConfig()}
-        history={history}
-        pluginManager={PluginManager.create()}
-      >
-        <Router history={history}>
+      <Router history={navigator.historyApiClient}>
+        <ApplicationStoreProvider
+          config={getTestApplicationConfig()}
+          navigator={navigator}
+          pluginManager={PluginManager.create()}
+        >
           <Setup />
-        </Router>
-      </ApplicationStoreProvider>,
+        </ApplicationStoreProvider>
+      </Router>,
     );
 
     await waitFor(() =>

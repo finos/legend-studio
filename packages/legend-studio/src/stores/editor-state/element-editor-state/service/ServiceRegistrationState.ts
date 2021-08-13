@@ -31,7 +31,7 @@ import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import { Version } from '../../../../models/sdlc/models/version/Version';
 import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
-import { ServiceRegistrationEnvInfo } from '../../../ApplicationConfig';
+import { ServiceRegistrationEnvInfo } from '../../../application/ApplicationConfig';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 

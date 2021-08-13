@@ -104,7 +104,7 @@ export class ProjectOverviewState {
           'Current workspace is deleted. Redirecting to home page',
         );
         this.editorStore.setIgnoreNavigationBlocking(true);
-        this.editorStore.applicationStore.historyApiClient.push(
+        this.editorStore.applicationStore.navigator.goTo(
           generateSetupRoute(
             this.editorStore.applicationStore.config.sdlcServerKey,
             this.editorStore.sdlcState.currentProjectId,

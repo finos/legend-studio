@@ -15,7 +15,7 @@
  */
 
 /// <reference types="jest-extended" />
-import { ApplicationConfig } from './ApplicationConfig';
+import { ApplicationConfig } from './application/ApplicationConfig';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ApplicationStore } from './ApplicationStore';
 import { EditorStore } from './EditorStore';
@@ -25,6 +25,7 @@ import { PluginManager } from '../application/PluginManager';
 import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
+import { WebApplicationNavigator } from './application/WebApplicationNavigator';
 
 export const testApplicationConfigData = {
   appName: 'test-app',
@@ -69,7 +70,7 @@ export const getTestEditorStore = (
   pluginManager = PluginManager.create(),
 ): EditorStore => {
   const applicationStore = new ApplicationStore(
-    createBrowserHistory(),
+    new WebApplicationNavigator(createBrowserHistory()),
     applicationConfig,
     pluginManager,
   );

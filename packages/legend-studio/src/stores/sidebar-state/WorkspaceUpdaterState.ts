@@ -277,7 +277,7 @@ export class WorkspaceUpdaterState {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
         case WORKSPACE_UPDATE_REPORT_STATUS.CONFLICT:
         case WORKSPACE_UPDATE_REPORT_STATUS.UPDATED:
-          window.location.reload();
+          this.editorStore.applicationStore.navigator.reload();
           break;
         case WORKSPACE_UPDATE_REPORT_STATUS.NO_OP:
         default:

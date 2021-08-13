@@ -171,7 +171,7 @@ export const makeUrl = (
   relativeUrl: string,
   parameters: Parameters,
 ): string => {
-  const url = new URL(relativeUrl, baseUrl ?? window.location.href);
+  const url = new URL(relativeUrl, baseUrl);
   if (parameters instanceof Object) {
     Object.entries(parameters).forEach(([name, value]) => {
       if (value !== undefined) {

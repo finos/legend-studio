@@ -50,7 +50,7 @@ export const WorkspaceSelector = observer(
       ) {
         setupStore.setCurrentWorkspaceId(val?.value);
         onChange(Boolean(selectedOption));
-        applicationStore.historyApiClient.push(
+        applicationStore.navigator.goTo(
           generateSetupRoute(
             applicationStore.config.sdlcServerKey,
             setupStore.currentProjectId ?? '',

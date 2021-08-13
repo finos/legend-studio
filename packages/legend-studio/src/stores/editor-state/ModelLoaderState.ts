@@ -183,7 +183,7 @@ export class ModelLoaderState extends EditorState {
         this.editorStore.sdlcState.currentWorkspaceId,
         { replace: this.replace, entities, message },
       );
-      window.location.reload(); // hard refresh after
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.MODEL_LOADER_PROBLEM,

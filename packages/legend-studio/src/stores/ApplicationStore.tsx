@@ -28,10 +28,10 @@ import {
   NetworkClient,
   ActionState,
 } from '@finos/legend-studio-shared';
-import { observable, makeAutoObservable, action } from 'mobx';
+import { makeAutoObservable, action } from 'mobx';
 import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
-import type { ApplicationConfig } from './ApplicationConfig';
-import type { History } from 'history';
+import type { ApplicationConfig } from './application/ApplicationConfig';
+import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { useLocalObservable } from 'mobx-react-lite';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 import { User } from '../models/sdlc/models/User';
@@ -131,24 +131,26 @@ export class ApplicationStore {
   pluginManager: PluginManager;
   networkClientManager: NetworkClientManager;
   telemetryService = new TelemetryService();
-  historyApiClient: History;
+  navigator: WebApplicationNavigator;
   notification?: Notification;
   logger: Logger;
   blockingAlertInfo?: BlockingAlertInfo;
   actionAlertInfo?: ActionAlertInfo;
   config: ApplicationConfig;
   initState = ActionState.create();
+
+  // TODO: move SDLC states out of application
   isSDLCAuthorized = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
   currentSDLCUser = new User(UNKNOWN_USER_ID, UNKNOWN_USER_ID);
 
   constructor(
-    history: History,
+    navigator: WebApplicationNavigator,
     config: ApplicationConfig,
     pluginManager: PluginManager,
   ) {
     makeAutoObservable(this, {
-      historyApiClient: observable.ref,
+      navigator: false,
       dismissSDLCServerTermsOfServicesAlert: action,
       setBlockingAlert: action,
       setActionAltertInfo: action,
@@ -162,7 +164,7 @@ export class ApplicationStore {
 
     this.config = config;
     this.pluginManager = pluginManager;
-    this.historyApiClient = history;
+    this.navigator = navigator;
     this.networkClientManager = new NetworkClientManager(config);
     this.logger = new Logger();
     // Register plugins
@@ -354,9 +356,11 @@ export class ApplicationStore {
       ).every(Boolean);
 
       if (!this.isSDLCAuthorized) {
-        window.location.href = SDLCServerClient.authorizeCallbackUrl(
-          this.config.sdlcServerUrl,
-          window.location.href,
+        this.navigator.jumpTo(
+          SDLCServerClient.authorizeCallbackUrl(
+            this.config.sdlcServerUrl,
+            this.navigator.getCurrentLocation(),
+          ),
         );
       } else {
         // Only proceed to check terms of service agreement status after the passing authorization check
@@ -382,7 +386,7 @@ export class ApplicationStore {
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void => {
                   this.dismissSDLCServerTermsOfServicesAlert();
-                  window.location.reload();
+                  this.navigator.reload();
                 },
               },
             ],
@@ -484,16 +488,16 @@ const ApplicationStoreContext = createContext<ApplicationStore | undefined>(
 export const ApplicationStoreProvider = ({
   children,
   config,
-  history,
+  navigator,
   pluginManager,
 }: {
   children: React.ReactNode;
   config: ApplicationConfig;
   pluginManager: PluginManager;
-  history: History;
+  navigator: WebApplicationNavigator;
 }): React.ReactElement => {
   const applicationStore = useLocalObservable(
-    () => new ApplicationStore(history, config, pluginManager),
+    () => new ApplicationStore(navigator, config, pluginManager),
   );
   return (
     <ApplicationStoreContext.Provider value={applicationStore}>

@@ -545,14 +545,14 @@ export class EditorStore {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              window.location.reload();
+              this.applicationStore.navigator.reload();
             },
           },
           {
             label: 'Back to setup page',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.historyApiClient.push(
+              this.applicationStore.navigator.goTo(
                 generateSetupRoute(
                   this.applicationStore.config.sdlcServerKey,
                   undefined,
@@ -592,7 +592,7 @@ export class EditorStore {
           this.applicationStore.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
           );
-          window.location.reload();
+          this.applicationStore.navigator.reload();
         } catch (error: unknown) {
           this.applicationStore.logger.error(
             CORE_LOG_EVENT.SETUP_PROBLEM,
@@ -613,7 +613,7 @@ export class EditorStore {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.historyApiClient.push(
+              this.applicationStore.navigator.goTo(
                 generateViewProjectRoute(
                   this.applicationStore.config.sdlcServerKey,
                   projectId,
@@ -634,7 +634,7 @@ export class EditorStore {
             label: 'Back to setup page',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.historyApiClient.push(
+              this.applicationStore.navigator.goTo(
                 generateSetupRoute(
                   this.applicationStore.config.sdlcServerKey,
                   projectId,

@@ -16,8 +16,7 @@
 
 import type { RenderResult } from '@testing-library/react';
 import { render, fireEvent, waitFor, getByText } from '@testing-library/react';
-import { Router, Route } from 'react-router-dom';
-import type { History } from 'history';
+import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import {
   ApplicationStoreProvider,
@@ -35,7 +34,6 @@ import type { ProjectConfiguration } from '../models/sdlc/models/configuration/P
 import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { Revision } from '../models/sdlc/models/revision/Revision';
 import {
-  LEGEND_STUDIO_ROUTE_PATTERN,
   generateEditorRoute,
   URL_PATH_PLACEHOLDER,
 } from '../stores/LegendStudioRouter';
@@ -51,8 +49,8 @@ import type {
 } from '../models/metamodels/pure/action/generation/ImportConfigurationDescription';
 import type { GenerationConfigurationDescription } from '../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
 import { PluginManager } from '../application/PluginManager';
-import type { ApplicationConfig } from '../stores/ApplicationConfig';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 
 export const SDLC_TestData = {
   project: {
@@ -121,21 +119,22 @@ export const SDLC_TestData = {
   ],
 };
 
-export const getApplicationNavigationHistory = (
+export const getApplicationNavigator = (
   initialRoute?: string,
-): History =>
-  createMemoryHistory({
-    initialEntries: [initialRoute ?? `/${URL_PATH_PLACEHOLDER}/`],
-  });
+): WebApplicationNavigator =>
+  new WebApplicationNavigator(
+    createMemoryHistory({
+      initialEntries: [initialRoute ?? `/${URL_PATH_PLACEHOLDER}/`],
+    }),
+  );
 
 export const getMockedApplicationStore = (
-  config: ApplicationConfig,
-  pluginManager = PluginManager.create(),
+  config = getTestApplicationConfig(),
 ): ApplicationStore => {
   const mockedApplicationStore = new ApplicationStore(
-    createMemoryHistory(),
+    new WebApplicationNavigator(createMemoryHistory()),
     config,
-    pluginManager,
+    PluginManager.create(),
   );
   const MockedApplicationStore = require('../stores/ApplicationStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   mockedApplicationStore.logger.mute();
@@ -143,7 +142,6 @@ export const getMockedApplicationStore = (
   MockedApplicationStore.useApplicationStore.mockReturnValue(
     mockedApplicationStore,
   );
-
   return mockedApplicationStore;
 };
 
@@ -151,7 +149,7 @@ export const getMockedEditorStore = (
   applicationStore?: ApplicationStore,
 ): EditorStore => {
   const mockedEditorStore = new EditorStore(
-    applicationStore ?? getMockedApplicationStore(getTestApplicationConfig()),
+    applicationStore ?? getMockedApplicationStore(),
   );
   const MockedEditorStore = require('../stores/EditorStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStore.useEditorStore = jest.fn();
@@ -308,16 +306,7 @@ export const setUpEditor = async (
   mockedEditorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
     jest.fn();
   MOBX__disableSpyOrMock();
-  // render main editor
-  const component = (
-    <Route
-      exact={true}
-      strict={true}
-      path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT}
-      component={Editor}
-    />
-  );
-  const history = getApplicationNavigationHistory(
+  const navigator = getApplicationNavigator(
     generateEditorRoute(
       mockedEditorStore.applicationStore.config.sdlcServerKey,
       (workspace as unknown as Workspace).projectId,
@@ -325,13 +314,15 @@ export const setUpEditor = async (
     ),
   );
   const renderResult = render(
-    <ApplicationStoreProvider
-      config={getTestApplicationConfig()}
-      history={history}
-      pluginManager={PluginManager.create()}
-    >
-      <Router history={history}>{component}</Router>
-    </ApplicationStoreProvider>,
+    <Router history={navigator.historyApiClient}>
+      <ApplicationStoreProvider
+        config={getTestApplicationConfig()}
+        navigator={navigator}
+        pluginManager={PluginManager.create()}
+      >
+        <Editor />
+      </ApplicationStoreProvider>
+    </Router>,
   );
   // assert project/workspace have been set
   await waitFor(() =>

@@ -471,7 +471,7 @@ export class ConflictResolutionState {
         },
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
@@ -525,7 +525,7 @@ export class ConflictResolutionState {
         this.sdlcState.currentWorkspaceId,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
@@ -579,7 +579,7 @@ export class ConflictResolutionState {
         this.sdlcState.currentWorkspaceId,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,

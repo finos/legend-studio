@@ -41,22 +41,21 @@ const ShareModal = observer(
     const [selectedVersion, setSelectedVersion] = useState<
       Version | undefined
     >();
-    const urlBase = window.location.origin;
     const projectId = editorStore.sdlcState.currentProjectId;
     const projectLink = selectedVersion
-      ? `${urlBase}${applicationStore.historyApiClient.createHref({
-          pathname: generateViewVersionRoute(
+      ? applicationStore.navigator.generateLocation(
+          generateViewVersionRoute(
             applicationStore.config.sdlcServerKey,
             projectId,
             selectedVersion.id.id,
           ),
-        })}`
-      : `${urlBase}${applicationStore.historyApiClient.createHref({
-          pathname: generateViewProjectRoute(
+        )
+      : applicationStore.navigator.generateLocation(
+          generateViewProjectRoute(
             applicationStore.config.sdlcServerKey,
             projectId,
           ),
-        })}`;
+        );
     const copyProjectLink = (): void => {
       applicationStore
         .copyTextToClipboard(projectLink)

@@ -163,14 +163,14 @@ export const EditorInner = observer(() => {
   const retryBlockedLocation = useCallback(
     (allowedNavigation: boolean): void => {
       if (allowedNavigation && blockedLocation) {
-        applicationStore.historyApiClient.push(blockedLocation.pathname);
+        applicationStore.navigator.goTo(blockedLocation.pathname);
       }
     },
     [blockedLocation, applicationStore],
   );
   // NOTE: we have to use `useStateWithCallback` here because we want to guarantee that we call `history.push(blockedLocation.pathname)`
   // after confirmedAllowNavigation is flipped, otherwise we would end up in the `false` case of handleBlockedNavigation again!
-  // Another way to go about this is to use `setTimeout(() => history.push(...), 0)` but it can potentailly be more error prone
+  // Another way to go about this is to use `setTimeout(() => history.push(...), 0)` but it can potentially be more error-prone
   // See https://www.robinwieruch.de/react-usestate-callback
   const [confirmedAllowNavigation, setConfirmedAllowNavigation] =
     useStateWithCallback<boolean>(false, retryBlockedLocation);

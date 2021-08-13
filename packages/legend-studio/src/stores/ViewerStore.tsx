@@ -83,23 +83,25 @@ export class ViewerStore {
   internalizeEntityPath(params: ViewerPathParams): void {
     if (params.entityPath) {
       this.elementPath = params.entityPath;
-      this.editorStore.applicationStore.historyApiClient.replace(
-        params.versionId
-          ? generateViewVersionRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-              params.versionId,
-            )
-          : params.revisionId
-          ? generateVieweRevisionRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-              params.revisionId,
-            )
-          : generateViewProjectRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-            ),
+      this.editorStore.applicationStore.navigator.jumpTo(
+        this.editorStore.applicationStore.navigator.generateLocation(
+          params.versionId
+            ? generateViewVersionRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                params.projectId,
+                params.versionId,
+              )
+            : params.revisionId
+            ? generateVieweRevisionRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                params.projectId,
+                params.revisionId,
+              )
+            : generateViewProjectRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                params.projectId,
+              ),
+        ),
       );
     }
   }

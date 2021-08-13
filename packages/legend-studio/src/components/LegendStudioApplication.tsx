@@ -15,13 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import {
-  Switch,
-  Route,
-  Redirect,
-  useHistory,
-  useRouteMatch,
-} from 'react-router-dom';
+import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import { Setup } from './setup/Setup';
 import { Editor } from './editor/Editor';
 import { Review } from './review/Review';
@@ -50,10 +44,11 @@ import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import type {
   ApplicationConfig,
   SDLCServerOption,
-} from '../stores/ApplicationConfig';
+} from '../stores/application/ApplicationConfig';
 import type { PluginManager } from '../application/PluginManager';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
+import { useWebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 
 /**
  * NOTE: this approach generally works well to control Material theme overriding
@@ -217,7 +212,7 @@ export const LegendStudioApplicationRoot = observer(() => {
 const LegendStudioApplicationConfigEditor = observer(
   (props: { config: ApplicationConfig }) => {
     const { config } = props;
-    const history = useHistory();
+    const navigator = useWebApplicationNavigator();
     const sdlcServerOptions = config.sdlcServerOptions.map((option) => ({
       label: option.label,
       value: option,
@@ -237,7 +232,7 @@ const LegendStudioApplicationConfigEditor = observer(
     const configure = (): void => {
       config.setConfigured(true);
       // go to the default URL after confiruing SDLC server
-      history.push(generateSetupRoute(config.sdlcServerKey, undefined));
+      navigator.goTo(generateSetupRoute(config.sdlcServerKey, undefined));
     };
 
     return (
@@ -274,7 +269,7 @@ const LegendStudioApplicationConfigEditor = observer(
 export const LegendStudioApplication = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
     const { config, pluginManager } = props;
-    const history = useHistory();
+    const navigator = useWebApplicationNavigator();
     const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
       generateRoutePatternWithSDLCServerKey('/'),
     );
@@ -290,7 +285,7 @@ export const LegendStudioApplication = observer(
         } else if (config.sdlcServerOptions.length === 1) {
           // when there is only one SDLC server and the sdlc server key provided is unrecognized,
           // auto-fix the URL
-          history.push(
+          navigator.goTo(
             generateSetupRoute(config.sdlcServerOptions[0].key, undefined),
           );
         } else {
@@ -298,7 +293,7 @@ export const LegendStudioApplication = observer(
           config.setSDLCServerKey(config.sdlcServerOptions[0].key);
         }
       }
-    }, [config, history, sdlcServerKey]);
+    }, [config, navigator, sdlcServerKey]);
 
     if (!config.isConfigured) {
       if (!config._sdlcServerKey) {
@@ -313,7 +308,7 @@ export const LegendStudioApplication = observer(
     return (
       <ApplicationStoreProvider
         config={config}
-        history={history}
+        navigator={navigator}
         pluginManager={pluginManager}
       >
         <ThemeProvider theme={LegendMaterialUITheme}>

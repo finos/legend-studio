@@ -15,11 +15,12 @@
  */
 
 import { useEffect } from 'react';
-import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { ThemeProvider } from '@material-ui/core/styles';
 import type { ApplicationConfig, PluginManager } from '@finos/legend-studio';
 import {
+  useWebApplicationNavigator,
   useApplicationStore,
   ActionAlert,
   ApplicationStoreProvider,
@@ -86,7 +87,7 @@ const LegendQueryApplicationInner = observer(() => {
 export const LegendQueryApplication = observer(
   (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
     const { config, pluginManager } = props;
-    const history = useHistory();
+    const navigator = useWebApplicationNavigator();
 
     if (!config.isConfigured) {
       return null;
@@ -94,7 +95,7 @@ export const LegendQueryApplication = observer(
     return (
       <ApplicationStoreProvider
         config={config}
-        history={history}
+        navigator={navigator}
         pluginManager={pluginManager}
       >
         <QueryStoreProvider>

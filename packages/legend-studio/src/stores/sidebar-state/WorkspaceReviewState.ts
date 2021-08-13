@@ -207,7 +207,7 @@ export class WorkspaceReviewState {
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
-      window.location.reload();
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
         CORE_LOG_EVENT.SDLC_PROBLEM,
@@ -320,7 +320,7 @@ export class WorkspaceReviewState {
             label: 'Leave',
             type: ActionAlertActionType.PROCEED,
             handler: (): void =>
-              this.editorStore.applicationStore.historyApiClient.push(
+              this.editorStore.applicationStore.navigator.goTo(
                 generateSetupRoute(
                   this.editorStore.applicationStore.config.sdlcServerKey,
                   this.editorStore.sdlcState.currentProjectId,
