@@ -124,8 +124,8 @@ export const V1_transformQuery = (metamodel: Query): V1_Query => {
   protocol.versionId = metamodel.versionId;
   protocol.groupId = metamodel.groupId;
   protocol.artifactId = metamodel.artifactId;
-  protocol.mapping = metamodel.mapping.valueForSerialization;
-  protocol.runtime = metamodel.runtime.valueForSerialization;
+  protocol.mapping = metamodel.mapping.valueForSerialization ?? '';
+  protocol.runtime = metamodel.runtime.valueForSerialization ?? '';
   protocol.content = metamodel.content;
   protocol.owner = metamodel.owner;
   return protocol;

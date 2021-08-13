@@ -48,7 +48,7 @@ export class FilterMapping implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FILTER_MAPPING,
-      this.filter.ownerReference.valueForSerialization,
+      this.filter.ownerReference.hashValue,
       this.filter.value.name,
       hashArray(this.joinTreeNode ? extractLine(this.joinTreeNode) : []),
     ]);

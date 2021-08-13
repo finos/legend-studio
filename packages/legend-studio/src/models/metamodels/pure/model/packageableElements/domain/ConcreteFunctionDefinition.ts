@@ -110,7 +110,7 @@ export class ConcreteFunctionDefinition
       CORE_HASH_STRUCTURE.FUNCTION,
       this.path,
       hashArray(this.parameters),
-      this.returnType.valueForSerialization,
+      this.returnType.hashValue,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashLambda(undefined, this.body),

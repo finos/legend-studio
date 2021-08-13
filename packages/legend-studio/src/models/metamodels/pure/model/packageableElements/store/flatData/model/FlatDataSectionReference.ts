@@ -54,7 +54,7 @@ export abstract class FlatDataSectionReference extends ReferenceWithOwner {
   get pointerHashCode(): string {
     return [
       CORE_HASH_STRUCTURE.FLAT_DATA_SECTION_POINTER,
-      this.ownerReference.valueForSerialization,
+      this.ownerReference.hashValue,
       this.value.name,
     ]
       .map(hashString)

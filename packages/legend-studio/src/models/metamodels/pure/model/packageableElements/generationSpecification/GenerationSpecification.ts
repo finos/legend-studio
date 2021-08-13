@@ -66,7 +66,7 @@ export class GenerationTreeNode implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GENERATION_TREE_NODE,
-      this.generationElement.valueForSerialization,
+      this.generationElement.hashValue,
       this.id,
     ]);
   }
@@ -152,7 +152,7 @@ export class GenerationSpecification
         this.fileGenerations.map((fileGeneration) =>
           getElementPointerHashCode(
             PACKAGEABLE_ELEMENT_POINTER_TYPE.FILE_GENERATION,
-            fileGeneration.valueForSerialization,
+            fileGeneration.hashValue,
           ),
         ),
       ),

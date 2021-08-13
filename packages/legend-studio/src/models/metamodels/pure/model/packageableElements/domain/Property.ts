@@ -126,7 +126,7 @@ export class Property
       CORE_HASH_STRUCTURE.PROPERTY,
       this.name,
       this.multiplicity,
-      this.genericType.ownerReference.valueForSerialization,
+      this.genericType.ownerReference.hashValue,
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
     ]);

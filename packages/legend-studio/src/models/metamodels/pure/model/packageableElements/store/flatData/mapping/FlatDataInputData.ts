@@ -67,7 +67,7 @@ export class FlatDataInputData extends InputData implements Hashable {
       CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
       getElementPointerHashCode(
         PACKAGEABLE_ELEMENT_POINTER_TYPE.STORE,
-        this.sourceFlatData.valueForSerialization,
+        this.sourceFlatData.hashValue,
       ),
       this.data,
     ]);

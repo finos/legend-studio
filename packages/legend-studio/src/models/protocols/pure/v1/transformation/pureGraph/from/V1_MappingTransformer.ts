@@ -312,12 +312,12 @@ const transformMappingInclude = (
   element: MappingInclude,
 ): V1_MappingInclude => {
   const mappingInclude = new V1_MappingInclude();
-  mappingInclude.includedMapping = element.included.valueForSerialization;
+  mappingInclude.includedMapping = element.included.valueForSerialization ?? '';
   mappingInclude.sourceDatabasePath = element.storeSubstitutions.length
-    ? element.storeSubstitutions[0].original.valueForSerialization
+    ? element.storeSubstitutions[0].original.valueForSerialization ?? ''
     : undefined;
   mappingInclude.targetDatabasePath = element.storeSubstitutions.length
-    ? element.storeSubstitutions[0].substitute.valueForSerialization
+    ? element.storeSubstitutions[0].substitute.valueForSerialization ?? ''
     : undefined;
   return mappingInclude;
 };
@@ -801,7 +801,7 @@ const transformFlatDataInstanceSetImpl = (
     ) as V1_RawLambda;
   }
   classMapping.flatData =
-    element.sourceRootRecordType.ownerReference.valueForSerialization;
+    element.sourceRootRecordType.ownerReference.valueForSerialization ?? '';
   classMapping.id = mappingElementIdSerializer(element.id);
   classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
@@ -840,7 +840,7 @@ const transformRootRelationalSetImpl = (
     filter.joins = element.filter.joinTreeNode
       ? extractLine(element.filter.joinTreeNode).map((node) => {
           const joinPtr = new V1_JoinPointer();
-          joinPtr.db = node.join.ownerReference.valueForSerialization;
+          joinPtr.db = node.join.ownerReference.valueForSerialization ?? '';
           joinPtr.joinType = node.joinType;
           joinPtr.name = node.join.value.name;
           return joinPtr;

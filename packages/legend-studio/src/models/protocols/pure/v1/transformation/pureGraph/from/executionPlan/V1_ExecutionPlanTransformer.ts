@@ -113,7 +113,7 @@ const transformDataTypeResultType = (
   context: V1_GraphTransformerContext,
 ): V1_DataTypeResultType => {
   const protocol = new V1_DataTypeResultType();
-  protocol.dataType = metamodel.type.valueForSerialization;
+  protocol.dataType = metamodel.type.valueForSerialization ?? '';
   return protocol;
 };
 
@@ -124,7 +124,7 @@ const transformTDSColumn = (
   const protocol = new V1_TDSColumn();
   protocol.name = metamodel.name;
   protocol.doc = metamodel.documentation;
-  protocol.type = metamodel.type?.valueForSerialization;
+  protocol.type = metamodel.type?.valueForSerialization ?? '';
   protocol.relationalType =
     metamodel.sourceDataType instanceof DataType
       ? stringifyDataType(metamodel.sourceDataType)

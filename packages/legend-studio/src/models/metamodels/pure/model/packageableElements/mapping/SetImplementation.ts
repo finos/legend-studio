@@ -121,7 +121,7 @@ export abstract class SetImplementation
     return hashArray([
       CORE_HASH_STRUCTURE.SET_IMPLEMENTATION,
       this.id.valueForSerialization ?? '',
-      this.class.valueForSerialization,
+      this.class.hashValue,
       this.root.valueForSerialization.toString(),
     ]);
   }

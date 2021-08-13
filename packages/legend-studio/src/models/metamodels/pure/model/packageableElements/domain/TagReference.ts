@@ -64,7 +64,7 @@ export abstract class TagReference
     return [
       CORE_HASH_STRUCTURE.TAG_POINTER,
       this.value.value,
-      this.ownerReference.valueForSerialization,
+      this.ownerReference.hashValue,
     ]
       .map(hashString)
       .join(',');

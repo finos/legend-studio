@@ -37,7 +37,7 @@ export class ServiceStore extends Store implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_STORE,
       this.path,
-      hashArray(this.includes.map((include) => include.valueForSerialization)),
+      hashArray(this.includes.map((include) => include.hashValue)),
       this.docLink,
     ]);
   }

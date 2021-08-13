@@ -83,7 +83,7 @@ export class ConnectionPointer extends Connection implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.CONNECTION_POINTER,
-      this.packageableConnection.valueForSerialization,
+      this.packageableConnection.hashValue,
     ]);
   }
 

@@ -100,7 +100,7 @@ export class FlatDataInstanceSetImplementation
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,
-      this.sourceRootRecordType.ownerReference.valueForSerialization,
+      this.sourceRootRecordType.ownerReference.hashValue,
       this.sourceRootRecordType.value.owner.name,
       this.filter ?? '',
       hashArray(
