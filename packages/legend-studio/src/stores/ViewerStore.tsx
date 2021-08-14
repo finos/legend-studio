@@ -258,7 +258,7 @@ export class ViewerStore {
       }
       onLeave(true);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );

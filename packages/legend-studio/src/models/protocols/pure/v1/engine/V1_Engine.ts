@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Logger, PlainObject } from '@finos/legend-studio-shared';
+import type { Log, PlainObject } from '@finos/legend-studio-shared';
 import {
   losslessParse,
   assertErrorThrown,
@@ -122,17 +122,17 @@ interface V1_EngineSetupConfig {
  */
 export class V1_Engine {
   private engineServerClient: V1_EngineServerClient;
-  logger: Logger;
+  log: Log;
   config: V1_EngineConfig;
 
-  constructor(clientConfig: ServerClientConfig, logger: Logger) {
+  constructor(clientConfig: ServerClientConfig, log: Log) {
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
     this.config = new V1_EngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
     this.config.setUseClientRequestPayloadCompression(
       this.engineServerClient.enableCompression,
     );
-    this.logger = logger;
+    this.log = log;
   }
 
   private serializePureModelContextData = (
@@ -140,7 +140,7 @@ export class V1_Engine {
   ): PlainObject<V1_PureModelContextData> => {
     const startTime = Date.now();
     const serializedGraph = V1_serializePureModelContextData(graph);
-    this.logger.info(
+    this.log.info(
       GRAPH_MANAGER_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED,
       Date.now() - startTime,
       'ms',

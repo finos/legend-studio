@@ -69,7 +69,7 @@ class ProjectDashboardStore {
         this.fetchProjectByType(ProjectType.PROTOTYPE),
       ]);
     } catch (error: unknown) {
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.log.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.applicationStore.notifyError(error);
     } finally {
       this.isFetchingProjects = false;
@@ -111,7 +111,7 @@ class ProjectDashboardStore {
         builds.length !== 0 ? Build.serialization.fromJson(builds[0]) : null,
       );
     } catch (error: unknown) {
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.log.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.applicationStore.notifyError(error);
     }
   }

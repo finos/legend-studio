@@ -224,7 +224,7 @@ export class ServiceRegistrationState {
         null,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.SERVICE_REGISTRATION_FAILURE,
         error,
       );

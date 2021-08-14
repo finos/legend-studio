@@ -185,7 +185,7 @@ export class ModelLoaderState extends EditorState {
       );
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE,
         error,
       );
@@ -208,7 +208,7 @@ export class ModelLoaderState extends EditorState {
       this.modelImportDescriptions =
         (yield this.editorStore.graphState.graphManager.getAvailableImportConfigurationDescriptions()) as ImportConfigurationDescription[];
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE,
         error,
       );

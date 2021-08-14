@@ -113,7 +113,7 @@ export class FileGenerationState {
     } catch (error: unknown) {
       this.selectedNode = undefined;
       this.processGenerationResult([]);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.GENERATION_FAILURE,
         error,
       );
@@ -138,7 +138,7 @@ export class FileGenerationState {
     output.forEach((entry) => {
       entry.cleanFileName(rootFolder);
       if (generationResultMap.has(entry.fileName)) {
-        this.editorStore.applicationStore.logger.warn(
+        this.editorStore.applicationStore.log.warn(
           STUDIO_LOG_EVENT.GENERATION_FAILURE,
           'Found 2 generation outputs with same path',
         );

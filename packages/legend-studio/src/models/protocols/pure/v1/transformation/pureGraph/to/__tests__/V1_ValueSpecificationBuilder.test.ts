@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { unitTest, SilentLogger } from '@finos/legend-studio-shared';
+import { unitTest, Log } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
 import {
   CoreModel,
@@ -52,9 +52,8 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
     const { entities } = context;
     const { errorMessage } = result;
     const graph = new PureModel(new CoreModel([]), new SystemModel([]), []);
-    const logger = new SilentLogger();
     // setup
-    const graphManager = new V1_PureGraphManager([], [], logger);
+    const graphManager = new V1_PureGraphManager([], [], new Log());
     await flowResult(
       graphManager.buildGraph(graph, entities, {
         TEMPORARY__keepSectionIndex: true,

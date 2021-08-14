@@ -90,7 +90,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
@@ -124,7 +124,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
           );
           this.clearErrors();
         } catch (error: unknown) {
-          this.editorStore.applicationStore.logger.error(
+          this.editorStore.applicationStore.log.error(
             GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
             error,
           );
@@ -328,7 +328,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
           );
         });
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );

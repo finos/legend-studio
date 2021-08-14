@@ -215,7 +215,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
@@ -250,7 +250,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         );
         this.clearErrors();
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
@@ -360,7 +360,7 @@ export class QueryBuilderProjectionState {
           );
         });
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );

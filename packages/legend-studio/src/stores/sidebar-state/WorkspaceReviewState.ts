@@ -130,7 +130,7 @@ export class WorkspaceReviewState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
+      this.editorStore.applicationStore.log.info(
         CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         Date.now() - startTime,
         'ms',
@@ -138,7 +138,7 @@ export class WorkspaceReviewState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -185,7 +185,7 @@ export class WorkspaceReviewState {
         : undefined;
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -210,7 +210,7 @@ export class WorkspaceReviewState {
       );
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -233,7 +233,7 @@ export class WorkspaceReviewState {
       );
       this.workspaceReview = undefined;
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -266,7 +266,7 @@ export class WorkspaceReviewState {
         )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -332,7 +332,7 @@ export class WorkspaceReviewState {
         ],
       });
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );

@@ -88,7 +88,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
         );
         if (!setImplementation) {
           // TODO: we will get these cases sometimes since we haven't supported includedMappings
-          this.context.logger.debug(
+          this.context.log.debug(
             GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
             `Can't find class mapping of ID '${parameter}' in mapping '${this.parent.path}' (perhaps because we haven't supported included mappings)`,
           );

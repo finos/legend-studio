@@ -506,7 +506,7 @@ export class EditorStore {
        */
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
-        this.applicationStore.logger.info(
+        this.applicationStore.log.info(
           undefined,
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
@@ -596,7 +596,7 @@ export class EditorStore {
           );
           this.applicationStore.navigator.reload();
         } catch (error: unknown) {
-          this.applicationStore.logger.error(
+          this.applicationStore.log.error(
             STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
             error,
           );
@@ -768,7 +768,7 @@ export class EditorStore {
       this.changeDetectionState.workspaceLatestRevisionState.setEntities(
         entities,
       );
-      this.applicationStore.logger.info(
+      this.applicationStore.log.info(
         GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
         Date.now() - startTime,
         'ms',
@@ -797,7 +797,7 @@ export class EditorStore {
         this.changeDetectionState.computeAggregatedWorkspaceChanges(true),
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
-      this.applicationStore.logger.info(
+      this.applicationStore.log.info(
         CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         '[ASNYC]',
       );
@@ -1231,7 +1231,7 @@ export class EditorStore {
       .then(() => {
         if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
           monacoEditorAPI.remeasureFonts();
-          this.applicationStore.logger.info(
+          this.applicationStore.log.info(
             STUDIO_LOG_EVENT.EDITOR_FONT_LOADED,
             `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
           );

@@ -282,7 +282,7 @@ export class TestContainerState {
       }
     } catch (error: unknown) {
       this.setAssertionData(tryToFormatJSONString('{}'));
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
         error,
       );
@@ -327,7 +327,7 @@ export class TestContainerState {
       }
     } catch (error: unknown) {
       this.setTestExecutionResultText(undefined);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
         error,
       );
@@ -456,7 +456,7 @@ export class SingleExecutionTestState {
             CLIENT_VERSION.VX_X_X,
           )) as string;
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
           error,
         );
@@ -494,7 +494,7 @@ export class SingleExecutionTestState {
           result: false,
         })),
       );
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
         error,
       );

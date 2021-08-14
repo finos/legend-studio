@@ -17,7 +17,7 @@
 import { createContext, useContext } from 'react';
 import type {
   GeneratorFn,
-  Logger,
+  Log,
   PlainObject,
   SuperGenericFunction,
 } from '@finos/legend-studio-shared';
@@ -27,7 +27,6 @@ import {
   isString,
   ApplicationError,
   ActionState,
-  BrowserConsole,
 } from '@finos/legend-studio-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
@@ -133,7 +132,7 @@ export class ApplicationStore {
   telemetryService = new TelemetryService();
   navigator: WebApplicationNavigator;
   notification?: Notification;
-  logger: Logger;
+  log: Log;
   blockingAlertInfo?: BlockingAlertInfo;
   actionAlertInfo?: ActionAlertInfo;
   config: ApplicationConfig;
@@ -145,9 +144,10 @@ export class ApplicationStore {
   currentSDLCUser = new User(UNKNOWN_USER_ID, UNKNOWN_USER_ID);
 
   constructor(
-    navigator: WebApplicationNavigator,
     config: ApplicationConfig,
     pluginManager: PluginManager,
+    navigator: WebApplicationNavigator,
+    log: Log,
   ) {
     makeAutoObservable(this, {
       navigator: false,
@@ -166,7 +166,7 @@ export class ApplicationStore {
     this.pluginManager = pluginManager;
     this.navigator = navigator;
     this.networkClientManager = new NetworkClientManager(config);
-    this.logger = new BrowserConsole();
+    this.log = log;
     // Register plugins
     this.networkClientManager.sdlcClient.registerTracerServicePlugins(
       this.pluginManager.getTracerServicePlugins(),
@@ -272,7 +272,7 @@ export class ApplicationStore {
       message = content;
     } else {
       message = undefined;
-      this.logger.error(
+      this.log.error(
         APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
         'Unable to display error in notification',
         message,
@@ -329,7 +329,7 @@ export class ApplicationStore {
       this.currentSDLCUser = currentUser;
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.logger.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
+      this.log.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
       this.notifyWarning(error.message);
     }
   }
@@ -345,7 +345,7 @@ export class ApplicationStore {
                 if (mode !== SdlcMode.PROD) {
                   // if there is an issue with an endpoint in a non prod env, we return authorized as true
                   // but notify the user of the error
-                  this.logger.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
+                  this.log.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
                   this.notifyError(error);
                   return true;
                 }
@@ -394,7 +394,7 @@ export class ApplicationStore {
         }
       }
     } catch (error: unknown) {
-      this.logger.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
+      this.log.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
       this.notifyError(error);
     }
   }
@@ -431,7 +431,7 @@ export class ApplicationStore {
    * of throwing them to the UI. This enforces that by throwing `IllegalStateError`
    */
   alertIllegalUnhandledError = (error: Error): void => {
-    this.logger.error(
+    this.log.error(
       APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
       'Encountered unhandled rejection in component',
       error,
@@ -488,16 +488,18 @@ const ApplicationStoreContext = createContext<ApplicationStore | undefined>(
 export const ApplicationStoreProvider = ({
   children,
   config,
-  navigator,
   pluginManager,
+  navigator,
+  log,
 }: {
   children: React.ReactNode;
   config: ApplicationConfig;
   pluginManager: PluginManager;
   navigator: WebApplicationNavigator;
+  log: Log;
 }): React.ReactElement => {
   const applicationStore = useLocalObservable(
-    () => new ApplicationStore(navigator, config, pluginManager),
+    () => new ApplicationStore(config, pluginManager, navigator, log),
   );
   return (
     <ApplicationStoreContext.Provider value={applicationStore}>

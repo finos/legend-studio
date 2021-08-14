@@ -19,6 +19,7 @@ import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
+  Log,
 } from '@finos/legend-studio-shared';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
@@ -94,6 +95,7 @@ test(
           <LegendStudioApplication
             config={config}
             pluginManager={PluginManager.create()}
+            log={new Log()}
           />
         </WebApplicationNavigatorProvider>
       </MemoryRouter>,
@@ -135,6 +137,7 @@ test(
           <LegendStudioApplication
             config={config}
             pluginManager={PluginManager.create()}
+            log={new Log()}
           />
         </WebApplicationNavigatorProvider>
       </MemoryRouter>,
@@ -175,6 +178,7 @@ test(
           <LegendStudioApplication
             config={config}
             pluginManager={PluginManager.create()}
+            log={new Log()}
           />
         </WebApplicationNavigatorProvider>
       </MemoryRouter>,
@@ -207,6 +211,7 @@ test(
           <LegendStudioApplication
             config={config}
             pluginManager={PluginManager.create()}
+            log={new Log()}
           />
         </WebApplicationNavigatorProvider>
       </MemoryRouter>,
@@ -244,6 +249,7 @@ test(
           <LegendStudioApplication
             config={config}
             pluginManager={PluginManager.create()}
+            log={new Log()}
           />
         </WebApplicationNavigatorProvider>
       </MemoryRouter>,

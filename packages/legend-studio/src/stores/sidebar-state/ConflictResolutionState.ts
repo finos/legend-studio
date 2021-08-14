@@ -239,7 +239,7 @@ export class ConflictResolutionState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
+      this.editorStore.applicationStore.log.info(
         CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         Date.now() - startTime,
         'ms',
@@ -247,7 +247,7 @@ export class ConflictResolutionState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -324,13 +324,13 @@ export class ConflictResolutionState {
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
-      this.editorStore.applicationStore.logger.info(
+      this.editorStore.applicationStore.log.info(
         CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -374,7 +374,7 @@ export class ConflictResolutionState {
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -405,7 +405,7 @@ export class ConflictResolutionState {
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -470,7 +470,7 @@ export class ConflictResolutionState {
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -524,7 +524,7 @@ export class ConflictResolutionState {
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -578,7 +578,7 @@ export class ConflictResolutionState {
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );

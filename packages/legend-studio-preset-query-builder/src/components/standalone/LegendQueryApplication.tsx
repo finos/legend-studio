@@ -38,6 +38,7 @@ import {
 } from './QueryEditor';
 import { flowResult } from 'mobx';
 import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import type { Log } from '@finos/legend-studio-shared';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useQueryStore();
@@ -85,8 +86,12 @@ const LegendQueryApplicationInner = observer(() => {
 });
 
 export const LegendQueryApplication = observer(
-  (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
-    const { config, pluginManager } = props;
+  (props: {
+    config: ApplicationConfig;
+    pluginManager: PluginManager;
+    log: Log;
+  }) => {
+    const { config, pluginManager, log } = props;
     const navigator = useWebApplicationNavigator();
 
     if (!config.isConfigured) {
@@ -97,6 +102,7 @@ export const LegendQueryApplication = observer(
         config={config}
         navigator={navigator}
         pluginManager={pluginManager}
+        log={log}
       >
         <QueryStoreProvider>
           <ThemeProvider theme={LegendMaterialUITheme}>

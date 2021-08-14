@@ -889,7 +889,7 @@ export class MappingEditorState extends ElementEditorState {
         }
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.warn(
+      this.editorStore.applicationStore.log.warn(
         GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
         `Can't locate error, redirecting to text mode`,
         error,

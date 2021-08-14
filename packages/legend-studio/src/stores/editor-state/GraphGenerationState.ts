@@ -156,7 +156,7 @@ export class GraphGenerationState {
             new ElementFileGenerationState(this.editorStore, config.key),
         );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.GENERATION_FAILURE,
         error,
       );
@@ -180,7 +180,7 @@ export class GraphGenerationState {
       yield flowResult(this.generateFiles());
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.GENERATION_FAILURE,
         error,
       );
@@ -235,7 +235,7 @@ export class GraphGenerationState {
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.GENERATION_FAILURE,
         error,
       );
@@ -288,7 +288,7 @@ export class GraphGenerationState {
       this.processGenerationResult(generationResultMap);
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.GENERATION_FAILURE,
         error,
       );
@@ -375,7 +375,7 @@ export class GraphGenerationState {
       generationOutputs.forEach((genOutput) => {
         genOutput.cleanFileName(rootFolder);
         if (generationResultMap.has(genOutput.fileName)) {
-          this.editorStore.applicationStore.logger.warn(
+          this.editorStore.applicationStore.log.warn(
             STUDIO_LOG_EVENT.GENERATION_FAILURE,
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );

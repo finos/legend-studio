@@ -37,7 +37,7 @@ import { generateEditorRoute } from '../stores/LegendStudioRouter';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
-  SilentLogger,
+  Log,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-studio-shared';
@@ -124,8 +124,9 @@ export const TEST__ApplicationStoreProvider = ({
 }): React.ReactElement => (
   <ApplicationStoreProvider
     config={getTestApplicationConfig()}
-    navigator={new WebApplicationNavigator(createMemoryHistory())}
     pluginManager={PluginManager.create()}
+    navigator={new WebApplicationNavigator(createMemoryHistory())}
+    log={new Log()}
   >
     {children}
   </ApplicationStoreProvider>
@@ -135,12 +136,12 @@ export const getMockedApplicationStore = (
   config = getTestApplicationConfig(),
 ): ApplicationStore => {
   const mockedApplicationStore = new ApplicationStore(
-    new WebApplicationNavigator(createMemoryHistory()),
     config,
     PluginManager.create(),
+    new WebApplicationNavigator(createMemoryHistory()),
+    new Log(),
   );
   const MockedApplicationStore = require('../stores/ApplicationStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  mockedApplicationStore.logger = new SilentLogger();
   MockedApplicationStore.useApplicationStore = jest.fn();
   MockedApplicationStore.useApplicationStore.mockReturnValue(
     mockedApplicationStore,

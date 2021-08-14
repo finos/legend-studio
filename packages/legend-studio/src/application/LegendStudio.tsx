@@ -37,12 +37,13 @@ import type {
   AbstractPlugin,
   AbstractPluginManager,
   AbstractPreset,
+  Logger,
 } from '@finos/legend-studio-shared';
 import {
+  Log,
   guaranteeNonEmptyString,
   assertNonNullable,
   NetworkClient,
-  BrowserConsole,
 } from '@finos/legend-studio-shared';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
@@ -126,9 +127,10 @@ export const setupLegendStudioUILibrary = async (
 };
 
 export abstract class LegendApplication {
-  protected pluginManager: AbstractPluginManager;
-  protected baseUrl!: string;
   protected appConfig!: ApplicationConfig;
+  protected pluginManager: AbstractPluginManager;
+  protected log = new Log();
+  protected baseUrl!: string;
   protected pluginRegister?: (
     pluginManager: AbstractPluginManager,
     config: ApplicationConfig,
@@ -170,18 +172,22 @@ export abstract class LegendApplication {
     return this;
   }
 
+  withLoggers(loggers: Logger[]): LegendApplication {
+    loggers.forEach((logger) => this.log.registerLogger(logger));
+    return this;
+  }
+
   async fetchApplicationConfiguration(
     baseUrl: string,
   ): Promise<[ApplicationConfig, Record<PropertyKey, object>]> {
     const client = new NetworkClient();
-    const logger = new BrowserConsole();
     let configData: ConfigurationData | undefined;
     try {
       configData = await client.get<ConfigurationData>(
         `${window.location.origin}${baseUrl}config.json`,
       );
     } catch (error: unknown) {
-      logger.error(
+      this.log.error(
         APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
         error,
       );
@@ -196,7 +202,7 @@ export abstract class LegendApplication {
         `${window.location.origin}${baseUrl}version.json`,
       );
     } catch (error: unknown) {
-      logger.error(
+      this.log.error(
         APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
         error,
       );
@@ -215,7 +221,6 @@ export abstract class LegendApplication {
       this._isConfigured,
       'Legend application has not been configured properly. Make sure to run setup() before start()',
     );
-    const logger = new BrowserConsole();
     try {
       // Fetch application config
       const [appConfig, pluginConfigData] =
@@ -229,12 +234,12 @@ export abstract class LegendApplication {
 
       await this.loadApplication();
 
-      logger.info(
+      this.log.info(
         APPLICATION_LOG_EVENT.APPLICATION_LOADED,
         'Legend application loaded',
       );
     } catch (error: unknown) {
-      logger.error(
+      this.log.error(
         APPLICATION_LOG_EVENT.APPLICATION_FAILURE,
         'Failed to load Legend application',
       );
@@ -275,6 +280,7 @@ export class LegendStudio extends LegendApplication {
           <LegendStudioApplication
             config={this.appConfig}
             pluginManager={this.pluginManager}
+            log={this.log}
           />
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,

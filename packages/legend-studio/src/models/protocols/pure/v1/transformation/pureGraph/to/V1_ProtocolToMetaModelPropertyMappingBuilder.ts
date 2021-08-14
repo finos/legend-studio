@@ -222,7 +222,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
-        this.context.logger.debug(
+        this.context.log.debug(
           GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent.parent.path}' (perhaps because we haven't supported included mappings)`,
         );
@@ -299,7 +299,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
-        this.context.logger.debug(
+        this.context.log.debug(
           GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path} (perhaps because we haven't supported included mappings)`,
         );
@@ -499,7 +499,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       );
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
-        this.context.logger.debug(
+        this.context.log.debug(
           GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path}' (perhaps because we haven't supported included mappings)`,
         );

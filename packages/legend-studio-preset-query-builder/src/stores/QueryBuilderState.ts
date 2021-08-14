@@ -362,7 +362,7 @@ export class QueryBuilderState extends EditorExtensionState {
           );
         } catch (error: unknown) {
           assertErrorThrown(error);
-          this.editorStore.applicationStore.logger.error(
+          this.editorStore.applicationStore.log.error(
             GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
             error,
           );
@@ -411,7 +411,7 @@ export class QueryBuilderState extends EditorExtensionState {
         } catch (error: unknown) {
           assertErrorThrown(error);
           if (error instanceof CompilationError) {
-            this.editorStore.applicationStore.logger.error(
+            this.editorStore.applicationStore.log.error(
               GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
               error,
             );

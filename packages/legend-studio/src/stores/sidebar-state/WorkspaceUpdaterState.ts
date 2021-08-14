@@ -211,7 +211,7 @@ export class WorkspaceUpdaterState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
+      this.editorStore.applicationStore.log.info(
         CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         Date.now() - restartChangeDetectionStartTime,
         'ms',
@@ -219,7 +219,7 @@ export class WorkspaceUpdaterState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -268,7 +268,7 @@ export class WorkspaceUpdaterState {
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         )) as WorkspaceUpdateReport;
-      this.editorStore.applicationStore.logger.info(
+      this.editorStore.applicationStore.log.info(
         SDLC_LOG_EVENT.SDLC_UPDATE_WORKSPACE,
         Date.now() - startTime,
         'ms',
@@ -285,7 +285,7 @@ export class WorkspaceUpdaterState {
           break;
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -340,7 +340,7 @@ export class WorkspaceUpdaterState {
         .map((review) => Review.serialization.fromJson(review))
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );

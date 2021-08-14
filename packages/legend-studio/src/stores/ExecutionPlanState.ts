@@ -151,7 +151,7 @@ export class ExecutionPlanState {
         )) as object;
       this.buildExecutionPlan(rawPlan);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );

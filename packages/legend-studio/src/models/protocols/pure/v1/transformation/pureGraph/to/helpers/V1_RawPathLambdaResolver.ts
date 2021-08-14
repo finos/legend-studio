@@ -362,7 +362,7 @@ const V1_resolveLambdaElementPaths = (
     // return orginal lambda if anything goes wrong
     assertErrorThrown(error);
     error.message = `Can't resolve element paths for lambda:\n${error.message}`;
-    _context.logger.warn(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE, error);
+    _context.log.warn(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE, error);
     return rawLambdaProtocol;
   }
 };

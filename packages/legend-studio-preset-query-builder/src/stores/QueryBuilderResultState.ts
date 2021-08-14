@@ -105,7 +105,7 @@ export class QueryBuilderResultState {
         )) as ExecutionResult;
       this.setExecutionResult(result);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
@@ -135,7 +135,7 @@ export class QueryBuilderResultState {
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
@@ -178,7 +178,7 @@ export class QueryBuilderResultState {
         `Service ${service.name} created`,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );

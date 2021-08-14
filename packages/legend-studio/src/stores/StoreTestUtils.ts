@@ -26,7 +26,7 @@ import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
-import { SilentLogger } from '@finos/legend-studio-shared';
+import { Log } from '@finos/legend-studio-shared';
 
 export const testApplicationConfigData = {
   appName: 'test-app',
@@ -71,11 +71,11 @@ export const getTestEditorStore = (
   pluginManager = PluginManager.create(),
 ): EditorStore => {
   const applicationStore = new ApplicationStore(
-    new WebApplicationNavigator(createBrowserHistory()),
     applicationConfig,
     pluginManager,
+    new WebApplicationNavigator(createBrowserHistory()),
+    new Log(),
   );
-  applicationStore.logger = new SilentLogger();
   return new EditorStore(applicationStore);
 };
 

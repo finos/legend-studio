@@ -111,7 +111,7 @@ export class QueryTextEditorState extends LambdaEditorState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
@@ -148,7 +148,7 @@ export class QueryTextEditorState extends LambdaEditorState {
         this.clearErrors();
         this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );

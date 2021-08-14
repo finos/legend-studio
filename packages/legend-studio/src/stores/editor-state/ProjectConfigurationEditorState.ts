@@ -147,7 +147,7 @@ export class ProjectConfigurationEditorState extends EditorState {
               this.projects.set(project.projectId, project);
             })
             .catch((e) => {
-              this.editorStore.applicationStore.logger.error(
+              this.editorStore.applicationStore.log.error(
                 SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
                 e,
               );
@@ -166,7 +166,7 @@ export class ProjectConfigurationEditorState extends EditorState {
               this.versionsByProject.set(projDep.projectId, versionMap);
             })
             .catch((e) => {
-              this.editorStore.applicationStore.logger.error(
+              this.editorStore.applicationStore.log.error(
                 SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
                 e,
               );
@@ -186,7 +186,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         .forEach((project) => this.projects.set(project.projectId, project));
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -228,7 +228,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -256,7 +256,7 @@ export class ProjectConfigurationEditorState extends EditorState {
           .forEach((project) => this.projects.set(project.projectId, project));
         this.queryHistory.add(query);
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
           error,
         );
@@ -279,7 +279,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         .forEach((version) => versionMap.set(version.id.id, version));
       this.versionsByProject.set(projectId, versionMap);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -298,7 +298,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         );
         yield flowResult(this.updateProjectConfiguration(updateCommand));
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
           error,
         );
@@ -336,7 +336,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         this.updateProjectConfiguration(updateProjectConfigurationCommand),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -357,7 +357,7 @@ export class ProjectConfigurationEditorState extends EditorState {
             (yield this.sdlcState.sdlcClient.getLatestProjectStructureVersion()) as PlainObject<ProjectStructureVersion>,
           );
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
           error,
         );

@@ -50,7 +50,7 @@ export const V1_buildSection = (
       .map((_package) => {
         const element = context.graph.getNullableElement(_package, true);
         if (!(element instanceof Package)) {
-          context.logger.warn(
+          context.log.warn(
             GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
             `Can't find section import package '${_package}'`,
           );
@@ -73,14 +73,14 @@ export const V1_buildSection = (
     .map((elementPath) => {
       const element = context.graph.getNullableElement(elementPath);
       if (!element) {
-        context.logger.warn(
+        context.log.warn(
           GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
           `Can't find section element '${elementPath}'`,
         );
         return element;
       }
       if (context.graph.getOwnSection(element.path)) {
-        context.logger.warn(
+        context.log.warn(
           GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
           `Found duplicated section element '${elementPath}'`,
         );

@@ -18,16 +18,16 @@ import type { AbstractPureGraphManager } from '../../metamodels/pure/graph/Abstr
 import { V1_PureGraphManager } from './v1/V1_PureGraphManager';
 import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from '../../metamodels/pure/graph/PureGraphManagerPlugin';
-import type { Logger } from '@finos/legend-studio-shared';
+import type { Log } from '@finos/legend-studio-shared';
 
 export const getGraphManager = (
   pureGraphManagerPlugins: PureGraphManagerPlugin[],
   pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
-  logger: Logger,
+  log: Log,
 ): AbstractPureGraphManager =>
   // NOTE: until we support more client versions, we always default to return V1
   new V1_PureGraphManager(
     pureGraphManagerPlugins,
     pureProtocolProcessorPlugins,
-    logger,
+    log,
   );

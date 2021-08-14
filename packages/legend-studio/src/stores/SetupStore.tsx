@@ -134,7 +134,7 @@ export class SetupStore {
                   idx === 0 ? ProjectType.PRODUCTION : ProjectType.PROTOTYPE
                 } projects: ${error.message}`,
               );
-              this.applicationStore.logger.error(
+              this.applicationStore.log.error(
                 STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
                 wrappedError,
               );
@@ -151,7 +151,7 @@ export class SetupStore {
       this.projects = projectMap;
       this.loadProjectsState.pass();
     } catch (error: unknown) {
-      this.applicationStore.logger.error(
+      this.applicationStore.log.error(
         STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
         error,
       );
@@ -299,7 +299,7 @@ export class SetupStore {
       this.workspacesByProject.set(projectId, workspaceMap);
     } catch (error: unknown) {
       // TODO handle error when fetching workspaces for an individual project
-      this.applicationStore.logger.error(
+      this.applicationStore.log.error(
         STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
         error,
       );
@@ -335,7 +335,7 @@ export class SetupStore {
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
     } catch (error: unknown) {
-      this.applicationStore.logger.error(
+      this.applicationStore.log.error(
         STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
         error,
       );

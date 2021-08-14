@@ -250,7 +250,7 @@ export class QueryExportState {
         );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.queryStore.editorStore.applicationStore.logger.error(
+      this.queryStore.editorStore.applicationStore.log.error(
         QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
@@ -286,7 +286,7 @@ export class QueryExportState {
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.queryStore.editorStore.applicationStore.logger.error(
+      this.queryStore.editorStore.applicationStore.log.error(
         QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
@@ -396,7 +396,7 @@ export class QueryStore {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
@@ -481,7 +481,7 @@ export class QueryStore {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
@@ -557,7 +557,7 @@ export class QueryStore {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         QUERY_LOG_EVENT.QUERY_PROBLEM,
         error,
       );
@@ -601,7 +601,7 @@ export class QueryStore {
 
       this.initState.pass();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -661,7 +661,7 @@ export class QueryStore {
 
       this.buildGraphState.pass();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -714,7 +714,7 @@ export class QueryStore {
           });
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );

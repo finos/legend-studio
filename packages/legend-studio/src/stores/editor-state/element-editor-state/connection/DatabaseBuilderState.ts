@@ -249,7 +249,7 @@ export class DatabaseBuilderState {
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
         error,
       );
@@ -294,7 +294,7 @@ export class DatabaseBuilderState {
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
         error,
       );
@@ -334,7 +334,7 @@ export class DatabaseBuilderState {
         this.addColumnsNodeToTableNode(tableNode, enrichedTable, treeData);
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
         error,
       );
@@ -454,7 +454,7 @@ export class DatabaseBuilderState {
         this.setDatabaseGrammarCode(dbGrammar);
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
         error,
       );
@@ -561,7 +561,7 @@ export class DatabaseBuilderState {
         }
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
         error,
       );

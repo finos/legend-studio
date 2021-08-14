@@ -46,6 +46,7 @@ import type {
   SDLCServerOption,
 } from '../stores/application/ApplicationConfig';
 import type { PluginManager } from '../application/PluginManager';
+import type { Log } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
 import { useWebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
@@ -267,8 +268,12 @@ const LegendStudioApplicationConfigEditor = observer(
 );
 
 export const LegendStudioApplication = observer(
-  (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
-    const { config, pluginManager } = props;
+  (props: {
+    config: ApplicationConfig;
+    pluginManager: PluginManager;
+    log: Log;
+  }) => {
+    const { config, pluginManager, log } = props;
     const navigator = useWebApplicationNavigator();
     const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
       generateRoutePatternWithSDLCServerKey('/'),
@@ -310,6 +315,7 @@ export const LegendStudioApplication = observer(
         config={config}
         navigator={navigator}
         pluginManager={pluginManager}
+        log={log}
       >
         <ThemeProvider theme={LegendMaterialUITheme}>
           <LegendStudioApplicationRoot />

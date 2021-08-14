@@ -56,7 +56,7 @@ const ProjectDependencyVersionSelector = observer(
     ref: React.Ref<SelectComponent>,
   ) => {
     const editorStore = useEditorStore();
-    const logger = editorStore.applicationStore.logger;
+    const logger = editorStore.applicationStore.log;
     const {
       projectDependency,
       disabled,

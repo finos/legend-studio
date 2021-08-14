@@ -194,7 +194,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
         );
         this.clearErrors();
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
+        this.editorStore.applicationStore.log.error(
           GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
@@ -288,7 +288,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         ),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
@@ -318,7 +318,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         losslessStringify(result, undefined, TAB_SIZE),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );

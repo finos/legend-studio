@@ -122,7 +122,7 @@ export class LocalChangesState {
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
-      this.editorStore.applicationStore.logger.info(
+      this.editorStore.applicationStore.log.info(
         CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         Date.now() - startTime,
         'ms',
@@ -130,7 +130,7 @@ export class LocalChangesState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
@@ -215,7 +215,7 @@ export class LocalChangesState {
       this.sdlcState.setCurrentRevision(latestRevision); // update current revision to the latest
       const syncFinishedTime = Date.now();
 
-      this.editorStore.applicationStore.logger.info(
+      this.editorStore.applicationStore.log.info(
         SDLC_LOG_EVENT.SDLC_SYNC_WORKSPACE,
         syncFinishedTime - startTime,
         'ms',
@@ -253,7 +253,7 @@ export class LocalChangesState {
          */
         if (error instanceof NetworkClientError) {
           if (error.response.status === HttpStatus.NOT_FOUND) {
-            this.editorStore.applicationStore.logger.error(
+            this.editorStore.applicationStore.log.error(
               SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
               `Can't fetch entities for the latest workspace revision immediately after syncing`,
               error,
@@ -300,14 +300,14 @@ export class LocalChangesState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
+      this.editorStore.applicationStore.log.info(
         CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         Date.now() - syncFinishedTime,
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
+      this.editorStore.applicationStore.log.error(
         SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
