@@ -23,7 +23,7 @@ import {
   HttpStatus,
   NetworkClientError,
 } from '@finos/legend-studio-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/GraphManagerLogEvent';
 import { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportConfigurationDescription } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import { ImportMode } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';

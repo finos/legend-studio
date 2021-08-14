@@ -27,13 +27,11 @@ import {
   isString,
   ApplicationError,
   ActionState,
+  BrowserConsole,
 } from '@finos/legend-studio-shared';
 import { makeAutoObservable, action } from 'mobx';
-import {
-  BrowserConsole,
-  APPLICATION_LOG_EVENT,
-  SDLC_LOG_EVENT,
-} from '../utils/Logger';
+import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
+import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { ApplicationConfig } from './application/ApplicationConfig';
 import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { useLocalObservable } from 'mobx-react-lite';

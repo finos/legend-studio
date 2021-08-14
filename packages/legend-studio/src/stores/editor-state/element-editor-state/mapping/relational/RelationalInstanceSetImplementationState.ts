@@ -33,7 +33,7 @@ import type { RawRelationalOperationElement } from '../../../../../models/metamo
 import { createStubRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { CompilationError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/GraphManagerLogEvent';
 import { MappingElementDecorator } from '../MappingElementDecorator';
 import { SOURCE_ID_LABEL } from '../../../../../models/MetaModelConst';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';

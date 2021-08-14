@@ -27,7 +27,7 @@ import {
   getNullableFirstElement,
   assertTrue,
 } from '@finos/legend-studio-shared';
-import { STUDIO_LOG_EVENT } from '../../../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../../../utils/STUDIO_LOG_EVENT';
 import { Version } from '../../../../models/sdlc/models/version/Version';
 import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';

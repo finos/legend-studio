@@ -23,7 +23,7 @@ import {
   Revision,
   RevisionAlias,
 } from '../../models/sdlc/models/revision/Revision';
-import { SDLC_LOG_EVENT } from '../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { Version } from '../../models/sdlc/models/version/Version';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { Workspace } from '../../models/sdlc/models/workspace/Workspace';

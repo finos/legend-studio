@@ -22,7 +22,7 @@ import {
   assertNonEmptyString,
   assertTrue,
 } from '@finos/legend-studio-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../utils/GraphManagerLogEvent';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { SetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import type { PurePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';

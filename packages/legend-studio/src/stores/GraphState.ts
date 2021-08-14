@@ -15,11 +15,9 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import {
-  CHANGE_DETECTION_LOG_EVENT,
-  GRAPH_MANAGER_LOG_EVENT,
-  METADATA_LOG_EVENT,
-} from '../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { METADATA_LOG_EVENT } from '../utils/MetadataLogEvent';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import type { EntityChange } from '../models/sdlc/models/entity/EntityChange';
@@ -849,9 +847,7 @@ export class GraphState {
 
       /* @MARKER: MEMORY-SENSITIVE */
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
-      yield flowResult(
-        this.graph.dispose(this.editorStore.applicationStore.logger),
-      );
+      yield flowResult(this.graph.dispose());
 
       yield flowResult(
         this.graphManager.buildGraph(newGraph, entities, {
@@ -908,9 +904,7 @@ export class GraphState {
 
       // ======= (RE)START CHANGE DETECTION =======
       /* @MARKER: MEMORY-SENSITIVE */
-      yield flowResult(
-        this.graph.precomputeHashes(this.editorStore.applicationStore.logger),
-      );
+      yield flowResult(this.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
@@ -956,11 +950,7 @@ export class GraphState {
       this.editorStore.setCurrentEditorState(undefined);
 
       /* @MARKER: MEMORY-SENSITIVE */
-      yield flowResult(
-        this.graph.generationModel.dispose(
-          this.editorStore.applicationStore.logger,
-        ),
-      );
+      yield flowResult(this.graph.generationModel.dispose());
       // we reset the generation model
       this.graph.generationModel = new GenerationModel(
         this.getPureGraphExtensionElementClasses(),
@@ -1212,5 +1202,34 @@ export class GraphState {
         .flat();
     }
     return uniq(mappedProperties);
+  }
+
+  /**
+   * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
+   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
+   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
+   * not trigger memoization on computed so we need to enable `keepAlive`
+   */
+  *precomputeHashes(): GeneratorFn<void> {
+    const startTime = Date.now();
+    if (this.graph.allOwnElements.length) {
+      yield Promise.all<void>(
+        this.graph.allOwnElements.map(
+          (element) =>
+            new Promise((resolve) =>
+              setTimeout(() => {
+                element.hashCode; // manually trigger hash code recomputation
+                resolve();
+              }, 0),
+            ),
+        ),
+      );
+    }
+    this.editorStore.applicationStore.logger.info(
+      GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PRECOMPUTED,
+      '[ASYNC]',
+      Date.now() - startTime,
+      'ms',
+    );
   }
 }

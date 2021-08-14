@@ -15,10 +15,8 @@
  */
 
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
-import {
-  STUDIO_LOG_EVENT,
-  GRAPH_MANAGER_LOG_EVENT,
-} from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { STUDIO_LOG_EVENT } from '../../../../utils/STUDIO_LOG_EVENT';
 import type { Entity } from '../../../sdlc/models/entity/Entity';
 import {
   ELEMENT_PATH_DELIMITER,

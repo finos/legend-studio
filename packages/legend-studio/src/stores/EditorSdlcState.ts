@@ -23,7 +23,8 @@ import {
   assertTrue,
 } from '@finos/legend-studio-shared';
 import type { PlainObject, GeneratorFn } from '@finos/legend-studio-shared';
-import { CHANGE_DETECTION_LOG_EVENT, SDLC_LOG_EVENT } from '../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import { Project, ProjectType } from '../models/sdlc/models/project/Project';
 import {
   Workspace,

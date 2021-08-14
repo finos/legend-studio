@@ -18,7 +18,8 @@ import { action, makeAutoObservable, flowResult } from 'mobx';
 import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import { CHANGE_DETECTION_LOG_EVENT, SDLC_LOG_EVENT } from '../../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { Revision } from '../../models/sdlc/models/revision/Revision';
 import { DATE_TIME_FORMAT } from '../../const';
 import { TAB_SIZE } from '../EditorConfig';
@@ -115,9 +116,7 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.stop();
       yield Promise.all([
         this.sdlcState.buildWorkspaceLatestRevisionEntityHashesIndex(),
-        this.editorStore.graphState.graph.precomputeHashes(
-          this.editorStore.applicationStore.logger,
-        ),
+        this.editorStore.graphState.precomputeHashes(),
       ]);
       this.editorStore.changeDetectionState.start();
       yield flowResult(
@@ -293,11 +292,7 @@ export class LocalChangesState {
           throw error;
         }
       }
-      yield flowResult(
-        this.editorStore.graphState.graph.precomputeHashes(
-          this.editorStore.applicationStore.logger,
-        ),
-      );
+      yield flowResult(this.editorStore.graphState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield Promise.all([
         this.editorStore.changeDetectionState.computeLocalChanges(true),

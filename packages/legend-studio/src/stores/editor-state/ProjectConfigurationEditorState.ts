@@ -31,7 +31,7 @@ import {
   guaranteeNonNullable,
   compareLabelFn,
 } from '@finos/legend-studio-shared';
-import { SDLC_LOG_EVENT } from '../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { UpdateProjectConfigurationCommand } from '../../models/sdlc/models/configuration/UpdateProjectConfigurationCommand';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { Project, ProjectType } from '../../models/sdlc/models/project/Project';

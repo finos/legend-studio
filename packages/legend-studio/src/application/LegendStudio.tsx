@@ -42,8 +42,9 @@ import {
   guaranteeNonEmptyString,
   assertNonNullable,
   NetworkClient,
+  BrowserConsole,
 } from '@finos/legend-studio-shared';
-import { BrowserConsole, APPLICATION_LOG_EVENT } from '../utils/Logger';
+import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { PluginManager } from './PluginManager';
 import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';

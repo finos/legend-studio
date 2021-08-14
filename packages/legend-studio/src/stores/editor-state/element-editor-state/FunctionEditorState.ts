@@ -20,7 +20,7 @@ import { LambdaEditorState } from './LambdaEditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeType, assertType } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
 import { LAMBDA_START } from '../../../models/MetaModelConst';
 import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../models/metamodels/pure/action/EngineError';

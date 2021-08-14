@@ -22,7 +22,7 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import type { EditorStore } from '../../../EditorStore';
 import {

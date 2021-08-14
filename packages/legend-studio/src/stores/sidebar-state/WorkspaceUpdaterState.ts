@@ -19,7 +19,8 @@ import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { WorkspaceUpdateReport } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
 import { WORKSPACE_UPDATE_REPORT_STATUS } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
-import { CHANGE_DETECTION_LOG_EVENT, SDLC_LOG_EVENT } from '../../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import {
   Revision,
   RevisionAlias,

@@ -19,7 +19,7 @@ import {
   isNonNullable,
   uniq,
 } from '@finos/legend-studio-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/GraphManagerLogEvent';
 import type { Section } from '../../../../../../../metamodels/pure/model/packageableElements/section/Section';
 import {
   ImportAwareCodeSection,

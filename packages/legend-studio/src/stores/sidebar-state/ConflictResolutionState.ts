@@ -16,7 +16,8 @@
 
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import { CHANGE_DETECTION_LOG_EVENT, SDLC_LOG_EVENT } from '../../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -318,11 +319,7 @@ export class ConflictResolutionState {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.editorStore.changeDetectionState.stop();
-      yield flowResult(
-        this.editorStore.graphState.graph.precomputeHashes(
-          this.editorStore.applicationStore.logger,
-        ),
-      );
+      yield flowResult(this.editorStore.graphState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),

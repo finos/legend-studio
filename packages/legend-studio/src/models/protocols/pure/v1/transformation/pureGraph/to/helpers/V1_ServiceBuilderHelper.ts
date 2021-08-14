@@ -21,7 +21,7 @@ import {
   assertNonNullable,
 } from '@finos/legend-studio-shared';
 import { GraphError } from '../../../../../../../MetaModelUtils';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/GraphManagerLogEvent';
 import type { Runtime } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import { RuntimePointer } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import type { Service } from '../../../../../../../metamodels/pure/model/packageableElements/service/Service';

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { unitTest } from '@finos/legend-studio-shared';
+import { unitTest, SilentLogger } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
-import { SilentLogger } from '../../../../../../../../utils/Logger';
 import {
   CoreModel,
   PureModel,

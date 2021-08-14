@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../../EditorStore';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import { ELEMENT_NATIVE_VIEW_MODE, TAB_SIZE } from '../../EditorConfig';
 import { EditorState } from '../../editor-state/EditorState';

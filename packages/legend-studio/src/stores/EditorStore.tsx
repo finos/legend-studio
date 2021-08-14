@@ -82,11 +82,9 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import {
-  GRAPH_MANAGER_LOG_EVENT,
-  STUDIO_LOG_EVENT,
-  CHANGE_DETECTION_LOG_EVENT,
-} from '../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
+import { STUDIO_LOG_EVENT } from '../utils/STUDIO_LOG_EVENT';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
@@ -785,7 +783,7 @@ export class EditorStore {
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
       yield Promise.all([
-        this.graphState.graph.precomputeHashes(this.applicationStore.logger), // for local changes detection
+        this.graphState.precomputeHashes(), // for local changes detection
         this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           entities,
           CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,

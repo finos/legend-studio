@@ -18,10 +18,8 @@ import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import {
-  STUDIO_LOG_EVENT,
-  GRAPH_MANAGER_LOG_EVENT,
-} from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { STUDIO_LOG_EVENT } from '../../../../utils/STUDIO_LOG_EVENT';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   losslessStringify,

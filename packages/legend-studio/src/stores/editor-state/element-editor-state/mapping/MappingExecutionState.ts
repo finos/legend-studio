@@ -44,7 +44,7 @@ import {
   CLIENT_VERSION,
   LAMBDA_START,
 } from '../../../../models/MetaModelConst';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';

@@ -37,6 +37,7 @@ import { generateEditorRoute } from '../stores/LegendStudioRouter';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
+  SilentLogger,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-studio-shared';
@@ -48,7 +49,6 @@ import type { GenerationConfigurationDescription } from '../models/metamodels/pu
 import { PluginManager } from '../application/PluginManager';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
-import { SilentLogger } from '../utils/Logger';
 
 export const SDLC_TestData = {
   project: {

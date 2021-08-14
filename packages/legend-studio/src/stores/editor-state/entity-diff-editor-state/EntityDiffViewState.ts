@@ -15,7 +15,7 @@
  */
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import { SDLC_LOG_EVENT } from '../../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../../utils/SDLCLogEvent';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   assertNonNullable,

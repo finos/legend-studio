@@ -41,7 +41,7 @@ import {
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
-import { STUDIO_LOG_EVENT } from '../../../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../../../utils/STUDIO_LOG_EVENT';
 import type { EditorStore } from '../../../EditorStore';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {

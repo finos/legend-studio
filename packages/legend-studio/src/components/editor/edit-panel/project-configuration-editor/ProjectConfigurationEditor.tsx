@@ -42,7 +42,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '../../../../stores/ApplicationStore';
-import { SDLC_LOG_EVENT } from '../../../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../../../utils/SDLCLogEvent';
 import { flowResult } from 'mobx';
 
 const ProjectDependencyVersionSelector = observer(

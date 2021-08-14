@@ -63,7 +63,11 @@ export abstract class Logger {
 }
 
 export class Log {
-  loggers: Logger[] = [];
+  private loggers: Logger[] = [];
+
+  registerLogger(logger: Logger): void {
+    this.loggers.push(logger);
+  }
 
   debug(event: string | undefined, ...data: unknown[]): void {
     this.loggers.forEach((logger) => logger.debug(event, data));

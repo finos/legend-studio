@@ -26,7 +26,7 @@ import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
-import { SilentLogger } from '../utils/Logger';
+import { SilentLogger } from '@finos/legend-studio-shared';
 
 export const testApplicationConfigData = {
   appName: 'test-app',
@@ -171,11 +171,7 @@ export const checkBuildingElementsRoundtrip = async (
     excludeSectionIndex(entities),
   );
   // check hash
-  await flowResult(
-    editorStore.graphState.graph.precomputeHashes(
-      editorStore.applicationStore.logger,
-    ),
-  );
+  await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
     await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
@@ -210,11 +206,7 @@ export const checkBuildingResolvedElements = async (
     excludeSectionIndex(resolvedEntities),
   );
   // check hash
-  await flowResult(
-    editorStore.graphState.graph.precomputeHashes(
-      editorStore.applicationStore.logger,
-    ),
-  );
+  await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
     await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(

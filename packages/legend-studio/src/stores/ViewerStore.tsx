@@ -23,7 +23,7 @@ import {
   RevisionAlias,
 } from '../models/sdlc/models/revision/Revision';
 import { Version } from '../models/sdlc/models/version/Version';
-import { SDLC_LOG_EVENT } from '../utils/Logger';
+import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   IllegalStateError,

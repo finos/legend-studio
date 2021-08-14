@@ -23,7 +23,7 @@ import {
   flow,
   makeObservable,
 } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from '../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   IllegalStateError,

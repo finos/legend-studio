@@ -16,7 +16,8 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { CHANGE_DETECTION_LOG_EVENT, SDLC_LOG_EVENT } from '../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { Entity } from '../models/sdlc/models/entity/Entity';

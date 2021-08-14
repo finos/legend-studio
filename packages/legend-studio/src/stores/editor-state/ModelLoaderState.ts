@@ -23,7 +23,7 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
 } from '@finos/legend-studio-shared';
-import { STUDIO_LOG_EVENT } from '../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../utils/STUDIO_LOG_EVENT';
 import type { EditorStore } from '../EditorStore';
 import type { ImportConfigurationDescription } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
 import { ImportMode } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';

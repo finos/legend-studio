@@ -34,7 +34,7 @@ import {
   tryToMinifyJSONString,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import {
   observable,
   flow,

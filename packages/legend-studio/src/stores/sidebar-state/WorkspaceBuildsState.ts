@@ -15,7 +15,7 @@
  */
 
 import { makeAutoObservable } from 'mobx';
-import { SDLC_LOG_EVENT } from '../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { Build } from '../../models/sdlc/models/build/Build';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';

@@ -18,7 +18,7 @@ import { observable, action, flow, makeObservable } from 'mobx';
 import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../EditorStore';
 import { ParserError } from '../../../models/metamodels/pure/action/EngineError';

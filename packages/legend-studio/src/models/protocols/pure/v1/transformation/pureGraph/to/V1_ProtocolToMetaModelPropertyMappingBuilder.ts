@@ -22,7 +22,7 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-studio-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../utils/GraphManagerLogEvent';
 import { GraphError } from '../../../../../../MetaModelUtils';
 import type { PropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import { PurePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';

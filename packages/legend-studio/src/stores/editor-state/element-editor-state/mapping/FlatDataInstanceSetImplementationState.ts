@@ -19,7 +19,7 @@ import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
 } from '../../../../models/MetaModelConst';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,

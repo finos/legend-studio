@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flow, observable, makeObservable } from 'mobx';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
+import { action, observable, makeObservable } from 'mobx';
 import {
   PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
   TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../../../MetaModelConst';
-import type { Clazz, GeneratorFn, Logger } from '@finos/legend-studio-shared';
+import type { Clazz } from '@finos/legend-studio-shared';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -180,7 +179,6 @@ export class PureModel extends BasicModel {
       dependencyManager: observable,
       setDependencyManager: action,
       addElement: action,
-      precomputeHashes: flow,
     });
 
     this.coreModel = coreModel;
@@ -199,37 +197,6 @@ export class PureModel extends BasicModel {
 
   get primitiveTypes(): PrimitiveType[] {
     return this.coreModel.primitiveTypes;
-  }
-
-  /**
-   * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
-   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
-   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
-   * not trigger memoization on computed so we need to enable `keepAlive`
-   */
-  *precomputeHashes(logger: Logger, quiet?: boolean): GeneratorFn<void> {
-    const startTime = Date.now();
-    if (this.allOwnElements.length) {
-      yield Promise.all<void>(
-        this.allOwnElements.map(
-          (element) =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                element.hashCode; // manually trigger hash code recomputation
-                resolve();
-              }, 0),
-            ),
-        ),
-      );
-    }
-    if (!quiet) {
-      logger.info(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PREPROCESSED,
-        '[ASYNC]',
-        Date.now() - startTime,
-        'ms',
-      );
-    }
   }
 
   setDependencyManager = (dependencyManager: DependencyManager): void => {

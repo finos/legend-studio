@@ -113,11 +113,7 @@ const checkGrammarRoundtrip = async (
   );
 
   // check hash computation
-  await flowResult(
-    editorStore.graphState.graph.precomputeHashes(
-      editorStore.applicationStore.logger,
-    ),
-  );
+  await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
     await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(

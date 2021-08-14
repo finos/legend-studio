@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../utils/STUDIO_LOG_EVENT';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { ApplicationStore } from './ApplicationStore';
 import { useApplicationStore } from './ApplicationStore';
