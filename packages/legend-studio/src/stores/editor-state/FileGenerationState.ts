@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore';
 import { observable, action, makeAutoObservable } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../utils/STUDIO_LOG_EVENT';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type { TreeData } from '@finos/legend-studio-components';
 import type {
   GenerationTreeNodeData,

@@ -83,7 +83,7 @@ import { FileGenerationEditorState } from './editor-state/element-editor-state/F
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
-import { STUDIO_LOG_EVENT } from '../utils/STUDIO_LOG_EVENT';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
