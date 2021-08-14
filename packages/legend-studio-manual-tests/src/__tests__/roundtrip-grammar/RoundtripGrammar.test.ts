@@ -66,9 +66,9 @@ const EXCLUDED_CASE_FILES: string[] = [
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
-  // 'embedded-relational-mapping.pure',
-  // 'nested-embedded-relational-mapping.pure',
-  // 'relational-mapping-filter.pure',
+  'embedded-relational-mapping.pure',
+  'nested-embedded-relational-mapping.pure',
+  'relational-mapping-filter.pure',
   'relational-connection.pure',
 ];
 
