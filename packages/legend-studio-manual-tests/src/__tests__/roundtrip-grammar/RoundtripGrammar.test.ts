@@ -66,10 +66,10 @@ const EXCLUDED_CASE_FILES: string[] = [
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
-  'embedded-relational-mapping.pure',
-  'nested-embedded-relational-mapping.pure',
-  'relational-mapping-filter.pure',
-  'connection.pure',
+  // 'embedded-relational-mapping.pure',
+  // 'nested-embedded-relational-mapping.pure',
+  // 'relational-mapping-filter.pure',
+  'relational-connection.pure',
 ];
 
 const checkGrammarRoundtrip = async (
@@ -138,20 +138,28 @@ const checkGrammarRoundtrip = async (
   const sectionIndices = editorStore.graphState.graph.ownSectionIndices.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
+  const modelDataContext = {
+    _type: 'data',
+    elements: transformedEntities
+      .concat(sectionIndices)
+      .map((entity) => entity.content),
+  };
   const transformJsonToGrammarResult = await axios.post(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/transformJsonToGrammar`,
     {
-      modelDataContext: {
-        _type: 'data',
-        elements: transformedEntities
-          .concat(sectionIndices)
-          .map((entity) => entity.content),
-      },
+      modelDataContext,
       renderStyle: 'STANDARD',
     },
     {},
   );
   expect(transformJsonToGrammarResult.data.code).toEqual(grammarText);
+  // Test successful compilation with graph from serialization
+  const compileResult = await axios.post(
+    `${ENGINE_SERVER_URL}/pure/v1/compilation/compile`,
+    modelDataContext,
+  );
+  expect(compileResult.status).toBe(200);
+  expect(compileResult.data.message).toEqual('OK');
 };
 
 const testNameFrom = (fileName: string): string => {

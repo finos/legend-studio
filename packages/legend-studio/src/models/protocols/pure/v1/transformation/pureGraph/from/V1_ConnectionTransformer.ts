@@ -274,7 +274,7 @@ const transformModelChainConnection = (
   element: ModelChainConnection,
 ): V1_ModelChainConnection => {
   const connection = new V1_ModelChainConnection();
-  connection.store = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  connection.store = element.store.valueForSerialization;
   connection.mappings = element.mappings.map(V1_transformElementReference);
   return connection;
 };
@@ -284,7 +284,7 @@ const transformJsonModelConnection = (
 ): V1_JsonModelConnection => {
   const connection = new V1_JsonModelConnection();
   connection.class = V1_transformElementReference(element.class);
-  connection.store = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  connection.store = element.store.valueForSerialization;
   connection.url = element.url;
   return connection;
 };
@@ -294,7 +294,7 @@ const transformXmlModelConnection = (
 ): V1_XmlModelConnection => {
   const connection = new V1_XmlModelConnection();
   connection.class = V1_transformElementReference(element.class);
-  connection.store = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  connection.store = element.store.valueForSerialization;
   connection.url = element.url;
   return connection;
 };
