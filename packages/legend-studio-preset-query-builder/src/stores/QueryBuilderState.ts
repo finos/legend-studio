@@ -37,9 +37,9 @@ import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   EditorExtensionState,
   CompilationError,
-  CORE_LOG_EVENT,
   extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
@@ -363,7 +363,7 @@ export class QueryBuilderState extends EditorExtensionState {
         } catch (error: unknown) {
           assertErrorThrown(error);
           this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.COMPILATION_PROBLEM,
+            GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
             error,
           );
           let fallbackToTextModeForDebugging = true;
@@ -412,7 +412,7 @@ export class QueryBuilderState extends EditorExtensionState {
           assertErrorThrown(error);
           if (error instanceof CompilationError) {
             this.editorStore.applicationStore.logger.error(
-              CORE_LOG_EVENT.COMPILATION_PROBLEM,
+              GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
               error,
             );
             this.editorStore.applicationStore.notifyWarning(

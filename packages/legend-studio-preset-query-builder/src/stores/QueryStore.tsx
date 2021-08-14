@@ -602,7 +602,7 @@ export class QueryStore {
       this.initState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.setBlockingAlert({
@@ -662,7 +662,7 @@ export class QueryStore {
       this.buildGraphState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -715,7 +715,7 @@ export class QueryStore {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

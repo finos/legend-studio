@@ -27,7 +27,7 @@ import {
 } from '@finos/legend-studio-shared';
 import type { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import { ELEMENT_PATH_DELIMITER } from '../../../MetaModelConst';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
 import { Package } from '../model/packageableElements/domain/Package';
 import { Type } from '../model/packageableElements/domain/Type';
 import { Association } from '../model/packageableElements/domain/Association';
@@ -468,7 +468,7 @@ export abstract class BasicModel {
     }
     if (!quiet) {
       logger.info(
-        CORE_LOG_EVENT.GRAPH_HASHES_DISPOSED,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_DISPOSED,
         '[ASYNC]',
         Date.now() - startTime,
         'ms',

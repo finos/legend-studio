@@ -22,7 +22,7 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import type { EditorStore } from '../../../EditorStore';
 import {
@@ -890,7 +890,7 @@ export class MappingEditorState extends ElementEditorState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.warn(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
         `Can't locate error, redirecting to text mode`,
         error,
       );

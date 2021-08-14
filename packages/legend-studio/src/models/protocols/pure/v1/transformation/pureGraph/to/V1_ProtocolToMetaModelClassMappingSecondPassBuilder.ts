@@ -22,7 +22,7 @@ import {
   assertNonEmptyString,
   assertTrue,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../utils/Logger';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { SetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import type { PurePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
@@ -89,7 +89,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
         if (!setImplementation) {
           // TODO: we will get these cases sometimes since we haven't supported includedMappings
           this.context.logger.debug(
-            CORE_LOG_EVENT.GRAPH_PROBLEM,
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
             `Can't find class mapping of ID '${parameter}' in mapping '${this.parent.path}' (perhaps because we haven't supported included mappings)`,
           );
           return undefined;

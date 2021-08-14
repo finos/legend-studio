@@ -18,7 +18,7 @@ import {
   assertErrorThrown,
   returnUndefOnError,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/Logger';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { RawLambda } from '../../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
@@ -362,7 +362,7 @@ const V1_resolveLambdaElementPaths = (
     // return orginal lambda if anything goes wrong
     assertErrorThrown(error);
     error.message = `Can't resolve element paths for lambda:\n${error.message}`;
-    _context.logger.warn(CORE_LOG_EVENT.GRAPH_PROBLEM, error);
+    _context.logger.warn(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE, error);
     return rawLambdaProtocol;
   }
 };

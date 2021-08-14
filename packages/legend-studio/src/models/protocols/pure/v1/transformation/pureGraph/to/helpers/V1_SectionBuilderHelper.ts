@@ -19,7 +19,7 @@ import {
   isNonNullable,
   uniq,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/Logger';
 import type { Section } from '../../../../../../../metamodels/pure/model/packageableElements/section/Section';
 import {
   ImportAwareCodeSection,
@@ -51,7 +51,7 @@ export const V1_buildSection = (
         const element = context.graph.getNullableElement(_package, true);
         if (!(element instanceof Package)) {
           context.logger.warn(
-            CORE_LOG_EVENT.GRAPH_PROBLEM,
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
             `Can't find section import package '${_package}'`,
           );
         }
@@ -74,14 +74,14 @@ export const V1_buildSection = (
       const element = context.graph.getNullableElement(elementPath);
       if (!element) {
         context.logger.warn(
-          CORE_LOG_EVENT.GRAPH_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
           `Can't find section element '${elementPath}'`,
         );
         return element;
       }
       if (context.graph.getOwnSection(element.path)) {
         context.logger.warn(
-          CORE_LOG_EVENT.GRAPH_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
           `Found duplicated section element '${elementPath}'`,
         );
       } else {

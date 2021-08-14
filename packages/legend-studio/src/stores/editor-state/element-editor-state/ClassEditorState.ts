@@ -17,7 +17,7 @@
 import { computed, observable, makeObservable, override } from 'mobx';
 import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState';
 import { guaranteeType } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/Logger';
 import { SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
 import { ClassState } from './ClassState';
 import type { EditorStore } from '../../EditorStore';
@@ -83,7 +83,7 @@ export class ClassEditorState extends UMLEditorState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.warn(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
         `Can't locate error`,
         error,
       );

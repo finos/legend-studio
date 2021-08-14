@@ -80,7 +80,7 @@ export class ProjectOverviewState {
       ).map((workspace) => Workspace.serialization.fromJson(workspace));
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
     } finally {
@@ -113,7 +113,7 @@ export class ProjectOverviewState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
     } finally {
@@ -220,7 +220,7 @@ export class ProjectOverviewState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
     } finally {
@@ -242,7 +242,7 @@ export class ProjectOverviewState {
       yield flowResult(this.fetchLatestProjectVersion());
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -18,7 +18,10 @@ import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import {
+  STUDIO_LOG_EVENT,
+  GRAPH_MANAGER_LOG_EVENT,
+} from '../../../../utils/Logger';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   losslessStringify,
@@ -282,7 +285,7 @@ export class TestContainerState {
     } catch (error: unknown) {
       this.setAssertionData(tryToFormatJSONString('{}'));
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+        STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -327,7 +330,7 @@ export class TestContainerState {
     } catch (error: unknown) {
       this.setTestExecutionResultText(undefined);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+        STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -456,7 +459,7 @@ export class SingleExecutionTestState {
           )) as string;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.EXECUTION_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
           error,
         );
       }
@@ -494,7 +497,7 @@ export class SingleExecutionTestState {
         })),
       );
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+        STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
         error,
       );
     } finally {

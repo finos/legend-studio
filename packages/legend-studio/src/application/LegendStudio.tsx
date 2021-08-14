@@ -181,7 +181,7 @@ export abstract class LegendApplication {
       );
     } catch (error: unknown) {
       logger.error(
-        APPLICATION_LOG_EVENT.CONFIG_CONFIGURATION_FETCHING_PROBLEM,
+        APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
         error,
       );
     }
@@ -196,7 +196,7 @@ export abstract class LegendApplication {
       );
     } catch (error: unknown) {
       logger.error(
-        APPLICATION_LOG_EVENT.CONFIG_VERSION_INFO_FETCHING_PROBLEM,
+        APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
         error,
       );
     }
@@ -234,7 +234,7 @@ export abstract class LegendApplication {
       );
     } catch (error: unknown) {
       logger.error(
-        APPLICATION_LOG_EVENT.APPLICATION_LOAD_FAILED,
+        APPLICATION_LOG_EVENT.APPLICATION_FAILURE,
         'Failed to load Legend application',
       );
       throw error;

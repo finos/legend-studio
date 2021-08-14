@@ -186,7 +186,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
         this.editorStore.applicationStore.logger.error(
-          SDLC_LOG_EVENT.SDLC_PROBLEM,
+          SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
           error,
         );
       }
@@ -208,7 +208,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
         this.editorStore.applicationStore.logger.error(
-          SDLC_LOG_EVENT.SDLC_PROBLEM,
+          SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
           error,
         );
       }

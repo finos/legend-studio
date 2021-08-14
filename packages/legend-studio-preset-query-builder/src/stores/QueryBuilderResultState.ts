@@ -25,8 +25,8 @@ import type {
   RawLambda,
 } from '@finos/legend-studio';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   CLIENT_VERSION,
-  CORE_LOG_EVENT,
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
@@ -106,7 +106,7 @@ export class QueryBuilderResultState {
       this.setExecutionResult(result);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -136,7 +136,7 @@ export class QueryBuilderResultState {
       this.isGeneratingPlan = false;
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -179,7 +179,7 @@ export class QueryBuilderResultState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -73,7 +73,7 @@ const ProjectDependencyVersionSelector = observer(
         try {
           projectDependency.setVersionId(val?.value ?? '');
         } catch (error: unknown) {
-          logger.error(SDLC_LOG_EVENT.SDLC_PROBLEM, error);
+          logger.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
         }
       }
     };

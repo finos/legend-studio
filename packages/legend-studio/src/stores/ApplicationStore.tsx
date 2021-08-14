@@ -31,8 +31,8 @@ import {
 import { makeAutoObservable, action } from 'mobx';
 import {
   BrowserConsole,
-  CORE_LOG_EVENT,
-  EDITOR_LOG_EVENT,
+  APPLICATION_LOG_EVENT,
+  SDLC_LOG_EVENT,
 } from '../utils/Logger';
 import type { ApplicationConfig } from './application/ApplicationConfig';
 import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
@@ -275,7 +275,7 @@ export class ApplicationStore {
     } else {
       message = undefined;
       this.logger.error(
-        CORE_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+        APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
         'Unable to display error in notification',
         message,
       );
@@ -331,7 +331,7 @@ export class ApplicationStore {
       this.currentSDLCUser = currentUser;
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
+      this.logger.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
       this.notifyWarning(error.message);
     }
   }
@@ -347,7 +347,7 @@ export class ApplicationStore {
                 if (mode !== SdlcMode.PROD) {
                   // if there is an issue with an endpoint in a non prod env, we return authorized as true
                   // but notify the user of the error
-                  this.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
+                  this.logger.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
                   this.notifyError(error);
                   return true;
                 }
@@ -396,7 +396,7 @@ export class ApplicationStore {
         }
       }
     } catch (error: unknown) {
-      this.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
+      this.logger.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
       this.notifyError(error);
     }
   }
@@ -434,7 +434,7 @@ export class ApplicationStore {
    */
   alertIllegalUnhandledError = (error: Error): void => {
     this.logger.error(
-      CORE_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+      APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
       'Encountered unhandled rejection in component',
       error,
     );

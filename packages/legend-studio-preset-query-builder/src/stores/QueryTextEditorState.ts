@@ -16,8 +16,8 @@
 
 import type { EditorStore } from '@finos/legend-studio';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   buildSourceInformationSourceId,
-  CORE_LOG_EVENT,
   LambdaEditorState,
   LAMBDA_START,
   ParserError,
@@ -112,7 +112,7 @@ export class QueryTextEditorState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -149,7 +149,7 @@ export class QueryTextEditorState extends LambdaEditorState {
         this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
         this.isConvertingLambdaToString = false;

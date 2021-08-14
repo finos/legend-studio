@@ -33,7 +33,7 @@ import type { RawRelationalOperationElement } from '../../../../../models/metamo
 import { createStubRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { CompilationError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
-import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/Logger';
 import { MappingElementDecorator } from '../MappingElementDecorator';
 import { SOURCE_ID_LABEL } from '../../../../../models/MetaModelConst';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
@@ -91,7 +91,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -125,7 +125,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
           this.clearErrors();
         } catch (error: unknown) {
           this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.PARSING_PROBLEM,
+            GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
             error,
           );
         }
@@ -329,7 +329,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
         });
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       } finally {

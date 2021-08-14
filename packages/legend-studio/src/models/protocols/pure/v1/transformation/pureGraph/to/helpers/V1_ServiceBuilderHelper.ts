@@ -21,7 +21,7 @@ import {
   assertNonNullable,
 } from '@finos/legend-studio-shared';
 import { GraphError } from '../../../../../../../MetaModelUtils';
-import { CORE_LOG_EVENT } from '../../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/Logger';
 import type { Runtime } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import { RuntimePointer } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import type { Service } from '../../../../../../../metamodels/pure/model/packageableElements/service/Service';
@@ -154,7 +154,7 @@ export const V1_buildServiceTest = (
      */
     if (executionKeys.size) {
       context.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
         new GraphError(
           `Execution(s) with key '${Array.from(executionKeys.values()).join(
             ', ',

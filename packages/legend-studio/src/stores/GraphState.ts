@@ -15,7 +15,11 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import {
+  CHANGE_DETECTION_LOG_EVENT,
+  GRAPH_MANAGER_LOG_EVENT,
+  METADATA_LOG_EVENT,
+} from '../utils/Logger';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import type { EntityChange } from '../models/sdlc/models/entity/EntityChange';
@@ -265,7 +269,7 @@ export class GraphState {
       this.isInitializingGraph = true;
       const startTime = Date.now();
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
         Date.now() - startTime,
         'ms',
       );
@@ -299,7 +303,7 @@ export class GraphState {
       // build graph
       yield flowResult(this.graphManager.buildGraph(this.graph, entities));
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_INITIALIZED,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED,
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -308,7 +312,7 @@ export class GraphState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
         error,
       );
       this.graph.buildState.fail();
@@ -364,7 +368,7 @@ export class GraphState {
       // NOTE: we will see that: (time for fetching entities + time for building graph) < time for instantiating graph
       // this could be due to the time it takes for React to render in response to the fact that the model is just built
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_INITIALIZED,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED,
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -375,7 +379,7 @@ export class GraphState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
         error,
       );
       if (error instanceof DependencyGraphProcessingError) {
@@ -410,7 +414,7 @@ export class GraphState {
         } catch (error2: unknown) {
           assertErrorThrown(error2);
           this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.GRAPH_PROBLEM,
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
             error2,
           );
           if (error2 instanceof NetworkClientError) {
@@ -527,7 +531,7 @@ export class GraphState {
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
         error,
       );
       let fallbackToTextModeForDebugging = true;
@@ -628,7 +632,7 @@ export class GraphState {
         this.editorStore.grammarTextEditorState.setError(error);
       }
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
         'Compilation failed:',
         error,
       );
@@ -686,7 +690,7 @@ export class GraphState {
           this.editorStore.grammarTextEditorState.setError(error);
         }
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.COMPILATION_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
           'Compilation failed:',
           error,
         );
@@ -724,7 +728,7 @@ export class GraphState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
         error,
       );
     } finally {
@@ -792,10 +796,6 @@ export class GraphState {
    * See https://auth0.com/blog/four-types-of-leaks-in-your-javascript-code-and-how-to-get-rid-of-them/
    */
   private *updateGraphAndApplication(entities: Entity[]): GeneratorFn<void> {
-    this.editorStore.applicationStore.logger.info(
-      CORE_LOG_EVENT.GRAPH_REBUILDING,
-      '...',
-    );
     const startTime = Date.now();
     this.isUpdatingApplication = true;
     this.isUpdatingGraph = true;
@@ -899,7 +899,7 @@ export class GraphState {
       );
 
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_REBUILT,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_UPDATED_AND_REBUILT,
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -916,14 +916,14 @@ export class GraphState {
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         '[ASYNC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -991,7 +991,7 @@ export class GraphState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -1070,7 +1070,7 @@ export class GraphState {
       assertErrorThrown(error);
       const message = `Can't fetch dependency entitites. Error: ${error.message}`;
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.PROJECT_DEPENDENCY_PROBLEM,
+        METADATA_LOG_EVENT.METADATA_MANAGER_FAILURE,
         message,
       );
       this.editorStore.applicationStore.notifyError(error);

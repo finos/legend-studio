@@ -23,7 +23,7 @@ import {
   HttpStatus,
   NetworkClientError,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/Logger';
 import { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportConfigurationDescription } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import { ImportMode } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
@@ -141,7 +141,7 @@ export class V1_Engine {
     const startTime = Date.now();
     const serializedGraph = V1_serializePureModelContextData(graph);
     this.logger.info(
-      CORE_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED,
+      GRAPH_MANAGER_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED,
       Date.now() - startTime,
       'ms',
     );

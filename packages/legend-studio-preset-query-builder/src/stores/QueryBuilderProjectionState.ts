@@ -48,6 +48,7 @@ import type {
   ExecutionResult,
 } from '@finos/legend-studio';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   TdsExecutionResult,
   CLIENT_VERSION,
   PRIMITIVE_TYPE,
@@ -55,7 +56,6 @@ import {
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
-  CORE_LOG_EVENT,
   LambdaEditorState,
 } from '@finos/legend-studio';
 import {
@@ -216,7 +216,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -251,7 +251,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -361,7 +361,7 @@ export class QueryBuilderProjectionState {
         });
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       } finally {

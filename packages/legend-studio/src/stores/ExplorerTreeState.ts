@@ -31,7 +31,7 @@ import {
   openNodes,
   populatePackageTreeNodeChildren,
 } from './shared/PackageTreeUtil';
-import { CORE_LOG_EVENT, EDITOR_LOG_EVENT } from '../utils/Logger';
+import { STUDIO_LOG_EVENT, APPLICATION_LOG_EVENT } from '../utils/Logger';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';
 import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
@@ -107,7 +107,7 @@ export class ExplorerTreeState {
     }
     if (!treeData || !this.buildState.hasCompleted) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+        APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
         `Can't get explorer tree data for root package '${rootPackageName}' as it hasn't been initialized`,
       );
       throw new IllegalStateError(
@@ -389,7 +389,7 @@ export class ExplorerTreeState {
     }
     if (!opened) {
       this.editorStore.applicationStore.logger.error(
-        EDITOR_LOG_EVENT.PACKAGE_TREE_PROBLEM,
+        STUDIO_LOG_EVENT.PACKAGE_TREE_BUILDER_FAILURE,
         `Can't open package tree node for element '${element.path}' with package root '${packagePath}'`,
       );
     }

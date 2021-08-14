@@ -194,7 +194,7 @@ export { BlockingAlert } from './components/application/BlockingAlert';
 export { ActionAlert } from './components/application/ActionAlert';
 export { NotificationSnackbar } from './components/application/NotificationSnackbar';
 
-export { CORE_LOG_EVENT, SDLC_LOG_EVENT } from './utils/Logger';
+export { GRAPH_MANAGER_LOG_EVENT, SDLC_LOG_EVENT } from './utils/Logger';
 
 // test
 export * from './const';

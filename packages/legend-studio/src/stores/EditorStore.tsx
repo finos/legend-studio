@@ -82,7 +82,11 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { CORE_LOG_EVENT, EDITOR_LOG_EVENT } from '../utils/Logger';
+import {
+  GRAPH_MANAGER_LOG_EVENT,
+  STUDIO_LOG_EVENT,
+  CHANGE_DETECTION_LOG_EVENT,
+} from '../utils/Logger';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
@@ -595,7 +599,7 @@ export class EditorStore {
           this.applicationStore.navigator.reload();
         } catch (error: unknown) {
           this.applicationStore.logger.error(
-            EDITOR_LOG_EVENT.SETUP_PROBLEM,
+            STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
             error,
           );
           this.applicationStore.notifyError(error);
@@ -767,7 +771,7 @@ export class EditorStore {
         entities,
       );
       this.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
         Date.now() - startTime,
         'ms',
       );
@@ -784,7 +788,7 @@ export class EditorStore {
         this.graphState.graph.precomputeHashes(this.applicationStore.logger), // for local changes detection
         this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           entities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
         ),
         this.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex(),
         this.sdlcState.buildProjectLatestRevisionEntityHashesIndex(),
@@ -796,7 +800,7 @@ export class EditorStore {
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
       this.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
@@ -1230,7 +1234,7 @@ export class EditorStore {
         if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
           monacoEditorAPI.remeasureFonts();
           this.applicationStore.logger.info(
-            EDITOR_LOG_EVENT.EDITOR_FONT_LOADED,
+            STUDIO_LOG_EVENT.EDITOR_FONT_LOADED,
             `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
           );
         } else {

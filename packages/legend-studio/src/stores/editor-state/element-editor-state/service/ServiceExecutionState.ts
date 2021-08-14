@@ -24,7 +24,7 @@ import {
 import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
 import {
   CLIENT_VERSION,
   LAMBDA_START,
@@ -195,7 +195,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -289,7 +289,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -319,7 +319,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

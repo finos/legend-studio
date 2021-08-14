@@ -19,7 +19,7 @@ import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
 } from '../../../../models/MetaModelConst';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
@@ -78,7 +78,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -107,7 +107,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -200,7 +200,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
         });
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       } finally {

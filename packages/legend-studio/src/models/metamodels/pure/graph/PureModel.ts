@@ -15,7 +15,7 @@
  */
 
 import { action, flow, observable, makeObservable } from 'mobx';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
 import {
   PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
@@ -201,10 +201,6 @@ export class PureModel extends BasicModel {
     return this.coreModel.primitiveTypes;
   }
 
-  get reservedPathsForDependencyProcessing(): string[] {
-    return this.systemModel.allOwnElements.map((e) => e.path);
-  }
-
   /**
    * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
    * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
@@ -228,7 +224,7 @@ export class PureModel extends BasicModel {
     }
     if (!quiet) {
       logger.info(
-        CORE_LOG_EVENT.GRAPH_HASHES_PREPROCESSED,
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PREPROCESSED,
         '[ASYNC]',
         Date.now() - startTime,
         'ms',

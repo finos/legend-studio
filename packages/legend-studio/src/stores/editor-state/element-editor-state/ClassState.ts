@@ -18,7 +18,7 @@ import { observable, action, flow, makeObservable } from 'mobx';
 import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/Logger';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../EditorStore';
 import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
@@ -75,7 +75,7 @@ export class DerivedPropertyState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -110,7 +110,7 @@ export class DerivedPropertyState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -162,7 +162,7 @@ export class ConstraintState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -191,7 +191,7 @@ export class ConstraintState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -331,7 +331,7 @@ export class ClassState {
         });
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       } finally {
@@ -368,7 +368,7 @@ export class ClassState {
         });
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       } finally {

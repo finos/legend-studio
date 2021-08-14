@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { CORE_LOG_EVENT, SDLC_LOG_EVENT } from '../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT, SDLC_LOG_EVENT } from '../utils/Logger';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
@@ -84,7 +84,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -118,11 +118,11 @@ export class ReviewStore {
       yield Promise.all([
         this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
           fromEntities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
         ),
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           toEntities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
         ),
       ]);
       yield flowResult(
@@ -130,7 +130,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -148,7 +148,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -166,7 +166,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -186,7 +186,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -207,7 +207,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -227,7 +227,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -247,7 +247,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

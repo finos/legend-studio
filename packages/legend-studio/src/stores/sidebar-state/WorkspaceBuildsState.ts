@@ -52,7 +52,7 @@ export class WorkspaceBuildsState {
       ).map((build) => Build.serialization.fromJson(build));
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

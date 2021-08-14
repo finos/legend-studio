@@ -34,7 +34,7 @@ import {
   tryToMinifyJSONString,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
 import {
   observable,
   flow,
@@ -151,7 +151,7 @@ export class MappingTestQueryState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -591,7 +591,7 @@ export class MappingTestState {
         throw new UnsupportedOperationError();
       }
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -646,7 +646,7 @@ export class MappingTestState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.errorRunningTest = error as Error;
@@ -677,7 +677,7 @@ export class MappingTestState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error.message,
       );
       yield flowResult(this.editorStore.graphState.globalCompileInFormMode()); // recompile graph if there is problem with the deep fetch tree of a test
@@ -700,7 +700,7 @@ export class MappingTestState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

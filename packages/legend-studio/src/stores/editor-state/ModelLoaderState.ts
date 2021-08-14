@@ -23,7 +23,7 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
 } from '@finos/legend-studio-shared';
-import { EDITOR_LOG_EVENT } from '../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../utils/Logger';
 import type { EditorStore } from '../EditorStore';
 import type { ImportConfigurationDescription } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
 import { ImportMode } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
@@ -186,7 +186,7 @@ export class ModelLoaderState extends EditorState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        EDITOR_LOG_EVENT.MODEL_LOADER_PROBLEM,
+        STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -209,7 +209,7 @@ export class ModelLoaderState extends EditorState {
         (yield this.editorStore.graphState.graphManager.getAvailableImportConfigurationDescriptions()) as ImportConfigurationDescription[];
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        EDITOR_LOG_EVENT.MODEL_LOADER_PROBLEM,
+        STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -28,7 +28,7 @@ import { CLIENT_VERSION } from '../models/MetaModelConst';
 import type { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { RawLambda } from '../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { Runtime } from '../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../utils/Logger';
 
 export enum SQL_DISPLAY_TABS {
   SQL_QUERY = 'SQL_QUERY',
@@ -152,7 +152,7 @@ export class ExecutionPlanState {
       this.buildExecutionPlan(rawPlan);
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

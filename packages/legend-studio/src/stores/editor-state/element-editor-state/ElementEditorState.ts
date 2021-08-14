@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../../EditorStore';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/Logger';
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import { ELEMENT_NATIVE_VIEW_MODE, TAB_SIZE } from '../../EditorConfig';
 import { EditorState } from '../../editor-state/EditorState';
@@ -94,7 +94,7 @@ export abstract class ElementEditorState extends EditorState {
         ),
       );
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.PARSING_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
         error,
       );
     }
@@ -121,7 +121,7 @@ export abstract class ElementEditorState extends EditorState {
         ),
       );
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.PARSING_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
         error,
       );
     }

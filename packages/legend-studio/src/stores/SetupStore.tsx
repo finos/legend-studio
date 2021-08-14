@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { EDITOR_LOG_EVENT } from '../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../utils/Logger';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { ApplicationStore } from './ApplicationStore';
 import { useApplicationStore } from './ApplicationStore';
@@ -135,7 +135,7 @@ export class SetupStore {
                 } projects: ${error.message}`,
               );
               this.applicationStore.logger.error(
-                EDITOR_LOG_EVENT.SETUP_PROBLEM,
+                STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
                 wrappedError,
               );
               this.applicationStore.notifyError(wrappedError);
@@ -151,7 +151,10 @@ export class SetupStore {
       this.projects = projectMap;
       this.loadProjectsState.pass();
     } catch (error: unknown) {
-      this.applicationStore.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.logger.error(
+        STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
+        error,
+      );
       this.applicationStore.notifyError(error);
       this.loadProjectsState.fail();
     }
@@ -296,7 +299,10 @@ export class SetupStore {
       this.workspacesByProject.set(projectId, workspaceMap);
     } catch (error: unknown) {
       // TODO handle error when fetching workspaces for an individual project
-      this.applicationStore.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.logger.error(
+        STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
+        error,
+      );
     } finally {
       this.loadWorkspacesState.reset();
     }
@@ -329,7 +335,10 @@ export class SetupStore {
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
     } catch (error: unknown) {
-      this.applicationStore.logger.error(EDITOR_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.logger.error(
+        STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
+        error,
+      );
       this.applicationStore.notifyError(error);
       this.createWorkspaceState.fail();
     }

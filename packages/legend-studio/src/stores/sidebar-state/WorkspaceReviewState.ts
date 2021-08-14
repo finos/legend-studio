@@ -17,7 +17,7 @@
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import { CORE_LOG_EVENT, SDLC_LOG_EVENT } from '../../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT, SDLC_LOG_EVENT } from '../../utils/Logger';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import type { Revision } from '../../models/sdlc/models/revision/Revision';
 import { RevisionAlias } from '../../models/sdlc/models/revision/Revision';
@@ -130,7 +130,7 @@ export class WorkspaceReviewState {
         ),
       ]);
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
         Date.now() - startTime,
         'ms',
       );
@@ -138,7 +138,7 @@ export class WorkspaceReviewState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -185,7 +185,7 @@ export class WorkspaceReviewState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -210,7 +210,7 @@ export class WorkspaceReviewState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -233,7 +233,7 @@ export class WorkspaceReviewState {
       this.workspaceReview = undefined;
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -266,7 +266,7 @@ export class WorkspaceReviewState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -332,7 +332,7 @@ export class WorkspaceReviewState {
       });
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        SDLC_LOG_EVENT.SDLC_PROBLEM,
+        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

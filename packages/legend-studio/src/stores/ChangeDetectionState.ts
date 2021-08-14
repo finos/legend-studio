@@ -23,7 +23,7 @@ import {
   flow,
   makeObservable,
 } from 'mobx';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/Logger';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   IllegalStateError,
@@ -122,7 +122,7 @@ class RevisionChangeDetectionState {
     this.changes = changes;
     if (!quiet) {
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
         Date.now() - startTime,
         'ms',
       );
@@ -131,7 +131,7 @@ class RevisionChangeDetectionState {
 
   *buildEntityHashesIndex(
     entities: Entity[],
-    logEvent: CORE_LOG_EVENT,
+    logEvent: string,
     quiet?: boolean,
   ): GeneratorFn<void> {
     if (!this.entities.length && !this.entityHashesIndex.size) {
@@ -155,7 +155,7 @@ class RevisionChangeDetectionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.CHANGE_DETECTION_PROBLEM,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_FAILURE,
         `Can't build hashes index`,
       );
       this.setEntityHashesIndex(new Map<string, string>());
@@ -392,7 +392,7 @@ export class ChangeDetectionState {
     );
     if (!quiet) {
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_HASH_SNAPSHOTED,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED,
         Date.now() - startTime,
         'ms',
       );
@@ -451,7 +451,7 @@ export class ChangeDetectionState {
       );
       if (!quiet) {
         this.editorStore.applicationStore.logger.info(
-          CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
           Date.now() - startTime,
           'ms',
         );
@@ -511,7 +511,7 @@ export class ChangeDetectionState {
     )) as EntityChangeConflict[];
     if (!quiet) {
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
         Date.now() - startTime,
         'ms',
       );
@@ -541,7 +541,7 @@ export class ChangeDetectionState {
     )) as EntityChangeConflict[];
     if (!quiet) {
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
         Date.now() - startTime,
         'ms',
       );
@@ -673,7 +673,7 @@ export class ChangeDetectionState {
     ]);
     if (!quiet) {
       this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
         Date.now() - startTime,
         'ms',
       );

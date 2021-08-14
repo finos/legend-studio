@@ -44,7 +44,7 @@ import {
   CLIENT_VERSION,
   LAMBDA_START,
 } from '../../../../models/MetaModelConst';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/Logger';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
@@ -155,7 +155,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
           error,
         );
       }
@@ -556,7 +556,7 @@ export class MappingExecutionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -614,7 +614,7 @@ export class MappingExecutionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -646,7 +646,7 @@ export class MappingExecutionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -676,7 +676,7 @@ export class MappingExecutionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
