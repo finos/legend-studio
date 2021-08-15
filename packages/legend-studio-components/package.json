@@ -41,7 +41,7 @@
   "dependencies": {
     "@finos/legend-studio-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
-    "@types/react": "17.0.17",
+    "@types/react": "17.0.18",
     "@types/react-select": "4.0.17",
     "@types/react-window": "1.8.5",
     "clsx": "1.1.1",
