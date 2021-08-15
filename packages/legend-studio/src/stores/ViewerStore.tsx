@@ -154,8 +154,8 @@ export class ViewerStore {
 
       let entities: Entity[] = [];
       let projectConfiguration: PlainObject<ProjectConfiguration>;
-      this.editorStore.graphState.isInitializingGraph = true;
       const startTime = Date.now();
+      this.editorStore.graphState.isInitializingGraph = true;
 
       if (versionId) {
         // get version info if a version is specified
@@ -211,7 +211,6 @@ export class ViewerStore {
           ])) as [Entity[], PlainObject<ProjectConfiguration>];
           entities = result[0];
           projectConfiguration = result[1];
-          console.log('==> ', { entities, projectConfiguration });
           this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
             ProjectConfiguration.serialization.fromJson(projectConfiguration),
           );
