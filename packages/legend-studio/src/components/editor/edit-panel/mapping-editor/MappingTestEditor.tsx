@@ -16,7 +16,6 @@
 
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
@@ -36,6 +35,9 @@ import {
   TimesIcon,
   PencilIcon,
   PlayIcon,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
 } from '@finos/legend-studio-components';
 import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
@@ -202,8 +204,8 @@ const MappingTestQueryEditor = observer(
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <ReflexContainer orientation="vertical">
-              <ReflexElement minSize={250}>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={250}>
                 <div className="mapping-test-editor__query-panel__query">
                   <TextInputEditor
                     inputValue={queryState.lambdaString}
@@ -212,14 +214,14 @@ const MappingTestQueryEditor = observer(
                     showMiniMap={false}
                   />
                 </div>
-              </ReflexElement>
-              <ReflexSplitter />
-              <ReflexElement size={250} minSize={250}>
+              </ResizablePanel>
+              <ResizablePanelSplitter />
+              <ResizablePanel size={250} minSize={250}>
                 <div className="mapping-test-editor__query-panel__query-editor">
                   {extraQueryEditors}
                 </div>
-              </ReflexElement>
-            </ReflexContainer>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         )}
         {queryState.query.isStub && (
@@ -522,33 +524,33 @@ export const MappingTestBuilder = observer(
     return (
       <div className="mapping-test-editor">
         <PanelLoadingIndicator isLoading={testState.isExecutingTest} />
-        <ReflexContainer orientation="horizontal">
-          <ReflexElement size={250} minSize={28}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={250} minSize={28}>
             {/* use UUID key to make sure these components refresh when we change the state */}
             <MappingTestQueryEditor
               key={testState.queryState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
             />
-          </ReflexElement>
-          <ReflexSplitter />
-          <ReflexElement size={250} minSize={28}>
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel size={250} minSize={28}>
             {/* use UUID key to make sure these components refresh when we change the state */}
             <MappingTestInputDataBuilder
               key={testState.inputDataState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
             />
-          </ReflexElement>
-          <ReflexSplitter />
-          <ReflexElement minSize={28}>
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel minSize={28}>
             <MappingTestAssertionBuilder
               key={testState.assertionState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
             />
-          </ReflexElement>
-        </ReflexContainer>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

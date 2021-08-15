@@ -50,6 +50,7 @@ import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { PluginManager } from './PluginManager';
 import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';
 import { WebApplicationNavigatorProvider } from '../stores/application/WebApplicationNavigator';
+import { configureComponents } from '@finos/legend-studio-components';
 
 // This is not considered side-effect that hinders tree-shaking because the effectful calls
 // are embedded in the function
@@ -99,24 +100,7 @@ export const setupLegendStudioUILibrary = async (
     ignoreTags: [],
   });
 
-  /**
-   * The following block is needed to inject `react-reflex` styling during development
-   * as HMR makes stylesheet loaded after layout calculation, throwing off `react-reflex`
-   * See https://github.com/leefsmp/Re-Flex/issues/27#issuecomment-718949629
-   */
-  // eslint-disable-next-line no-process-env
-  if (process.env.NODE_ENV === 'development') {
-    const stylesheet = document.createElement('style');
-    stylesheet.innerHTML = `
-        /* For development, this needs to be injected before stylesheet, else \`react-reflex\` panel dimension calculation will be off */
-        .reflex-container { height: 100%; width: 100%; }
-        /* NOTE: we have to leave the min dimension as \`0.1rem\` to avoid re-calculation bugs due to HMR style injection order */
-        .reflex-container.horizontal { flex-direction: column; min-height: 0.1rem; }
-        .reflex-container.vertical { flex-direction: row; min-width: 0.1rem; }
-        .reflex-container > .reflex-element { height: 100%; width: 100%; }
-      `;
-    document.head.prepend(stylesheet);
-  }
+  configureComponents();
 
   await Promise.all(
     pluginManager

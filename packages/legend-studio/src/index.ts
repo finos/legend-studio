@@ -190,7 +190,6 @@ export { getElementIcon, getElementTypeIcon } from './components/shared/Icon';
 export { TypeTree } from './components/shared/TypeTree';
 export type { LambdaEditorOnKeyDownEventHandler } from './components/shared/LambdaEditor';
 export { LambdaEditor } from './components/shared/LambdaEditor';
-export { LegendMaterialUITheme } from './components/LegendStudioApplication';
 export { BlockingAlert } from './components/application/BlockingAlert';
 export { ActionAlert } from './components/application/ActionAlert';
 export { NotificationSnackbar } from './components/application/NotificationSnackbar';

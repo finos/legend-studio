@@ -17,12 +17,17 @@
 export * from './utils/ComponentUtils';
 export * from './utils/StubTransition';
 export * from './utils/PanelDisplayState';
+export * from './utils/TextEditorUtils';
+
+export * from './theme/LegendApplicationMaterialUITheme';
 
 export * from './components/Icon';
 export * from './components/LegendLogo';
 export * from './components/TreeView';
 export * from './components/CustomSelectorInput';
 export * from './components/BaseMuiComponents';
+export * from './components/ComponentsConfiguration';
+export * from './components/ResizablePanel';
 
 export * from './components/dialog/NonBlockingDialog';
 

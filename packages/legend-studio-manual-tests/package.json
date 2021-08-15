@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@finos/legend-studio": "workspace:*",
+    "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
     "@types/react": "17.0.18",
     "mobx": "6.3.2",

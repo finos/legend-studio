@@ -24,9 +24,11 @@ import type { RelationalDatabaseConnectionValueState } from '../../../../stores/
 import { useState } from 'react';
 import { MdModeEdit } from 'react-icons/md';
 import { VscError } from 'react-icons/vsc';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
   clsx,
   CustomSelectorInput,
   CheckSquareIcon,
@@ -995,8 +997,8 @@ const RelationalConnectionGeneralEditor = observer(
 
     return (
       <div className="relational-connection-editor">
-        <ReflexContainer orientation="horizontal">
-          <ReflexElement size={200} minSize={15}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={200} minSize={15}>
             <div className="panel">
               <div className="panel__header">
                 <div className="panel__header__title">
@@ -1026,12 +1028,12 @@ const RelationalConnectionGeneralEditor = observer(
                 />
               </div>
             </div>
-          </ReflexElement>
-          <ReflexSplitter />
-          <ReflexElement>
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel>
             <div className="relational-connection-editor__content">
-              <ReflexContainer orientation="vertical">
-                <ReflexElement size={450} minSize={50}>
+              <ResizablePanelGroup orientation="vertical">
+                <ResizablePanel size={450} minSize={50}>
                   <div className="relational-connection-editor__auth">
                     <div className="panel__header">
                       <div className="panel__header__title">
@@ -1061,9 +1063,9 @@ const RelationalConnectionGeneralEditor = observer(
                       </div>
                     </div>
                   </div>
-                </ReflexElement>
-                <ReflexSplitter />
-                <ReflexElement minSize={0}>
+                </ResizablePanel>
+                <ResizablePanelSplitter />
+                <ResizablePanel minSize={0}>
                   <div className="relational-connection-editor__source">
                     <div className="panel__header">
                       <div className="panel__header__title">
@@ -1093,11 +1095,11 @@ const RelationalConnectionGeneralEditor = observer(
                       </div>
                     </div>
                   </div>
-                </ReflexElement>
-              </ReflexContainer>
+                </ResizablePanel>
+              </ResizablePanelGroup>
             </div>
-          </ReflexElement>
-        </ReflexContainer>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

@@ -25,7 +25,6 @@ import {
   ActionAlert,
   ApplicationStoreProvider,
   BlockingAlert,
-  LegendMaterialUITheme,
   NotificationSnackbar,
 } from '@finos/legend-studio';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
@@ -37,7 +36,10 @@ import {
   ServiceQueryLoader,
 } from './QueryEditor';
 import { flowResult } from 'mobx';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  LegendMaterialUITheme,
+  PanelLoadingIndicator,
+} from '@finos/legend-studio-components';
 import type { Log } from '@finos/legend-studio-shared';
 
 const LegendQueryApplicationInner = observer(() => {
