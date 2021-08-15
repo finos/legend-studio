@@ -79,6 +79,10 @@ import {
 } from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
 import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
 import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext';
+import {
+  getClassMappingById,
+  getClassMappingsByClass,
+} from '../../../../../../metamodels/pure/helpers/MappingHelper';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -87,14 +91,14 @@ const resolveRelationalPropertyMappingSource = (
 ): SetImplementation | undefined => {
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
-      return immediateParent.parent.getClassMapping(value.source);
+      return getClassMappingById(immediateParent.parent, value.source);
     }
     const property = immediateParent.association.value.getProperty(
       value.property.property,
     );
     const _class =
       immediateParent.association.value.getPropertyAssociatedClass(property);
-    const setImpls = immediateParent.parent.classMappingsByClass(_class);
+    const setImpls = getClassMappingsByClass(immediateParent.parent, _class);
     return setImpls.find((r) => r.root.value) ?? setImpls[0];
   }
   return topParent;
@@ -188,13 +192,15 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const topParent = guaranteeNonNullable(this.topParent);
     if (propertyType instanceof Class) {
       if (protocol.target) {
-        targetSetImplementation = topParent.parent.getClassMapping(
+        targetSetImplementation = getClassMappingById(
+          topParent.parent,
           protocol.target,
         );
       } else {
         /* @MARKER: ACTION ANALYTICS */
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
-        const setImplementation = topParent.parent.classMappingsByClass(
+        const setImplementation = getClassMappingsByClass(
+          topParent.parent,
           guaranteeType(propertyType, Class),
         )[0];
         targetSetImplementation = guaranteeNonNullable(
@@ -205,7 +211,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     }
     const sourceSetImplementation = returnUndefOnError(() =>
       protocol.source
-        ? topParent.parent.getClassMapping(protocol.source)
+        ? getClassMappingById(topParent.parent, protocol.source)
         : undefined,
     );
     const purePropertyMapping = new PurePropertyMapping(
@@ -276,9 +282,9 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     let targetSetImplementation: SetImplementation | undefined;
     const propertyType = property.genericType.value.rawType;
     if (propertyType instanceof Class && protocol.target) {
-      targetSetImplementation = this.topParent?.parent.getClassMapping(
-        protocol.target,
-      );
+      targetSetImplementation = this.topParent
+        ? getClassMappingById(this.topParent.parent, protocol.target)
+        : undefined;
     }
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
       this.immediateParent,
@@ -438,13 +444,16 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         parentMapping = this.immediateParent.parent;
       }
       if (protocol.target) {
-        targetSetImplementation = parentMapping?.getClassMapping(
-          protocol.target,
-        );
+        targetSetImplementation = parentMapping
+          ? getClassMappingById(parentMapping, protocol.target)
+          : undefined;
       } else {
-        targetSetImplementation = parentMapping?.classMappingsByClass(
-          guaranteeType(propertyType, Class),
-        )[0];
+        targetSetImplementation = parentMapping
+          ? getClassMappingsByClass(
+              parentMapping,
+              guaranteeType(propertyType, Class),
+            )[0]
+          : undefined;
       }
     }
     const sourceSetImplementation = guaranteeNonNullable(
@@ -567,7 +576,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       _class,
       InferableMappingElementIdExplicitValue.create(id, ''),
     );
-    inline.inlineSetImplementation = topParent.parent.getClassMapping(
+    inline.inlineSetImplementation = getClassMappingById(
+      topParent.parent,
       protocol.setImplementationId,
     );
     return inline;

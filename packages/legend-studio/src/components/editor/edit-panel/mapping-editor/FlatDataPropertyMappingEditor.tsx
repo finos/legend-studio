@@ -21,6 +21,7 @@ import {
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
 } from '../../../../stores/shared/DnDUtil';
+import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type {
   FlatDataPropertyMappingState,
@@ -37,10 +38,10 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { FlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
+import { getEnumerationMappingsByEnumeration } from '../../../../models/metamodels/pure/helpers/MappingHelper';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -123,9 +124,10 @@ const EnumerationPropertyMappingEditor = observer(
       propertyMappingState.instanceSetImplementationState.selectedType ===
         expectedType;
     // Enumeration Mapping Selector
-    const options = mappingEditorState.mapping
-      .enumerationMappingsByEnumeration(enumeration)
-      .map((em) => ({ value: em, label: em.id.value }));
+    const options = getEnumerationMappingsByEnumeration(
+      mappingEditorState.mapping,
+      enumeration,
+    ).map((em) => ({ value: em, label: em.id.value }));
     const transformer = propertyMapping.transformer?.id.value ?? '';
     const handleSelectionChange = (
       val: { label: string; value: EnumerationMapping } | null,

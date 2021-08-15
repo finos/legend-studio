@@ -31,7 +31,7 @@ import {
   openNodes,
   populatePackageTreeNodeChildren,
 } from './shared/PackageTreeUtil';
-import { STUDIO_LOG_EVENT } from '../utils/STUDIO_LOG_EVENT';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';

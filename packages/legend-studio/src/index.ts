@@ -107,6 +107,7 @@ export {
 } from './models/metamodels/pure/model/valueSpecification/GraphFetchTree';
 export * from './models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 export * from './models/metamodels/pure/action/query/Query';
+export { getRootSetImplementation } from './models/metamodels/pure/helpers/MappingResolutionHelper';
 
 // protocols
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';

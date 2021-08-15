@@ -71,7 +71,6 @@ import { PrimitiveType } from '../models/metamodels/pure/model/packageableElemen
 import { Enumeration } from '../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Class } from '../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Association } from '../models/metamodels/pure/model/packageableElements/domain/Association';
-import type { MappingElement } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Diagram } from '../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 import { ConcreteFunctionDefinition } from '../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
@@ -102,6 +101,7 @@ import { AssociationImplementation } from '../models/metamodels/pure/model/packa
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { ProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
 import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
+import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 
 export class GraphState {
   editorStore: EditorStore;

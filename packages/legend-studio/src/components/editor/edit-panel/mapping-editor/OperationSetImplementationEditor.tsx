@@ -47,6 +47,7 @@ import { InferableMappingElementIdExplicitValue } from '../../../../models/metam
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { SetImplementationExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementationReference';
 import { InferableMappingElementRootExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementRoot';
+import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
 
 interface SetImplementationOption {
   value: SetImplementation;
@@ -64,8 +65,10 @@ export const OperationSetImplementationEditor = observer(
       editorStore.getCurrentEditorState(MappingEditorState);
     const mapping = mappingEditorState.mapping;
     // Parameters
-    const setImplementationOptions = mapping
-      .classMappingsByClass(setImplementation.class.value, true)
+    const setImplementationOptions = getClassMappingsByClass(
+      mapping,
+      setImplementation.class.value,
+    )
       .filter((si) => si.id.value !== setImplementation.id.value)
       .map((si) => ({ value: si, label: si.id.value }));
     const filterOption = createFilter({

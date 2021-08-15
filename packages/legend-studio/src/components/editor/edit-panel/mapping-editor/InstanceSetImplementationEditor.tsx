@@ -31,7 +31,11 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 import { guaranteeNonNullable, noop } from '@finos/legend-studio-shared';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  getMappingElementSource,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { TypeTree } from '../../../shared/TypeTree';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
@@ -50,8 +54,6 @@ import type { Property } from '../../../../models/metamodels/pure/model/packagea
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import type { MappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { getMappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';

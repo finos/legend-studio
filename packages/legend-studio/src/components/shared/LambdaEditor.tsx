@@ -310,7 +310,14 @@ const LambdaEditorInner = observer(
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
-          setErrorMarkers(editorModel, error.sourceInformation, error.message);
+          setErrorMarkers(
+            editorModel,
+            error.message,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+            error.sourceInformation.endLine,
+            error.sourceInformation.endColumn,
+          );
         } else {
           monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
         }

@@ -28,7 +28,7 @@ import { ClassViewExplicitReference } from '../../../model/packageableElements/d
 /**
  * Get absolute position of element on the screen by recursively walking up element tree
  */
-export function getElementPosition(element: HTMLElement): Point {
+export const getElementPosition = (element: HTMLElement): Point => {
   let xPosition = 0;
   let yPosition = 0;
   while (element.offsetParent) {
@@ -37,16 +37,16 @@ export function getElementPosition(element: HTMLElement): Point {
     element = element.offsetParent as HTMLElement;
   }
   return new Point(xPosition, yPosition);
-}
+};
 
 /**
  * For a path, only counts the points which lie outside of the 2 class views
  */
-export function manageInsidePointsDynamically(
+export const manageInsidePointsDynamically = (
   path: Point[],
   from: ClassView,
   to: ClassView,
-): Point[] {
+): Point[] => {
   let start = 0;
   let startPoint = path[start];
 
@@ -64,7 +64,7 @@ export function manageInsidePointsDynamically(
   }
 
   return path.slice(start - 1, end + 2);
-}
+};
 
 export class RelationshipView implements Hashable {
   owner: Diagram;

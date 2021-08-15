@@ -28,6 +28,7 @@ import {
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
 
 const editorStore = getTestEditorStore();
 
@@ -76,7 +77,8 @@ test(unitTest('Relational Mapping with property from association'), () => {
   expect(mapping.classMappings).toHaveLength(2);
   const personClassMapping = guaranteeType(
     guaranteeNonNullable(
-      mapping.classMappingsByClass(
+      getClassMappingsByClass(
+        mapping,
         graph.getClass('apps::pure::studio::model::simple::Person'),
       )[0],
     ),
@@ -93,7 +95,8 @@ test(unitTest('Relational Mapping with property from association'), () => {
   expect(primaryKey.column.value.name).toBe('ID');
   const firmClassMapping = guaranteeType(
     guaranteeNonNullable(
-      mapping.classMappingsByClass(
+      getClassMappingsByClass(
+        mapping,
         graph.getClass('apps::pure::studio::model::simple::Firm'),
       )[0],
     ),

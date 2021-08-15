@@ -374,7 +374,14 @@ const MergeConflictEditor = observer(
       if (editorModel) {
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         if (error?.sourceInformation) {
-          setErrorMarkers(editorModel, error.sourceInformation, error.message);
+          setErrorMarkers(
+            editorModel,
+            error.message,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+            error.sourceInformation.endLine,
+            error.sourceInformation.endColumn,
+          );
         } else {
           monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
         }
@@ -540,7 +547,11 @@ const MergeConflictEditor = observer(
     useEffect(() => {
       if (editor) {
         if (error?.sourceInformation) {
-          revealError(editor, error.sourceInformation);
+          revealError(
+            editor,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+          );
         }
       }
     }, [editor, error, error?.sourceInformation]);

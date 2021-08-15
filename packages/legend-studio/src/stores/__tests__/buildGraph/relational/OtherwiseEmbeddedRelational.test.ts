@@ -21,6 +21,7 @@ import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
 
 const editorStore = getTestEditorStore();
 
@@ -43,7 +44,7 @@ test(unitTest('Otherwise Embedded Relational Mapping'), () => {
   const mapping = graph.getMapping('mappingPackage::myMapping');
   // person
   const personClassMapping = guaranteeType(
-    mapping.classMappingsByClass(graph.getClass('other::Person'))[0],
+    getClassMappingsByClass(mapping, graph.getClass('other::Person'))[0],
     RootRelationalInstanceSetImplementation,
   );
   expect(personClassMapping.id.value).toBe('alias1');

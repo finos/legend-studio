@@ -30,6 +30,7 @@ import type {
   Type,
 } from '@finos/legend-studio';
 import {
+  getRootSetImplementation,
   TYPICAL_MULTIPLICITY_TYPE,
   OperationSetImplementation,
   AbstractPropertyExpression,
@@ -318,7 +319,7 @@ const getQueryBuilderTreeData = (
 ): TreeData<QueryBuilderExplorerTreeNodeData> => {
   const rootIds = [];
   const nodes = new Map<string, QueryBuilderExplorerTreeNodeData>();
-  const rootSetImpl = mapping.getRootSetImplementation(rootClass);
+  const rootSetImpl = getRootSetImplementation(mapping, rootClass);
   const treeRootNode = new QueryBuilderExplorerTreeRootNodeData(
     '@dummy_rootNode',
     rootClass.name,

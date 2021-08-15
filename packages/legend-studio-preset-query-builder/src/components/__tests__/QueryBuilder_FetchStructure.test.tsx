@@ -40,6 +40,7 @@ import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderE
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
 import {
   AbstractPropertyExpression,
+  getRootSetImplementation,
   RawLambda,
   setUpEditorWithDefaultSDLCData,
 } from '@finos/legend-studio';
@@ -99,7 +100,7 @@ test(
     const mapping = mockedEditorStore.graphState.graph.getMapping(
       'model::relational::tests::simpleRelationalMapping',
     );
-    expect(mapping.getRootSetImplementation(_personClass)).toBe(
+    expect(getRootSetImplementation(mapping, _personClass)).toBe(
       rootNode.setImpl,
     );
     expect(rootNode.mapped).toBe(true);

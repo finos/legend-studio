@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { MappingEditorState } from './MappingEditorState';
+import type {
+  MappingEditorState,
+  MappingElementSource,
+} from './MappingEditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   hashObject,
@@ -67,10 +70,7 @@ import { FlatDataInputData } from '../../../../models/metamodels/pure/model/pack
 import type { MappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTestAssert';
 import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
 import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import type {
-  MappingElementSource,
-  Mapping,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';

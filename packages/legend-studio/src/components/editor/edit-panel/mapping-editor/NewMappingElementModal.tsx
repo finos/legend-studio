@@ -25,12 +25,17 @@ import {
 } from '@finos/legend-studio-components';
 import type { SelectComponent } from '@finos/legend-studio-components';
 import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  createClassMapping,
+  createEnumerationMapping,
+  getAllMappingElements,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   UnsupportedOperationError,
   compareLabelFn,
 } from '@finos/legend-studio-shared';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
@@ -57,9 +62,9 @@ export const NewMappingElementModal = observer(() => {
   const handleIdChange: React.ChangeEventHandler<HTMLInputElement> = (event) =>
     setId(event.target.value);
   const mapping = mappingEditorState.mapping;
-  const mappingIds = mapping
-    .getAllMappingElements()
-    .map((mappingElement) => mappingElement.id.value);
+  const mappingIds = getAllMappingElements(mapping).map(
+    (mappingElement) => mappingElement.id.value,
+  );
   const isMappingIdUnique = !mappingIds.includes(id);
   const showId =
     spec?.target &&
@@ -146,14 +151,16 @@ export const NewMappingElementModal = observer(() => {
         let newMappingElement: MappingElement | undefined = undefined;
         if (spec.target instanceof Class) {
           if (classMappingType?.value) {
-            newMappingElement = mapping.createClassMapping(
+            newMappingElement = createClassMapping(
+              mapping,
               id,
               spec.target,
               classMappingType.value,
             );
           }
         } else if (spec.target instanceof Enumeration) {
-          newMappingElement = mapping.createEnumerationMapping(
+          newMappingElement = createEnumerationMapping(
+            mapping,
             id,
             spec.target,
             editorStore.graphState.graph.getPrimitiveType(

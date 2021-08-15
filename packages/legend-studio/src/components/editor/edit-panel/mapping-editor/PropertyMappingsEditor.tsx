@@ -19,6 +19,7 @@ import { FaArrowAltCircleRight } from 'react-icons/fa';
 import { MultiplicityBadge } from '../../../shared/MultiplicityBadge';
 import { PurePropertyMappingEditor } from './PurePropertyMappingEditor';
 import { getElementIcon } from '../../../shared/Icon';
+import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import type { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
@@ -26,7 +27,10 @@ import {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { nominateRootSetImplementation } from '../../../../utils/MappingResolutionUtil';
+import {
+  getRootSetImplementation,
+  nominateRootSetImplementation,
+} from '../../../../models/metamodels/pure/helpers/MappingResolutionHelper';
 import { clsx } from '@finos/legend-studio-components';
 import { guaranteeType } from '@finos/legend-studio-shared';
 import type { FlatDataPropertyMappingState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
@@ -46,7 +50,6 @@ import type { Property } from '../../../../models/metamodels/pure/model/packagea
 import { PrimitiveType } from '../../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
 import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type {
   RelationalPropertyMappingState,
   RootRelationalInstanceSetImplementationState,
@@ -95,10 +98,10 @@ export const PropertyMappingsEditor = observer(
           instanceSetImplementationState.mappingElement instanceof
           PureInstanceSetImplementation
         ) {
-          const rootMappingElement =
-            mappingEditorState.mapping.getRootSetImplementation(
-              propertyRawType,
-            );
+          const rootMappingElement = getRootSetImplementation(
+            mappingEditorState.mapping,
+            propertyRawType,
+          );
           if (rootMappingElement) {
             mappingEditorState.openMappingElement(rootMappingElement, true);
           } else {

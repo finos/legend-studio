@@ -29,7 +29,7 @@ import {
   DatabasePattern,
   TargetDatabase,
 } from '../../../../models/metamodels/pure/action/generation/DatabaseBuilderInput';
-import { getDbNullableTable } from '../../../../models/metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
+import { getDbNullableTable } from '../../../../models/metamodels/pure/helpers/DatabaseHelper';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { Column } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Column';
@@ -41,7 +41,7 @@ import {
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
-import { STUDIO_LOG_EVENT } from '../../../../utils/STUDIO_LOG_EVENT';
+import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { EditorStore } from '../../../EditorStore';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {

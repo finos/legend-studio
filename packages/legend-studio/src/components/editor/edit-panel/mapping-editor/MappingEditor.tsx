@@ -36,8 +36,16 @@ import {
 } from '../../../shared/Icon';
 import SplitPane from 'react-split-pane';
 import { useResizeDetector } from 'react-resize-detector';
-import type { MappingEditorTabState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type {
+  MappingEditorTabState,
+  MappingElement,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  MappingEditorState,
+  getMappingElementTarget,
+  getMappingElementType,
+  MAPPING_ELEMENT_TYPE,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { MappingExplorer } from './MappingExplorer';
 import { MappingTestEditor } from './MappingTestEditor';
@@ -47,12 +55,6 @@ import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../../const';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import {
-  MAPPING_ELEMENT_TYPE,
-  getMappingElementType,
-  getMappingElementTarget,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';

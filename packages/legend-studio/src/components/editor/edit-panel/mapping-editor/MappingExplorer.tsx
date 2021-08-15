@@ -30,8 +30,16 @@ import { clsx, TreeView, ContextMenu } from '@finos/legend-studio-components';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { useDrop, useDrag } from 'react-dnd';
 import { toSentenceCase } from '@finos/legend-studio-shared';
-import type { MappingExplorerTreeNodeData } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type {
+  MappingElement,
+  MappingExplorerTreeNodeData,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  getAllMappingElements,
+  getMappingElementTarget,
+  getMappingElementType,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
 import {
   FaPlus,
@@ -46,11 +54,6 @@ import { getElementIcon } from '../../../shared/Icon';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import {
-  getMappingElementType,
-  getMappingElementTarget,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
@@ -345,13 +348,11 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
   const mappingEditorState =
     editorStore.getCurrentEditorState(MappingEditorState);
   const mapping = mappingEditorState.mapping;
-  const mappingElements = mapping
-    .getAllMappingElements()
-    .sort((a, b) =>
-      getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
-        getMappingIdentitySortString(b, getMappingElementTarget(b)),
-      ),
-    );
+  const mappingElements = getAllMappingElements(mapping).sort((a, b) =>
+    getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
+      getMappingIdentitySortString(b, getMappingElementTarget(b)),
+    ),
+  );
   const openNewMapingModal = (): void =>
     mappingEditorState.createMappingElement({
       showTarget: true,

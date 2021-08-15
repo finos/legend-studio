@@ -20,6 +20,7 @@ import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
+import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
 
 const editorStore = getTestEditorStore();
 
@@ -43,7 +44,8 @@ test(unitTest('Embedded Relational Mapping'), () => {
     'meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded',
   );
   const personClassMapping = guaranteeType(
-    mapping.classMappingsByClass(
+    getClassMappingsByClass(
+      mapping,
       graph.getClass('meta::pure::tests::model::simple::Person'),
     )[0],
     RootRelationalInstanceSetImplementation,

@@ -32,6 +32,10 @@ import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-studio-components';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  getMappingElementSource,
+  getMappingElementTarget,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { NewServiceModal } from '../service-editor/NewServiceModal';
@@ -58,10 +62,6 @@ import {
   useApplicationStore,
 } from '../../../../stores/ApplicationStore';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import {
-  getMappingElementTarget,
-  getMappingElementSource,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';

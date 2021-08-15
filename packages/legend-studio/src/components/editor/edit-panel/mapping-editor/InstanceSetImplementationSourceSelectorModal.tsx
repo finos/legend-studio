@@ -21,14 +21,16 @@ import {
   CustomSelectorInput,
   createFilter,
 } from '@finos/legend-studio-components';
-import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type {
+  MappingEditorState,
+  MappingElementSource,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import { getMappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import Dialog from '@material-ui/core/Dialog';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { MappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { getMappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';

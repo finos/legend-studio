@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-import type { MappingEditorState } from './MappingEditorState';
-import { generateMappingTestName } from './MappingEditorState';
+import type {
+  MappingEditorState,
+  MappingElementSource,
+} from './MappingEditorState';
+import {
+  getMappingElementSource,
+  getMappingElementTarget,
+  generateMappingTestName,
+} from './MappingEditorState';
 import type { EditorStore } from '../../../EditorStore';
 import {
   observable,
@@ -63,14 +70,7 @@ import { JsonModelConnection } from '../../../../models/metamodels/pure/model/pa
 import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
 import type { InputData } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InputData';
 import { FlatDataInputData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
-import type {
-  MappingElementSource,
-  Mapping,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import {
-  getMappingElementTarget,
-  getMappingElementSource,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Service } from '../../../../models/metamodels/pure/model/packageableElements/service/Service';
 import {
   SingleExecutionTest,

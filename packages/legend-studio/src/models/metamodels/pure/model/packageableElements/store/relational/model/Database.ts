@@ -23,7 +23,7 @@ import type { PackageableElementVisitor } from '../../../../../model/packageable
 import type { Schema } from '../../../../../model/packageableElements/store/relational/model/Schema';
 import type { Join } from '../../../../../model/packageableElements/store/relational/model/Join';
 import type { Filter } from '../../../../../model/packageableElements/store/relational/model/Filter';
-import { getAllIncludedDbs } from '../../../../helpers/store/relational/model/DatabaseHelper';
+import { getAllIncludedDbs } from '../../../../../helpers/DatabaseHelper';
 
 export class Database extends Store implements Hashable {
   schemas: Schema[] = [];
@@ -48,6 +48,7 @@ export class Database extends Store implements Hashable {
       this.schemas.find((schema) => schema.name === name),
       `Can't find schema '${name}' in database '${this.path}'`,
     );
+
   getJoin = (name: string): Join =>
     guaranteeNonNullable(
       Array.from(getAllIncludedDbs(this))
@@ -55,6 +56,7 @@ export class Database extends Store implements Hashable {
         .find((join) => join.name === name),
       `Can't find join '${name}' in database '${this.path}'`,
     );
+
   getFilter = (name: string): Filter =>
     guaranteeNonNullable(
       this.filters.find((filter) => filter.name === name),

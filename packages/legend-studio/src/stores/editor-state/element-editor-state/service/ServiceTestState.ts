@@ -19,7 +19,7 @@ import type { ServiceEditorState } from '../../../editor-state/element-editor-st
 import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
-import { STUDIO_LOG_EVENT } from '../../../../utils/STUDIO_LOG_EVENT';
+import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   losslessStringify,
