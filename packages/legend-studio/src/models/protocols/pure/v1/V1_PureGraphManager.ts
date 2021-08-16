@@ -28,6 +28,7 @@ import type {
   GeneratorFn,
   Log,
   PlainObject,
+  ServerClientConfig,
 } from '@finos/legend-studio-shared';
 import {
   LogEvent,
@@ -203,7 +204,6 @@ import {
   V1_buildLightQuery,
 } from './engine/V1_EngineHelper';
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
-import type { ServerClientConfig } from '@finos/legend-studio-network';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 

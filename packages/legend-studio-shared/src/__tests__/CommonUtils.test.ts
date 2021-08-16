@@ -20,7 +20,7 @@ import {
   getClass,
   getSuperClass,
 } from '../CommonUtils';
-import { unitTest } from '../TestUtils';
+import { unitTest } from '../application/TestUtils';
 
 test(unitTest('Recursive omit'), () => {
   const obj: Record<PropertyKey, unknown> = { a: '', b: { c: '', d: '' } };

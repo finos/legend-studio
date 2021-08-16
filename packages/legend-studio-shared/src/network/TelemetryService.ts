@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin } from '@finos/legend-studio-shared';
+import { AbstractPlugin } from '../application/AbstractPluginManager';
 
 export interface TelemetryData {
   [key: string]: unknown;

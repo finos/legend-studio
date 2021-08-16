@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { Log, PlainObject } from '@finos/legend-studio-shared';
+import type {
+  Log,
+  PlainObject,
+  ServerClientConfig,
+} from '@finos/legend-studio-shared';
 import {
   LogEvent,
   losslessParse,
@@ -54,7 +58,6 @@ import { V1_GenerationConfigurationDescription } from '../engine/generation/V1_G
 import { V1_GenerationOutput } from '../engine/generation/V1_GenerationOutput';
 import { V1_ParserError } from '../engine/grammar/V1_ParserError';
 import { V1_CompilationError } from '../engine/compilation/V1_CompilationError';
-import type { ServerClientConfig } from '@finos/legend-studio-network';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import type { RawRelationalOperationElement } from '../../../../metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';

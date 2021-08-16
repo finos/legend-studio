@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { SuperGenericFunction } from './CommonUtils';
-import { printObject } from './CommonUtils';
+import type { SuperGenericFunction } from '../CommonUtils';
+import { printObject } from '../CommonUtils';
 
 // a generic error that does not have a stack trace, it is useful for try-catch logic
 // as Typescript current catch phrase is not typed

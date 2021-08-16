@@ -1011,12 +1011,10 @@ export class GraphState {
     );
     try {
       if (directDependencies.length) {
-        const metadataClient =
-          this.editorStore.applicationStore.networkClientManager.metadataClient;
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield metadataClient.getProjectVersionsDependencyEntities(
+          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getProjectVersionsDependencyEntities(
             directDependencies as PlainObject<ProjectVersion>[],
             true,
             true,

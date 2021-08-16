@@ -45,14 +45,16 @@ import type { PluginManager } from '../../../../application/PluginManager';
 import type { DatabaseBuilderInput } from '../action/generation/DatabaseBuilderInput';
 import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
-import type { ServerClientConfig } from '@finos/legend-studio-network';
 import type { RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type {
   ExecutionPlan,
   RawExecutionPlan,
 } from '../model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type {
+  GeneratorFn,
+  ServerClientConfig,
+} from '@finos/legend-studio-shared';
 import type { LightQuery, Query } from '../action/query/Query';
 
 export interface TEMP__EngineSetupConfig {

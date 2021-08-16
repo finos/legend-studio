@@ -14,23 +14,28 @@
  * limitations under the License.
  */
 
-export * from './utils/CommonUtils';
-export * from './utils/AssertionUtils';
-export * from './utils/FormatterUtils';
-export * from './utils/ErrorUtils';
-export * from './utils/NetworkUtils';
-export * from './utils/ValidatorUtils';
-export * from './utils/HashUtils';
-export * from './utils/TestUtils';
-export * from './utils/RandomUtils';
-export * from './utils/SerializationUtils';
+export * from './CommonUtils';
 
-export * from './data-structures/Pair';
-export * from './data-structures/Stack';
+export * from './error/AssertionUtils';
+export * from './error/ErrorUtils';
 
-export * from './states/ActionState';
+export * from './format/FormatterUtils';
+export * from './format/ValidatorUtils';
 
-export * from './plugins/AbstractPluginManager';
+export * from './network/NetworkUtils';
+export * from './network/AbstractServerClient';
+export * from './network/TelemetryService';
+export * from './network/TracerService';
+
+export * from './application/HashUtils';
+export * from './application/TestUtils';
+export * from './application/SerializationUtils';
+export * from './application/RandomizerUtils';
+export * from './application/ActionState';
+export * from './application/AbstractPluginManager';
+
+export * from './data-structure/Pair';
+export * from './data-structure/Stack';
 
 export * from './log/Logger';
 export * from './log/BrowserConsole';

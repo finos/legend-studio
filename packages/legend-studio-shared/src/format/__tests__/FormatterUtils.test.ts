@@ -27,7 +27,7 @@ import {
   TITLE_CASE_EXCEPTION_WORDS,
   isCamelCase,
 } from '../FormatterUtils';
-import { unitTest } from '../TestUtils';
+import { unitTest } from '../../application/TestUtils';
 
 test(unitTest('To sentence case'), () => {
   expect(toSentenceCase('')).toEqual('');

@@ -28,6 +28,7 @@ import {
   isString,
   ApplicationError,
   ActionState,
+  TelemetryService,
 } from '@finos/legend-studio-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
@@ -40,7 +41,6 @@ import { User } from '../models/sdlc/models/User';
 import { SdlcMode } from '../models/sdlc/models/project/Project';
 import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
-import { TelemetryService } from '@finos/legend-studio-network';
 import { MetadataServerClient } from '../models/metadata/MetadataServerClient';
 
 export enum ActionAlertType {

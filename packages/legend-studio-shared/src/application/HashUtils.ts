@@ -15,7 +15,7 @@
  */
 
 import hash from 'hash.js';
-import type { Clazz } from './CommonUtils';
+import type { Clazz } from '../CommonUtils';
 
 /**
  * NOTE: despite the push to adopt visitor pattern across the code-base, hashing implementation for now will remain within

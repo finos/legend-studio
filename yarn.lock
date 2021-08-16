@@ -2214,20 +2214,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-network@workspace:*, @finos/legend-studio-network@workspace:packages/legend-studio-network":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-network@workspace:packages/legend-studio-network"
-  dependencies:
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    rimraf: 3.0.2
-    typescript: 4.3.5
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management"
@@ -2261,7 +2247,6 @@ __metadata:
   dependencies:
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-network": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@types/zipkin-javascript-opentracing": 1.6.0
     cross-env: 7.0.3
@@ -2399,7 +2384,6 @@ __metadata:
   dependencies:
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-network": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.1.0

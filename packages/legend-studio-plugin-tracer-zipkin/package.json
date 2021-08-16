@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-network": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
     "@types/zipkin-javascript-opentracing": "1.6.0",
     "opentracing": "0.14.5",
