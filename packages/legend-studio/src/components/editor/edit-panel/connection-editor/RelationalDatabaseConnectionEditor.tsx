@@ -1065,7 +1065,7 @@ const RelationalConnectionGeneralEditor = observer(
                   </div>
                 </ResizablePanel>
                 <ResizablePanelSplitter />
-                <ResizablePanel minSize={0}>
+                <ResizablePanel>
                   <div className="relational-connection-editor__source">
                     <div className="panel__header">
                       <div className="panel__header__title">

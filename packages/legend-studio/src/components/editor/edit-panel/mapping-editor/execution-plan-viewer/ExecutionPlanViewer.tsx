@@ -15,19 +15,21 @@
  */
 
 import { useState } from 'react';
-
 import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
 } from '@finos/legend-studio-components';
 import {
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanel,
+  ResizablePanelSplitterLine,
   clsx,
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
 } from '@finos/legend-studio-components';
-
 import { ExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
 import type { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
@@ -35,7 +37,6 @@ import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/m
 import { addUniqueEntry, isNonNullable } from '@finos/legend-studio-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { observer } from 'mobx-react-lite';
-import SplitPane from 'react-split-pane';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
 import Dialog from '@material-ui/core/Dialog';
 import { TextInputEditor } from '../../../../shared/TextInputEditor';
@@ -349,33 +350,38 @@ export const ExecutionPlanViewer = observer(
           </div>
           {plan ? (
             <div className="modal__body">
-              <SplitPane
-                className="review-explorer__content"
-                split="vertical"
-                size={350}
-                minSize={350}
-                maxSize={-600}
-              >
-                <div className="panel explorer">
-                  <div className="panel__header side-bar__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__content side-bar__header__title__content">
-                        EXECUTION PLAN EXPLORER
+              <ResizablePanelGroup orientation="vertical">
+                <ResizablePanel
+                  size={350}
+                  minSize={350}
+                  className="review-explorer__content"
+                >
+                  <div className="panel explorer">
+                    <div className="panel__header side-bar__header">
+                      <div className="panel__header__title">
+                        <div className="panel__header__title__content side-bar__header__title__content">
+                          EXECUTION PLAN EXPLORER
+                        </div>
                       </div>
                     </div>
+                    <div className="panel__content explorer__content__container">
+                      <ExecutionPlanTree
+                        executionPlanState={executionPlanState}
+                        executionPlan={plan}
+                      />
+                    </div>
                   </div>
-                  <div className="panel__content explorer__content__container">
-                    <ExecutionPlanTree
-                      executionPlanState={executionPlanState}
-                      executionPlan={plan}
-                    />
-                  </div>
-                </div>
-                <ExecutionNodesViewer
-                  displayData={executionPlanState.displayData}
-                  executionPlanState={executionPlanState}
-                />
-              </SplitPane>
+                </ResizablePanel>
+                <ResizablePanelSplitter>
+                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                </ResizablePanelSplitter>
+                <ResizablePanel>
+                  <ExecutionNodesViewer
+                    displayData={executionPlanState.displayData}
+                    executionPlanState={executionPlanState}
+                  />
+                </ResizablePanel>
+              </ResizablePanelGroup>
             </div>
           ) : (
             <div className="modal__body">

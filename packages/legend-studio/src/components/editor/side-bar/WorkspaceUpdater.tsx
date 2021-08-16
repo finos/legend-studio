@@ -24,8 +24,14 @@ import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/Entit
 import { FaInfoCircle } from 'react-icons/fa';
 import { GoCloudDownload } from 'react-icons/go';
 import { MdRefresh } from 'react-icons/md';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
-import SplitPane from 'react-split-pane';
+import {
+  clsx,
+  PanelLoadingIndicator,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-studio-components';
 import { Link } from 'react-router-dom';
 import type { EntityChangeConflict } from '../../../models/sdlc/models/entity/EntityChangeConflict';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
@@ -161,108 +167,110 @@ export const WorkspaceUpdater = observer(() => {
       </div>
       <div className="panel__content side-bar__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
-        <SplitPane
-          split="horizontal"
-          defaultSize="50%"
-          minSize={28}
-          maxSize={-28}
-        >
-          <div className="panel side-bar__panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__content">CHANGES</div>
-                <div
-                  className="side-bar__panel__title__info"
-                  title={
-                    'All changes made to project since the revision the workspace is created.\nPotential workspace update conflicts are also shown if they exist'
-                  }
-                >
-                  <FaInfoCircle />
-                </div>
-              </div>
-              <div
-                className="side-bar__panel__header__changes-count"
-                data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
-              >
-                {changes.length}
-              </div>
-            </div>
-            <div className="panel__content">
-              {conflicts
-                .slice()
-                .sort((a, b) => a.entityName.localeCompare(b.entityName))
-                .map((conflict) => (
-                  <EntityChangeConflictSideBarItem
-                    key={`conflict-${conflict.entityPath}`}
-                    conflict={conflict}
-                    isSelected={isSelectedConflict(conflict)}
-                    openConflict={openPotentialConflict(conflict)}
-                  />
-                ))}
-              {Boolean(conflicts.length) &&
-                Boolean(changesWithoutConflicts.length) && (
-                  <div className="diff-panel__item-section-separator" />
-                )}
-              {changesWithoutConflicts
-                .slice()
-                .sort(entityDiffSorter)
-                .map((diff) => (
-                  <EntityDiffSideBarItem
-                    key={diff.key}
-                    diff={diff}
-                    isSelected={isSelectedDiff(diff)}
-                    openDiff={openChange(diff)}
-                  />
-                ))}
-            </div>
-          </div>
-          <div className="panel side-bar__panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__content">
-                  COMMITTED REVIEWS
-                </div>
-                <div
-                  className="side-bar__panel__title__info"
-                  title="All committed reviews in the project since the revision the workspace is created"
-                >
-                  <FaInfoCircle />
-                </div>
-              </div>
-              <div
-                className="side-bar__panel__header__changes-count"
-                data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
-              >
-                {commitedReviews.length}
-              </div>
-            </div>
-            <div className="panel__content">
-              {commitedReviews.map((review) => (
-                <Link
-                  key={review.id}
-                  className="side-bar__panel__item workspace-updater__review__link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  to={generateReviewRoute(
-                    applicationStore.config.sdlcServerKey,
-                    review.projectId,
-                    review.id,
-                  )}
-                  title={'See review detail'}
-                >
-                  <div className="workspace-updater__review">
-                    <span className="workspace-updater__review__name">
-                      {review.title}
-                    </span>
-                    <span className="workspace-updater__review__info">
-                      {review.author.name}
-                    </span>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={400} minSize={28}>
+            <div className="panel side-bar__panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__content">CHANGES</div>
+                  <div
+                    className="side-bar__panel__title__info"
+                    title={
+                      'All changes made to project since the revision the workspace is created.\nPotential workspace update conflicts are also shown if they exist'
+                    }
+                  >
+                    <FaInfoCircle />
                   </div>
-                </Link>
-              ))}
+                </div>
+                <div
+                  className="side-bar__panel__header__changes-count"
+                  data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                >
+                  {changes.length}
+                </div>
+              </div>
+              <div className="panel__content">
+                {conflicts
+                  .slice()
+                  .sort((a, b) => a.entityName.localeCompare(b.entityName))
+                  .map((conflict) => (
+                    <EntityChangeConflictSideBarItem
+                      key={`conflict-${conflict.entityPath}`}
+                      conflict={conflict}
+                      isSelected={isSelectedConflict(conflict)}
+                      openConflict={openPotentialConflict(conflict)}
+                    />
+                  ))}
+                {Boolean(conflicts.length) &&
+                  Boolean(changesWithoutConflicts.length) && (
+                    <div className="diff-panel__item-section-separator" />
+                  )}
+                {changesWithoutConflicts
+                  .slice()
+                  .sort(entityDiffSorter)
+                  .map((diff) => (
+                    <EntityDiffSideBarItem
+                      key={diff.key}
+                      diff={diff}
+                      isSelected={isSelectedDiff(diff)}
+                      openDiff={openChange(diff)}
+                    />
+                  ))}
+              </div>
             </div>
-          </div>
-        </SplitPane>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-100)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={28}>
+            <div className="panel side-bar__panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__content">
+                    COMMITTED REVIEWS
+                  </div>
+                  <div
+                    className="side-bar__panel__title__info"
+                    title="All committed reviews in the project since the revision the workspace is created"
+                  >
+                    <FaInfoCircle />
+                  </div>
+                </div>
+                <div
+                  className="side-bar__panel__header__changes-count"
+                  data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                >
+                  {commitedReviews.length}
+                </div>
+              </div>
+              <div className="panel__content">
+                {commitedReviews.map((review) => (
+                  <Link
+                    key={review.id}
+                    className="side-bar__panel__item workspace-updater__review__link"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    to={generateReviewRoute(
+                      applicationStore.config.sdlcServerKey,
+                      review.projectId,
+                      review.id,
+                    )}
+                    title={'See review detail'}
+                  >
+                    <div className="workspace-updater__review">
+                      <span className="workspace-updater__review__name">
+                        {review.title}
+                      </span>
+                      <span className="workspace-updater__review__info">
+                        {review.author.name}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );

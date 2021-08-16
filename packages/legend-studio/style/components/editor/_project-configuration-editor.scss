@@ -178,14 +178,6 @@
       color: var(--color-light-grey-50);
     }
   }
-
-  &__content .Resizer.vertical {
-    background: padding-box var(--color-dark-grey-100);
-    width: 1.1rem;
-    min-width: 1.1rem;
-    border-left: 0.5rem solid transparent;
-    border-right: 0.5rem solid transparent;
-  }
 }
 
 .project-dependency-editor {

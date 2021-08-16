@@ -20,8 +20,16 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
-import { clsx, useStateWithCallback } from '@finos/legend-studio-components';
-import SplitPane from 'react-split-pane';
+import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import {
+  roundUpResizingForPanel,
+  clsx,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+  useStateWithCallback,
+} from '@finos/legend-studio-components';
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel';
 import { SideBar } from './side-bar/SideBar';
 import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel';
@@ -85,17 +93,18 @@ export const EditorInner = observer(() => {
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // These create snapping effect on panel resizing
-  const resizeSideBar = (newSize: number | undefined): void => {
-    if (newSize !== undefined) {
-      editorStore.sideBarDisplayState.setSize(newSize);
-    }
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void => {
+    roundUpResizingForPanel(handleProps);
+    editorStore.sideBarDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
+    );
   };
-  const resizeAuxPanel = (newSize: number | undefined): void => {
-    if (ref.current) {
-      if (newSize !== undefined) {
-        editorStore.auxPanelDisplayState.setSize(newSize);
-      }
-    }
+
+  const resizeAuxPanel = (handleProps: ResizablePanelHandlerProps): void => {
+    roundUpResizingForPanel(handleProps);
+    editorStore.auxPanelDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().height,
+    );
   };
 
   useEffect(() => {
@@ -252,33 +261,39 @@ export const EditorInner = observer(() => {
                     'editor__content--expanded': editorStore.isInExpandedMode,
                   })}
                 >
-                  <SplitPane
-                    split="vertical"
-                    size={editorStore.sideBarDisplayState.size}
-                    onDragFinished={resizeSideBar}
-                    minSize={0}
-                    maxSize={-600}
-                  >
-                    <SideBar />
-                    <SplitPane
-                      primary="second"
-                      split="horizontal"
-                      size={editorStore.auxPanelDisplayState.size}
-                      onDragFinished={resizeAuxPanel}
-                      minSize={0}
-                      maxSize={0}
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel
+                      size={editorStore.sideBarDisplayState.size}
+                      onStopResize={resizeSideBar}
+                      direction={1}
                     >
-                      <>
-                        {(isResolvingConflicts || editable) &&
-                          editorStore.isInFormMode && <EditPanel />}
-                        {editable && editorStore.isInGrammarTextMode && (
-                          <GrammarTextEditor />
-                        )}
-                        {!editable && <EditPanelSplashScreen />}
-                      </>
-                      <AuxiliaryPanel />
-                    </SplitPane>
-                  </SplitPane>
+                      <SideBar />
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel>
+                      <ResizablePanelGroup orientation="horizontal">
+                        <ResizablePanel>
+                          {(isResolvingConflicts || editable) &&
+                            editorStore.isInFormMode && <EditPanel />}
+                          {editable && editorStore.isInGrammarTextMode && (
+                            <GrammarTextEditor />
+                          )}
+                          {!editable && <EditPanelSplashScreen />}
+                        </ResizablePanel>
+                        <ResizablePanelSplitter>
+                          <ResizablePanelSplitterLine color="var(--color-dark-grey-250)" />
+                        </ResizablePanelSplitter>
+                        <ResizablePanel
+                          flex={0}
+                          direction={-1}
+                          size={editorStore.auxPanelDisplayState.size}
+                          onStopResize={resizeAuxPanel}
+                        >
+                          <AuxiliaryPanel />
+                        </ResizablePanel>
+                      </ResizablePanelGroup>
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </div>
               </div>
             </div>

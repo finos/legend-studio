@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
-import SplitPane from 'react-split-pane';
 import {
   FaList,
   FaCodeBranch,
@@ -33,7 +32,14 @@ import { useParams, Link } from 'react-router-dom';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import { clsx } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import {
+  roundUpResizingForPanel,
+  clsx,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+} from '@finos/legend-studio-components';
 import { isNonNullable } from '@finos/legend-studio-shared';
 import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -175,10 +181,11 @@ export const ViewerInner = observer(() => {
   const allowOpeningElement =
     editorStore.sdlcState.currentProject &&
     editorStore.graphState.graph.buildState.hasSucceeded;
-  const resizeSideBar = (newSize: number | undefined): void => {
-    if (newSize !== undefined) {
-      editorStore.sideBarDisplayState.setSize(newSize);
-    }
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void => {
+    roundUpResizingForPanel(handleProps);
+    editorStore.sideBarDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
+    );
   };
   // Extensions
   const extraEditorExtensionComponents =
@@ -245,19 +252,23 @@ export const ViewerInner = observer(() => {
                     'editor__content--expanded': editorStore.isInExpandedMode,
                   })}
                 >
-                  <SplitPane
-                    split="vertical"
-                    onDragFinished={resizeSideBar}
-                    size={editorStore.sideBarDisplayState.size}
-                    minSize={0}
-                    maxSize={-600}
+                  <ResizablePanelGroup
+                    orientation="vertical"
+                    className="review-explorer__content"
                   >
-                    <SideBar />
-                    {editorStore.isInFormMode && <EditPanel />}
-                    {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
-                    <div />
-                    <div />
-                  </SplitPane>
+                    <ResizablePanel
+                      size={editorStore.sideBarDisplayState.size}
+                      direction={1}
+                      onStopResize={resizeSideBar}
+                    >
+                      <SideBar />
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel>
+                      {editorStore.isInFormMode && <EditPanel />}
+                      {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </div>
               </div>
             </div>

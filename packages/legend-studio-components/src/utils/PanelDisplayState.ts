@@ -76,10 +76,10 @@ export class PanelDisplayState {
     if (this.snapSize !== undefined) {
       if (val > this.size) {
         // expanding
-        if (this.maxSize) {
-          this.size = val > this.maxSize - this.snapSize ? this.maxSize : val;
+        if (this.maxSize && val > this.maxSize - this.snapSize) {
+          this.size = this.maxSize;
         } else {
-          this.size = val;
+          this.size = val < this.snapSize ? this.defaultSize : val;
         }
       } else {
         // shrinking

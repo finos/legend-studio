@@ -263,7 +263,7 @@ export const DatabaseBuilder = observer(
           <div className="database-builder__content">
             <PanelLoadingIndicator isLoading={isExecutingAction} />
             <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel size={450} minSize={0}>
+              <ResizablePanel size={450}>
                 <div className="database-builder__config">
                   <div className="panel__header">
                     <div className="panel__header__title">

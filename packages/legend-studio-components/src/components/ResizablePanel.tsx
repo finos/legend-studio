@@ -42,6 +42,31 @@ export const ResizablePanelGroup =
     ? (MockedReactComponent as unknown as typeof ReflexContainer)
     : ReflexContainer;
 
+/**
+ * NOTE: there is a small problem with `react-reflex` that is when a panel
+ * is minimized, due to `flex-grow` not being set/round to 0, there is a little
+ * of the panel still being shown. We are waiting to see when how we could address
+ * this issue programmatically. But the following is an attempt to do this when
+ * user manually resize the panel.
+ *
+ * We will see if we could get the library to support some rounding behavior for
+ * flex-grow out of the box.
+ *
+ * See https://github.com/leefsmp/Re-Flex/issues/146
+ */
+export const roundUpResizingForPanel = (
+  handleProps: ResizablePanelHandlerProps,
+): void => {
+  const flexGrow = Number(
+    (handleProps.domElement as HTMLDivElement).style.flexGrow,
+  );
+  if (flexGrow <= 0.01) {
+    (handleProps.domElement as HTMLDivElement).style.flexGrow = '0';
+  } else if (flexGrow >= 0.99) {
+    (handleProps.domElement as HTMLDivElement).style.flexGrow = '1';
+  }
+};
+
 export const ResizablePanel =
   // eslint-disable-next-line no-process-env
   process.env.NODE_ENV === 'test'
@@ -53,5 +78,16 @@ export const ResizablePanelSplitter =
   process.env.NODE_ENV === 'test'
     ? (MockedReactComponent as unknown as typeof ReflexSplitter)
     : ReflexSplitter;
+
+export const ResizablePanelSplitterLine: React.FC<{ color: string }> = (
+  props,
+) => (
+  <div
+    className="resizable-panel__splitter-line"
+    style={{
+      background: props.color,
+    }}
+  />
+);
 
 export type ResizablePanelHandlerProps = HandlerProps;

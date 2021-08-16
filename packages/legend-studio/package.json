@@ -61,7 +61,6 @@
     "react-resize-detector": "6.7.6",
     "react-router": "5.2.0",
     "react-router-dom": "5.2.0",
-    "react-split-pane": "0.1.92",
     "serializr": "2.0.5",
     "sql-formatter": "4.0.2"
   },

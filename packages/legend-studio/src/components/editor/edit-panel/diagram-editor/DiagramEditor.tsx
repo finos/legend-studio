@@ -44,6 +44,7 @@ import {
 } from '../../../../stores/shared/DnDUtil';
 import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
 import {
+  roundUpResizingForPanel,
   BasePopover,
   BlankPanelContent,
   CaretDownIcon,
@@ -611,18 +612,20 @@ const DiagramEditorOverlay = observer(
     const { diagramEditorState } = props;
     const sidePanelState = diagramEditorState.sidePanelState;
 
-    const resizeSidePanel = (handleProps: ResizablePanelHandlerProps): void =>
+    const resizeSidePanel = (handleProps: ResizablePanelHandlerProps): void => {
+      roundUpResizingForPanel(handleProps);
       diagramEditorState.sidePanelDisplayState.setSize(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
+    };
 
     return (
       <ResizablePanelGroup
         className="diagram-editor__overlay"
         orientation="vertical"
       >
-        <ResizablePanel direction={1}>
+        <ResizablePanel>
           <div className="diagram-editor__view-finder" />
         </ResizablePanel>
         <ResizablePanelSplitter className="diagram-editor__overlay__panel-resizer" />

@@ -83,12 +83,12 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
 
     return (
       <ResizablePanelGroup orientation="vertical">
-        <ResizablePanel size={450} minSize={0}>
+        <ResizablePanel size={450}>
           <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
           <QueryBuilderUnsupportedQueryExplorer />
         </ResizablePanel>
         <ResizablePanelSplitter />
-        <ResizablePanel minSize={0}>
+        <ResizablePanel>
           <QueryBuilderUnsupportedQueryEditPanel
             queryBuilderState={queryBuilderState}
           />

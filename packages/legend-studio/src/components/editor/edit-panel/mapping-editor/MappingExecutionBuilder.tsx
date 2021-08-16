@@ -29,6 +29,7 @@ import {
   TimesIcon,
   PlayIcon,
   FlaskIcon,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-studio-components';
 import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
@@ -309,7 +310,9 @@ const MappingExecutionQueryEditor = observer(
                   />
                 </div>
               </ResizablePanel>
-              <ResizablePanelSplitter />
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+              </ResizablePanelSplitter>
               <ResizablePanel size={250} minSize={250}>
                 <div className="mapping-execution-builder__query-panel__query-editor">
                   {extraQueryEditors}
@@ -670,14 +673,18 @@ export const MappingExecutionBuilder = observer(
                 executionState={executionState}
               />
             </ResizablePanel>
-            <ResizablePanelSplitter />
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+            </ResizablePanelSplitter>
             <ResizablePanel size={250} minSize={28}>
               <MappingExecutionInputDataBuilder
                 key={executionState.inputDataState.uuid}
                 executionState={executionState}
               />
             </ResizablePanel>
-            <ResizablePanelSplitter />
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+            </ResizablePanelSplitter>
             <ResizablePanel minSize={28}>
               <div className="panel mapping-execution-builder__result-panel">
                 <div className="panel__header">

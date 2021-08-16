@@ -18,8 +18,8 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import { useEditorStore } from '../../../stores/EditorStore';
-import { ContextMenu } from '@finos/legend-studio-components';
 import {
+  ContextMenu,
   revealError,
   setErrorMarkers,
   disposeEditor,

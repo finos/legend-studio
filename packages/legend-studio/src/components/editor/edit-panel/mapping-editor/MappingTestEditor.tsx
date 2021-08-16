@@ -38,6 +38,7 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-studio-components';
 import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
@@ -215,7 +216,9 @@ const MappingTestQueryEditor = observer(
                   />
                 </div>
               </ResizablePanel>
-              <ResizablePanelSplitter />
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+              </ResizablePanelSplitter>
               <ResizablePanel size={250} minSize={250}>
                 <div className="mapping-test-editor__query-panel__query-editor">
                   {extraQueryEditors}
@@ -533,7 +536,9 @@ export const MappingTestBuilder = observer(
               isReadOnly={isReadOnly}
             />
           </ResizablePanel>
-          <ResizablePanelSplitter />
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+          </ResizablePanelSplitter>
           <ResizablePanel size={250} minSize={28}>
             {/* use UUID key to make sure these components refresh when we change the state */}
             <MappingTestInputDataBuilder
@@ -542,7 +547,9 @@ export const MappingTestBuilder = observer(
               isReadOnly={isReadOnly}
             />
           </ResizablePanel>
-          <ResizablePanelSplitter />
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+          </ResizablePanelSplitter>
           <ResizablePanel minSize={28}>
             <MappingTestAssertionBuilder
               key={testState.assertionState.uuid}

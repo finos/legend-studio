@@ -30,11 +30,14 @@ import { useDragLayer, useDrag, useDrop } from 'react-dnd';
 import { FileGenerationIcon, getElementIcon } from '../../shared/Icon';
 import { MdRefresh } from 'react-icons/md';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
-import SplitPane from 'react-split-pane';
 import {
   clsx,
   BlankPanelContent,
   CustomSelectorInput,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-studio-components';
 import type {
   ElementDragSource,
@@ -581,19 +584,23 @@ export const GenerationSpecificationEditor = observer(() => {
           </div>
         </div>
         <div className="panel__content generation-spec-editor__content">
-          <SplitPane
-            split="horizontal"
-            defaultSize={'50%'}
-            minSize={25}
-            maxSize={'90%'}
-          >
-            <ModelGenerationSpecifications
-              specState={generationSpecificationState}
-            />
-            <FileGenerationSpecifications
-              generationSpecificationEditorState={generationSpecificationState}
-            />
-          </SplitPane>
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel size={400} minSize={25}>
+              <ModelGenerationSpecifications
+                specState={generationSpecificationState}
+              />
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel>
+              <FileGenerationSpecifications
+                generationSpecificationEditorState={
+                  generationSpecificationState
+                }
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       </div>
     </div>

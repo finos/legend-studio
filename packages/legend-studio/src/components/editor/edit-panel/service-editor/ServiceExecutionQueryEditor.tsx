@@ -22,9 +22,15 @@ import type { ServicePureExecutionState } from '../../../../stores/editor-state/
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { Dialog } from '@material-ui/core';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  clsx,
+  PanelLoadingIndicator,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-studio-components';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
-import SplitPane from 'react-split-pane';
 import { isNonNullable } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
@@ -166,24 +172,28 @@ export const ServiceExecutionQueryEditor = observer(
               {extraServiceQueryEditors}
             </div>
           ) : (
-            <SplitPane
-              split="vertical"
-              defaultSize="60%"
-              minSize={15}
-              maxSize={2000}
-            >
-              <div className={clsx('service-execution-query-editor__content')}>
-                <TextInputEditor
-                  inputValue={queryState.lambdaString}
-                  isReadOnly={true}
-                  language={EDITOR_LANGUAGE.PURE}
-                  showMiniMap={true}
-                />
-              </div>
-              <div className="service-execution-query-editor__editor-trigger">
-                {extraServiceQueryEditors}
-              </div>
-            </SplitPane>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={300}>
+                <div
+                  className={clsx('service-execution-query-editor__content')}
+                >
+                  <TextInputEditor
+                    inputValue={queryState.lambdaString}
+                    isReadOnly={true}
+                    language={EDITOR_LANGUAGE.PURE}
+                    showMiniMap={true}
+                  />
+                </div>
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel size={300} minSize={200}>
+                <div className="service-execution-query-editor__editor-trigger">
+                  {extraServiceQueryEditors}
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           )}
           <ServiceExecutionModals executionState={executionState} />
         </div>
