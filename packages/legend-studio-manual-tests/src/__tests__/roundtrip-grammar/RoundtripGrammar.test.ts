@@ -66,9 +66,9 @@ const EXCLUDED_CASE_FILES: string[] = [
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
-  'embedded-relational-mapping.pure',
-  'nested-embedded-relational-mapping.pure',
-  'relational-mapping-filter.pure',
+  // 'embedded-relational-mapping.pure',
+  // 'nested-embedded-relational-mapping.pure',
+  // 'relational-mapping-filter.pure',
   'relational-connection.pure',
 ];
 
@@ -169,7 +169,7 @@ const testNameFrom = (fileName: string): string => {
 
 const cases = fs
   .readdirSync(TEST_CASE_DIR)
-  .filter((caseName) => !EXCLUDED_CASE_FILES.includes(caseName))
+  .filter((caseName) => EXCLUDED_CASE_FILES.includes(caseName))
   .map((caseName) => resolve(TEST_CASE_DIR, caseName))
   .filter((filePath) => fs.statSync(filePath).isFile())
   .map((filePath) => [testNameFrom(filePath), filePath]);

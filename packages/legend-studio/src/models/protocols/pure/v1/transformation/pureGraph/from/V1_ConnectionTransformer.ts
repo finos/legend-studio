@@ -250,13 +250,12 @@ export const V1_transformRelationalDatabaseConnection = (
     context,
   );
   connection.type = metamodel.type as unknown as V1_DatabaseType;
-  connection.timeZone = metamodel.timeZone;
+  connection.databaseType = connection.type;
   connection.quoteIdentifiers = metamodel.quoteIdentifiers;
-  if (metamodel.postProcessors.length) {
-    connection.postProcessors = metamodel.postProcessors.map((postprocessor) =>
-      V1_transformPostProcessor(postprocessor, context),
-    );
-  }
+  connection.postProcessors = metamodel.postProcessors?.map((postprocessor) =>
+    V1_transformPostProcessor(postprocessor, context),
+  );
+  console.log(connection.postProcessors);
   return connection;
 };
 

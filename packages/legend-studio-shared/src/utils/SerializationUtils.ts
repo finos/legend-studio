@@ -68,25 +68,32 @@ export const serializeArray = (
   values: any,
   itemSerializer: (val: any) => any,
   skipIfEmpty: boolean,
-): any[] | typeof SKIP =>
-  Array.isArray(values)
+): any[] | typeof SKIP => {
+  console.log('test');
+  console.log(values);
+  console.log(
+    Array.isArray(values)
+      ? values.length
+        ? values.map((value) => itemSerializer(value))
+        : skipIfEmpty
+        ? SKIP
+        : []
+      : SKIP,
+  );
+  return Array.isArray(values)
     ? values.length
       ? values.map((value) => itemSerializer(value))
       : skipIfEmpty
       ? SKIP
       : []
     : SKIP;
+};
 
 export const deserializeArray = (
   values: any,
   itemDeserializer: (val: any) => any,
   skipIfEmpty: boolean,
-): any[] | typeof SKIP => {
-  if (Array.isArray(values)) {
-    return values.map(itemDeserializer);
-  }
-  return skipIfEmpty ? SKIP : [];
-};
+): any[] | typeof SKIP => SKIP;
 /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
 
 export const usingConstantValueSchema = (

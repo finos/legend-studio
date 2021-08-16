@@ -25,6 +25,7 @@ import {
   object,
   alias,
   optional,
+  raw,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
@@ -514,6 +515,7 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
+    databaseType: primitive(),
     datasourceSpecification: custom(
       (val) => V1_serializeDatasourceSpecification(val, plugins),
       (val) => V1_deserializeDatasourceSpecification(val, plugins),
@@ -533,9 +535,10 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
           values,
           (value: PlainObject<V1_PostProcessor>) =>
             V1_deserializePostProcessor(value, plugins),
-          false,
+          true,
         ),
     ),
+    postProcessorWithParameter: list(raw()),
     type: primitive(),
   });
 };

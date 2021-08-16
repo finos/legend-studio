@@ -29,6 +29,7 @@ export function assertNonNullable<T>(
   value: T | null | undefined,
   message = '',
 ): asserts value is T {
+  console.log('testing shared');
   if (value === null || value === undefined) {
     throw new AssertionError(message || 'Value is nullable');
   }

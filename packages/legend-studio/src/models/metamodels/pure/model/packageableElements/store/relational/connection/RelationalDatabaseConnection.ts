@@ -46,6 +46,7 @@ export abstract class DatabaseConnection extends Connection {
   // debug?: boolean;
   timeZone?: string;
   quoteIdentifiers?: boolean;
+  postProcessorWithParameter: unknown[] = [];
 
   constructor(
     store: PackageableElementReference<Database>,
@@ -76,7 +77,7 @@ export abstract class DatabaseConnection extends Connection {
 export class RelationalDatabaseConnection extends DatabaseConnection {
   datasourceSpecification: DatasourceSpecification;
   authenticationStrategy: AuthenticationStrategy;
-  postProcessors: PostProcessor[] = [];
+  postProcessors?: PostProcessor[];
 
   get database(): Database {
     return guaranteeType(
@@ -115,7 +116,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,
       this.authenticationStrategy,
-      hashArray(this.postProcessors),
+      hashArray(this.postProcessors ?? []),
     ]);
   }
 

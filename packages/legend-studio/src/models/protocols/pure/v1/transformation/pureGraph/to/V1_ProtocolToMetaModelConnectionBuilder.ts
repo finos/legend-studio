@@ -226,9 +226,11 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     );
     val.timeZone = connection.timeZone;
     val.quoteIdentifiers = connection.quoteIdentifiers;
-    val.postProcessors = connection.postProcessors.map((p) =>
+    val.postProcessors = connection.postProcessors?.map((p) =>
       V1_buildPostProcessor(p, this.context),
     );
+    console.log(connection.postProcessors);
+    console.log(val.postProcessors);
     return val;
   }
 }

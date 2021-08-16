@@ -41,8 +41,10 @@ export enum V1_DatabaseType {
 
 export abstract class V1_DatabaseConnection extends V1_Connection {
   type!: V1_DatabaseType;
+  databaseType!: V1_DatabaseType;
   timeZone?: string;
   quoteIdentifiers?: boolean;
+  postProcessorWithParameter: unknown[] = [];
 }
 
 export class V1_RelationalDatabaseConnection
@@ -51,7 +53,7 @@ export class V1_RelationalDatabaseConnection
 {
   datasourceSpecification!: V1_DatasourceSpecification;
   authenticationStrategy!: V1_AuthenticationStrategy;
-  postProcessors: V1_PostProcessor[] = [];
+  postProcessors?: V1_PostProcessor[];
 
   get hashCode(): string {
     return hashArray([
@@ -61,7 +63,7 @@ export class V1_RelationalDatabaseConnection
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,
       this.authenticationStrategy,
-      hashArray(this.postProcessors),
+      hashArray(this.postProcessors ?? []),
     ]);
   }
 
