@@ -286,7 +286,13 @@ export const EditorInner = observer(() => {
                           {!editable && <EditPanelSplashScreen />}
                         </ResizablePanel>
                         <ResizablePanelSplitter>
-                          <ResizablePanelSplitterLine color="var(--color-dark-grey-250)" />
+                          <ResizablePanelSplitterLine
+                            color={
+                              editorStore.auxPanelDisplayState.isMaximized
+                                ? 'transparent'
+                                : 'var(--color-dark-grey-250)'
+                            }
+                          />
                         </ResizablePanelSplitter>
                         <ResizablePanel
                           {...getControlledResizablePanelProps(
