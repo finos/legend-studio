@@ -233,3 +233,38 @@ test(integrationTest('Association View'), async () => {
   const deleteSubPanelButton = queryAllByRole(subPropertyPanel, 'button')[0];
   fireEvent.click(deleteSubPanelButton);
 });
+
+test.only(integrationTest('Function View without lambda editor'), async () => {
+  await openElementFromExplorerTree('ui::TestFunction', renderResult);
+  const editPanelHeader = renderResult.getByTestId(
+    CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
+  );
+  expect(getByText(editPanelHeader, 'TestFunction')).not.toBeNull();
+
+  const functionEditor = renderResult.getByTestId(CORE_TEST_ID.FUNCTION_EDITOR);
+  // Test parameters
+  const parameters = ['input', 'input2'];
+  parameters.forEach((t) =>
+    expect(getByDisplayValue(functionEditor, t)).not.toBeNull(),
+  );
+  // Test tagged values
+  fireEvent.click(getByText(functionEditor, 'Tagged Values'));
+  await waitFor(() => getByText(functionEditor, 'ProfileTest'));
+  getByDisplayValue(functionEditor, 'Function Tag');
+  // Test Stereotypes
+  fireEvent.click(getByText(functionEditor, 'Stereotypes'));
+  await waitFor(() => getByText(functionEditor, 'stereotype2'));
+  // Test editing Parameters
+  fireEvent.click(getByText(functionEditor, 'General'));
+  await waitFor(() => getByDisplayValue(functionEditor, 'input'));
+  const input = getByDisplayValue(functionEditor, 'input');
+  const inputType = input.parentElement as HTMLElement;
+  fireEvent.change(input, { target: { value: 'random' } });
+  await waitFor(() => getByDisplayValue(functionEditor, 'random'));
+  expect(getAllByDisplayValue(inputType, '1')).toHaveLength(2);
+  expect(getByText(inputType, 'String')).not.toBeNull();
+  expect(getAllByRole(inputType, 'button')).toHaveLength(1);
+  // Test Deletion
+  fireEvent.click(getAllByRole(inputType, 'button')[0]);
+  expect(queryByText(functionEditor, 'random')).toBeNull();
+});

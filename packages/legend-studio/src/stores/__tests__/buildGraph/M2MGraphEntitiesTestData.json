@@ -1579,5 +1579,176 @@
       ]
     },
     "classifierPath": "meta::pure::metamodel::diagram::Diagram"
+  },
+  {
+    "path": "ui::TestFunction",
+    "content": {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "if",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "string",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "sourceInformation": {
+                    "endColumn": 14,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 17
+                  },
+                  "values": [
+                    "param1"
+                  ]
+                },
+                {
+                  "_type": "string",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "sourceInformation": {
+                    "endColumn": 26,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 19,
+                    "startLine": 17
+                  },
+                  "values": [
+                    "param1"
+                  ]
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 17,
+                "endLine": 17,
+                "sourceId": "",
+                "startColumn": 16,
+                "startLine": 17
+              }
+            },
+            {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "boolean",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "sourceInformation": {
+                    "endColumn": 33,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 30,
+                    "startLine": 17
+                  },
+                  "values": [
+                    true
+                  ]
+                }
+              ],
+              "parameters": [],
+              "sourceInformation": {
+                "endColumn": 33,
+                "endLine": 17,
+                "sourceId": "",
+                "startColumn": 29,
+                "startLine": 17
+              }
+            },
+            {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "boolean",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "sourceInformation": {
+                    "endColumn": 41,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 37,
+                    "startLine": 17
+                  },
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "parameters": [],
+              "sourceInformation": {
+                "endColumn": 41,
+                "endLine": 17,
+                "sourceId": "",
+                "startColumn": 36,
+                "startLine": 17
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 17,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 17
+          }
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "ui::test1::ProfileTest",
+          "value": "stereotype2"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "ui::test1::ProfileTest",
+            "value": "tag1"
+          },
+          "value": "Function Tag"
+        }
+      ],
+      "name": "TestFunction",
+      "package": "ui",
+      "parameters": [
+        {
+          "_type": "var",
+          "class": "String",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "input"
+        },
+        {
+          "_type": "var",
+          "class": "String",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "input2"
+        }
+      ],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Boolean"
+    },
+    "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
   }
 ]

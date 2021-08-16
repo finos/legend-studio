@@ -677,7 +677,7 @@ export const FunctionEditor = observer(() => {
   }, [applicationStore, functionEditorState]);
 
   return (
-    <div className="function-editor">
+    <div className="function-editor" data-testid={CORE_TEST_ID.FUNCTION_EDITOR}>
       <div className="panel">
         <div className="panel__header">
           <div className="panel__header__title">
