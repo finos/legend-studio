@@ -46,19 +46,19 @@ export abstract class Logger {
   ): void;
 
   debug(event: string | undefined, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.DEBUG ? undefined : this._debug(event, data);
+    this.level > LOG_LEVEL.DEBUG ? undefined : this._debug(event, ...data);
   }
 
   info(event: string | undefined, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.INFO ? undefined : this._info(event, data);
+    this.level > LOG_LEVEL.INFO ? undefined : this._info(event, ...data);
   }
 
   warn(event: string | undefined, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.WARN ? undefined : this._warn(event, data);
+    this.level > LOG_LEVEL.WARN ? undefined : this._warn(event, ...data);
   }
 
   error(event: string | undefined, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.ERROR ? undefined : this._error(event, data);
+    this.level > LOG_LEVEL.ERROR ? undefined : this._error(event, ...data);
   }
 }
 
@@ -70,18 +70,18 @@ export class Log {
   }
 
   debug(event: string | undefined, ...data: unknown[]): void {
-    this.loggers.forEach((logger) => logger.debug(event, data));
+    this.loggers.forEach((logger) => logger.debug(event, ...data));
   }
 
   info(event: string | undefined, ...data: unknown[]): void {
-    this.loggers.forEach((logger) => logger.info(event, data));
+    this.loggers.forEach((logger) => logger.info(event, ...data));
   }
 
   warn(event: string | undefined, ...data: unknown[]): void {
-    this.loggers.forEach((logger) => logger.warn(event, data));
+    this.loggers.forEach((logger) => logger.warn(event, ...data));
   }
 
   error(event: string | undefined, ...data: unknown[]): void {
-    this.loggers.forEach((logger) => logger.error(event, data));
+    this.loggers.forEach((logger) => logger.error(event, ...data));
   }
 }
