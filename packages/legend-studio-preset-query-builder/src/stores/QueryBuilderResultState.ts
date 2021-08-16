@@ -16,7 +16,7 @@
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { LogEvent, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   EditorStore,
@@ -25,8 +25,8 @@ import type {
   RawLambda,
 } from '@finos/legend-studio';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   CLIENT_VERSION,
-  CORE_LOG_EVENT,
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
@@ -105,8 +105,8 @@ export class QueryBuilderResultState {
         )) as ExecutionResult;
       this.setExecutionResult(result);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -135,8 +135,8 @@ export class QueryBuilderResultState {
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -178,8 +178,8 @@ export class QueryBuilderResultState {
         `Service ${service.name} created`,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

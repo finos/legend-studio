@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { Log, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   losslessParse,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -23,14 +24,13 @@ import {
   HttpStatus,
   NetworkClientError,
 } from '@finos/legend-studio-shared';
-import type { Logger } from '../../../../../utils/Logger';
-import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/GraphManagerLogEvent';
 import { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportConfigurationDescription } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import { ImportMode } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import type { RawLambda } from '../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { GenerationConfigurationDescription } from '../../../../metamodels/pure/action/generation/GenerationConfigurationDescription';
-import { AbstractEngineConfig } from '../../../../metamodels/pure/action/AbstractEngineConfiguration';
+import { TEMP__AbstractEngineConfig } from '../../../../metamodels/pure/action/TEMP__AbstractEngineConfig';
 import { V1_EngineServerClient } from './V1_EngineServerClient';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult';
@@ -79,7 +79,7 @@ import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationRe
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../metamodels/pure/action/service/ServiceExecutionMode';
 
-class V1_EngineConfig extends AbstractEngineConfig {
+class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
 
   override setEnv(val: string | undefined): void {
@@ -123,17 +123,17 @@ interface V1_EngineSetupConfig {
  */
 export class V1_Engine {
   private engineServerClient: V1_EngineServerClient;
-  logger: Logger;
+  log: Log;
   config: V1_EngineConfig;
 
-  constructor(clientConfig: ServerClientConfig, logger: Logger) {
+  constructor(clientConfig: ServerClientConfig, log: Log) {
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
     this.config = new V1_EngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
     this.config.setUseClientRequestPayloadCompression(
       this.engineServerClient.enableCompression,
     );
-    this.logger = logger;
+    this.log = log;
   }
 
   private serializePureModelContextData = (
@@ -141,8 +141,8 @@ export class V1_Engine {
   ): PlainObject<V1_PureModelContextData> => {
     const startTime = Date.now();
     const serializedGraph = V1_serializePureModelContextData(graph);
-    this.logger.info(
-      CORE_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED,
+    this.log.info(
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED),
       Date.now() - startTime,
       'ms',
     );

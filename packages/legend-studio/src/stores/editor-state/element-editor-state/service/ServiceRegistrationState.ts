@@ -19,6 +19,7 @@ import type { ServiceEditorState } from '../../../editor-state/element-editor-st
 import type { EditorStore } from '../../../EditorStore';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   ActionState,
   prettyCONSTName,
   assertNonEmptyString,
@@ -27,11 +28,11 @@ import {
   getNullableFirstElement,
   assertTrue,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import { Version } from '../../../../models/sdlc/models/version/Version';
 import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
-import { ServiceRegistrationEnvInfo } from '../../../ApplicationConfig';
+import { ServiceRegistrationEnvInfo } from '../../../application/ApplicationConfig';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
@@ -76,7 +77,7 @@ export class ServiceRegistrationState {
       updateVersion: action,
       setProjectVersion: action,
       openModal: action,
-      init: action,
+      initialize: action,
       updateType: action,
       updateEnv: action,
       setActivatePostRegistration: action,
@@ -105,10 +106,10 @@ export class ServiceRegistrationState {
 
   openModal(): void {
     this.setModal(true);
-    this.init();
+    this.initialize();
   }
 
-  init(): void {
+  initialize(): void {
     this.serviceEnv = getNullableFirstElement(
       this.editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig,
@@ -224,8 +225,8 @@ export class ServiceRegistrationState {
         null,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, null);

@@ -20,13 +20,12 @@ import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import type { EDITOR_LANGUAGE } from '../../stores/EditorConfig';
 import { TAB_SIZE, EDITOR_THEME } from '../../stores/EditorConfig';
 import { useResizeDetector } from 'react-resize-detector';
-
 import {
   disposeEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
-} from '../../utils/TextEditorUtil';
+} from '@finos/legend-studio-components';
 import { useEditorStore } from '../../stores/EditorStore';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';

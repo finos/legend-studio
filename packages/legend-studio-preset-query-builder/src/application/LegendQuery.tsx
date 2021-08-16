@@ -18,6 +18,7 @@ import {
   LegendApplication,
   setupLegendStudioUILibrary,
   PluginManager,
+  WebApplicationNavigatorProvider,
 } from '@finos/legend-studio';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
@@ -53,10 +54,13 @@ export class LegendQuery extends LegendApplication {
 
     ReactDOM.render(
       <BrowserRouter basename={this.baseUrl}>
-        <LegendQueryApplication
-          config={this.appConfig}
-          pluginManager={this.pluginManager}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendQueryApplication
+            config={this.appConfig}
+            pluginManager={this.pluginManager}
+            log={this.log}
+          />
+        </WebApplicationNavigatorProvider>
       </BrowserRouter>,
       root,
     );

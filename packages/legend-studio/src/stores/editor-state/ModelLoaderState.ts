@@ -20,10 +20,11 @@ import { EditorState } from '../editor-state/EditorState';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   UnsupportedOperationError,
   guaranteeNonNullable,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { ImportConfigurationDescription } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
 import { ImportMode } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
@@ -183,10 +184,10 @@ export class ModelLoaderState extends EditorState {
         this.editorStore.sdlcState.currentWorkspaceId,
         { replace: this.replace, entities, message },
       );
-      window.location.reload(); // hard refresh after
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.MODEL_LOADER_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -208,8 +209,8 @@ export class ModelLoaderState extends EditorState {
       this.modelImportDescriptions =
         (yield this.editorStore.graphState.graphManager.getAvailableImportConfigurationDescriptions()) as ImportConfigurationDescription[];
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.MODEL_LOADER_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

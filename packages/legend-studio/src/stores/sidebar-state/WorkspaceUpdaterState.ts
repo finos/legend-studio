@@ -19,7 +19,8 @@ import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { WorkspaceUpdateReport } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
 import { WORKSPACE_UPDATE_REPORT_STATUS } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import {
   Revision,
   RevisionAlias,
@@ -29,6 +30,7 @@ import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   getNullableFirstElement,
@@ -210,16 +212,16 @@ export class WorkspaceUpdaterState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - restartChangeDetectionStartTime,
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -267,8 +269,8 @@ export class WorkspaceUpdaterState {
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         )) as WorkspaceUpdateReport;
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.SDLC_UPDATE_WORKSPACE,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_UPDATE_WORKSPACE),
         Date.now() - startTime,
         'ms',
       );
@@ -277,15 +279,15 @@ export class WorkspaceUpdaterState {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
         case WORKSPACE_UPDATE_REPORT_STATUS.CONFLICT:
         case WORKSPACE_UPDATE_REPORT_STATUS.UPDATED:
-          window.location.reload();
+          this.editorStore.applicationStore.navigator.reload();
           break;
         case WORKSPACE_UPDATE_REPORT_STATUS.NO_OP:
         default:
           break;
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -339,8 +341,8 @@ export class WorkspaceUpdaterState {
         .map((review) => Review.serialization.fromJson(review))
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -18,7 +18,7 @@ import { action, makeObservable, observable } from 'mobx';
 
 const DEFAULT_TAB_SIZE = 2;
 
-export class AbstractEngineConfig {
+export class TEMP__AbstractEngineConfig {
   env?: string;
   tabSize = DEFAULT_TAB_SIZE;
   currentUserId?: string;

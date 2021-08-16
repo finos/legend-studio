@@ -89,7 +89,7 @@ const ExistingQuerySetup = observer(
             querySetupState.currentQuery,
           ),
         );
-        applicationStore.historyApiClient.push(
+        applicationStore.navigator.goTo(
           generateExistingQueryRoute(querySetupState.currentQuery.id),
         );
       }
@@ -293,7 +293,7 @@ const ServiceQuerySetup = observer(
             querySetupState.currentServiceExecutionKey,
           ),
         );
-        applicationStore.historyApiClient.push(
+        applicationStore.navigator.goTo(
           generateServiceQueryRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
@@ -543,7 +543,7 @@ const CreateQuerySetup = observer(
             querySetupState.currentRuntime,
           ),
         );
-        applicationStore.historyApiClient.push(
+        applicationStore.navigator.goTo(
           generateCreateQueryRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
@@ -815,7 +815,7 @@ const QuerySetupLandingPage = observer(() => {
     setupStore.setSetupState(new CreateQuerySetupState(queryStore));
 
   useEffect(() => {
-    setupStore.init();
+    setupStore.initialize();
   }, [setupStore]);
 
   return (

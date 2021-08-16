@@ -27,10 +27,8 @@ export default {
   testEnvironment: 'jsdom',
   moduleNameMapper: {
     ...base.moduleNameMapper,
-    // manual mocks - TODO: we might eventually want to move these to `@finos/legend-studio-components` or `@finos/legend-studio-test-mocks`, etc.
     '^monaco-editor$':
-      '@finos/legend-studio/lib/testMocks/MockedMonacoEditor.js',
-    // '^react-reflex$': '@finos/legend-studio/lib/testMocks/MockedReactReflex.js',
+      '@finos/legend-studio-components/lib/testMocks/MockedMonacoEditor.js',
   },
   testMatch: [
     '<rootDir>/packages/legend-studio-manual-tests/src/**/__tests__/**/*(*.)test.[jt]s?(x)',

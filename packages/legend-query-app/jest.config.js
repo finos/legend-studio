@@ -29,11 +29,6 @@ export default {
     ...base.setupFiles,
     '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
   ],
-  moduleNameMapper: {
-    ...base.moduleNameMapper,
-    '^monaco-editor$':
-      '@finos/legend-studio/lib/testMocks/MockedMonacoEditor.js',
-  },
   testMatch: [
     '<rootDir>/packages/legend-query-app/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],

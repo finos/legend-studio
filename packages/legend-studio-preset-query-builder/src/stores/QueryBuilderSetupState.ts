@@ -165,7 +165,7 @@ export class QueryBuilderSetupState {
   ): GeneratorFn<void> {
     this.setMapping(mapping);
     this.setRuntime(runtime);
-    this.queryBuilderState.init(func);
+    this.queryBuilderState.initialize(func);
     this.setOnSaveQuery(onSave);
     yield flowResult(
       this.queryBuilderState.setOpenQueryBuilder(true, {

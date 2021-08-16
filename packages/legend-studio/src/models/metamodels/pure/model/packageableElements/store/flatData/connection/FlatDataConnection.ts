@@ -29,7 +29,7 @@ import { Connection } from '../../../../../model/packageableElements/connection/
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
 
 export class FlatDataConnection extends Connection implements Hashable {
-  public static readonly CONTENT_TYPE = ContentType.TEXT_PLAIN;
+  static readonly CONTENT_TYPE = ContentType.TEXT_PLAIN;
 
   url: string;
 

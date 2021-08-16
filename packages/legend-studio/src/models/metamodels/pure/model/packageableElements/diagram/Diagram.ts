@@ -92,9 +92,6 @@ export class Diagram extends PackageableElement implements Hashable {
     deleteEntry(this.propertyViews, val);
   }
 
-  getClassView = (sourceViewId: string): ClassView | undefined =>
-    this.classViews.find((c) => c.id === sourceViewId);
-
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DIAGRAM,

@@ -33,7 +33,15 @@ export interface ServerClientConfig {
   baseUrl?: string;
   networkClientOptions?: Record<PropertyKey, unknown>;
   enableCompression?: boolean;
-  authenticationUrl?: string; // help to re-authenticate app automatically
+  /**
+   * This supports a basic re-authenticate mechanism using <iframe>.
+   * The provided URL will be loaded in the <iframe> in the background
+   * and supposedly re-authentication would happen without user's action
+   * i.e. could be that auth cookie is being refreshed.
+   *
+   * NOTE: this is very specific to the deployment context.
+   */
+  autoReAuthenticateUrl?: string;
 }
 
 /**
@@ -45,7 +53,7 @@ export abstract class AbstractServerClient {
   private readonly tracerService = new TracerService();
   enableCompression: boolean;
   baseUrl?: string;
-  authenticationUrl?: string;
+  autoReAuthenticateUrl?: string;
 
   constructor(config: ServerClientConfig) {
     this.networkClient = new NetworkClient({
@@ -54,7 +62,7 @@ export abstract class AbstractServerClient {
     });
     this.baseUrl = config.baseUrl;
     this.enableCompression = Boolean(config.enableCompression);
-    this.authenticationUrl = config.authenticationUrl;
+    this.autoReAuthenticateUrl = config.autoReAuthenticateUrl;
   }
 
   setBaseUrl(val: string | undefined): void {
@@ -285,7 +293,7 @@ export abstract class AbstractServerClient {
         {
           ...(responseProcessConfig ?? {}),
           preprocess: (response: Response) => trace.bootstrap(response),
-          authenticationUrl: this.authenticationUrl,
+          autoReAuthenticateUrl: this.autoReAuthenticateUrl,
         },
       )
       .then((result) => {

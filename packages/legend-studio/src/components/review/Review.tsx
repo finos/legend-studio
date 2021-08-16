@@ -18,7 +18,6 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReviewStoreProvider, useReviewStore } from '../../stores/ReviewStore';
 import { useParams } from 'react-router';
-import SplitPane from 'react-split-pane';
 import { ReviewSideBar } from './ReviewSideBar';
 import { ReviewPanel } from './ReviewPanel';
 import {
@@ -32,7 +31,15 @@ import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import {
+  roundUpResizingForPanel,
+  clsx,
+  PanelLoadingIndicator,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+} from '@finos/legend-studio-components';
 import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateViewProjectRoute,
@@ -136,10 +143,11 @@ const ReviewExplorer = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const resizeSideBar = (newSize: number | undefined): void => {
-    if (newSize !== undefined) {
-      editorStore.sideBarDisplayState.setSize(newSize);
-    }
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void => {
+    roundUpResizingForPanel(handleProps);
+    editorStore.sideBarDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
+    );
   };
 
   useEffect(() => {
@@ -149,17 +157,22 @@ const ReviewExplorer = observer(() => {
   }, [applicationStore, reviewStore]);
 
   return (
-    <SplitPane
+    <ResizablePanelGroup
+      orientation="vertical"
       className="review-explorer__content"
-      split="vertical"
-      onDragFinished={resizeSideBar}
-      size={editorStore.sideBarDisplayState.size}
-      minSize={0}
-      maxSize={-600}
     >
-      <ReviewSideBar />
-      <ReviewPanel />
-    </SplitPane>
+      <ResizablePanel
+        size={editorStore.sideBarDisplayState.size}
+        direction={1}
+        onStopResize={resizeSideBar}
+      >
+        <ReviewSideBar />
+      </ResizablePanel>
+      <ResizablePanelSplitter />
+      <ResizablePanel>
+        <ReviewPanel />
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 });
 
@@ -177,7 +190,7 @@ const ReviewInner = observer(() => {
 
   useEffect(() => {
     reviewStore.setProjectIdAndReviewId(projectId, reviewId);
-    flowResult(reviewStore.init()).catch(
+    flowResult(reviewStore.initialize()).catch(
       applicationStore.alertIllegalUnhandledError,
     );
     flowResult(reviewStore.getReview()).catch(

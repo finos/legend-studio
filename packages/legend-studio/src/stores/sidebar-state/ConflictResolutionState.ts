@@ -16,10 +16,12 @@
 
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   assertTrue,
   guaranteeNonNullable,
@@ -238,16 +240,16 @@ export class ConflictResolutionState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - startTime,
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -256,7 +258,7 @@ export class ConflictResolutionState {
     }
   }
 
-  *init(): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',
@@ -318,23 +320,19 @@ export class ConflictResolutionState {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.editorStore.changeDetectionState.stop();
-      yield flowResult(
-        this.editorStore.graphState.graph.precomputeHashes(
-          this.editorStore.applicationStore.logger,
-        ),
-      );
+      yield flowResult(this.editorStore.graphState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -372,13 +370,15 @@ export class ConflictResolutionState {
       yield flowResult(
         this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.buildEntityHashesIndex(
           entities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -403,13 +403,15 @@ export class ConflictResolutionState {
       yield flowResult(
         this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.buildEntityHashesIndex(
           workspaceBaseEntities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          ),
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -471,10 +473,10 @@ export class ConflictResolutionState {
         },
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -525,10 +527,10 @@ export class ConflictResolutionState {
         this.sdlcState.currentWorkspaceId,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -579,10 +581,10 @@ export class ConflictResolutionState {
         this.sdlcState.currentWorkspaceId,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
+      this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

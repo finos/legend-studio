@@ -17,8 +17,13 @@
 import { observer } from 'mobx-react-lite';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { FaUserSecret, FaSave } from 'react-icons/fa';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
-import { clsx, HammerIcon } from '@finos/legend-studio-components';
+import {
+  clsx,
+  HammerIcon,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+} from '@finos/legend-studio-components';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
@@ -159,44 +164,44 @@ export const QueryBuilder = observer(
           <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
           <QueryBuilderHeader queryBuilderState={queryBuilderState} />
           <div className="query-builder__content">
-            <ReflexContainer orientation="horizontal">
-              <ReflexElement minSize={132}>
+            <ResizablePanelGroup orientation="horizontal">
+              <ResizablePanel minSize={132}>
                 {isQuerySupported ? (
-                  <ReflexContainer orientation="vertical">
-                    <ReflexElement size={450} minSize={300}>
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel size={450} minSize={300}>
                       <QueryBuilderSetupPanel
                         queryBuilderState={queryBuilderState}
                       />
                       <QueryBuilderExplorerPanel
                         queryBuilderState={queryBuilderState}
                       />
-                    </ReflexElement>
-                    <ReflexSplitter />
-                    <ReflexElement minSize={300}>
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel minSize={300}>
                       <QueryBuilderFetchStructurePanel
                         queryBuilderState={queryBuilderState}
                       />
-                    </ReflexElement>
-                    <ReflexSplitter />
-                    <ReflexElement minSize={300}>
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel minSize={300}>
                       <QueryBuilderFilterPanel
                         queryBuilderState={queryBuilderState}
                       />
-                    </ReflexElement>
-                  </ReflexContainer>
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 ) : (
                   <QueryBuilderUnsupportedQueryEditor
                     queryBuilderState={queryBuilderState}
                   />
                 )}
-              </ReflexElement>
-              <ReflexSplitter />
-              <ReflexElement size={300} minSize={28}>
+              </ResizablePanel>
+              <ResizablePanelSplitter />
+              <ResizablePanel size={300} minSize={28}>
                 <QueryBuilderResultPanel
                   queryBuilderState={queryBuilderState}
                 />
-              </ReflexElement>
-            </ReflexContainer>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
           <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
           {queryBuilderState.queryTextEditorState.mode && (

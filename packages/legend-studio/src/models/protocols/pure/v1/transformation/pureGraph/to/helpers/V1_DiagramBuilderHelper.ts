@@ -31,6 +31,7 @@ import type { V1_Point } from '../../../../model/packageableElements/diagram/geo
 import type { V1_Rectangle } from '../../../../model/packageableElements/diagram/geometry/V1_Rectangle';
 import type { V1_PropertyView } from '../../../../model/packageableElements/diagram/V1_PropertyView';
 import type { V1_GeneralizationView } from '../../../../model/packageableElements/diagram/V1_GeneralizationView';
+import { getClassView } from '../../../../../../../metamodels/pure/helpers/DiagramHelper';
 
 const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, 'x coordinate of point is missing');
@@ -89,11 +90,11 @@ export const V1_buildPropertyView = (
   );
   assertNonNullable(propertyView.line, 'Diagram property view line is missing');
   const sourceClassView = guaranteeNonNullable(
-    diagram.getClassView(guaranteeNonNullable(propertyView.sourceView)),
+    getClassView(diagram, guaranteeNonNullable(propertyView.sourceView)),
     'Diagram property view source class line is missing',
   );
   const targetClassView = guaranteeNonNullable(
-    diagram.getClassView(guaranteeNonNullable(propertyView.targetView)),
+    getClassView(diagram, guaranteeNonNullable(propertyView.targetView)),
     'Diagram property view target class is missing',
   );
   const property = context.resolveOwnedProperty(propertyView.property);
@@ -113,11 +114,11 @@ export const V1_buildGeneralizationView = (
   diagram: Diagram,
 ): GeneralizationView => {
   const sourceClassView = guaranteeNonNullable(
-    diagram.getClassView(guaranteeNonNullable(generalizationView.sourceView)),
+    getClassView(diagram, guaranteeNonNullable(generalizationView.sourceView)),
     'Diagram property view source class line is missing',
   );
   const targetClassView = guaranteeNonNullable(
-    diagram.getClassView(guaranteeNonNullable(generalizationView.targetView)),
+    getClassView(diagram, guaranteeNonNullable(generalizationView.targetView)),
     'Diagram property view target class is missing',
   );
   const view = new GeneralizationView(

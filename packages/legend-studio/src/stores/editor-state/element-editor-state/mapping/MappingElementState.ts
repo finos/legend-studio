@@ -21,9 +21,9 @@ import { LambdaEditorState } from '../../../editor-state/element-editor-state/La
 import type { EditorStore } from '../../../EditorStore';
 import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
+import type { MappingElement } from './MappingEditorState';
 
 export class MappingElementState {
   uuid = uuid();

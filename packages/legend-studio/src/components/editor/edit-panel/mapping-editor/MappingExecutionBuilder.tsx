@@ -15,10 +15,12 @@
  */
 
 import { Fragment, useState, useRef, useCallback } from 'react';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { flowResult } from 'mobx';
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
   createFilter,
   CustomSelectorInput,
   BlankPanelPlaceholder,
@@ -27,11 +29,16 @@ import {
   TimesIcon,
   PlayIcon,
   FlaskIcon,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-studio-components';
 import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-studio-components';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  getMappingElementSource,
+  getMappingElementTarget,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { NewServiceModal } from '../service-editor/NewServiceModal';
@@ -58,10 +65,6 @@ import {
   useApplicationStore,
 } from '../../../../stores/ApplicationStore';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import {
-  getMappingElementTarget,
-  getMappingElementSource,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
@@ -296,8 +299,8 @@ const MappingExecutionQueryEditor = observer(
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <ReflexContainer orientation="vertical">
-              <ReflexElement minSize={250}>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={250}>
                 <div className="mapping-execution-builder__query-panel__query">
                   <TextInputEditor
                     inputValue={queryState.lambdaString}
@@ -306,14 +309,16 @@ const MappingExecutionQueryEditor = observer(
                     showMiniMap={false}
                   />
                 </div>
-              </ReflexElement>
-              <ReflexSplitter />
-              <ReflexElement size={250} minSize={250}>
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel size={250} minSize={250}>
                 <div className="mapping-execution-builder__query-panel__query-editor">
                   {extraQueryEditors}
                 </div>
-              </ReflexElement>
-            </ReflexContainer>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         )}
         {queryState.query.isStub && (
@@ -660,23 +665,27 @@ export const MappingExecutionBuilder = observer(
           </div>
         </div>
         <div className="mapping-execution-builder__content">
-          <ReflexContainer orientation="horizontal">
-            <ReflexElement size={250} minSize={28}>
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel size={250} minSize={28}>
               {/* use UUID key to make sure these components refresh when we change the state */}
               <MappingExecutionQueryEditor
                 key={executionState.queryState.uuid}
                 executionState={executionState}
               />
-            </ReflexElement>
-            <ReflexSplitter />
-            <ReflexElement size={250} minSize={28}>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel size={250} minSize={28}>
               <MappingExecutionInputDataBuilder
                 key={executionState.inputDataState.uuid}
                 executionState={executionState}
               />
-            </ReflexElement>
-            <ReflexSplitter />
-            <ReflexElement minSize={28}>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel minSize={28}>
               <div className="panel mapping-execution-builder__result-panel">
                 <div className="panel__header">
                   <div className="panel__header__title">
@@ -691,8 +700,8 @@ export const MappingExecutionBuilder = observer(
                   />
                 </div>
               </div>
-            </ReflexElement>
-          </ReflexContainer>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
         <ExecutionPlanViewer
           executionPlanState={executionState.executionPlanState}

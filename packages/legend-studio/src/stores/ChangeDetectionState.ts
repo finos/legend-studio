@@ -23,9 +23,10 @@ import {
   flow,
   makeObservable,
 } from 'mobx';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   IllegalStateError,
   shallowStringify,
   noop,
@@ -121,8 +122,10 @@ class RevisionChangeDetectionState {
     }
     this.changes = changes;
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -131,7 +134,7 @@ class RevisionChangeDetectionState {
 
   *buildEntityHashesIndex(
     entities: Entity[],
-    logEvent: CORE_LOG_EVENT,
+    logEvent: LogEvent,
     quiet?: boolean,
   ): GeneratorFn<void> {
     if (!this.entities.length && !this.entityHashesIndex.size) {
@@ -146,7 +149,7 @@ class RevisionChangeDetectionState {
       this.setEntityHashesIndex(hashesIndex);
       this.setIsBuildingEntityHashesIndex(false);
       if (!quiet) {
-        this.editorStore.applicationStore.logger.info(
+        this.editorStore.applicationStore.log.info(
           logEvent,
           '[ASYNC]',
           Date.now() - startTime,
@@ -154,8 +157,8 @@ class RevisionChangeDetectionState {
         );
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.CHANGE_DETECTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_FAILURE),
         `Can't build hashes index`,
       );
       this.setEntityHashesIndex(new Map<string, string>());
@@ -391,8 +394,10 @@ export class ChangeDetectionState {
       snapshot.set(el.path, el.hashCode),
     );
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_HASH_SNAPSHOTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -450,8 +455,10 @@ export class ChangeDetectionState {
         ),
       );
       if (!quiet) {
-        this.editorStore.applicationStore.logger.info(
-          CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+        this.editorStore.applicationStore.log.info(
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          ),
           Date.now() - startTime,
           'ms',
         );
@@ -510,8 +517,10 @@ export class ChangeDetectionState {
       ),
     )) as EntityChangeConflict[];
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -540,8 +549,10 @@ export class ChangeDetectionState {
       ),
     )) as EntityChangeConflict[];
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -672,8 +683,10 @@ export class ChangeDetectionState {
       this.conflictResolutionBaseRevisionState.computeChanges(quiet), // for conflict resolution changes detection
     ]);
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );

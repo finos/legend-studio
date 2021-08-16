@@ -27,6 +27,7 @@ import {
   parse as _getQueryParams,
   parseUrl as _getQueryParamsFromUrl,
 } from 'query-string';
+import { returnUndefOnError } from './ErrorUtils';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms
@@ -113,14 +114,24 @@ const extractMessage = (payload: Payload): string => {
 export const unauthenticated = (response: Response): boolean =>
   response.status === 0 || response.status === HttpStatus.UNAUTHORIZED;
 
-export const authenticate = (authenticationUrl: string): Promise<void> =>
+/**
+ * This is a fairly basic way to attempt re-authentication.
+ * We create an <iframe> to load a re-authentication url
+ * which suppose to silently refresh the authentication cookie
+ * and requires no action from users.
+ *
+ * NOTE: authentication is very specific to the deployment context
+ * i.e. how the servers are being setup, so this way of re-authenticate
+ * should be optional and configurable.
+ */
+export const autoReAuthenticate = (url: string): Promise<void> =>
   new Promise((resolve: Function): void => {
-    const id = 'AUTHENTICATION_IFRAME';
+    const id = 'AUTO_AUTHENTICATION_IFRAME';
     const previous = document.getElementById(id);
     previous?.remove();
     const element = document.createElement('iframe');
     element.id = id;
-    element.src = authenticationUrl;
+    element.src = url;
     element.style.display = 'none';
     element.addEventListener('load', (): void => {
       element.remove();
@@ -158,10 +169,15 @@ export class NetworkClientError extends Error {
 
 export const makeUrl = (
   baseUrl: string | undefined,
-  relativeUrl: string,
+  url: string,
   parameters: Parameters,
 ): string => {
-  const url = new URL(relativeUrl, baseUrl ?? window.location.href);
+  if (!baseUrl && !returnUndefOnError(() => new URL(url))) {
+    throw new Error(
+      `Can't build URL string: base URL is not specified and the provided URL '${url}' is not absolute`,
+    );
+  }
+  const fullUrl = new URL(url, baseUrl);
   if (parameters instanceof Object) {
     Object.entries(parameters).forEach(([name, value]) => {
       if (value !== undefined) {
@@ -170,15 +186,15 @@ export const makeUrl = (
           value
             .filter(isNonNullable)
             .forEach((subVal) =>
-              url.searchParams.append(name, subVal.toString()),
+              fullUrl.searchParams.append(name, subVal.toString()),
             );
         } else {
-          url.searchParams.append(name, value.toString());
+          fullUrl.searchParams.append(name, value.toString());
         }
       }
     });
   }
-  return url.toString();
+  return fullUrl.toString();
 };
 
 // NOTE: in case of missing CORS headers, failed authentication manifests itself as CORS error
@@ -188,7 +204,7 @@ const couldBeCORS = (error: Error): boolean =>
 export interface ResponseProcessConfig {
   skipProcessing?: boolean;
   preprocess?: (response: Response) => void;
-  authenticationUrl?: string;
+  autoReAuthenticateUrl?: string;
 }
 
 export interface RequestProcessConfig {
@@ -247,8 +263,8 @@ const retry = async <T>(
   init: RequestInit,
   responseProcessConfig?: ResponseProcessConfig,
 ): Promise<T> => {
-  if (responseProcessConfig?.authenticationUrl) {
-    return authenticate(responseProcessConfig.authenticationUrl)
+  if (responseProcessConfig?.autoReAuthenticateUrl) {
+    return autoReAuthenticate(responseProcessConfig.autoReAuthenticateUrl)
       .then(() => fetch(url, init))
       .then((response) =>
         processResponse(response, init, responseProcessConfig),

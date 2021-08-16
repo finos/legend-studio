@@ -23,7 +23,8 @@ import { isValidUrl } from '@finos/legend-studio-shared';
 export const DevTool = observer(() => {
   const editorStore = useEditorStore();
   // Engine
-  const engineConfig = editorStore.graphState.graphManager.getEngineConfig();
+  const engineConfig =
+    editorStore.graphState.graphManager.TEMP__getEngineConfig();
   const changeEngineClientBaseUrl: React.ChangeEventHandler<HTMLInputElement> =
     (event) =>
       engineConfig.setBaseUrl(

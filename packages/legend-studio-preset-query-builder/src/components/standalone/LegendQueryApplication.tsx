@@ -14,68 +14,87 @@
  * limitations under the License.
  */
 
-import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { ThemeProvider } from '@material-ui/core/styles';
 import type { ApplicationConfig, PluginManager } from '@finos/legend-studio';
 import {
+  useWebApplicationNavigator,
+  useApplicationStore,
   ActionAlert,
   ApplicationStoreProvider,
   BlockingAlert,
-  LegendMaterialUITheme,
   NotificationSnackbar,
 } from '@finos/legend-studio';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
-import { QueryStoreProvider } from '../../stores/QueryStore';
+import { QueryStoreProvider, useQueryStore } from '../../stores/QueryStore';
 import {
   CreateQueryLoader,
   ExistingQueryLoader,
   ServiceQueryLoader,
 } from './QueryEditor';
+import { flowResult } from 'mobx';
+import {
+  LegendMaterialUITheme,
+  PanelLoadingIndicator,
+} from '@finos/legend-studio-components';
+import type { Log } from '@finos/legend-studio-shared';
 
-export const LegendQueryApplicationRoot = observer(() => (
-  // TODO: when `ApplicationStore` nolonger depends on SDLC, we can get rid of this
-  // useEffect(() => {
-  // flowResult(applicationStore.init()).catch(
-  //   applicationStore.alertIllegalUnhandledError,
-  // );
-  // }, [applicationStore]);
+const LegendQueryApplicationInner = observer(() => {
+  const queryStore = useQueryStore();
+  const applicationStore = useApplicationStore();
 
-  <div className="app">
-    <BlockingAlert />
-    <ActionAlert />
-    <NotificationSnackbar />
-    <Switch>
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
-        component={ExistingQueryLoader}
-      />
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
-        component={ServiceQueryLoader}
-      />
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
-        component={CreateQueryLoader}
-      />
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-        component={QuerySetup}
-      />
-      <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
-    </Switch>
-  </div>
-));
+  useEffect(() => {
+    flowResult(queryStore.initialize()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+  }, [queryStore, applicationStore]);
+
+  return (
+    <div className="app">
+      <BlockingAlert />
+      <ActionAlert />
+      <NotificationSnackbar />
+      <PanelLoadingIndicator isLoading={queryStore.initState.isInProgress} />
+      {queryStore.initState.hasSucceeded && (
+        <Switch>
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
+            component={ExistingQueryLoader}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
+            component={ServiceQueryLoader}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
+            component={CreateQueryLoader}
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
+            component={QuerySetup}
+          />
+          <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
+        </Switch>
+      )}
+    </div>
+  );
+});
 
 export const LegendQueryApplication = observer(
-  (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
-    const { config, pluginManager } = props;
-    const history = useHistory();
+  (props: {
+    config: ApplicationConfig;
+    pluginManager: PluginManager;
+    log: Log;
+  }) => {
+    const { config, pluginManager, log } = props;
+    const navigator = useWebApplicationNavigator();
 
     if (!config.isConfigured) {
       return null;
@@ -83,12 +102,13 @@ export const LegendQueryApplication = observer(
     return (
       <ApplicationStoreProvider
         config={config}
-        history={history}
+        navigator={navigator}
         pluginManager={pluginManager}
+        log={log}
       >
         <QueryStoreProvider>
           <ThemeProvider theme={LegendMaterialUITheme}>
-            <LegendQueryApplicationRoot />
+            <LegendQueryApplicationInner />
           </ThemeProvider>
         </QueryStoreProvider>
       </ApplicationStoreProvider>

@@ -15,7 +15,7 @@
  */
 
 /// <reference types="jest-extended" />
-import { ApplicationConfig } from './ApplicationConfig';
+import { ApplicationConfig } from './application/ApplicationConfig';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ApplicationStore } from './ApplicationStore';
 import { EditorStore } from './EditorStore';
@@ -25,6 +25,8 @@ import { PluginManager } from '../application/PluginManager';
 import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
+import { WebApplicationNavigator } from './application/WebApplicationNavigator';
+import { Log } from '@finos/legend-studio-shared';
 
 export const testApplicationConfigData = {
   appName: 'test-app',
@@ -69,11 +71,11 @@ export const getTestEditorStore = (
   pluginManager = PluginManager.create(),
 ): EditorStore => {
   const applicationStore = new ApplicationStore(
-    createBrowserHistory(),
     applicationConfig,
     pluginManager,
+    new WebApplicationNavigator(createBrowserHistory()),
+    new Log(),
   );
-  applicationStore.logger.mute();
   return new EditorStore(applicationStore);
 };
 
@@ -169,11 +171,7 @@ export const checkBuildingElementsRoundtrip = async (
     excludeSectionIndex(entities),
   );
   // check hash
-  await flowResult(
-    editorStore.graphState.graph.precomputeHashes(
-      editorStore.applicationStore.logger,
-    ),
-  );
+  await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
     await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
@@ -208,11 +206,7 @@ export const checkBuildingResolvedElements = async (
     excludeSectionIndex(resolvedEntities),
   );
   // check hash
-  await flowResult(
-    editorStore.graphState.graph.precomputeHashes(
-      editorStore.applicationStore.logger,
-    ),
-  );
+  await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
     await editorStore.graphState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(

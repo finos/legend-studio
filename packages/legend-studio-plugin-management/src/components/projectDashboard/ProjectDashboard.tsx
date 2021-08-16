@@ -32,7 +32,6 @@ import type { ApplicationStore } from '@finos/legend-studio';
 import {
   Build,
   BuildStatus,
-  CORE_LOG_EVENT,
   Project,
   ProjectType,
   useApplicationStore,
@@ -69,7 +68,6 @@ class ProjectDashboardStore {
         this.fetchProjectByType(ProjectType.PROTOTYPE),
       ]);
     } catch (error: unknown) {
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.applicationStore.notifyError(error);
     } finally {
       this.isFetchingProjects = false;
@@ -111,7 +109,6 @@ class ProjectDashboardStore {
         builds.length !== 0 ? Build.serialization.fromJson(builds[0]) : null,
       );
     } catch (error: unknown) {
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
       this.applicationStore.notifyError(error);
     }
   }

@@ -19,7 +19,7 @@ import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
 } from '../../../../models/MetaModelConst';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
@@ -31,7 +31,7 @@ import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpec
 import type { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 import type { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import { LogEvent, isNonNullable } from '@finos/legend-studio-shared';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
 
 export class PurePropertyMappingState extends PropertyMappingState {
@@ -77,8 +77,8 @@ export class PurePropertyMappingState extends PropertyMappingState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -106,8 +106,8 @@ export class PurePropertyMappingState extends PropertyMappingState {
         );
         this.clearErrors();
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -199,8 +199,8 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
           );
         });
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

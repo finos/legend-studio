@@ -813,7 +813,7 @@ export class QueryBuilderLambdaProcessor
       this.queryBuilderState.fetchStructureState.setFetchStructureMode(
         FETCH_STRUCTURE_MODE.GRAPH_FETCH,
       );
-      this.queryBuilderState.fetchStructureState.graphFetchTreeState.init(
+      this.queryBuilderState.fetchStructureState.graphFetchTreeState.initialize(
         value,
       );
 

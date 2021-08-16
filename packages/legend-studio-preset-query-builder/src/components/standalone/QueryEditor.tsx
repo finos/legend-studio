@@ -139,7 +139,7 @@ const QueryEditorHeader = observer(() => {
   const queryInfoState = queryStore.queryInfoState;
   const applicationStore = useApplicationStore();
   const backToMainMenu = (): void =>
-    applicationStore.historyApiClient.push(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
+    applicationStore.navigator.goTo(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
 
   return (
     <div className="query-editor__header">
@@ -211,7 +211,8 @@ export const ServiceQueryLoader = observer(() => {
   const queryStore = useQueryStore();
   const params = useParams<ServiceQueryPathParams>();
   const queryParams = getQueryParameters<ServiceQueryQueryParams>(
-    applicationStore.historyApiClient.location.search,
+    applicationStore.navigator.getCurrentLocation(),
+    true,
   );
 
   useEffect(() => {
@@ -246,7 +247,7 @@ export const CreateQueryLoader = observer(() => {
         (queryStore.queryInfoState.mapping !== currentMapping ||
           queryStore.queryInfoState.runtime !== currentRuntime)
       ) {
-        applicationStore.historyApiClient.push(
+        applicationStore.navigator.goTo(
           generateCreateQueryRoute(
             queryStore.queryInfoState.project.groupId,
             queryStore.queryInfoState.project.artifactId,

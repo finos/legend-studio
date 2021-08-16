@@ -66,18 +66,17 @@ export interface SDLCServerClientConfig {
 }
 
 export class SDLCServerClient extends AbstractServerClient {
-  public currentUser?: User;
+  currentUser?: User;
   private env: string;
 
   constructor(config: SDLCServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
-      authenticationUrl: SDLCServerClient.authenticationUrl(config.serverUrl),
     });
     this.env = config.env;
   }
 
-  public setCurrentUser = (value: User): void => {
+  setCurrentUser = (value: User): void => {
     this.currentUser = value;
   };
 
@@ -95,8 +94,6 @@ export class SDLCServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Authentication -------------------------------------------
 
-  static authenticationUrl = (authenticationServerUrl: string): string =>
-    `${authenticationServerUrl}/auth/authorize`;
   static authorizeCallbackUrl = (
     authenticationServerUrl: string,
     callbackURI: string,

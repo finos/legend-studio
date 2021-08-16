@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore';
 import { observable, action, makeAutoObservable } from 'mobx';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type { TreeData } from '@finos/legend-studio-components';
 import type {
   GenerationTreeNodeData,
@@ -41,6 +41,7 @@ import {
 import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
 import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { LogEvent } from '@finos/legend-studio-shared';
 
 export class FileGenerationState {
   editorStore: EditorStore;
@@ -113,8 +114,8 @@ export class FileGenerationState {
     } catch (error: unknown) {
       this.selectedNode = undefined;
       this.processGenerationResult([]);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -138,8 +139,8 @@ export class FileGenerationState {
     output.forEach((entry) => {
       entry.cleanFileName(rootFolder);
       if (generationResultMap.has(entry.fileName)) {
-        this.editorStore.applicationStore.logger.warn(
-          CORE_LOG_EVENT.CODE_GENERATION_PROBLEM,
+        this.editorStore.applicationStore.log.warn(
+          LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
           'Found 2 generation outputs with same path',
         );
       }

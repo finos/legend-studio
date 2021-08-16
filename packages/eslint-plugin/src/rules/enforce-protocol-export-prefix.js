@@ -17,7 +17,8 @@
 const micromatch = require('micromatch');
 
 const protocolFileMatchPattern = '**/src/models/protocols/*/v*/**';
-const protocolVersionMatchPattern = /[/\\]v(?<protocolVersion>.*?)[/\\]/u;
+const protocolVersionMatchPattern =
+  /[/\\]src[/\\]models[/\\]protocols[/\\][^/\\]+[/\\]v(?<protocolVersion>.*?)[/\\]/u;
 
 /**
  * Enforce files related to a specific protocol version

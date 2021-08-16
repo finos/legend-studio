@@ -23,12 +23,12 @@ import {
   Revision,
   RevisionAlias,
 } from '../../models/sdlc/models/revision/Revision';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { Version } from '../../models/sdlc/models/version/Version';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { Workspace } from '../../models/sdlc/models/workspace/Workspace';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
-import { getNullableFirstElement } from '@finos/legend-studio-shared';
+import { LogEvent, getNullableFirstElement } from '@finos/legend-studio-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
@@ -79,8 +79,8 @@ export class ProjectOverviewState {
         )) as PlainObject<Workspace>[]
       ).map((workspace) => Workspace.serialization.fromJson(workspace));
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -104,7 +104,7 @@ export class ProjectOverviewState {
           'Current workspace is deleted. Redirecting to home page',
         );
         this.editorStore.setIgnoreNavigationBlocking(true);
-        this.editorStore.applicationStore.historyApiClient.push(
+        this.editorStore.applicationStore.navigator.goTo(
           generateSetupRoute(
             this.editorStore.applicationStore.config.sdlcServerKey,
             this.editorStore.sdlcState.currentProjectId,
@@ -112,8 +112,8 @@ export class ProjectOverviewState {
         );
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -219,8 +219,8 @@ export class ProjectOverviewState {
         this.committedReviewsBetweenMostRecentVersionAndProjectLatest = [];
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -241,8 +241,8 @@ export class ProjectOverviewState {
       );
       yield flowResult(this.fetchLatestProjectVersion());
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

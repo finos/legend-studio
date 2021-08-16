@@ -18,9 +18,11 @@ import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   losslessStringify,
   uuid,
   guaranteeType,
@@ -169,7 +171,7 @@ export class TestContainerState {
                 .connectionValue
             : identifiedConnection.connection;
         const engineConfig =
-          this.editorStore.graphState.graphManager.getEngineConfig();
+          this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
 
         if (connection instanceof JsonModelConnection) {
           newRuntime.addIdentifiedConnection(
@@ -281,8 +283,8 @@ export class TestContainerState {
       }
     } catch (error: unknown) {
       this.setAssertionData(tryToFormatJSONString('{}'));
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -326,8 +328,8 @@ export class TestContainerState {
       }
     } catch (error: unknown) {
       this.setTestExecutionResultText(undefined);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -455,8 +457,8 @@ export class SingleExecutionTestState {
             CLIENT_VERSION.VX_X_X,
           )) as string;
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.EXECUTION_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
           error,
         );
       }
@@ -493,8 +495,8 @@ export class SingleExecutionTestState {
           result: false,
         })),
       );
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
     } finally {

@@ -21,6 +21,7 @@ import {
 } from '../MappingElementState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   IllegalStateError,
   isNonNullable,
   UnsupportedOperationError,
@@ -33,7 +34,7 @@ import type { RawRelationalOperationElement } from '../../../../../models/metamo
 import { createStubRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { CompilationError } from '../../../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
-import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/GraphManagerLogEvent';
 import { MappingElementDecorator } from '../MappingElementDecorator';
 import { SOURCE_ID_LABEL } from '../../../../../models/MetaModelConst';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
@@ -90,8 +91,8 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -124,8 +125,8 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
           );
           this.clearErrors();
         } catch (error: unknown) {
-          this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.PARSING_PROBLEM,
+          this.editorStore.applicationStore.log.error(
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
             error,
           );
         }
@@ -328,8 +329,8 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
           );
         });
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

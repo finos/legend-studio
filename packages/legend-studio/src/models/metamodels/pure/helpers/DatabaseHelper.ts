@@ -15,10 +15,10 @@
  */
 
 import { guaranteeType } from '@finos/legend-studio-shared';
-import { Database } from '../../../../packageableElements/store/relational/model/Database';
-import type { Filter } from '../../../../packageableElements/store/relational/model/Filter';
-import type { Schema } from '../../../../packageableElements/store/relational/model/Schema';
-import type { Table } from '../../../../packageableElements/store/relational/model/Table';
+import { Database } from '../model/packageableElements/store/relational/model/Database';
+import type { Filter } from '../model/packageableElements/store/relational/model/Filter';
+import type { Schema } from '../model/packageableElements/store/relational/model/Schema';
+import type { Table } from '../model/packageableElements/store/relational/model/Table';
 
 const collectIncludedDBs = (
   results: Set<Database>,

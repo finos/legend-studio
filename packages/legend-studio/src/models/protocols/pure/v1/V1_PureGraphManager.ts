@@ -15,8 +15,8 @@
  */
 
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
-import type { Logger } from '../../../../utils/Logger';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { Entity } from '../../../sdlc/models/entity/Entity';
 import {
   ELEMENT_PATH_DELIMITER,
@@ -26,9 +26,11 @@ import {
 import type {
   Clazz,
   GeneratorFn,
+  Log,
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   getClass,
   guaranteeNonNullable,
   UnsupportedOperationError,
@@ -43,9 +45,9 @@ import {
   SystemGraphProcessingError,
   DependencyGraphProcessingError,
 } from '../../../MetaModelUtils';
-import type { AbstractEngineConfig } from '../../../metamodels/pure/action/AbstractEngineConfiguration';
+import type { TEMP__AbstractEngineConfig } from '../../../metamodels/pure/action/TEMP__AbstractEngineConfig';
 import type {
-  EngineSetupConfig,
+  TEMP__EngineSetupConfig,
   GraphBuilderOptions,
 } from '../../../metamodels/pure/graph/AbstractPureGraphManager';
 import { AbstractPureGraphManager } from '../../../metamodels/pure/graph/AbstractPureGraphManager';
@@ -365,13 +367,13 @@ export interface V1_EngineSetupConfig {
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
   engine!: V1_Engine;
-  logger: Logger;
+  log: Log;
   extensions: V1_GraphBuilderExtensions;
 
   constructor(
     pureGraphManagerPlugins: PureGraphManagerPlugin[],
     pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
-    logger: Logger,
+    log: Log,
   ) {
     super(pureGraphManagerPlugins, pureProtocolProcessorPlugins);
 
@@ -390,7 +392,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       | 'buildFileGenerations'
       | 'buildGenerationSpecificationss'
     >(this, {
-      setupEngine: flow,
+      initialize: flow,
       buildSystem: flow,
       buildDependencies: flow,
       buildGraph: flow,
@@ -409,7 +411,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildGenerationSpecificationss: flow,
     });
 
-    this.logger = logger;
+    this.log = log;
     // setup plugins
     this.extensions = new V1_GraphBuilderExtensions(
       this.pureProtocolProcessorPlugins,
@@ -421,15 +423,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     V1_setupDatabaseSerialization(this.pureProtocolProcessorPlugins);
   }
 
-  getEngineConfig(): AbstractEngineConfig {
+  TEMP__getEngineConfig(): TEMP__AbstractEngineConfig {
     return this.engine.config;
   }
 
-  *setupEngine(
+  *initialize(
     pluginManager: PluginManager,
-    config: EngineSetupConfig,
+    config: TEMP__EngineSetupConfig,
   ): GeneratorFn<void> {
-    this.engine = new V1_Engine(config.clientConfig, this.logger);
+    this.engine = new V1_Engine(config.clientConfig, this.log);
     this.engine
       .getEngineServerClient()
       .registerTracerServicePlugins(pluginManager.getTracerServicePlugins());
@@ -490,8 +492,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield flowResult(this.buildOtherElements(graph, systemGraphBuilderInput));
       yield flowResult(this.postProcess(graph, systemGraphBuilderInput));
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_SYSTEM_BUILT,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SYSTEM_BUILT),
           Date.now() - startTime,
           'ms',
           `[profile: ${systemModel.ownProfiles.length}, enumeration: ${systemModel.ownEnumerations.length}]`,
@@ -502,8 +504,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(error);
       systemModel.buildState.fail();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_FAILED,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
           '[ERROR]',
           Date.now() - startTime,
           'ms',
@@ -551,8 +553,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       const preprocessingFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_DEPENDENCIES_PREPROCESSED,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_PREPROCESSED,
+          ),
           preprocessingFinishedTime - startTime,
           'ms',
         );
@@ -589,8 +593,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield flowResult(this.postProcess(graph, graphBuilderInput));
       const processingFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_DEPENDENCIES_PROCESSED,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_PROCESSED,
+          ),
           processingFinishedTime - preprocessingFinishedTime,
           'ms',
         );
@@ -598,8 +604,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
       dependencyManager.buildState.pass();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_DEPENDENCIES_BUILT,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_BUILT,
+          ),
           '[TOTAL]',
           Date.now() - startTime,
           'ms',
@@ -608,8 +616,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     } catch (error: unknown) {
       assertErrorThrown(error);
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_FAILED,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
           '[ERROR]',
           Date.now() - startTime,
           'ms',
@@ -626,9 +634,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     entities: Entity[],
     options?: GraphBuilderOptions,
   ): GeneratorFn<void> {
-    if (!options?.quiet) {
-      this.logger.info(CORE_LOG_EVENT.GRAPH_BUILD_STARTED);
-    }
     let stepStartTime = Date.now();
     let stepFinishedTime;
     const startTime = stepStartTime;
@@ -649,8 +654,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ];
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_DATA_MODEL_PARSED,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DATA_MODEL_PARSED,
+          ),
           stepFinishedTime - stepStartTime,
           'ms',
         );
@@ -662,8 +669,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_ELEMENTS_INITIALIZED_AND_INDEXED,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_INITIALIZED_AND_INDEXED,
+          ),
           stepFinishedTime - stepStartTime,
           'ms',
           `[element: ${data.elements.length}]`,
@@ -677,8 +686,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_SECTION_INDICES_BUILT,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SECTION_INDICES_BUILT,
+          ),
           stepFinishedTime - stepStartTime,
           'ms',
           `[sectionIndex: ${graph.ownSectionIndices.length}]`,
@@ -689,8 +700,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield flowResult(this.buildTypes(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_DOMAIN_MODELS_BUILT,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DOMAIN_MODELS_BUILT,
+          ),
           stepFinishedTime - stepStartTime,
           'ms',
           `[class: ${graph.ownClasses.length}, enumeration: ${graph.ownEnumerations.length}, association: ${graph.ownAssociations.length}, profile: ${graph.ownProfiles.length}, functions: ${graph.ownFunctions.length}]`,
@@ -703,8 +716,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stepFinishedTime = Date.now();
       // TODO: we might want to detail out the number of stores by type
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_STORES_BUILT,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_STORES_BUILT),
           stepFinishedTime - stepStartTime,
           'ms',
           `[store: ${graph.ownStores.length}]`,
@@ -716,8 +729,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield flowResult(this.buildMappings(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_MAPPINGS_BUILT,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_MAPPINGS_BUILT),
           stepFinishedTime - stepStartTime,
           'ms',
           `[mapping: ${graph.ownMappings.length}]`,
@@ -725,17 +738,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
       stepStartTime = stepFinishedTime;
 
-      // Connections
+      // Connections and runtimes
       yield flowResult(
         this.buildConnectionsAndRuntimes(graph, graphBuilderInput, options),
       );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_CONNECTIONS_AND_RUNTIMES_BUILT,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_CONNECTIONS_BUILT,
+          ),
           stepFinishedTime - stepStartTime,
           'ms',
-          `[connection: ${graph.ownConnections.length}, runtime: ${graph.ownRuntimes.length}]`,
+          `[connection: ${graph.ownConnections.length}]`,
+        );
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_RUNTIMES_BUILT),
+          stepFinishedTime - stepStartTime,
+          'ms',
+          `[runtime: ${graph.ownRuntimes.length}]`,
         );
       }
       stepStartTime = stepFinishedTime;
@@ -744,8 +765,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield flowResult(this.buildServices(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_SERVICES_BUILT,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SERVICES_BUILT),
           stepFinishedTime - stepStartTime,
           'ms',
           `[service: ${graph.ownServices.length}]`,
@@ -757,8 +778,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield flowResult(this.buildDiagrams(graph, graphBuilderInput, options));
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_DIAGRAMS_BUILT,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DIAGRAMS_BUILT),
           stepFinishedTime - stepStartTime,
           'ms',
           `[diagram: ${graph.ownDiagrams.length}]`,
@@ -772,8 +793,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_FILE_GENERATIONS_BUILT,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FILE_GENERATIONS_BUILT,
+          ),
           stepFinishedTime - stepStartTime,
           'ms',
           `[file-generation: ${graph.ownFileGenerations.length}]`,
@@ -787,8 +810,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_GENERATION_TREE_BUILT,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_GENERATION_TREE_BUILT,
+          ),
           stepFinishedTime - stepStartTime,
           'ms',
           `[generation-specification: ${graph.ownGenerationSpecifications.length}]`,
@@ -802,8 +827,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       stepFinishedTime = Date.now();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_OTHER_ELEMENTS_BUILT,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT,
+          ),
           stepFinishedTime - stepStartTime,
           'ms',
         );
@@ -816,8 +843,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
       graph.buildState.pass();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILT,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED),
           '[TOTAL]',
           Date.now() - startTime,
           'ms',
@@ -826,8 +853,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     } catch (error: unknown) {
       assertErrorThrown(error);
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_FAILED,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
           '[ERROR]',
           Date.now() - startTime,
           'ms',
@@ -852,7 +879,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     generatedModel.buildState.reset();
     try {
       if (!options?.quiet) {
-        this.logger.info(CORE_LOG_EVENT.GRAPH_BUILD_DATA_MODEL_PARSED);
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DATA_MODEL_PARSED,
+          ),
+        );
       }
       const generatedDataMap = new Map<string, V1_PureModelContextData>();
       yield Promise.all(
@@ -901,8 +932,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield flowResult(this.postProcess(graph, generationGraphBuilderInput));
       generatedModel.buildState.pass();
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_GENERATIONS_BUILT,
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_GENERATIONS_BUILT,
+          ),
           Date.now() - stepStartTime,
           `${graph.generationModel.allOwnElements.length} generated elements processed`,
           'ms',
@@ -911,8 +944,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     } catch (error: unknown) {
       assertErrorThrown(error);
       if (!options?.quiet) {
-        this.logger.info(
-          CORE_LOG_EVENT.GRAPH_BUILD_FAILED,
+        this.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
           Date.now() - stepStartTime,
           'ms',
         );
@@ -936,7 +969,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graph,
       currentSubGraph,
       this.extensions,
-      this.logger,
+      this.log,
       options,
     )
       .withElement(element)
@@ -1472,8 +1505,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
       graphData,
     );
-    this.logger.info(
-      CORE_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
+    this.log.info(
+      LogEvent.create(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
+      ),
       Date.now() - startTime,
       'ms',
     );
@@ -1485,8 +1520,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
       await this.entitiesToPureModelContextData(entities),
     );
-    this.logger.info(
-      CORE_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
+    this.log.info(
+      LogEvent.create(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
+      ),
       Date.now() - startTime,
       'ms',
     );
@@ -1662,7 +1699,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graph,
         graph,
         this.extensions,
-        this.logger,
+        this.log,
       ).build(),
     );
   }
@@ -1696,7 +1733,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           graph,
           graph,
           this.extensions,
-          this.logger,
+          this.log,
         ).build(),
       ),
     );
@@ -1895,7 +1932,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graph,
         graph,
         this.extensions,
-        this.logger,
+        this.log,
       ).build(),
     );
   }
@@ -2329,8 +2366,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         keepSourceInformation: options?.keepSourceInformation,
       }),
     );
-    this.logger.info(
-      CORE_LOG_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED,
+    this.log.info(
+      LogEvent.create(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED,
+      ),
       Date.now() - startTime,
       'ms',
     );
@@ -2349,8 +2388,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...dependencyManager.allElements,
       ...generatedModel.allOwnElements,
     ].map((element) => this.elementToProtocol(element));
-    this.logger.info(
-      CORE_LOG_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED,
+    this.log.info(
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED),
       Date.now() - startTime,
       'ms',
     );
@@ -2476,8 +2515,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ).values[0];
       assertTrue(typeof json === 'string', `Expected value of type 'string'`);
     } catch (error: unknown) {
-      this.logger.warn(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+      this.log.warn(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         `Can't extract assertion result`,
       );
       json = undefined;

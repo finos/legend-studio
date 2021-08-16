@@ -42,7 +42,9 @@ import {
   CORE_DND_TYPE,
   ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
+import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
 import {
+  roundUpResizingForPanel,
   BasePopover,
   BlankPanelContent,
   CaretDownIcon,
@@ -56,6 +58,9 @@ import {
   MenuContentItem,
   PlusIcon,
   SquareIcon,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanel,
 } from '@finos/legend-studio-components';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
@@ -72,8 +77,6 @@ import {
 } from 'react-icons/fi';
 import { IoResize } from 'react-icons/io5';
 import { Dialog } from '@material-ui/core';
-import type { HandlerProps } from 'react-reflex';
-import { ReflexContainer, ReflexSplitter, ReflexElement } from 'react-reflex';
 import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
 import { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
 import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
@@ -609,22 +612,24 @@ const DiagramEditorOverlay = observer(
     const { diagramEditorState } = props;
     const sidePanelState = diagramEditorState.sidePanelState;
 
-    const resizeSidePanel = (handleProps: HandlerProps): void =>
+    const resizeSidePanel = (handleProps: ResizablePanelHandlerProps): void => {
+      roundUpResizingForPanel(handleProps);
       diagramEditorState.sidePanelDisplayState.setSize(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
+    };
 
     return (
-      <ReflexContainer
+      <ResizablePanelGroup
         className="diagram-editor__overlay"
         orientation="vertical"
       >
-        <ReflexElement direction={1}>
+        <ResizablePanel>
           <div className="diagram-editor__view-finder" />
-        </ReflexElement>
-        <ReflexSplitter className="diagram-editor__overlay__panel-resizer" />
-        <ReflexElement
+        </ResizablePanel>
+        <ResizablePanelSplitter className="diagram-editor__overlay__panel-resizer" />
+        <ResizablePanel
           className="diagram-editor__overlay__panel"
           flex={0}
           size={diagramEditorState.sidePanelDisplayState.size}
@@ -642,8 +647,8 @@ const DiagramEditorOverlay = observer(
               <BlankPanelContent>No element selected</BlankPanelContent>
             )}
           </div>
-        </ReflexElement>
-      </ReflexContainer>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     );
   },
 );

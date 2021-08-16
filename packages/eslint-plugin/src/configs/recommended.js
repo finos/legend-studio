@@ -205,6 +205,7 @@ const STUDIO_RULES = {
   '@finos/legend-studio/enforce-protocol-file-prefix': ERROR,
   '@finos/legend-studio/no-cross-protocol-version-import': ERROR,
   '@finos/legend-studio/no-cross-workspace-source-import': ERROR,
+  '@finos/legend-studio/no-cross-workspace-unexposed-import': ERROR,
   '@finos/legend-studio/no-same-workspace-index-import': ERROR,
 };
 

@@ -15,6 +15,7 @@
  */
 
 import {
+  LogEvent,
   UnsupportedOperationError,
   assertType,
   isNonNullable,
@@ -22,7 +23,7 @@ import {
   assertNonEmptyString,
   assertTrue,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../utils/GraphManagerLogEvent';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { SetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import type { PurePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
@@ -54,6 +55,10 @@ import { V1_getInferredClassMappingId } from './helpers/V1_MappingBuilderHelper'
 import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { V1_AggregateSetImplementationContainer } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer';
 import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
+import {
+  extractClassMappingsFromAggregationAwareClassMappings,
+  getClassMappingById,
+} from '../../../../../../metamodels/pure/helpers/MappingHelper';
 
 export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
@@ -75,11 +80,11 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       this.context.resolveClass(classMapping.class).value,
       classMapping,
     ).value;
-    const operationSetImplementation = this.parent.getClassMapping(id);
+    const operationSetImplementation = getClassMappingById(this.parent, id);
     assertType(
       operationSetImplementation,
       OperationSetImplementation,
-      `Class mapping '${id}' is not of type operation set implementation`,
+      `Class mapping with ID '${id}' is not of type operation set implementation`,
     );
     operationSetImplementation.parameters = classMapping.parameters
       .map((parameter) => {
@@ -88,9 +93,9 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
         );
         if (!setImplementation) {
           // TODO: we will get these cases sometimes since we haven't supported includedMappings
-          this.context.logger.debug(
-            CORE_LOG_EVENT.GRAPH_PROBLEM,
-            `Can't find class mapping of ID '${parameter}' in mapping '${this.parent.path}' (perhaps because we haven't supported included mappings)`,
+          this.context.log.debug(
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+            `Can't find class mapping with ID '${parameter}' in mapping '${this.parent.path}' (perhaps because we haven't supported included mappings)`,
           );
           return undefined;
         }
@@ -112,7 +117,8 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       'Model-to-model class mapping class is missing',
     );
     const pureInstanceSetImplementation = guaranteeType(
-      this.parent.getClassMapping(
+      getClassMappingById(
+        this.parent,
         V1_getInferredClassMappingId(
           this.context.resolveClass(classMapping.class).value,
           classMapping,
@@ -144,7 +150,8 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       'Flat-data class mapping class is missing',
     );
     const flatDataInstanceSetImplementation = guaranteeType(
-      this.parent.getClassMapping(
+      getClassMappingById(
+        this.parent,
         V1_getInferredClassMappingId(
           this.context.resolveClass(classMapping.class).value,
           classMapping,
@@ -177,7 +184,8 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       'Relational class mapping class is missing',
     );
     const rootRelationalInstanceSetImplementation = guaranteeType(
-      this.parent.getClassMapping(
+      getClassMappingById(
+        this.parent,
         V1_getInferredClassMappingId(
           this.context.resolveClass(classMapping.class).value,
           classMapping,
@@ -258,7 +266,8 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       'Aggregation-aware class mapping class is missing',
     );
     const aggragetionAwareInstanceSetImplementation = guaranteeType(
-      this.parent.getClassMapping(
+      getClassMappingById(
+        this.parent,
         V1_getInferredClassMappingId(
           this.context.resolveClass(classMapping.class).value,
           classMapping,
@@ -283,7 +292,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
             aggragetionAwareInstanceSetImplementation,
             this.parent.enumerationMappings,
             new Map<string, TableAlias>(),
-            mapping.allClassMappings,
+            [
+              ...mapping.allClassMappings,
+              ...extractClassMappingsFromAggregationAwareClassMappings(mapping),
+            ],
             undefined,
             aggragetionAwareInstanceSetImplementation,
           ),

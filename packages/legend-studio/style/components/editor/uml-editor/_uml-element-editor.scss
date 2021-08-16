@@ -200,4 +200,10 @@
     pointer-events: none;
     visibility: hidden;
   }
+
+  &__sub-editor {
+    background: var(--color-light-grey-50);
+    height: 100%;
+    width: 100%;
+  }
 }

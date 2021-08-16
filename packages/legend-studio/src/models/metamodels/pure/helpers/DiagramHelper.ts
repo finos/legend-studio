@@ -15,7 +15,14 @@
  */
 
 import type { PureModel } from '../graph/PureModel';
+import type { ClassView } from '../model/packageableElements/diagram/ClassView';
 import type { Diagram } from '../model/packageableElements/diagram/Diagram';
+
+export const getClassView = (
+  diagram: Diagram,
+  sourceViewId: string,
+): ClassView | undefined =>
+  diagram.classViews.find((classView) => classView.id === sourceViewId);
 
 export const cleanUpDeadReferencesInDiagram = (
   diagram: Diagram,

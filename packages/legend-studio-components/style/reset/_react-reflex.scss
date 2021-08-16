@@ -64,6 +64,7 @@
 
 .reflex-container > .reflex-splitter {
   background: transparent;
+  position: relative;
   z-index: 100;
 }
 
@@ -87,6 +88,15 @@
   user-select: none;
 }
 
+.reflex-container.horizontal
+  > .reflex-splitter
+  > .resizable-panel__splitter-line {
+  height: 0.1rem;
+  width: 100%;
+  position: absolute;
+  top: 0.3rem;
+}
+
 .reflex-container.vertical > .reflex-splitter {
   border-right: none;
   border-left: none;
@@ -102,6 +112,10 @@
   background: var(--color-dark-grey-300);
   border-bottom: none;
   border-top: none;
+
+  .resizable-panel__splitter-line {
+    background: transparent !important;
+  }
 }
 
 .reflex-element.vertical .reflex-handle {
@@ -109,9 +123,26 @@
   user-select: none;
 }
 
+.reflex-container.vertical
+  > .reflex-splitter
+  > .resizable-panel__splitter-line {
+  width: 0.1rem;
+  height: 100%;
+  position: absolute;
+  left: 0.3rem;
+}
+
 .reflex-container.vertical > .reflex-splitter:hover,
 .reflex-container.vertical > .reflex-splitter.active {
   background: var(--color-dark-grey-300);
   border-right: none;
   border-left: none;
+
+  .resizable-panel__splitter-line {
+    background: transparent !important;
+  }
+}
+
+.reflex-element.resizable-panel--minimized {
+  flex: 0 1 0% !important;
 }

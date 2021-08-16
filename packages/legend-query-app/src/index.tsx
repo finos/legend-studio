@@ -21,10 +21,12 @@ import {
 import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
 import appConfig from '../query.config';
 import './index.scss';
+import { BrowserConsole } from '@finos/legend-studio-shared';
 
 LegendQuery.create()
   .setup({ baseUrl: appConfig.baseUrl })
   .withPresets([new DSLText_Preset(), new QueryBuilder_Preset()])
+  .withLoggers([new BrowserConsole()])
   .start()
   .catch((e) => {
     throw e;

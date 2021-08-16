@@ -16,9 +16,10 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { LogEvent, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { makeAutoObservable, action, flowResult } from 'mobx';
 import { Review } from '../models/sdlc/models/review/Review';
@@ -26,7 +27,6 @@ import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
 import { Project } from '../models/sdlc/models/project/Project';
 import { EDITOR_MODE, ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
-import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 
 export class ReviewStore {
   editorStore: EditorStore;
@@ -64,11 +64,11 @@ export class ReviewStore {
     return guaranteeNonNullable(this.currentReview, 'Review must exist');
   }
 
-  *init(): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     try {
       // setup engine
       yield flowResult(
-        this.editorStore.graphState.graphManager.setupEngine(
+        this.editorStore.graphState.graphManager.initialize(
           this.editorStore.applicationStore.pluginManager,
           {
             env: this.editorStore.applicationStore.config.env,
@@ -76,16 +76,16 @@ export class ReviewStore {
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
               enableCompression: true,
-              authenticationUrl: SDLCServerClient.authenticationUrl(
-                this.editorStore.applicationStore.config.sdlcServerUrl,
-              ),
+              autoReAuthenticateUrl:
+                this.editorStore.applicationStore.config
+                  .engineAutoReAuthenticationUrl,
             },
           },
         ),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -119,19 +119,23 @@ export class ReviewStore {
       yield Promise.all([
         this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
           fromEntities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          ),
         ),
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           toEntities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
         ),
       ]);
       yield flowResult(
         this.editorStore.changeDetectionState.computeAggregatedWorkspaceChanges(),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -148,8 +152,8 @@ export class ReviewStore {
         )) as PlainObject<Project>,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -166,8 +170,8 @@ export class ReviewStore {
         )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -186,8 +190,8 @@ export class ReviewStore {
         )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -207,8 +211,8 @@ export class ReviewStore {
         )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -227,8 +231,8 @@ export class ReviewStore {
         )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -247,8 +251,8 @@ export class ReviewStore {
         )) as PlainObject<Review>,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-/**
- * We need to mock `react-reflex` components for test as it does DOM dimension
- * calculation which will be thrown off by `jsdom`
- * See https://github.com/leefsmp/Re-Flex/issues/27#issuecomment-718949629
- */
-const MockedReactComponent: React.FC = (props) => {
-  const { children } = props;
-  return <div>{children}</div>;
-};
-
-export const ReflexContainer = MockedReactComponent;
-export const ReflexElement = MockedReactComponent;
-export const ReflexSplitter = MockedReactComponent;
+export enum SDLC_LOG_EVENT {
+  SDLC_MANAGER_FAILURE = 'SDLC_MANAGER_FAILURE',
+  SDLC_UPDATE_WORKSPACE = 'SDLC_UPDATE_WORKSPACE',
+  SDLC_SYNC_WORKSPACE = 'SDLC_SYNC_WORKSPACE',
+}

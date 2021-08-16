@@ -16,8 +16,8 @@
 
 import type { EditorStore } from '@finos/legend-studio';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   buildSourceInformationSourceId,
-  CORE_LOG_EVENT,
   LambdaEditorState,
   LAMBDA_START,
   ParserError,
@@ -25,6 +25,7 @@ import {
   TAB_SIZE,
 } from '@finos/legend-studio';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { LogEvent } from '@finos/legend-studio-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 
@@ -111,8 +112,8 @@ export class QueryTextEditorState extends LambdaEditorState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -148,8 +149,8 @@ export class QueryTextEditorState extends LambdaEditorState {
         this.clearErrors();
         this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
         this.isConvertingLambdaToString = false;
@@ -189,7 +190,7 @@ export class QueryTextEditorState extends LambdaEditorState {
           `Can't parse query. Please fix error before closing: ${this.parserError.message}`,
         );
       } else {
-        this.queryBuilderState.init(this.rawLambdaState.lambda);
+        this.queryBuilderState.initialize(this.rawLambdaState.lambda);
         this.setMode(undefined);
       }
       return;

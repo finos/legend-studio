@@ -18,6 +18,7 @@ import {
   PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../../MetaModelConst';
+import type { Log } from '@finos/legend-studio-shared';
 import {
   uniq,
   assertNonEmptyString,
@@ -71,7 +72,6 @@ import type { V1_FilterPointer } from '../../../model/packageableElements/store/
 import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
 import type { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr';
 import { V1_getRelation } from './helpers/V1_DatabaseBuilderHelper';
-import type { Logger } from '../../../../../../../utils/Logger';
 import type { BasicModel } from '../../../../../../metamodels/pure/graph/BasicModel';
 import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graph/AbstractPureGraphManager';
@@ -93,7 +93,7 @@ interface ResolutionResult<T> {
 }
 
 export class V1_GraphBuilderContext {
-  readonly logger: Logger;
+  readonly log: Log;
   readonly currentSubGraph: BasicModel;
   readonly extensions: V1_GraphBuilderExtensions;
   readonly graph: PureModel;
@@ -102,7 +102,7 @@ export class V1_GraphBuilderContext {
   readonly options?: GraphBuilderOptions;
 
   constructor(builder: V1_GraphBuilderContextBuilder) {
-    this.logger = builder.logger;
+    this.log = builder.log;
     this.graph = builder.graph;
     this.currentSubGraph = builder.currentSubGraph;
     this.extensions = builder.extensions;
@@ -436,7 +436,7 @@ export class V1_GraphBuilderContext {
 }
 
 export class V1_GraphBuilderContextBuilder {
-  logger: Logger;
+  log: Log;
   /**
    * The (sub) graph where the current processing is taking place.
    * This information is important because each sub-graph holds their
@@ -455,13 +455,13 @@ export class V1_GraphBuilderContextBuilder {
     graph: PureModel,
     currentSubGraph: BasicModel,
     extensions: V1_GraphBuilderExtensions,
-    logger: Logger,
+    log: Log,
     options?: GraphBuilderOptions,
   ) {
     this.graph = graph;
     this.currentSubGraph = currentSubGraph;
     this.extensions = extensions;
-    this.logger = logger;
+    this.log = log;
     this.options = options;
   }
 

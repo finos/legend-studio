@@ -616,7 +616,7 @@ const SetupSelection = observer(() => {
       setupStore.currentWorkspaceId &&
       setupStore.currentWorkspace
     ) {
-      applicationStore.historyApiClient.push(
+      applicationStore.navigator.goTo(
         generateEditorRoute(
           applicationStore.config.sdlcServerKey,
           setupStore.currentProjectId,
@@ -666,7 +666,7 @@ const SetupSelection = observer(() => {
                 className="setup__view-project-btn u-pull-right"
                 onClick={(): void => {
                   if (setupStore.currentProjectId) {
-                    applicationStore.historyApiClient.push(
+                    applicationStore.navigator.goTo(
                       generateViewProjectRoute(
                         applicationStore.config.sdlcServerKey,
                         setupStore.currentProjectId,
