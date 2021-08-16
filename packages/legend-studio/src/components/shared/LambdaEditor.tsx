@@ -183,7 +183,7 @@ const LambdaEditorInner = observer(
     // set styling for expanded mode
     useEffect(() => {
       if (editor) {
-        const currentClassName = editor.getRawOptions().extraEditorClassName;
+        const currentClassName = editor.getRawOptions()?.extraEditorClassName;
         const isInExpanded = currentClassName === 'lambda-editor__expanded';
         if (isInExpanded !== isExpanded) {
           editor.updateOptions(
@@ -299,7 +299,7 @@ const LambdaEditorInner = observer(
       if (currentValue !== value) {
         editor.setValue(value);
       }
-      if (currentConfig.readOnly !== disabled) {
+      if (currentConfig?.readOnly !== disabled) {
         editor.updateOptions({
           readOnly: disabled,
         });
