@@ -39,6 +39,7 @@ import {
   assertTrue,
   isNonNullable,
   NetworkClientError,
+  uniqBy,
 } from '@finos/legend-studio-shared';
 import type { ProjectDependencyMetadata } from '../models/sdlc/models/configuration/ProjectDependency';
 import type { EditorStore } from './EditorStore';
@@ -100,7 +101,6 @@ import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import type { PropertyMapping } from '../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import { AssociationImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import type { ProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
 import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
 import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 
@@ -1013,16 +1013,37 @@ export class GraphState {
       if (directDependencies.length) {
         const metadataClient =
           this.editorStore.applicationStore.networkClientManager.metadataClient;
-        // NOTE: if A@v1 is transitive dependencies of 2 or more
-        // direct dependencies, metadata server will take care of deduplication
-        const dependencyEntitiesJson =
-          (yield metadataClient.getProjectVersionsDependencyEntities(
-            directDependencies as PlainObject<ProjectVersion>[],
-            true,
-            true,
-          )) as PlainObject<DeprecatedProjectVersionEntities>[];
-        const dependencyEntities = dependencyEntitiesJson.map((e) =>
-          DeprecatedProjectVersionEntities.serialization.fromJson(e),
+        // TEMPORARY: Disable use of API until server issue is resolved
+        // // NOTE: if A@v1 is transitive dependencies of 2 or more
+        // // direct dependencies, metadata server will take care of deduplication
+        // const dependencyEntitiesJson =
+        //   (yield metadataClient.projectVersionsDependencyEntitiesFromProjects(
+        //     directDependencies as PlainObject<ProjectVersion>[],
+        //     true,
+        //     true,
+        //   )) as PlainObject<DeprecatedProjectVersionEntities>[];
+        // const dependencyEntities = dependencyEntitiesJson.map((e) =>
+        //   DeprecatedProjectVersionEntities.serialization.fromJson(e),
+        // );
+
+        // TEMPORARY: Workaround until metadata issue is resolved
+        const dependencyEntitiesJson = (
+          (yield Promise.all(
+            directDependencies.map((depProject) =>
+              metadataClient.getProjectVersionsDependencyEntities(
+                depProject.projectId,
+                depProject.versionId,
+                true,
+                true,
+              ),
+            ),
+          )) as PlainObject<DeprecatedProjectVersionEntities>[][]
+        ).flat();
+        const dependencyEntities = uniqBy(
+          dependencyEntitiesJson.map((e) =>
+            DeprecatedProjectVersionEntities.serialization.fromJson(e),
+          ),
+          (val) => `${val.projectId}.${val.versionId}`,
         );
         const dependencyProjects = new Set<string>();
         dependencyEntities.forEach((dependencyInfo) => {

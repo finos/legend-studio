@@ -125,7 +125,7 @@ export class MetadataServerClient extends AbstractServerClient {
       },
     );
 
-  getProjectVersionsDependencyEntities = (
+  projectVersionsDependencyEntitiesFromProjects = (
     /**
      * List of (direct) dependencies.
      */
@@ -142,6 +142,29 @@ export class MetadataServerClient extends AbstractServerClient {
     this.post(
       `${this._projects()}/versions/dependencies`,
       dependencies,
+      undefined,
+      undefined,
+      {
+        transitive,
+        includeOrigin,
+        versioned: false, // we don't need to add version prefix to entity path
+      },
+    );
+
+  getProjectVersionsDependencyEntities = (
+    projectId: string,
+    versionId: string,
+    /**
+     * Flag indicating if transitive dependencies should be returned.
+     */
+    transitive: boolean,
+    /**
+     * Flag indicating whether to return the root of the dependency tree.
+     */
+    includeOrigin: boolean,
+  ): Promise<PlainObject<DeprecatedProjectVersionEntities>[]> =>
+    this.get(
+      `${this._projects()}/${projectId}/versions/${versionId}/dependencies`,
       undefined,
       undefined,
       {
