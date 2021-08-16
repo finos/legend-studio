@@ -40,6 +40,7 @@ import type {
   Logger,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   Log,
   guaranteeNonEmptyString,
   assertNonNullable,
@@ -172,7 +173,9 @@ export abstract class LegendApplication {
       );
     } catch (error: unknown) {
       this.log.error(
-        APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
+        LogEvent.create(
+          APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
+        ),
         error,
       );
     }
@@ -187,7 +190,9 @@ export abstract class LegendApplication {
       );
     } catch (error: unknown) {
       this.log.error(
-        APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
+        LogEvent.create(
+          APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
+        ),
         error,
       );
     }
@@ -219,12 +224,12 @@ export abstract class LegendApplication {
       await this.loadApplication();
 
       this.log.info(
-        APPLICATION_LOG_EVENT.APPLICATION_LOADED,
+        LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_LOADED),
         'Legend application loaded',
       );
     } catch (error: unknown) {
       this.log.error(
-        APPLICATION_LOG_EVENT.APPLICATION_FAILURE,
+        LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_FAILURE),
         'Failed to load Legend application',
       );
       throw error;

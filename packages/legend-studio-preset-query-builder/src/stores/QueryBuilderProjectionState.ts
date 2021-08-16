@@ -23,6 +23,7 @@ import {
 } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertType,
   UnsupportedOperationError,
   assertErrorThrown,
@@ -216,7 +217,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -251,7 +252,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -361,7 +362,7 @@ export class QueryBuilderProjectionState {
         });
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

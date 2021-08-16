@@ -17,6 +17,7 @@
 import type { TreeData, TreeNodeData } from '@finos/legend-studio-components';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   addUniqueEntry,
   assertNonEmptyString,
   assertTrue,
@@ -250,7 +251,7 @@ export class DatabaseBuilderState {
       this.setTreeData(treeData);
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -295,7 +296,7 @@ export class DatabaseBuilderState {
       this.setTreeData({ ...treeData });
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -335,7 +336,7 @@ export class DatabaseBuilderState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -455,7 +456,7 @@ export class DatabaseBuilderState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -562,7 +563,7 @@ export class DatabaseBuilderState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);

@@ -20,6 +20,7 @@ import { Build } from '../../models/sdlc/models/build/Build';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import { LogEvent } from '@finos/legend-studio-shared';
 
 export class WorkspaceBuildsState {
   editorStore: EditorStore;
@@ -52,7 +53,7 @@ export class WorkspaceBuildsState {
       ).map((build) => Build.serialization.fromJson(build));
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

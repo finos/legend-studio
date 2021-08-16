@@ -19,7 +19,7 @@ import { useLocalObservable } from 'mobx-react-lite';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { LogEvent, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { makeAutoObservable, action, flowResult } from 'mobx';
 import { Review } from '../models/sdlc/models/review/Review';
@@ -85,7 +85,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -119,11 +119,15 @@ export class ReviewStore {
       yield Promise.all([
         this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
           fromEntities,
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          ),
         ),
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           toEntities,
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
         ),
       ]);
       yield flowResult(
@@ -131,7 +135,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -149,7 +153,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -167,7 +171,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -187,7 +191,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -208,7 +212,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -228,7 +232,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -248,7 +252,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

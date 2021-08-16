@@ -17,6 +17,7 @@
 import { action, flow, flowResult, observable, makeObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   changeEntry,
   guaranteeNonNullable,
@@ -363,7 +364,7 @@ export class QueryBuilderState extends EditorExtensionState {
         } catch (error: unknown) {
           assertErrorThrown(error);
           this.editorStore.applicationStore.log.error(
-            GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
             error,
           );
           let fallbackToTextModeForDebugging = true;
@@ -412,7 +413,7 @@ export class QueryBuilderState extends EditorExtensionState {
           assertErrorThrown(error);
           if (error instanceof CompilationError) {
             this.editorStore.applicationStore.log.error(
-              GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
+              LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
               error,
             );
             this.editorStore.applicationStore.notifyWarning(

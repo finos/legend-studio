@@ -14,24 +14,37 @@
  * limitations under the License.
  */
 
+import type { LogEvent } from './Logger';
 import { Logger } from './Logger';
 
 const { debug, info, warn, error } = console;
 
 export class BrowserConsole extends Logger {
-  _debug(event: string | undefined, ...data: unknown[]): void {
-    debug(event ? (data.length ? `${event}:` : event) : '', ...data);
+  _debug(event: LogEvent, ...data: unknown[]): void {
+    debug(
+      `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
+      ...data,
+    );
   }
 
-  _info(event: string | undefined, ...data: unknown[]): void {
-    info(event ? (data.length ? `${event}:` : event) : '', ...data);
+  _info(event: LogEvent, ...data: unknown[]): void {
+    info(
+      `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
+      ...data,
+    );
   }
 
-  _warn(event: string | undefined, ...data: unknown[]): void {
-    warn(event ? (data.length ? `${event}:` : event) : '', ...data);
+  _warn(event: LogEvent, ...data: unknown[]): void {
+    warn(
+      `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
+      ...data,
+    );
   }
 
-  _error(event: string | undefined, ...data: unknown[]): void {
-    error(event ? (data.length ? `${event}:` : event) : '', ...data);
+  _error(event: LogEvent, ...data: unknown[]): void {
+    error(
+      `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
+      ...data,
+    );
   }
 }

@@ -18,7 +18,11 @@ import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import { LambdaEditorState } from './LambdaEditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { guaranteeType, assertType } from '@finos/legend-studio-shared';
+import {
+  LogEvent,
+  guaranteeType,
+  assertType,
+} from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
 import { LAMBDA_START } from '../../../models/MetaModelConst';
@@ -74,7 +78,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -130,7 +134,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
         this.isConvertingFunctionBodyToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
         this.isConvertingFunctionBodyToString = false;
@@ -190,7 +194,7 @@ export class FunctionEditorState extends ElementEditorState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.warn(
-        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error`,
         error,
       );

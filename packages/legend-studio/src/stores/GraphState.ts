@@ -31,6 +31,7 @@ import type {
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertType,
   uniq,
   UnsupportedOperationError,
@@ -267,7 +268,7 @@ export class GraphState {
       this.isInitializingGraph = true;
       const startTime = Date.now();
       this.editorStore.applicationStore.log.info(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
         Date.now() - startTime,
         'ms',
       );
@@ -301,7 +302,7 @@ export class GraphState {
       // build graph
       yield flowResult(this.graphManager.buildGraph(this.graph, entities));
       this.editorStore.applicationStore.log.info(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -310,7 +311,7 @@ export class GraphState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.graph.buildState.fail();
@@ -366,7 +367,7 @@ export class GraphState {
       // NOTE: we will see that: (time for fetching entities + time for building graph) < time for instantiating graph
       // this could be due to the time it takes for React to render in response to the fact that the model is just built
       this.editorStore.applicationStore.log.info(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -377,7 +378,7 @@ export class GraphState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       if (error instanceof DependencyGraphProcessingError) {
@@ -412,7 +413,7 @@ export class GraphState {
         } catch (error2: unknown) {
           assertErrorThrown(error2);
           this.editorStore.applicationStore.log.error(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
             error2,
           );
           if (error2 instanceof NetworkClientError) {
@@ -529,7 +530,7 @@ export class GraphState {
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         error,
       );
       let fallbackToTextModeForDebugging = true;
@@ -630,7 +631,7 @@ export class GraphState {
         this.editorStore.grammarTextEditorState.setError(error);
       }
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         'Compilation failed:',
         error,
       );
@@ -688,7 +689,7 @@ export class GraphState {
           this.editorStore.grammarTextEditorState.setError(error);
         }
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
           'Compilation failed:',
           error,
         );
@@ -726,7 +727,7 @@ export class GraphState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         error,
       );
     } finally {
@@ -895,7 +896,7 @@ export class GraphState {
       );
 
       this.editorStore.applicationStore.log.info(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_UPDATED_AND_REBUILT,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_UPDATED_AND_REBUILT),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -910,14 +911,14 @@ export class GraphState {
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
       this.editorStore.applicationStore.log.info(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASYNC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -981,7 +982,7 @@ export class GraphState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -1060,7 +1061,7 @@ export class GraphState {
       assertErrorThrown(error);
       const message = `Can't fetch dependency entitites. Error: ${error.message}`;
       this.editorStore.applicationStore.log.error(
-        METADATA_LOG_EVENT.METADATA_MANAGER_FAILURE,
+        LogEvent.create(METADATA_LOG_EVENT.METADATA_MANAGER_FAILURE),
         message,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -1226,7 +1227,7 @@ export class GraphState {
       );
     }
     this.editorStore.applicationStore.log.info(
-      GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PRECOMPUTED,
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PRECOMPUTED),
       '[ASYNC]',
       Date.now() - startTime,
       'ms',

@@ -22,6 +22,7 @@ import type {
   SuperGenericFunction,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   isString,
@@ -273,7 +274,9 @@ export class ApplicationStore {
     } else {
       message = undefined;
       this.log.error(
-        APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+        LogEvent.create(
+          APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+        ),
         'Unable to display error in notification',
         message,
       );
@@ -329,7 +332,10 @@ export class ApplicationStore {
       this.currentSDLCUser = currentUser;
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.log.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
+      this.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
       this.notifyWarning(error.message);
     }
   }
@@ -345,7 +351,10 @@ export class ApplicationStore {
                 if (mode !== SdlcMode.PROD) {
                   // if there is an issue with an endpoint in a non prod env, we return authorized as true
                   // but notify the user of the error
-                  this.log.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
+                  this.log.error(
+                    LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+                    error,
+                  );
                   this.notifyError(error);
                   return true;
                 }
@@ -394,7 +403,10 @@ export class ApplicationStore {
         }
       }
     } catch (error: unknown) {
-      this.log.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
+      this.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
       this.notifyError(error);
     }
   }
@@ -432,7 +444,7 @@ export class ApplicationStore {
    */
   alertIllegalUnhandledError = (error: Error): void => {
     this.log.error(
-      APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+      LogEvent.create(APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
       'Encountered unhandled rejection in component',
       error,
     );

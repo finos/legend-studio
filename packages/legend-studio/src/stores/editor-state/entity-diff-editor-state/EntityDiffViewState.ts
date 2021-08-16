@@ -18,6 +18,7 @@ import { observable, action, flow, computed, makeObservable } from 'mobx';
 import { SDLC_LOG_EVENT } from '../../../utils/SDLCLogEvent';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertNonNullable,
   guaranteeNonNullable,
   hashObject,
@@ -186,7 +187,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
         this.editorStore.applicationStore.log.error(
-          SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+          LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
       }
@@ -208,7 +209,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
         this.editorStore.applicationStore.log.error(
-          SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+          LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
       }

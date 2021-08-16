@@ -26,6 +26,7 @@ import { Version } from '../models/sdlc/models/version/Version';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   IllegalStateError,
   guaranteeNonNullable,
   ActionState,
@@ -259,7 +260,7 @@ export class ViewerStore {
       onLeave(true);
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

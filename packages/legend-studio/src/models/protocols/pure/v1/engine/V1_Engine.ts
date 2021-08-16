@@ -16,6 +16,7 @@
 
 import type { Log, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   losslessParse,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -141,7 +142,7 @@ export class V1_Engine {
     const startTime = Date.now();
     const serializedGraph = V1_serializePureModelContextData(graph);
     this.log.info(
-      GRAPH_MANAGER_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED,
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED),
       Date.now() - startTime,
       'ms',
     );

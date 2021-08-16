@@ -16,7 +16,11 @@
 
 import { useEffect, useMemo } from 'react';
 import { useEditorStore } from '../../../../stores/EditorStore';
-import { debounce, prettyCONSTName } from '@finos/legend-studio-shared';
+import {
+  LogEvent,
+  debounce,
+  prettyCONSTName,
+} from '@finos/legend-studio-shared';
 import { observer } from 'mobx-react-lite';
 import {
   FaPlus,
@@ -73,7 +77,10 @@ const ProjectDependencyVersionSelector = observer(
         try {
           projectDependency.setVersionId(val?.value ?? '');
         } catch (error: unknown) {
-          logger.error(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE, error);
+          logger.error(
+            LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+            error,
+          );
         }
       }
     };

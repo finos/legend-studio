@@ -15,6 +15,7 @@
  */
 
 import {
+  LogEvent,
   UnsupportedOperationError,
   assertNonEmptyString,
   assertType,
@@ -154,7 +155,7 @@ export const V1_buildServiceTest = (
      */
     if (executionKeys.size) {
       context.log.error(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         new GraphError(
           `Execution(s) with key '${Array.from(executionKeys.values()).join(
             ', ',

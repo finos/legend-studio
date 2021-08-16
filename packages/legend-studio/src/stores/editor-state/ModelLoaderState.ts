@@ -20,6 +20,7 @@ import { EditorState } from '../editor-state/EditorState';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   UnsupportedOperationError,
   guaranteeNonNullable,
 } from '@finos/legend-studio-shared';
@@ -186,7 +187,7 @@ export class ModelLoaderState extends EditorState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -209,7 +210,7 @@ export class ModelLoaderState extends EditorState {
         (yield this.editorStore.graphState.graphManager.getAvailableImportConfigurationDescriptions()) as ImportConfigurationDescription[];
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

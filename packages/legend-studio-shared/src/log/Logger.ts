@@ -27,6 +27,23 @@ export enum LOG_LEVEL {
   SILENT,
 }
 
+export class LogEvent {
+  channel?: string;
+  name!: string;
+  timestamp: number = Date.now();
+
+  /**
+   * TODO: we should make channel required and potentially name required as well, and for each
+   * channel, there should be a list of known event names. Unknown event name, or wrong channel
+   * will result in error.
+   */
+  static create(name: string): LogEvent {
+    const event = new LogEvent();
+    event.name = name;
+    return event;
+  }
+}
+
 export abstract class Logger {
   private level: LOG_LEVEL = LOG_LEVEL.DEBUG;
 
@@ -34,30 +51,24 @@ export abstract class Logger {
     this.level = level;
   }
 
-  protected abstract _debug(
-    event: string | undefined,
-    ...data: unknown[]
-  ): void;
-  protected abstract _info(event: string | undefined, ...data: unknown[]): void;
-  protected abstract _warn(event: string | undefined, ...data: unknown[]): void;
-  protected abstract _error(
-    event: string | undefined,
-    ...data: unknown[]
-  ): void;
+  protected abstract _debug(event: LogEvent, ...data: unknown[]): void;
+  protected abstract _info(event: LogEvent, ...data: unknown[]): void;
+  protected abstract _warn(event: LogEvent, ...data: unknown[]): void;
+  protected abstract _error(event: LogEvent, ...data: unknown[]): void;
 
-  debug(event: string | undefined, ...data: unknown[]): void {
+  debug(event: LogEvent, ...data: unknown[]): void {
     this.level > LOG_LEVEL.DEBUG ? undefined : this._debug(event, ...data);
   }
 
-  info(event: string | undefined, ...data: unknown[]): void {
+  info(event: LogEvent, ...data: unknown[]): void {
     this.level > LOG_LEVEL.INFO ? undefined : this._info(event, ...data);
   }
 
-  warn(event: string | undefined, ...data: unknown[]): void {
+  warn(event: LogEvent, ...data: unknown[]): void {
     this.level > LOG_LEVEL.WARN ? undefined : this._warn(event, ...data);
   }
 
-  error(event: string | undefined, ...data: unknown[]): void {
+  error(event: LogEvent, ...data: unknown[]): void {
     this.level > LOG_LEVEL.ERROR ? undefined : this._error(event, ...data);
   }
 }
@@ -69,19 +80,19 @@ export class Log {
     this.loggers.push(logger);
   }
 
-  debug(event: string | undefined, ...data: unknown[]): void {
+  debug(event: LogEvent, ...data: unknown[]): void {
     this.loggers.forEach((logger) => logger.debug(event, ...data));
   }
 
-  info(event: string | undefined, ...data: unknown[]): void {
+  info(event: LogEvent, ...data: unknown[]): void {
     this.loggers.forEach((logger) => logger.info(event, ...data));
   }
 
-  warn(event: string | undefined, ...data: unknown[]): void {
+  warn(event: LogEvent, ...data: unknown[]): void {
     this.loggers.forEach((logger) => logger.warn(event, ...data));
   }
 
-  error(event: string | undefined, ...data: unknown[]): void {
+  error(event: LogEvent, ...data: unknown[]): void {
     this.loggers.forEach((logger) => logger.error(event, ...data));
   }
 }

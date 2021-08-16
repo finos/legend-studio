@@ -41,6 +41,7 @@ import {
 import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
 import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { LogEvent } from '@finos/legend-studio-shared';
 
 export class FileGenerationState {
   editorStore: EditorStore;
@@ -114,7 +115,7 @@ export class FileGenerationState {
       this.selectedNode = undefined;
       this.processGenerationResult([]);
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.GENERATION_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -139,7 +140,7 @@ export class FileGenerationState {
       entry.cleanFileName(rootFolder);
       if (generationResultMap.has(entry.fileName)) {
         this.editorStore.applicationStore.log.warn(
-          STUDIO_LOG_EVENT.GENERATION_FAILURE,
+          LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
           'Found 2 generation outputs with same path',
         );
       }

@@ -15,6 +15,7 @@
  */
 
 import {
+  LogEvent,
   UnsupportedOperationError,
   assertType,
   isNonNullable,
@@ -93,7 +94,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
         if (!setImplementation) {
           // TODO: we will get these cases sometimes since we haven't supported includedMappings
           this.context.log.debug(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
             `Can't find class mapping with ID '${parameter}' in mapping '${this.parent.path}' (perhaps because we haven't supported included mappings)`,
           );
           return undefined;

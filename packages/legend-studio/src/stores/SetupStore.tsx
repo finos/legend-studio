@@ -34,6 +34,7 @@ import {
 } from '../models/sdlc/models/workspace/Workspace';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   ActionState,
   assertNonNullable,
   guaranteeNonNullable,
@@ -135,7 +136,7 @@ export class SetupStore {
                 } projects: ${error.message}`,
               );
               this.applicationStore.log.error(
-                STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
+                LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
                 wrappedError,
               );
               this.applicationStore.notifyError(wrappedError);
@@ -152,7 +153,7 @@ export class SetupStore {
       this.loadProjectsState.pass();
     } catch (error: unknown) {
       this.applicationStore.log.error(
-        STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -300,7 +301,7 @@ export class SetupStore {
     } catch (error: unknown) {
       // TODO handle error when fetching workspaces for an individual project
       this.applicationStore.log.error(
-        STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
     } finally {
@@ -336,7 +337,7 @@ export class SetupStore {
       this.createWorkspaceState.pass();
     } catch (error: unknown) {
       this.applicationStore.log.error(
-        STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);

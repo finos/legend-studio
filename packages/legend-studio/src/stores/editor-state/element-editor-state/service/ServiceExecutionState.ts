@@ -17,6 +17,7 @@
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   losslessStringify,
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
@@ -195,7 +196,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -289,7 +290,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -319,7 +320,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

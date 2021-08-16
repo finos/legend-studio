@@ -26,6 +26,7 @@ import {
 } from './MappingElementState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   UnsupportedOperationError,
   guaranteeType,
   IllegalStateError,
@@ -91,7 +92,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -123,7 +124,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
           this.clearErrors();
         } catch (error: unknown) {
           this.editorStore.applicationStore.log.error(
-            GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
             error,
           );
         }
@@ -227,7 +228,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
         });
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

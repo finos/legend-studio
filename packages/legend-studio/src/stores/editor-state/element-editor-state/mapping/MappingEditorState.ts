@@ -43,6 +43,7 @@ import { createMockDataForMappingElementSource } from '../../../shared/MockDataU
 import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   deleteEntry,
   generateEnumerableNameFromToken,
   IllegalStateError,
@@ -1141,7 +1142,7 @@ export class MappingEditorState extends ElementEditorState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.warn(
-        GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error, redirecting to text mode`,
         error,
       );

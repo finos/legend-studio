@@ -20,6 +20,7 @@ import type {
 } from './MappingEditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   hashObject,
   UnsupportedOperationError,
   guaranteeNonNullable,
@@ -151,7 +152,7 @@ export class MappingTestQueryState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -591,7 +592,7 @@ export class MappingTestState {
         throw new UnsupportedOperationError();
       }
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -646,7 +647,7 @@ export class MappingTestState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.errorRunningTest = error as Error;
@@ -677,7 +678,7 @@ export class MappingTestState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error.message,
       );
       yield flowResult(this.editorStore.graphState.globalCompileInFormMode()); // recompile graph if there is problem with the deep fetch tree of a test
@@ -700,7 +701,7 @@ export class MappingTestState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

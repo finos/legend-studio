@@ -22,6 +22,7 @@ import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent'
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   losslessStringify,
   uuid,
   guaranteeType,
@@ -283,7 +284,7 @@ export class TestContainerState {
     } catch (error: unknown) {
       this.setAssertionData(tryToFormatJSONString('{}'));
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -328,7 +329,7 @@ export class TestContainerState {
     } catch (error: unknown) {
       this.setTestExecutionResultText(undefined);
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -457,7 +458,7 @@ export class SingleExecutionTestState {
           )) as string;
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
           error,
         );
       }
@@ -495,7 +496,7 @@ export class SingleExecutionTestState {
         })),
       );
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
     } finally {

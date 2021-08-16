@@ -35,6 +35,7 @@ import {
 } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   guaranteeNonNullable,
   assertTrue,
   IllegalStateError,
@@ -155,7 +156,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
         this.clearErrors();
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -556,7 +557,7 @@ export class MappingExecutionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -614,7 +615,7 @@ export class MappingExecutionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -646,7 +647,7 @@ export class MappingExecutionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -676,7 +677,7 @@ export class MappingExecutionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

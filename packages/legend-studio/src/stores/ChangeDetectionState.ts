@@ -26,6 +26,7 @@ import {
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   IllegalStateError,
   shallowStringify,
   noop,
@@ -122,7 +123,9 @@ class RevisionChangeDetectionState {
     this.changes = changes;
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -131,7 +134,7 @@ class RevisionChangeDetectionState {
 
   *buildEntityHashesIndex(
     entities: Entity[],
-    logEvent: string,
+    logEvent: LogEvent,
     quiet?: boolean,
   ): GeneratorFn<void> {
     if (!this.entities.length && !this.entityHashesIndex.size) {
@@ -155,7 +158,7 @@ class RevisionChangeDetectionState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_FAILURE,
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_FAILURE),
         `Can't build hashes index`,
       );
       this.setEntityHashesIndex(new Map<string, string>());
@@ -392,7 +395,9 @@ export class ChangeDetectionState {
     );
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED,
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -451,7 +456,9 @@ export class ChangeDetectionState {
       );
       if (!quiet) {
         this.editorStore.applicationStore.log.info(
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          ),
           Date.now() - startTime,
           'ms',
         );
@@ -511,7 +518,9 @@ export class ChangeDetectionState {
     )) as EntityChangeConflict[];
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -541,7 +550,9 @@ export class ChangeDetectionState {
     )) as EntityChangeConflict[];
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -673,7 +684,9 @@ export class ChangeDetectionState {
     ]);
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );

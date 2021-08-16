@@ -25,6 +25,7 @@ import {
   TAB_SIZE,
 } from '@finos/legend-studio';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { LogEvent } from '@finos/legend-studio-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 
@@ -112,7 +113,7 @@ export class QueryTextEditorState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -149,7 +150,7 @@ export class QueryTextEditorState extends LambdaEditorState {
         this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
         this.isConvertingLambdaToString = false;

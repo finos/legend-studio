@@ -15,6 +15,7 @@
  */
 
 import {
+  LogEvent,
   UnsupportedOperationError,
   isNonNullable,
   uniq,
@@ -51,7 +52,7 @@ export const V1_buildSection = (
         const element = context.graph.getNullableElement(_package, true);
         if (!(element instanceof Package)) {
           context.log.warn(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
             `Can't find section import package '${_package}'`,
           );
         }
@@ -74,14 +75,14 @@ export const V1_buildSection = (
       const element = context.graph.getNullableElement(elementPath);
       if (!element) {
         context.log.warn(
-          GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
           `Can't find section element '${elementPath}'`,
         );
         return element;
       }
       if (context.graph.getOwnSection(element.path)) {
         context.log.warn(
-          GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
           `Found duplicated section element '${elementPath}'`,
         );
       } else {

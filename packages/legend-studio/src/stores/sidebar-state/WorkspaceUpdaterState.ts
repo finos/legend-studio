@@ -30,6 +30,7 @@ import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   getNullableFirstElement,
@@ -212,7 +213,7 @@ export class WorkspaceUpdaterState {
         ),
       ]);
       this.editorStore.applicationStore.log.info(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - restartChangeDetectionStartTime,
         'ms',
       );
@@ -220,7 +221,7 @@ export class WorkspaceUpdaterState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -269,7 +270,7 @@ export class WorkspaceUpdaterState {
           this.sdlcState.currentWorkspaceId,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.log.info(
-        SDLC_LOG_EVENT.SDLC_UPDATE_WORKSPACE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_UPDATE_WORKSPACE),
         Date.now() - startTime,
         'ms',
       );
@@ -286,7 +287,7 @@ export class WorkspaceUpdaterState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -341,7 +342,7 @@ export class WorkspaceUpdaterState {
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -16,7 +16,7 @@
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { LogEvent, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   EditorStore,
@@ -106,7 +106,7 @@ export class QueryBuilderResultState {
       this.setExecutionResult(result);
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -136,7 +136,7 @@ export class QueryBuilderResultState {
       this.isGeneratingPlan = false;
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -179,7 +179,7 @@ export class QueryBuilderResultState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

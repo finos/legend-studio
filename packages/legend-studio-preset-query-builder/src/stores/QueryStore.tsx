@@ -30,6 +30,7 @@ import type {
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   uuid,
   assertType,
@@ -251,7 +252,7 @@ export class QueryExportState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.queryStore.editorStore.applicationStore.log.error(
-        QUERY_LOG_EVENT.QUERY_PROBLEM,
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.queryStore.editorStore.applicationStore.notifyError(error);
@@ -287,7 +288,7 @@ export class QueryExportState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.queryStore.editorStore.applicationStore.log.error(
-        QUERY_LOG_EVENT.QUERY_PROBLEM,
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.queryStore.editorStore.applicationStore.notifyError(error);
@@ -397,7 +398,7 @@ export class QueryStore {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        QUERY_LOG_EVENT.QUERY_PROBLEM,
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -482,7 +483,7 @@ export class QueryStore {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        QUERY_LOG_EVENT.QUERY_PROBLEM,
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -558,7 +559,7 @@ export class QueryStore {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        QUERY_LOG_EVENT.QUERY_PROBLEM,
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -602,7 +603,7 @@ export class QueryStore {
       this.initState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.setBlockingAlert({
@@ -662,7 +663,7 @@ export class QueryStore {
       this.buildGraphState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -715,7 +716,7 @@ export class QueryStore {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE,
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

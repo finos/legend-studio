@@ -21,6 +21,7 @@ import {
 } from '../MappingElementState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   IllegalStateError,
   isNonNullable,
   UnsupportedOperationError,
@@ -91,7 +92,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -125,7 +126,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
           this.clearErrors();
         } catch (error: unknown) {
           this.editorStore.applicationStore.log.error(
-            GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
             error,
           );
         }
@@ -329,7 +330,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
         });
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE,
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

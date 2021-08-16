@@ -59,6 +59,7 @@ import type {
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   addUniqueEntry,
   isNonNullable,
   assertErrorThrown,
@@ -128,6 +129,7 @@ import type { Type } from '../models/metamodels/pure/model/packageableElements/d
 import type { Store } from '../models/metamodels/pure/model/packageableElements/store/Store';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
+import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -507,7 +509,7 @@ export class EditorStore {
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
         this.applicationStore.log.info(
-          undefined,
+          LogEvent.create(APPLICATION_LOG_EVENT.DEVELOPMENT_ISSUE),
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
@@ -597,7 +599,7 @@ export class EditorStore {
           this.applicationStore.navigator.reload();
         } catch (error: unknown) {
           this.applicationStore.log.error(
-            STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE,
+            LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
             error,
           );
           this.applicationStore.notifyError(error);
@@ -769,7 +771,7 @@ export class EditorStore {
         entities,
       );
       this.applicationStore.log.info(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
         Date.now() - startTime,
         'ms',
       );
@@ -786,7 +788,9 @@ export class EditorStore {
         this.graphState.precomputeHashes(), // for local changes detection
         this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           entities,
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
         ),
         this.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex(),
         this.sdlcState.buildProjectLatestRevisionEntityHashesIndex(),
@@ -798,7 +802,7 @@ export class EditorStore {
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
       this.applicationStore.log.info(
-        CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
@@ -1232,7 +1236,7 @@ export class EditorStore {
         if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
           monacoEditorAPI.remeasureFonts();
           this.applicationStore.log.info(
-            STUDIO_LOG_EVENT.EDITOR_FONT_LOADED,
+            LogEvent.create(STUDIO_LOG_EVENT.EDITOR_FONT_LOADED),
             `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
           );
         } else {

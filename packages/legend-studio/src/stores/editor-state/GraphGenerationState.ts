@@ -25,6 +25,7 @@ import {
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertTrue,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -157,7 +158,7 @@ export class GraphGenerationState {
         );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.GENERATION_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -181,7 +182,7 @@ export class GraphGenerationState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.GENERATION_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -236,7 +237,7 @@ export class GraphGenerationState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.GENERATION_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -289,7 +290,7 @@ export class GraphGenerationState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        STUDIO_LOG_EVENT.GENERATION_FAILURE,
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -376,7 +377,7 @@ export class GraphGenerationState {
         genOutput.cleanFileName(rootFolder);
         if (generationResultMap.has(genOutput.fileName)) {
           this.editorStore.applicationStore.log.warn(
-            STUDIO_LOG_EVENT.GENERATION_FAILURE,
+            LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );
         }
