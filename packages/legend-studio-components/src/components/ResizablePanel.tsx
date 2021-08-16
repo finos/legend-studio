@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import type { HandlerProps } from 'react-reflex';
+import type { ClassValue } from 'clsx';
+import clsx from 'clsx';
+import type { HandlerProps, ReflexElementProps } from 'react-reflex';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 
 /**
@@ -42,6 +44,7 @@ export const ResizablePanelGroup =
     ? (MockedReactComponent as unknown as typeof ReflexContainer)
     : ReflexContainer;
 
+const RESIZABLE_PANEL_MINIMIZED_CLASS_NAME = 'resizable-panel--minimized';
 /**
  * NOTE: there is a small problem with `react-reflex` that is when a panel
  * is minimized, due to `flex-grow` not being set/round to 0, there is a little
@@ -54,18 +57,35 @@ export const ResizablePanelGroup =
  *
  * See https://github.com/leefsmp/Re-Flex/issues/146
  */
-export const roundUpResizingForPanel = (
-  handleProps: ResizablePanelHandlerProps,
-): void => {
-  const flexGrow = Number(
-    (handleProps.domElement as HTMLDivElement).style.flexGrow,
-  );
-  if (flexGrow <= 0.01) {
-    (handleProps.domElement as HTMLDivElement).style.flexGrow = '0';
-  } else if (flexGrow >= 0.99) {
-    (handleProps.domElement as HTMLDivElement).style.flexGrow = '1';
-  }
-};
+export const getControlledResizablePanelProps = (
+  minimizeCondition: boolean,
+  options?: {
+    classes?: ClassValue[];
+    onStartResize?: (handleProps: ResizablePanelHandlerProps) => void;
+    onStopResize?: (handleProps: ResizablePanelHandlerProps) => void;
+  },
+): ReflexElementProps => ({
+  className: clsx(...(options?.classes ?? []), {
+    [RESIZABLE_PANEL_MINIMIZED_CLASS_NAME]: minimizeCondition,
+  }),
+  onStartResize: (handleProps: ResizablePanelHandlerProps): void => {
+    (handleProps.domElement as HTMLDivElement).classList.remove(
+      RESIZABLE_PANEL_MINIMIZED_CLASS_NAME,
+    );
+    options?.onStartResize?.(handleProps);
+  },
+  onStopResize: (handleProps: ResizablePanelHandlerProps): void => {
+    const flexGrow = Number(
+      (handleProps.domElement as HTMLDivElement).style.flexGrow,
+    );
+    if (flexGrow <= 0.01) {
+      (handleProps.domElement as HTMLDivElement).style.flexGrow = '0';
+    } else if (flexGrow >= 0.99) {
+      (handleProps.domElement as HTMLDivElement).style.flexGrow = '1';
+    }
+    options?.onStopResize?.(handleProps);
+  },
+});
 
 export const ResizablePanel =
   // eslint-disable-next-line no-process-env

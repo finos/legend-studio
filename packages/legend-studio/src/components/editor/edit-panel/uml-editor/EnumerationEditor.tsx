@@ -31,6 +31,7 @@ import { prettyCONSTName } from '@finos/legend-studio-shared';
 import {
   BlankPanelContent,
   clsx,
+  getControlledResizablePanelProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -538,7 +539,12 @@ export const EnumerationEditor = observer(
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
-          <ResizablePanel flex={0} direction={-1} size={selectedEnum ? 250 : 0}>
+          <ResizablePanel
+            {...getControlledResizablePanelProps(!selectedEnum)}
+            flex={0}
+            direction={-1}
+            size={selectedEnum ? 250 : 0}
+          >
             {selectedEnum ? (
               <EnumEditor
                 _enum={selectedEnum}

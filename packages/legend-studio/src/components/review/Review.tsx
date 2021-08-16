@@ -33,7 +33,7 @@ import { Link } from 'react-router-dom';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
 import {
-  roundUpResizingForPanel,
+  getControlledResizablePanelProps,
   clsx,
   PanelLoadingIndicator,
   ResizablePanel,
@@ -143,12 +143,10 @@ const ReviewExplorer = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void => {
-    roundUpResizingForPanel(handleProps);
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
     editorStore.sideBarDisplayState.setSize(
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
     );
-  };
 
   useEffect(() => {
     flowResult(reviewStore.fetchReviewComparison()).catch(
@@ -162,14 +160,19 @@ const ReviewExplorer = observer(() => {
       className="review-explorer__content"
     >
       <ResizablePanel
-        size={editorStore.sideBarDisplayState.size}
+        {...getControlledResizablePanelProps(
+          editorStore.sideBarDisplayState.size === 0,
+          {
+            onStopResize: resizeSideBar,
+          },
+        )}
         direction={1}
-        onStopResize={resizeSideBar}
+        size={editorStore.sideBarDisplayState.size}
       >
         <ReviewSideBar />
       </ResizablePanel>
       <ResizablePanelSplitter />
-      <ResizablePanel>
+      <ResizablePanel minSize={300}>
         <ReviewPanel />
       </ResizablePanel>
     </ResizablePanelGroup>

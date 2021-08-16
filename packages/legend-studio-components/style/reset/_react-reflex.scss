@@ -144,5 +144,5 @@
 }
 
 .reflex-element.resizable-panel--minimized {
-  flex: 0 1 0% !important;
+  visibility: hidden;
 }
