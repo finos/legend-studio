@@ -516,15 +516,6 @@ export const AssociationEditor = observer(
                 isReadOnly={isReadOnly}
               />
             ) : (
-              <div />
-            )}
-            {selectedProperty ? (
-              <PropertyEditor
-                property={selectedProperty}
-                deselectProperty={deselectProperty}
-                isReadOnly={isReadOnly}
-              />
-            ) : (
               <div className="uml-element-editor__sub-editor">
                 <BlankPanelContent>No property selected</BlankPanelContent>
               </div>

@@ -47,7 +47,7 @@ beforeEach(async () => {
   });
 });
 
-test(integrationTest('Profile view renders properly'), async () => {
+test(integrationTest('Profile editor renders properly'), async () => {
   await openElementFromExplorerTree('ui::test1::ProfileTest', renderResult);
   const editPanelHeader = renderResult.getByTestId(
     CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
@@ -69,7 +69,7 @@ test(integrationTest('Profile view renders properly'), async () => {
 });
 
 test(
-  integrationTest('Class view without constraints and derived properties'),
+  integrationTest('Class editor without constraints and derived properties'),
   async () => {
     await openElementFromExplorerTree('ui::TestClass', renderResult);
     const editPanelHeader = renderResult.getByTestId(
@@ -150,7 +150,7 @@ test(
   },
 );
 
-test(integrationTest('Enumeration View'), async () => {
+test(integrationTest('Enumeration editor'), async () => {
   await openElementFromExplorerTree('ui::TestEnumeration', renderResult);
   const editPanelHeader = renderResult.getByTestId(
     CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
@@ -186,7 +186,7 @@ test(integrationTest('Enumeration View'), async () => {
   expect(queryByText(enumerationEditor, 'enumA')).toBeNull();
 });
 
-test(integrationTest('Association View'), async () => {
+test(integrationTest('Association editor'), async () => {
   await openElementFromExplorerTree('ui::TestAssociation', renderResult);
   const editPanelHeader = renderResult.getByTestId(
     CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
@@ -225,7 +225,6 @@ test(integrationTest('Association View'), async () => {
   expect(queryByDisplayValue(associationEditor, 'ProfileTest')).toBeNull();
   const navigateToPropertyButton = buttons[1];
   fireEvent.click(navigateToPropertyButton);
-  await waitFor(() => getByText(associationEditor, 'property'));
   const subPropertyPanel = getByTestId(associationEditor, CORE_TEST_ID.PANEL);
   getByDisplayValue(subPropertyPanel, 'association tag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
