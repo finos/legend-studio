@@ -493,7 +493,6 @@ const ExplorerDropdownMenu = observer(
 
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
-  const config = editorStore.applicationStore.config;
   const { isInGrammarTextMode, isInViewerMode } = editorStore;
   const openModelLoader = (): void =>
     editorStore.openSingletonEditorState(editorStore.modelLoaderState);
@@ -596,10 +595,7 @@ const ExplorerTrees = observer(() => {
                 }}
               />
               <ElementRenamer />
-              {!config.options
-                .TEMPORARY__disableSDLCProjectStructureSupport && (
-                <ProjectConfig />
-              )}
+              <ProjectConfig />
               {/* SYSTEM TREE */}
               {Boolean(
                 editorStore.graphState.systemModel.allOwnElements.length,
@@ -617,22 +613,20 @@ const ExplorerTrees = observer(() => {
                 />
               )}
               {/* DEPENDENCY TREE */}
-              {graph.dependencyManager.hasDependencies &&
-                !config.options
-                  .TEMPORARY__disableSDLCProjectStructureSupport && (
-                  <TreeView
-                    components={{
-                      TreeNodeContainer: PackageTreeNodeContainer,
-                    }}
-                    treeData={dependencyTreeData}
-                    onNodeSelect={onDependencyTreeSelect}
-                    getChildNodes={getDependencyTreeChildNodes}
-                    innerProps={{
-                      disableContextMenu: isInGrammarTextMode,
-                      isContextImmutable: true,
-                    }}
-                  />
-                )}
+              {graph.dependencyManager.hasDependencies && (
+                <TreeView
+                  components={{
+                    TreeNodeContainer: PackageTreeNodeContainer,
+                  }}
+                  treeData={dependencyTreeData}
+                  onNodeSelect={onDependencyTreeSelect}
+                  getChildNodes={getDependencyTreeChildNodes}
+                  innerProps={{
+                    disableContextMenu: isInGrammarTextMode,
+                    isContextImmutable: true,
+                  }}
+                />
+              )}
               {/* GENERATION SPECIFICATION */}
               {Boolean(graph.generationModel.allOwnElements.length) && (
                 <TreeView

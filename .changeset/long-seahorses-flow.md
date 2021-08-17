@@ -2,4 +2,5 @@
 '@finos/legend-studio-manual-tests': patch
 ---
 
-Add compilation check and phase logging/skippin in manual tests.
+pr: #419
+Add compilation check and phase logging/skipping in manual tests.
