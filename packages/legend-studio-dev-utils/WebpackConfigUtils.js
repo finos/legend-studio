@@ -114,6 +114,8 @@ const getBaseWebpackConfig = (
           include: [
             // The source code of the current workspace
             resolve(dirname, './src/'),
+            // Packages from the same monorepo
+            /packages\/legend-/,
             // Packages coming from NPM published under '@finos' scope
             /@finos\/legend-/,
             ...extraBabelLoaderIncludePatterns,
