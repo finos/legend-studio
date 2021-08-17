@@ -17,6 +17,7 @@
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   losslessStringify,
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
@@ -24,7 +25,7 @@ import {
 import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import {
   CLIENT_VERSION,
   LAMBDA_START,
@@ -194,8 +195,8 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
         );
         this.clearErrors();
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -288,8 +289,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         ),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -318,8 +319,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         losslessStringify(result, undefined, TAB_SIZE),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

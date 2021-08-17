@@ -25,12 +25,13 @@ import {
 import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertTrue,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type {
   GenerationTreeNodeData,
   GenerationOutputResult,
@@ -156,8 +157,8 @@ export class GraphGenerationState {
             new ElementFileGenerationState(this.editorStore, config.key),
         );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -180,8 +181,8 @@ export class GraphGenerationState {
       yield flowResult(this.generateFiles());
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -235,8 +236,8 @@ export class GraphGenerationState {
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -288,8 +289,8 @@ export class GraphGenerationState {
       this.processGenerationResult(generationResultMap);
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -375,8 +376,8 @@ export class GraphGenerationState {
       generationOutputs.forEach((genOutput) => {
         genOutput.cleanFileName(rootFolder);
         if (generationResultMap.has(genOutput.fileName)) {
-          this.editorStore.applicationStore.logger.warn(
-            CORE_LOG_EVENT.CODE_GENERATION_PROBLEM,
+          this.editorStore.applicationStore.log.warn(
+            LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );
         }

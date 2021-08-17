@@ -17,7 +17,12 @@
 // application
 export * from './application/LegendStudio';
 export * from './application/PluginManager';
-export { ApplicationConfig } from './stores/ApplicationConfig';
+export { ApplicationConfig } from './stores/application/ApplicationConfig';
+export {
+  WebApplicationNavigator,
+  WebApplicationNavigatorProvider,
+  useWebApplicationNavigator,
+} from './stores/application/WebApplicationNavigator';
 
 // network
 export * from './stores/network/Telemetry';
@@ -102,6 +107,7 @@ export {
 } from './models/metamodels/pure/model/valueSpecification/GraphFetchTree';
 export * from './models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 export * from './models/metamodels/pure/action/query/Query';
+export { getRootSetImplementation } from './models/metamodels/pure/helpers/MappingResolutionHelper';
 
 // protocols
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
@@ -184,12 +190,13 @@ export { getElementIcon, getElementTypeIcon } from './components/shared/Icon';
 export { TypeTree } from './components/shared/TypeTree';
 export type { LambdaEditorOnKeyDownEventHandler } from './components/shared/LambdaEditor';
 export { LambdaEditor } from './components/shared/LambdaEditor';
-export { LegendMaterialUITheme } from './components/LegendStudioApplication';
 export { BlockingAlert } from './components/application/BlockingAlert';
 export { ActionAlert } from './components/application/ActionAlert';
 export { NotificationSnackbar } from './components/application/NotificationSnackbar';
 
-export * from './utils/Logger'; // TODO: to be removed when we move this to @finos/legend-studio-shared
+// logging
+export { GRAPH_MANAGER_LOG_EVENT } from './utils/GraphManagerLogEvent';
+export { SDLC_LOG_EVENT } from './utils/SDLCLogEvent';
 
 // test
 export * from './const';

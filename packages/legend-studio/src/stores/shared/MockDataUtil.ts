@@ -26,7 +26,6 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { MappingElementSource } from '../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
   getRandomDate,
   getRandomDouble,
@@ -36,6 +35,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../EditorStore';
+import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,

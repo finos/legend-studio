@@ -16,8 +16,7 @@
 
 import type { RenderResult } from '@testing-library/react';
 import { render, fireEvent, waitFor, getByText } from '@testing-library/react';
-import { Router, Route } from 'react-router-dom';
-import type { History } from 'history';
+import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import {
   ApplicationStoreProvider,
@@ -34,14 +33,11 @@ import type { Entity } from '../models/sdlc/models/entity/Entity';
 import type { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { Revision } from '../models/sdlc/models/revision/Revision';
-import {
-  LEGEND_STUDIO_ROUTE_PATTERN,
-  generateEditorRoute,
-  URL_PATH_PLACEHOLDER,
-} from '../stores/LegendStudioRouter';
+import { generateEditorRoute } from '../stores/LegendStudioRouter';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import {
+  Log,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-studio-shared';
@@ -51,8 +47,8 @@ import type {
 } from '../models/metamodels/pure/action/generation/ImportConfigurationDescription';
 import type { GenerationConfigurationDescription } from '../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
 import { PluginManager } from '../application/PluginManager';
-import type { ApplicationConfig } from '../stores/ApplicationConfig';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 
 export const SDLC_TestData = {
   project: {
@@ -121,37 +117,53 @@ export const SDLC_TestData = {
   ],
 };
 
-export const getApplicationNavigationHistory = (
-  initialRoute?: string,
-): History =>
-  createMemoryHistory({
-    initialEntries: [initialRoute ?? `/${URL_PATH_PLACEHOLDER}/`],
-  });
+export const TEST__ApplicationStoreProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement => (
+  <ApplicationStoreProvider
+    config={getTestApplicationConfig()}
+    pluginManager={PluginManager.create()}
+    navigator={new WebApplicationNavigator(createMemoryHistory())}
+    log={new Log()}
+  >
+    {children}
+  </ApplicationStoreProvider>
+);
 
 export const getMockedApplicationStore = (
-  config: ApplicationConfig,
-  pluginManager = PluginManager.create(),
+  config = getTestApplicationConfig(),
 ): ApplicationStore => {
   const mockedApplicationStore = new ApplicationStore(
-    createMemoryHistory(),
     config,
-    pluginManager,
+    PluginManager.create(),
+    new WebApplicationNavigator(createMemoryHistory()),
+    new Log(),
   );
   const MockedApplicationStore = require('../stores/ApplicationStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  mockedApplicationStore.logger.mute();
   MockedApplicationStore.useApplicationStore = jest.fn();
   MockedApplicationStore.useApplicationStore.mockReturnValue(
     mockedApplicationStore,
   );
-
   return mockedApplicationStore;
+};
+
+export const getMockedWebApplicationNavigator = (
+  history = createMemoryHistory(),
+): WebApplicationNavigator => {
+  const mock = new WebApplicationNavigator(history);
+  const MockWebApplicationNavigator = require('../stores/application/WebApplicationNavigator'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MockWebApplicationNavigator.useWebApplicationNavigator = jest.fn();
+  MockWebApplicationNavigator.useWebApplicationNavigator.mockReturnValue(mock);
+  return mock;
 };
 
 export const getMockedEditorStore = (
   applicationStore?: ApplicationStore,
 ): EditorStore => {
   const mockedEditorStore = new EditorStore(
-    applicationStore ?? getMockedApplicationStore(getTestApplicationConfig()),
+    applicationStore ?? getMockedApplicationStore(),
   );
   const MockedEditorStore = require('../stores/EditorStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStore.useEditorStore = jest.fn();
@@ -281,7 +293,7 @@ export const setUpEditor = async (
     )
     .mockResolvedValue(latestProjectStructureVersion);
   // TODO: we need to think of how we will mock these calls when we modularize
-  mockedEditorStore.graphState.graphManager.setupEngine = jest.fn();
+  mockedEditorStore.graphState.graphManager.initialize = jest.fn();
   jest
     .spyOn(
       mockedEditorStore.graphState.graphManager,
@@ -308,30 +320,26 @@ export const setUpEditor = async (
   mockedEditorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
     jest.fn();
   MOBX__disableSpyOrMock();
-  // render main editor
-  const component = (
-    <Route
-      exact={true}
-      strict={true}
-      path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT}
-      component={Editor}
-    />
+
+  const history = createMemoryHistory({
+    initialEntries: [
+      generateEditorRoute(
+        mockedEditorStore.applicationStore.config.sdlcServerKey,
+        (workspace as unknown as Workspace).projectId,
+        (workspace as unknown as Workspace).workspaceId,
+      ),
+    ],
+  });
+  mockedEditorStore.applicationStore.navigator = new WebApplicationNavigator(
+    history,
   );
-  const history = getApplicationNavigationHistory(
-    generateEditorRoute(
-      mockedEditorStore.applicationStore.config.sdlcServerKey,
-      (workspace as unknown as Workspace).projectId,
-      (workspace as unknown as Workspace).workspaceId,
-    ),
-  );
+
   const renderResult = render(
-    <ApplicationStoreProvider
-      config={getTestApplicationConfig()}
-      history={history}
-      pluginManager={PluginManager.create()}
-    >
-      <Router history={history}>{component}</Router>
-    </ApplicationStoreProvider>,
+    <Router history={history}>
+      <TEST__ApplicationStoreProvider>
+        <Editor />
+      </TEST__ApplicationStoreProvider>
+    </Router>,
   );
   // assert project/workspace have been set
   await waitFor(() =>

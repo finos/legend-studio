@@ -15,13 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import {
-  Switch,
-  Route,
-  Redirect,
-  useHistory,
-  useRouteMatch,
-} from 'react-router-dom';
+import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import { Setup } from './setup/Setup';
 import { Editor } from './editor/Editor';
 import { Review } from './review/Review';
@@ -34,6 +28,7 @@ import { NotificationSnackbar } from './application/NotificationSnackbar';
 import { observer } from 'mobx-react-lite';
 import {
   CustomSelectorInput,
+  LegendMaterialUITheme,
   PanelLoadingIndicator,
 } from '@finos/legend-studio-components';
 import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
@@ -46,83 +41,16 @@ import { ActionAlert } from './application/ActionAlert';
 import { BlockingAlert } from './application/BlockingAlert';
 import { AppHeader, BasicAppHeader } from './shared/AppHeader';
 import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider } from '@material-ui/core/styles';
 import type {
   ApplicationConfig,
   SDLCServerOption,
-} from '../stores/ApplicationConfig';
+} from '../stores/application/ApplicationConfig';
 import type { PluginManager } from '../application/PluginManager';
+import type { Log } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
-
-/**
- * NOTE: this approach generally works well to control Material theme overriding
- * However, due to modularization and tree-shaking, it seems like if in `legend-studio`
- * core, if for example, `MuiList` is not used, the overriding does not take effect.
- *
- * As such, the b etter approach is to override the styles locally using `makeStyles` or `withStyles`
- * when we use Material UI components.
- *
- * TODO: Eventually, when we have componentize most of the apps, we can eliminate this usage
- * of Material UI Theme provider
- */
-export const LegendMaterialUITheme = createTheme({
-  props: {
-    MuiButtonBase: {
-      // disable button ripples
-      disableRipple: true,
-    },
-  },
-  transitions: {
-    // So we have `transition: none;` everywhere
-    create: (): string => 'none',
-  },
-  typography: {
-    fontFamily: 'Roboto',
-    fontSize: 10,
-    htmlFontSize: 10,
-  },
-  // Overriding global theme, specific theme for each component can be customized at component level
-  // See https://material-ui.com/customization/globals/
-  overrides: {
-    MuiTooltip: {
-      tooltip: {
-        background: 'var(--color-dark-grey-100)',
-        color: 'var(--color-light-grey-100)',
-        fontSize: '1.2rem',
-        maxWidth: 'inherit',
-      },
-      tooltipPlacementTop: {
-        margin: '0.5rem 0',
-      },
-    },
-    MuiPaper: {
-      root: {
-        borderRadius: 0,
-      },
-      rounded: {
-        borderRadius: 0,
-      },
-    },
-    MuiDialog: {
-      scrollPaper: {
-        alignItems: 'flex-start',
-      },
-      paper: {
-        margin: 0,
-      },
-      root: {
-        marginTop: '4.8rem',
-      },
-    },
-    MuiList: {
-      padding: {
-        paddingTop: 0,
-        paddingBottom: 0,
-      },
-    },
-  },
-});
+import { useWebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 
 export const LegendStudioApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore();
@@ -145,7 +73,7 @@ export const LegendStudioApplicationRoot = observer(() => {
     });
 
   useEffect(() => {
-    flowResult(applicationStore.init()).catch(
+    flowResult(applicationStore.initialize()).catch(
       applicationStore.alertIllegalUnhandledError,
     );
   }, [applicationStore]);
@@ -217,7 +145,7 @@ export const LegendStudioApplicationRoot = observer(() => {
 const LegendStudioApplicationConfigEditor = observer(
   (props: { config: ApplicationConfig }) => {
     const { config } = props;
-    const history = useHistory();
+    const navigator = useWebApplicationNavigator();
     const sdlcServerOptions = config.sdlcServerOptions.map((option) => ({
       label: option.label,
       value: option,
@@ -237,7 +165,7 @@ const LegendStudioApplicationConfigEditor = observer(
     const configure = (): void => {
       config.setConfigured(true);
       // go to the default URL after confiruing SDLC server
-      history.push(generateSetupRoute(config.sdlcServerKey, undefined));
+      navigator.goTo(generateSetupRoute(config.sdlcServerKey, undefined));
     };
 
     return (
@@ -272,9 +200,13 @@ const LegendStudioApplicationConfigEditor = observer(
 );
 
 export const LegendStudioApplication = observer(
-  (props: { config: ApplicationConfig; pluginManager: PluginManager }) => {
-    const { config, pluginManager } = props;
-    const history = useHistory();
+  (props: {
+    config: ApplicationConfig;
+    pluginManager: PluginManager;
+    log: Log;
+  }) => {
+    const { config, pluginManager, log } = props;
+    const navigator = useWebApplicationNavigator();
     const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
       generateRoutePatternWithSDLCServerKey('/'),
     );
@@ -290,7 +222,7 @@ export const LegendStudioApplication = observer(
         } else if (config.sdlcServerOptions.length === 1) {
           // when there is only one SDLC server and the sdlc server key provided is unrecognized,
           // auto-fix the URL
-          history.push(
+          navigator.goTo(
             generateSetupRoute(config.sdlcServerOptions[0].key, undefined),
           );
         } else {
@@ -298,7 +230,7 @@ export const LegendStudioApplication = observer(
           config.setSDLCServerKey(config.sdlcServerOptions[0].key);
         }
       }
-    }, [config, history, sdlcServerKey]);
+    }, [config, navigator, sdlcServerKey]);
 
     if (!config.isConfigured) {
       if (!config._sdlcServerKey) {
@@ -313,8 +245,9 @@ export const LegendStudioApplication = observer(
     return (
       <ApplicationStoreProvider
         config={config}
-        history={history}
+        navigator={navigator}
         pluginManager={pluginManager}
+        log={log}
       >
         <ThemeProvider theme={LegendMaterialUITheme}>
           <LegendStudioApplicationRoot />

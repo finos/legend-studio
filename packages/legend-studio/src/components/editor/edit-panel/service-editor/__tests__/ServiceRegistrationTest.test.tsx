@@ -52,7 +52,7 @@ import { flowResult } from 'mobx';
 
 let renderResult: RenderResult;
 
-const init = async (
+const setup = async (
   project: PlainObject<Project>,
   workspace: PlainObject<Workspace>,
   versions?: PlainObject<Version>[],
@@ -117,7 +117,7 @@ test(
     'Service Editor basic registration functionality for PRODUCTION projects',
   ),
   async () => {
-    const mockedEditorStore = await init(
+    const mockedEditorStore = await setup(
       {
         projectId: 'PROD-19481',
         description: 'sdlcTesting',
@@ -226,7 +226,7 @@ test(
     'Service Editor basic general and registration functionality for PROTOTYPE projects',
   ),
   async () => {
-    const mockedEditorStore = await init(
+    const mockedEditorStore = await setup(
       SDLC_TestData.project,
       SDLC_TestData.workspace,
     );

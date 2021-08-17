@@ -22,7 +22,6 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-studio-shared';
-import studioConfig from '../../studio.config';
 
 class Dummy_Preset extends AbstractPreset {
   constructor() {
@@ -44,7 +43,7 @@ test(integrationTest('Application can start with a dummy preset'), async () => {
   MOBX__disableSpyOrMock();
 
   application
-    .setup({ baseUrl: studioConfig.baseUrl })
+    .setup({ baseUrl: '/' })
     .withPresets([new Dummy_Preset()])
     .start()
     .catch((e) => {

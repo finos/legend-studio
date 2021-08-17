@@ -27,11 +27,12 @@ import {
 import type { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   compareLabelFn,
 } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { UpdateProjectConfigurationCommand } from '../../models/sdlc/models/configuration/UpdateProjectConfigurationCommand';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { Project, ProjectType } from '../../models/sdlc/models/project/Project';
@@ -147,8 +148,8 @@ export class ProjectConfigurationEditorState extends EditorState {
               this.projects.set(project.projectId, project);
             })
             .catch((e) => {
-              this.editorStore.applicationStore.logger.error(
-                CORE_LOG_EVENT.SDLC_PROBLEM,
+              this.editorStore.applicationStore.log.error(
+                LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
                 e,
               );
             }),
@@ -166,8 +167,8 @@ export class ProjectConfigurationEditorState extends EditorState {
               this.versionsByProject.set(projDep.projectId, versionMap);
             })
             .catch((e) => {
-              this.editorStore.applicationStore.logger.error(
-                CORE_LOG_EVENT.SDLC_PROBLEM,
+              this.editorStore.applicationStore.log.error(
+                LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
                 e,
               );
             }),
@@ -186,8 +187,8 @@ export class ProjectConfigurationEditorState extends EditorState {
         .forEach((project) => this.projects.set(project.projectId, project));
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -228,8 +229,8 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -256,8 +257,8 @@ export class ProjectConfigurationEditorState extends EditorState {
           .forEach((project) => this.projects.set(project.projectId, project));
         this.queryHistory.add(query);
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.SDLC_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
         this.editorStore.applicationStore.notifyError(error);
@@ -279,8 +280,8 @@ export class ProjectConfigurationEditorState extends EditorState {
         .forEach((version) => versionMap.set(version.id.id, version));
       this.versionsByProject.set(projectId, versionMap);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -298,8 +299,8 @@ export class ProjectConfigurationEditorState extends EditorState {
         );
         yield flowResult(this.updateProjectConfiguration(updateCommand));
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.SDLC_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
         this.editorStore.applicationStore.notifyError(error);
@@ -336,8 +337,8 @@ export class ProjectConfigurationEditorState extends EditorState {
         this.updateProjectConfiguration(updateProjectConfigurationCommand),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -357,8 +358,8 @@ export class ProjectConfigurationEditorState extends EditorState {
             (yield this.sdlcState.sdlcClient.getLatestProjectStructureVersion()) as PlainObject<ProjectStructureVersion>,
           );
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.SDLC_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
         this.editorStore.applicationStore.notifyError(error);

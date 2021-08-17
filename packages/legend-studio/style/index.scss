@@ -21,11 +21,6 @@
 @forward 'deps';
 @forward 'extensions';
 
-// Reset (override library styles)
-@forward 'reset/react-reflex';
-@forward 'reset/react-split-pane';
-@forward 'reset/monaco-editor';
-
 // Components
 @forward 'components/shared';
 @forward 'components/app';

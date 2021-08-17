@@ -38,7 +38,6 @@ import {
   RuntimePointer,
 } from '../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import type { Mapping } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { getMappingElementSource } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Connection } from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
 import { ConnectionPointer } from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
 import { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
@@ -64,6 +63,7 @@ import {
 } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { StaticDatasourceSpecification } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { DefaultH2AuthenticationStrategy } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
+import { getMappingElementSource } from './mapping/MappingEditorState';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
@@ -87,8 +87,7 @@ const getStoresFromMappings = (
 ): Store[] =>
   uniq(
     mappings.flatMap((mapping) =>
-      mapping
-        .getClassMappings()
+      mapping.allClassMappings
         .map((setImplementation) =>
           getClassMappingStore(setImplementation, graph),
         )
@@ -208,8 +207,7 @@ export const getRuntimeExplorerTreeData = (
   const nodes = new Map<string, RuntimeExplorerTreeNodeData>();
   const allSourceClassesFromMappings = uniq(
     runtimeValue.mappings.flatMap((mapping) =>
-      mapping.value
-        .getClassMappings()
+      mapping.value.allClassMappings
         .map((setImplementation) => getMappingElementSource(setImplementation))
         .filter((source): source is Class => source instanceof Class),
     ),
@@ -540,8 +538,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
     if (!this.identifiedConnections.length) {
       const allSourceClassesFromMappings = uniq(
         this.runtimeEditorState.runtimeValue.mappings.flatMap((mapping) =>
-          mapping.value
-            .getClassMappings()
+          mapping.value.allClassMappings
             .map((setImplementation) =>
               getMappingElementSource(setImplementation),
             )

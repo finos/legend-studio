@@ -27,7 +27,7 @@ import { Database } from '../../../../../../../metamodels/pure/model/packageable
 import {
   getAllIncludedDbs,
   getDatabaseNullableFilter,
-} from '../../../../../../../metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
+} from '../../../../../../../metamodels/pure/helpers/DatabaseHelper';
 import { Schema } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Schema';
 import { Table } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { Column } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Column';

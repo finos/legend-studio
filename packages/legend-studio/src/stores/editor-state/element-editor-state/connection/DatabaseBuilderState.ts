@@ -17,6 +17,7 @@
 import type { TreeData, TreeNodeData } from '@finos/legend-studio-components';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   addUniqueEntry,
   assertNonEmptyString,
   assertTrue,
@@ -29,7 +30,7 @@ import {
   DatabasePattern,
   TargetDatabase,
 } from '../../../../models/metamodels/pure/action/generation/DatabaseBuilderInput';
-import { getDbNullableTable } from '../../../../models/metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
+import { getDbNullableTable } from '../../../../models/metamodels/pure/helpers/DatabaseHelper';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { Column } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Column';
@@ -41,7 +42,7 @@ import {
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
 import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { EditorStore } from '../../../EditorStore';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
@@ -249,8 +250,8 @@ export class DatabaseBuilderState {
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -294,8 +295,8 @@ export class DatabaseBuilderState {
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -334,8 +335,8 @@ export class DatabaseBuilderState {
         this.addColumnsNodeToTableNode(tableNode, enrichedTable, treeData);
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -454,8 +455,8 @@ export class DatabaseBuilderState {
         this.setDatabaseGrammarCode(dbGrammar);
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -561,8 +562,8 @@ export class DatabaseBuilderState {
         }
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);

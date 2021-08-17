@@ -30,6 +30,7 @@ import type {
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   uuid,
   assertType,
@@ -56,9 +57,8 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
   ProjectData,
-  SDLCServerClient,
   TAB_SIZE,
-  CORE_LOG_EVENT,
+  SDLC_LOG_EVENT,
   EditorStore,
   useApplicationStore,
   ProjectVersionEntities,
@@ -71,6 +71,7 @@ import type {
   ServiceQueryPathParams,
 } from './LegendQueryRouter';
 import { generateExistingQueryRoute } from './LegendQueryRouter';
+import { QUERY_LOG_EVENT } from '../QueryLogEvent';
 
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
@@ -250,8 +251,8 @@ export class QueryExportState {
         );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.queryStore.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+      this.queryStore.editorStore.applicationStore.log.error(
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.queryStore.editorStore.applicationStore.notifyError(error);
@@ -269,7 +270,7 @@ export class QueryExportState {
         this.queryStore.editorStore.applicationStore.notifySuccess(
           `Successfully created query!`,
         );
-        this.queryStore.editorStore.applicationStore.historyApiClient.push(
+        this.queryStore.editorStore.applicationStore.navigator.goTo(
           generateExistingQueryRoute(newQuery.id),
         );
       } else {
@@ -286,8 +287,8 @@ export class QueryExportState {
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.queryStore.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+      this.queryStore.editorStore.applicationStore.log.error(
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.queryStore.editorStore.applicationStore.notifyError(error);
@@ -304,7 +305,7 @@ export class QueryStore {
   queryBuilderState: QueryBuilderState;
   queryExportState?: QueryExportState;
   buildGraphState = ActionState.create();
-  initGraphState = ActionState.create();
+  initState = ActionState.create();
   editorInitState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
@@ -342,12 +343,6 @@ export class QueryStore {
 
     try {
       this.editorInitState.inProgress();
-      if (this.initGraphState.isInInitialState) {
-        yield flowResult(this.initGraph());
-      } else if (this.initGraphState.isInProgress) {
-        return;
-      }
-
       let queryInfoState: ExistingQueryInfoState;
       if (this.queryInfoState instanceof ExistingQueryInfoState) {
         assertTrue(this.queryInfoState.query.id === queryId);
@@ -402,8 +397,8 @@ export class QueryStore {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -487,8 +482,8 @@ export class QueryStore {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -563,8 +558,8 @@ export class QueryStore {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.QUERY_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -577,14 +572,17 @@ export class QueryStore {
     }
   }
 
-  *initGraph(): GeneratorFn<void> {
-    if (!this.initGraphState.isInInitialState) {
+  *initialize(): GeneratorFn<void> {
+    if (!this.initState.isInInitialState) {
+      this.editorStore.applicationStore.notifyIllegalState(
+        `Query store is already initialized`,
+      );
       return;
     }
     try {
-      this.initGraphState.inProgress();
+      this.initState.inProgress();
       yield flowResult(
-        this.editorStore.graphState.graphManager.setupEngine(
+        this.editorStore.graphState.graphManager.initialize(
           this.editorStore.applicationStore.pluginManager,
           {
             env: this.editorStore.applicationStore.config.env,
@@ -592,9 +590,9 @@ export class QueryStore {
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
               enableCompression: true,
-              authenticationUrl: SDLCServerClient.authenticationUrl(
-                this.editorStore.applicationStore.config.sdlcServerUrl,
-              ),
+              autoReAuthenticateUrl:
+                this.editorStore.applicationStore.config
+                  .engineAutoReAuthenticationUrl,
             },
           },
         ),
@@ -602,27 +600,22 @@ export class QueryStore {
 
       yield flowResult(this.editorStore.graphState.initializeSystem());
 
-      this.initGraphState.pass();
+      this.initState.pass();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
-      this.initGraphState.fail();
+      this.editorStore.applicationStore.setBlockingAlert({
+        message: `Can't initialize Legend Query`,
+      });
+      this.initState.fail();
     }
   }
 
   *buildGraph(project: ProjectData, versionId: string): GeneratorFn<void> {
-    if (this.initGraphState.isInInitialState) {
-      yield flowResult(this.initGraph());
-    } else if (this.initGraphState.isInProgress) {
-      return;
-    }
-
-    this.buildGraphState.inProgress();
-
     try {
+      this.buildGraphState.inProgress();
       let entities: Entity[] = [];
 
       if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
@@ -669,8 +662,8 @@ export class QueryStore {
 
       this.buildGraphState.pass();
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -722,8 +715,8 @@ export class QueryStore {
           });
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

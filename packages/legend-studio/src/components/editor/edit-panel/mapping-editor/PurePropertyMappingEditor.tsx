@@ -21,6 +21,7 @@ import {
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
+import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type {
   PurePropertyMappingState,
@@ -32,7 +33,6 @@ import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import {
   CLASS_PROPERTY_TYPE,
@@ -41,6 +41,7 @@ import {
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
+import { getEnumerationMappingsByEnumeration } from '../../../../models/metamodels/pure/helpers/MappingHelper';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -123,9 +124,10 @@ const EnumerationPropertyMappingEditor = observer(
       propertyMappingState.instanceSetImplementationState.selectedType ===
         expectedType;
     // Enumeration Mapping Selector
-    const options = mappingEditorState.mapping
-      .enumerationMappingsByEnumeration(enumeration)
-      .map((em) => ({ value: em, label: em.id.value }));
+    const options = getEnumerationMappingsByEnumeration(
+      mappingEditorState.mapping,
+      enumeration,
+    ).map((em) => ({ value: em, label: em.id.value }));
     const transformer = propertyMapping.transformer?.id.value ?? '';
     const handleSelectionChange = (
       val: { label: string; value: EnumerationMapping } | null,

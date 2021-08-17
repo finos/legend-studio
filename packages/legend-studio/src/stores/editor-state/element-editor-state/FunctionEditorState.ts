@@ -18,9 +18,13 @@ import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import { LambdaEditorState } from './LambdaEditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { guaranteeType, assertType } from '@finos/legend-studio-shared';
+import {
+  LogEvent,
+  guaranteeType,
+  assertType,
+} from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
 import { LAMBDA_START } from '../../../models/MetaModelConst';
 import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
@@ -73,8 +77,8 @@ export class FunctionBodyEditorState extends LambdaEditorState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -129,8 +133,8 @@ export class FunctionBodyEditorState extends LambdaEditorState {
         }
         this.isConvertingFunctionBodyToString = false;
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
         this.isConvertingFunctionBodyToString = false;
@@ -189,8 +193,8 @@ export class FunctionEditorState extends ElementEditorState {
         revealed = true;
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.warn(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+      this.editorStore.applicationStore.log.warn(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error`,
         error,
       );

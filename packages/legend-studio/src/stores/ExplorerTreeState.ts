@@ -18,6 +18,7 @@ import { action, observable, makeObservable } from 'mobx';
 import { ROOT_PACKAGE_NAME } from '../models/MetaModelConst';
 import type { EditorStore } from './EditorStore';
 import {
+  LogEvent,
   IllegalStateError,
   isNonNullable,
   UnsupportedOperationError,
@@ -31,7 +32,8 @@ import {
   openNodes,
   populatePackageTreeNodeChildren,
 } from './shared/PackageTreeUtil';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-studio-components';
 import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
@@ -106,8 +108,10 @@ export class ExplorerTreeState {
         treeData = this.treeData;
     }
     if (!treeData || !this.buildState.hasCompleted) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(
+          APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+        ),
         `Can't get explorer tree data for root package '${rootPackageName}' as it hasn't been initialized`,
       );
       throw new IllegalStateError(
@@ -388,8 +392,8 @@ export class ExplorerTreeState {
       opened = true;
     }
     if (!opened) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.PACKAGE_TREE_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.PACKAGE_TREE_BUILDER_FAILURE),
         `Can't open package tree node for element '${element.path}' with package root '${packagePath}'`,
       );
     }

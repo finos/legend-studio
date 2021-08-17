@@ -16,7 +16,11 @@
 
 import { useEffect, useMemo } from 'react';
 import { useEditorStore } from '../../../../stores/EditorStore';
-import { debounce, prettyCONSTName } from '@finos/legend-studio-shared';
+import {
+  LogEvent,
+  debounce,
+  prettyCONSTName,
+} from '@finos/legend-studio-shared';
 import { observer } from 'mobx-react-lite';
 import {
   FaPlus,
@@ -42,7 +46,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '../../../../stores/ApplicationStore';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { SDLC_LOG_EVENT } from '../../../../utils/SDLCLogEvent';
 import { flowResult } from 'mobx';
 
 const ProjectDependencyVersionSelector = observer(
@@ -56,7 +60,7 @@ const ProjectDependencyVersionSelector = observer(
     ref: React.Ref<SelectComponent>,
   ) => {
     const editorStore = useEditorStore();
-    const logger = editorStore.applicationStore.logger;
+    const logger = editorStore.applicationStore.log;
     const {
       projectDependency,
       disabled,
@@ -73,7 +77,10 @@ const ProjectDependencyVersionSelector = observer(
         try {
           projectDependency.setVersionId(val?.value ?? '');
         } catch (error: unknown) {
-          logger.error(CORE_LOG_EVENT.SDLC_PROBLEM, error);
+          logger.error(
+            LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+            error,
+          );
         }
       }
     };

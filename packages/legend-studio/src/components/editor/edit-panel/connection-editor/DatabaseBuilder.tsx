@@ -18,13 +18,15 @@ import { observer } from 'mobx-react-lite';
 import Dialog from '@material-ui/core/Dialog';
 import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
   PanelLoadingIndicator,
   SaveIcon,
   FireIcon,
   clsx,
   TreeView,
 } from '@finos/legend-studio-components';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { useEffect } from 'react';
 import type {
   DatabaseBuilderState,
@@ -260,8 +262,8 @@ export const DatabaseBuilder = observer(
           </div>
           <div className="database-builder__content">
             <PanelLoadingIndicator isLoading={isExecutingAction} />
-            <ReflexContainer orientation="vertical">
-              <ReflexElement size={450} minSize={0}>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel size={450}>
                 <div className="database-builder__config">
                   <div className="panel__header">
                     <div className="panel__header__title">
@@ -301,9 +303,9 @@ export const DatabaseBuilder = observer(
                     )}
                   </div>
                 </div>
-              </ReflexElement>
-              <ReflexSplitter />
-              <ReflexElement>
+              </ResizablePanel>
+              <ResizablePanelSplitter />
+              <ResizablePanel>
                 <div className="panel database-builder__generated">
                   <div className="panel__header">
                     <div className="panel__header__title">
@@ -342,8 +344,8 @@ export const DatabaseBuilder = observer(
                     />
                   </div>
                 </div>
-              </ReflexElement>
-            </ReflexContainer>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         </div>
       </Dialog>

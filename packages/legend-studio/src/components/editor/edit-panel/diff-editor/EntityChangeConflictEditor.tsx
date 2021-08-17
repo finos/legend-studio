@@ -29,15 +29,6 @@ import {
   EDITOR_LANGUAGE,
 } from '../../../../stores/EditorConfig';
 import { useResizeDetector } from 'react-resize-detector';
-import {
-  disposeEditor,
-  disableEditorHotKeys,
-  baseTextEditorSettings,
-  moveToPosition,
-  setErrorMarkers,
-  revealError,
-  resetLineNumberGutterWidth,
-} from '../../../../utils/TextEditorUtil';
 import type { EntityChangeConflict } from '../../../../models/sdlc/models/entity/EntityChangeConflict';
 import type {
   MergeEditorComparisonViewInfo,
@@ -55,7 +46,17 @@ import {
   hashObject,
 } from '@finos/legend-studio-shared';
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import {
+  clsx,
+  CustomSelectorInput,
+  disposeEditor,
+  disableEditorHotKeys,
+  baseTextEditorSettings,
+  moveToPosition,
+  setErrorMarkers,
+  revealError,
+  resetLineNumberGutterWidth,
+} from '@finos/legend-studio-components';
 import { TextDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
@@ -374,7 +375,14 @@ const MergeConflictEditor = observer(
       if (editorModel) {
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         if (error?.sourceInformation) {
-          setErrorMarkers(editorModel, error.sourceInformation, error.message);
+          setErrorMarkers(
+            editorModel,
+            error.message,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+            error.sourceInformation.endLine,
+            error.sourceInformation.endColumn,
+          );
         } else {
           monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
         }
@@ -540,7 +548,11 @@ const MergeConflictEditor = observer(
     useEffect(() => {
       if (editor) {
         if (error?.sourceInformation) {
-          revealError(editor, error.sourceInformation);
+          revealError(
+            editor,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+          );
         }
       }
     }, [editor, error, error?.sourceInformation]);

@@ -17,6 +17,7 @@
 import { action, flow, flowResult, observable, makeObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   changeEntry,
   guaranteeNonNullable,
@@ -37,9 +38,9 @@ import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   EditorExtensionState,
   CompilationError,
-  CORE_LOG_EVENT,
   extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
@@ -247,14 +248,14 @@ export class QueryBuilderState extends EditorExtensionState {
       this,
     );
     this.explorerState.refreshTreeData();
-    this.fetchStructureState.graphFetchTreeState.init();
+    this.fetchStructureState.graphFetchTreeState.initialize();
   }
 
   setQuerySetupState(val: QueryBuilderSetupState): void {
     this.querySetupState = val;
   }
 
-  init(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
+  initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
     try {
       this.buildStateFromRawLambda(rawLambda);
     } catch (error: unknown) {
@@ -362,8 +363,8 @@ export class QueryBuilderState extends EditorExtensionState {
           );
         } catch (error: unknown) {
           assertErrorThrown(error);
-          this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.COMPILATION_PROBLEM,
+          this.editorStore.applicationStore.log.error(
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
             error,
           );
           let fallbackToTextModeForDebugging = true;
@@ -411,8 +412,8 @@ export class QueryBuilderState extends EditorExtensionState {
         } catch (error: unknown) {
           assertErrorThrown(error);
           if (error instanceof CompilationError) {
-            this.editorStore.applicationStore.logger.error(
-              CORE_LOG_EVENT.COMPILATION_PROBLEM,
+            this.editorStore.applicationStore.log.error(
+              LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
               error,
             );
             this.editorStore.applicationStore.notifyWarning(

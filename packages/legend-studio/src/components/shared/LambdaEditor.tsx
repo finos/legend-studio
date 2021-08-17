@@ -18,12 +18,6 @@ import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import type { IDisposable, IKeyboardEvent } from 'monaco-editor';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
-import {
-  setErrorMarkers,
-  disposeEditor,
-  disableEditorHotKeys,
-  baseTextEditorSettings,
-} from '../../utils/TextEditorUtil';
 import { useEditorStore } from '../../stores/EditorStore';
 import { useResizeDetector } from 'react-resize-detector';
 import {
@@ -31,7 +25,13 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
 } from '../../stores/EditorConfig';
-import { clsx } from '@finos/legend-studio-components';
+import {
+  clsx,
+  setErrorMarkers,
+  disposeEditor,
+  disableEditorHotKeys,
+  baseTextEditorSettings,
+} from '@finos/legend-studio-components';
 import { FaLongArrowAltDown, FaLongArrowAltUp } from 'react-icons/fa';
 import type { LambdaEditorState } from '../../stores/editor-state/element-editor-state/LambdaEditorState';
 import type { DebouncedFunc, GeneratorFn } from '@finos/legend-studio-shared';
@@ -310,7 +310,14 @@ const LambdaEditorInner = observer(
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
-          setErrorMarkers(editorModel, error.sourceInformation, error.message);
+          setErrorMarkers(
+            editorModel,
+            error.message,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+            error.sourceInformation.endLine,
+            error.sourceInformation.endColumn,
+          );
         } else {
           monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
         }

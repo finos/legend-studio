@@ -19,13 +19,14 @@ import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
 } from '../../../../models/MetaModelConst';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   UnsupportedOperationError,
   guaranteeType,
   IllegalStateError,
@@ -90,8 +91,8 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -122,8 +123,8 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
           );
           this.clearErrors();
         } catch (error: unknown) {
-          this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.PARSING_PROBLEM,
+          this.editorStore.applicationStore.log.error(
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
             error,
           );
         }
@@ -226,8 +227,8 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
           );
         });
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

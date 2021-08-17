@@ -55,7 +55,7 @@ export const URLRedirector = observer(() => {
       }
       const queryParams = getQueryParameters<{
         marketingId?: string;
-      }>(applicationStore.historyApiClient.location.search);
+      }>(applicationStore.navigator.getCurrentLocation(), true);
       let redirectUrl = params[PATH_PARAM_TOKEN_REDIRECT_URL];
       switch (redirectUrl) {
         case SPECIAL_REDIRECT_ALIAS.HOME:
@@ -74,7 +74,7 @@ export const URLRedirector = observer(() => {
           },
         );
       }
-      applicationStore.historyApiClient.push(`/${redirectUrl}`);
+      applicationStore.navigator.goTo(`/${redirectUrl}`);
     }
   }, [applicationStore, params, isApplicationLoadConcluded]);
 

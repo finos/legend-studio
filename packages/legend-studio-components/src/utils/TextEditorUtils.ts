@@ -20,7 +20,6 @@ import {
   KeyCode,
 } from 'monaco-editor';
 import { noop } from '@finos/legend-studio-shared';
-import type { SourceInformation } from '../models/metamodels/pure/action/SourceInformation';
 
 /**
  * Normally `monaco-editor` worker disposes after 5 minutes staying idle, but we fasten
@@ -89,21 +88,20 @@ export const moveToPosition = (
 
 export const revealError = (
   editor: monacoEditorAPI.ICodeEditor,
-  sourceInformation: SourceInformation,
+  startLine: number,
+  startColumn: number,
 ): void => {
-  moveToPosition(
-    editor,
-    sourceInformation.startLine,
-    sourceInformation.startColumn,
-  );
+  moveToPosition(editor, startLine, startColumn);
 };
 
 export const setErrorMarkers = (
   editorModel: monacoEditorAPI.ITextModel,
-  sourceInformation: SourceInformation,
   message: string,
+  startLine: number,
+  startColumn: number,
+  endLine: number,
+  endColumn: number,
 ): void => {
-  const { startLine, startColumn, endLine, endColumn } = sourceInformation;
   monacoEditorAPI.setModelMarkers(editorModel, 'Error', [
     {
       startLineNumber: startLine,

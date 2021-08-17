@@ -33,11 +33,15 @@ import type {
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
-import SplitPane from 'react-split-pane';
 import {
   clsx,
   CustomSelectorInput,
   createFilter,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelGroup,
+  ResizablePanelSplitterLine,
+  BlankPanelContent,
 } from '@finos/legend-studio-components';
 import { getElementIcon } from '../../../shared/Icon';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-studio-shared';
@@ -387,130 +391,137 @@ export const AssociationEditor = observer(
         data-testid={CORE_TEST_ID.ASSOCIATION_EDITOR}
         className="uml-element-editor association-editor"
       >
-        <SplitPane
-          split="horizontal"
-          primary="second"
-          size={selectedProperty ? 250 : 0}
-          minSize={250}
-          maxSize={0}
-        >
-          <div className="panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                {isReadOnly && (
-                  <div className="uml-element-editor__header__lock">
-                    <FaLock />
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel minSize={56}>
+            <div className="panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  {isReadOnly && (
+                    <div className="uml-element-editor__header__lock">
+                      <FaLock />
+                    </div>
+                  )}
+                  <div className="panel__header__title__label">association</div>
+                  <div className="panel__header__title__content">
+                    {association.name}
+                  </div>
+                </div>
+              </div>
+              <div className="panel__header uml-element-editor__tabs__header">
+                <div className="uml-element-editor__tabs">
+                  {tabs.map((tab) => (
+                    <div
+                      key={tab}
+                      onClick={changeTab(tab)}
+                      className={clsx('uml-element-editor__tab', {
+                        'uml-element-editor__tab--active': tab === selectedTab,
+                      })}
+                    >
+                      {prettyCONSTName(tab)}
+                    </div>
+                  ))}
+                </div>
+                <div className="panel__header__actions">
+                  <button
+                    className="panel__header__action"
+                    disabled={
+                      isReadOnly || selectedTab === UML_EDITOR_TAB.PROPERTIES
+                    }
+                    onClick={add}
+                    tabIndex={-1}
+                    title={addButtonTitle}
+                  >
+                    <FaPlus />
+                  </button>
+                </div>
+              </div>
+              <div
+                className={clsx('panel__content', {
+                  'panel__content--with-backdrop-element':
+                    selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES ||
+                    selectedTab === UML_EDITOR_TAB.CONSTRAINTS,
+                })}
+              >
+                {selectedTab === UML_EDITOR_TAB.PROPERTIES && (
+                  <div className="panel__content__lists">
+                    <AssociationPropertyBasicEditor
+                      association={association}
+                      property={association.getFirstProperty()}
+                      selectProperty={selectProperty(
+                        association.getFirstProperty(),
+                      )}
+                      isReadOnly={isReadOnly}
+                    />
+                    <AssociationPropertyBasicEditor
+                      association={association}
+                      property={association.getSecondProperty()}
+                      selectProperty={selectProperty(
+                        association.getSecondProperty(),
+                      )}
+                      isReadOnly={isReadOnly}
+                    />
                   </div>
                 )}
-                <div className="panel__header__title__label">association</div>
-                <div className="panel__header__title__content">
-                  {association.name}
-                </div>
-              </div>
-            </div>
-            <div className="panel__header uml-element-editor__tabs__header">
-              <div className="uml-element-editor__tabs">
-                {tabs.map((tab) => (
+                {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
                   <div
-                    key={tab}
-                    onClick={changeTab(tab)}
-                    className={clsx('uml-element-editor__tab', {
-                      'uml-element-editor__tab--active': tab === selectedTab,
+                    ref={dropTaggedValueRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isTaggedValueDragOver && !isReadOnly,
                     })}
                   >
-                    {prettyCONSTName(tab)}
+                    {association.taggedValues.map((taggedValue) => (
+                      <TaggedValueEditor
+                        key={taggedValue.uuid}
+                        taggedValue={taggedValue}
+                        deleteValue={deleteTaggedValue(taggedValue)}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action"
-                  disabled={
-                    isReadOnly || selectedTab === UML_EDITOR_TAB.PROPERTIES
-                  }
-                  onClick={add}
-                  tabIndex={-1}
-                  title={addButtonTitle}
-                >
-                  <FaPlus />
-                </button>
+                )}
+                {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
+                  <div
+                    ref={dropStereotypeRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isStereotypeDragOver && !isReadOnly,
+                    })}
+                  >
+                    {association.stereotypes.map((stereotype) => (
+                      <StereotypeSelector
+                        key={stereotype.value.uuid}
+                        stereotype={stereotype}
+                        deleteStereotype={deleteStereotype(stereotype)}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-            <div
-              className={clsx('panel__content', {
-                'panel__content--with-backdrop-element':
-                  selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES ||
-                  selectedTab === UML_EDITOR_TAB.CONSTRAINTS,
-              })}
-            >
-              {selectedTab === UML_EDITOR_TAB.PROPERTIES && (
-                <div className="panel__content__lists">
-                  <AssociationPropertyBasicEditor
-                    association={association}
-                    property={association.getFirstProperty()}
-                    selectProperty={selectProperty(
-                      association.getFirstProperty(),
-                    )}
-                    isReadOnly={isReadOnly}
-                  />
-                  <AssociationPropertyBasicEditor
-                    association={association}
-                    property={association.getSecondProperty()}
-                    selectProperty={selectProperty(
-                      association.getSecondProperty(),
-                    )}
-                    isReadOnly={isReadOnly}
-                  />
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
-                <div
-                  ref={dropTaggedValueRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isTaggedValueDragOver && !isReadOnly,
-                  })}
-                >
-                  {association.taggedValues.map((taggedValue) => (
-                    <TaggedValueEditor
-                      key={taggedValue.uuid}
-                      taggedValue={taggedValue}
-                      deleteValue={deleteTaggedValue(taggedValue)}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-                <div
-                  ref={dropStereotypeRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isStereotypeDragOver && !isReadOnly,
-                  })}
-                >
-                  {association.stereotypes.map((stereotype) => (
-                    <StereotypeSelector
-                      key={stereotype.value.uuid}
-                      stereotype={stereotype}
-                      deleteStereotype={deleteStereotype(stereotype)}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          {selectedProperty ? (
-            <PropertyEditor
-              property={selectedProperty}
-              deselectProperty={deselectProperty}
-              isReadOnly={isReadOnly}
-            />
-          ) : (
-            <div />
-          )}
-        </SplitPane>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel
+            flex={0}
+            direction={-1}
+            size={selectedProperty ? 250 : 0}
+          >
+            {selectedProperty ? (
+              <PropertyEditor
+                property={selectedProperty}
+                deselectProperty={deselectProperty}
+                isReadOnly={isReadOnly}
+              />
+            ) : (
+              <div className="uml-element-editor__sub-editor">
+                <BlankPanelContent>No property selected</BlankPanelContent>
+              </div>
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

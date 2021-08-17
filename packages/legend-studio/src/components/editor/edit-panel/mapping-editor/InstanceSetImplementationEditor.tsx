@@ -17,8 +17,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaAsterisk, FaLongArrowAltDown, FaEdit } from 'react-icons/fa';
-import SplitPane from 'react-split-pane';
-import { clsx, BlankPanelPlaceholder } from '@finos/legend-studio-components';
+import {
+  clsx,
+  BlankPanelPlaceholder,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+} from '@finos/legend-studio-components';
 import type {
   ElementDragSource,
   MappingElementSourceDropTarget,
@@ -31,7 +36,11 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 import { guaranteeNonNullable, noop } from '@finos/legend-studio-shared';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  getMappingElementSource,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { TypeTree } from '../../../shared/TypeTree';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
@@ -50,8 +59,6 @@ import type { Property } from '../../../../models/metamodels/pure/model/packagea
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import type { MappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { getMappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
@@ -403,58 +410,35 @@ export const InstanceSetImplementationEditor = observer(
 
     return (
       <div className="mapping-element-editor__content">
-        <SplitPane
-          primary="second"
-          defaultSize={300}
-          minSize={300}
-          maxSize={-600}
-        >
-          <div className="panel class-mapping-editor__property-panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__content">PROPERTIES</div>
-              </div>
-              <div className="panel__header__actions">
-                <div className="panel__header__action">
-                  <div
-                    className={`class-mapping-editor__sort-by-required-btn ${
-                      sortByRequired
-                        ? 'class-mapping-editor__sort-by-required-btn--enabled'
-                        : ''
-                    }`}
-                    onClick={handleSortChange}
-                  >
-                    <FaLongArrowAltDown />
-                    <FaAsterisk />
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel minSize={300}>
+            <div className="panel class-mapping-editor__property-panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__content">
+                    PROPERTIES
+                  </div>
+                </div>
+                <div className="panel__header__actions">
+                  <div className="panel__header__action">
+                    <div
+                      className={`class-mapping-editor__sort-by-required-btn ${
+                        sortByRequired
+                          ? 'class-mapping-editor__sort-by-required-btn--enabled'
+                          : ''
+                      }`}
+                      onClick={handleSortChange}
+                    >
+                      <FaLongArrowAltDown />
+                      <FaAsterisk />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="panel__content">
-              {!isReadOnly &&
-                !isUnsupported &&
-                sortedProperties.map((property) => (
-                  <PropertyMappingsEditor
-                    key={property.name}
-                    property={property}
-                    instanceSetImplementationState={
-                      instanceSetImplementationState
-                    }
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-              {isReadOnly &&
-                !isUnsupported &&
-                sortedProperties
-                  // for property without any property mapping in readonly mode, we won't show it
-                  .filter(
-                    (p) =>
-                      instanceSetImplementationState.propertyMappingStates.filter(
-                        (pm) =>
-                          pm.propertyMapping.property.value.name === p.name,
-                      ).length,
-                  )
-                  .map((property) => (
+              <div className="panel__content">
+                {!isReadOnly &&
+                  !isUnsupported &&
+                  sortedProperties.map((property) => (
                     <PropertyMappingsEditor
                       key={property.name}
                       property={property}
@@ -464,19 +448,44 @@ export const InstanceSetImplementationEditor = observer(
                       isReadOnly={isReadOnly}
                     />
                   ))}
-              {isUnsupported && (
-                <UnsupportedEditorPanel
-                  isReadOnly={isReadOnly}
-                  text={`Can't display class mapping in form mode`}
-                ></UnsupportedEditorPanel>
-              )}
+                {isReadOnly &&
+                  !isUnsupported &&
+                  sortedProperties
+                    // for property without any property mapping in readonly mode, we won't show it
+                    .filter(
+                      (p) =>
+                        instanceSetImplementationState.propertyMappingStates.filter(
+                          (pm) =>
+                            pm.propertyMapping.property.value.name === p.name,
+                        ).length,
+                    )
+                    .map((property) => (
+                      <PropertyMappingsEditor
+                        key={property.name}
+                        property={property}
+                        instanceSetImplementationState={
+                          instanceSetImplementationState
+                        }
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
+                {isUnsupported && (
+                  <UnsupportedEditorPanel
+                    isReadOnly={isReadOnly}
+                    text={`Can't display class mapping in form mode`}
+                  ></UnsupportedEditorPanel>
+                )}
+              </div>
             </div>
-          </div>
-          <InstanceSetImplementationSourceExplorer
-            setImplementation={setImplementation}
-            isReadOnly={isReadOnly}
-          />
-        </SplitPane>
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel size={300} minSize={300}>
+            <InstanceSetImplementationSourceExplorer
+              setImplementation={setImplementation}
+              isReadOnly={isReadOnly}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

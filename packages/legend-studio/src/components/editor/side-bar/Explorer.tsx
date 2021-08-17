@@ -221,13 +221,13 @@ const ExplorerContextMenu = observer(
     const openElementInViewerMode = (): void => {
       if (node) {
         window.open(
-          applicationStore.historyApiClient.createHref({
-            pathname: generateViewEntityRoute(
+          applicationStore.navigator.generateLocation(
+            generateViewEntityRoute(
               applicationStore.config.sdlcServerKey,
               projectId,
               node.packageableElement.path,
             ),
-          }),
+          ),
         );
       }
     };
@@ -235,15 +235,13 @@ const ExplorerContextMenu = observer(
       if (node) {
         applicationStore
           .copyTextToClipboard(
-            `${
-              window.location.origin
-            }${applicationStore.historyApiClient.createHref({
-              pathname: generateViewEntityRoute(
+            applicationStore.navigator.generateLocation(
+              generateViewEntityRoute(
                 applicationStore.config.sdlcServerKey,
                 projectId,
                 node.packageableElement.path,
               ),
-            })}`,
+            ),
           )
           .then(() =>
             applicationStore.notifySuccess('Copied element link to clipboard'),

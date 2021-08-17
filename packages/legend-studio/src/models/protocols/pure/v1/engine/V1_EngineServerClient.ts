@@ -74,7 +74,7 @@ enum CORE_ENGINE_TRACER_SPAN {
 
 export class V1_EngineServerClient extends AbstractServerClient {
   private version = 'v1';
-  public currentUserId?: string;
+  currentUserId?: string;
   private env?: string;
 
   constructor(config: ServerClientConfig) {

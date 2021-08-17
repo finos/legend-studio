@@ -68,7 +68,7 @@ export const ProjectSelector = observer(
             applicationStore.alertIllegalUnhandledError,
           );
         }
-        applicationStore.historyApiClient.push(
+        applicationStore.navigator.goTo(
           generateSetupRoute(
             applicationStore.config.sdlcServerKey,
             val?.value ?? '',
@@ -81,7 +81,7 @@ export const ProjectSelector = observer(
       if (setupStore.projects && !setupStore.currentProject) {
         if (currentProjectId) {
           // For first load, if the project is not found, reset the URL
-          applicationStore.historyApiClient.push(
+          applicationStore.navigator.goTo(
             generateSetupRoute(
               applicationStore.config.sdlcServerKey,
               undefined,

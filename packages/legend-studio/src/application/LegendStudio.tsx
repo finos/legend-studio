@@ -31,22 +31,27 @@ import { EDITOR_THEME, EDITOR_LANGUAGE } from '../stores/EditorConfig';
 import type {
   ConfigurationData,
   LegendApplicationVersionData,
-} from '../stores/ApplicationConfig';
-import { ApplicationConfig } from '../stores/ApplicationConfig';
+} from '../stores/application/ApplicationConfig';
+import { ApplicationConfig } from '../stores/application/ApplicationConfig';
 import type {
   AbstractPlugin,
   AbstractPluginManager,
   AbstractPreset,
+  Logger,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
+  Log,
   guaranteeNonEmptyString,
   assertNonNullable,
   NetworkClient,
 } from '@finos/legend-studio-shared';
-import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
+import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { PluginManager } from './PluginManager';
 import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';
+import { WebApplicationNavigatorProvider } from '../stores/application/WebApplicationNavigator';
+import { configureComponents } from '@finos/legend-studio-components';
 
 // This is not considered side-effect that hinders tree-shaking because the effectful calls
 // are embedded in the function
@@ -96,24 +101,7 @@ export const setupLegendStudioUILibrary = async (
     ignoreTags: [],
   });
 
-  /**
-   * The following block is needed to inject `react-reflex` styling during development
-   * as HMR makes stylesheet loaded after layout calculation, throwing off `react-reflex`
-   * See https://github.com/leefsmp/Re-Flex/issues/27#issuecomment-718949629
-   */
-  // eslint-disable-next-line no-process-env
-  if (process.env.NODE_ENV === 'development') {
-    const stylesheet = document.createElement('style');
-    stylesheet.innerHTML = `
-        /* For development, this needs to be injected before stylesheet, else \`react-reflex\` panel dimension calculation will be off */
-        .reflex-container { height: 100%; width: 100%; }
-        /* NOTE: we have to leave the min dimension as \`0.1rem\` to avoid re-calculation bugs due to HMR style injection order */
-        .reflex-container.horizontal { flex-direction: column; min-height: 0.1rem; }
-        .reflex-container.vertical { flex-direction: row; min-width: 0.1rem; }
-        .reflex-container > .reflex-element { height: 100%; width: 100%; }
-      `;
-    document.head.prepend(stylesheet);
-  }
+  configureComponents();
 
   await Promise.all(
     pluginManager
@@ -124,9 +112,10 @@ export const setupLegendStudioUILibrary = async (
 };
 
 export abstract class LegendApplication {
-  protected pluginManager: AbstractPluginManager;
-  protected baseUrl!: string;
   protected appConfig!: ApplicationConfig;
+  protected pluginManager: AbstractPluginManager;
+  protected log = new Log();
+  protected baseUrl!: string;
   protected pluginRegister?: (
     pluginManager: AbstractPluginManager,
     config: ApplicationConfig,
@@ -168,16 +157,27 @@ export abstract class LegendApplication {
     return this;
   }
 
+  withLoggers(loggers: Logger[]): LegendApplication {
+    loggers.forEach((logger) => this.log.registerLogger(logger));
+    return this;
+  }
+
   async fetchApplicationConfiguration(
     baseUrl: string,
   ): Promise<[ApplicationConfig, Record<PropertyKey, object>]> {
     const client = new NetworkClient();
-    const logger = new Logger();
     let configData: ConfigurationData | undefined;
     try {
-      configData = await client.get<ConfigurationData>(`${baseUrl}config.json`);
+      configData = await client.get<ConfigurationData>(
+        `${window.location.origin}${baseUrl}config.json`,
+      );
     } catch (error: unknown) {
-      logger.error(CORE_LOG_EVENT.CONFIG_CONFIGURATION_FETCHING_PROBLEM, error);
+      this.log.error(
+        LogEvent.create(
+          APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
+        ),
+        error,
+      );
     }
     assertNonNullable(
       configData,
@@ -186,10 +186,15 @@ export abstract class LegendApplication {
     let versionData;
     try {
       versionData = await client.get<LegendApplicationVersionData>(
-        `${baseUrl}version.json`,
+        `${window.location.origin}${baseUrl}version.json`,
       );
     } catch (error: unknown) {
-      logger.error(CORE_LOG_EVENT.CONFIG_VERSION_INFO_FETCHING_PROBLEM, error);
+      this.log.error(
+        LogEvent.create(
+          APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
+        ),
+        error,
+      );
     }
     assertNonNullable(versionData, `Can't fetch Legend application version`);
     return [
@@ -205,7 +210,6 @@ export abstract class LegendApplication {
       this._isConfigured,
       'Legend application has not been configured properly. Make sure to run setup() before start()',
     );
-    const logger = new Logger();
     try {
       // Fetch application config
       const [appConfig, pluginConfigData] =
@@ -219,13 +223,13 @@ export abstract class LegendApplication {
 
       await this.loadApplication();
 
-      logger.info(
-        CORE_LOG_EVENT.APPLICATION_LOADED,
+      this.log.info(
+        LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_LOADED),
         'Legend application loaded',
       );
     } catch (error: unknown) {
-      logger.error(
-        CORE_LOG_EVENT.APPLICATION_LOAD_FAILED,
+      this.log.error(
+        LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_FAILURE),
         'Failed to load Legend application',
       );
       throw error;
@@ -261,10 +265,13 @@ export class LegendStudio extends LegendApplication {
       // concurrency yet, we would have to wait until @next become official
       // See https://github.com/mobxjs/mobx-react-lite/issues/53
       <BrowserRouter basename={this.baseUrl}>
-        <LegendStudioApplication
-          config={this.appConfig}
-          pluginManager={this.pluginManager}
-        />
+        <WebApplicationNavigatorProvider>
+          <LegendStudioApplication
+            config={this.appConfig}
+            pluginManager={this.pluginManager}
+            log={this.log}
+          />
+        </WebApplicationNavigatorProvider>
       </BrowserRouter>,
       root,
     );

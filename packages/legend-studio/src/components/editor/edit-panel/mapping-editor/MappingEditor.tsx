@@ -24,6 +24,10 @@ import {
   FlaskIcon,
   MapIcon,
   PlayIcon,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
   TimesIcon,
 } from '@finos/legend-studio-components';
 import { ClassMappingEditor } from './ClassMappingEditor';
@@ -34,10 +38,17 @@ import {
   EnumerationIcon,
   AssociationIcon,
 } from '../../../shared/Icon';
-import SplitPane from 'react-split-pane';
 import { useResizeDetector } from 'react-resize-detector';
-import type { MappingEditorTabState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type {
+  MappingEditorTabState,
+  MappingElement,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  MappingEditorState,
+  getMappingElementTarget,
+  getMappingElementType,
+  MAPPING_ELEMENT_TYPE,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { MappingExplorer } from './MappingExplorer';
 import { MappingTestEditor } from './MappingTestEditor';
@@ -47,12 +58,6 @@ import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../../const';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import {
-  MAPPING_ELEMENT_TYPE,
-  getMappingElementType,
-  getMappingElementTarget,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
@@ -212,115 +217,122 @@ export const MappingEditor = observer(() => {
 
   return (
     <div className="mapping-editor">
-      <SplitPane
-        split="vertical"
-        defaultSize={300}
-        minSize={300}
-        maxSize={-600}
-      >
-        <div className="mapping-editor__side-bar">
-          <SplitPane
-            split="horizontal"
-            defaultSize="50%"
-            minSize={28}
-            maxSize={-36}
-          >
-            <MappingExplorer isReadOnly={isReadOnly} />
-            <MappingTestsExplorer isReadOnly={isReadOnly} />
-          </SplitPane>
-        </div>
-        <div className="panel">
-          <ContextMenu
-            className="panel__header mapping-editor__header"
-            disabled={true}
-          >
-            <div
-              data-testid={CORE_TEST_ID.EDITOR__TABS__HEADER}
-              className="mapping-editor__header__tabs"
-            >
-              {mappingEditorState.openedTabStates.map((tabState) => (
-                <div
-                  key={tabState.uuid}
-                  onMouseUp={closeTabOnMiddleClick(tabState)}
-                  className={clsx('mapping-editor__header__tab', {
-                    'mapping-editor__header__tab--active':
-                      tabState === mappingEditorState.currentTabState,
-                  })}
-                >
-                  <ContextMenu
-                    className="mapping-editor__header__tab__content"
-                    content={
-                      <MappingEditorHeaderTabContextMenu tabState={tabState} />
-                    }
-                  >
-                    {tabState instanceof MappingTestState && (
-                      <>
-                        <FlaskIcon className="mapping-editor__header__tab__icon--test" />
-                        <button
-                          className="mapping-editor__header__tab__element__name"
-                          tabIndex={-1}
-                          onClick={openTab(tabState)}
-                        >
-                          {tabState.test.name}
-                        </button>
-                      </>
-                    )}
-                    {tabState instanceof MappingElementState && (
-                      <>
-                        <div
-                          className={`mapping-editor__header__tab__element__type icon color--${getMappingElementType(
-                            tabState.mappingElement,
-                          ).toLowerCase()}`}
-                        >
-                          {getMappingElementTargetIcon(tabState.mappingElement)}
-                        </div>
-                        <button
-                          className="mapping-editor__header__tab__element__name"
-                          tabIndex={-1}
-                          onClick={openTab(tabState)}
-                          title={`${toSentenceCase(
-                            getMappingElementType(tabState.mappingElement),
-                          ).toLowerCase()} mapping '${
-                            tabState.mappingElement.id.value
-                          }' for '${
-                            getMappingElementTarget(tabState.mappingElement)
-                              .name
-                          }'`}
-                        >
-                          {tabState.mappingElement.label.value}
-                        </button>
-                      </>
-                    )}
-                    {tabState instanceof MappingExecutionState && (
-                      <>
-                        <PlayIcon className="mapping-editor__header__tab__icon--execution" />
-                        <button
-                          className="mapping-editor__header__tab__element__name"
-                          tabIndex={-1}
-                          onClick={openTab(tabState)}
-                        >
-                          {tabState.name}
-                        </button>
-                      </>
-                    )}
-                    <button
-                      className="mapping-editor__header__tab__close-btn"
-                      onClick={closeTab(tabState)}
-                      tabIndex={-1}
-                      title={'Close'}
-                    >
-                      <TimesIcon />
-                    </button>
-                  </ContextMenu>
-                </div>
-              ))}
-            </div>
-          </ContextMenu>
-          <div className="panel__content mapping-editor__content">
-            {renderActiveMappingElementTab()}
+      <ResizablePanelGroup orientation="vertical">
+        <ResizablePanel size={300} minSize={300}>
+          <div className="mapping-editor__side-bar">
+            <ResizablePanelGroup orientation="horizontal">
+              <ResizablePanel size={400} minSize={28}>
+                <MappingExplorer isReadOnly={isReadOnly} />
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-light-grey-400)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel minSize={36}>
+                <MappingTestsExplorer isReadOnly={isReadOnly} />
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
-        </div>
-      </SplitPane>
+        </ResizablePanel>
+        <ResizablePanelSplitter />
+        <ResizablePanel>
+          {' '}
+          <div className="panel">
+            <ContextMenu
+              className="panel__header mapping-editor__header"
+              disabled={true}
+            >
+              <div
+                data-testid={CORE_TEST_ID.EDITOR__TABS__HEADER}
+                className="mapping-editor__header__tabs"
+              >
+                {mappingEditorState.openedTabStates.map((tabState) => (
+                  <div
+                    key={tabState.uuid}
+                    onMouseUp={closeTabOnMiddleClick(tabState)}
+                    className={clsx('mapping-editor__header__tab', {
+                      'mapping-editor__header__tab--active':
+                        tabState === mappingEditorState.currentTabState,
+                    })}
+                  >
+                    <ContextMenu
+                      className="mapping-editor__header__tab__content"
+                      content={
+                        <MappingEditorHeaderTabContextMenu
+                          tabState={tabState}
+                        />
+                      }
+                    >
+                      {tabState instanceof MappingTestState && (
+                        <>
+                          <FlaskIcon className="mapping-editor__header__tab__icon--test" />
+                          <button
+                            className="mapping-editor__header__tab__element__name"
+                            tabIndex={-1}
+                            onClick={openTab(tabState)}
+                          >
+                            {tabState.test.name}
+                          </button>
+                        </>
+                      )}
+                      {tabState instanceof MappingElementState && (
+                        <>
+                          <div
+                            className={`mapping-editor__header__tab__element__type icon color--${getMappingElementType(
+                              tabState.mappingElement,
+                            ).toLowerCase()}`}
+                          >
+                            {getMappingElementTargetIcon(
+                              tabState.mappingElement,
+                            )}
+                          </div>
+                          <button
+                            className="mapping-editor__header__tab__element__name"
+                            tabIndex={-1}
+                            onClick={openTab(tabState)}
+                            title={`${toSentenceCase(
+                              getMappingElementType(tabState.mappingElement),
+                            ).toLowerCase()} mapping '${
+                              tabState.mappingElement.id.value
+                            }' for '${
+                              getMappingElementTarget(tabState.mappingElement)
+                                .name
+                            }'`}
+                          >
+                            {tabState.mappingElement.label.value}
+                          </button>
+                        </>
+                      )}
+                      {tabState instanceof MappingExecutionState && (
+                        <>
+                          <PlayIcon className="mapping-editor__header__tab__icon--execution" />
+                          <button
+                            className="mapping-editor__header__tab__element__name"
+                            tabIndex={-1}
+                            onClick={openTab(tabState)}
+                          >
+                            {tabState.name}
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className="mapping-editor__header__tab__close-btn"
+                        onClick={closeTab(tabState)}
+                        tabIndex={-1}
+                        title={'Close'}
+                      >
+                        <TimesIcon />
+                      </button>
+                    </ContextMenu>
+                  </div>
+                ))}
+              </div>
+            </ContextMenu>
+            <div className="panel__content mapping-editor__content">
+              {renderActiveMappingElementTab()}
+            </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 });

@@ -16,7 +16,6 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { Dialog } from '@material-ui/core';
-import SplitPane from 'react-split-pane';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
@@ -32,6 +31,12 @@ import { FaArrowAltCircleLeft } from 'react-icons/fa';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
 import { flowResult } from 'mobx';
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-studio-components';
 
 const NewFileGenerationModal = observer(
   (props: {
@@ -149,22 +154,31 @@ export const ElementGenerationEditor = observer(
         </div>
         <div className="panel__content element-generation-editor__content">
           <div className="file-generation-editor">
-            <SplitPane
-              className="file-generation-editor__split-pane"
-              split="vertical"
-              defaultSize={300}
-              minSize={300}
-              maxSize={-550}
-            >
-              <FileGenerationConfigurationEditor
-                fileGenerationState={elementGenerationState.fileGenerationState}
-                isReadOnly={isReadOnly}
-                elementGenerationState={elementGenerationState}
-              />
-              <GenerationResultViewer
-                fileGenerationState={elementGenerationState.fileGenerationState}
-              />
-            </SplitPane>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel
+                size={300}
+                minSize={300}
+                className="file-generation-editor__split-pane"
+              >
+                <FileGenerationConfigurationEditor
+                  fileGenerationState={
+                    elementGenerationState.fileGenerationState
+                  }
+                  isReadOnly={isReadOnly}
+                  elementGenerationState={elementGenerationState}
+                />
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel>
+                <GenerationResultViewer
+                  fileGenerationState={
+                    elementGenerationState.fileGenerationState
+                  }
+                />
+              </ResizablePanel>
+            </ResizablePanelGroup>
             <NewFileGenerationModal
               elementGenerationState={elementGenerationState}
               currentElementState={currentElementState}

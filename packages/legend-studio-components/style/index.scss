@@ -30,3 +30,7 @@
 @forward 'components/blank-panel-placeholder';
 @forward 'components/selector-input';
 @forward 'components/tree-view';
+
+// Reset (override library styles)
+@forward 'reset/react-reflex';
+@forward 'reset/monaco-editor';

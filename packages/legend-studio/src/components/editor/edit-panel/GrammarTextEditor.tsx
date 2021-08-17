@@ -18,15 +18,15 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import { useEditorStore } from '../../../stores/EditorStore';
-import { ContextMenu } from '@finos/legend-studio-components';
 import {
+  ContextMenu,
   revealError,
   setErrorMarkers,
   disposeEditor,
   baseTextEditorSettings,
   disableEditorHotKeys,
   resetLineNumberGutterWidth,
-} from '../../../utils/TextEditorUtil';
+} from '@finos/legend-studio-components';
 import {
   TAB_SIZE,
   EDITOR_THEME,
@@ -186,7 +186,14 @@ export const GrammarTextEditor = observer(() => {
     if (editorModel) {
       editorModel.updateOptions({ tabSize: TAB_SIZE });
       if (error?.sourceInformation) {
-        setErrorMarkers(editorModel, error.sourceInformation, error.message);
+        setErrorMarkers(
+          editorModel,
+          error.message,
+          error.sourceInformation.startLine,
+          error.sourceInformation.startColumn,
+          error.sourceInformation.endLine,
+          error.sourceInformation.endColumn,
+        );
       } else {
         monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
       }
@@ -209,7 +216,11 @@ export const GrammarTextEditor = observer(() => {
   useEffect(() => {
     if (editor) {
       if (error?.sourceInformation) {
-        revealError(editor, error.sourceInformation);
+        revealError(
+          editor,
+          error.sourceInformation.startLine,
+          error.sourceInformation.startColumn,
+        );
       }
     }
   }, [editor, error, error?.sourceInformation]);

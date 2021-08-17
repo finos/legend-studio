@@ -15,11 +15,14 @@
  */
 
 import { findLast } from '@finos/legend-studio-shared';
-import type { SetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { OperationSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import type { InstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import type { PropertyMapping } from '../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import type { Property } from '../models/metamodels/pure/model/packageableElements/domain/Property';
+import type { SetImplementation } from '../model/packageableElements/mapping/SetImplementation';
+import { OperationSetImplementation } from '../model/packageableElements/mapping/OperationSetImplementation';
+import type { InstanceSetImplementation } from '../model/packageableElements/mapping/InstanceSetImplementation';
+import type { PropertyMapping } from '../model/packageableElements/mapping/PropertyMapping';
+import type { Property } from '../model/packageableElements/domain/Property';
+import type { Mapping } from '../model/packageableElements/mapping/Mapping';
+import type { Class } from '../model/packageableElements/domain/Class';
+import { getClassMappingsByClass } from './MappingHelper';
 
 /**
  * If this is the only mapping element for the target class, automatically mark it as root,
@@ -29,9 +32,10 @@ import type { Property } from '../models/metamodels/pure/model/packageableElemen
 export const updateRootSetImplementationOnCreate = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = setImp.parent
-    .classMappingsByClass(setImp.class.value)
-    .filter((si) => si !== setImp);
+  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+    setImp.parent,
+    setImp.class.value,
+  ).filter((si) => si !== setImp);
   if (classMappingsWithSimilarTarget.length) {
     setImp.setRoot(false);
     if (classMappingsWithSimilarTarget.length === 1) {
@@ -48,9 +52,10 @@ export const updateRootSetImplementationOnCreate = (
 export const updateRootSetImplementationOnDelete = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = setImp.parent
-    .classMappingsByClass(setImp.class.value)
-    .filter((si) => si !== setImp);
+  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+    setImp.parent,
+    setImp.class.value,
+  ).filter((si) => si !== setImp);
   if (classMappingsWithSimilarTarget.length === 1) {
     classMappingsWithSimilarTarget[0].setRoot(false);
   }
@@ -63,7 +68,8 @@ export const updateRootSetImplementationOnDelete = (
 export const nominateRootSetImplementation = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = setImp.parent.classMappingsByClass(
+  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+    setImp.parent,
     setImp.class.value,
   );
   classMappingsWithSimilarTarget.forEach((si) => {
@@ -92,18 +98,6 @@ export const findRootSetImplementation = (
     classMappingsWithSimilarTarget,
     (setImp: SetImplementation) => setImp.root.value,
   );
-};
-
-export const getLeafSetImplementations = (
-  setImp?: SetImplementation,
-): SetImplementation[] | undefined => {
-  if (!setImp) {
-    return undefined;
-  }
-  if (setImp instanceof OperationSetImplementation) {
-    return setImp.leafSetImplementations;
-  }
-  return [setImp];
 };
 
 /**
@@ -135,4 +129,24 @@ export const getDecoratedSetImplementationPropertyMappings = <
     );
   });
   return Array.from(propertyMappingMap.values()).flat();
+};
+
+export const getRootSetImplementation = (
+  mapping: Mapping,
+  _class: Class,
+): SetImplementation | undefined =>
+  findRootSetImplementation(getClassMappingsByClass(mapping, _class));
+
+export const getLeafSetImplementations = (
+  mapping: Mapping,
+  _class: Class,
+): SetImplementation[] | undefined => {
+  const setImp = getRootSetImplementation(mapping, _class);
+  if (!setImp) {
+    return undefined;
+  }
+  if (setImp instanceof OperationSetImplementation) {
+    return setImp.leafSetImplementations;
+  }
+  return [setImp];
 };

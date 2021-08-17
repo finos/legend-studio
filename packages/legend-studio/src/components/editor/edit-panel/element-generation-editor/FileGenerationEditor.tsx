@@ -37,6 +37,10 @@ import type {
   TreeNodeData,
 } from '@finos/legend-studio-components';
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
   clsx,
   TreeView,
   BlankPanelContent,
@@ -59,7 +63,6 @@ import { MdModeEdit, MdRefresh } from 'react-icons/md';
 import type { FileGenerationSourceDropTarget } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState';
-import SplitPane from 'react-split-pane';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { GenerationTreeNodeData } from '../../../../stores/shared/FileGenerationTreeUtil';
@@ -225,78 +228,80 @@ export const GenerationResultViewer = observer(
     );
 
     return (
-      <SplitPane
-        split="vertical"
-        defaultSize={250}
-        minSize={250}
-        maxSize={-300}
-      >
-        <div className="generation-result-viewer__side-bar">
-          <div className="panel generation-result-viewer__explorer">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__label">result</div>
-              </div>
-              <div className="panel__header__actions">
-                <button
-                  className={clsx(
-                    'panel__header__action  generation-result-viewer__regenerate-btn',
-                    {
-                      ' generation-result-viewer__regenerate-btn--loading':
-                        fileGenerationState.isGenerating,
-                    },
-                  )}
-                  tabIndex={-1}
-                  disabled={fileGenerationState.isGenerating}
-                  onClick={regenerate}
-                  title={'Re-generate'}
-                >
-                  <MdRefresh />
-                </button>
-              </div>
-            </div>
-            <div className="panel__content">
-              <PanelLoadingIndicator
-                isLoading={fileGenerationState.isGenerating}
-              />
-              {Boolean(fileGenerationState.directoryTreeData) && (
-                <GenerationResultExplorer
-                  fileGenerationState={fileGenerationState}
-                />
-              )}
-              {Boolean(!fileGenerationState.directoryTreeData) && (
-                <BlankPanelContent>
-                  Generation result not available
-                </BlankPanelContent>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="panel generation-result-viewer__file">
-          <div className="panel__header">
-            {fileNode && !(fileNode instanceof GenerationDirectory) && (
-              <div className="panel__header__title">
-                <div className="panel__header__title__label">file</div>
-                <div className="panel__header__title__content generation-result-viewer__file__header-name">
-                  {fileNode.name}
+      <ResizablePanelGroup orientation="vertical">
+        <ResizablePanel size={250} minSize={250}>
+          <div className="generation-result-viewer__side-bar">
+            <div className="panel generation-result-viewer__explorer">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__label">result</div>
+                </div>
+                <div className="panel__header__actions">
+                  <button
+                    className={clsx(
+                      'panel__header__action  generation-result-viewer__regenerate-btn',
+                      {
+                        ' generation-result-viewer__regenerate-btn--loading':
+                          fileGenerationState.isGenerating,
+                      },
+                    )}
+                    tabIndex={-1}
+                    disabled={fileGenerationState.isGenerating}
+                    onClick={regenerate}
+                    title={'Re-generate'}
+                  >
+                    <MdRefresh />
+                  </button>
                 </div>
               </div>
-            )}
+              <div className="panel__content">
+                <PanelLoadingIndicator
+                  isLoading={fileGenerationState.isGenerating}
+                />
+                {Boolean(fileGenerationState.directoryTreeData) && (
+                  <GenerationResultExplorer
+                    fileGenerationState={fileGenerationState}
+                  />
+                )}
+                {Boolean(!fileGenerationState.directoryTreeData) && (
+                  <BlankPanelContent>
+                    Generation result not available
+                  </BlankPanelContent>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="panel__content">
-            {fileNode instanceof GenerationFile && (
-              <TextInputEditor
-                inputValue={getTextContent(fileNode.content, fileNode.format)}
-                isReadOnly={true}
-                language={getEditorLanguageFromFormat(fileNode.format)}
-              />
-            )}
-            {!(fileNode instanceof GenerationFile) && (
-              <BlankPanelContent>No file selected</BlankPanelContent>
-            )}
+        </ResizablePanel>
+        <ResizablePanelSplitter>
+          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+        </ResizablePanelSplitter>
+        <ResizablePanel>
+          <div className="panel generation-result-viewer__file">
+            <div className="panel__header">
+              {fileNode && !(fileNode instanceof GenerationDirectory) && (
+                <div className="panel__header__title">
+                  <div className="panel__header__title__label">file</div>
+                  <div className="panel__header__title__content generation-result-viewer__file__header-name">
+                    {fileNode.name}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="panel__content">
+              {fileNode instanceof GenerationFile && (
+                <TextInputEditor
+                  inputValue={getTextContent(fileNode.content, fileNode.format)}
+                  isReadOnly={true}
+                  language={getEditorLanguageFromFormat(fileNode.format)}
+                />
+              )}
+              {!(fileNode instanceof GenerationFile) && (
+                <BlankPanelContent>No file selected</BlankPanelContent>
+              )}
+            </div>
           </div>
-        </div>
-      </SplitPane>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     );
   },
 );
@@ -1423,24 +1428,26 @@ export const FileGenerationEditor = observer(() => {
           </div>
         </div>
         <div className="panel__content file-generation-editor__content">
-          <SplitPane
-            split="vertical"
-            defaultSize={400}
-            minSize={300}
-            maxSize={-550}
-          >
-            <FileGenerationConfigurationEditor
-              isReadOnly={isReadOnly}
-              fileGenerationState={
-                fileGenerationEditorState.fileGenerationState
-              }
-            />
-            <GenerationResultViewer
-              fileGenerationState={
-                fileGenerationEditorState.fileGenerationState
-              }
-            />
-          </SplitPane>
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel size={400} minSize={300}>
+              <FileGenerationConfigurationEditor
+                isReadOnly={isReadOnly}
+                fileGenerationState={
+                  fileGenerationEditorState.fileGenerationState
+                }
+              />
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel>
+              <GenerationResultViewer
+                fileGenerationState={
+                  fileGenerationEditorState.fileGenerationState
+                }
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       </div>
     </div>

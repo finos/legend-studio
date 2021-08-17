@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import type { MappingEditorState } from './MappingEditorState';
+import type {
+  MappingEditorState,
+  MappingElementSource,
+} from './MappingEditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   hashObject,
   UnsupportedOperationError,
   guaranteeNonNullable,
@@ -34,7 +38,7 @@ import {
   tryToMinifyJSONString,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import {
   observable,
   flow,
@@ -67,10 +71,7 @@ import { FlatDataInputData } from '../../../../models/metamodels/pure/model/pack
 import type { MappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTestAssert';
 import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
 import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import type {
-  MappingElementSource,
-  Mapping,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
@@ -150,8 +151,8 @@ export class MappingTestQueryState extends LambdaEditorState {
         );
         this.clearErrors();
       } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -215,7 +216,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphState.graphManager.getEngineConfig();
+      this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -248,7 +249,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphState.graphManager.getEngineConfig();
+      this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -590,8 +591,8 @@ export class MappingTestState {
       } else {
         throw new UnsupportedOperationError();
       }
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -645,8 +646,8 @@ export class MappingTestState {
         assertionMatched ? TEST_RESULT.PASSED : TEST_RESULT.FAILED,
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.errorRunningTest = error as Error;
@@ -676,8 +677,8 @@ export class MappingTestState {
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error.message,
       );
       yield flowResult(this.editorStore.graphState.globalCompileInFormMode()); // recompile graph if there is problem with the deep fetch tree of a test
@@ -699,8 +700,8 @@ export class MappingTestState {
         ),
       );
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -23,9 +23,10 @@ import {
   RevisionAlias,
 } from '../models/sdlc/models/revision/Revision';
 import { Version } from '../models/sdlc/models/version/Version';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   IllegalStateError,
   guaranteeNonNullable,
   ActionState,
@@ -41,7 +42,6 @@ import {
   generateVieweRevisionRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
-import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 
 export class ViewerStore {
@@ -85,28 +85,30 @@ export class ViewerStore {
   internalizeEntityPath(params: ViewerPathParams): void {
     if (params.entityPath) {
       this.elementPath = params.entityPath;
-      this.editorStore.applicationStore.historyApiClient.replace(
-        params.versionId
-          ? generateViewVersionRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-              params.versionId,
-            )
-          : params.revisionId
-          ? generateVieweRevisionRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-              params.revisionId,
-            )
-          : generateViewProjectRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-            ),
+      this.editorStore.applicationStore.navigator.jumpTo(
+        this.editorStore.applicationStore.navigator.generateLocation(
+          params.versionId
+            ? generateViewVersionRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                params.projectId,
+                params.versionId,
+              )
+            : params.revisionId
+            ? generateVieweRevisionRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                params.projectId,
+                params.revisionId,
+              )
+            : generateViewProjectRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                params.projectId,
+              ),
+        ),
       );
     }
   }
 
-  *init(
+  *initialize(
     projectId: string,
     versionId: string | undefined,
     revisionId: string | undefined,
@@ -154,8 +156,6 @@ export class ViewerStore {
 
       let entities: Entity[] = [];
       let projectConfiguration: PlainObject<ProjectConfiguration>;
-      const startTime = Date.now();
-      this.editorStore.graphState.isInitializingGraph = true;
 
       if (versionId) {
         // get version info if a version is specified
@@ -226,15 +226,9 @@ export class ViewerStore {
         }
       }
 
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
-        Date.now() - startTime,
-        'ms',
-      );
-
       // setup engine
       yield flowResult(
-        this.editorStore.graphState.graphManager.setupEngine(
+        this.editorStore.graphState.graphManager.initialize(
           this.editorStore.applicationStore.pluginManager,
           {
             env: this.editorStore.applicationStore.config.env,
@@ -242,14 +236,14 @@ export class ViewerStore {
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
               enableCompression: true,
-              authenticationUrl: SDLCServerClient.authenticationUrl(
-                this.editorStore.applicationStore.config.sdlcServerUrl,
-              ),
+              autoReAuthenticateUrl:
+                this.editorStore.applicationStore.config
+                  .engineAutoReAuthenticationUrl,
             },
           },
         ),
       );
-      // init graph
+      // initialize graph manager
       yield flowResult(this.editorStore.graphState.initializeSystem());
       yield flowResult(
         this.editorStore.graphState.buildGraphForViewerMode(entities),
@@ -291,8 +285,8 @@ export class ViewerStore {
       }
       onLeave(true);
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -31,7 +31,7 @@ import {
   SerializationFactory,
 } from '@finos/legend-studio-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
+import { URL_PATH_PLACEHOLDER } from '../LegendStudioRouter';
 
 export class ServiceRegistrationEnvInfo {
   env!: string;
@@ -148,7 +148,7 @@ export interface ConfigurationData {
   env: string;
   sdlc: { url: string } | SDLCServerOption[];
   metadata: { url: string };
-  engine: { url: string };
+  engine: { url: string; autoReAuthenticationUrl?: string };
   documentation: { url: string };
   options?: Record<PropertyKey, unknown>;
 }
@@ -169,6 +169,7 @@ export class ApplicationConfig {
   _sdlcServerKey: string | undefined;
   sdlcServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
+  readonly engineAutoReAuthenticationUrl?: string;
   readonly metadataServerUrl: string;
 
   // TODO: consider modifying and/or moving this out when we refactor `version.json`
@@ -240,6 +241,8 @@ export class ApplicationConfig {
       configData.engine.url,
       `Application configuration failure: 'engine.url' field is missing or empty`,
     );
+    this.engineAutoReAuthenticationUrl =
+      configData.engine.autoReAuthenticationUrl;
     assertNonNullable(
       configData.metadata,
       `Application configuration failure: 'metadata' field is missing`,

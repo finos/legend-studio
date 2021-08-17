@@ -15,7 +15,9 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { METADATA_LOG_EVENT } from '../utils/MetadataLogEvent';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import type { EntityChange } from '../models/sdlc/models/entity/EntityChange';
@@ -29,6 +31,7 @@ import type {
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertType,
   uniq,
   UnsupportedOperationError,
@@ -69,7 +72,6 @@ import { PrimitiveType } from '../models/metamodels/pure/model/packageableElemen
 import { Enumeration } from '../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Class } from '../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Association } from '../models/metamodels/pure/model/packageableElements/domain/Association';
-import type { MappingElement } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Diagram } from '../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 import { ConcreteFunctionDefinition } from '../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
@@ -100,6 +102,7 @@ import { AssociationImplementation } from '../models/metamodels/pure/model/packa
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { ProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
 import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
+import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 
 export class GraphState {
   editorStore: EditorStore;
@@ -142,7 +145,7 @@ export class GraphState {
     this.graphManager = getGraphManager(
       this.editorStore.applicationStore.pluginManager.getPureGraphManagerPlugins(),
       this.editorStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-      this.editorStore.applicationStore.logger,
+      this.editorStore.applicationStore.log,
     );
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
   }
@@ -264,8 +267,8 @@ export class GraphState {
     try {
       this.isInitializingGraph = true;
       const startTime = Date.now();
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
         Date.now() - startTime,
         'ms',
       );
@@ -298,8 +301,8 @@ export class GraphState {
       this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // build graph
       yield flowResult(this.graphManager.buildGraph(this.graph, entities));
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_INITIALIZED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -307,8 +310,8 @@ export class GraphState {
       this.editorStore.explorerTreeState.build();
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.graph.buildState.fail();
@@ -363,8 +366,8 @@ export class GraphState {
 
       // NOTE: we will see that: (time for fetching entities + time for building graph) < time for instantiating graph
       // this could be due to the time it takes for React to render in response to the fact that the model is just built
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_INITIALIZED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -374,8 +377,8 @@ export class GraphState {
       this.graphGenerationState.addMissingGenerationSpecifications();
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       if (error instanceof DependencyGraphProcessingError) {
@@ -409,8 +412,8 @@ export class GraphState {
           );
         } catch (error2: unknown) {
           assertErrorThrown(error2);
-          this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.GRAPH_PROBLEM,
+          this.editorStore.applicationStore.log.error(
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
             error2,
           );
           if (error2 instanceof NetworkClientError) {
@@ -526,8 +529,8 @@ export class GraphState {
       // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         error,
       );
       let fallbackToTextModeForDebugging = true;
@@ -627,8 +630,8 @@ export class GraphState {
       if (error instanceof EngineError) {
         this.editorStore.grammarTextEditorState.setError(error);
       }
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         'Compilation failed:',
         error,
       );
@@ -685,8 +688,8 @@ export class GraphState {
         if (error instanceof EngineError) {
           this.editorStore.grammarTextEditorState.setError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.COMPILATION_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
           'Compilation failed:',
           error,
         );
@@ -723,8 +726,8 @@ export class GraphState {
         }
       }
     } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         error,
       );
     } finally {
@@ -792,10 +795,6 @@ export class GraphState {
    * See https://auth0.com/blog/four-types-of-leaks-in-your-javascript-code-and-how-to-get-rid-of-them/
    */
   private *updateGraphAndApplication(entities: Entity[]): GeneratorFn<void> {
-    this.editorStore.applicationStore.logger.info(
-      CORE_LOG_EVENT.GRAPH_REBUILDING,
-      '...',
-    );
     const startTime = Date.now();
     this.isUpdatingApplication = true;
     this.isUpdatingGraph = true;
@@ -849,9 +848,7 @@ export class GraphState {
 
       /* @MARKER: MEMORY-SENSITIVE */
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
-      yield flowResult(
-        this.graph.dispose(this.editorStore.applicationStore.logger),
-      );
+      yield flowResult(this.graph.dispose());
 
       yield flowResult(
         this.graphManager.buildGraph(newGraph, entities, {
@@ -898,8 +895,8 @@ export class GraphState {
         this.editorStore.findCurrentEditorState(currentEditorState),
       );
 
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_REBUILT,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_UPDATED_AND_REBUILT),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -908,22 +905,20 @@ export class GraphState {
 
       // ======= (RE)START CHANGE DETECTION =======
       /* @MARKER: MEMORY-SENSITIVE */
-      yield flowResult(
-        this.graph.precomputeHashes(this.editorStore.applicationStore.logger),
-      );
+      yield flowResult(this.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASYNC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -956,11 +951,7 @@ export class GraphState {
       this.editorStore.setCurrentEditorState(undefined);
 
       /* @MARKER: MEMORY-SENSITIVE */
-      yield flowResult(
-        this.graph.generationModel.dispose(
-          this.editorStore.applicationStore.logger,
-        ),
-      );
+      yield flowResult(this.graph.generationModel.dispose());
       // we reset the generation model
       this.graph.generationModel = new GenerationModel(
         this.getPureGraphExtensionElementClasses(),
@@ -990,8 +981,8 @@ export class GraphState {
       );
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GRAPH_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -1069,8 +1060,8 @@ export class GraphState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       const message = `Can't fetch dependency entitites. Error: ${error.message}`;
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.PROJECT_DEPENDENCY_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(METADATA_LOG_EVENT.METADATA_MANAGER_FAILURE),
         message,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -1212,5 +1203,34 @@ export class GraphState {
         .flat();
     }
     return uniq(mappedProperties);
+  }
+
+  /**
+   * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
+   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
+   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
+   * not trigger memoization on computed so we need to enable `keepAlive`
+   */
+  *precomputeHashes(): GeneratorFn<void> {
+    const startTime = Date.now();
+    if (this.graph.allOwnElements.length) {
+      yield Promise.all<void>(
+        this.graph.allOwnElements.map(
+          (element) =>
+            new Promise((resolve) =>
+              setTimeout(() => {
+                element.hashCode; // manually trigger hash code recomputation
+                resolve();
+              }, 0),
+            ),
+        ),
+      );
+    }
+    this.editorStore.applicationStore.log.info(
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PRECOMPUTED),
+      '[ASYNC]',
+      Date.now() - startTime,
+      'ms',
+    );
   }
 }

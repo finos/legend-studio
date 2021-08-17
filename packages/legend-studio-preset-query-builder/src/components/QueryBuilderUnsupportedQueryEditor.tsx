@@ -15,10 +15,14 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
-import { BlankPanelContent } from '@finos/legend-studio-components';
+import {
+  BlankPanelContent,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+} from '@finos/legend-studio-components';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
 
 const QueryBuilderUnsupportedQueryExplorer = observer(() => (
@@ -78,18 +82,18 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
     const { queryBuilderState } = props;
 
     return (
-      <ReflexContainer orientation="vertical">
-        <ReflexElement size={450} minSize={0}>
+      <ResizablePanelGroup orientation="vertical">
+        <ResizablePanel size={450}>
           <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
           <QueryBuilderUnsupportedQueryExplorer />
-        </ReflexElement>
-        <ReflexSplitter />
-        <ReflexElement minSize={0}>
+        </ResizablePanel>
+        <ResizablePanelSplitter />
+        <ResizablePanel>
           <QueryBuilderUnsupportedQueryEditPanel
             queryBuilderState={queryBuilderState}
           />
-        </ReflexElement>
-      </ReflexContainer>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     );
   },
 );

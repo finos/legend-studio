@@ -31,7 +31,6 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-studio-shared';
-import SplitPane from 'react-split-pane';
 import type { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
 import { VscError } from 'react-icons/vsc';
@@ -48,6 +47,10 @@ import {
   BlankPanelContent,
   BlankPanelPlaceholder,
   CustomSelectorInput,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-studio-components';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
 import { MappingIcon, RuntimeIcon } from '../../../shared/Icon';
@@ -418,65 +421,69 @@ const PureExecutionEditor = observer(
 
     return (
       <div className="service-execution-editor">
-        <SplitPane
-          split="horizontal"
-          defaultSize={200}
-          minSize={15}
-          maxSize={800}
-        >
-          <ServiceExecutionQueryEditor
-            executionState={executionState}
-            isReadOnly={isReadOnly}
-          />
-          <div className="service-execution-editor__content">
-            <div className="panel">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label service-editor__execution__label--test">
-                    configuration
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={200} minSize={28}>
+            <ServiceExecutionQueryEditor
+              executionState={executionState}
+              isReadOnly={isReadOnly}
+            />
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={56}>
+            <div className="service-execution-editor__content">
+              <div className="panel">
+                <div className="panel__header">
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__label service-editor__execution__label--test">
+                      configuration
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="panel__content service-execution-editor__configuration__content">
-                <SplitPane
-                  split="vertical"
-                  defaultSize={250}
-                  minSize={50}
-                  maxSize={600}
-                >
-                  <div className="service-execution-editor__keys">
-                    <div className="panel__header">
-                      <div className="panel__header__title">
-                        <div className="panel__header__title__label service-editor__execution__label--execution">
-                          keys
+                <div className="panel__content service-execution-editor__configuration__content">
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel size={250} minSize={50}>
+                      <div className="service-execution-editor__keys">
+                        <div className="panel__header">
+                          <div className="panel__header__title">
+                            <div className="panel__header__title__label service-editor__execution__label--execution">
+                              keys
+                            </div>
+                          </div>
+                        </div>
+                        <div className="panel__content">
+                          <BlankPanelPlaceholder
+                            placeholderText="Add a key"
+                            onClick={addKey}
+                            clickActionType="add"
+                            tooltipText="Click to add a test"
+                          />
                         </div>
                       </div>
-                    </div>
-                    <div className="panel__content">
-                      <BlankPanelPlaceholder
-                        placeholderText="Add a key"
-                        onClick={addKey}
-                        clickActionType="add"
-                        tooltipText="Click to add a test"
-                      />
-                    </div>
-                  </div>
-                  {execution instanceof PureSingleExecution && (
-                    <PureSingleExecutionEditorWrapper
-                      executionState={executionState}
-                    />
-                  )}
-                  {execution instanceof PureMultiExecution && (
-                    <UnsupportedEditorPanel
-                      text={`Can't display service multi-execution in form-mode`}
-                      isReadOnly={isReadOnly}
-                    />
-                  )}
-                </SplitPane>
+                    </ResizablePanel>
+                    <ResizablePanelSplitter>
+                      <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                    </ResizablePanelSplitter>
+                    <ResizablePanel minSize={300}>
+                      {execution instanceof PureSingleExecution && (
+                        <PureSingleExecutionEditorWrapper
+                          executionState={executionState}
+                        />
+                      )}
+                      {execution instanceof PureMultiExecution && (
+                        <UnsupportedEditorPanel
+                          text={`Can't display service multi-execution in form-mode`}
+                          isReadOnly={isReadOnly}
+                        />
+                      )}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                </div>
               </div>
             </div>
-          </div>
-        </SplitPane>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

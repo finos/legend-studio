@@ -53,13 +53,13 @@ import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState
 import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
-import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 import type {
   Clazz,
   GeneratorFn,
   PlainObject,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   addUniqueEntry,
   isNonNullable,
   assertErrorThrown,
@@ -83,7 +83,9 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
@@ -127,6 +129,7 @@ import type { Type } from '../models/metamodels/pure/model/packageableElements/d
 import type { Store } from '../models/metamodels/pure/model/packageableElements/store/Store';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
+import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -495,7 +498,7 @@ export class EditorStore {
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */
-  *init(projectId: string, workspaceId: string): GeneratorFn<void> {
+  *initialize(projectId: string, workspaceId: string): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
        * Since React `fast-refresh` will sometimes cause `Editor` to rerender, this method will be called again
@@ -505,9 +508,9 @@ export class EditorStore {
        */
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
-        this.applicationStore.logger.info(
-          CORE_LOG_EVENT.DEVELOPMENT_MODE,
-          `Fast-refreshing the app - undoing cleanUp() and preventing init() recall in editor store...`,
+        this.applicationStore.log.info(
+          LogEvent.create(APPLICATION_LOG_EVENT.DEVELOPMENT_ISSUE),
+          `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
         this._isDisposed = false;
@@ -546,14 +549,14 @@ export class EditorStore {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              window.location.reload();
+              this.applicationStore.navigator.reload();
             },
           },
           {
             label: 'Back to setup page',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.historyApiClient.push(
+              this.applicationStore.navigator.goTo(
                 generateSetupRoute(
                   this.applicationStore.config.sdlcServerKey,
                   undefined,
@@ -593,10 +596,10 @@ export class EditorStore {
           this.applicationStore.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
           );
-          window.location.reload();
+          this.applicationStore.navigator.reload();
         } catch (error: unknown) {
-          this.applicationStore.logger.error(
-            CORE_LOG_EVENT.SETUP_PROBLEM,
+          this.applicationStore.log.error(
+            LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
             error,
           );
           this.applicationStore.notifyError(error);
@@ -614,7 +617,7 @@ export class EditorStore {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.historyApiClient.push(
+              this.applicationStore.navigator.goTo(
                 generateViewProjectRoute(
                   this.applicationStore.config.sdlcServerKey,
                   projectId,
@@ -635,7 +638,7 @@ export class EditorStore {
             label: 'Back to setup page',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.historyApiClient.push(
+              this.applicationStore.navigator.goTo(
                 generateSetupRoute(
                   this.applicationStore.config.sdlcServerKey,
                   projectId,
@@ -653,7 +656,7 @@ export class EditorStore {
       this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
       this.preloadTextEditorFont(),
       this.graphState.initializeSystem(), // this can be moved inside of `setupEngine`
-      this.graphState.graphManager.setupEngine(
+      this.graphState.graphManager.initialize(
         this.applicationStore.pluginManager,
         {
           env: this.applicationStore.config.env,
@@ -661,9 +664,8 @@ export class EditorStore {
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             enableCompression: true,
-            authenticationUrl: SDLCServerClient.authenticationUrl(
-              this.applicationStore.config.sdlcServerUrl,
-            ),
+            autoReAuthenticateUrl:
+              this.applicationStore.config.engineAutoReAuthenticationUrl,
           },
         },
       ),
@@ -730,7 +732,7 @@ export class EditorStore {
       ],
     });
     yield Promise.all([
-      this.conflictResolutionState.init(),
+      this.conflictResolutionState.initialize(),
       this.sdlcState.checkIfWorkspaceIsOutdated(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
@@ -768,8 +770,8 @@ export class EditorStore {
       this.changeDetectionState.workspaceLatestRevisionState.setEntities(
         entities,
       );
-      this.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_ENTITIES_FETCHED,
+      this.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
         Date.now() - startTime,
         'ms',
       );
@@ -783,10 +785,12 @@ export class EditorStore {
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
       yield Promise.all([
-        this.graphState.graph.precomputeHashes(this.applicationStore.logger), // for local changes detection
+        this.graphState.precomputeHashes(), // for local changes detection
         this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           entities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
         ),
         this.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex(),
         this.sdlcState.buildProjectLatestRevisionEntityHashesIndex(),
@@ -797,8 +801,8 @@ export class EditorStore {
         this.changeDetectionState.computeAggregatedWorkspaceChanges(true),
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
-      this.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
@@ -1231,8 +1235,8 @@ export class EditorStore {
       .then(() => {
         if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
           monacoEditorAPI.remeasureFonts();
-          this.applicationStore.logger.info(
-            CORE_LOG_EVENT.EDITOR_FONT_LOADED,
+          this.applicationStore.log.info(
+            LogEvent.create(STUDIO_LOG_EVENT.EDITOR_FONT_LOADED),
             `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
           );
         } else {

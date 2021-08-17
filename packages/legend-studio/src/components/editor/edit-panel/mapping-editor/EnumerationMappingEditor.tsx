@@ -17,9 +17,11 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaTimes, FaPlus } from 'react-icons/fa';
-import SplitPane from 'react-split-pane';
 import type { SelectComponent } from '@finos/legend-studio-components';
 import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
   clsx,
   CustomSelectorInput,
   BlankPanelPlaceholder,
@@ -425,92 +427,92 @@ export const EnumerationMappingEditor = observer(
             )}
           </div>
           <div className="mapping-element-editor__content">
-            <SplitPane
-              primary="second"
-              defaultSize={300}
-              minSize={300}
-              maxSize={-300}
-            >
-              <div className="panel">
-                <div className="panel__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__content">ENUMS</div>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={300}>
+                <div className="panel">
+                  <div className="panel__header">
+                    <div className="panel__header__title">
+                      <div className="panel__header__title__content">ENUMS</div>
+                    </div>
+                  </div>
+                  <div className="panel__content enumeration-mapping-editor__enum-values">
+                    {enumeration.value.values.map((enumValue) => (
+                      <EnumValueMappingEditor
+                        key={enumValue.name}
+                        enumValue={enumValue}
+                        enumerationMapping={enumerationMapping}
+                        sourceType={enumerationMapping.sourceType}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
                   </div>
                 </div>
-                <div className="panel__content enumeration-mapping-editor__enum-values">
-                  {enumeration.value.values.map((enumValue) => (
-                    <EnumValueMappingEditor
-                      key={enumValue.name}
-                      enumValue={enumValue}
+              </ResizablePanel>
+              <ResizablePanelSplitter />
+              <ResizablePanel size={300} minSize={300}>
+                <div
+                  data-testid={CORE_TEST_ID.SOURCE_PANEL}
+                  className="panel source-panel"
+                >
+                  <div className="panel__header">
+                    <div className="panel__header__title">
+                      <div className="panel__header__title__label">source</div>
+                      <div className="panel__header__title__content">
+                        {sourceType?.name ?? '(none)'}
+                      </div>
+                    </div>
+                    <div className="panel__header__actions">
+                      <button
+                        className="panel__header__action"
+                        onClick={showSourceSelectorModal}
+                        disabled={isReadOnly}
+                        tabIndex={-1}
+                        title={'Select Source...'}
+                      >
+                        <MdModeEdit />
+                      </button>
+                    </div>
+                  </div>
+                  <div ref={dropRef} className="panel__content dnd__dropzone">
+                    {sourceType && isDragOver && !isReadOnly && (
+                      <div className="dnd__overlay"></div>
+                    )}
+                    {sourceType && (
+                      <div className="source-panel__explorer">
+                        {sourceType instanceof Enumeration && (
+                          <TypeTree type={sourceType} />
+                        )}
+                        {/* TODO?: do we need to show anything when the source type is string or integer */}
+                      </div>
+                    )}
+                    {!sourceType && (
+                      <BlankPanelPlaceholder
+                        placeholderText="Choose a source"
+                        onClick={showSourceSelectorModal}
+                        clickActionType="add"
+                        tooltipText="Drop an enumeration"
+                        dndProps={{
+                          isDragOver: isDragOver && !isReadOnly,
+                          canDrop: canDrop && !isReadOnly,
+                        }}
+                        readOnlyProps={
+                          !isReadOnly
+                            ? undefined
+                            : {
+                                placeholderText: 'No source',
+                              }
+                        }
+                      />
+                    )}
+                    <EnumerationMappingSourceSelectorModal
                       enumerationMapping={enumerationMapping}
-                      sourceType={enumerationMapping.sourceType}
-                      isReadOnly={isReadOnly}
+                      open={openSourceSelectorModal}
+                      closeModal={hideSourceSelectorModal}
                     />
-                  ))}
-                </div>
-              </div>
-              <div
-                data-testid={CORE_TEST_ID.SOURCE_PANEL}
-                className="panel source-panel"
-              >
-                <div className="panel__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__label">source</div>
-                    <div className="panel__header__title__content">
-                      {sourceType?.name ?? '(none)'}
-                    </div>
-                  </div>
-                  <div className="panel__header__actions">
-                    <button
-                      className="panel__header__action"
-                      onClick={showSourceSelectorModal}
-                      disabled={isReadOnly}
-                      tabIndex={-1}
-                      title={'Select Source...'}
-                    >
-                      <MdModeEdit />
-                    </button>
                   </div>
                 </div>
-                <div ref={dropRef} className="panel__content dnd__dropzone">
-                  {sourceType && isDragOver && !isReadOnly && (
-                    <div className="dnd__overlay"></div>
-                  )}
-                  {sourceType && (
-                    <div className="source-panel__explorer">
-                      {sourceType instanceof Enumeration && (
-                        <TypeTree type={sourceType} />
-                      )}
-                      {/* TODO?: do we need to show anything when the source type is string or integer */}
-                    </div>
-                  )}
-                  {!sourceType && (
-                    <BlankPanelPlaceholder
-                      placeholderText="Choose a source"
-                      onClick={showSourceSelectorModal}
-                      clickActionType="add"
-                      tooltipText="Drop an enumeration"
-                      dndProps={{
-                        isDragOver: isDragOver && !isReadOnly,
-                        canDrop: canDrop && !isReadOnly,
-                      }}
-                      readOnlyProps={
-                        !isReadOnly
-                          ? undefined
-                          : {
-                              placeholderText: 'No source',
-                            }
-                      }
-                    />
-                  )}
-                  <EnumerationMappingSourceSelectorModal
-                    enumerationMapping={enumerationMapping}
-                    open={openSourceSelectorModal}
-                    closeModal={hideSourceSelectorModal}
-                  />
-                </div>
-              </div>
-            </SplitPane>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         </div>
       </div>

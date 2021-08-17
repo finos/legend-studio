@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { CORE_LOG_EVENT } from '../utils/Logger';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { ApplicationStore } from './ApplicationStore';
 import { useApplicationStore } from './ApplicationStore';
@@ -34,6 +34,7 @@ import {
 } from '../models/sdlc/models/workspace/Workspace';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   ActionState,
   assertNonNullable,
   guaranteeNonNullable,
@@ -134,8 +135,8 @@ export class SetupStore {
                   idx === 0 ? ProjectType.PRODUCTION : ProjectType.PROTOTYPE
                 } projects: ${error.message}`,
               );
-              this.applicationStore.logger.error(
-                CORE_LOG_EVENT.SETUP_PROBLEM,
+              this.applicationStore.log.error(
+                LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
                 wrappedError,
               );
               this.applicationStore.notifyError(wrappedError);
@@ -151,7 +152,10 @@ export class SetupStore {
       this.projects = projectMap;
       this.loadProjectsState.pass();
     } catch (error: unknown) {
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+        error,
+      );
       this.applicationStore.notifyError(error);
       this.loadProjectsState.fail();
     }
@@ -187,7 +191,7 @@ export class SetupStore {
       );
       yield flowResult(this.fetchProjects());
       this.projects?.set(createdProject.projectId, createdProject);
-      this.applicationStore.historyApiClient.push(
+      this.applicationStore.navigator.goTo(
         generateSetupRoute(
           this.applicationStore.config.sdlcServerKey,
           createdProject.projectId,
@@ -296,7 +300,10 @@ export class SetupStore {
       this.workspacesByProject.set(projectId, workspaceMap);
     } catch (error: unknown) {
       // TODO handle error when fetching workspaces for an individual project
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+        error,
+      );
     } finally {
       this.loadWorkspacesState.reset();
     }
@@ -329,7 +336,10 @@ export class SetupStore {
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
     } catch (error: unknown) {
-      this.applicationStore.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+        error,
+      );
       this.applicationStore.notifyError(error);
       this.createWorkspaceState.fail();
     }

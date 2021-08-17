@@ -17,21 +17,23 @@
 import { createContext, useContext } from 'react';
 import type {
   GeneratorFn,
+  Log,
   PlainObject,
   SuperGenericFunction,
 } from '@finos/legend-studio-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   isString,
   ApplicationError,
-  NetworkClient,
   ActionState,
 } from '@finos/legend-studio-shared';
-import { observable, makeAutoObservable, action } from 'mobx';
-import { Logger, CORE_LOG_EVENT } from '../utils/Logger';
-import type { ApplicationConfig } from './ApplicationConfig';
-import type { History } from 'history';
+import { makeAutoObservable, action } from 'mobx';
+import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
+import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
+import type { ApplicationConfig } from './application/ApplicationConfig';
+import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { useLocalObservable } from 'mobx-react-lite';
 import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
 import { User } from '../models/sdlc/models/User';
@@ -109,12 +111,10 @@ export class Notification {
 }
 
 export class NetworkClientManager {
-  coreClient!: NetworkClient;
   sdlcClient!: SDLCServerClient;
   metadataClient!: MetadataServerClient;
 
   constructor(config: ApplicationConfig) {
-    this.coreClient = new NetworkClient();
     this.sdlcClient = new SDLCServerClient({
       env: config.env,
       serverUrl: config.sdlcServerUrl,
@@ -131,24 +131,27 @@ export class ApplicationStore {
   pluginManager: PluginManager;
   networkClientManager: NetworkClientManager;
   telemetryService = new TelemetryService();
-  historyApiClient: History;
+  navigator: WebApplicationNavigator;
   notification?: Notification;
-  logger: Logger;
+  log: Log;
   blockingAlertInfo?: BlockingAlertInfo;
   actionAlertInfo?: ActionAlertInfo;
   config: ApplicationConfig;
   initState = ActionState.create();
+
+  // TODO: move SDLC states out of application
   isSDLCAuthorized = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
   currentSDLCUser = new User(UNKNOWN_USER_ID, UNKNOWN_USER_ID);
 
   constructor(
-    history: History,
     config: ApplicationConfig,
     pluginManager: PluginManager,
+    navigator: WebApplicationNavigator,
+    log: Log,
   ) {
     makeAutoObservable(this, {
-      historyApiClient: observable.ref,
+      navigator: false,
       dismissSDLCServerTermsOfServicesAlert: action,
       setBlockingAlert: action,
       setActionAltertInfo: action,
@@ -162,9 +165,9 @@ export class ApplicationStore {
 
     this.config = config;
     this.pluginManager = pluginManager;
-    this.historyApiClient = history;
+    this.navigator = navigator;
     this.networkClientManager = new NetworkClientManager(config);
-    this.logger = new Logger();
+    this.log = log;
     // Register plugins
     this.networkClientManager.sdlcClient.registerTracerServicePlugins(
       this.pluginManager.getTracerServicePlugins(),
@@ -270,8 +273,10 @@ export class ApplicationStore {
       message = content;
     } else {
       message = undefined;
-      this.logger.error(
-        CORE_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+      this.log.error(
+        LogEvent.create(
+          APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+        ),
         'Unable to display error in notification',
         message,
       );
@@ -295,7 +300,7 @@ export class ApplicationStore {
     return Boolean(this.SDLCServerTermsOfServicesUrlsToView.length);
   }
 
-  *init(): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       this.notifyIllegalState('Application store is re-initialized');
       return;
@@ -327,7 +332,10 @@ export class ApplicationStore {
       this.currentSDLCUser = currentUser;
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
       this.notifyWarning(error.message);
     }
   }
@@ -343,7 +351,10 @@ export class ApplicationStore {
                 if (mode !== SdlcMode.PROD) {
                   // if there is an issue with an endpoint in a non prod env, we return authorized as true
                   // but notify the user of the error
-                  this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+                  this.log.error(
+                    LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+                    error,
+                  );
                   this.notifyError(error);
                   return true;
                 }
@@ -354,9 +365,11 @@ export class ApplicationStore {
       ).every(Boolean);
 
       if (!this.isSDLCAuthorized) {
-        window.location.href = SDLCServerClient.authorizeCallbackUrl(
-          this.config.sdlcServerUrl,
-          window.location.href,
+        this.navigator.jumpTo(
+          SDLCServerClient.authorizeCallbackUrl(
+            this.config.sdlcServerUrl,
+            this.navigator.getCurrentLocation(),
+          ),
         );
       } else {
         // Only proceed to check terms of service agreement status after the passing authorization check
@@ -382,7 +395,7 @@ export class ApplicationStore {
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void => {
                   this.dismissSDLCServerTermsOfServicesAlert();
-                  window.location.reload();
+                  this.navigator.reload();
                 },
               },
             ],
@@ -390,7 +403,10 @@ export class ApplicationStore {
         }
       }
     } catch (error: unknown) {
-      this.logger.error(CORE_LOG_EVENT.SETUP_PROBLEM, error);
+      this.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
       this.notifyError(error);
     }
   }
@@ -427,8 +443,8 @@ export class ApplicationStore {
    * of throwing them to the UI. This enforces that by throwing `IllegalStateError`
    */
   alertIllegalUnhandledError = (error: Error): void => {
-    this.logger.error(
-      CORE_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
+    this.log.error(
+      LogEvent.create(APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
       'Encountered unhandled rejection in component',
       error,
     );
@@ -484,16 +500,18 @@ const ApplicationStoreContext = createContext<ApplicationStore | undefined>(
 export const ApplicationStoreProvider = ({
   children,
   config,
-  history,
   pluginManager,
+  navigator,
+  log,
 }: {
   children: React.ReactNode;
   config: ApplicationConfig;
   pluginManager: PluginManager;
-  history: History;
+  navigator: WebApplicationNavigator;
+  log: Log;
 }): React.ReactElement => {
   const applicationStore = useLocalObservable(
-    () => new ApplicationStore(history, config, pluginManager),
+    () => new ApplicationStore(config, pluginManager, navigator, log),
   );
   return (
     <ApplicationStoreContext.Provider value={applicationStore}>

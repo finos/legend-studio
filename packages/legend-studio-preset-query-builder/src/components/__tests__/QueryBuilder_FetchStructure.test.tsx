@@ -40,6 +40,7 @@ import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderE
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
 import {
   AbstractPropertyExpression,
+  getRootSetImplementation,
   RawLambda,
   setUpEditorWithDefaultSDLCData,
 } from '@finos/legend-studio';
@@ -99,13 +100,13 @@ test(
     const mapping = mockedEditorStore.graphState.graph.getMapping(
       'model::relational::tests::simpleRelationalMapping',
     );
-    expect(mapping.getRootSetImplementation(_personClass)).toBe(
+    expect(getRootSetImplementation(mapping, _personClass)).toBe(
       rootNode.setImpl,
     );
     expect(rootNode.mapped).toBe(true);
 
     // simpleProjection
-    queryBuilderState.init(getRawLambda(simpleProjection));
+    queryBuilderState.initialize(getRawLambda(simpleProjection));
     let projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -148,7 +149,7 @@ test(
 
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
-    queryBuilderState.init(getRawLambda(projectionWithChainedProperty));
+    queryBuilderState.initialize(getRawLambda(projectionWithChainedProperty));
     const projectionWithChainedPropertyCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -182,7 +183,9 @@ test(
 
     // result set modifiers
     const RESULT_LIMIT = 500;
-    queryBuilderState.init(getRawLambda(projectionWithResultSetModifiers));
+    queryBuilderState.initialize(
+      getRawLambda(projectionWithResultSetModifiers),
+    );
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -253,7 +256,7 @@ test(
 
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.init(getRawLambda(getAllWithOneConditionFilter));
+    queryBuilderState.initialize(getRawLambda(getAllWithOneConditionFilter));
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
@@ -274,7 +277,7 @@ test(
     // filter with group condition
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.init(getRawLambda(getAllWithGroupedFilter));
+    queryBuilderState.initialize(getRawLambda(getAllWithGroupedFilter));
     filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
@@ -304,7 +307,7 @@ test(
     // projection column with derived property
     queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.init(getRawLambda(projectWithDerivedProperty));
+    queryBuilderState.initialize(getRawLambda(projectWithDerivedProperty));
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -363,11 +366,11 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'MyMapping'));
 
     // simple graph fetch
-    queryBuilderState.init(getRawLambda(simpleGraphFetch));
+    queryBuilderState.initialize(getRawLambda(simpleGraphFetch));
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
-    queryBuilderState.init(getRawLambda(complexGraphFetch));
+    queryBuilderState.initialize(getRawLambda(complexGraphFetch));
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );

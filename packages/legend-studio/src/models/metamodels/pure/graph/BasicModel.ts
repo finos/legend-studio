@@ -27,8 +27,6 @@ import {
 } from '@finos/legend-studio-shared';
 import type { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import { ELEMENT_PATH_DELIMITER } from '../../../MetaModelConst';
-import type { Logger } from '../../../../utils/Logger';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import { Package } from '../model/packageableElements/domain/Package';
 import { Type } from '../model/packageableElements/domain/Type';
 import { Association } from '../model/packageableElements/domain/Association';
@@ -452,8 +450,7 @@ export abstract class BasicModel {
    * Dispose the current graph and any potential reference from parts outside of the graph to the graph
    * This is a MUST to prevent memory-leak as we use referneces to link between objects instead of string pointers
    */
-  *dispose(logger: Logger, quiet?: boolean): GeneratorFn<void> {
-    const startTime = Date.now();
+  *dispose(): GeneratorFn<void> {
     if (this.allOwnElements.length) {
       yield Promise.all<void>(
         this.allOwnElements.map(
@@ -465,14 +462,6 @@ export abstract class BasicModel {
               }, 0),
             ),
         ),
-      );
-    }
-    if (!quiet) {
-      logger.info(
-        CORE_LOG_EVENT.GRAPH_HASHES_DISPOSED,
-        '[ASYNC]',
-        Date.now() - startTime,
-        'ms',
       );
     }
   }

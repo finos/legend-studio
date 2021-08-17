@@ -28,7 +28,7 @@ export class XmlModelConnection
   extends PureModelConnection
   implements Hashable
 {
-  public static readonly CONTENT_TYPE = ContentType.APPLICATION_XML;
+  static readonly CONTENT_TYPE = ContentType.APPLICATION_XML;
 
   class: PackageableElementReference<Class>;
   url: string;

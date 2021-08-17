@@ -31,3 +31,6 @@ export * from './data-structures/Stack';
 export * from './states/ActionState';
 
 export * from './plugins/AbstractPluginManager';
+
+export * from './log/Logger';
+export * from './log/BrowserConsole';
