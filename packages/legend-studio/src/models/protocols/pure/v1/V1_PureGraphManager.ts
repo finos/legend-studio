@@ -2189,6 +2189,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         // connection
         'elementSourceInformation',
         'classSourceInformation',
+        'mappingsSourceInformation',
         // mapping
         'classSourceInformation',
         'sourceClassSourceInformation',

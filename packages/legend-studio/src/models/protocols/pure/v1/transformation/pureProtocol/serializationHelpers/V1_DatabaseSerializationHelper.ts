@@ -536,6 +536,10 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
           false,
         ),
     ),
+    postProcessorWithParameter: custom(
+      (values) => serializeArray(values, (value) => value, true),
+      (values) => deserializeArray(values, (value: unknown) => value, false),
+    ),
     type: primitive(),
   });
 };

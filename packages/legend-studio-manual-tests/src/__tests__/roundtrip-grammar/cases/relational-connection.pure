@@ -4,38 +4,7 @@ Database store::db
 )
 
 
-###Pure
-Class model::TestClass
-{
-}
-
-
-###Mapping
-Mapping mapping::myMapping
-(
-)
-
-
 ###Connection
-JsonModelConnection connection::TestJsonModelConnection
-{
-  class: model::TestClass;
-  url: 'my_url';
-}
-
-XmlModelConnection connection::TestXMLConnection
-{
-  class: model::TestClass;
-  url: 'my_url';
-}
-
-ModelChainConnection connection::TestModelChainConnection
-{
-  mappings: [
-    mapping::myMapping
-  ];
-}
-
 RelationalDatabaseConnection connection::relation::MySnowFlake
 {
   store: store::db;
