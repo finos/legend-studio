@@ -1,6 +1,5 @@
 ---
-"@finos/legend-studio-manual-tests": patch
+'@finos/legend-studio-manual-tests': patch
 ---
 
-Add compilation check in manual tests.
-
+Add compilation check and phase logging/skippin in manual tests.

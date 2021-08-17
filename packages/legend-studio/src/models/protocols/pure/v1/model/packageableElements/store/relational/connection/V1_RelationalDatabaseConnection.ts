@@ -41,7 +41,6 @@ export enum V1_DatabaseType {
 
 export abstract class V1_DatabaseConnection extends V1_Connection {
   type!: V1_DatabaseType;
-  databaseType!: V1_DatabaseType;
   timeZone?: string;
   quoteIdentifiers?: boolean;
   postProcessorWithParameter: unknown[] = [];

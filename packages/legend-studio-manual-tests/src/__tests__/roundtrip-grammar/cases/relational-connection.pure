@@ -3,6 +3,7 @@ Database store::db
 (
 )
 
+
 ###Connection
 RelationalDatabaseConnection connection::relation::MySnowFlake
 {

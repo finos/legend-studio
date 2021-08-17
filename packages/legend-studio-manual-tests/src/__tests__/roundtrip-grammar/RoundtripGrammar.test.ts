@@ -62,22 +62,72 @@ const ENGINE_SERVER_PORT = (engineConfig as any).server.connector // eslint-disa
   .port as number;
 const ENGINE_SERVER_URL = `http://localhost:${ENGINE_SERVER_PORT}/api`;
 const TEST_CASE_DIR = resolve(__dirname, 'cases');
-const EXCLUDED_CASE_FILES: string[] = [
+enum ROUNTRIP_TEST_PHASES {
+  PROTOCOL_ROUNDTRIP = 'PROTOCOL_ROUNDTRIP',
+  HASH = 'HASH',
+  GRAMMAR_ROUNDTRIP = 'GRAMMAR_ROUNDTRIP',
+  COMPILATION = 'COMPILATION',
+}
+const EXCLUDED_PHASES: { [key: string]: ROUNTRIP_TEST_PHASES[] } = {
+  // post processor mismatch between engine (undefined) vs studio ([])
+  'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
-  'embedded-relational-mapping.pure',
-  'nested-embedded-relational-mapping.pure',
-  'relational-mapping-filter.pure',
-  // post processor mismatch between engine (undefined) vs studio ([])
-  'relational-connection.pure',
-];
+  'embedded-relational-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+    ROUNTRIP_TEST_PHASES.HASH,
+    ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP,
+  ],
+  'nested-embedded-relational-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+    ROUNTRIP_TEST_PHASES.HASH,
+    ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP,
+  ],
+  'relational-mapping-filter.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+    ROUNTRIP_TEST_PHASES.HASH,
+    ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP,
+  ],
+};
+type GrammarRoundtripOptions = {
+  debug?: boolean;
+};
+const logPhase = (
+  phase: ROUNTRIP_TEST_PHASES,
+  excludedPhases: ROUNTRIP_TEST_PHASES[],
+  debug?: boolean,
+): void => {
+  if (debug) {
+    const skip = excludedPhases.includes(phase);
+    // eslint-disable-next-line no-console
+    console.log(`${skip ? 'Skipping' : 'Running'} phase '${phase}'`);
+  }
+};
+const logSuccess = (phase: ROUNTRIP_TEST_PHASES, debug?: boolean): void => {
+  if (debug) {
+    // eslint-disable-next-line no-console
+    console.log(`Sucess running phase '${phase}' `);
+  }
+};
 
 const checkGrammarRoundtrip = async (
+  testCase: string,
   file: string,
+  options?: GrammarRoundtripOptions,
   editorStore = getTestEditorStore(),
 ): Promise<void> => {
-  // parse the grammar
+  if (options?.debug) {
+    // eslint-disable-next-line no-console
+    console.log(`Roundtrip test case: ${testCase}`);
+  }
+  const excludedPhases = Object.keys(EXCLUDED_PHASES).includes(basename(file))
+    ? EXCLUDED_PHASES[basename(file)]
+    : [];
+
+  // Phase 1: protocol roundtrip check
+  let phase = ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP;
+  logPhase(phase, excludedPhases, options?.debug);
   const grammarText = fs.readFileSync(file, { encoding: 'utf-8' });
   const transformGrammarToJsonResult = await axios.post(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/transformGrammarToJson`,
@@ -89,30 +139,34 @@ const checkGrammarRoundtrip = async (
   const entities = editorStore.graphState.graphManager.pureProtocolToEntities(
     JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
-
   await buildGraphBasic(entities, editorStore, {
     TEMPORARY__keepSectionIndex: true,
   });
   const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
+  if (!excludedPhases.includes(phase)) {
+    // ensure that transformed entities have all fields ordered alphabetically
+    expect(
+      // received: transformed entity
+      transformedEntities
+        .map((entity) => entity.content)
+        .map(editorStore.graphState.graphManager.pruneSourceInformation),
+    ).toIncludeSameMembers(
+      // expected: protocol JSON parsed from grammar text
+      transformGrammarToJsonResult.data.modelDataContext.elements
+        .map(editorStore.graphState.graphManager.pruneSourceInformation)
+        .filter(
+          (elementProtocol: PlainObject<V1_PackageableElement>) =>
+            elementProtocol._type !== 'sectionIndex',
+        ),
+    );
+    logSuccess(phase, options?.debug);
+  }
 
-  // ensure that transformed entities have all fields ordered alphabetically
-  expect(
-    // received: transformed entity
-    transformedEntities
-      .map((entity) => entity.content)
-      .map(editorStore.graphState.graphManager.pruneSourceInformation),
-  ).toIncludeSameMembers(
-    // expected: protocol JSON parsed from grammar text
-    transformGrammarToJsonResult.data.modelDataContext.elements
-      .map(editorStore.graphState.graphManager.pruneSourceInformation)
-      .filter(
-        (elementProtocol: PlainObject<V1_PackageableElement>) =>
-          elementProtocol._type !== 'sectionIndex',
-      ),
-  );
-
+  // Phase 2: hash and local changes check
+  phase = ROUNTRIP_TEST_PHASES.HASH;
+  logPhase(phase, excludedPhases, options?.debug);
   // check hash computation
   await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
@@ -122,15 +176,21 @@ const checkGrammarRoundtrip = async (
   );
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
 
-  // TODO: avoid listing section index as part of change detection for now
-  expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes.filter(
-      (change) =>
-        change.entityChangeType !== EntityChangeType.DELETE ||
-        change.oldPath !== '__internal__::SectionIndex',
-    ).length,
-  ).toBe(0);
+  if (!excludedPhases.includes(phase)) {
+    // TODO: avoid listing section index as part of change detection for now
+    expect(
+      editorStore.changeDetectionState.workspaceLatestRevisionState.changes.filter(
+        (change) =>
+          change.entityChangeType !== EntityChangeType.DELETE ||
+          change.oldPath !== '__internal__::SectionIndex',
+      ).length,
+    ).toBe(0);
+    logSuccess(phase, options?.debug);
+  }
 
+  // Phase 3: grammar roundtrip check
+  phase = ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP;
+  logPhase(phase, excludedPhases, options?.debug);
   // compose grammar and compare that with original grammar text
   // NOTE: this is optional test as `grammar text <-> protocol` test should be covered
   // in engine already.
@@ -153,14 +213,23 @@ const checkGrammarRoundtrip = async (
     },
     {},
   );
-  expect(transformJsonToGrammarResult.data.code).toEqual(grammarText);
-  // Test successful compilation with graph from serialization
-  const compileResult = await axios.post(
-    `${ENGINE_SERVER_URL}/pure/v1/compilation/compile`,
-    modelDataContext,
-  );
-  expect(compileResult.status).toBe(200);
-  expect(compileResult.data.message).toEqual('OK');
+  if (!excludedPhases.includes(phase)) {
+    expect(transformJsonToGrammarResult.data.code).toEqual(grammarText);
+    logSuccess(phase, options?.debug);
+  }
+  // Phase 4: Compilation check using serialized protocol
+  phase = ROUNTRIP_TEST_PHASES.COMPILATION;
+  logPhase(phase, excludedPhases, options?.debug);
+  if (!excludedPhases.includes(phase)) {
+    // Test successful compilation with graph from serialization
+    const compileResult = await axios.post(
+      `${ENGINE_SERVER_URL}/pure/v1/compilation/compile`,
+      modelDataContext,
+    );
+    expect(compileResult.status).toBe(200);
+    expect(compileResult.data.message).toEqual('OK');
+    logSuccess(phase, options?.debug);
+  }
 };
 
 const testNameFrom = (fileName: string): string => {
@@ -170,13 +239,12 @@ const testNameFrom = (fileName: string): string => {
 
 const cases = fs
   .readdirSync(TEST_CASE_DIR)
-  .filter((caseName) => !EXCLUDED_CASE_FILES.includes(caseName))
   .map((caseName) => resolve(TEST_CASE_DIR, caseName))
   .filter((filePath) => fs.statSync(filePath).isFile())
   .map((filePath) => [testNameFrom(filePath), filePath]);
 
 describe('Protocol JSON parsed from grammar text roundtrip test', () => {
   test.each(cases)('%s', async (testName, filePath) => {
-    await checkGrammarRoundtrip(filePath);
+    await checkGrammarRoundtrip(testName, filePath, { debug: false });
   });
 });

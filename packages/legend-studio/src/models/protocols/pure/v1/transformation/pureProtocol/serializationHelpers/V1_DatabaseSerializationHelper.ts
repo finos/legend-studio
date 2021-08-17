@@ -514,7 +514,6 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
-    databaseType: primitive(),
     datasourceSpecification: custom(
       (val) => V1_serializeDatasourceSpecification(val, plugins),
       (val) => V1_deserializeDatasourceSpecification(val, plugins),
