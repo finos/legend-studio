@@ -22,7 +22,6 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   LogEvent,
@@ -64,6 +63,7 @@ import { Enumeration } from '../../models/metamodels/pure/model/packageableEleme
 import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
 import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../models/metamodels/pure/graph/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
 import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class GraphGenerationState {
   editorStore: EditorStore;

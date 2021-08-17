@@ -16,7 +16,6 @@
 
 /// <reference types="jest-extended" />
 import { ApplicationConfig } from './application/ApplicationConfig';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ApplicationStore } from './ApplicationStore';
 import { EditorStore } from './EditorStore';
 import { createBrowserHistory } from 'history';
@@ -27,6 +26,7 @@ import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { Log } from '@finos/legend-studio-shared';
+import type { Entity } from '@finos/legend-model-storage';
 
 export const testApplicationConfigData = {
   appName: 'test-app',

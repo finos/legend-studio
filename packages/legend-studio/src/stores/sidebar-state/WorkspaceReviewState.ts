@@ -31,10 +31,10 @@ import {
 } from '@finos/legend-studio-shared';
 import { ActionAlertActionType } from '../ApplicationStore';
 import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { generateSetupRoute } from '../LegendStudioRouter';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;

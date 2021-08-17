@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import {
   simpleDebuggingCase,
@@ -26,6 +25,7 @@ import { buildGraphBasic, getTestEditorStore } from '../../StoreTestUtils';
 import { simpleCoreModelData } from './CoreTestData';
 import { waitFor } from '@testing-library/dom';
 import { flowResult } from 'mobx';
+import type { Entity } from '@finos/legend-model-storage';
 
 const PARENT_ELEMENT_PATH = 'model::myFileGeneration';
 const buildParentElement = (): Entity => {

@@ -37,6 +37,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
     "@material-ui/core": "4.12.3",

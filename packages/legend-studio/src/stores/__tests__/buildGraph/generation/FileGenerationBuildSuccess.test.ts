@@ -15,10 +15,10 @@
  */
 
 import fileGenerationTestData from './FileGenerationTestData.json';
-import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { PackageableElementReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import type { Entity } from '@finos/legend-model-storage';
 
 const editorStore = getTestEditorStore();
 

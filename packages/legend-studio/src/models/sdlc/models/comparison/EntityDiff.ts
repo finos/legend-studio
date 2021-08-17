@@ -20,7 +20,7 @@ import {
   IllegalStateError,
 } from '@finos/legend-studio-shared';
 import { EntityChangeType } from '../entity/EntityChange';
-import { extractEntityNameFromPath } from '../../SDLCUtils';
+import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 
 export class EntityDiff {
   newPath?: string;

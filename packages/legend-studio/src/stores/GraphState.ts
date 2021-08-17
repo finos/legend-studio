@@ -23,7 +23,6 @@ import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import type { EntityChange } from '../models/sdlc/models/entity/EntityChange';
 import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { getGraphManager } from '../models/protocols/pure/Pure';
 import type {
   Clazz,
@@ -103,6 +102,7 @@ import { AggregationAwareSetImplementation } from '../models/metamodels/pure/mod
 import type { ProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
 import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
 import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class GraphState {
   editorStore: EditorStore;

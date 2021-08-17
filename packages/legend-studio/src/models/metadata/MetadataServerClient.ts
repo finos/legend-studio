@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@finos/legend-model-storage';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import { AbstractServerClient } from '@finos/legend-studio-shared';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { ProjectData } from './models/ProjectData';
 import type {
   ProjectVersion,

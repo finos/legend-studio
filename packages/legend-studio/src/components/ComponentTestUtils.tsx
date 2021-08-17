@@ -29,7 +29,6 @@ import { Editor } from './editor/Editor';
 import type { Project } from '../models/sdlc/models/project/Project';
 import type { Workspace } from '../models/sdlc/models/workspace/Workspace';
 import type { Version } from '../models/sdlc/models/version/Version';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
 import type { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { Revision } from '../models/sdlc/models/revision/Revision';
@@ -49,6 +48,7 @@ import type { GenerationConfigurationDescription } from '../models/metamodels/pu
 import { PluginManager } from '../application/PluginManager';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
+import type { Entity } from '@finos/legend-model-storage';
 
 export const SDLC_TestData = {
   project: {

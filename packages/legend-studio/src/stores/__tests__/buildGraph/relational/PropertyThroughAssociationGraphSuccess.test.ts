@@ -15,7 +15,6 @@
  */
 
 import { targetSetImplementationThroughAssociation } from './RelationalEntitiesTestData';
-import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import {
   unitTest,
   guaranteeNonNullable,
@@ -29,6 +28,7 @@ import {
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+import type { Entity } from '@finos/legend-model-storage';
 
 const editorStore = getTestEditorStore();
 

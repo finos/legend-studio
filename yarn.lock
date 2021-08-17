@@ -2058,6 +2058,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-model-storage@workspace:*, @finos/legend-model-storage@workspace:packages/legend-model-storage":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-model-storage@workspace:packages/legend-model-storage"
+  dependencies:
+    "@finos/legend-studio-dev-utils": "workspace:*"
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    lodash: 4.17.21
+    rimraf: 3.0.2
+    typescript: 4.3.5
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-query-app@workspace:packages/legend-query-app":
   version: 0.0.0-use.local
   resolution: "@finos/legend-query-app@workspace:packages/legend-query-app"
@@ -2265,6 +2279,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
   dependencies:
+    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
@@ -2310,6 +2325,7 @@ __metadata:
     "@ag-grid-community/client-side-row-model": 25.3.0
     "@ag-grid-community/core": 25.3.0
     "@ag-grid-community/react": 25.3.0
+    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
@@ -2382,6 +2398,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
   dependencies:
+    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-dev-utils": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"

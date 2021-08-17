@@ -26,7 +26,7 @@ import type {
 import type { Workspace } from './models/workspace/Workspace';
 import type { Revision, RevisionAlias } from './models/revision/Revision';
 import type { Build, BuildStatus } from './models/build/Build';
-import type { Entity, UpdateEntitiesCommand } from './models/entity/Entity';
+import type { UpdateEntitiesCommand } from './models/entity/UpdateEntitiesCommand';
 import type { PerformEntitiesChangesCommand } from './models/entity/EntityChange';
 import type {
   Review,
@@ -43,6 +43,7 @@ import type { UpdateProjectConfigurationCommand } from './models/configuration/U
 import type { User } from './models/User';
 import type { PlainObject, TraceData } from '@finos/legend-studio-shared';
 import { AbstractServerClient } from '@finos/legend-studio-shared';
+import type { Entity } from '@finos/legend-model-storage';
 
 enum SDLC_TRACER_SPAN {
   IMPORT_PROJECT = 'import project',

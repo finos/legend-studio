@@ -41,6 +41,7 @@
     "@ag-grid-community/client-side-row-model": "25.3.0",
     "@ag-grid-community/core": "25.3.0",
     "@ag-grid-community/react": "25.3.0",
+    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",

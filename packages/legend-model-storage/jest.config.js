@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-export class Entity {
-  classifierPath!: string;
-  path!: string;
-  content!: Record<PropertyKey, unknown>;
-}
+import base from '../../scripts/jest/jest.config.base.js';
+import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
 
-export interface UpdateEntitiesCommand {
-  message: string;
-  entities: Entity[];
-  replace: boolean;
-}
+const packageJson = loadJSON('./package.json');
+
+export default {
+  ...base,
+  displayName: packageJson.name,
+  name: packageJson.name,
+  rootDir: '../..',
+  testMatch: [
+    '<rootDir>/packages/legend-model-storage/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+  ],
+};

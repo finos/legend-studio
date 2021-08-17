@@ -151,7 +151,6 @@ export { V1_serializeRawValueSpecification } from './models/protocols/pure/v1/tr
 export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 
 // SDLC
-export { Entity } from './models/sdlc/models/entity/Entity';
 export { EntityChangeType } from './models/sdlc/models/entity/EntityChange';
 export { Build, BuildStatus } from './models/sdlc/models/build/Build';
 export { Project, ProjectType } from './models/sdlc/models/project/Project';

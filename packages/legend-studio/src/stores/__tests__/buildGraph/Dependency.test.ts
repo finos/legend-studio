@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import {
@@ -31,6 +30,7 @@ import { DependencyManager } from '../../../models/metamodels/pure/graph/Depende
 import { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { DeprecatedProjectVersionEntities } from '../../../models/metadata/models/ProjectVersionEntities';
 import { flowResult } from 'mobx';
+import type { Entity } from '@finos/legend-model-storage';
 
 const testDependingOnDifferentProjectVersions = [
   {

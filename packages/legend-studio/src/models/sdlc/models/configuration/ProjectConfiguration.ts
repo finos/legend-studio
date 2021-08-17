@@ -27,7 +27,7 @@ import {
   usingModelSchema,
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import { ENTITY_PATH_DELIMITER } from '../../SDLCUtils';
+import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
 
 const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';
 

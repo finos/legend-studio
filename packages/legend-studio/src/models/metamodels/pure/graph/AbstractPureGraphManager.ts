@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { Entity } from '../../../sdlc/models/entity/Entity';
 import type { ProjectDependencyMetadata } from '../../../sdlc/models/configuration/ProjectDependency';
 import type { ExecutionResult } from '../action/execution/ExecutionResult';
 import type { ServiceRegistrationResult } from '../action/service/ServiceRegistrationResult';
@@ -56,6 +55,7 @@ import type {
   ServerClientConfig,
 } from '@finos/legend-studio-shared';
 import type { LightQuery, Query } from '../action/query/Query';
+import type { Entity } from '@finos/legend-model-storage';
 
 export interface TEMP__EngineSetupConfig {
   env: string;

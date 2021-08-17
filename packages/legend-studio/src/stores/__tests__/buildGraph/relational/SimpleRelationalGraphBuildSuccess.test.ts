@@ -15,7 +15,6 @@
  */
 
 import { relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
-import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { unitTest, guaranteeType } from '@finos/legend-studio-shared';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
@@ -24,6 +23,7 @@ import { RootRelationalInstanceSetImplementation } from '../../../../models/meta
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+import type { Entity } from '@finos/legend-model-storage';
 
 const editorStore = getTestEditorStore();
 

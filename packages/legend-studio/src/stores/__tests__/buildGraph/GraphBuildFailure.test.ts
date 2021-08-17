@@ -27,10 +27,10 @@ import {
   testMissingClassMapping,
   testMissingClassMappingWithTargetId,
 } from './GraphBuildFailureTestData';
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import { unitTest } from '@finos/legend-studio-shared';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { flowResult } from 'mobx';
+import type { Entity } from '@finos/legend-model-storage';
 
 let editorStore: EditorStore;
 

@@ -32,7 +32,6 @@ import {
   ActionState,
 } from '@finos/legend-studio-shared';
 import { Workspace } from '../models/sdlc/models/workspace/Workspace';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { GraphError } from '../models/MetaModelUtils';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
@@ -43,6 +42,7 @@ import {
   generateViewProjectRoute,
 } from './LegendStudioRouter';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class ViewerStore {
   editorStore: EditorStore;

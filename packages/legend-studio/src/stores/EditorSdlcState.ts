@@ -36,10 +36,10 @@ import {
   RevisionAlias,
   Revision,
 } from '../models/sdlc/models/revision/Revision';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { Build } from '../models/sdlc/models/build/Build';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
 import type { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class EditorSdlcState {
   editorStore: EditorStore;

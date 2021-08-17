@@ -17,7 +17,6 @@
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import type { Entity } from '../../../sdlc/models/entity/Entity';
 import {
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
@@ -167,7 +166,6 @@ import { V1_transformRelationalDatabaseConnection } from './transformation/pureG
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database';
 import { V1_ServiceStore } from './model/packageableElements/store/relational/V1_ServiceStore';
-import { ENTITY_PATH_DELIMITER } from '../../../sdlc/SDLCUtils';
 import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity';
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
@@ -204,6 +202,8 @@ import {
   V1_buildLightQuery,
 } from './engine/V1_EngineHelper';
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
+import type { Entity } from '@finos/legend-model-storage';
+import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 

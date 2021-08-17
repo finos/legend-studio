@@ -23,7 +23,6 @@ import {
   flowResult,
 } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
@@ -31,7 +30,8 @@ import { UnsupportedOperationError } from '@finos/legend-studio-shared';
 import { mergeDiff3 } from 'node-diff3';
 import { EntityChangeConflictResolution } from '../../../models/sdlc/models/entity/EntityChangeConflict';
 import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
-import { extractEntityNameFromPath } from '../../../models/sdlc/SDLCUtils';
+import type { Entity } from '@finos/legend-model-storage';
+import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 
 const START_HEADER_MARKER = '<<<<<<<';
 const COMMON_BASE_MARKER = '|||||||';

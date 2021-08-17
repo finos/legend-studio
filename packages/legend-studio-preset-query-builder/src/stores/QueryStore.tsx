@@ -40,7 +40,6 @@ import {
 } from '@finos/legend-studio-shared';
 import type {
   LightQuery,
-  Entity,
   Mapping,
   PackageableRuntime,
   RawLambda,
@@ -72,6 +71,7 @@ import type {
 } from './LegendQueryRouter';
 import { generateExistingQueryRoute } from './LegendQueryRouter';
 import { QUERY_LOG_EVENT } from '../QueryLogEvent';
+import type { Entity } from '@finos/legend-model-storage';
 
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';

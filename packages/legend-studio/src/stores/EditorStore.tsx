@@ -86,7 +86,6 @@ import { EntityChangeConflictEditorState } from './editor-state/entity-diff-edit
 import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState';
@@ -130,6 +129,7 @@ import type { Store } from '../models/metamodels/pure/model/packageableElements/
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
+import type { Entity } from '@finos/legend-model-storage';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';

@@ -24,11 +24,11 @@ import {
   hashObject,
 } from '@finos/legend-studio-shared';
 import type { EditorStore } from '../../EditorStore';
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { extractEntityNameFromPath } from '../../../models/sdlc/SDLCUtils';
+import type { Entity } from '@finos/legend-model-storage';
+import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 
 /**
  * NOTE: when we support comparison between entities, we should create a new editor state
