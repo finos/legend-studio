@@ -2,4 +2,5 @@
 '@finos/legend-studio': patch
 ---
 
-Remove 'TEMPORARY__disableSDLCProjectStructureSupport' application config flag.
+pr: #420
+Remove `TEMPORARY__disableSDLCProjectStructureSupport` application config flag.

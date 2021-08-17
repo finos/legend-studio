@@ -115,9 +115,9 @@ const getBaseWebpackConfig = (
             // The source code of the current workspace
             resolve(dirname, './src/'),
             // Packages from the same monorepo
-            /legend-studio/,
+            /packages\/legend-/,
             // Packages coming from NPM published under '@finos' scope
-            /@finos\/legend-studio/,
+            /@finos\/legend-/,
             ...extraBabelLoaderIncludePatterns,
           ],
           use: [
