@@ -42,6 +42,7 @@ import {
   generateVieweRevisionRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
+import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 
 export class ViewerStore {
   editorStore: EditorStore;
@@ -152,6 +153,7 @@ export class ViewerStore {
           `Can't have both version ID and revision ID specified for viewer mode`,
         );
       }
+
       let entities: Entity[] = [];
 
       if (versionId) {
@@ -194,12 +196,39 @@ export class ViewerStore {
 
       // if no revision ID or version ID is specified, we will just get the project HEAD
       if (!revisionId && !versionId) {
-        entities =
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
-            this.editorStore.sdlcState.currentProjectId,
-            undefined,
-          )) as Entity[];
+        try {
+          // fetch workspace entities and config at the same time
+          const result = (yield Promise.all([
+            this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
+              this.editorStore.sdlcState.currentProjectId,
+              undefined,
+            ),
+            this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+              this.editorStore.sdlcState.currentProjectId,
+              undefined,
+            ),
+          ])) as [Entity[], PlainObject<ProjectConfiguration>];
+          entities = result[0];
+          const rawProjectConfiguration = result[1];
+          const projectConfiguration =
+            ProjectConfiguration.serialization.fromJson(
+              rawProjectConfiguration,
+            );
+          this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
+            projectConfiguration,
+          );
+          // make sure we set the original project configuration to a different object
+          this.editorStore.projectConfigurationEditorState.setOriginalProjectConfiguration(
+            projectConfiguration,
+          );
+          this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
+            entities,
+          );
+        } catch (error: unknown) {
+          return;
+        }
       }
+
       // setup engine
       yield flowResult(
         this.editorStore.graphState.graphManager.initialize(

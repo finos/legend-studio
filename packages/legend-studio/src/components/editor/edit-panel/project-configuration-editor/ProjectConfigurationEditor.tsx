@@ -350,8 +350,8 @@ export const ProjectConfigurationEditor = observer(() => {
     ProjectConfigurationEditorState,
   );
   const sdlcState = editorStore.sdlcState;
+  const isReadOnly = editorStore.isInViewerMode;
   const selectedTab = configurationEditorState.selectedTab;
-  const isReadOnly = configurationEditorState.isReadOnly;
   const tabs = [
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
