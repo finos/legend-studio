@@ -211,12 +211,14 @@ export class ViewerStore {
           ])) as [Entity[], PlainObject<ProjectConfiguration>];
           entities = result[0];
           projectConfiguration = result[1];
+          const serializedProjectConfiguration =
+            ProjectConfiguration.serialization.fromJson(projectConfiguration);
           this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
-            ProjectConfiguration.serialization.fromJson(projectConfiguration),
+            serializedProjectConfiguration,
           );
           // make sure we set the original project configuration to a different object
           this.editorStore.projectConfigurationEditorState.setOriginalProjectConfiguration(
-            ProjectConfiguration.serialization.fromJson(projectConfiguration),
+            serializedProjectConfiguration,
           );
           this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
             entities,
