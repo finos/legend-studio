@@ -31,7 +31,6 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-studio-shared';
 import { waitFor } from '@testing-library/dom';
-import type { Entity } from '@finos/legend-studio';
 import {
   RawLambda,
   setUpEditorWithDefaultSDLCData,
@@ -40,6 +39,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+import type { Entity } from '@finos/legend-model-storage';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;

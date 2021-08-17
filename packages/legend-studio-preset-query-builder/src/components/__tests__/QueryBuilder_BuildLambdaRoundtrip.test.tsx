@@ -38,7 +38,6 @@ import {
 } from '@finos/legend-studio-shared';
 import { waitFor } from '@testing-library/dom';
 import type { PlainObject } from '@finos/legend-studio-shared';
-import type { Entity } from '@finos/legend-studio';
 import {
   RawLambda,
   setUpEditorWithDefaultSDLCData,
@@ -70,6 +69,7 @@ import {
 } from './QueryBuilder_TestQueriesWithFullPathFunctions';
 
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+import type { Entity } from '@finos/legend-model-storage';
 
 type RoundtripTestCase = [
   string,

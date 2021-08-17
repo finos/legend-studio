@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { Entity } from '../../../sdlc/models/entity/Entity';
-import type { ProjectDependencyMetadata } from '../../../sdlc/models/configuration/ProjectDependency';
 import type { ExecutionResult } from '../action/execution/ExecutionResult';
 import type { ServiceRegistrationResult } from '../action/service/ServiceRegistrationResult';
 import type { Service } from '../model/packageableElements/service/Service';
@@ -45,15 +43,18 @@ import type { PluginManager } from '../../../../application/PluginManager';
 import type { DatabaseBuilderInput } from '../action/generation/DatabaseBuilderInput';
 import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
-import type { ServerClientConfig } from '@finos/legend-studio-network';
 import type { RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type {
   ExecutionPlan,
   RawExecutionPlan,
 } from '../model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type {
+  GeneratorFn,
+  ServerClientConfig,
+} from '@finos/legend-studio-shared';
 import type { LightQuery, Query } from '../action/query/Query';
+import type { Entity } from '@finos/legend-model-storage';
 
 export interface TEMP__EngineSetupConfig {
   env: string;
@@ -131,7 +132,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    projectDependencyMetadataMap: Map<string, ProjectDependencyMetadata>,
+    dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
   ): GeneratorFn<void>;
 

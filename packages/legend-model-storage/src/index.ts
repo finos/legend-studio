@@ -14,21 +14,4 @@
  * limitations under the License.
  */
 
-import { returnUndefOnError } from './ErrorUtils';
-
-const VALID_STRING = /^[\w_][\w_$]*$/u;
-
-export const isValidString = (val: string): boolean =>
-  Boolean(val.match(VALID_STRING));
-
-export const isValidJSONString = (value: string): boolean => {
-  try {
-    JSON.parse(value);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-export const isValidUrl = (val: string): boolean =>
-  Boolean(returnUndefOnError(() => new URL(val)));
+export * from './Entity';

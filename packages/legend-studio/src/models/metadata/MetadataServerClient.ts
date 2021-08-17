@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { AbstractServerClient } from '@finos/legend-studio-network';
+import type { Entity } from '@finos/legend-model-storage';
 import type { PlainObject } from '@finos/legend-studio-shared';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
+import { AbstractServerClient } from '@finos/legend-studio-shared';
 import type { ProjectData } from './models/ProjectData';
 import type {
-  ProjectVersion,
+  DeprecatedProjectVersion,
   DeprecatedProjectVersionEntities,
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities';
@@ -129,7 +129,7 @@ export class MetadataServerClient extends AbstractServerClient {
     /**
      * List of (direct) dependencies.
      */
-    dependencies: PlainObject<ProjectVersion>[],
+    dependencies: PlainObject<DeprecatedProjectVersion>[],
     /**
      * Flag indicating if transitive dependencies should be returned.
      */

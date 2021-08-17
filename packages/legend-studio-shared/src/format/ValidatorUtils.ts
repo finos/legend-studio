@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-import base from '../../scripts/jest/jest.config.base.js';
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { returnUndefOnError } from '../error/ErrorUtils';
 
-const packageJson = loadJSON('./package.json');
+const VALID_STRING = /^[\w_][\w_$]*$/u;
 
-export default {
-  ...base,
-  displayName: packageJson.name,
-  name: packageJson.name,
-  rootDir: '../..',
-  testMatch: [
-    '<rootDir>/packages/legend-studio-network/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
-  ],
+export const isValidString = (val: string): boolean =>
+  Boolean(val.match(VALID_STRING));
+
+export const isValidJSONString = (value: string): boolean => {
+  try {
+    JSON.parse(value);
+    return true;
+  } catch {
+    return false;
+  }
 };
+
+export const isValidUrl = (val: string): boolean =>
+  Boolean(returnUndefOnError(() => new URL(val)));

@@ -34,11 +34,11 @@ import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
 import {
-  roundUpResizingForPanel,
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
+  getControlledResizablePanelProps,
 } from '@finos/legend-studio-components';
 import { isNonNullable } from '@finos/legend-studio-shared';
 import { NotificationSnackbar } from '../application/NotificationSnackbar';
@@ -181,12 +181,10 @@ export const ViewerInner = observer(() => {
   const allowOpeningElement =
     editorStore.sdlcState.currentProject &&
     editorStore.graphState.graph.buildState.hasSucceeded;
-  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void => {
-    roundUpResizingForPanel(handleProps);
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
     editorStore.sideBarDisplayState.setSize(
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
     );
-  };
   // Extensions
   const extraEditorExtensionComponents =
     editorStore.applicationStore.pluginManager
@@ -257,14 +255,19 @@ export const ViewerInner = observer(() => {
                     className="review-explorer__content"
                   >
                     <ResizablePanel
-                      size={editorStore.sideBarDisplayState.size}
+                      {...getControlledResizablePanelProps(
+                        editorStore.sideBarDisplayState.size === 0,
+                        {
+                          onStopResize: resizeSideBar,
+                        },
+                      )}
                       direction={1}
-                      onStopResize={resizeSideBar}
+                      size={editorStore.sideBarDisplayState.size}
                     >
                       <SideBar />
                     </ResizablePanel>
                     <ResizablePanelSplitter />
-                    <ResizablePanel>
+                    <ResizablePanel minSize={300}>
                       {editorStore.isInFormMode && <EditPanel />}
                       {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
                     </ResizablePanel>

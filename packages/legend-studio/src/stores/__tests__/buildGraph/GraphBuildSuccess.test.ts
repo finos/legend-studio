@@ -15,7 +15,6 @@
  */
 
 import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import { PRIMITIVE_TYPE } from '../../../models/MetaModelConst';
 import { fromElementPathToMappingElementId } from '../../../models/MetaModelUtils';
 import { unitTest } from '@finos/legend-studio-shared';
@@ -24,6 +23,7 @@ import type { PureInstanceSetImplementation } from '../../../models/metamodels/p
 import type { OperationSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { Enum } from '../../../models/metamodels/pure/model/packageableElements/domain/Enum';
 import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
+import type { Entity } from '@finos/legend-model-storage';
 
 const editorStore = getTestEditorStore();
 

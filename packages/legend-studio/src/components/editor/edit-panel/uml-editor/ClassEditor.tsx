@@ -45,6 +45,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   BlankPanelContent,
+  getControlledResizablePanelProps,
 } from '@finos/legend-studio-components';
 import { CORE_TEST_ID } from '../../../../const';
 import {
@@ -1317,6 +1318,7 @@ export const ClassFormEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
+            {...getControlledResizablePanelProps(!selectedProperty)}
             flex={0}
             direction={-1}
             size={selectedProperty ? 250 : 0}

@@ -15,8 +15,12 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import { ContentType } from '@finos/legend-studio-shared';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type {
+  PlainObject,
+  ServerClientConfig,
+  TraceData,
+} from '@finos/legend-studio-shared';
+import { ContentType, AbstractServerClient } from '@finos/legend-studio-shared';
 import type { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportMode } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
@@ -36,11 +40,6 @@ import type { V1_GenerationConfigurationDescription } from './generation/V1_Gene
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
 import type { V1_ExecuteInput } from './execution/V1_ExecuteInput';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
-import type {
-  ServerClientConfig,
-  TraceData,
-} from '@finos/legend-studio-network';
-import { AbstractServerClient } from '@finos/legend-studio-network';
 import type { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
 import type { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';

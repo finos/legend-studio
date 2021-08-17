@@ -42,6 +42,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitterLine,
   BlankPanelContent,
+  getControlledResizablePanelProps,
 } from '@finos/legend-studio-components';
 import { getElementIcon } from '../../../shared/Icon';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-studio-shared';
@@ -505,6 +506,7 @@ export const AssociationEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
+            {...getControlledResizablePanelProps(!selectedProperty)}
             flex={0}
             direction={-1}
             size={selectedProperty ? 250 : 0}

@@ -18,8 +18,6 @@
 
 - [#344](https://github.com/finos/legend-studio/pull/344) [`e3c0c75`](https://github.com/finos/legend-studio/commit/e3c0c752c15a85ca9370794099a177ccf63b4958) Thanks [@akphi](https://github.com/akphi)! - Include a check for unknown packages in changeset validation tools. This is useful to check if the PR removes any packages that might render some existing changesets invalid.
 
-* [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! -
-
 ## 0.0.22
 
 ## 0.0.21

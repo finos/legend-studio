@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { uuid } from '../utils/CommonUtils';
+import { uuid } from '../CommonUtils';
 
 export abstract class AbstractPlugin {
   private readonly name: string;

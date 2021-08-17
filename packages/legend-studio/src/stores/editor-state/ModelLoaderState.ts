@@ -17,7 +17,6 @@
 import { observable, action, flow, makeObservable } from 'mobx';
 import { TAB_SIZE } from '../EditorConfig';
 import { EditorState } from '../editor-state/EditorState';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
   LogEvent,
@@ -28,6 +27,7 @@ import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { ImportConfigurationDescription } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
 import { ImportMode } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
+import type { Entity } from '@finos/legend-model-storage';
 
 export enum MODEL_UPDATER_INPUT_TYPE {
   ENTITIES = 'ENTITIES',

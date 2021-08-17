@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@finos/legend-model-storage';
 import { unitTest, Log } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
 import {
@@ -21,7 +22,6 @@ import {
   PureModel,
   SystemModel,
 } from '../../../../../../../metamodels/pure/graph/PureModel';
-import type { Entity } from '../../../../../../../sdlc/models/entity/Entity';
 import { V1_PureGraphManager } from '../../../../V1_PureGraphManager';
 import { V1_unsupportedFunctionExpression } from './V1_ValueSpecificationBuilderTestData';
 

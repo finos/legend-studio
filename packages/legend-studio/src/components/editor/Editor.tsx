@@ -22,7 +22,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
 import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
 import {
-  roundUpResizingForPanel,
+  getControlledResizablePanelProps,
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
@@ -93,19 +93,15 @@ export const EditorInner = observer(() => {
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // These create snapping effect on panel resizing
-  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void => {
-    roundUpResizingForPanel(handleProps);
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
     editorStore.sideBarDisplayState.setSize(
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
     );
-  };
 
-  const resizeAuxPanel = (handleProps: ResizablePanelHandlerProps): void => {
-    roundUpResizingForPanel(handleProps);
+  const resizeAuxPanel = (handleProps: ResizablePanelHandlerProps): void =>
     editorStore.auxPanelDisplayState.setSize(
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().height,
     );
-  };
 
   useEffect(() => {
     if (ref.current) {
@@ -263,16 +259,25 @@ export const EditorInner = observer(() => {
                 >
                   <ResizablePanelGroup orientation="vertical">
                     <ResizablePanel
+                      {...getControlledResizablePanelProps(
+                        editorStore.sideBarDisplayState.size === 0,
+                        {
+                          onStopResize: resizeSideBar,
+                        },
+                      )}
                       size={editorStore.sideBarDisplayState.size}
-                      onStopResize={resizeSideBar}
                       direction={1}
                     >
                       <SideBar />
                     </ResizablePanel>
                     <ResizablePanelSplitter />
-                    <ResizablePanel>
+                    <ResizablePanel minSize={300}>
                       <ResizablePanelGroup orientation="horizontal">
-                        <ResizablePanel>
+                        <ResizablePanel
+                          {...getControlledResizablePanelProps(
+                            editorStore.auxPanelDisplayState.isMaximized,
+                          )}
+                        >
                           {(isResolvingConflicts || editable) &&
                             editorStore.isInFormMode && <EditPanel />}
                           {editable && editorStore.isInGrammarTextMode && (
@@ -281,13 +286,24 @@ export const EditorInner = observer(() => {
                           {!editable && <EditPanelSplashScreen />}
                         </ResizablePanel>
                         <ResizablePanelSplitter>
-                          <ResizablePanelSplitterLine color="var(--color-dark-grey-250)" />
+                          <ResizablePanelSplitterLine
+                            color={
+                              editorStore.auxPanelDisplayState.isMaximized
+                                ? 'transparent'
+                                : 'var(--color-dark-grey-250)'
+                            }
+                          />
                         </ResizablePanelSplitter>
                         <ResizablePanel
+                          {...getControlledResizablePanelProps(
+                            editorStore.auxPanelDisplayState.size === 0,
+                            {
+                              onStopResize: resizeAuxPanel,
+                            },
+                          )}
                           flex={0}
                           direction={-1}
                           size={editorStore.auxPanelDisplayState.size}
-                          onStopResize={resizeAuxPanel}
                         >
                           <AuxiliaryPanel />
                         </ResizablePanel>

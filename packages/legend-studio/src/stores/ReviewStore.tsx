@@ -20,13 +20,13 @@ import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-studio-shared';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { makeAutoObservable, action, flowResult } from 'mobx';
 import { Review } from '../models/sdlc/models/review/Review';
 import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
 import { Project } from '../models/sdlc/models/project/Project';
 import { EDITOR_MODE, ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class ReviewStore {
   editorStore: EditorStore;

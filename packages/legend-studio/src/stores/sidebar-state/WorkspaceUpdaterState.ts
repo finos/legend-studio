@@ -27,7 +27,6 @@ import {
 } from '../../models/sdlc/models/revision/Revision';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import {
   LogEvent,
@@ -41,6 +40,7 @@ import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/En
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { EntityChangeConflict } from '../../models/sdlc/models/entity/EntityChangeConflict';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;

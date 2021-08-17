@@ -15,7 +15,7 @@
  */
 
 import { EnrichedError } from './ErrorUtils';
-import type { GenericClazz } from './CommonUtils';
+import type { GenericClazz } from '../CommonUtils';
 
 export class AssertionError extends EnrichedError {
   constructor(error: string | Error | undefined, message?: string) {

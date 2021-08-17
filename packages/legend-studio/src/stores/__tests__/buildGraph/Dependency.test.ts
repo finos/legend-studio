@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import type { PlainObject } from '@finos/legend-studio-shared';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-studio-shared';
 import {
@@ -31,6 +30,7 @@ import { DependencyManager } from '../../../models/metamodels/pure/graph/Depende
 import { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { DeprecatedProjectVersionEntities } from '../../../models/metadata/models/ProjectVersionEntities';
 import { flowResult } from 'mobx';
+import type { Entity } from '@finos/legend-model-storage';
 
 const testDependingOnDifferentProjectVersions = [
   {
@@ -176,7 +176,7 @@ const testDependencyElements = async (
     .mockResolvedValue(dependencyEntities);
   await flowResult(editorStore.graphState.initializeSystem());
   const dependencyManager = new DependencyManager([]);
-  const dependencyMap = await flowResult(
+  const dependencyEntitiesMap = await flowResult(
     editorStore.graphState.getConfigurationProjectDependencyEntities(),
   );
   editorStore.graphState.graph.setDependencyManager(dependencyManager);
@@ -185,7 +185,7 @@ const testDependencyElements = async (
       editorStore.graphState.coreModel,
       editorStore.graphState.systemModel,
       dependencyManager,
-      dependencyMap,
+      dependencyEntitiesMap,
     ),
   );
   await waitFor(() =>
@@ -204,7 +204,7 @@ const testDependencyElements = async (
   await waitFor(() =>
     expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
   );
-  Array.from(dependencyMap.keys()).forEach((k) =>
+  Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
   Array.from(keys).forEach((k) =>

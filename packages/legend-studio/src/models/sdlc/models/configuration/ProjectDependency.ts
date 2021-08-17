@@ -22,17 +22,10 @@ import {
   usingModelSchema,
 } from '@finos/legend-studio-shared';
 import type { Hashable } from '@finos/legend-studio-shared';
-import type { Entity } from '../entity/Entity';
 import { VersionId } from '../version/VersionId';
 import { observable, action, computed, makeObservable } from 'mobx';
-import type { ProjectVersion } from '../../../metadata/models/ProjectVersionEntities';
 
 const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';
-
-export interface ProjectDependencyMetadata {
-  entities: Entity[];
-  projectVersion: ProjectVersion;
-}
 
 export class ProjectDependency implements Hashable {
   uuid = uuid();
@@ -43,8 +36,6 @@ export class ProjectDependency implements Hashable {
     makeObservable(this, {
       projectId: observable,
       versionId: observable,
-      pathVersion: computed,
-      version: computed,
       setProjectId: action,
       setVersionId: action,
       hashCode: computed,
@@ -60,13 +51,6 @@ export class ProjectDependency implements Hashable {
       versionId: usingModelSchema(VersionId.serialization.schema),
     }),
   );
-
-  get pathVersion(): string {
-    return `v${this.versionId.pathId}`;
-  }
-  get version(): string {
-    return this.versionId.id;
-  }
 
   setProjectId(projectId: string): void {
     this.projectId = projectId;

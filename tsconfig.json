@@ -7,7 +7,7 @@
   "references": [
     { "path": "packages/legend-studio-shared" },
     { "path": "packages/legend-studio-components" },
-    { "path": "packages/legend-studio-network" },
+    { "path": "packages/legend-model-storage" },
     { "path": "packages/legend-studio" },
     { "path": "packages/legend-studio-app" },
     { "path": "packages/legend-studio-plugin-tracer-zipkin" },

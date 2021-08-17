@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@finos/legend-model-storage';
 import type { TreeData, TreeNodeData } from '@finos/legend-studio-components';
 import type { GeneratorFn } from '@finos/legend-studio-shared';
 import {
@@ -41,7 +42,6 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
-import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { EditorStore } from '../../../EditorStore';
 

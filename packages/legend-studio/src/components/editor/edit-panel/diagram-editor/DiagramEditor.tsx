@@ -44,7 +44,7 @@ import {
 } from '../../../../stores/shared/DnDUtil';
 import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
 import {
-  roundUpResizingForPanel,
+  getControlledResizablePanelProps,
   BasePopover,
   BlankPanelContent,
   CaretDownIcon,
@@ -612,29 +612,32 @@ const DiagramEditorOverlay = observer(
     const { diagramEditorState } = props;
     const sidePanelState = diagramEditorState.sidePanelState;
 
-    const resizeSidePanel = (handleProps: ResizablePanelHandlerProps): void => {
-      roundUpResizingForPanel(handleProps);
+    const resizeSidePanel = (handleProps: ResizablePanelHandlerProps): void =>
       diagramEditorState.sidePanelDisplayState.setSize(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
-    };
 
     return (
       <ResizablePanelGroup
         className="diagram-editor__overlay"
         orientation="vertical"
       >
-        <ResizablePanel>
+        <ResizablePanel minSize={300}>
           <div className="diagram-editor__view-finder" />
         </ResizablePanel>
         <ResizablePanelSplitter className="diagram-editor__overlay__panel-resizer" />
         <ResizablePanel
-          className="diagram-editor__overlay__panel"
+          {...getControlledResizablePanelProps(
+            diagramEditorState.sidePanelDisplayState.size === 0,
+            {
+              classes: ['diagram-editor__overlay__panel'],
+              onStopResize: resizeSidePanel,
+            },
+          )}
           flex={0}
-          size={diagramEditorState.sidePanelDisplayState.size}
           direction={-1}
-          onStopResize={resizeSidePanel}
+          size={diagramEditorState.sidePanelDisplayState.size}
         >
           <div className="panel diagram-editor__side-panel">
             {sidePanelState instanceof

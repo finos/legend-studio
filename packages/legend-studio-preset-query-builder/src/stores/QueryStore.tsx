@@ -40,12 +40,10 @@ import {
 } from '@finos/legend-studio-shared';
 import type {
   LightQuery,
-  Entity,
   Mapping,
   PackageableRuntime,
   RawLambda,
   Service,
-  ProjectDependencyMetadata,
   PackageableElement,
 } from '@finos/legend-studio';
 import {
@@ -72,6 +70,7 @@ import type {
 } from './LegendQueryRouter';
 import { generateExistingQueryRoute } from './LegendQueryRouter';
 import { QUERY_LOG_EVENT } from '../QueryLogEvent';
+import type { Entity } from '@finos/legend-model-storage';
 
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
@@ -648,7 +647,7 @@ export class QueryStore {
           dependencyManager,
           (yield flowResult(
             this.getProjectDependencyEntities(project, versionId),
-          )) as Map<string, ProjectDependencyMetadata>,
+          )) as Map<string, Entity[]>,
         ),
       );
       this.editorStore.graphState.graph.setDependencyManager(dependencyManager);
@@ -674,12 +673,9 @@ export class QueryStore {
   *getProjectDependencyEntities(
     project: ProjectData,
     versionId: string,
-  ): GeneratorFn<Map<string, ProjectDependencyMetadata>> {
+  ): GeneratorFn<Map<string, Entity[]>> {
     this.buildGraphState.inProgress();
-    const projectDependencyMetadataMap = new Map<
-      string,
-      ProjectDependencyMetadata
-    >();
+    const dependencyEntitiesMap = new Map<string, Entity[]>();
     try {
       let dependencyEntitiesJson: PlainObject<ProjectVersionEntities>[] = [];
       if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
@@ -704,13 +700,9 @@ export class QueryStore {
         dependencyEntitiesJson
           .map((e) => ProjectVersionEntities.serialization.fromJson(e))
           .forEach((dependencyInfo) => {
-            const projectDependenciesMetadata = {
-              entities: dependencyInfo.entities,
-              projectVersion: dependencyInfo.projectVersion,
-            };
-            projectDependencyMetadataMap.set(
+            dependencyEntitiesMap.set(
               dependencyInfo.id,
-              projectDependenciesMetadata,
+              dependencyInfo.entities,
             );
           });
       }
@@ -722,7 +714,7 @@ export class QueryStore {
       this.editorStore.applicationStore.notifyError(error);
       this.buildGraphState.fail();
     }
-    return projectDependencyMetadataMap;
+    return dependencyEntitiesMap;
   }
 
   private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {

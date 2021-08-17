@@ -16,13 +16,21 @@
 
 import { list, createModelSchema, primitive, raw } from 'serializr';
 import { SerializationFactory } from '@finos/legend-studio-shared';
-import type { Entity } from '../../sdlc/models/entity/Entity';
+import type { Entity } from '@finos/legend-model-storage';
 
-export interface ProjectVersion {
+/**
+ * @deprecated This will be removed when we update SDLC project dependency
+ * to use `groupId` and `artifactId` to be consistent with metadata server.
+ */
+export interface DeprecatedProjectVersion {
   projectId: string;
   versionId: string;
 }
 
+/**
+ * @deprecated This will be removed when we update SDLC project dependency
+ * to use `groupId` and `artifactId` to be consistent with metadata server.
+ */
 export class DeprecatedProjectVersionEntities {
   projectId!: string;
   versionId!: string;
@@ -36,7 +44,7 @@ export class DeprecatedProjectVersionEntities {
     }),
   );
 
-  get projectVersion(): ProjectVersion {
+  get projectVersion(): DeprecatedProjectVersion {
     return {
       projectId: this.projectId,
       versionId: this.versionId,
@@ -58,7 +66,8 @@ export class ProjectVersionEntities {
       entities: list(raw()),
     }),
   );
-  get projectVersion(): ProjectVersion {
+
+  get projectVersion(): DeprecatedProjectVersion {
     return {
       projectId: `${this.id}`,
       versionId: this.versionId,

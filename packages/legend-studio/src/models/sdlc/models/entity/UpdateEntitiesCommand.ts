@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { findLast, guaranteeNonNullable } from '@finos/legend-studio-shared';
+import type { Entity } from '@finos/legend-model-storage';
 
-export const ENTITY_PATH_DELIMITER = '::';
-
-export const extractEntityNameFromPath = (fullPath: string): string =>
-  guaranteeNonNullable(findLast(fullPath.split(ENTITY_PATH_DELIMITER)));
+export interface UpdateEntitiesCommand {
+  message: string;
+  entities: Entity[];
+  replace: boolean;
+}

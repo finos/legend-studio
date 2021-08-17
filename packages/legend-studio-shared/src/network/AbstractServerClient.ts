@@ -19,13 +19,13 @@ import type {
   RequestHeaders,
   RequestProcessConfig,
   ResponseProcessConfig,
-} from '@finos/legend-studio-shared';
+} from './NetworkUtils';
 import {
   HttpMethod,
   makeUrl,
   createRequestHeaders,
   NetworkClient,
-} from '@finos/legend-studio-shared';
+} from './NetworkUtils';
 import type { TraceData, TracerServicePlugin } from './TracerService';
 import { TracerService } from './TracerService';
 

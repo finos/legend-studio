@@ -6,8 +6,6 @@
 
 ### Patch Changes
 
-- [#400](https://github.com/finos/legend-studio/pull/400) [`8303f1b`](https://github.com/finos/legend-studio/commit/8303f1bdfed2d46bd0425b45d727a9b203cec229) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! -
-
 - Updated dependencies [[`3175301`](https://github.com/finos/legend-studio/commit/3175301a3919d25557a2d975df75f95886d11a53)]:
   - @finos/legend-studio-shared@0.0.26
   - @finos/legend-studio-components@0.0.30
@@ -174,8 +172,6 @@
 * [#290](https://github.com/finos/legend-studio/pull/290) [`cb0ff2b`](https://github.com/finos/legend-studio/commit/cb0ff2b7aecfaf2a89d4ddc98e04854c25624ce8) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add database builder in the relational connection editor to support generating a database from a connection specification.
 
 - [#340](https://github.com/finos/legend-studio/pull/340) [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb) Thanks [@akphi](https://github.com/akphi)! - Improve diagram editor modelling capabilities (related to https://github.com/finos/legend-studio/issues/300). In diagram editor, users now have can see all supported hotkeys and have the tools to create new classes, properties, inheritance relationships, etc. All of this is made possible thanks to @pierredebelen for contributing to the core diagram renderer in https://github.com/finos/legend-studio/pull/338.
-
-* [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! -
 
 - [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! - Add support for `BigQuery` connection.
 

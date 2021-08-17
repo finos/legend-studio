@@ -19,15 +19,15 @@ import SpanBuilder from 'zipkin-javascript-opentracing';
 import { BatchRecorder, jsonEncoder } from 'zipkin';
 import { HttpLogger } from 'zipkin-transport-http';
 import type { Span as ZipkinSpan } from 'opentracing';
+import type { TraceData } from '@finos/legend-studio-shared';
 import {
   assertNonEmptyString,
   guaranteeNonNullable,
   isNonNullable,
+  TracerServicePlugin,
 } from '@finos/legend-studio-shared';
 import type { PluginManager } from '@finos/legend-studio';
 import { CORE_TRACER_TAG } from '@finos/legend-studio';
-import { TracerServicePlugin } from '@finos/legend-studio-network';
-import type { TraceData } from '@finos/legend-studio-network';
 
 interface ZipkinTracerPluginConfigData {
   url: string;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from './CommonUtils';
+import type { PlainObject } from '../CommonUtils';
 import type { ClazzOrModelSchema, ModelSchema, PropSchema } from 'serializr';
 import { custom, SKIP, deserialize, serialize } from 'serializr';
 

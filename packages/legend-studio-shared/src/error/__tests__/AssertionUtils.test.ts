@@ -19,7 +19,7 @@ import {
   AssertionError,
   guaranteeNonNullable,
 } from '../AssertionUtils';
-import { unitTest } from '../TestUtils';
+import { unitTest } from '../../application/TestUtils';
 
 test(unitTest('Check nullable value'), () => {
   expect(isNonNullable(null)).toEqual(false);

@@ -31,7 +31,6 @@ import {
   assertErrorThrown,
   usingModelSchema,
 } from '@finos/legend-studio-shared';
-import type { Entity } from '../../../../../sdlc/models/entity/Entity';
 import { GraphDataParserError } from '../../../../../MetaModelUtils';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';
@@ -46,6 +45,7 @@ import { V1_AlloySdlc } from '../../model/context/V1_AlloySdlc';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
 import { V1_packageableElementPointerDeserrializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin';
+import type { Entity } from '@finos/legend-model-storage';
 
 enum V1_SdlcType {
   ALLOY = 'alloy',

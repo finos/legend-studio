@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
-export * from './TracerService';
-export * from './TelemetryService';
-export * from './AbstractServerClient';
+import { findLast, guaranteeNonNullable } from '@finos/legend-studio-shared';
+
+export const ENTITY_PATH_DELIMITER = '::';
+
+export const extractEntityNameFromPath = (fullPath: string): string =>
+  guaranteeNonNullable(findLast(fullPath.split(ENTITY_PATH_DELIMITER)));
+
+export class Entity {
+  classifierPath!: string;
+  path!: string;
+  content!: Record<PropertyKey, unknown>;
+}

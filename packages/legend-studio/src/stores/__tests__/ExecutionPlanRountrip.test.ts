@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
+import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-studio-shared';
 import { buildGraphBasic, getTestEditorStore } from '../StoreTestUtils';
 import { simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';

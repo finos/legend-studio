@@ -15,9 +15,9 @@
  */
 
 import { cloneDeep as deepClone, mergeWith, pickBy } from 'lodash-es';
-import { UnsupportedOperationError } from './ErrorUtils';
+import { UnsupportedOperationError } from './error/ErrorUtils';
 import { format as prettyPrintObject } from 'pretty-format';
-import { assertTrue } from './AssertionUtils';
+import { assertTrue } from './error/AssertionUtils';
 
 // NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
 // in case we want to swap out the implementation

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import { unitTest } from '@finos/legend-studio-shared';
 import {
   testInferenceDefaultMappingElementID,
@@ -28,6 +27,7 @@ import {
   buildGraphBasic,
 } from '../StoreTestUtils';
 import { flowResult } from 'mobx';
+import type { Entity } from '@finos/legend-model-storage';
 
 test(unitTest('Infer default mapping element ID'), async () => {
   const editorStore = getTestEditorStore();

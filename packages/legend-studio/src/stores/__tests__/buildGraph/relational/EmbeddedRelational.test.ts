@@ -15,12 +15,12 @@
  */
 
 import { embeddedRelationalTestData } from './RelationalEntitiesTestData';
-import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
 import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+import type { Entity } from '@finos/legend-model-storage';
 
 const editorStore = getTestEditorStore();
 

@@ -23,7 +23,6 @@ import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import type { EntityChange } from '../models/sdlc/models/entity/EntityChange';
 import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
 import { getGraphManager } from '../models/protocols/pure/Pure';
 import type {
   Clazz,
@@ -40,7 +39,6 @@ import {
   isNonNullable,
   NetworkClientError,
 } from '@finos/legend-studio-shared';
-import type { ProjectDependencyMetadata } from '../models/sdlc/models/configuration/ProjectDependency';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import {
@@ -100,9 +98,10 @@ import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import type { PropertyMapping } from '../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import { AssociationImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import type { ProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
+import type { DeprecatedProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
 import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
 import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class GraphState {
   editorStore: EditorStore;
@@ -294,7 +293,7 @@ export class GraphState {
           dependencyManager,
           (yield flowResult(
             this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, ProjectDependencyMetadata>,
+          )) as Map<string, Entity[]>,
         ),
       );
       this.graph.setDependencyManager(dependencyManager);
@@ -340,7 +339,7 @@ export class GraphState {
           dependencyManager,
           (yield flowResult(
             this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, ProjectDependencyMetadata>,
+          )) as Map<string, Entity[]>,
         ),
       );
       this.graph.setDependencyManager(dependencyManager);
@@ -824,7 +823,7 @@ export class GraphState {
             dependencyManager,
             (yield flowResult(
               this.getConfigurationProjectDependencyEntities(),
-            )) as Map<string, ProjectDependencyMetadata>,
+            )) as Map<string, Entity[]>,
           ),
         );
         newGraph.setDependencyManager(dependencyManager);
@@ -994,12 +993,9 @@ export class GraphState {
   }
 
   *getConfigurationProjectDependencyEntities(): GeneratorFn<
-    Map<string, ProjectDependencyMetadata>
+    Map<string, Entity[]>
   > {
-    const projectDependencyMetadataMap = new Map<
-      string,
-      ProjectDependencyMetadata
-    >();
+    const dependencyEntitiesMap = new Map<string, Entity[]>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration;
@@ -1011,13 +1007,11 @@ export class GraphState {
     );
     try {
       if (directDependencies.length) {
-        const metadataClient =
-          this.editorStore.applicationStore.networkClientManager.metadataClient;
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield metadataClient.getProjectVersionsDependencyEntities(
-            directDependencies as PlainObject<ProjectVersion>[],
+          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getProjectVersionsDependencyEntities(
+            directDependencies as PlainObject<DeprecatedProjectVersion>[],
             true,
             true,
           )) as PlainObject<DeprecatedProjectVersionEntities>[];
@@ -1046,13 +1040,9 @@ export class GraphState {
               )}.`,
             );
           }
-          const projectDependenciesMetadata = {
-            entities: dependencyInfo.entities,
-            projectVersion: dependencyInfo.projectVersion,
-          };
-          projectDependencyMetadataMap.set(
+          dependencyEntitiesMap.set(
             dependencyInfo.projectId,
-            projectDependenciesMetadata,
+            dependencyInfo.entities,
           );
           dependencyProjects.add(dependencyInfo.projectId);
         });
@@ -1067,7 +1057,7 @@ export class GraphState {
       this.editorStore.applicationStore.notifyError(error);
       throw new DependencyGraphProcessingError(error);
     }
-    return projectDependencyMetadataMap;
+    return dependencyEntitiesMap;
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------

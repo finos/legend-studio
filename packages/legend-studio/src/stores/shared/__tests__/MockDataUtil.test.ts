@@ -15,11 +15,11 @@
  */
 
 import completeGraphEntities from './MockDataGenerationTestData.json';
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import { classHasCycle, createMockClassInstance } from '../MockDataUtil';
 import { unitTest } from '@finos/legend-studio-shared';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { flowResult } from 'mobx';
+import type { Entity } from '@finos/legend-model-storage';
 
 const editorStore = getTestEditorStore();
 

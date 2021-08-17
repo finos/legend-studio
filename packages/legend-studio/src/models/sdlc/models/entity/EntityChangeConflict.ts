@@ -21,8 +21,8 @@ import {
   IllegalStateError,
   shallowStringify,
 } from '@finos/legend-studio-shared';
-import type { Entity } from './Entity';
-import { extractEntityNameFromPath } from '../../SDLCUtils';
+import type { Entity } from '@finos/legend-model-storage';
+import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 
 export class EntityChangeConflictResolution {
   entityPath: string;

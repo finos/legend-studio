@@ -32,7 +32,6 @@ import {
   deleteEntry,
 } from '@finos/legend-studio-shared';
 import { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
 import {
   RevisionAlias,
   Revision,
@@ -47,6 +46,7 @@ import type {
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { EntityChangeType } from '../../models/sdlc/models/entity/EntityChange';
 import { ACTIVITY_MODE } from '../EditorConfig';
+import type { Entity } from '@finos/legend-model-storage';
 
 export class ConflictResolutionState {
   editorStore: EditorStore;
