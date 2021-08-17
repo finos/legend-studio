@@ -514,6 +514,7 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
+    databaseType: primitive(),
     datasourceSpecification: custom(
       (val) => V1_serializeDatasourceSpecification(val, plugins),
       (val) => V1_deserializeDatasourceSpecification(val, plugins),
@@ -535,6 +536,10 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
             V1_deserializePostProcessor(value, plugins),
           false,
         ),
+    ),
+    postProcessorWithParameter: custom(
+      (values) => serializeArray(values, (value) => value, true),
+      (values) => deserializeArray(values, (value: unknown) => value, false),
     ),
     type: primitive(),
   });

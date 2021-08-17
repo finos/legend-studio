@@ -69,6 +69,7 @@ const EXCLUDED_CASE_FILES: string[] = [
   'embedded-relational-mapping.pure',
   'nested-embedded-relational-mapping.pure',
   'relational-mapping-filter.pure',
+  // post processor mismatch between engine (undefined) vs studio ([])
   'relational-connection.pure',
 ];
 

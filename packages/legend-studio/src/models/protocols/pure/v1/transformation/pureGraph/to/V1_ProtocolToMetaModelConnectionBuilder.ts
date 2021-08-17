@@ -229,6 +229,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     val.postProcessors = connection.postProcessors.map((p) =>
       V1_buildPostProcessor(p, this.context),
     );
+    val.postProcessorWithParameter = connection.postProcessorWithParameter;
     return val;
   }
 }

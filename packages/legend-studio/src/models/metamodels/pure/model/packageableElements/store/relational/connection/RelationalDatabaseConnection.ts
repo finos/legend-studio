@@ -46,6 +46,7 @@ export abstract class DatabaseConnection extends Connection {
   // debug?: boolean;
   timeZone?: string;
   quoteIdentifiers?: boolean;
+  postProcessorWithParameter: unknown[] = [];
 
   constructor(
     store: PackageableElementReference<Database>,
