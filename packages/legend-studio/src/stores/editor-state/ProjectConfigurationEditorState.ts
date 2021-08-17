@@ -348,22 +348,17 @@ export class ProjectConfigurationEditorState extends EditorState {
   }
 
   *fetchLatestProjectStructureVersion(): GeneratorFn<void> {
-    if (
-      !this.editorStore.applicationStore.config.options
-        .TEMPORARY__disableSDLCProjectStructureSupport
-    ) {
-      try {
-        this.latestProjectStructureVersion =
-          ProjectStructureVersion.serialization.fromJson(
-            (yield this.sdlcState.sdlcClient.getLatestProjectStructureVersion()) as PlainObject<ProjectStructureVersion>,
-          );
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.log.error(
-          LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
-          error,
+    try {
+      this.latestProjectStructureVersion =
+        ProjectStructureVersion.serialization.fromJson(
+          (yield this.sdlcState.sdlcClient.getLatestProjectStructureVersion()) as PlainObject<ProjectStructureVersion>,
         );
-        this.editorStore.applicationStore.notifyError(error);
-      }
+    } catch (error: unknown) {
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
     }
   }
 }

@@ -57,12 +57,6 @@ class ApplicationCoreOptions {
    */
   DEV__enableStrictRuntimeChecks = false;
   /**
-   * Allows disabling support for project structure feature such as pipeline and dependencies.
-   *
-   * NOTE: when we have proper support for pipeline, we can remove this flag.
-   */
-  TEMPORARY__disableSDLCProjectStructureSupport = false;
-  /**
    * Allows disabling support for project creation.
    *
    * NOTE: when we properly partition Production and Prototype projects, we can remove this flag.
@@ -111,7 +105,6 @@ class ApplicationCoreOptions {
   private static readonly serialization = new SerializationFactory(
     createModelSchema(ApplicationCoreOptions, {
       DEV__enableStrictRuntimeChecks: optional(primitive()),
-      TEMPORARY__disableSDLCProjectStructureSupport: optional(primitive()),
       TEMPORARY__disableSDLCProjectCreation: optional(primitive()),
       TEMPORARY__useSDLCProductionProjectsOnly: optional(primitive()),
       EXPERIMENTAL__enableFullGrammarImportSupport: optional(primitive()),
