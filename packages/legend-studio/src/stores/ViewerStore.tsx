@@ -155,7 +155,6 @@ export class ViewerStore {
       }
 
       let entities: Entity[] = [];
-      let projectConfiguration: PlainObject<ProjectConfiguration>;
 
       if (versionId) {
         // get version info if a version is specified
@@ -210,9 +209,11 @@ export class ViewerStore {
             ),
           ])) as [Entity[], PlainObject<ProjectConfiguration>];
           entities = result[0];
-          projectConfiguration = result[1];
+          const rawProjectConfiguration = result[1];
           const serializedProjectConfiguration =
-            ProjectConfiguration.serialization.fromJson(projectConfiguration);
+            ProjectConfiguration.serialization.fromJson(
+              rawProjectConfiguration,
+            );
           this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
             serializedProjectConfiguration,
           );
