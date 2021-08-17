@@ -22,7 +22,6 @@ import {
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-studio-shared';
-import type { ProjectDependencyMetadata } from '../../../sdlc/models/configuration/ProjectDependency';
 import type { PackageableElement } from '../model/packageableElements/PackageableElement';
 import type { Enumeration } from '../model/packageableElements/domain/Enumeration';
 import type { Type } from '../model/packageableElements/domain/Type';
@@ -45,6 +44,7 @@ import type {
   Unit,
 } from '../model/packageableElements/domain/Measure';
 import type { SectionIndex } from '../model/packageableElements/section/SectionIndex';
+import type { Entity } from '@finos/legend-model-storage';
 
 class DependencyModel extends BasicModel {
   constructor(
@@ -94,10 +94,8 @@ export class DependencyManager {
   /**
    * Here we initialize a Dependency Pure Model for each Dependent project
    */
-  initialize(
-    projectDependencyMetadataMap: Map<string, ProjectDependencyMetadata>,
-  ): void {
-    Array.from(projectDependencyMetadataMap.keys()).forEach((dependencyKey) => {
+  initialize(dependencyEntitiesMap: Map<string, Entity[]>): void {
+    Array.from(dependencyEntitiesMap.keys()).forEach((dependencyKey) => {
       // NOTE: all dependency models will share the dependency manager package root.
       this.projectDependencyModelsIndex.set(
         dependencyKey,

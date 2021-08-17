@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { ProjectDependencyMetadata } from '../../../sdlc/models/configuration/ProjectDependency';
 import type { ExecutionResult } from '../action/execution/ExecutionResult';
 import type { ServiceRegistrationResult } from '../action/service/ServiceRegistrationResult';
 import type { Service } from '../model/packageableElements/service/Service';
@@ -133,7 +132,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    projectDependencyMetadataMap: Map<string, ProjectDependencyMetadata>,
+    dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
   ): GeneratorFn<void>;
 

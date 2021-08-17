@@ -176,7 +176,7 @@ const testDependencyElements = async (
     .mockResolvedValue(dependencyEntities);
   await flowResult(editorStore.graphState.initializeSystem());
   const dependencyManager = new DependencyManager([]);
-  const dependencyMap = await flowResult(
+  const dependencyEntitiesMap = await flowResult(
     editorStore.graphState.getConfigurationProjectDependencyEntities(),
   );
   editorStore.graphState.graph.setDependencyManager(dependencyManager);
@@ -185,7 +185,7 @@ const testDependencyElements = async (
       editorStore.graphState.coreModel,
       editorStore.graphState.systemModel,
       dependencyManager,
-      dependencyMap,
+      dependencyEntitiesMap,
     ),
   );
   await waitFor(() =>
@@ -204,7 +204,7 @@ const testDependencyElements = async (
   await waitFor(() =>
     expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
   );
-  Array.from(dependencyMap.keys()).forEach((k) =>
+  Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
   Array.from(keys).forEach((k) =>

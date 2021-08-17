@@ -39,7 +39,6 @@ import {
   isNonNullable,
   NetworkClientError,
 } from '@finos/legend-studio-shared';
-import type { ProjectDependencyMetadata } from '../models/sdlc/models/configuration/ProjectDependency';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import {
@@ -99,7 +98,7 @@ import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import type { PropertyMapping } from '../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import { AssociationImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import type { ProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
+import type { DeprecatedProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
 import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
 import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { Entity } from '@finos/legend-model-storage';
@@ -294,7 +293,7 @@ export class GraphState {
           dependencyManager,
           (yield flowResult(
             this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, ProjectDependencyMetadata>,
+          )) as Map<string, Entity[]>,
         ),
       );
       this.graph.setDependencyManager(dependencyManager);
@@ -340,7 +339,7 @@ export class GraphState {
           dependencyManager,
           (yield flowResult(
             this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, ProjectDependencyMetadata>,
+          )) as Map<string, Entity[]>,
         ),
       );
       this.graph.setDependencyManager(dependencyManager);
@@ -824,7 +823,7 @@ export class GraphState {
             dependencyManager,
             (yield flowResult(
               this.getConfigurationProjectDependencyEntities(),
-            )) as Map<string, ProjectDependencyMetadata>,
+            )) as Map<string, Entity[]>,
           ),
         );
         newGraph.setDependencyManager(dependencyManager);
@@ -994,12 +993,9 @@ export class GraphState {
   }
 
   *getConfigurationProjectDependencyEntities(): GeneratorFn<
-    Map<string, ProjectDependencyMetadata>
+    Map<string, Entity[]>
   > {
-    const projectDependencyMetadataMap = new Map<
-      string,
-      ProjectDependencyMetadata
-    >();
+    const dependencyEntitiesMap = new Map<string, Entity[]>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration;
@@ -1015,7 +1011,7 @@ export class GraphState {
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
           (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getProjectVersionsDependencyEntities(
-            directDependencies as PlainObject<ProjectVersion>[],
+            directDependencies as PlainObject<DeprecatedProjectVersion>[],
             true,
             true,
           )) as PlainObject<DeprecatedProjectVersionEntities>[];
@@ -1044,13 +1040,9 @@ export class GraphState {
               )}.`,
             );
           }
-          const projectDependenciesMetadata = {
-            entities: dependencyInfo.entities,
-            projectVersion: dependencyInfo.projectVersion,
-          };
-          projectDependencyMetadataMap.set(
+          dependencyEntitiesMap.set(
             dependencyInfo.projectId,
-            projectDependenciesMetadata,
+            dependencyInfo.entities,
           );
           dependencyProjects.add(dependencyInfo.projectId);
         });
@@ -1065,7 +1057,7 @@ export class GraphState {
       this.editorStore.applicationStore.notifyError(error);
       throw new DependencyGraphProcessingError(error);
     }
-    return projectDependencyMetadataMap;
+    return dependencyEntitiesMap;
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------

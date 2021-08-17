@@ -39,7 +39,6 @@ import {
   assertErrorThrown,
   promisify,
 } from '@finos/legend-studio-shared';
-import type { ProjectDependencyMetadata } from '../../../sdlc/models/configuration/ProjectDependency';
 import {
   GraphError,
   SystemGraphProcessingError,
@@ -520,7 +519,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    dependencyMetadataMap: Map<string, ProjectDependencyMetadata>,
+    dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
   ): GeneratorFn<void> {
     const startTime = Date.now();
@@ -535,16 +534,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     graph.setDependencyManager(dependencyManager);
     try {
-      dependencyManager.initialize(dependencyMetadataMap);
+      dependencyManager.initialize(dependencyEntitiesMap);
       // Parse/Build Data
       const dependencyDataMap = new Map<string, V1_PureModelContextData>();
       yield Promise.all(
-        Array.from(dependencyMetadataMap.entries()).map(
-          ([dependencyKey, projectDependencyMetadata]) => {
+        Array.from(dependencyEntitiesMap.entries()).map(
+          ([dependencyKey, entities]) => {
             const projectModelData = new V1_PureModelContextData();
             dependencyDataMap.set(dependencyKey, projectModelData);
             return V1_entitiesToPureModelContextData(
-              projectDependencyMetadata.entities,
+              entities,
               projectModelData,
               this.pureProtocolProcessorPlugins,
             );

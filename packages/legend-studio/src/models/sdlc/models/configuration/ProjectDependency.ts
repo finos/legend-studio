@@ -24,15 +24,8 @@ import {
 import type { Hashable } from '@finos/legend-studio-shared';
 import { VersionId } from '../version/VersionId';
 import { observable, action, computed, makeObservable } from 'mobx';
-import type { ProjectVersion } from '../../../metadata/models/ProjectVersionEntities';
-import type { Entity } from '@finos/legend-model-storage';
 
 const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';
-
-export interface ProjectDependencyMetadata {
-  entities: Entity[];
-  projectVersion: ProjectVersion;
-}
 
 export class ProjectDependency implements Hashable {
   uuid = uuid();
