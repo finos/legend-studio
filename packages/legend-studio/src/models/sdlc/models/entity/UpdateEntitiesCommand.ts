@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@finos/legend-model-storage';
+
 export interface UpdateEntitiesCommand {
   message: string;
   entities: Entity[];

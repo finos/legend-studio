@@ -5,5 +5,6 @@
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
     "rootDir": "src"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
+  "references": [{ "path": "../legend-studio-shared" }]
 }

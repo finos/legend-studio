@@ -33,6 +33,9 @@
     "test": "jest",
     "test:watch": "jest --watch"
   },
+  "dependencies": {
+    "@finos/legend-studio-shared": "workspace:*"
+  },
   "devDependencies": {
     "@finos/legend-studio-dev-utils": "workspace:*",
     "cross-env": "7.0.3",

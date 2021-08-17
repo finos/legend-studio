@@ -2063,6 +2063,7 @@ __metadata:
   resolution: "@finos/legend-model-storage@workspace:packages/legend-model-storage"
   dependencies:
     "@finos/legend-studio-dev-utils": "workspace:*"
+    "@finos/legend-studio-shared": "workspace:*"
     cross-env: 7.0.3
     eslint: 7.32.0
     jest: 27.0.6
