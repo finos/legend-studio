@@ -15,11 +15,8 @@
  */
 
 import { resolve, dirname } from 'path';
-import { generateCopyrightComment } from '@finos/legend-studio-dev-utils/CopyrightUtils';
-import {
-  getFileContent,
-  loadJSON,
-} from '@finos/legend-studio-dev-utils/DevUtils';
+import { generateCopyrightComment } from '@finos/legend-dev-utils/CopyrightUtils';
+import { getFileContent, loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

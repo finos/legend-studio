@@ -18,7 +18,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

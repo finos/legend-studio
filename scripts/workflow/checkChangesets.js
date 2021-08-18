@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { validateChangesets } from '@finos/legend-studio-dev-utils/ChangesetUtils';
+import { validateChangesets } from '@finos/legend-dev-utils/ChangesetUtils';
 
 validateChangesets(process.cwd(), 'origin/master');

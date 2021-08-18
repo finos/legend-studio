@@ -6,7 +6,7 @@
 '@finos/legend-studio': patch
 '@finos/legend-studio-app': patch
 '@finos/legend-studio-components': patch
-'@finos/legend-studio-dev-utils': patch
+'@finos/legend-dev-utils': patch
 '@finos/legend-studio-plugin-management': patch
 '@finos/legend-application-plugin-tracer-zipkin': patch
 '@finos/legend-studio-preset-dsl-text': patch

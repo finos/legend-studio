@@ -71,7 +71,7 @@
     "@changesets/cli": "2.16.0",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
-    "@finos/legend-studio-dev-utils": "workspace:*",
+    "@finos/legend-dev-utils": "workspace:*",
     "@finos/stylelint-config-legend-studio": "workspace:*",
     "@juggle/resize-observer": "3.3.1",
     "@types/jest": "27.0.1",

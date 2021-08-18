@@ -20,7 +20,7 @@ import appConfig from './studio.config.js';
 import {
   getEnvInfo,
   getWebAppBaseWebpackConfig,
-} from '@finos/legend-studio-dev-utils/WebpackConfigUtils';
+} from '@finos/legend-dev-utils/WebpackConfigUtils';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

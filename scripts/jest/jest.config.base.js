@@ -16,7 +16,7 @@
 
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getBaseConfig } from '@finos/legend-studio-dev-utils/JestConfigUtils';
+import { getBaseConfig } from '../../packages/legend-dev-utils/JestConfigUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -62,7 +62,7 @@ export default {
     '!**/__tests__/**',
     '!**/vendor/**',
     '!**/scripts/**',
-    '!<rootDir>/packages/legend-studio-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
+    '!<rootDir>/packages/legend-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
     '!<rootDir>/packages/legend-studio-app/cypress/**', // TODO: update this when restructure `e2e` test suite
   ],
   coverageDirectory: '<rootDir>/build/coverage',

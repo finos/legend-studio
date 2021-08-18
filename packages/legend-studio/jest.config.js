@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import base from '../../scripts/jest/jest.config.base.js';
 
 const packageJson = loadJSON('./package.json');

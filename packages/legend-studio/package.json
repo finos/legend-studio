@@ -65,7 +65,7 @@
     "sql-formatter": "4.0.2"
   },
   "devDependencies": {
-    "@finos/legend-studio-dev-utils": "workspace:*",
+    "@finos/legend-dev-utils": "workspace:*",
     "@testing-library/dom": "8.1.0",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",

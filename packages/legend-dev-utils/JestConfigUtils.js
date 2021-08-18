@@ -34,7 +34,7 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
   moduleNameMapper: {
     // Mock for non-javascript file as we don't need Jest to transform these
     // NOTE: we should not need this right now, but we leave this here just in case
-    '\\.(svg|css|scss)$': '@finos/legend-studio-dev-utils/mocks/fileMock',
+    '\\.(svg|css|scss)$': '@finos/legend-dev-utils/mocks/fileMock',
   },
   // Since each test should be independent, we automatically restore mock state before every test
   // NOTE: only works for `jest.spyOn` and not `jest.fn()`

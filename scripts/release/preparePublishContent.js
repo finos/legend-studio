@@ -18,10 +18,10 @@ import { existsSync, readdirSync, copyFileSync, writeFileSync } from 'fs';
 import chalk from 'chalk';
 import { resolve, dirname } from 'path';
 import { execSync } from 'child_process';
-import { resolveFullTsConfig } from '@finos/legend-studio-dev-utils/TypescriptConfigUtils';
+import { resolveFullTsConfig } from '@finos/legend-dev-utils/TypescriptConfigUtils';
 import { mkdirs, copySync } from 'fs-extra';
 import { fileURLToPath } from 'url';
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

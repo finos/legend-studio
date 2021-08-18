@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { exitWithError } from '@finos/legend-studio-dev-utils/DevUtils';
+import { exitWithError } from '@finos/legend-dev-utils/DevUtils';
 
 // Handle unhandled rejection in case Jest missed it to avoid accidentally passing test with failures
 // See https://github.com/facebook/jest/issues/3251#issuecomment-299183885

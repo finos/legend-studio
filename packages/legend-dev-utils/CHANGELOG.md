@@ -1,4 +1,4 @@
-# @finos/legend-studio-dev-utils
+# @finos/legend-dev-utils
 
 ## 0.0.29
 
