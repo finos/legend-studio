@@ -16,7 +16,7 @@
 
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getBaseConfig } from '../../packages/legend-dev-utils/JestConfigUtils';
+import { getBaseConfig } from '@finos/legend-dev-utils/JestConfigUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
