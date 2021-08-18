@@ -32,7 +32,7 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
   tryToFormatLosslessJSONString,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   clsx,
   ContextMenu,

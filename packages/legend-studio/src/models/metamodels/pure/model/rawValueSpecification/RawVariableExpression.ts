@@ -15,8 +15,8 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, uuid } from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray, uuid } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 import type { Type } from '../../model/packageableElements/domain/Type';
 import { Multiplicity } from '../../model/packageableElements/domain/Multiplicity';

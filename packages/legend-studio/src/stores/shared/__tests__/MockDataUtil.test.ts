@@ -16,7 +16,7 @@
 
 import completeGraphEntities from './MockDataGenerationTestData.json';
 import { classHasCycle, createMockClassInstance } from '../MockDataUtil';
-import { unitTest } from '@finos/legend-studio-shared';
+import { unitTest } from '@finos/legend-shared';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';

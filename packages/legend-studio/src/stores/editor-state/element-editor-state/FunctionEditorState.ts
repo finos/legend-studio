@@ -17,12 +17,8 @@
 import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import { LambdaEditorState } from './LambdaEditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import {
-  LogEvent,
-  guaranteeType,
-  assertType,
-} from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent, guaranteeType, assertType } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
 import { LAMBDA_START } from '../../../models/MetaModelConst';

@@ -20,7 +20,7 @@ import {
   assertNonEmptyString,
   assertType,
   assertNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { GraphError } from '../../../../../../../MetaModelUtils';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/GraphManagerLogEvent';
 import type { Runtime } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';

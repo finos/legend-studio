@@ -24,7 +24,7 @@ import {
   makeObservable,
 } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   IllegalStateError,
@@ -32,7 +32,7 @@ import {
   noop,
   assertErrorThrown,
   hashObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import type { GraphState } from './GraphState';
 import { EntityDiff } from '../models/sdlc/models/comparison/EntityDiff';

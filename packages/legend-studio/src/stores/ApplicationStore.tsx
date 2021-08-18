@@ -20,7 +20,7 @@ import type {
   Log,
   PlainObject,
   SuperGenericFunction,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
@@ -29,7 +29,7 @@ import {
   ApplicationError,
   ActionState,
   TelemetryService,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';

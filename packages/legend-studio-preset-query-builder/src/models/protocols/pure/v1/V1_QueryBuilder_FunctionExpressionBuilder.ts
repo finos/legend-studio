@@ -48,7 +48,7 @@ import {
   assertType,
   guaranteeType,
   returnUndefOnError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const';
 
 const buildBaseSimpleFunctionExpression = (

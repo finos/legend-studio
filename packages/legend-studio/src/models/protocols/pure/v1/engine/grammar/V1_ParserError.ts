@@ -15,10 +15,7 @@
  */
 
 import { createModelSchema, optional, primitive } from 'serializr';
-import {
-  SerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-studio-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { V1_EngineError } from '../../engine/V1_EngineError';
 import { V1_sourceInformationSerialization } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 

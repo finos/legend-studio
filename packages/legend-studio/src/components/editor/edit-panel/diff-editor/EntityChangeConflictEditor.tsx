@@ -44,7 +44,7 @@ import {
   debounce,
   isNonNullable,
   hashObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
 import {
   clsx,

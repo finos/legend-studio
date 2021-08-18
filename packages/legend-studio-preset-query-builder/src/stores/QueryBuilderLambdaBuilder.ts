@@ -17,7 +17,7 @@
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { Class, ValueSpecification } from '@finos/legend-studio';
 import {
   Multiplicity,

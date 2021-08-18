@@ -15,14 +15,14 @@
  */
 
 import { action, flow, flowResult, observable, makeObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
   changeEntry,
   guaranteeNonNullable,
   guaranteeType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterState';
 import { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState';

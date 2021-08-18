@@ -45,7 +45,7 @@ import {
   getControlledResizablePanelProps,
 } from '@finos/legend-application-components';
 import { getElementIcon } from '../../../shared/Icon';
-import { prettyCONSTName, guaranteeType } from '@finos/legend-studio-shared';
+import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../../../const';
 import { MULTIPLICITY_INFINITE } from '../../../../models/MetaModelConst';
 import { StereotypeSelector } from './StereotypeSelector';

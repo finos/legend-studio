@@ -19,7 +19,7 @@ import {
   addUniqueEntry,
   guaranteeNonNullable,
   deleteEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   TreeNodeData,
   TreeData,

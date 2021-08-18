@@ -20,7 +20,7 @@ import {
   SerializationFactory,
   serializeMap,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_ParserError } from '../../engine/grammar/V1_ParserError';
 import { V1_Protocol } from '../../model/V1_Protocol';
 import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda';

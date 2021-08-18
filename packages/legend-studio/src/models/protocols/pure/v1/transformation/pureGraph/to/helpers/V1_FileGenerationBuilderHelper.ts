@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { returnUndefOnError } from '@finos/legend-studio-shared';
+import { returnUndefOnError } from '@finos/legend-shared';
 import { ConfigurationProperty } from '../../../../../../../metamodels/pure/model/packageableElements/fileGeneration/ConfigurationProperty';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';

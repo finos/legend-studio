@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   assertNonNullable,
   assertTrue,
@@ -26,7 +26,7 @@ import {
   isString,
   returnUndefOnError,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import {
   COLUMN_SORT_TYPE,

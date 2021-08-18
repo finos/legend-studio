@@ -21,7 +21,7 @@ import {
   isCamelCase,
   prettyCamelCase,
   prettyCONSTName,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   AbstractProperty,
   EditorStore,

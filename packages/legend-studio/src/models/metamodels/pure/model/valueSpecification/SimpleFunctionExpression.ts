@@ -22,7 +22,7 @@ import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 import type { Function } from '../../model/packageableElements/domain/Function';
 import type { AbstractProperty } from '../../model/packageableElements/domain/AbstractProperty';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 
 export class Expression extends ValueSpecification {
   classifierGenericType?: GenericTypeReference;

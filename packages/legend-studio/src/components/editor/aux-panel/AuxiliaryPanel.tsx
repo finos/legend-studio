@@ -21,7 +21,7 @@ import { Console } from './Console';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig';
 import { useEditorStore } from '../../../stores/EditorStore';
 import { GoChevronUp, GoChevronDown, GoX } from 'react-icons/go';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import { DevTool } from './DevTool';
 
 export const AuxiliaryPanel = observer(() => {

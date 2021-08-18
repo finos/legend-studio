@@ -15,8 +15,8 @@
  */
 
 import { observable, action, computed, makeObservable, flow } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { uuid } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { uuid } from '@finos/legend-shared';
 import { SourceInformation } from '../../../models/metamodels/pure/action/SourceInformation';
 import type {
   ParserError,

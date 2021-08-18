@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { unitTest, guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   simpleDebuggingCase,
   testAutoImportsWithAny,

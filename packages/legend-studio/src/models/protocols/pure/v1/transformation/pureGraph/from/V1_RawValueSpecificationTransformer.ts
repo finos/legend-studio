@@ -25,7 +25,7 @@ import {
   V1_transformElementReference,
 } from './V1_CoreTransformerHelper';
 import { SOURCE_INFORMATION_KEY } from '../../../../../../MetaModelConst';
-import { recursiveOmit } from '@finos/legend-studio-shared';
+import { recursiveOmit } from '@finos/legend-shared';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import type { V1_RawValueSpecification } from '../../../model/rawValueSpecification/V1_RawValueSpecification';
 import { V1_RawInstanceValue } from '../../../model/rawValueSpecification/V1_RawInstanceValue';

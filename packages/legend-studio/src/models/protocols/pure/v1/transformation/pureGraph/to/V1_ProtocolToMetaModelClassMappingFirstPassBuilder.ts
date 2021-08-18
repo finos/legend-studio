@@ -18,7 +18,7 @@ import {
   UnsupportedOperationError,
   assertNonEmptyString,
   assertNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { SetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import {

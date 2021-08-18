@@ -18,7 +18,7 @@ import {
   assertNonEmptyString,
   assertNonNullable,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { Diagram } from '../../../../../../../metamodels/pure/model/packageableElements/diagram/Diagram';
 import { ClassView } from '../../../../../../../metamodels/pure/model/packageableElements/diagram/ClassView';
 import { Point } from '../../../../../../../metamodels/pure/model/packageableElements/diagram/geometry/Point';

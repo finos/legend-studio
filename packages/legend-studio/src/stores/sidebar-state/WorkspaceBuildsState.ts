@@ -19,8 +19,8 @@ import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { Build } from '../../models/sdlc/models/build/Build';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
-import { LogEvent } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { LogEvent } from '@finos/legend-shared';
 
 export class WorkspaceBuildsState {
   editorStore: EditorStore;

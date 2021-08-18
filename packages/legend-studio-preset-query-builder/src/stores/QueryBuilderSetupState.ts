@@ -15,12 +15,12 @@
  */
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   getNullableFirstElement,
   isNonNullable,
   uniq,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   Class,

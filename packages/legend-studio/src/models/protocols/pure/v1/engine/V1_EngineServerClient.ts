@@ -19,8 +19,8 @@ import type {
   PlainObject,
   ServerClientConfig,
   TraceData,
-} from '@finos/legend-studio-shared';
-import { ContentType, AbstractServerClient } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import { ContentType, AbstractServerClient } from '@finos/legend-shared';
 import type { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportMode } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';

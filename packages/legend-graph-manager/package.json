@@ -35,7 +35,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-studio-shared": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
     "mobx": "6.3.2",
     "mobx-react-lite": "3.2.0",
     "react": "17.0.2",

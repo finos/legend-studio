@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin } from '@finos/legend-studio-shared';
-import type { Clazz } from '@finos/legend-studio-shared';
+import { AbstractPlugin } from '@finos/legend-shared';
+import type { Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../model/packageableElements/PackageableElement';
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {

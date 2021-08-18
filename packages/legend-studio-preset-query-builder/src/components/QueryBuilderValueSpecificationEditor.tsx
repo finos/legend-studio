@@ -45,7 +45,7 @@ import {
   isNonNullable,
   returnUndefOnError,
   uniq,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import CSVParser from 'papaparse';
 
 const StringPrimitiveInstanceValueEditor = observer(

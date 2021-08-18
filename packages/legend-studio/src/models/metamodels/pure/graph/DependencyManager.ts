@@ -16,12 +16,12 @@
 
 import { observable, computed, makeObservable } from 'mobx';
 import { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
-import type { Clazz } from '@finos/legend-studio-shared';
+import type { Clazz } from '@finos/legend-shared';
 import {
   ActionState,
   guaranteeNonNullable,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { PackageableElement } from '../model/packageableElements/PackageableElement';
 import type { Enumeration } from '../model/packageableElements/domain/Enumeration';
 import type { Type } from '../model/packageableElements/domain/Type';

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   MULTIPLICITY_INFINITE,
 } from '../../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 
 export class V1_Multiplicity implements Hashable {
   lowerBound = 0;

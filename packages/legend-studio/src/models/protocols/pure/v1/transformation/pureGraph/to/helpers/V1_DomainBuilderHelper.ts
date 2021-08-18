@@ -20,7 +20,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   assertTrue,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { Class } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import type { Association } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Association';
 import type { Measure } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Measure';

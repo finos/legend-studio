@@ -25,8 +25,8 @@ import {
   deleteEntry,
   SerializationFactory,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
 
 const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';

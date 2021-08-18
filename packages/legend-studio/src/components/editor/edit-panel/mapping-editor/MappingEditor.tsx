@@ -17,7 +17,7 @@
 import { useEffect, useState } from 'react';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
-import { toSentenceCase } from '@finos/legend-studio-shared';
+import { toSentenceCase } from '@finos/legend-shared';
 import {
   clsx,
   ContextMenu,

@@ -16,7 +16,7 @@
 
 import { computed, action, makeObservable } from 'mobx';
 import type { EditorStore, PackageableElement } from '@finos/legend-studio';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import { ElementEditorState } from '@finos/legend-studio';
 import { Text } from '../models/metamodels/pure/model/packageableElements/Text';
 

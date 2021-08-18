@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  guaranteeType,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import type { ExecutionPlan } from '../../../../../../../metamodels/pure/model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../../../../../../../metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import { RelationalTDSInstantiationExecutionNode } from '../../../../../../../metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';

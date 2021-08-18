@@ -25,7 +25,7 @@ import {
   optional,
   raw,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
   deserializeArray,
@@ -38,7 +38,7 @@ import {
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../MetaModelConst';
 import type { V1_InputData } from '../../../model/packageableElements/mapping/V1_InputData';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';

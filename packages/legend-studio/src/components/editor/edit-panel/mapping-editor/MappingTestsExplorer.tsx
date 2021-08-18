@@ -35,7 +35,7 @@ import {
   FaPlus,
 } from 'react-icons/fa';
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
-import { getRandomItemInCollection } from '@finos/legend-studio-shared';
+import { getRandomItemInCollection } from '@finos/legend-shared';
 import { clsx, ContextMenu } from '@finos/legend-application-components';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';

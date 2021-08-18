@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Stack } from '@finos/legend-studio-shared';
+import { Stack } from '@finos/legend-shared';
 import type { ValueSpecification } from '../../../../../../../metamodels/pure/model/valueSpecification/ValueSpecification';
 
 export class V1_ProcessingContext {

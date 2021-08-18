@@ -19,8 +19,8 @@ import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import { ELEMENT_NATIVE_VIEW_MODE, TAB_SIZE } from '../../EditorConfig';
 import { EditorState } from '../../editor-state/EditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { LogEvent, assertErrorThrown } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent, assertErrorThrown } from '@finos/legend-shared';
 import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 

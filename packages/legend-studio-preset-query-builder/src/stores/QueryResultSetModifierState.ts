@@ -20,7 +20,7 @@ import {
   addUniqueEntry,
   deleteEntry,
   guaranteeType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
 import {

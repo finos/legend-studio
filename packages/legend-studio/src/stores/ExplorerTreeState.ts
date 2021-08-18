@@ -24,7 +24,7 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
   ActionState,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   getPackableElementTreeData,
   openNode,

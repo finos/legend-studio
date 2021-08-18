@@ -17,12 +17,12 @@
 import { observable, action, flow, makeObservable } from 'mobx';
 import { TAB_SIZE } from '../EditorConfig';
 import { EditorState } from '../editor-state/EditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   UnsupportedOperationError,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { ImportConfigurationDescription } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';

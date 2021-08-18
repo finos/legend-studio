@@ -19,7 +19,7 @@ import type { Class } from '../../../models/metamodels/pure/model/packageableEle
 import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 import { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { uuid } from '@finos/legend-studio-shared';
+import { uuid } from '@finos/legend-shared';
 
 export class InheritanceDiagramRenderer extends DiagramRenderer {
   constructor(div: HTMLDivElement, _class: Class) {

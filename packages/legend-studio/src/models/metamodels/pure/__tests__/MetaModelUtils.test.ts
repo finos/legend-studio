@@ -25,7 +25,7 @@ import {
   losslessParse,
   losslessStringify,
   unitTest,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import { Package } from '../model/packageableElements/domain/Package';
 import {

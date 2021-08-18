@@ -31,7 +31,7 @@ import {
   serializeArray,
   usingConstantValueSchema,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration';
 import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile';

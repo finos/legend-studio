@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,

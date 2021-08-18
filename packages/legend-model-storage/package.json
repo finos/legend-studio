@@ -34,7 +34,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-studio-shared": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

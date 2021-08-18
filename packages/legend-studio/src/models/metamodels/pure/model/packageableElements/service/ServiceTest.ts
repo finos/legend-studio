@@ -19,9 +19,9 @@ import {
   hashArray,
   addUniqueEntry,
   deleteEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { observable, computed, action, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { RawLambda } from '../../../model/rawValueSpecification/RawLambda';
 import type { Service } from './Service';

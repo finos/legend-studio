@@ -15,7 +15,7 @@
  */
 
 import { observable, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
 import type { PackageableElementReference } from '../../../model/packageableElements/PackageableElementReference';
 

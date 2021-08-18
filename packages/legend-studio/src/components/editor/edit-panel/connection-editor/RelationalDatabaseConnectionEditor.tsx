@@ -35,7 +35,7 @@ import {
   SquareIcon,
   TimesIcon,
 } from '@finos/legend-application-components';
-import { capitalize, prettyCONSTName } from '@finos/legend-studio-shared';
+import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { DatabaseType } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import {

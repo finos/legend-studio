@@ -34,7 +34,7 @@ import { ExecutionNode } from '../../../../../models/metamodels/pure/model/execu
 import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
 import type { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
-import { addUniqueEntry, isNonNullable } from '@finos/legend-studio-shared';
+import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { observer } from 'mobx-react-lite';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';

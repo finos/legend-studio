@@ -15,7 +15,7 @@
  */
 
 import { list, createModelSchema, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 
 export class ProjectData {

@@ -15,8 +15,8 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, hashObject } from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray, hashObject } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 
 export class ConfigurationProperty implements Hashable {

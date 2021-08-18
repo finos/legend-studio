@@ -16,7 +16,7 @@
 
 import packageJson from '../package.json';
 import type { PluginManager } from '@finos/legend-studio';
-import { AbstractPreset } from '@finos/legend-studio-shared';
+import { AbstractPreset } from '@finos/legend-shared';
 import { DSLText_EditorPlugin } from './components/DSLText_EditorPlugin';
 import { DSLText_PureGraphManagerPlugin } from './models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
 import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin';

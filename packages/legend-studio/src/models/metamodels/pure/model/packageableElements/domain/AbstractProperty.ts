@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import type { GenericTypeReference } from '../../../model/packageableElements/domain/GenericTypeReference';
 import type { Multiplicity } from './Multiplicity';
 import type { Stubable } from '../../../model/Stubable';

@@ -16,7 +16,7 @@
 
 import { createModelSchema, primitive } from 'serializr';
 import { action, computed, observable, makeObservable } from 'mobx';
-import { assertTrue, SerializationFactory } from '@finos/legend-studio-shared';
+import { assertTrue, SerializationFactory } from '@finos/legend-shared';
 
 export class VersionId {
   majorVersion: number;

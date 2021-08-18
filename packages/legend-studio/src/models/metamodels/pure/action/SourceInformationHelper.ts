@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assertTrue } from '@finos/legend-studio-shared';
+import { assertTrue } from '@finos/legend-shared';
 import type { SourceInformation } from './SourceInformation';
 
 const COORDINATE_DELIMITER = '__';

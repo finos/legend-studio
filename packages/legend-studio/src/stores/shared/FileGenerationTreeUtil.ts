@@ -22,7 +22,7 @@ import {
   isNonNullable,
   returnUndefOnError,
   addUniqueEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
 
 export interface GenerationOutputResult {

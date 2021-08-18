@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 
 export abstract class PostProcessor implements Hashable {
   abstract get hashCode(): string;

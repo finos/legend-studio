@@ -18,12 +18,12 @@ import {
   PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../../MetaModelConst';
-import type { Log } from '@finos/legend-studio-shared';
+import type { Log } from '@finos/legend-shared';
 import {
   uniq,
   assertNonEmptyString,
   guaranteeType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { GraphError } from '../../../../../../MetaModelUtils';
 import { GenericType } from '../../../../../../metamodels/pure/model/packageableElements/domain/GenericType';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';

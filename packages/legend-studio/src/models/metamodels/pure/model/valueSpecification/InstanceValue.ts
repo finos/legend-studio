@@ -15,8 +15,8 @@
  */
 
 import { observable, makeObservable, action } from 'mobx';
-import { deleteEntry, addUniqueEntry } from '@finos/legend-studio-shared';
-import type { Pair } from '@finos/legend-studio-shared';
+import { deleteEntry, addUniqueEntry } from '@finos/legend-shared';
+import type { Pair } from '@finos/legend-shared';
 import type { ValueSpecificationVisitor } from './ValueSpecification';
 import { ValueSpecification } from './ValueSpecification';
 import type { Multiplicity } from '../../model/packageableElements/domain/Multiplicity';

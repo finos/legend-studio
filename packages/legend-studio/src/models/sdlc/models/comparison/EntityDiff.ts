@@ -15,10 +15,7 @@
  */
 
 import { observable, computed, makeObservable } from 'mobx';
-import {
-  guaranteeNonNullable,
-  IllegalStateError,
-} from '@finos/legend-studio-shared';
+import { guaranteeNonNullable, IllegalStateError } from '@finos/legend-shared';
 import { EntityChangeType } from '../entity/EntityChange';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 

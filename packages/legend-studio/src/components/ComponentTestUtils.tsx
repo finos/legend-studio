@@ -34,12 +34,12 @@ import type { ProjectStructureVersion } from '../models/sdlc/models/configuratio
 import type { Revision } from '../models/sdlc/models/revision/Revision';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   Log,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   ImportConfigurationDescription,
   ImportMode,

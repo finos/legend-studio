@@ -18,7 +18,7 @@ import Dialog from '@material-ui/core/Dialog';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator } from '@finos/legend-application-components';
-import { noop } from '@finos/legend-studio-shared';
+import { noop } from '@finos/legend-shared';
 
 /**
  * The users of this need to justify their use case because blocking app disrupts the UX flow.

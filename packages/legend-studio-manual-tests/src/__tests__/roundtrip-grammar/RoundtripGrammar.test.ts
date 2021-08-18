@@ -20,8 +20,8 @@
 // will generate empty array, however, in Studio, we avoid that to lessen the size of the serialized graph
 // to save bandwidth, as such the best action is just to mock these methods so in the scope of this test, Studio
 // serializers return empty array for these fields just like the parser's
-jest.mock('@finos/legend-studio-shared', () => ({
-  ...jest.requireActual('@finos/legend-studio-shared'),
+jest.mock('@finos/legend-shared', () => ({
+  ...jest.requireActual('@finos/legend-shared'),
   /* eslint-disable @typescript-eslint/no-explicit-any */
   serializeArray: (
     values: any,
@@ -50,7 +50,7 @@ import {
   getTestEditorStore,
   buildGraphBasic,
 } from '@finos/legend-studio';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 
 const engineConfig = JSON.parse(

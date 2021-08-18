@@ -1,4 +1,4 @@
-# @finos/legend-studio-shared
+# @finos/legend-shared
 
 ## 0.0.26
 

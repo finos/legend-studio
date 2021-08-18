@@ -27,7 +27,7 @@ import { clsx } from '@finos/legend-application-components';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { CORE_TEST_ID } from '../../../../const';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
 import type { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';

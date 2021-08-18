@@ -15,7 +15,7 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import { unitTest } from '@finos/legend-studio-shared';
+import { unitTest } from '@finos/legend-shared';
 import { buildGraphBasic, getTestEditorStore } from '../StoreTestUtils';
 import { simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
 

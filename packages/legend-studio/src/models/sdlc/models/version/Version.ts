@@ -17,10 +17,7 @@
 import { createModelSchema, primitive } from 'serializr';
 import { computed, observable, makeObservable } from 'mobx';
 import { VersionId } from '../version/VersionId';
-import {
-  SerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-studio-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 
 export interface VersionSelectOption {
   label: string;

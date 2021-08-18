@@ -20,7 +20,7 @@ import {
   deserializeArray,
   usingModelSchema,
   usingConstantValueSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_packageableElementPointerDeserrializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import {
   V1_GenerationSpecification,

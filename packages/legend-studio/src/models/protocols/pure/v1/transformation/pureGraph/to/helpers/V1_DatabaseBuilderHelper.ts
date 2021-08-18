@@ -22,7 +22,7 @@ import {
   assertNonNullable,
   guaranteeType,
   assertTrue,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { Database } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
 import {
   getAllIncludedDbs,

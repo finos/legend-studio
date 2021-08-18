@@ -25,12 +25,12 @@ import {
   custom,
   alias,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
   UnsupportedOperationError,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 import type {
   V1_RawValueSpecification,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { isEmpty } from '@finos/legend-studio-shared';
+import { isEmpty } from '@finos/legend-shared';
 
 export type RawRelationalOperationElement = object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
 

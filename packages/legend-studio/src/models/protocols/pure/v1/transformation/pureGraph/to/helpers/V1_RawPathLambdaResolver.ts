@@ -18,7 +18,7 @@ import {
   LogEvent,
   assertErrorThrown,
   returnUndefOnError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/GraphManagerLogEvent';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';

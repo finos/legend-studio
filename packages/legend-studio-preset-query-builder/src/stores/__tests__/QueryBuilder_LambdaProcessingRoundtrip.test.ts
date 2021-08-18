@@ -21,7 +21,7 @@ import {
   PluginManager,
   getTestEditorStore,
 } from '@finos/legend-studio';
-import { unitTest } from '@finos/legend-studio-shared';
+import { unitTest } from '@finos/legend-shared';
 import { QueryBuilder_Preset } from '../../QueryBuilder_Preset';
 import {
   M2MModel,

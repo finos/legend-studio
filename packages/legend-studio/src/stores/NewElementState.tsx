@@ -27,13 +27,13 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   ELEMENT_PATH_DELIMITER,
 } from '../models/MetaModelConst';
-import type { Clazz } from '@finos/legend-studio-shared';
+import type { Clazz } from '@finos/legend-shared';
 import {
   IllegalStateError,
   guaranteeType,
   UnsupportedOperationError,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
 import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../models/metamodels/pure/model/packageableElements/PackageableElement';

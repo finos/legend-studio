@@ -18,7 +18,7 @@ import {
   isNonNullable,
   recursiveOmit,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type {
   SetImplementationVisitor,

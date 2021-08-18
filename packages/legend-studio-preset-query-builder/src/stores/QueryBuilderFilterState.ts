@@ -37,7 +37,7 @@ import {
   deleteEntry,
   assertErrorThrown,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
 import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState';
 import type { QueryBuilderState } from './QueryBuilderState';

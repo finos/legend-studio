@@ -29,7 +29,7 @@ import {
 } from 'react-icons/fa';
 import { MdSettingsEthernet, MdLink } from 'react-icons/md';
 import { FiPackage } from 'react-icons/fi';
-import { returnUndefOnError } from '@finos/legend-studio-shared';
+import { returnUndefOnError } from '@finos/legend-shared';
 import { RiShapeLine } from 'react-icons/ri';
 import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';

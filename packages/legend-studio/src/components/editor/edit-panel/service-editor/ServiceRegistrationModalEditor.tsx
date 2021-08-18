@@ -24,7 +24,7 @@ import {
   CustomSelectorInput,
 } from '@finos/legend-application-components';
 import { Dialog } from '@material-ui/core';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { Version } from '../../../../models/sdlc/models/version/Version';
 import { CORE_TEST_ID } from '../../../../const';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';

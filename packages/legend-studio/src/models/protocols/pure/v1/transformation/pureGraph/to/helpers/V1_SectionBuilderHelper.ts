@@ -19,7 +19,7 @@ import {
   UnsupportedOperationError,
   isNonNullable,
   uniq,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/GraphManagerLogEvent';
 import type { Section } from '../../../../../../../metamodels/pure/model/packageableElements/section/Section';
 import {

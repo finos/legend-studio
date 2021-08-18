@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst';
 import { Store } from '../../../../../model/packageableElements/store/Store';
 import type { PackageableElementVisitor } from '../../../../../model/packageableElements/PackageableElement';

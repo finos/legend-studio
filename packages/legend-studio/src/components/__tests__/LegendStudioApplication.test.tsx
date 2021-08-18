@@ -19,7 +19,7 @@ import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
 import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
 import {

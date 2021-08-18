@@ -17,7 +17,7 @@
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   TdsRow,
   INTERNAL__UnknownExecutionResult,

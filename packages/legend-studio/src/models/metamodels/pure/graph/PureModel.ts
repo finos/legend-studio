@@ -21,13 +21,13 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../../../MetaModelConst';
-import type { Clazz } from '@finos/legend-studio-shared';
+import type { Clazz } from '@finos/legend-shared';
 import {
   guaranteeNonNullable,
   guaranteeType,
   returnUndefOnError,
   getClass,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { PrimitiveType } from '../model/packageableElements/domain/PrimitiveType';
 import { Enumeration } from '../model/packageableElements/domain/Enumeration';
 import { Multiplicity } from '../model/packageableElements/domain/Multiplicity';

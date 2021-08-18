@@ -18,7 +18,7 @@ import { createModelSchema, raw, list, primitive, optional } from 'serializr';
 import {
   usingConstantValueSchema,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_ConfigurationProperty } from '../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty';
 import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 

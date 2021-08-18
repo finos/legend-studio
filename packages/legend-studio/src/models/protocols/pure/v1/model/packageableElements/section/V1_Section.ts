@@ -15,7 +15,7 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 
 export abstract class V1_Section {
   parserName!: string[1];

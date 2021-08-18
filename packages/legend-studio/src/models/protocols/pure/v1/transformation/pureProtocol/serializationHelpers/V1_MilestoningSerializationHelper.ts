@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   createModelSchema,
   custom,

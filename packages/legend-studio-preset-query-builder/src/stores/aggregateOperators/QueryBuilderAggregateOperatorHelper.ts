@@ -22,7 +22,7 @@ import {
   VariableExpression,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-studio';
-import { guaranteeType, assertTrue } from '@finos/legend-studio-shared';
+import { guaranteeType, assertTrue } from '@finos/legend-shared';
 import type { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
 import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';

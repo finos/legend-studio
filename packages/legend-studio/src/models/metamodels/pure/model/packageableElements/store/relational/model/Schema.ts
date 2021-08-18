@@ -15,9 +15,9 @@
  */
 
 import { computed, observable, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray, guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { hashArray, guaranteeNonNullable } from '@finos/legend-shared';
 import type { Database } from './Database';
 import type { Table } from './Table';
 import type { View } from './View';

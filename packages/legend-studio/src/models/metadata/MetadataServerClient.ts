@@ -15,8 +15,8 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import type { PlainObject } from '@finos/legend-studio-shared';
-import { AbstractServerClient } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
+import { AbstractServerClient } from '@finos/legend-shared';
 import type { ProjectData } from './models/ProjectData';
 import type {
   DeprecatedProjectVersion,

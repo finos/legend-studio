@@ -15,7 +15,7 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 import { V1_AssociationMapping } from '../../../../../model/packageableElements/mapping/V1_AssociationMapping';
 import type { V1_PropertyMapping } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
 

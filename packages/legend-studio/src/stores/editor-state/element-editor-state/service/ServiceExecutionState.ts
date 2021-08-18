@@ -15,13 +15,13 @@
  */
 
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   losslessStringify,
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';

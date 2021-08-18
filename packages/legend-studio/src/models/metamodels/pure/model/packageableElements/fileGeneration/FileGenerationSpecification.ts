@@ -22,9 +22,9 @@ import {
   addUniqueEntry,
   deleteEntry,
   changeEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { observable, action, makeObservable, override } from 'mobx';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { GenerationProperty } from '../../../action/generation/GenerationConfigurationDescription';
 import { GenerationPropertyItemType } from '../../../action/generation/GenerationConfigurationDescription';

@@ -20,8 +20,8 @@ import {
   hashString,
   IllegalStateError,
   uuid,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,

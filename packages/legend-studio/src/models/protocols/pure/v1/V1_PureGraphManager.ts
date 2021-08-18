@@ -28,7 +28,7 @@ import type {
   Log,
   PlainObject,
   ServerClientConfig,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   LogEvent,
   getClass,
@@ -38,7 +38,7 @@ import {
   assertTrue,
   assertErrorThrown,
   promisify,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   GraphError,
   SystemGraphProcessingError,

@@ -19,13 +19,13 @@ import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from '../MappingElementState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   IllegalStateError,
   isNonNullable,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore';
 import type { PropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import type { RelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';

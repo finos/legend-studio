@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import { InstanceSetImplementationState } from './MappingElementState';
 
 export class UnsupportedInstanceSetImplementationState extends InstanceSetImplementationState {

@@ -19,7 +19,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import { InheritanceDiagramRenderer } from '../../../shared/diagram-viewer/InheritanceDiagramRenderer';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../stores/EditorStore';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
 import { useDrop } from 'react-dnd';
 import type {

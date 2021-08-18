@@ -27,7 +27,7 @@ import type {
   UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
   clsx,

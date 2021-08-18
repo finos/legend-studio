@@ -57,7 +57,7 @@ import { PackageableConnectionEditorState } from '../../../stores/editor-state/e
 import { PackageableConnectionEditor } from './connection-editor/ConnectionEditor';
 import { FileGenerationEditorState } from '../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
 import { FileGenerationEditor } from './element-generation-editor/FileGenerationEditor';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { EntityChangeConflictEditor } from './diff-editor/EntityChangeConflictEditor';
 import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState';

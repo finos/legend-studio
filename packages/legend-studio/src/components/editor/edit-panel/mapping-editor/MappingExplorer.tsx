@@ -33,7 +33,7 @@ import {
 } from '@finos/legend-application-components';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { useDrop, useDrag } from 'react-dnd';
-import { toSentenceCase } from '@finos/legend-studio-shared';
+import { toSentenceCase } from '@finos/legend-shared';
 import type {
   MappingElement,
   MappingExplorerTreeNodeData,

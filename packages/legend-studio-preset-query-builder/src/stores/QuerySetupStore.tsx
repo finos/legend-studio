@@ -25,12 +25,12 @@ import {
   observable,
 } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   LightQuery,
   Mapping,

@@ -21,7 +21,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   assertType,
@@ -34,7 +34,7 @@ import {
   addUniqueEntry,
   guaranteeNonNullable,
   findLast,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 import { buildPropertyExpressionFromExplorerTreeNodeData } from './QueryBuilderExplorerState';
 import {

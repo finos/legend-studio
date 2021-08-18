@@ -18,7 +18,7 @@ import type {
   MappingEditorState,
   MappingElementSource,
 } from './MappingEditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   hashObject,
@@ -36,7 +36,7 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToMinifyJSONString,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import {

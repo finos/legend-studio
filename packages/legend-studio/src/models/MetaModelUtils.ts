@@ -24,7 +24,7 @@ import {
   guaranteeNonNullable,
   hashArray,
   hashObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 
 export class GraphError extends EnrichedError {
   constructor(error: string | Error | undefined, message?: string) {

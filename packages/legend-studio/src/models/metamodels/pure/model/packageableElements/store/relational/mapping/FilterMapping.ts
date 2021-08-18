@@ -16,9 +16,9 @@
 
 import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 import { extractLine } from '../../../../../model/packageableElements/store/relational/model/RelationalOperationElement';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import type { Database } from '../../../../../model/packageableElements/store/relational/model/Database';
 import type { JoinTreeNode } from '../../../../../model/packageableElements/store/relational/model/RelationalOperationElement';
 import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';

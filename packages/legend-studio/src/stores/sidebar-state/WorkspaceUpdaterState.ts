@@ -27,7 +27,7 @@ import {
 } from '../../models/sdlc/models/revision/Revision';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
@@ -35,7 +35,7 @@ import {
   getNullableFirstElement,
   NetworkClientError,
   HttpStatus,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { EntityChangeConflict } from '../../models/sdlc/models/entity/EntityChangeConflict';

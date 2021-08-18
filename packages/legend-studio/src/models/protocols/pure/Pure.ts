@@ -18,7 +18,7 @@ import type { AbstractPureGraphManager } from '../../metamodels/pure/graph/Abstr
 import { V1_PureGraphManager } from './v1/V1_PureGraphManager';
 import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from '../../metamodels/pure/graph/PureGraphManagerPlugin';
-import type { Log } from '@finos/legend-studio-shared';
+import type { Log } from '@finos/legend-shared';
 
 export const getGraphManager = (
   pureGraphManagerPlugins: PureGraphManagerPlugin[],

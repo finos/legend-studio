@@ -20,7 +20,7 @@ import {
   guaranteeType,
   uuid,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PackageableConnection } from '../../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';

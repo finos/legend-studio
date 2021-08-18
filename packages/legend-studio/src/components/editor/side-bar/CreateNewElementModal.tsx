@@ -30,7 +30,7 @@ import { CustomSelectorInput } from '@finos/legend-application-components';
 import { ELEMENT_PATH_DELIMITER } from '../../../models/MetaModelConst';
 import type { EditorStore } from '../../../stores/EditorStore';
 import { useEditorStore } from '../../../stores/EditorStore';
-import { compareLabelFn, prettyCONSTName } from '@finos/legend-studio-shared';
+import { compareLabelFn, prettyCONSTName } from '@finos/legend-shared';
 import type { FileGenerationTypeOption } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';

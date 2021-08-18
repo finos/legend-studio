@@ -35,7 +35,7 @@ import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../models/MetaModelConst';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */

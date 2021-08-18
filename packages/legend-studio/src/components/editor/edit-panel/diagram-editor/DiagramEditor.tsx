@@ -92,7 +92,7 @@ import {
   isValidPathIdentifier,
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 import { cleanUpDeadReferencesInDiagram } from '../../../../models/metamodels/pure/helpers/DiagramHelper';

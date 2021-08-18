@@ -24,7 +24,7 @@ import {
   getByTitle,
 } from '@testing-library/react';
 import m2mGraphEntities from '../../../../stores/__tests__/buildGraph/M2MGraphEntitiesTestData.json';
-import { integrationTest } from '@finos/legend-studio-shared';
+import { integrationTest } from '@finos/legend-shared';
 import {
   openElementFromExplorerTree,
   getMockedEditorStore,

@@ -15,7 +15,7 @@
  */
 
 import { observable, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import type { MappingClass } from '../../../model/packageableElements/mapping/MappingClass';
 import { SetImplementation } from '../../../model/packageableElements/mapping/SetImplementation';
 import type { PropertyMappingsImplementation } from '../../../model/packageableElements/mapping/PropertyMappingsImplementation';

@@ -24,7 +24,7 @@ import {
   optional,
   SKIP,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   deserializeArray,
   serializeArray,
@@ -33,7 +33,7 @@ import {
   usingModelSchema,
   usingConstantValueSchema,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { V1_ExecutionPlan } from '../../../../model/executionPlan/V1_ExecutionPlan';
 import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan';
 import { V1_Protocol } from '../../../../model/V1_Protocol';

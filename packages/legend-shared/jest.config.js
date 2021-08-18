@@ -25,6 +25,6 @@ export default {
   name: packageJson.name,
   rootDir: '../..',
   testMatch: [
-    '<rootDir>/packages/legend-studio-shared/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+    '<rootDir>/packages/legend-shared/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
 };

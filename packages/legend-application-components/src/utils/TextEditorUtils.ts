@@ -19,7 +19,7 @@ import {
   MarkerSeverity,
   KeyCode,
 } from 'monaco-editor';
-import { noop } from '@finos/legend-studio-shared';
+import { noop } from '@finos/legend-shared';
 
 /**
  * Normally `monaco-editor` worker disposes after 5 minutes staying idle, but we fasten

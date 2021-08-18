@@ -32,14 +32,14 @@ import {
   WORKSPACE_TYPE,
   PROJECT_LATEST_VIEWER_WORKSPACE,
 } from '../models/sdlc/models/workspace/Workspace';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   ActionState,
   assertNonNullable,
   guaranteeNonNullable,
   compareLabelFn,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { Review } from '../models/sdlc/models/review/Review';
 import { generateSetupRoute } from './LegendStudioRouter';
 

@@ -35,7 +35,7 @@ import {
   MappingElementState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { guaranteeNonNullable, noop } from '@finos/legend-studio-shared';
+import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   getMappingElementSource,

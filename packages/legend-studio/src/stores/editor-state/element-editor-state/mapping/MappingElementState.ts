@@ -15,8 +15,8 @@
  */
 
 import { observable, computed, makeObservable, action, flow } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { uuid } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { uuid } from '@finos/legend-shared';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../../EditorStore';
 import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';

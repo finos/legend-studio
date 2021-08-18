@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { GenericClazz } from '@finos/legend-studio-shared';
-import { assertNonEmptyString, assertTrue } from '@finos/legend-studio-shared';
+import type { GenericClazz } from '@finos/legend-shared';
+import { assertNonEmptyString, assertTrue } from '@finos/legend-shared';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';

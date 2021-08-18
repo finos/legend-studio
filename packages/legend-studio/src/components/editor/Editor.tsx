@@ -52,7 +52,7 @@ import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 
 const buildHotkeySupport = (

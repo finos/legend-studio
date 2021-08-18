@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 
 export abstract class V1_Store

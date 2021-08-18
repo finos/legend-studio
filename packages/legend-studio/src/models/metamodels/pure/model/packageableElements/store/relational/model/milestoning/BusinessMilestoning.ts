@@ -15,7 +15,7 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 import { TemporalMilestoning } from './Milestoning';
 
 export class BusinessMilestoning extends TemporalMilestoning {

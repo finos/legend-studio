@@ -21,10 +21,7 @@ import {
   primitive,
   SKIP,
 } from 'serializr';
-import {
-  SerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-studio-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 import type { V1_Runtime } from '../../model/packageableElements/runtime/V1_Runtime';
 import type { V1_RawExecutionContext } from '../../model/rawValueSpecification/V1_RawExecutionContext';

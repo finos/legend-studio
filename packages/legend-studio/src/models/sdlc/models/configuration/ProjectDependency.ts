@@ -20,8 +20,8 @@ import {
   uuid,
   SerializationFactory,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { VersionId } from '../version/VersionId';
 import { observable, action, computed, makeObservable } from 'mobx';
 

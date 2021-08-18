@@ -21,9 +21,9 @@ import {
   deleteEntry,
   addUniqueEntry,
   changeEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import type { Enumeration } from './Enumeration';
 import type { TaggedValue } from './TaggedValue';
 import type { AnnotatedElement } from './AnnotatedElement';

@@ -21,7 +21,7 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
 import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtils';
 import { Type } from '../../../../../../../metamodels/pure/model/packageableElements/domain/Type';

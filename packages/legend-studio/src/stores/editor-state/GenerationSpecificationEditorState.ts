@@ -20,7 +20,7 @@ import {
   uuid,
   addUniqueEntry,
   deleteEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   computed,
   observable,

@@ -18,7 +18,7 @@ import { createModelSchema, list, optional, primitive } from 'serializr';
 import {
   usingConstantValueSchema,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_ClassView } from '../../../model/packageableElements/diagram/V1_ClassView';
 import { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
 import { V1_Point } from '../../../model/packageableElements/diagram/geometry/V1_Point';

@@ -15,7 +15,7 @@
  */
 
 import { primitive, createModelSchema, optional } from 'serializr';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement';
 import { V1_SourceInformation } from '../../../model/V1_SourceInformation';

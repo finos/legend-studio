@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
-import { unitTest, guaranteeNonNullable } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
+import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   simpleDebuggingCase,
   testAutoImportsWithAny,

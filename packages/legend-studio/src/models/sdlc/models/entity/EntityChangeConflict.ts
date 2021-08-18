@@ -17,10 +17,7 @@
 import { observable, computed, makeObservable } from 'mobx';
 import type { EntityDiff } from '../comparison/EntityDiff';
 import { EntityChangeType } from '../entity/EntityChange';
-import {
-  IllegalStateError,
-  shallowStringify,
-} from '@finos/legend-studio-shared';
+import { IllegalStateError, shallowStringify } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 

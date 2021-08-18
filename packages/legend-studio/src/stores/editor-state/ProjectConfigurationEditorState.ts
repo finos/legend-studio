@@ -25,13 +25,13 @@ import {
   flowResult,
 } from 'mobx';
 import type { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   compareLabelFn,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { UpdateProjectConfigurationCommand } from '../../models/sdlc/models/configuration/UpdateProjectConfigurationCommand';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';

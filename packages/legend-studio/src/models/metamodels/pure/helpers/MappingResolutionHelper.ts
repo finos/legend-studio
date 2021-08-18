@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { findLast } from '@finos/legend-studio-shared';
+import { findLast } from '@finos/legend-shared';
 import type { SetImplementation } from '../model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../model/packageableElements/mapping/OperationSetImplementation';
 import type { InstanceSetImplementation } from '../model/packageableElements/mapping/InstanceSetImplementation';

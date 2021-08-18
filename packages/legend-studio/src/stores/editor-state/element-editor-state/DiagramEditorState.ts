@@ -21,7 +21,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   uuid,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';

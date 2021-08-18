@@ -15,10 +15,7 @@
  */
 
 import { list, primitive, createModelSchema } from 'serializr';
-import {
-  SerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-studio-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 
 // TODO: consider removing this when SDLC finally get rid of project type and environment flags
 export enum ProjectType {

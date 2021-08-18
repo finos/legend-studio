@@ -25,12 +25,12 @@ import {
   getEditorLanguageFromFormat,
 } from '../../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
-import type { DebouncedFunc } from '@finos/legend-studio-shared';
+import type { DebouncedFunc } from '@finos/legend-shared';
 import {
   UnsupportedOperationError,
   debounce,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   TreeNodeContainerProps,
   TreeData,

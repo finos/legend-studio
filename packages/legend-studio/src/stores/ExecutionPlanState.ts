@@ -23,8 +23,8 @@ import type {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { LogEvent } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent } from '@finos/legend-shared';
 import { CLIENT_VERSION } from '../models/MetaModelConst';
 import type { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { RawLambda } from '../models/metamodels/pure/model/rawValueSpecification/RawLambda';

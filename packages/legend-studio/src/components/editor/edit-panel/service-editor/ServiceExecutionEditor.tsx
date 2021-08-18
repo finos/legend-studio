@@ -30,7 +30,7 @@ import {
 import {
   prettyCONSTName,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
 import { VscError } from 'react-icons/vsc';

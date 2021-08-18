@@ -28,7 +28,7 @@ import type { RootRelationalInstanceSetImplementation } from '../../../../../mod
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
 import type { Class } from '../../../../../model/packageableElements/domain/Class';
 import type { InferableMappingElementIdValue } from '../../../../../model/packageableElements/mapping/InferableMappingElementId';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 
 export class InlineEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation

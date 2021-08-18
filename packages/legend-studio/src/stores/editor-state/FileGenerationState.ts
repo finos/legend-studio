@@ -40,8 +40,8 @@ import {
 } from '../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
 import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { LogEvent } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent } from '@finos/legend-shared';
 
 export class FileGenerationState {
   editorStore: EditorStore;

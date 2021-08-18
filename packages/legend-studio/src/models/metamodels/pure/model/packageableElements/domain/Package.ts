@@ -19,12 +19,8 @@ import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../MetaModelConst';
-import {
-  hashArray,
-  assertTrue,
-  addUniqueEntry,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray, assertTrue, addUniqueEntry } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { GraphError } from '../../../../../MetaModelUtils';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';

@@ -15,7 +15,7 @@
  */
 
 import { createModelSchema, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 
 export class V1_Protocol {
   name: string;

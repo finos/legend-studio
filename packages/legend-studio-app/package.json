@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@finos/legend-studio-shared": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
     "copy-webpack-plugin": "9.0.1",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",

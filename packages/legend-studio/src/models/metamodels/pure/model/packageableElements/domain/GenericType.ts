@@ -15,8 +15,8 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import type { Clazz } from '@finos/legend-studio-shared';
-import { guaranteeType, uuid } from '@finos/legend-studio-shared';
+import type { Clazz } from '@finos/legend-shared';
+import { guaranteeType, uuid } from '@finos/legend-shared';
 import type { Type } from './Type';
 import type { Stubable } from '../../../model/Stubable';
 

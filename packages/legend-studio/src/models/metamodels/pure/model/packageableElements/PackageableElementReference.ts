@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assertType } from '@finos/legend-studio-shared';
+import { assertType } from '@finos/legend-shared';
 import { observable, action, computed, makeObservable } from 'mobx';
 import type { PackageableElement } from '../../model/packageableElements/PackageableElement';
 import type { Section } from '../../model/packageableElements/section/Section';

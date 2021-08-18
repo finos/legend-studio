@@ -15,7 +15,7 @@
  */
 
 import { inlineEmbeddedRelationalTestData } from './RelationalEntitiesTestData';
-import { guaranteeType, unitTest } from '@finos/legend-studio-shared';
+import { guaranteeType, unitTest } from '@finos/legend-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';

@@ -21,12 +21,12 @@ import {
   custom,
   serialize,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
   UnsupportedOperationError,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_packageableElementPointerDeserrializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';

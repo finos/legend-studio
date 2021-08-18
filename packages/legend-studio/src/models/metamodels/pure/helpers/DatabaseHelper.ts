@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import { Database } from '../model/packageableElements/store/relational/model/Database';
 import type { Filter } from '../model/packageableElements/store/relational/model/Filter';
 import type { Schema } from '../model/packageableElements/store/relational/model/Schema';

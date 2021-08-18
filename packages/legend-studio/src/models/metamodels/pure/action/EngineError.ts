@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ApplicationError } from '@finos/legend-studio-shared';
+import { ApplicationError } from '@finos/legend-shared';
 import { observable, action, makeObservable } from 'mobx';
 import type { SourceInformation } from '../action/SourceInformation';
 

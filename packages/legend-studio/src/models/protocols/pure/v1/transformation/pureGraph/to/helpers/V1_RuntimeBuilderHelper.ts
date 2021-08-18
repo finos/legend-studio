@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assertTrue, assertNonEmptyString } from '@finos/legend-studio-shared';
+import { assertTrue, assertNonEmptyString } from '@finos/legend-shared';
 import {
   EngineRuntime,
   StoreConnections,

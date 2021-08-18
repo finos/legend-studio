@@ -19,7 +19,7 @@ import type {
   TreeData,
   TreeNodeData,
 } from '@finos/legend-application-components';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   addUniqueEntry,
@@ -27,7 +27,7 @@ import {
   assertTrue,
   guaranteeNonNullable,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import {
   DatabaseBuilderInput,

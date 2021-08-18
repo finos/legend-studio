@@ -16,7 +16,7 @@
 
 import { V1_Milestoning } from './V1_Milestoning';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 
 export class V1_BusinessSnapshotMilestoning extends V1_Milestoning {
   snapshotDate!: string;

@@ -41,7 +41,7 @@ import {
 import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { SQL_DISPLAY_TABS } from '../../../../../stores/ExecutionPlanState';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { clsx } from '@finos/legend-application-components';
 import type { DatabaseConnection } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { RelationalDatabaseConnection } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';

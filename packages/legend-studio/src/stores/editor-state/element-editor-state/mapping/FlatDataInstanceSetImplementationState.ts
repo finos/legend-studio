@@ -24,13 +24,13 @@ import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   UnsupportedOperationError,
   guaranteeType,
   IllegalStateError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
 import type { SourceInformation } from '../../../../models/metamodels/pure/action/SourceInformation';

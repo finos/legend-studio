@@ -32,7 +32,7 @@ import {
   nominateRootSetImplementation,
 } from '../../../../models/metamodels/pure/helpers/MappingResolutionHelper';
 import { clsx } from '@finos/legend-application-components';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import type { FlatDataPropertyMappingState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor';

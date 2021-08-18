@@ -20,7 +20,7 @@ import { useEditorStore } from '../../../../stores/EditorStore';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
 import { resolvePackagePathAndElementName } from '../../../../models/MetaModelUtils';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import Dialog from '@material-ui/core/Dialog';
 import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';

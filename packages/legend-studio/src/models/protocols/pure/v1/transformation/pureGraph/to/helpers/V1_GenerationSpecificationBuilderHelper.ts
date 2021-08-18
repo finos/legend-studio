@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assertNonEmptyString } from '@finos/legend-studio-shared';
+import { assertNonEmptyString } from '@finos/legend-shared';
 import { GenerationTreeNode } from '../../../../../../../metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
 import type { FileGenerationSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';

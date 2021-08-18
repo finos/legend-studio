@@ -24,11 +24,7 @@ import type { EntityChange } from '../models/sdlc/models/entity/EntityChange';
 import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import { getGraphManager } from '../models/protocols/pure/Pure';
-import type {
-  Clazz,
-  GeneratorFn,
-  PlainObject,
-} from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertType,
@@ -38,7 +34,7 @@ import {
   assertTrue,
   isNonNullable,
   NetworkClientError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import {

@@ -45,7 +45,7 @@ import { CORE_TEST_ID } from '../../../../const';
 import { useEditorStore } from '../../../../stores/EditorStore';
 import { MdModeEdit } from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
-import { noop } from '@finos/legend-studio-shared';
+import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,

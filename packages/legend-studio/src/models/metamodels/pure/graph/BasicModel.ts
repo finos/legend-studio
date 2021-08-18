@@ -15,7 +15,7 @@
  */
 
 import { observable, computed, action, flow, makeObservable } from 'mobx';
-import type { Clazz, GeneratorFn } from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn } from '@finos/legend-shared';
 import {
   ActionState,
   assertNonEmptyString,
@@ -24,7 +24,7 @@ import {
   guaranteeNonNullable,
   IllegalStateError,
   returnUndefOnError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { ROOT_PACKAGE_NAME } from '../../../MetaModelConst';
 import { ELEMENT_PATH_DELIMITER } from '../../../MetaModelConst';
 import { Package } from '../model/packageableElements/domain/Package';

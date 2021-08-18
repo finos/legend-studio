@@ -19,7 +19,7 @@ import { createModelSchema, primitive } from 'serializr';
 import {
   assertNonEmptyString,
   SerializationFactory,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 
 export enum VERSION_TYPE {
   MAJOR = 'MAJOR',

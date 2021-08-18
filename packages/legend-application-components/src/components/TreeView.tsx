@@ -15,7 +15,7 @@
  */
 
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import clsx from 'clsx';
 
 const DEFAULT_STEP_PADDING_IN_REM = 1;

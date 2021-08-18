@@ -19,7 +19,7 @@ import {
   fromElementPathToMappingElementId,
   matchFunctionName,
 } from '../MetaModelUtils';
-import { unitTest } from '@finos/legend-studio-shared';
+import { unitTest } from '@finos/legend-shared';
 
 test(unitTest('Extract element name in full element path'), () => {
   expect(extractElementNameFromPath('namePart')).toBe('namePart');

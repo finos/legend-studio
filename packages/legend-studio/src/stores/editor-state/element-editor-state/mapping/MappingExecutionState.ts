@@ -33,7 +33,7 @@ import {
   makeAutoObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   guaranteeNonNullable,
@@ -47,7 +47,7 @@ import {
   createUrlStringFromData,
   losslessStringify,
   guaranteeType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   CLIENT_VERSION,
   LAMBDA_START,

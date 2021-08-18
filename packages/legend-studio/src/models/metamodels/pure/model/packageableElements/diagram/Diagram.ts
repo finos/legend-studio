@@ -15,12 +15,8 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import {
-  hashArray,
-  addUniqueEntry,
-  deleteEntry,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { ClassView } from './ClassView';
 import type { PropertyView } from './PropertyView';

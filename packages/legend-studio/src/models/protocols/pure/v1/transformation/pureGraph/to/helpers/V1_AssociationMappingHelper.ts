@@ -15,7 +15,7 @@
  */
 
 import { fromElementPathToMappingElementId } from '../../../../../../../MetaModelUtils';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { Mapping } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RelationalAssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/RelationalAssociationImplementation';
 import type { AssociationImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/AssociationImplementation';

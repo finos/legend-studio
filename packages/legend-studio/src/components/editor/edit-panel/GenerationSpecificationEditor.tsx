@@ -52,7 +52,7 @@ import type {
 import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { GenerationTreeNode } from '../../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import { getNullableFirstElement } from '@finos/legend-studio-shared';
+import { getNullableFirstElement } from '@finos/legend-shared';
 import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../../models/metamodels/pure/graph/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
 import type { DSLGenerationSpecification_EditorPlugin_Extension } from '../../../stores/DSLGenerationSpecification_EditorPlugin_Extension';
 import { flowResult } from 'mobx';

@@ -15,8 +15,8 @@
  */
 
 import { computed, observable, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-studio-shared';
-import { hashArray, guaranteeNonNullable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
+import { hashArray, guaranteeNonNullable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { ColumnMapping } from '../../../../../model/packageableElements/store/relational/model/ColumnMapping';
 import type { Schema } from './Schema';

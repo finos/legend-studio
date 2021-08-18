@@ -16,7 +16,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { compareLabelFn } from '@finos/legend-studio-shared';
+import { compareLabelFn } from '@finos/legend-shared';
 import { FaCaretDown } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
 import { useEditorStore } from '../../../stores/EditorStore';

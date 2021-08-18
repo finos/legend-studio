@@ -16,13 +16,13 @@
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import { SDLC_LOG_EVENT } from '../../../utils/SDLCLogEvent';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   assertNonNullable,
   guaranteeNonNullable,
   hashObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';

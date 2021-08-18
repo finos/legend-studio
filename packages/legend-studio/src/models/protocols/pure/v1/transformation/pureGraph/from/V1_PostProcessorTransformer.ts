@@ -19,7 +19,7 @@ import { MapperPostProcessor } from '../../../../../../metamodels/pure/model/pac
 import type { Mapper } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/postprocessor/Mapper';
 import { V1_MapperPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor';
 import type { V1_PostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   SchemaNameMapper,
   TableNameMapper,

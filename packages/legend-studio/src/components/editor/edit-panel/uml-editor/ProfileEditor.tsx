@@ -15,7 +15,7 @@
  */
 
 import { useEditorStore } from '../../../../stores/EditorStore';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,

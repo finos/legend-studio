@@ -16,7 +16,7 @@
 
 import { observable, computed, makeObservable, action } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray, guaranteeType } from '@finos/legend-studio-shared';
+import { hashArray, guaranteeType } from '@finos/legend-shared';
 import type { ConnectionVisitor } from '../../../../../model/packageableElements/connection/Connection';
 import { Connection } from '../../../../../model/packageableElements/connection/Connection';
 import type { DatasourceSpecification } from '../../../../../model/packageableElements/store/relational/connection/DatasourceSpecification';

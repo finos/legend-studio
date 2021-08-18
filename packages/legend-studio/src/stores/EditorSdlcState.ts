@@ -16,14 +16,14 @@
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import type { PlainObject, GeneratorFn } from '@finos/legend-studio-shared';
+import type { PlainObject, GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   NetworkClientError,
   HttpStatus,
   guaranteeNonNullable,
   assertTrue,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import { Project, ProjectType } from '../models/sdlc/models/project/Project';

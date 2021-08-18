@@ -15,8 +15,8 @@
  */
 
 import { observable, computed, action, makeObservable } from 'mobx';
-import { hashArray, uuid, addUniqueEntry } from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray, uuid, addUniqueEntry } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Mapping } from '../../../model/packageableElements/mapping/Mapping';
 import type { RawLambda } from '../../../model/rawValueSpecification/RawLambda';

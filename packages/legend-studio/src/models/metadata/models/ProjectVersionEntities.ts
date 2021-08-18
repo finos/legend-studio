@@ -15,7 +15,7 @@
  */
 
 import { list, createModelSchema, primitive, raw } from 'serializr';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 
 /**

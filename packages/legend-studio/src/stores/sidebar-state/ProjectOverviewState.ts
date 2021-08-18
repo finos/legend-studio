@@ -27,8 +27,8 @@ import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { Version } from '../../models/sdlc/models/version/Version';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import { Workspace } from '../../models/sdlc/models/workspace/Workspace';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
-import { LogEvent, getNullableFirstElement } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { LogEvent, getNullableFirstElement } from '@finos/legend-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {

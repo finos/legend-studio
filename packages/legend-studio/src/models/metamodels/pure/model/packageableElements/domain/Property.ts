@@ -21,8 +21,8 @@ import {
   deleteEntry,
   addUniqueEntry,
   changeEntry,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { GenericTypeReference } from '../../../model/packageableElements/domain/GenericTypeReference';
 import { GenericTypeExplicitReference } from '../../../model/packageableElements/domain/GenericTypeReference';

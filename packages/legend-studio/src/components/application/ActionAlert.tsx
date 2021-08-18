@@ -22,7 +22,7 @@ import {
   ActionAlertType,
 } from '../../stores/ApplicationStore';
 import { observer } from 'mobx-react-lite';
-import { noop } from '@finos/legend-studio-shared';
+import { noop } from '@finos/legend-shared';
 
 const getActionButtonClassName = (type: ActionAlertActionType): string => {
   switch (type) {

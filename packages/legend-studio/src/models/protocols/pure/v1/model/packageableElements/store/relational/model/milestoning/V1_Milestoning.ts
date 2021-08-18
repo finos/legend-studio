@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import type { V1_RawInstanceValue } from '../../../../../rawValueSpecification/V1_RawInstanceValue';
 
 export abstract class V1_Milestoning implements Hashable {

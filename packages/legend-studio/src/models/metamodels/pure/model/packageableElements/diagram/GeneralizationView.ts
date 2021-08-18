@@ -15,8 +15,8 @@
  */
 
 import { computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { RelationshipView } from './RelationshipView';
 import type { Diagram } from '../../../model/packageableElements/diagram/Diagram';

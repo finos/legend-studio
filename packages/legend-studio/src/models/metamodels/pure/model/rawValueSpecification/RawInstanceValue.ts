@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
 import type { Type } from '../packageableElements/domain/Type';

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-studio-shared';
+import { uuid } from '@finos/legend-shared';
 
 // Core
 export enum BuilderType {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assertNonEmptyString, assertTrue } from '@finos/legend-studio-shared';
+import { assertNonEmptyString, assertTrue } from '@finos/legend-shared';
 import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,

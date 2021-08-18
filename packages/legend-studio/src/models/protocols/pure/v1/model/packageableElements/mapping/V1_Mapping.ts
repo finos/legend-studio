@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import type { V1_MappingInclude } from '../../../model/packageableElements/mapping/V1_MappingInclude';
 import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping';

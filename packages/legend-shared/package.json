@@ -1,5 +1,5 @@
 {
-  "name": "@finos/legend-studio-shared",
+  "name": "@finos/legend-shared",
   "version": "0.0.26",
   "description": "Legend Studio shared utilities and helpers",
   "keywords": [
@@ -9,14 +9,14 @@
     "utilities",
     "utils"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-shared",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-shared",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-studio-shared"
+    "directory": "packages/legend-shared"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

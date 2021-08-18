@@ -32,7 +32,7 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { clsx } from '@finos/legend-application-components';
 import { MdModeEdit } from 'react-icons/md';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor';
 import { CORE_TEST_ID } from '../../../../const';
 import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/service-editor/ServiceRegistrationModalEditor';

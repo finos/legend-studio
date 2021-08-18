@@ -26,7 +26,7 @@ import {
   FaCheckSquare,
   FaTruckLoading,
 } from 'react-icons/fa';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { EDITOR_LANGUAGE } from '../../../stores/EditorConfig';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import {

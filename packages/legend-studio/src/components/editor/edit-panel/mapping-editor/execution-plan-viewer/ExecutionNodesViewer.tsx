@@ -53,7 +53,7 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-application-components';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { TextInputEditor } from '../../../../shared/TextInputEditor';
 import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/domain/DataType';
 

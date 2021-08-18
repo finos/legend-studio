@@ -19,7 +19,7 @@ import {
   assertNonEmptyString,
   guaranteeType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_BusinessMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_BusinessMilestoning';
 import type { V1_Milestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning';
 import type { Milestoning } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/model/milestoning/Milestoning';

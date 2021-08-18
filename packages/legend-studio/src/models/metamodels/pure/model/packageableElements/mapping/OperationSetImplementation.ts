@@ -21,8 +21,8 @@ import {
   addUniqueEntry,
   deleteEntry,
   changeEntry,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../../../model/packageableElements/PackageableElementReference';
 import type { SetImplementationVisitor } from '../../../model/packageableElements/mapping/SetImplementation';

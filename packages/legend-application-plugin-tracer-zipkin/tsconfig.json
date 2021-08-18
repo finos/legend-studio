@@ -9,6 +9,6 @@
   "references": [
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-studio" },
-    { "path": "../legend-studio-shared" }
+    { "path": "../legend-shared" }
   ]
 }

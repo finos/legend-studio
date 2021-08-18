@@ -21,7 +21,7 @@ import {
   assertType,
   addUniqueEntry,
   printObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import type {
   TreeNodeContainerProps,

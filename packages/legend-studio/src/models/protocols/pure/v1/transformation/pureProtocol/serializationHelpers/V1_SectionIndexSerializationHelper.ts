@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
-import { usingConstantValueSchema } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
+import { usingConstantValueSchema } from '@finos/legend-shared';
 import {
   createModelSchema,
   list,

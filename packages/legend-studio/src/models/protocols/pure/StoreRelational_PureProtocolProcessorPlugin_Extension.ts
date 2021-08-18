@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import type { AuthenticationStrategy } from '../../metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { DatasourceSpecification } from '../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import type { PostProcessor } from '../../metamodels/pure/model/packageableElements/store/relational/connection/postprocessor/PostProcessor';

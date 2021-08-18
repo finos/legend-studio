@@ -15,7 +15,7 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import { unitTest, Log } from '@finos/legend-studio-shared';
+import { unitTest, Log } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
   CoreModel,

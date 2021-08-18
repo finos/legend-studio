@@ -67,7 +67,7 @@ import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerati
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
-import { isNonNullable, toTitleCase } from '@finos/legend-studio-shared';
+import { isNonNullable, toTitleCase } from '@finos/legend-shared';
 import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Dialog } from '@material-ui/core';

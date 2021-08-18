@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../model/packageableElements/mapping/EnumerationMapping';
 import type { SetImplementation } from '../model/packageableElements/mapping/SetImplementation';
 import type { Class } from '../model/packageableElements/domain/Class';

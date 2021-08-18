@@ -22,7 +22,7 @@ import {
   guaranteeType,
   assertNonEmptyString,
   assertTrue,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../utils/GraphManagerLogEvent';
 import type { Mapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { SetImplementation } from '../../../../../../metamodels/pure/model/packageableElements/mapping/SetImplementation';

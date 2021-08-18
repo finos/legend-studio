@@ -24,12 +24,12 @@ import {
   deserialize,
   optional,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
   UnsupportedOperationError,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_Variable } from '../../../model/valueSpecification/V1_Variable';
 import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
 import { V1_Lambda } from '../../../model/valueSpecification/raw/V1_Lambda';

@@ -20,7 +20,7 @@ import {
   assertNonEmptyString,
   SerializationFactory,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 
 class V1_GenerationDigest {
   generationId!: string;

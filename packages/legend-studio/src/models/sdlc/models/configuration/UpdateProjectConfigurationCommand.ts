@@ -17,10 +17,7 @@
 import { ProjectDependency } from '../configuration/ProjectDependency';
 import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion';
 import { createModelSchema, list, primitive } from 'serializr';
-import {
-  SerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-studio-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 
 export class UpdateProjectConfigurationCommand {
   artifactId: string;

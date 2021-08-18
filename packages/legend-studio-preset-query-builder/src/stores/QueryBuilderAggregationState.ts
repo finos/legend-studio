@@ -15,7 +15,7 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-studio-shared';
+import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-shared';
 import type {
   AbstractPropertyExpression,
   EditorStore,

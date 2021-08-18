@@ -23,7 +23,7 @@ import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { Revision } from '../../models/sdlc/models/revision/Revision';
 import { DATE_TIME_FORMAT } from '../../const';
 import { TAB_SIZE } from '../EditorConfig';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
@@ -32,7 +32,7 @@ import {
   ContentType,
   NetworkClientError,
   HttpStatus,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ActionAlertType, ActionAlertActionType } from '../ApplicationStore';
 import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';

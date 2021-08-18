@@ -25,8 +25,8 @@ import {
 import type { EditorStore } from '../../EditorStore';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import { mergeDiff3 } from 'node-diff3';
 import { EntityChangeConflictResolution } from '../../../models/sdlc/models/entity/EntityChangeConflict';
 import { ParserError } from '../../../models/metamodels/pure/action/EngineError';

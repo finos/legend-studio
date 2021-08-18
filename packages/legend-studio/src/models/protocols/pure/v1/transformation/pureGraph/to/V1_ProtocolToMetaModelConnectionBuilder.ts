@@ -19,7 +19,7 @@ import {
   guaranteeNonNullable,
   assertTrue,
   assertType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { MODEL_STORE_NAME } from '../../../../../../MetaModelConst';
 import type { DatabaseType } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { RelationalDatabaseConnection } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';

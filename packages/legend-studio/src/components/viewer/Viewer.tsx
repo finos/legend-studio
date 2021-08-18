@@ -40,7 +40,7 @@ import {
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
 } from '@finos/legend-application-components';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from '../../stores/ViewerStore';

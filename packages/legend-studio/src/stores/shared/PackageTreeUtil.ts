@@ -15,7 +15,7 @@
  */
 
 import { ROOT_PACKAGE_NAME } from '../../models/MetaModelConst';
-import { isNonNullable, addUniqueEntry } from '@finos/legend-studio-shared';
+import { isNonNullable, addUniqueEntry } from '@finos/legend-shared';
 import type { PackageTreeNodeData } from './TreeUtil';
 import type {
   TreeNodeData,

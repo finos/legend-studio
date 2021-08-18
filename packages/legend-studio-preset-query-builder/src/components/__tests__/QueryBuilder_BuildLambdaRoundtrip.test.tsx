@@ -35,9 +35,9 @@ import {
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
   integrationTest,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   RawLambda,
   setUpEditorWithDefaultSDLCData,

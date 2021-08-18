@@ -24,11 +24,7 @@ import {
   observable,
 } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
-import type {
-  Clazz,
-  GeneratorFn,
-  PlainObject,
-} from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
@@ -37,7 +33,7 @@ import {
   assertTrue,
   guaranteeNonNullable,
   ActionState,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   LightQuery,
   Mapping,

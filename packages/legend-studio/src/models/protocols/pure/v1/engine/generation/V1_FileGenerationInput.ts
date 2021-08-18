@@ -16,7 +16,7 @@
 
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 import { CLIENT_VERSION } from '../../../../../MetaModelConst';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 import { V1_pureModelContextDataPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization';
 

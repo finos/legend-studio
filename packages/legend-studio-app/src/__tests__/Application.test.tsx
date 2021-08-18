@@ -15,13 +15,13 @@
  */
 
 import { getTestApplicationConfig, LegendStudio } from '@finos/legend-studio';
-import type { AbstractPluginManager } from '@finos/legend-studio-shared';
+import type { AbstractPluginManager } from '@finos/legend-shared';
 import {
   AbstractPreset,
   integrationTest,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 
 class Dummy_Preset extends AbstractPreset {
   constructor() {

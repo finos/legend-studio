@@ -15,7 +15,7 @@
  */
 
 import type { History } from 'history';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { createContext, useContext } from 'react';
 import { useHistory } from 'react-router';
 

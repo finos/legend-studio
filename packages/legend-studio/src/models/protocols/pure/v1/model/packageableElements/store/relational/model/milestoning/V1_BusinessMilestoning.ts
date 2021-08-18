@@ -15,7 +15,7 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 import { V1_Milestoning } from './V1_Milestoning';
 
 export class V1_BusinessMilestoning extends V1_Milestoning {

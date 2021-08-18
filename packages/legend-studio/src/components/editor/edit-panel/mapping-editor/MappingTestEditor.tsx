@@ -50,7 +50,7 @@ import {
   isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
 import {

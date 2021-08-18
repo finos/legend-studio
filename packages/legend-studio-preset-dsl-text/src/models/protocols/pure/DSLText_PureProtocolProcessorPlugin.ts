@@ -21,8 +21,8 @@ import {
   V1_initPackageableElement,
 } from '@finos/legend-studio';
 import { V1_Text } from './v1/model/packageableElements/V1_Text';
-import type { PlainObject } from '@finos/legend-studio-shared';
-import { assertType } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
+import { assertType } from '@finos/legend-shared';
 import type {
   PluginManager,
   PackageableElement,

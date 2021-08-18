@@ -22,7 +22,7 @@ import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
 import { resolvePackagePathAndElementName } from '../../../../models/MetaModelUtils';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import {
   GenerationResultViewer,
   FileGenerationConfigurationEditor,

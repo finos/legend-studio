@@ -40,7 +40,7 @@ import {
   assertTrue,
   generateEnumerableNameFromToken,
   addUniqueEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   QueryBuilderFilterState,
   QueryBuilderFilterOperator,

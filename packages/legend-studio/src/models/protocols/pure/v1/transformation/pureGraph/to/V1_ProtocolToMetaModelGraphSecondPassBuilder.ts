@@ -22,7 +22,7 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
   assertTrue,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { Stereotype } from '../../../../../../metamodels/pure/model/packageableElements/domain/Stereotype';
 import { Tag } from '../../../../../../metamodels/pure/model/packageableElements/domain/Tag';
 import { Enum } from '../../../../../../metamodels/pure/model/packageableElements/domain/Enum';

@@ -17,7 +17,7 @@
 import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
 import { PRIMITIVE_TYPE } from '../../../models/MetaModelConst';
 import { fromElementPathToMappingElementId } from '../../../models/MetaModelUtils';
-import { unitTest } from '@finos/legend-studio-shared';
+import { unitTest } from '@finos/legend-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../StoreTestUtils';
 import type { PureInstanceSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import type { OperationSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';

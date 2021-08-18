@@ -23,7 +23,7 @@ import {
   fireEvent,
 } from '@testing-library/react';
 import enumerationMappingEntities from '../../../../editor/edit-panel/mapping-editor/__tests__/EnumerationMappingTestData.json';
-import { integrationTest } from '@finos/legend-studio-shared';
+import { integrationTest } from '@finos/legend-shared';
 import {
   openElementFromExplorerTree,
   getMockedEditorStore,

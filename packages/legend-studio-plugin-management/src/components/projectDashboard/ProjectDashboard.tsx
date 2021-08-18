@@ -25,8 +25,8 @@ import {
   FaBan,
 } from 'react-icons/fa';
 import { PanelLoadingIndicator } from '@finos/legend-application-components';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult, makeAutoObservable } from 'mobx';
 import type { ApplicationStore } from '@finos/legend-studio';
 import {

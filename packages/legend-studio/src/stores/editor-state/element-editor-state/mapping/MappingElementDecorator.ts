@@ -19,7 +19,7 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   getDecoratedSetImplementationPropertyMappings,
   getLeafSetImplementations,

@@ -16,11 +16,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { useEditorStore } from '../../../../stores/EditorStore';
-import {
-  LogEvent,
-  debounce,
-  prettyCONSTName,
-} from '@finos/legend-studio-shared';
+import { LogEvent, debounce, prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
   FaPlus,

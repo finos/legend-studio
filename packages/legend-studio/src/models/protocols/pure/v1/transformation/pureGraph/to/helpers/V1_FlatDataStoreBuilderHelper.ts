@@ -23,7 +23,7 @@ import {
   isBoolean,
   isString,
   guaranteeType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
 import { FlatDataSection } from '../../../../../../../metamodels/pure/model/packageableElements/store/flatData/model/FlatDataSection';
 import type { FlatDataDataType } from '../../../../../../../metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';

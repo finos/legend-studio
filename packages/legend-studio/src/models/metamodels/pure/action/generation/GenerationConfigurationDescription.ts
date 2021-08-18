@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { GenerationMode } from '../../model/packageableElements/fileGeneration/FileGenerationSpecification';
 
 export enum GenerationPropertyItemType {

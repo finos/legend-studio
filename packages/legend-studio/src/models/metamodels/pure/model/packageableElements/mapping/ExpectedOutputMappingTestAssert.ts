@@ -20,8 +20,8 @@ import {
   isValidJSONString,
   fromGrammarString,
   tryToMinifyLosslessJSONString,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { MappingTestAssert } from './MappingTestAssert';
 import type { ValidationIssue } from '../../../action/validator/ValidationResult';

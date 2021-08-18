@@ -50,7 +50,7 @@ import {
   uniq,
   compareLabelFn,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,

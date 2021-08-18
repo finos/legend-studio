@@ -20,9 +20,9 @@ import {
   addUniqueEntry,
   deleteEntry,
   changeEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { hashLambda } from '../../../../../MetaModelUtils';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import type { RawVariableExpression } from '../../../model/rawValueSpecification/RawVariableExpression';

@@ -34,7 +34,7 @@ import {
   RobotIcon,
   UserIcon,
 } from '@finos/legend-application-components';
-import { debounce } from '@finos/legend-studio-shared';
+import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';

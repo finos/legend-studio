@@ -23,7 +23,7 @@ import {
   guaranteeNonNullable,
   findLast,
   uniqBy,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { PositionedRectangle } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/PositionedRectangle';
 import { Point } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
 import { Rectangle } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Rectangle';

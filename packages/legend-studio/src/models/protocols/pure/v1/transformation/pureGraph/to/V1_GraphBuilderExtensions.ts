@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { GenericClazz } from '@finos/legend-studio-shared';
+import type { GenericClazz } from '@finos/legend-shared';
 import {
   isClassAssignableFrom,
   isNonNullable,
@@ -22,7 +22,7 @@ import {
   getSuperClass,
   UnsupportedOperationError,
   IllegalStateError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
 import { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';

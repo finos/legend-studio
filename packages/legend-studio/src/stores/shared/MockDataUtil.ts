@@ -33,7 +33,7 @@ import {
   getRandomPositiveInteger,
   getRandomItemInCollection,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore';
 import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState';
 

@@ -19,7 +19,7 @@ import {
   deseralizeMap,
   SerializationFactory,
   serializeMap,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 
 export class V1_RelationalOperationElementGrammarToJsonInput {
   operations!: Map<string, string>;

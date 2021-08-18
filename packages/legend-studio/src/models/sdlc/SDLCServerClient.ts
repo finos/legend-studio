@@ -41,8 +41,8 @@ import type { CreateVersionCommand } from './models/version/CreateVersionCommand
 import type { ProjectStructureVersion } from './models/configuration/ProjectStructureVersion';
 import type { UpdateProjectConfigurationCommand } from './models/configuration/UpdateProjectConfigurationCommand';
 import type { User } from './models/User';
-import type { PlainObject, TraceData } from '@finos/legend-studio-shared';
-import { AbstractServerClient } from '@finos/legend-studio-shared';
+import type { PlainObject, TraceData } from '@finos/legend-shared';
+import { AbstractServerClient } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 
 enum SDLC_TRACER_SPAN {

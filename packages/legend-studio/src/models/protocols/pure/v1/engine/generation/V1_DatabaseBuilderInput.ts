@@ -21,10 +21,7 @@ import {
   list,
   optional,
 } from 'serializr';
-import {
-  SerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-studio-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import {
   V1_serializeConnectionValue,
   V1_deserializeConnectionValue,

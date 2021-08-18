@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 import { createModelSchema, optional, primitive } from 'serializr';
 
 export class V1_Query {

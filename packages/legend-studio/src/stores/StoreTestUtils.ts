@@ -25,7 +25,7 @@ import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
-import { Log } from '@finos/legend-studio-shared';
+import { Log } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 
 export const testApplicationConfigData = {

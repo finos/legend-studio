@@ -24,13 +24,13 @@ import {
 } from '../models/sdlc/models/revision/Revision';
 import { Version } from '../models/sdlc/models/version/Version';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   IllegalStateError,
   guaranteeNonNullable,
   ActionState,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { Workspace } from '../models/sdlc/models/workspace/Workspace';
 import { GraphError } from '../models/MetaModelUtils';
 import { useLocalObservable } from 'mobx-react-lite';

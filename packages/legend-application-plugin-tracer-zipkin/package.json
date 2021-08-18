@@ -38,8 +38,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-shared": "workspace:*",
     "@types/zipkin-javascript-opentracing": "1.6.0",
     "opentracing": "0.14.5",
     "zipkin": "0.22.0",

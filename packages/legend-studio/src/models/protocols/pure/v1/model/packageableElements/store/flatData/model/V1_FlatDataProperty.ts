@@ -15,8 +15,8 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-studio-shared';
-import { hashArray } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
+import { hashArray } from '@finos/legend-shared';
 
 export class V1_FlatDataProperty implements Hashable {
   name!: string;

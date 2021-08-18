@@ -21,7 +21,7 @@ import {
   primitive,
   optional,
 } from 'serializr';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 
 export enum BuildStatus {
   PENDING = 'PENDING',

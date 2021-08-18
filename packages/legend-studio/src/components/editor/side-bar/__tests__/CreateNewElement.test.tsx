@@ -21,7 +21,7 @@ import {
   getByText,
   getByPlaceholderText,
 } from '@testing-library/react';
-import { integrationTest, toTitleCase } from '@finos/legend-studio-shared';
+import { integrationTest, toTitleCase } from '@finos/legend-shared';
 import {
   getMockedEditorStore,
   setUpEditorWithDefaultSDLCData,

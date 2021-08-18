@@ -24,12 +24,12 @@ import {
   unsupportedFunctionWithFullPath,
 } from './QueryBuilder_FailureTestData';
 import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
 import {
   RawLambda,

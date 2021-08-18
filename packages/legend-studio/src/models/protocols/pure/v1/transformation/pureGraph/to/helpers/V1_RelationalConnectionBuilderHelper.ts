@@ -19,7 +19,7 @@ import {
   UnsupportedOperationError,
   assertNonNullable,
   guaranteeNonEmptyString,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { DatasourceSpecification } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import {
   LocalH2DatasourceSpecification,

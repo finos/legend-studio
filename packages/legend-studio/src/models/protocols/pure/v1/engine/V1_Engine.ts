@@ -18,7 +18,7 @@ import type {
   Log,
   PlainObject,
   ServerClientConfig,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   LogEvent,
   losslessParse,
@@ -27,7 +27,7 @@ import {
   mergeObjects,
   HttpStatus,
   NetworkClientError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/GraphManagerLogEvent';
 import { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportConfigurationDescription } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';

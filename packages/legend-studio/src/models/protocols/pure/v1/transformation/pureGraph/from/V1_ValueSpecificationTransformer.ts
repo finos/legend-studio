@@ -18,7 +18,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../MetaModelConst';
 import type { AlloySerializationConfigInstanceValue } from '../../../../../../metamodels/pure/model/valueSpecification/AlloySerializationConfig';
 import type {

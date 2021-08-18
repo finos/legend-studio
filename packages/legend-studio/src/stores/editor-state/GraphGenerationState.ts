@@ -22,14 +22,14 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   assertTrue,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type {
   GenerationTreeNodeData,

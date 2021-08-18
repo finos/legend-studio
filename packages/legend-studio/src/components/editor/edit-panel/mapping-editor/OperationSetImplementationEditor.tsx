@@ -30,7 +30,7 @@ import type {
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
-import { noop } from '@finos/legend-studio-shared';
+import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,

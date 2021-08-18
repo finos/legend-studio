@@ -20,7 +20,7 @@ import {
   integrationTest,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   getMockedApplicationStore,
   SDLC_TestData,

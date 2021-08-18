@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { Database } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/Database';
 import type { DataType } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import {

@@ -49,10 +49,7 @@ import type {
   RawExecutionPlan,
 } from '../model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
-import type {
-  GeneratorFn,
-  ServerClientConfig,
-} from '@finos/legend-studio-shared';
+import type { GeneratorFn, ServerClientConfig } from '@finos/legend-shared';
 import type { LightQuery, Query } from '../action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
 

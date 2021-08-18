@@ -15,13 +15,9 @@
  */
 
 import { observable, action, computed, makeObservable, override } from 'mobx';
-import {
-  hashArray,
-  deleteEntry,
-  addUniqueEntry,
-} from '@finos/legend-studio-shared';
+import { hashArray, deleteEntry, addUniqueEntry } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../../../model/packageableElements/mapping/EnumerationMapping';
 import type { SetImplementation } from '../../../model/packageableElements/mapping/SetImplementation';
 import type { AssociationImplementation } from '../../../model/packageableElements/mapping/AssociationImplementation';

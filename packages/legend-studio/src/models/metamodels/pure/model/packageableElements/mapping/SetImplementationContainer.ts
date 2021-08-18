@@ -15,7 +15,7 @@
  */
 
 import { computed, action, makeObservable } from 'mobx';
-import { uuid } from '@finos/legend-studio-shared';
+import { uuid } from '@finos/legend-shared';
 import type { SetImplementationReference } from '../../../model/packageableElements/mapping/SetImplementationReference';
 import type { Stubable } from '../../../model/Stubable';
 import type { SetImplementation } from '../../../model/packageableElements/mapping/SetImplementation';

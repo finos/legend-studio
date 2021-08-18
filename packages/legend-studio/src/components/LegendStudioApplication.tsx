@@ -47,8 +47,8 @@ import type {
   SDLCServerOption,
 } from '../stores/application/ApplicationConfig';
 import type { PluginManager } from '../application/PluginManager';
-import type { Log } from '@finos/legend-studio-shared';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import type { Log } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useWebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 

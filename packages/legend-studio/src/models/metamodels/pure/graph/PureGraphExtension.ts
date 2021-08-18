@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Clazz } from '@finos/legend-studio-shared';
+import type { Clazz } from '@finos/legend-shared';
 import { observable, computed, action, makeObservable } from 'mobx';
 import type { PackageableElement } from '../model/packageableElements/PackageableElement';
 

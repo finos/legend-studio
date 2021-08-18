@@ -16,7 +16,7 @@
 
 import { createModelSchema, optional, primitive } from 'serializr';
 import { observable, action, computed, makeObservable } from 'mobx';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 
 export class ProjectStructureVersion {
   version!: number;

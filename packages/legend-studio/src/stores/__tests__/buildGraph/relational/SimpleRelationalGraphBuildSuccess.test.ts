@@ -15,7 +15,7 @@
  */
 
 import { relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
-import { unitTest, guaranteeType } from '@finos/legend-studio-shared';
+import { unitTest, guaranteeType } from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';

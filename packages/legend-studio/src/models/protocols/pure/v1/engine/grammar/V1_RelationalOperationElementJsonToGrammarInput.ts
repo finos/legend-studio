@@ -19,7 +19,7 @@ import {
   deseralizeMap,
   SerializationFactory,
   serializeMap,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_ParserError } from './V1_ParserError';
 import type { V1_RawRelationalOperationElement } from '../../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 

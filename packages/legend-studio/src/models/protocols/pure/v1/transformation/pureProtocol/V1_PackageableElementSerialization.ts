@@ -15,8 +15,8 @@
  */
 
 import { serialize, deserialize } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { V1_PackageableConnection } from '../../model/packageableElements/connection/V1_PackageableConnection';
 import type { V1_Diagram } from '../../model/packageableElements/diagram/V1_Diagram';
 import type { V1_Association } from '../../model/packageableElements/domain/V1_Association';

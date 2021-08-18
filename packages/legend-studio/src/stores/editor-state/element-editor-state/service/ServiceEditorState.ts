@@ -15,10 +15,7 @@
  */
 
 import { observable, computed, action, makeObservable } from 'mobx';
-import {
-  guaranteeType,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceExecutionState } from './ServiceExecutionState';
 import { ServicePureExecutionState } from './ServiceExecutionState';

@@ -15,12 +15,12 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { uuid, isNumber, hashArray } from '@finos/legend-studio-shared';
+import { uuid, isNumber, hashArray } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   PRIMITIVE_TYPE,
 } from '../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { Enum } from '../../../model/packageableElements/domain/Enum';
 import type { Stubable } from '../../../model/Stubable';
 import { Type } from '../../../model/packageableElements/domain/Type';

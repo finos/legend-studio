@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { findLast, guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { findLast, guaranteeNonNullable } from '@finos/legend-shared';
 
 export const ENTITY_PATH_DELIMITER = '::';
 

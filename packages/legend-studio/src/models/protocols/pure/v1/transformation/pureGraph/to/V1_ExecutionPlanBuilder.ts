@@ -18,7 +18,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ExecutionPlan } from '../../../../../../metamodels/pure/model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../../../../../../metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import { RelationalTDSInstantiationExecutionNode } from '../../../../../../metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';

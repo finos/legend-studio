@@ -15,8 +15,8 @@
  */
 
 import { observable, action, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { Point } from './Point';
 import { Rectangle } from './Rectangle';

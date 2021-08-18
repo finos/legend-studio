@@ -27,7 +27,7 @@ import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryBuilder } from './QueryBuilder';
 import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
-import { noop } from '@finos/legend-studio-shared';
+import { noop } from '@finos/legend-shared';
 
 /**
  * NOTE: Query builder is by right its own mini-app so we have it hosted in a full-screen modal dialog

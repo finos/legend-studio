@@ -15,7 +15,7 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { uuid } from '@finos/legend-studio-shared';
+import { uuid } from '@finos/legend-shared';
 import type { Profile } from '../../../model/packageableElements/domain/Profile';
 import type { Stubable } from '../../../model/Stubable';
 

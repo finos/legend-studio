@@ -24,7 +24,7 @@ import {
   uniq,
   addUniqueEntry,
   assertErrorThrown,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
 import type { TreeData } from '@finos/legend-application-components';

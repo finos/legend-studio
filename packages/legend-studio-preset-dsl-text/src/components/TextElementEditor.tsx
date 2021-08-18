@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import {
   prettyCONSTName,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   useEditorStore,
   EDITOR_LANGUAGE,

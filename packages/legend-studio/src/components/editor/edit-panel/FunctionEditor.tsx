@@ -29,7 +29,7 @@ import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import {
   prettyCONSTName,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import { FaLock, FaPlus, FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
 import { StudioLambdaEditor } from '../../shared/LambdaEditor';

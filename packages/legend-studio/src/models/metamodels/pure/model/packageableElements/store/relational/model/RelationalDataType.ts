@@ -16,7 +16,7 @@
 
 import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 
 export abstract class DataType {
   abstract get hashCode(): string;

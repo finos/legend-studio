@@ -23,7 +23,7 @@ import {
   serialize,
   optional,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
   deserializeArray,
@@ -31,7 +31,7 @@ import {
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';

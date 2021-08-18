@@ -28,7 +28,7 @@ import {
 } from '../../../../stores/shared/DnDUtil';
 import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../../../models/MetaModelConst';
 import type { FlatDataRecordTypeTreeNodeData } from '../../../../stores/shared/TreeUtil';
-import { addUniqueEntry } from '@finos/legend-studio-shared';
+import { addUniqueEntry } from '@finos/legend-shared';
 import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import type {
   RootFlatDataRecordType,

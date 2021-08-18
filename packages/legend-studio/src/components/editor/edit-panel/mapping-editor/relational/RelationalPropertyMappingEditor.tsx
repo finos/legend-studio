@@ -36,7 +36,7 @@ import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import { StudioLambdaEditor } from '../../../../shared/LambdaEditor';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import { Enumeration } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { EnumerationMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import {

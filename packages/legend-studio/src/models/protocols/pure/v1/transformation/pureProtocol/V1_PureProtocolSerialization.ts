@@ -24,13 +24,13 @@ import {
   serialize,
   deserialize,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
   UnsupportedOperationError,
   assertErrorThrown,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { GraphDataParserError } from '../../../../../MetaModelUtils';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';

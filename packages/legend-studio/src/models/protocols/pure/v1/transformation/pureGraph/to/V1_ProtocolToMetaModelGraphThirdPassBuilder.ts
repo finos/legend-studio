@@ -19,7 +19,7 @@ import {
   assertTrue,
   isNonNullable,
   assertErrorThrown,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { CORE_ELEMENT_PATH } from '../../../../../../MetaModelConst';
 import { GraphError } from '../../../../../../MetaModelUtils';
 import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';

@@ -5,7 +5,7 @@
   // See https://github.com/RyanCavanaugh/learn-a
   "files": [],
   "references": [
-    { "path": "packages/legend-studio-shared" },
+    { "path": "packages/legend-shared" },
     { "path": "packages/legend-application-components" },
     { "path": "packages/legend-model-storage" },
     { "path": "packages/legend-metadata" },

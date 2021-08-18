@@ -19,7 +19,7 @@ import {
   hashArray,
   getNullableFirstElement,
   addUniqueEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../../../model/packageableElements/PackageableElementReference';
 import type { Mapping } from '../../../model/packageableElements/mapping/Mapping';

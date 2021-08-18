@@ -40,7 +40,7 @@ import {
   LegendMaterialUITheme,
   PanelLoadingIndicator,
 } from '@finos/legend-application-components';
-import type { Log } from '@finos/legend-studio-shared';
+import type { Log } from '@finos/legend-shared';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useQueryStore();

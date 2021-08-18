@@ -15,7 +15,7 @@
  */
 
 import { alias, custom, SKIP, createModelSchema, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 
 export enum RevisionAlias {
   BASE = 'BASE',

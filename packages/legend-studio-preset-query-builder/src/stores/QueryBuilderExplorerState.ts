@@ -22,7 +22,7 @@ import {
   guaranteeNonNullable,
   addUniqueEntry,
   uniq,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   AbstractProperty,
   EditorStore,

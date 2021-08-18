@@ -53,11 +53,7 @@ import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState
 import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
-import type {
-  Clazz,
-  GeneratorFn,
-  PlainObject,
-} from '@finos/legend-studio-shared';
+import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   addUniqueEntry,
@@ -69,7 +65,7 @@ import {
   assertNonNullable,
   assertTrue,
   ActionState,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
 import { EditorSdlcState } from './EditorSdlcState';

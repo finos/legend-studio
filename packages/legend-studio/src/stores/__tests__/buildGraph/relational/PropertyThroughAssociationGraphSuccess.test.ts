@@ -19,7 +19,7 @@ import {
   unitTest,
   guaranteeNonNullable,
   guaranteeType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
 import {
   DynaFunction,

@@ -41,7 +41,7 @@ import {
 } from './MappingTestState';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   deleteEntry,
@@ -54,7 +54,7 @@ import {
   UnsupportedOperationError,
   assertTrue,
   addUniqueEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState';
 import {
   FlatDataInstanceSetImplementationState,

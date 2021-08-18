@@ -15,8 +15,8 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../../../model/packageableElements/mapping/InstanceSetImplementation';
 import type { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';

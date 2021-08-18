@@ -35,7 +35,7 @@ import {
 import {
   UnsupportedOperationError,
   compareLabelFn,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';

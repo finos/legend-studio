@@ -15,14 +15,14 @@
  */
 
 import { computed, observable, action, makeObservable, override } from 'mobx';
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
   UnsupportedOperationError,
   hashArray,
   addUniqueEntry,
   deleteEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { FileGenerationSpecification } from '../fileGeneration/FileGenerationSpecification';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import {

@@ -19,7 +19,7 @@ import type { EditorStore } from '../EditorStore';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
@@ -30,7 +30,7 @@ import {
   HttpStatus,
   hashObject,
   deleteEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
 import {
   RevisionAlias,

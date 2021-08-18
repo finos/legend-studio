@@ -20,7 +20,7 @@ import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   losslessStringify,
@@ -33,7 +33,7 @@ import {
   toGrammarString,
   fromGrammarString,
   createUrlStringFromData,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceTestResult } from '../../../../models/metamodels/pure/action/service/ServiceTestResult';
 import type { KeyedSingleExecutionTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';

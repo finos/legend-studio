@@ -31,7 +31,7 @@ import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import Dialog from '@material-ui/core/Dialog';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { ProjectType } from '../../models/sdlc/models/project/Project';
-import { isNumber } from '@finos/legend-studio-shared';
+import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
 import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {

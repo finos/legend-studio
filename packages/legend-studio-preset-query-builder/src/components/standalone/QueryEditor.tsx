@@ -20,7 +20,7 @@ import {
   PanelLoadingIndicator,
   RobotIcon,
 } from '@finos/legend-application-components';
-import { getQueryParameters } from '@finos/legend-studio-shared';
+import { getQueryParameters } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';

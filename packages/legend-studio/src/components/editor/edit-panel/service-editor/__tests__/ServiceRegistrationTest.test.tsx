@@ -28,7 +28,7 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
   prettyCONSTName,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   SDLC_TestData,
   openElementFromExplorerTree,
@@ -39,7 +39,7 @@ import {
 import { CORE_TEST_ID } from '../../../../../const';
 import type { Project } from '../../../../../models/sdlc/models/project/Project';
 import type { Workspace } from '../../../../../models/sdlc/models/workspace/Workspace';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { NOTIFCATION_SEVERITY } from '../../../../../stores/ApplicationStore';

@@ -18,7 +18,7 @@ import { createModelSchema, optional, primitive } from 'serializr';
 import {
   BasicSerializationFactory,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { V1_SourceInformation } from '../model/V1_SourceInformation';
 import { V1_sourceInformationSerialization } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 

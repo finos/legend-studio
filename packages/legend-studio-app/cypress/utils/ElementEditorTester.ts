@@ -18,7 +18,7 @@ import { TEST_ID } from '../../src/const';
 import { EDITOR_LANGUAGE } from '../../src/stores/EditorConfig';
 import { getConfigUrls } from './E2ETestUtil';
 import { editor as MonacoEditorAPI } from 'monaco-editor';
-import { Clazz, guaranteeType } from '@finos/legend-studio-shared';
+import { Clazz, guaranteeType } from '@finos/legend-shared';
 import { EndToEndTester } from './EndToEndTester';
 import { ElementHelperExtension } from './ElementHelperExtension';
 

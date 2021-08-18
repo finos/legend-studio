@@ -15,7 +15,7 @@
  */
 
 import { createModelSchema, optional, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-studio-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 
 export class V1_GenerationOutput {
   content!: string;

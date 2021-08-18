@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { FlatData } from '../../../../../../metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
 import {
   FlatDataString,

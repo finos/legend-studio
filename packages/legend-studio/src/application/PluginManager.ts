@@ -17,8 +17,8 @@
 import type {
   TelemetryServicePlugin,
   TracerServicePlugin,
-} from '@finos/legend-studio-shared';
-import { AbstractPluginManager } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import { AbstractPluginManager } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from '../models/metamodels/pure/graph/PureGraphManagerPlugin';
 import type { PureProtocolProcessorPlugin } from '../models/protocols/pure/PureProtocolProcessorPlugin';
 import type { EditorPlugin } from '../stores/EditorPlugin';

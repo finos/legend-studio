@@ -22,13 +22,13 @@ import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
 import type { Revision } from '../../models/sdlc/models/revision/Revision';
 import { RevisionAlias } from '../../models/sdlc/models/revision/Revision';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
   assertNonNullable,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ActionAlertActionType } from '../ApplicationStore';
 import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';

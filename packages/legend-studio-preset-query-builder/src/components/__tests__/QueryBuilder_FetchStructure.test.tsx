@@ -34,7 +34,7 @@ import {
   guaranteeType,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { getAllByText, waitFor } from '@testing-library/dom';
 import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';

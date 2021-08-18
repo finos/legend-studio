@@ -38,14 +38,14 @@ import type {
   AbstractPluginManager,
   AbstractPreset,
   Logger,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   LogEvent,
   Log,
   guaranteeNonEmptyString,
   assertNonNullable,
   NetworkClient,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { PluginManager } from './PluginManager';

@@ -32,7 +32,7 @@ import {
   assertTrue,
   guaranteeType,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { Type } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import type { Table } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { Column } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Column';

@@ -22,10 +22,7 @@ import {
   StringTypeIcon,
   UnknownTypeIcon,
 } from '@finos/legend-application-components';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { getClass, UnsupportedOperationError } from '@finos/legend-shared';
 import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
 import {
   Real,

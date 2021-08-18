@@ -16,7 +16,7 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashString } from '@finos/legend-studio-shared';
+import { hashString } from '@finos/legend-shared';
 import type {
   PackageableElementReference,
   PackageableElementImplicitReference,

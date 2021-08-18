@@ -22,10 +22,7 @@ import {
   primitive,
   optional,
 } from 'serializr';
-import {
-  SerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-studio-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 
 export enum ReviewState {
   OPEN = 'OPEN',

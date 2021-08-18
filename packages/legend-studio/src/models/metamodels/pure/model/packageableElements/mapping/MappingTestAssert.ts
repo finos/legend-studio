@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
 import type { ValidationIssue } from '../../../action/validator/ValidationResult';
 
 export abstract class MappingTestAssert implements Hashable {

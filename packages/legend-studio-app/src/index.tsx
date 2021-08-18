@@ -19,7 +19,7 @@ import { QueryBuilder_Preset } from '@finos/legend-studio-preset-query-builder';
 import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
 import { EFJSONSchema_Preset } from '@finos/legend-studio-preset-external-format-json-schema';
 import studioConfig from '../studio.config';
-import { BrowserConsole } from '@finos/legend-studio-shared';
+import { BrowserConsole } from '@finos/legend-shared';
 import './index.scss';
 
 LegendStudio.create()

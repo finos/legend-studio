@@ -22,14 +22,14 @@ import {
   list,
   serialize,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
   deserializeArray,
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { V1_ServiceExecution } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import {
   V1_KeyedExecutionParameter,

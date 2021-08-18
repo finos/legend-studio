@@ -32,7 +32,7 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
 } from '@finos/legend-studio';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildNotExpression,

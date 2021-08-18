@@ -34,7 +34,7 @@ import {
   losslessStringify,
   tryToFormatJSONString,
   tryToFormatLosslessJSONString,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 

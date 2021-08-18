@@ -31,7 +31,7 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-application-components';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
 

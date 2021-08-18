@@ -34,8 +34,8 @@ import {
 } from '@finos/legend-application-components';
 import { FaLongArrowAltDown, FaLongArrowAltUp } from 'react-icons/fa';
 import type { LambdaEditorState } from '../../stores/editor-state/element-editor-state/LambdaEditorState';
-import type { DebouncedFunc, GeneratorFn } from '@finos/legend-studio-shared';
-import { debounce } from '@finos/legend-studio-shared';
+import type { DebouncedFunc, GeneratorFn } from '@finos/legend-shared';
+import { debounce } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../const';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import type { EngineError } from '../../models/metamodels/pure/action/EngineError';

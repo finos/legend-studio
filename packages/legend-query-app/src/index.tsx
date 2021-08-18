@@ -21,7 +21,7 @@ import {
 import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
 import appConfig from '../query.config';
 import './index.scss';
-import { BrowserConsole } from '@finos/legend-studio-shared';
+import { BrowserConsole } from '@finos/legend-shared';
 
 LegendQuery.create()
   .setup({ baseUrl: appConfig.baseUrl })

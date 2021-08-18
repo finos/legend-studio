@@ -15,10 +15,7 @@
  */
 
 import { list, createModelSchema, optional, primitive } from 'serializr';
-import {
-  SerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-studio-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 
 class FileImportContent {
   fileName?: string;

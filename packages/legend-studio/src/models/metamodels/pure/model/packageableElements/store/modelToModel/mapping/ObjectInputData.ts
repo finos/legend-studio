@@ -20,8 +20,8 @@ import {
   UnsupportedOperationError,
   isValidJSONString,
   tryToMinifyLosslessJSONString,
-} from '@finos/legend-studio-shared';
-import type { Hashable } from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../../../model/packageableElements/mapping/InputData';
 import type { Class } from '../../../../../model/packageableElements/domain/Class';

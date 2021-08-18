@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-studio-shared';
+import { hashArray } from '@finos/legend-shared';
 import { hashLambda } from '../../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';

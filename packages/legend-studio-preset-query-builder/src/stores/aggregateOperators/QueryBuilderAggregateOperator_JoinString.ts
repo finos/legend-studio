@@ -30,7 +30,7 @@ import {
   GenericType,
   PRIMITIVE_TYPE,
 } from '@finos/legend-studio';
-import { assertTrue, guaranteeType } from '@finos/legend-studio-shared';
+import { assertTrue, guaranteeType } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   QueryBuilderAggregateColumnState,

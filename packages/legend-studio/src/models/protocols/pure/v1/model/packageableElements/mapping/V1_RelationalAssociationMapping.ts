@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-studio-shared';
-import { hashArray } from '@finos/legend-studio-shared';
+import type { Hashable } from '@finos/legend-shared';
+import { hashArray } from '@finos/legend-shared';
 import { V1_AssociationMapping } from './V1_AssociationMapping';
 import type { V1_PropertyMapping } from './V1_PropertyMapping';
 

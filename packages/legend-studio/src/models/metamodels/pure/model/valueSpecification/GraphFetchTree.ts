@@ -15,7 +15,7 @@
  */
 
 import { makeObservable, observable, action, computed } from 'mobx';
-import { addUniqueEntry, deleteEntry } from '@finos/legend-studio-shared';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { Class } from '../../model/packageableElements/domain/Class';
 import type { PropertyReference } from '../../model/packageableElements/domain/PropertyReference';
 import type {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import type { V1_RelationalOperationElement } from './V1_RelationalOperationElement';
 
 export type V1_RawRelationalOperationElement =

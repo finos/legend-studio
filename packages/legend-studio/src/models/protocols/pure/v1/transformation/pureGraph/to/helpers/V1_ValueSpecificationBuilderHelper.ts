@@ -19,7 +19,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
   PRIMITIVE_TYPE,

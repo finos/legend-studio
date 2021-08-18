@@ -15,7 +15,7 @@
  */
 
 import { makeObservable, observable, action } from 'mobx';
-import { uuid } from '@finos/legend-studio-shared';
+import { uuid } from '@finos/legend-shared';
 import type { RelationalDatabaseConnection } from '../../model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 
 export class DatabasePattern {

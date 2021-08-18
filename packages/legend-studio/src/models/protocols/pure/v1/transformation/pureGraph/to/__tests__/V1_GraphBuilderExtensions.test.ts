@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import type { Clazz } from '@finos/legend-studio-shared';
-import {
-  UnsupportedOperationError,
-  unitTest,
-} from '@finos/legend-studio-shared';
+import type { Clazz } from '@finos/legend-shared';
+import { UnsupportedOperationError, unitTest } from '@finos/legend-shared';
 import type { PluginManager } from '../../../../../../../../application/PluginManager';
 import type { PackageableElementVisitor } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
