@@ -25,7 +25,7 @@ import {
   disableEditorHotKeys,
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { useEditorStore } from '../../stores/EditorStore';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';

@@ -20,7 +20,7 @@ import {
   clsx,
   DropdownMenu,
   ContextMenu,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,

@@ -39,7 +39,7 @@ import {
   MenuContentItem,
   MenuContentItemIcon,
   MenuContentItemLabel,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 
 const SettingsMenu = observer(
   (props, ref: React.Ref<HTMLDivElement>) => {

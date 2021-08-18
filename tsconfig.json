@@ -6,7 +6,7 @@
   "files": [],
   "references": [
     { "path": "packages/legend-studio-shared" },
-    { "path": "packages/legend-studio-components" },
+    { "path": "packages/legend-application-components" },
     { "path": "packages/legend-model-storage" },
     { "path": "packages/legend-metadata" },
     { "path": "packages/legend-sdlc" },

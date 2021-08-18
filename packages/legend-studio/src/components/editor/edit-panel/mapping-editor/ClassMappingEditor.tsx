@@ -20,7 +20,10 @@ import { InstanceSetImplementationEditor } from './InstanceSetImplementationEdit
 import { OperationSetImplementationEditor } from './OperationSetImplementationEditor';
 import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import { FaRegSquare, FaCheckSquare } from 'react-icons/fa';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import {
+  clsx,
+  CustomSelectorInput,
+} from '@finos/legend-application-components';
 import { ClassIcon, getElementTypeIcon } from '../../../shared/Icon';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';

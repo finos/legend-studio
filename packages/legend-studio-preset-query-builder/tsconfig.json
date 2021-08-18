@@ -12,6 +12,6 @@
     { "path": "../legend-studio" },
     { "path": "../legend-studio-shared" },
     { "path": "../legend-model-storage" },
-    { "path": "../legend-studio-components" }
+    { "path": "../legend-application-components" }
   ]
 }

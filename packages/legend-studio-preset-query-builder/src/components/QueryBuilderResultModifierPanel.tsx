@@ -22,7 +22,10 @@ import {
   FaSquare,
   FaTimes,
 } from 'react-icons/fa';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import {
+  clsx,
+  CustomSelectorInput,
+} from '@finos/legend-application-components';
 import { Dialog } from '@material-ui/core';
 import {
   COLUMN_SORT_TYPE,

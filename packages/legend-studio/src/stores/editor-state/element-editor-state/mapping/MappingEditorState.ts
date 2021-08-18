@@ -60,7 +60,10 @@ import {
   FlatDataInstanceSetImplementationState,
   RootFlatDataInstanceSetImplementationState,
 } from './FlatDataInstanceSetImplementationState';
-import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+import type {
+  TreeNodeData,
+  TreeData,
+} from '@finos/legend-application-components';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
 import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
 import { extractSourceInformationCoordinates } from '../../../../models/metamodels/pure/action/SourceInformationHelper';

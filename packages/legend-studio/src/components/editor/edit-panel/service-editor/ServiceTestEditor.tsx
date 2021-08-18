@@ -43,7 +43,7 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { TestContainerState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';

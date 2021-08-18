@@ -19,7 +19,10 @@ import { useReviewStore } from '../../stores/ReviewStore';
 import { EntityDiffSideBarItem } from '../editor/edit-panel/diff-editor/EntityDiffView';
 import { ReviewState } from '../../models/sdlc/models/review/Review';
 import { FaInfoCircle, FaTimes, FaArrowUp, FaCheck } from 'react-icons/fa';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  clsx,
+  PanelLoadingIndicator,
+} from '@finos/legend-application-components';
 import { formatDistanceToNow } from 'date-fns';
 import { FiGitMerge } from 'react-icons/fi';
 import type { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';

@@ -38,8 +38,11 @@ import type {
   Version,
   VersionSelectOption,
 } from '../../../../models/sdlc/models/version/Version';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-application-components';
+import {
+  clsx,
+  CustomSelectorInput,
+} from '@finos/legend-application-components';
 import type { ProjectSelectOption } from '../../../../models/sdlc/models/project/Project';
 import {
   useApplicationStore,

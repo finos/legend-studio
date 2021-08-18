@@ -22,7 +22,7 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { observer } from 'mobx-react-lite';
 import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx } from '@finos/legend-application-components';
 import { CORE_TEST_ID } from '../../../../const';
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';

@@ -31,7 +31,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { Link } from 'react-router-dom';
 import type { EntityChangeConflict } from '../../../models/sdlc/models/entity/EntityChangeConflict';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';

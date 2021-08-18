@@ -24,7 +24,7 @@ import {
 import {
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { useEditorStore } from '../../../stores/EditorStore';
 import { FiShare } from 'react-icons/fi';

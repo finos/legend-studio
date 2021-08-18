@@ -14,7 +14,7 @@
   ],
   "references": [
     { "path": "../legend-studio" },
-    { "path": "../legend-studio-components" },
+    { "path": "../legend-application-components" },
     { "path": "../legend-studio-shared" }
   ]
 }

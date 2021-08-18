@@ -100,7 +100,7 @@ import {
 import {
   NonBlockingDialogState,
   PanelDisplayState,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type {
   PackageableElement,
   PackageableElementSelectOption,

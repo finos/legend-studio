@@ -26,8 +26,8 @@ import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import type {
   TreeNodeContainerProps,
   TreeData,
-} from '@finos/legend-studio-components';
-import { clsx, TreeView } from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
+import { clsx, TreeView } from '@finos/legend-application-components';
 import { useDrag } from 'react-dnd';
 import { TypeDragSource, CORE_DND_TYPE } from '../../stores/shared/DnDUtil';
 import { EnumValueIcon, getClassPropertyIcon } from './Icon';

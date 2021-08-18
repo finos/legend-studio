@@ -2058,6 +2058,39 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application-components@workspace:*, @finos/legend-application-components@workspace:packages/legend-application-components":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-components@workspace:packages/legend-application-components"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-studio-shared": "workspace:*"
+    "@material-ui/core": 4.12.3
+    "@types/react": 17.0.18
+    "@types/react-select": 4.0.17
+    "@types/react-window": 1.8.5
+    clsx: 1.1.1
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.27.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    react-dom: 17.0.2
+    react-icons: 4.2.0
+    react-reflex: 4.0.3
+    react-resize-detector: 6.7.6
+    react-select: 4.3.1
+    react-window: 1.8.6
+    rimraf: 3.0.2
+    sass: 1.38.0
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-application-plugin-tracer-zipkin@workspace:packages/legend-application-plugin-tracer-zipkin":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-plugin-tracer-zipkin@workspace:packages/legend-application-plugin-tracer-zipkin"
@@ -2279,46 +2312,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-components@workspace:*, @finos/legend-studio-components@workspace:packages/legend-studio-components":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-components@workspace:packages/legend-studio-components"
-  dependencies:
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@material-ui/core": 4.12.3
-    "@types/react": 17.0.18
-    "@types/react-select": 4.0.17
-    "@types/react-window": 1.8.5
-    clsx: 1.1.1
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    mobx: 6.3.2
-    mobx-react-lite: 3.2.0
-    monaco-editor: 0.27.0
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    react-dom: 17.0.2
-    react-icons: 4.2.0
-    react-reflex: 4.0.3
-    react-resize-detector: 6.7.6
-    react-select: 4.3.1
-    react-window: 1.8.6
-    rimraf: 3.0.2
-    sass: 1.38.0
-    typescript: 4.3.5
-  peerDependencies:
-    react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests"
   dependencies:
+    "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@types/react": 17.0.18
     axios: 0.21.1
@@ -2337,9 +2337,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management"
   dependencies:
+    "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@types/react": 17.0.18
     "@types/react-router-dom": 5.1.8
@@ -2364,10 +2364,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
   dependencies:
+    "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@types/react": 17.0.18
     cross-env: 7.0.3
@@ -2410,10 +2410,10 @@ __metadata:
     "@ag-grid-community/client-side-row-model": 25.3.0
     "@ag-grid-community/core": 25.3.0
     "@ag-grid-community/react": 25.3.0
+    "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.1.0
@@ -2483,9 +2483,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
   dependencies:
+    "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
     "@finos/legend-studio-shared": "workspace:*"
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.1.0

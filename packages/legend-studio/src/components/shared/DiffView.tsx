@@ -27,7 +27,7 @@ import {
   disposeDiffEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { useEditorStore } from '../../stores/EditorStore';
 import {
   isString,

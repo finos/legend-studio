@@ -19,7 +19,7 @@ import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -29,7 +29,7 @@ import {
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { ExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
 import type { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';

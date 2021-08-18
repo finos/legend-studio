@@ -33,7 +33,7 @@ import {
   PlusIcon,
   RobotIcon,
   UserIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { debounce } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';

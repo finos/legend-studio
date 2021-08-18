@@ -29,7 +29,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { ClassMappingEditor } from './ClassMappingEditor';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor';
 import {

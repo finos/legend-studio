@@ -21,7 +21,7 @@ import { FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
 import {
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import type { StereotypeSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';

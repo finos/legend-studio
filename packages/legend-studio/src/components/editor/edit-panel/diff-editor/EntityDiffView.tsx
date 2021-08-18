@@ -26,7 +26,7 @@ import { MdCompareArrows } from 'react-icons/md';
 import { VscGoToFile } from 'react-icons/vsc';
 import type { EntityDiff } from '../../../../models/sdlc/models/comparison/EntityDiff';
 import { EntityChangeType } from '../../../../models/sdlc/models/entity/EntityChange';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx } from '@finos/legend-application-components';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';

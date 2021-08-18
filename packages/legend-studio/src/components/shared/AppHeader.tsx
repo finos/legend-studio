@@ -15,7 +15,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { LegendLogo } from '@finos/legend-studio-components';
+import { LegendLogo } from '@finos/legend-application-components';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import type { ApplicationConfig } from '../../stores/application/ApplicationConfig';
 

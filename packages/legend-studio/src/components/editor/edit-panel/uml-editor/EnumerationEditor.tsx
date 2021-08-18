@@ -36,7 +36,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { CORE_TEST_ID } from '../../../../const';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';

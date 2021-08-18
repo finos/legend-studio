@@ -28,7 +28,10 @@ import {
 import type { MappingElement } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../../../../stores/EditorStore';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import {
+  clsx,
+  CustomSelectorInput,
+} from '@finos/legend-application-components';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';

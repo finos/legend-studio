@@ -20,13 +20,13 @@ import { compareLabelFn } from '@finos/legend-studio-shared';
 import { FaCaretDown } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
 import { useEditorStore } from '../../../stores/EditorStore';
-import type { SelectComponent } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-application-components';
 import {
   DropdownMenu,
   NonBlockingDialog,
   createFilter,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { getElementTypeIcon } from '../../shared/Icon';
 import type {
   PackageableElementSelectOption,

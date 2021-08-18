@@ -19,11 +19,11 @@ import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-application-components';
 import {
   CustomSelectorInput,
   PanelLoadingIndicator,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { SetupStoreProvider, useSetupStore } from '../../stores/SetupStore';
 import { useParams } from 'react-router';
 import { CORE_TEST_ID } from '../../const';

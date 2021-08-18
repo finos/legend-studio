@@ -20,7 +20,10 @@ import {
   guaranteeNonNullable,
   deleteEntry,
 } from '@finos/legend-studio-shared';
-import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+import type {
+  TreeNodeData,
+  TreeData,
+} from '@finos/legend-application-components';
 import type {
   AbstractProperty,
   GraphFetchTree,

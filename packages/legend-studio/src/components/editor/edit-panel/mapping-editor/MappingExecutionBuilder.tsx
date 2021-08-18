@@ -30,10 +30,10 @@ import {
   PlayIcon,
   FlaskIcon,
   ResizablePanelSplitterLine,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-application-components';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   getMappingElementSource,

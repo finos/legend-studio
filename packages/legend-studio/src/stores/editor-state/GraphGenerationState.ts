@@ -45,7 +45,7 @@ import {
   buildGenerationDirectory,
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
+import type { TreeData } from '@finos/legend-application-components';
 import type { EditorStore } from '../EditorStore';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState';
 import { FileGenerationViewerState } from './FileGenerationViewerState';

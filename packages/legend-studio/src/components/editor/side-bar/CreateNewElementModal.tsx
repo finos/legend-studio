@@ -26,7 +26,7 @@ import {
   resolvePackageAndElementName,
   CONNECTION_TYPE,
 } from '../../../stores/NewElementState';
-import { CustomSelectorInput } from '@finos/legend-studio-components';
+import { CustomSelectorInput } from '@finos/legend-application-components';
 import { ELEMENT_PATH_DELIMITER } from '../../../models/MetaModelConst';
 import type { EditorStore } from '../../../stores/EditorStore';
 import { useEditorStore } from '../../../stores/EditorStore';

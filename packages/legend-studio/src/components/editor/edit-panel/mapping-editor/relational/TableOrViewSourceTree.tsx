@@ -20,13 +20,13 @@ import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { TableJoinIcon } from '../../../../shared/Icon';
 import {
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   addUniqueEntry,
   assertTrue,

@@ -39,7 +39,7 @@ import { flowResult } from 'mobx';
 import {
   LegendMaterialUITheme,
   PanelLoadingIndicator,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { Log } from '@finos/legend-studio-shared';
 
 const LegendQueryApplicationInner = observer(() => {

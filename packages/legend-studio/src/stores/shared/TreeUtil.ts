@@ -25,7 +25,7 @@ import type {
   RootFlatDataRecordType,
 } from '../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import type { AbstractProperty } from '../../models/metamodels/pure/model/packageableElements/domain/AbstractProperty';
-import type { TreeNodeData } from '@finos/legend-studio-components';
+import type { TreeNodeData } from '@finos/legend-application-components';
 
 export interface PackageTreeNodeData extends TreeNodeData {
   dndType: string;

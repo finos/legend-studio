@@ -20,7 +20,7 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
 import Dialog from '@material-ui/core/Dialog';
 import { useApplicationStore } from '../../../stores/ApplicationStore';

@@ -182,7 +182,7 @@ export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 // components
 export * from './components/shared/TextInputEditor';
 export * from './components/shared/AppHeader';
-export * from './components/shared/Icon'; // TODO: we might want to move all of these to @finos/legend-studio-components
+export * from './components/shared/Icon'; // TODO: we might want to move all of these to @finos/legend-application-components
 export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
 export { getElementIcon, getElementTypeIcon } from './components/shared/Icon';
 export { TypeTree } from './components/shared/TypeTree';

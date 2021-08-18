@@ -31,7 +31,7 @@ import {
   disposeEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { FaLongArrowAltDown, FaLongArrowAltUp } from 'react-icons/fa';
 import type { LambdaEditorState } from '../../stores/editor-state/element-editor-state/LambdaEditorState';
 import type { DebouncedFunc, GeneratorFn } from '@finos/legend-studio-shared';

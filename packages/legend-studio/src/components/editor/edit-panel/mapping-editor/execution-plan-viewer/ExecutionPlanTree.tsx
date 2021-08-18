@@ -20,13 +20,13 @@ import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   clsx,
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 
 import { ExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';

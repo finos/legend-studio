@@ -24,7 +24,7 @@ import {
   FaPauseCircle,
   FaBan,
 } from 'react-icons/fa';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import { PanelLoadingIndicator } from '@finos/legend-application-components';
 import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
 import { guaranteeNonNullable } from '@finos/legend-studio-shared';
 import { flowResult, makeAutoObservable } from 'mobx';

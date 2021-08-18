@@ -22,7 +22,7 @@ import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-ed
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import { GoCloudDownload } from 'react-icons/go';
 import { FaCheck, FaTimes, FaBan, FaInfoCircle } from 'react-icons/fa';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import { PanelLoadingIndicator } from '@finos/legend-application-components';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
 import type { EntityChangeConflict } from '../../../models/sdlc/models/entity/EntityChangeConflict';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';

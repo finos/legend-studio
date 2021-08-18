@@ -22,7 +22,7 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
 
 const QueryBuilderUnsupportedQueryExplorer = observer(() => (

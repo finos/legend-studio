@@ -21,7 +21,7 @@ import {
   NumberTypeIcon,
   StringTypeIcon,
   UnknownTypeIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   getClass,
   UnsupportedOperationError,

@@ -32,7 +32,7 @@ import type {
   EditorPluginSetup,
 } from '@finos/legend-studio';
 import { Class, EditorPlugin } from '@finos/legend-studio';
-import { MenuContentItem } from '@finos/legend-studio-components';
+import { MenuContentItem } from '@finos/legend-application-components';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder';
 import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';

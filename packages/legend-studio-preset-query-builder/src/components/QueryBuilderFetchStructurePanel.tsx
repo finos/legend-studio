@@ -19,7 +19,7 @@ import {
   clsx,
   BlankPanelContent,
   PlusIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';

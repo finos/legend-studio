@@ -30,6 +30,6 @@ export default {
     '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
   ],
   testMatch: [
-    '<rootDir>/packages/legend-studio-components/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+    '<rootDir>/packages/legend-application-components/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
 };

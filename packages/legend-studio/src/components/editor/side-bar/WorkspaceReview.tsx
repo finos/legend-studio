@@ -28,7 +28,10 @@ import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-ed
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import type { EntityDiff } from '../../../models/sdlc/models/comparison/EntityDiff';
 import { entityDiffSorter } from '../../../models/sdlc/models/comparison/EntityDiff';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  clsx,
+  PanelLoadingIndicator,
+} from '@finos/legend-application-components';
 import { MdRefresh } from 'react-icons/md';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { formatDistanceToNow } from 'date-fns';

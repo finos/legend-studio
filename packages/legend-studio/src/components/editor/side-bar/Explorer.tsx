@@ -41,8 +41,8 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   TreeView,
-} from '@finos/legend-studio-components';
-import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
+import type { TreeNodeContainerProps } from '@finos/legend-application-components';
 import {
   getElementIcon,
   getElementTypeIcon,

@@ -39,7 +39,7 @@ import {
   clsx,
   CustomSelectorInput,
   PencilIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   guaranteeNonNullable,
   isNonNullable,

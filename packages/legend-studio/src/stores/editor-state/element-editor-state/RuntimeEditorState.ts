@@ -27,7 +27,7 @@ import {
 } from '@finos/legend-studio-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
+import type { TreeData } from '@finos/legend-application-components';
 import { ConnectionEditorState } from './connection/ConnectionEditorState';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PackageableRuntime } from '../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';

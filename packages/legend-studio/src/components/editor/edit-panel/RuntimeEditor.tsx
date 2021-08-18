@@ -26,7 +26,7 @@ import {
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
 import { useEditorStore } from '../../../stores/EditorStore';
-import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
+import type { TreeNodeContainerProps } from '@finos/legend-application-components';
 import {
   ResizablePanel,
   ResizablePanelGroup,
@@ -41,7 +41,7 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   FaChevronDown,
   FaChevronRight,

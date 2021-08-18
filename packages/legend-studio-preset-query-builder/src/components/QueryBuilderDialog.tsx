@@ -22,7 +22,7 @@ import {
   FaRegWindowMaximize,
   FaRegWindowRestore,
 } from 'react-icons/fa';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx } from '@finos/legend-application-components';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryBuilder } from './QueryBuilder';
 import { useApplicationStore, useEditorStore } from '@finos/legend-studio';

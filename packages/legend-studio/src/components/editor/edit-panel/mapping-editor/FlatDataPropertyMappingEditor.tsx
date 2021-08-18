@@ -28,7 +28,10 @@ import type {
   FlatDataInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { useEditorStore } from '../../../../stores/EditorStore';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import {
+  clsx,
+  CustomSelectorInput,
+} from '@finos/legend-application-components';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';

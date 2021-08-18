@@ -20,8 +20,8 @@ import { PrimitiveTypeIcon } from '../../../shared/Icon';
 import type {
   TreeNodeContainerProps,
   TreeData,
-} from '@finos/legend-studio-components';
-import { clsx, TreeView } from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
+import { clsx, TreeView } from '@finos/legend-application-components';
 import {
   CORE_DND_TYPE,
   FlatDataColumnDragSource,

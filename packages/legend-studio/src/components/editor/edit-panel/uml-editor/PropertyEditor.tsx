@@ -23,7 +23,7 @@ import type {
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { FaLock, FaPlus, FaTimes } from 'react-icons/fa';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx } from '@finos/legend-application-components';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { CORE_TEST_ID } from '../../../../const';

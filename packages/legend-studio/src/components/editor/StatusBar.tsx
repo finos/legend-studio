@@ -25,7 +25,7 @@ import {
 } from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
 import { useEditorStore } from '../../stores/EditorStore';
-import { clsx, HammerIcon } from '@finos/legend-studio-components';
+import { clsx, HammerIcon } from '@finos/legend-application-components';
 import { GoSync } from 'react-icons/go';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';

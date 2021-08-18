@@ -27,7 +27,7 @@ import {
   clsx,
   PanelLoadingIndicator,
   ContextMenu,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
 import type { Workspace } from '../../../models/sdlc/models/workspace/Workspace';
 import {

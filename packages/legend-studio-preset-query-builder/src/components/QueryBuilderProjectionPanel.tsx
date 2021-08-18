@@ -26,7 +26,7 @@ import {
   CaretDownIcon,
   GripVerticalIcon,
   ContextMenu,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { MdFunctions } from 'react-icons/md';
 import type {
   QueryBuilderExplorerTreeDragSource,

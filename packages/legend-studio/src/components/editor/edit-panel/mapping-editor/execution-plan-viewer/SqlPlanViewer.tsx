@@ -42,7 +42,7 @@ import type { DataType } from '../../../../../models/metamodels/pure/model/packa
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { SQL_DISPLAY_TABS } from '../../../../../stores/ExecutionPlanState';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx } from '@finos/legend-application-components';
 import type { DatabaseConnection } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { RelationalDatabaseConnection } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { RelationalDatabaseConnectionEditor } from '../../connection-editor/RelationalDatabaseConnectionEditor';

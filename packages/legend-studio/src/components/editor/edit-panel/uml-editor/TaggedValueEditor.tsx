@@ -27,7 +27,7 @@ import {
   clsx,
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import type { TagSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';

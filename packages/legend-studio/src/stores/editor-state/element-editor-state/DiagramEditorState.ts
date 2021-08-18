@@ -28,7 +28,7 @@ import { Diagram } from '../../../models/metamodels/pure/model/packageableElemen
 import type { DiagramRenderer } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { DIAGRAM_INTERACTION_MODE } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { ClassEditorState } from './ClassEditorState';
-import { PanelDisplayState } from '@finos/legend-studio-components';
+import { PanelDisplayState } from '@finos/legend-application-components';
 import type { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
 import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
 import {

@@ -22,8 +22,8 @@ import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
-import type { SelectComponent } from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-application-components';
 import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {

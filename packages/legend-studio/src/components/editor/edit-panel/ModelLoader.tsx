@@ -38,7 +38,7 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { ImportConfigurationDescription } from '../../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
 import { flowResult } from 'mobx';
 

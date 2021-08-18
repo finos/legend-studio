@@ -37,7 +37,7 @@ import {
   clsx,
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { CORE_TEST_ID } from '../../../const';
 import {
   PRIMITIVE_TYPE,

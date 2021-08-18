@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import type {
   TreeNodeContainerProps,
   TreeNodeViewProps,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   clsx,
   TreeView,
@@ -40,7 +40,7 @@ import {
   CompressIcon,
   EyeIcon,
   InfoCircleIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type {
   QueryBuilderExplorerTreeDragSource,
   QueryBuilderExplorerTreeNodeData,

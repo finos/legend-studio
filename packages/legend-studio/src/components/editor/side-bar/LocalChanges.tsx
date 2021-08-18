@@ -16,7 +16,10 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../stores/EditorStore';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  clsx,
+  PanelLoadingIndicator,
+} from '@finos/legend-application-components';
 import type { EntityDiff } from '../../../models/sdlc/models/comparison/EntityDiff';
 import { entityDiffSorter } from '../../../models/sdlc/models/comparison/EntityDiff';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';

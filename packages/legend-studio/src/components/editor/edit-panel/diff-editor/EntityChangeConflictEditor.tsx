@@ -56,7 +56,7 @@ import {
   setErrorMarkers,
   revealError,
   resetLineNumberGutterWidth,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { TextDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';

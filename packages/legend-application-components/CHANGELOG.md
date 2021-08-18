@@ -1,4 +1,4 @@
-# @finos/legend-studio-components
+# @finos/legend-application-components
 
 ## 0.0.30
 

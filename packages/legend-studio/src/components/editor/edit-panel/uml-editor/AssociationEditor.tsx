@@ -43,7 +43,7 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { getElementIcon } from '../../../shared/Icon';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-studio-shared';
 import { CORE_TEST_ID } from '../../../../const';

@@ -35,7 +35,7 @@ import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -46,7 +46,7 @@ import {
   BlankPanelContent,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   FaTimes,
   FaCheckSquare,

@@ -17,7 +17,7 @@
 import Dialog from '@material-ui/core/Dialog';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { observer } from 'mobx-react-lite';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import { PanelLoadingIndicator } from '@finos/legend-application-components';
 import { noop } from '@finos/legend-studio-shared';
 
 /**

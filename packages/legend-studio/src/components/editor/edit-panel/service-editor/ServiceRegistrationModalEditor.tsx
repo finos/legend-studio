@@ -22,7 +22,7 @@ import {
   clsx,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { Dialog } from '@material-ui/core';
 import { prettyCONSTName } from '@finos/legend-studio-shared';
 import { Version } from '../../../../models/sdlc/models/version/Version';

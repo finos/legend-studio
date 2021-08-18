@@ -20,7 +20,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
-import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
   getControlledResizablePanelProps,
   clsx,
@@ -29,7 +29,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   useStateWithCallback,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel';
 import { SideBar } from './side-bar/SideBar';
 import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel';

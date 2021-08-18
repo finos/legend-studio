@@ -42,7 +42,7 @@ import {
   CORE_DND_TYPE,
   ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
   getControlledResizablePanelProps,
   BasePopover,
@@ -61,7 +61,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanel,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';

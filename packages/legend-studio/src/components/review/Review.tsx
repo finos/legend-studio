@@ -31,7 +31,7 @@ import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
   getControlledResizablePanelProps,
   clsx,
@@ -39,7 +39,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateViewProjectRoute,

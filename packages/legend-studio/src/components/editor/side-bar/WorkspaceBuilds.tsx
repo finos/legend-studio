@@ -17,7 +17,10 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../stores/EditorStore';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  clsx,
+  PanelLoadingIndicator,
+} from '@finos/legend-application-components';
 import { MdRefresh } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
 import { BuildStatus } from '../../../models/sdlc/models/build/Build';

@@ -28,7 +28,7 @@ import type { ConnectionEditorState } from '../../../../stores/editor-state/elem
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import type { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { FaLock } from 'react-icons/fa';
-import { CustomSelectorInput } from '@finos/legend-studio-components';
+import { CustomSelectorInput } from '@finos/legend-application-components';
 
 const ModelConnectionEditor = observer(
   (props: {

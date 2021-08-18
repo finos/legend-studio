@@ -37,8 +37,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@finos/legend-application-components": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-components": "workspace:*",
     "@finos/legend-studio-shared": "workspace:*",
     "@types/react": "17.0.18",
     "@types/react-router-dom": "5.1.8",

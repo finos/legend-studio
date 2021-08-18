@@ -22,7 +22,7 @@ import {
   CogIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type {

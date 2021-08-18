@@ -17,7 +17,10 @@
 import { ROOT_PACKAGE_NAME } from '../../models/MetaModelConst';
 import { isNonNullable, addUniqueEntry } from '@finos/legend-studio-shared';
 import type { PackageTreeNodeData } from './TreeUtil';
-import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+import type {
+  TreeNodeData,
+  TreeData,
+} from '@finos/legend-application-components';
 import { Package } from '../../models/metamodels/pure/model/packageableElements/domain/Package';
 import { Class } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';

@@ -23,7 +23,7 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type {
   ElementDragSource,
   MappingElementSourceDropTarget,

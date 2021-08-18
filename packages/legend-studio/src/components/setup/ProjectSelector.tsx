@@ -18,8 +18,11 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaPlus } from 'react-icons/fa';
 import { useSetupStore } from '../../stores/SetupStore';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-application-components';
+import {
+  clsx,
+  CustomSelectorInput,
+} from '@finos/legend-application-components';
 import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';

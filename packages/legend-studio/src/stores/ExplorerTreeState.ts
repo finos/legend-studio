@@ -35,7 +35,7 @@ import {
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
+import type { TreeData } from '@finos/legend-application-components';
 import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
 import { getGenerationTreeData } from './shared/FileGenerationTreeUtil';
 import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';

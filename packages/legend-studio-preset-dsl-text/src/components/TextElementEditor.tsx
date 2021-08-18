@@ -32,7 +32,7 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { TEXT_TYPE } from '../models/metamodels/pure/model/packageableElements/Text';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {

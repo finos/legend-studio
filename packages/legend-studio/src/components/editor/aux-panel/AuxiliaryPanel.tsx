@@ -16,7 +16,7 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx } from '@finos/legend-application-components';
 import { Console } from './Console';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig';
 import { useEditorStore } from '../../../stores/EditorStore';

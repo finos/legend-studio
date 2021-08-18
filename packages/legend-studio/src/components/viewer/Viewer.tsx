@@ -32,14 +32,14 @@ import { useParams, Link } from 'react-router-dom';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
 import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { isNonNullable } from '@finos/legend-studio-shared';
 import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';

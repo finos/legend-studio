@@ -23,7 +23,7 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { MappingEditor } from './mapping-editor/MappingEditor';
 import { UMLEditor } from './uml-editor/UMLEditor';
 import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
