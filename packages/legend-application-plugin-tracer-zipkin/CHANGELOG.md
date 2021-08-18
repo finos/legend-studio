@@ -1,4 +1,4 @@
-# @finos/legend-studio-plugin-tracer-zipkin
+# @finos/legend-application-plugin-tracer-zipkin
 
 ## 0.0.47
 

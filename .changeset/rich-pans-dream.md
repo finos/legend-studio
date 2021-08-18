@@ -8,7 +8,7 @@
 '@finos/legend-studio-components': patch
 '@finos/legend-studio-dev-utils': patch
 '@finos/legend-studio-plugin-management': patch
-'@finos/legend-studio-plugin-tracer-zipkin': patch
+'@finos/legend-application-plugin-tracer-zipkin': patch
 '@finos/legend-studio-preset-dsl-text': patch
 '@finos/legend-studio-preset-external-format-json-schema': patch
 '@finos/legend-studio-preset-query-builder': patch

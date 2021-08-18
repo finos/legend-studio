@@ -2058,6 +2058,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application-plugin-tracer-zipkin@workspace:packages/legend-application-plugin-tracer-zipkin":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-plugin-tracer-zipkin@workspace:packages/legend-application-plugin-tracer-zipkin"
+  dependencies:
+    "@finos/legend-studio": "workspace:*"
+    "@finos/legend-studio-dev-utils": "workspace:*"
+    "@finos/legend-studio-shared": "workspace:*"
+    "@types/zipkin-javascript-opentracing": 1.6.0
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    opentracing: 0.14.5
+    rimraf: 3.0.2
+    typescript: 4.3.5
+    zipkin: 0.22.0
+    zipkin-javascript-opentracing: 3.0.0
+    zipkin-transport-http: 0.22.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-graph-manager@workspace:packages/legend-graph-manager":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph-manager@workspace:packages/legend-graph-manager"
@@ -2337,26 +2357,6 @@ __metadata:
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-plugin-tracer-zipkin@workspace:packages/legend-studio-plugin-tracer-zipkin":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-plugin-tracer-zipkin@workspace:packages/legend-studio-plugin-tracer-zipkin"
-  dependencies:
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@types/zipkin-javascript-opentracing": 1.6.0
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    opentracing: 0.14.5
-    rimraf: 3.0.2
-    typescript: 4.3.5
-    zipkin: 0.22.0
-    zipkin-javascript-opentracing: 3.0.0
-    zipkin-transport-http: 0.22.0
   languageName: unknown
   linkType: soft
 
