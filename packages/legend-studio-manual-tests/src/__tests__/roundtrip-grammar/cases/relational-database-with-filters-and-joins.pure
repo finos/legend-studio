@@ -47,7 +47,7 @@ Database model::realtional::test::PersonDB
   )
 )
 
-Database meta::relational::tests::dbInc
+Database _meta::relational::tests::dbInc
 (
   Schema productSchema
   (
@@ -134,13 +134,13 @@ Database meta::relational::tests::dbInc
   (
     PERSON_ID: personTable.ID PRIMARY KEY,
     lastName: personTable.LASTNAME,
-    firm_name: [meta::relational::tests::dbInc]@Firm_Person | firmTable.LEGALNAME
+    firm_name: [_meta::relational::tests::dbInc]@Firm_Person | firmTable.LEGALNAME
   )
   View FirstNameAddress
   (
     ~distinct
     firstName: personTable.FIRSTNAME PRIMARY KEY,
-    address: [meta::relational::tests::dbInc]@Address_Person | addressTable.NAME PRIMARY KEY
+    address: [_meta::relational::tests::dbInc]@Address_Person | addressTable.NAME PRIMARY KEY
   )
   View personViewWithGroupBy
   (
@@ -154,10 +154,10 @@ Database meta::relational::tests::dbInc
   View PersonViewWithDistinct
   (
     ~distinct
-    id: [meta::relational::tests::dbInc]@PersonWithPersonView | personTable.ID PRIMARY KEY,
-    firstName: [meta::relational::tests::dbInc]@PersonWithPersonView | personTable.FIRSTNAME,
-    lastName: [meta::relational::tests::dbInc]@PersonWithPersonView | personTable.LASTNAME,
-    firmId: [meta::relational::tests::dbInc]@PersonWithPersonView | personTable.FIRMID
+    id: [_meta::relational::tests::dbInc]@PersonWithPersonView | personTable.ID PRIMARY KEY,
+    firstName: [_meta::relational::tests::dbInc]@PersonWithPersonView | personTable.FIRSTNAME,
+    lastName: [_meta::relational::tests::dbInc]@PersonWithPersonView | personTable.LASTNAME,
+    firmId: [_meta::relational::tests::dbInc]@PersonWithPersonView | personTable.FIRMID
   )
 
   Join personViewWithFirmTable(firmTable.ID = PersonViewWithDistinct.firmId)
@@ -176,4 +176,176 @@ Database meta::relational::tests::dbInc
 
   Filter FirmXFilter(firmTable.LEGALNAME = 'Firm X')
   Filter FirmBFilter(firmTable.LEGALNAME = 'Firm B')
+)
+
+Database _meta::relational::tests::db
+(
+  include _meta::relational::tests::dbInc
+
+  Schema productSchema
+  (
+    Table synonymTable
+    (
+      ID INTEGER PRIMARY KEY,
+      PRODID INTEGER,
+      TYPE VARCHAR(200),
+      NAME VARCHAR(200)
+    )
+  )
+
+  Table interactionTable
+  (
+    ID INTEGER PRIMARY KEY,
+    sourceId INTEGER,
+    targetId INTEGER,
+    time INTEGER,
+    active VARCHAR(1)
+  )
+  Table tradeTable
+  (
+    ID INTEGER PRIMARY KEY,
+    prodId INTEGER,
+    accountID INTEGER,
+    quantity FLOAT,
+    tradeDate DATE,
+    settlementDateTime TIMESTAMP
+  )
+  Table accountTable
+  (
+    ID INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    createDate DATE
+  )
+  Table tradeEventTable
+  (
+    EVENT_ID INTEGER PRIMARY KEY,
+    trade_id INTEGER,
+    eventType VARCHAR(10),
+    eventDate DATE,
+    person_id INTEGER
+  )
+  Table orderTable
+  (
+    ID INTEGER PRIMARY KEY,
+    prodId INTEGER,
+    accountID INTEGER,
+    quantity INTEGER,
+    orderDate DATE,
+    settlementDateTime TIMESTAMP
+  )
+  Table orderPnlTable
+  (
+    ORDER_ID INTEGER PRIMARY KEY,
+    pnl FLOAT,
+    from_z DATE,
+    thru_z DATE
+  )
+  Table salesPersonTable
+  (
+    PERSON_ID INTEGER PRIMARY KEY,
+    ACCOUNT_ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200),
+    from_z DATE,
+    thru_z DATE
+  )
+  Table otherNamesTable
+  (
+    PERSON_ID INTEGER,
+    OTHER_NAME VARCHAR(200)
+  )
+  Table tableWithQuotedColumns
+  (
+    ID INTEGER PRIMARY KEY,
+    "FIRST NAME" VARCHAR(200) PRIMARY KEY,
+    "LAST NAME" VARCHAR(200) PRIMARY KEY,
+    "1columnStartsWithNumber" VARCHAR(200)
+  )
+
+  View interactionViewMaxTime
+  (
+    ~filter PositiveInteractionTimeFilter
+    ~groupBy
+    (
+      interactionTable.sourceId,
+      interactionTable.targetId
+    )
+    sourceId: interactionTable.sourceId,
+    targetId: interactionTable.targetId,
+    maxTime: max(interactionTable.time)
+  )
+  View tradeEventViewMaxTradeEventDate
+  (
+    ~groupBy
+    (
+      tradeEventTable.trade_id
+    )
+    trade_id: tradeEventTable.trade_id,
+    maxTradeEventDate: max(tradeEventTable.eventDate)
+  )
+  View orderPnlView
+  (
+    ~filter NonNegativePnlFilter
+    ~distinct
+    ORDER_ID: orderPnlTable.ORDER_ID PRIMARY KEY,
+    pnl: orderPnlTable.pnl,
+    accountId: [_meta::relational::tests::db]@OrderPnlTable_Order > [_meta::relational::tests::db]@Order_Account | accountTable.ID,
+    supportContact: [_meta::relational::tests::db]@OrderPnlTable_Order > [_meta::relational::tests::db]@Order_SalesPerson | salesPersonTable.NAME,
+    supportContactId: [_meta::relational::tests::db]@OrderPnlTable_Order > [_meta::relational::tests::db]@Order_SalesPerson | salesPersonTable.PERSON_ID
+  )
+  View orderPnlViewOnView
+  (
+    ORDER_ID: orderPnlView.ORDER_ID PRIMARY KEY,
+    pnl: orderPnlView.pnl
+  )
+  View orderNegativePnlView
+  (
+    ~filter LessThanEqualZeroPnlFilter
+    ~distinct
+    ORDER_ID: orderPnlTable.ORDER_ID PRIMARY KEY,
+    pnl: orderPnlTable.pnl,
+    accountId: [_meta::relational::tests::db]@OrderPnlTable_Order > [_meta::relational::tests::db]@Order_Account | accountTable.ID,
+    supportContact: [_meta::relational::tests::db]@OrderPnlTable_Order > [_meta::relational::tests::db]@Order_SalesPerson | salesPersonTable.NAME,
+    supportContactId: [_meta::relational::tests::db]@OrderPnlTable_Order > [_meta::relational::tests::db]@Order_SalesPerson | salesPersonTable.PERSON_ID
+  )
+  View orderNegativePnlViewOnView
+  (
+    ORDER_ID: orderNegativePnlView.ORDER_ID PRIMARY KEY,
+    pnl: orderNegativePnlView.pnl
+  )
+  View accountOrderPnlView
+  (
+    ~groupBy
+    (
+      orderTable.accountID
+    )
+    accountId: orderTable.accountID PRIMARY KEY,
+    orderPnl: sum([_meta::relational::tests::db]@OrderPnlTable_Order | orderPnlTable.pnl)
+  )
+
+  Join Product_Synonym(productSchema.synonymTable.PRODID = productSchema.productTable.ID)
+  Join Trade_Product(tradeTable.prodId = productSchema.productTable.ID)
+  Join Trade_Account(tradeTable.accountID = accountTable.ID)
+  Join Interaction_Source(interactionTable.sourceId = personTable.ID)
+  Join Interaction_Target(interactionTable.targetId = personTable.ID)
+  Join InteractionTable_InteractionViewMaxTime(interactionTable.sourceId = interactionViewMaxTime.sourceId and interactionTable.targetId = interactionViewMaxTime.targetId)
+  Join Trade_TradeEvent(tradeTable.ID = tradeEventTable.trade_id)
+  Join Trade_TradeEventViewMaxTradeEventDate(tradeTable.ID = tradeEventViewMaxTradeEventDate.trade_id)
+  Join TradeEvent_Person(tradeEventTable.person_id = personTable.ID)
+  Join Interaction_Interaction(interactionTable.sourceId = {target}.sourceId and interactionTable.targetId = {target}.targetId)
+  Join Order_SalesPerson(orderTable.accountID = salesPersonTable.ACCOUNT_ID)
+  Join Order_Account(orderTable.accountID = accountTable.ID)
+  Join OrderPnlView_Order(orderPnlView.ORDER_ID = orderTable.ID)
+  Join OrderPnlViewOnView_Order(orderPnlViewOnView.ORDER_ID = orderTable.ID)
+  Join OrderNetativePnlView_Order(orderNegativePnlView.ORDER_ID = orderTable.ID)
+  Join OrderNegativePnlViewOnView_Order(orderNegativePnlViewOnView.ORDER_ID = orderTable.ID)
+  Join OrderPnlView_Person(orderPnlView.supportContactId = personTable.ID)
+  Join SalesPerson_PersonView(salesPersonTable.PERSON_ID = PersonFirmView.PERSON_ID)
+  Join OrderPnlTable_Order(orderPnlTable.ORDER_ID = orderTable.ID)
+  Join AccountPnlView_Account(accountOrderPnlView.accountId = accountTable.ID)
+  Join Person_OtherNames(personTable.ID = otherNamesTable.PERSON_ID)
+
+  Filter PositiveInteractionTimeFilter(interactionTable.time > 0)
+  Filter ProductSynonymFilter(productSchema.synonymTable.ID != 1)
+  Filter NonNegativePnlFilter(orderPnlTable.pnl > 0)
+  Filter LessThanEqualZeroPnlFilter(orderPnlTable.pnl <= 0)
 )
