@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-import type {
-  ImportProjectReport,
-  Project,
-  SdlcMode,
-  ProjectType,
-} from './models/project/Project';
+import type { Project, SdlcMode, ProjectType } from './models/project/Project';
+import type { ImportReport } from './models/project/ImportReport';
 import type { Workspace } from './models/workspace/Workspace';
 import type { Revision, RevisionAlias } from './models/revision/Revision';
 import type { Build, BuildStatus } from './models/build/Build';
@@ -146,7 +142,7 @@ export class SDLCServerClient extends AbstractServerClient {
     );
   importProject = (
     command: PlainObject<ImportProjectCommand>,
-  ): Promise<PlainObject<ImportProjectReport>> =>
+  ): Promise<PlainObject<ImportReport>> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.IMPORT_PROJECT),
       `${this._projects()}/import`,
