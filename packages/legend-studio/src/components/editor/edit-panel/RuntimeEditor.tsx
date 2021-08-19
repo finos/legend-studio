@@ -74,7 +74,8 @@ import {
 } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { Dialog } from '@material-ui/core';
-import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import {
   Connection,
   ConnectionPointer,
@@ -787,20 +788,19 @@ const RuntimeMappingEditor = observer(
     const runtimeValue = runtimeEditorState.runtimeValue;
     const mappingOptions = editorStore.graphState.graph.ownMappings
       .filter((m) => !runtimeValue.mappings.map((_m) => _m.value).includes(m))
-      .map((m) => m.selectOption);
+      .map(buildElementOption);
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Mapping>): string =>
+      stringify: (option: PackageableElementOption<Mapping>): string =>
         option.value.path,
     });
     const selectedMappingOption = {
       value: mappingRef,
       label: mappingRef.value.name,
     };
-    const changeMapping = (
-      val: PackageableElementSelectOption<Mapping>,
-    ): void => runtimeEditorState.changeMapping(mappingRef, val.value);
+    const changeMapping = (val: PackageableElementOption<Mapping>): void =>
+      runtimeEditorState.changeMapping(mappingRef, val.value);
     const deleteMapping = (): void =>
       runtimeEditorState.deleteMapping(mappingRef);
     const visitMapping = (): void => editorStore.openElement(mappingRef.value);

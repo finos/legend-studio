@@ -64,7 +64,7 @@ import {
 } from '@finos/legend-application-components';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import {
   FiMinus,
   FiMousePointer,
@@ -1003,16 +1003,14 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     const propertyTypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: currentPropertyType,
       label: currentPropertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Type>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Type>): void => {
       if (property instanceof Property || property instanceof DerivedProperty) {
         property.setGenericType(new GenericType(val.value));
       }

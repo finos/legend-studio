@@ -91,7 +91,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
       package: observable,
       isReadOnly: computed,
       isDeleted: computed,
-      selectOption: computed,
       path: computed,
       _elementHashCode: computed,
       // We need to enable `keepAlive` to facillitate precomutation of element hash code
@@ -140,10 +139,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
    */
   getRoot(): PackageableElement {
     return !this.package ? this : this.package.getRoot();
-  }
-
-  get selectOption(): PackageableElementSelectOption<PackageableElement> {
-    return { label: this.name, value: this };
   }
 
   get path(): string {
@@ -248,11 +243,6 @@ export enum PACKAGEABLE_ELEMENT_POINTER_TYPE {
   MAPPING = 'MAPPING',
   FILE_GENERATION = 'FILE_GENERATION',
   SERVICE = 'SERVICE',
-}
-
-export interface PackageableElementSelectOption<T extends PackageableElement> {
-  label: string;
-  value: T;
 }
 
 export const getElementPointerHashCode = (

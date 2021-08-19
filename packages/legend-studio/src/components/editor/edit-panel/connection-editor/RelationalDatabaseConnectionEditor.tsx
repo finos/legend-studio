@@ -53,7 +53,8 @@ import {
   RedshiftDatasourceSpecification,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
 import { runInAction } from 'mobx';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { Store } from '../../../../models/metamodels/pure/model/packageableElements/store/Store';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
@@ -749,14 +750,14 @@ const RelationalConnectionStoreEditor = observer(
       </div>
     );
     const stores = connectionValueState.editorStore.graphState.graph.ownStores;
-    const options = stores.map((e) => e.selectOption);
+    const options = stores.map(buildElementOption);
     const store = connection.store.value;
     const selectedStore = {
       value: store,
       label: isStoreEmpty ? noStoreLabel : store.path,
     };
     const onStoreChange = (
-      val: PackageableElementSelectOption<Store> | null,
+      val: PackageableElementOption<Store> | null,
     ): void => {
       if (val) {
         connection.setStore(

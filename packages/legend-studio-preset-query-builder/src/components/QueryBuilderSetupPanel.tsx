@@ -28,7 +28,7 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type {
   Class,
   Mapping,
-  PackageableElementSelectOption,
+  PackageableElementOption,
   Runtime,
 } from '@finos/legend-studio';
 import {
@@ -51,7 +51,7 @@ export const QueryBuilderSetupPanel = observer(
     const elementFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Class>): string =>
+      stringify: (option: PackageableElementOption<Class>): string =>
         option.value.path,
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
@@ -60,7 +60,7 @@ export const QueryBuilderSetupPanel = observer(
     const selectedClassOption = querySetupState._class
       ? { value: querySetupState._class, label: querySetupState._class.name }
       : null;
-    const changeClass = (val: PackageableElementSelectOption<Class>): void => {
+    const changeClass = (val: PackageableElementOption<Class>): void => {
       querySetupState.setClass(val.value);
       queryBuilderState.resetData();
     };
@@ -89,9 +89,7 @@ export const QueryBuilderSetupPanel = observer(
               : inCompatibleMappingLabel,
         }
       : null;
-    const changeMapping = (
-      val: PackageableElementSelectOption<Mapping>,
-    ): void => {
+    const changeMapping = (val: PackageableElementOption<Mapping>): void => {
       if (queryBuilderState.querySetupState._class) {
         queryBuilderState.querySetupState.setMapping(val.value);
         queryBuilderState.resetData();

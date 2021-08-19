@@ -45,10 +45,9 @@ import type {
 } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type {
-  PackageableElement,
-  PackageableElementSelectOption,
-} from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { GenerationTreeNode } from '../../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
@@ -94,7 +93,7 @@ const ModelGenerationItem = observer(
   (props: {
     specState: GenerationSpecificationEditorState;
     nodeState: GenerationTreeNodeState;
-    options: PackageableElementSelectOption<PackageableElement>[];
+    options: PackageableElementOption<PackageableElement>[];
     isRearrangingNodes: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
@@ -105,7 +104,7 @@ const ModelGenerationItem = observer(
     const modelGeneration = modelGenerationRef.value;
     const value = { label: modelGeneration.name, value: modelGeneration };
     const onChange = (
-      val: PackageableElementSelectOption<FileGenerationSpecification> | null,
+      val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
       if (val !== null) {
         modelGenerationRef.setValue(val.value);
@@ -270,9 +269,8 @@ const ModelGenerationSpecifications = observer(
               plugin as DSLGenerationSpecification_EditorPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
-    const modelGenerationElementOptions = modelGenerationElementsInGraph.map(
-      (f) => f.selectOption,
-    );
+    const modelGenerationElementOptions =
+      modelGenerationElementsInGraph.map(buildElementOption);
     const addModelGeneration = (): void => {
       const option = getNullableFirstElement(modelGenerationElementOptions);
       if (option) {
@@ -369,7 +367,7 @@ const FileGenerationItem = observer(
   (props: {
     generationSpecificationEditorState: GenerationSpecificationEditorState;
     fileGeneraitonRef: PackageableElementReference<FileGenerationSpecification>;
-    options: PackageableElementSelectOption<FileGenerationSpecification>[];
+    options: PackageableElementOption<FileGenerationSpecification>[];
   }) => {
     const { fileGeneraitonRef, generationSpecificationEditorState, options } =
       props;
@@ -377,7 +375,7 @@ const FileGenerationItem = observer(
     const fileGeneration = fileGeneraitonRef.value;
     const value = { label: fileGeneration.name, value: fileGeneration };
     const onChange = (
-      val: PackageableElementSelectOption<FileGenerationSpecification> | null,
+      val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
       if (val !== null) {
         fileGeneraitonRef.setValue(val.value);
@@ -437,8 +435,8 @@ const FileGenerationSpecifications = observer(
     const fileGenerationsOptions = fileGenerationInGraph
       .filter((f) => !fileGenerations.includes(f))
       .map(
-        (f) => f.selectOption,
-      ) as PackageableElementSelectOption<FileGenerationSpecification>[];
+        buildElementOption,
+      ) as PackageableElementOption<FileGenerationSpecification>[];
     const addFileGeneration = (): void => {
       const option = getNullableFirstElement(fileGenerationsOptions);
       if (option) {

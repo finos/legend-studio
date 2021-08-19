@@ -60,7 +60,7 @@ import {
   PureSingleExecution,
   PureMultiExecution,
 } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import { RuntimePointer } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
@@ -99,7 +99,7 @@ const PureSingleExecutionConfigurationEditor = observer(
       label: isMappingEmpty ? noMappingLabel : mapping.path,
     };
     const onMappingSelectionChange = (
-      val: PackageableElementSelectOption<Mapping>,
+      val: PackageableElementOption<Mapping>,
     ): void => {
       if (val.value !== mapping) {
         selectedExecution.setMapping(val.value);

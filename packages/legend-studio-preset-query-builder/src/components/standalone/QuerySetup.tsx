@@ -17,7 +17,7 @@
 import type {
   LightQuery,
   Mapping,
-  PackageableElementSelectOption,
+  PackageableElementOption,
   PackageableRuntime,
   ProjectData,
 } from '@finos/legend-studio';
@@ -631,7 +631,7 @@ const CreateQuerySetup = observer(
       ? 'Choose a mapping'
       : 'No mapping available';
     const onMappingOptionChange = (
-      option: PackageableElementSelectOption<Mapping> | null,
+      option: PackageableElementOption<Mapping> | null,
     ): void => {
       querySetupState.setCurrentMapping(option?.value);
       // cascade
@@ -660,7 +660,7 @@ const CreateQuerySetup = observer(
       ? 'Choose a runtime'
       : 'No runtime available';
     const onRuntimeOptionChange = (
-      option: PackageableElementSelectOption<PackageableRuntime> | null,
+      option: PackageableElementOption<PackageableRuntime> | null,
     ): void => {
       querySetupState.setCurrentRuntime(option?.value);
     };

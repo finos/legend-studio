@@ -28,7 +28,7 @@ import {
   CustomSelectorInput,
   createFilter,
 } from '@finos/legend-application-components';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import type { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
 import type { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
@@ -57,18 +57,16 @@ export const TaggedValueEditor = observer(
     const profileFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Profile>): string =>
+      stringify: (option: PackageableElementOption<Profile>): string =>
         option.value.path,
     });
     const [selectedProfile, setSelectedProfile] = useState<
-      PackageableElementSelectOption<Profile>
+      PackageableElementOption<Profile>
     >({
       value: taggedValue.tag.value.owner,
       label: taggedValue.tag.value.owner.name,
     });
-    const changeProfile = (
-      val: PackageableElementSelectOption<Profile>,
-    ): void => {
+    const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.tags.length) {
         setSelectedProfile(val);
         taggedValue.setTag(val.value.tags[0]);

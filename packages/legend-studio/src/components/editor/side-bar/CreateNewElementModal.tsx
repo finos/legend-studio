@@ -32,7 +32,7 @@ import type { EditorStore } from '../../../stores/EditorStore';
 import { useEditorStore } from '../../../stores/EditorStore';
 import { compareLabelFn, prettyCONSTName } from '@finos/legend-shared';
 import type { FileGenerationTypeOption } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { Mapping } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
@@ -112,7 +112,7 @@ const NewRuntimeDriverEditor = observer(() => {
   const mappingOptions = editorStore.mappingOptions;
   const selectedMappingOption = { label: mapping?.path ?? '', value: mapping };
   const onMappingSelectionChange = (
-    val: PackageableElementSelectOption<Mapping>,
+    val: PackageableElementOption<Mapping>,
   ): void => {
     if (val.value !== mapping) {
       newRuntimeDriver.setMapping(val.value);

@@ -57,7 +57,7 @@ import { TaggedValue } from '../../../../models/metamodels/pure/model/packageabl
 import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
 import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
 import {
   Class,
@@ -94,16 +94,14 @@ const AssociationPropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Class>): string =>
+      stringify: (option: PackageableElementOption<Class>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Class>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Class>): void => {
       association.changePropertyType(
         property,
         guaranteeType(

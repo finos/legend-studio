@@ -71,7 +71,7 @@ import { Profile } from '../../../../models/metamodels/pure/model/packageableEle
 import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
 import { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
 import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
 import { Constraint } from '../../../../models/metamodels/pure/model/packageableElements/domain/Constraint';
 import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
@@ -110,16 +110,14 @@ const PropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Type>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Type>): void => {
       property.setGenericType(new GenericType(val.value));
       setIsEditingType(false);
     };
@@ -373,16 +371,14 @@ const DerivedPropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Type>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Type>): void => {
       derivedProperty.setGenericType(new GenericType(val.value));
       setIsEditingType(false);
     };
@@ -736,11 +732,11 @@ const SuperTypeEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Class>): string =>
+      stringify: (option: PackageableElementOption<Class>): string =>
         option.value.path,
     });
     const selectedType = { value: rawType, label: rawType.name };
-    const changeType = (val: PackageableElementSelectOption<Class>): void =>
+    const changeType = (val: PackageableElementOption<Class>): void =>
       superType.setValue(new GenericType(val.value));
     const visitDerivationSource = (): void => editorStore.openElement(rawType);
 

@@ -51,10 +51,9 @@ import {
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import type {
-  PackageableElementSelectOption,
-  PackageableElement,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { SourceValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumValueMapping';
 import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { Enum } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enum';
@@ -73,7 +72,7 @@ const EnumerationMappingSourceSelectorModal = observer(
       editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER),
       editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
     ]
-      .map((primitiveType) => primitiveType.selectOption)
+      .map(buildElementOption)
       .concat(editorStore.enumerationOptions);
 
     const sourceSelectorRef = useRef<SelectComponent>(null);
@@ -81,7 +80,7 @@ const EnumerationMappingSourceSelectorModal = observer(
       ignoreCase: true,
       ignoreAccents: false,
       stringify: (
-        option: PackageableElementSelectOption<PackageableElement>,
+        option: PackageableElementOption<PackageableElement>,
       ): string => option.value.path,
     });
     const sourceType = enumerationMapping.sourceType.value;
@@ -89,7 +88,7 @@ const EnumerationMappingSourceSelectorModal = observer(
       ? { value: sourceType, label: sourceType.name }
       : null;
     const changeSourceType = (
-      val: PackageableElementSelectOption<PackageableElement> | null,
+      val: PackageableElementOption<PackageableElement> | null,
     ): void => {
       const value = val?.value;
       if (!value || value instanceof Type) {

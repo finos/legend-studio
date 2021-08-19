@@ -22,7 +22,7 @@ import {
   CustomSelectorInput,
   createFilter,
 } from '@finos/legend-application-components';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import type { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
@@ -47,15 +47,13 @@ export const StereotypeSelector = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Profile>): string =>
+      stringify: (option: PackageableElementOption<Profile>): string =>
         option.value.path,
     });
     const [selectedProfile, setSelectedProfile] = useState<
-      PackageableElementSelectOption<Profile>
+      PackageableElementOption<Profile>
     >({ value: stereotype.value.owner, label: stereotype.value.owner.name });
-    const changeProfile = (
-      val: PackageableElementSelectOption<Profile>,
-    ): void => {
+    const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.stereotypes.length) {
         setSelectedProfile(val);
         stereotype.setValue(val.value.stereotypes[0]);

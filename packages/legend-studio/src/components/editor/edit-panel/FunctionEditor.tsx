@@ -51,7 +51,7 @@ import { TaggedValue } from '../../../models/metamodels/pure/model/packageableEl
 import { Tag } from '../../../models/metamodels/pure/model/packageableElements/domain/Tag';
 import { Profile } from '../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import { Stereotype } from '../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { Type } from '../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { RawVariableExpression } from '../../../models/metamodels/pure/model/rawValueSpecification/RawVariableExpression';
 import { Multiplicity } from '../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
@@ -105,11 +105,11 @@ const ParameterBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedType = { value: paramType, label: paramType.name };
-    const changeType = (val: PackageableElementSelectOption<Type>): void => {
+    const changeType = (val: PackageableElementOption<Type>): void => {
       parameter.setType(val.value);
       setIsEditingType(false);
     };
@@ -298,11 +298,11 @@ const ReturnTypeEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedType = { value: returnType, label: returnType.value.name };
-    const changeType = (val: PackageableElementSelectOption<Type>): void => {
+    const changeType = (val: PackageableElementOption<Type>): void => {
       functionElement.setReturnType(val.value);
       setIsEditingType(false);
     };

@@ -96,10 +96,9 @@ import {
   NonBlockingDialogState,
   PanelDisplayState,
 } from '@finos/legend-application-components';
-import type {
-  PackageableElement,
-  PackageableElementSelectOption,
-} from '../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
+import { buildElementOption } from './shared/PackageableElementOptionUtil';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { PrimitiveType } from '../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
 import { Class } from '../models/metamodels/pure/model/packageableElements/domain/Class';
@@ -1261,15 +1260,15 @@ export class EditorStore {
     );
   }
 
-  get enumerationOptions(): PackageableElementSelectOption<Enumeration>[] {
+  get enumerationOptions(): PackageableElementOption<Enumeration>[] {
     return this.graphState.graph.ownEnumerations
       .concat(this.graphState.graph.dependencyManager.enumerations)
       .map(
-        (e) => e.selectOption as PackageableElementSelectOption<Enumeration>,
+        (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
       );
   }
 
-  get classOptions(): PackageableElementSelectOption<Class>[] {
+  get classOptions(): PackageableElementOption<Class>[] {
     return this.graphState.graph.ownClasses
       .concat(
         this.filterSystemElementOptions(
@@ -1277,10 +1276,10 @@ export class EditorStore {
         ),
       )
       .concat(this.graphState.graph.dependencyManager.classes)
-      .map((c) => c.selectOption as PackageableElementSelectOption<Class>);
+      .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
   }
 
-  get associationOptions(): PackageableElementSelectOption<Association>[] {
+  get associationOptions(): PackageableElementOption<Association>[] {
     return this.graphState.graph.ownAssociations
       .concat(
         this.filterSystemElementOptions(
@@ -1289,11 +1288,11 @@ export class EditorStore {
       )
       .concat(this.graphState.graph.dependencyManager.associations)
       .map(
-        (p) => p.selectOption as PackageableElementSelectOption<Association>,
+        (e) => buildElementOption(e) as PackageableElementOption<Association>,
       );
   }
 
-  get profileOptions(): PackageableElementSelectOption<Profile>[] {
+  get profileOptions(): PackageableElementOption<Profile>[] {
     return this.graphState.graph.ownProfiles
       .concat(
         this.filterSystemElementOptions(
@@ -1301,13 +1300,13 @@ export class EditorStore {
         ),
       )
       .concat(this.graphState.graph.dependencyManager.profiles)
-      .map((p) => p.selectOption as PackageableElementSelectOption<Profile>);
+      .map((e) => buildElementOption(e) as PackageableElementOption<Profile>);
   }
 
-  get classPropertyGenericTypeOptions(): PackageableElementSelectOption<Type>[] {
+  get classPropertyGenericTypeOptions(): PackageableElementOption<Type>[] {
     return this.graphState.graph.primitiveTypes
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
-      .map((e) => e.selectOption as PackageableElementSelectOption<Type>)
+      .map((e) => buildElementOption(e) as PackageableElementOption<Type>)
       .concat(
         this.graphState.graph.ownTypes
           .concat(
@@ -1316,35 +1315,35 @@ export class EditorStore {
             ),
           )
           .concat(this.graphState.graph.dependencyManager.types)
-          .map((a) => a.selectOption as PackageableElementSelectOption<Type>),
+          .map((e) => buildElementOption(e) as PackageableElementOption<Type>),
       );
   }
 
-  get mappingOptions(): PackageableElementSelectOption<Mapping>[] {
+  get mappingOptions(): PackageableElementOption<Mapping>[] {
     return this.graphState.graph.ownMappings
       .concat(this.graphState.graph.dependencyManager.mappings)
-      .map((a) => a.selectOption as PackageableElementSelectOption<Mapping>);
+      .map((e) => buildElementOption(e) as PackageableElementOption<Mapping>);
   }
 
-  get runtimeOptions(): PackageableElementSelectOption<PackageableRuntime>[] {
+  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
     return this.graphState.graph.ownRuntimes
       .concat(this.graphState.graph.dependencyManager.runtimes)
       .map(
-        (a) =>
-          a.selectOption as PackageableElementSelectOption<PackageableRuntime>,
+        (e) =>
+          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
       );
   }
 
-  get serviceOptions(): PackageableElementSelectOption<Service>[] {
+  get serviceOptions(): PackageableElementOption<Service>[] {
     return this.graphState.graph.ownServices
       .concat(this.graphState.graph.dependencyManager.services)
-      .map((a) => a.selectOption as PackageableElementSelectOption<Service>);
+      .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
   }
 
-  get storeOptions(): PackageableElementSelectOption<Store>[] {
+  get storeOptions(): PackageableElementOption<Store>[] {
     return this.graphState.graph.ownStores
       .concat(this.graphState.graph.dependencyManager.stores)
-      .map((a) => a.selectOption as PackageableElementSelectOption<Store>);
+      .map((e) => buildElementOption(e) as PackageableElementOption<Store>);
   }
 
   getSupportedElementTypes(): string[] {

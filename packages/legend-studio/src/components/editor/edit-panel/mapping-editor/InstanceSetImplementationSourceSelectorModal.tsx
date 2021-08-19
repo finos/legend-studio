@@ -37,6 +37,7 @@ import { Table } from '../../../../models/metamodels/pure/model/packageableEleme
 import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../models/MetaModelConst';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSourceFilterText = (
@@ -83,7 +84,7 @@ export const buildMappingElementSourceOption = (
   source: MappingElementSource | undefined,
 ): MappingElementSourceSelectOption | null => {
   if (source instanceof Class) {
-    return source.selectOption as MappingElementSourceSelectOption;
+    return buildElementOption(source) as MappingElementSourceSelectOption;
   } else if (source instanceof RootFlatDataRecordType) {
     return {
       label: `${source.owner.owner.name}.${source.owner.name}`,

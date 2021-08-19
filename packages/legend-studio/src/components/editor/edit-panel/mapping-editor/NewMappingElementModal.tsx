@@ -39,10 +39,8 @@ import {
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
-import type {
-  PackageableElementSelectOption,
-  PackageableElement,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 
 interface ClassMappingSubTypeOption {
@@ -72,7 +70,7 @@ export const NewMappingElementModal = observer(() => {
 
   // Target
   const targetSelectorRef = useRef<SelectComponent>(null);
-  const options: PackageableElementSelectOption<PackageableElement>[] = [
+  const options: PackageableElementOption<PackageableElement>[] = [
     ...editorStore.enumerationOptions,
     ...editorStore.associationOptions,
     ...editorStore.classOptions,
@@ -80,15 +78,14 @@ export const NewMappingElementModal = observer(() => {
   const filterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (
-      option: PackageableElementSelectOption<PackageableElement>,
-    ): string => option.value.path,
+    stringify: (option: PackageableElementOption<PackageableElement>): string =>
+      option.value.path,
   });
   const selectedOption = spec?.target
     ? { label: spec.target.name, value: spec.target.path }
     : null;
   const handleTargetChange = (
-    val: PackageableElementSelectOption<PackageableElement> | null,
+    val: PackageableElementOption<PackageableElement> | null,
   ): void => {
     mappingEditorState.createMappingElement({
       target: val?.value,

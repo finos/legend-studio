@@ -34,7 +34,7 @@ import {
 import type {
   LightQuery,
   Mapping,
-  PackageableElementSelectOption,
+  PackageableElementOption,
   PackageableRuntime,
   Service,
 } from '@finos/legend-studio';
@@ -163,7 +163,7 @@ export class CreateQuerySetupState extends QuerySetupState {
     this.currentRuntime = val;
   }
 
-  get runtimeOptions(): PackageableElementSelectOption<PackageableRuntime>[] {
+  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
     return this.currentMapping
       ? this.queryStore.editorStore.runtimeOptions.filter((option) =>
           option.value.runtimeValue.mappings

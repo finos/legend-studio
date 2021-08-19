@@ -155,6 +155,7 @@ export { ProjectData } from './models/metadata/models/ProjectData';
 export { ProjectVersionEntities } from './models/metadata/models/ProjectVersionEntities';
 
 // stores
+export * from './stores/shared/PackageableElementOptionUtil';
 export * from './stores/EditorPlugin';
 export * from './stores/ApplicationStore';
 export * from './stores/EditorStore';

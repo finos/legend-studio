@@ -28,10 +28,9 @@ import {
   CustomSelectorInput,
 } from '@finos/legend-application-components';
 import { getElementTypeIcon } from '../../shared/Icon';
-import type {
-  PackageableElementSelectOption,
-  PackageableElement,
-} from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();
@@ -50,18 +49,16 @@ export const ProjectSearchCommand = observer(() => {
         editorStore.graphState.getPackageableElementType(element) ===
           elementType,
     )
-    .map((element) => element.selectOption)
-    // .getElementOptions(elementType)
+    .map(buildElementOption)
     .sort(compareLabelFn);
   const filterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (
-      option: PackageableElementSelectOption<PackageableElement>,
-    ): string => option.value.path,
+    stringify: (option: PackageableElementOption<PackageableElement>): string =>
+      option.value.path,
   });
   const openElement = (
-    val: PackageableElementSelectOption<PackageableElement> | null,
+    val: PackageableElementOption<PackageableElement> | null,
   ): void => {
     if (val?.value) {
       closeModal();
