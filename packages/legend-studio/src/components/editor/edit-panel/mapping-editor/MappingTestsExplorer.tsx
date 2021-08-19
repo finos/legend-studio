@@ -35,7 +35,6 @@ import {
   FaPlus,
 } from 'react-icons/fa';
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
-import { getRandomItemInCollection } from '@finos/legend-shared';
 import { clsx, ContextMenu } from '@finos/legend-application-components';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
@@ -44,6 +43,7 @@ import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
+import { Randomizer } from '@finos/legend-shared';
 
 const addTestPromps = [
   "Let's add some test!",
@@ -486,7 +486,7 @@ export const MappingTestsExplorer = observer(
                 onClick={showClassMappingSelectorModal}
               >
                 <div className="mapping-test-explorer__content__adder__text">
-                  {getRandomItemInCollection(addTestPromps)}
+                  {new Randomizer().getRandomItemInCollection(addTestPromps)}
                 </div>
                 <div className="mapping-test-explorer__content__adder__action">
                   <MdVerticalAlignBottom className="mapping-test-explorer__content__adder__action__dnd-icon" />

@@ -16,36 +16,47 @@
 
 import seedrandom from 'seedrandom';
 
-let rng = seedrandom();
+export class Randomizer {
+  private rng = seedrandom();
 
-/**
- * This method is exposed to allow setting seeds in test.
- * NOTE: Disable this during production for security.
- */
-export const setSeed = (seed?: string): void => {
-  // eslint-disable-next-line no-process-env
-  if (process.env.NODE_ENV === 'production') {
-    return;
+  /**
+   * This method is exposed to allow setting seeds in test.
+   * NOTE: Disable this during production for security.
+   */
+  setSeed(seed?: string): void {
+    // eslint-disable-next-line no-process-env
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
+    this.rng = seedrandom(seed);
   }
-  rng = seedrandom(seed);
-};
 
-export const getRandomFloat = (): number => rng.quick();
+  getRandomFloat(): number {
+    return this.rng.quick();
+  }
 
-export const getRandomDouble = (): number => rng.double();
+  getRandomDouble(): number {
+    return this.rng.double();
+  }
 
-export const getRandomSignedInteger = (): number => rng.int32();
+  getRandomSignedInteger(): number {
+    return this.rng.int32();
+  }
 
-export const getRandomPositiveInteger = (max?: number): number =>
-  max
-    ? Math.floor(getRandomFloat() * Math.floor(max))
-    : Math.abs(getRandomSignedInteger());
+  getRandomPositiveInteger(max?: number): number {
+    return max
+      ? Math.floor(this.getRandomFloat() * Math.floor(max))
+      : Math.abs(this.getRandomSignedInteger());
+  }
 
-export const getRandomItemInCollection = <T>(collection: T[]): T =>
-  collection[getRandomPositiveInteger(collection.length)];
+  getRandomItemInCollection<T>(collection: T[]): T {
+    return collection[this.getRandomPositiveInteger(collection.length - 1)];
+  }
 
-export const getRandomDate = (start: Date, end: Date): Date =>
-  new Date(
-    start.getTime() +
-      Math.floor(getRandomFloat() * (end.getTime() - start.getTime())),
-  );
+  getRandomDate(start: Date, end: Date): Date {
+    return new Date(
+      start.getTime() +
+        Math.round(this.getRandomFloat() * (end.getTime() - start.getTime())),
+    );
+  }
+}

@@ -33,6 +33,21 @@ beforeAll(async () => {
 });
 
 test(unitTest('Class with hierarchy cycle is detected'), () => {
+  const _class = editorStore.graphState.graph.getClass('myPackage::test::Misc');
+  expect(createMockClassInstance(_class)).toContainAllKeys([
+    'string',
+    'boolean',
+    'float',
+    'decimal',
+    'number',
+    'integer',
+    'date',
+    'dateTime',
+    'strictDate',
+  ]);
+});
+
+test(unitTest('Class with hierarchy cycle is detected'), () => {
   const cycledComplexClass = editorStore.graphState.graph.getClass(
     'myPackage::test::shared::src::Application',
   );
