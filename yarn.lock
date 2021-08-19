@@ -5,32 +5,32 @@ __metadata:
   version: 4
   cacheKey: 8
 
-"@ag-grid-community/client-side-row-model@npm:25.3.0":
-  version: 25.3.0
-  resolution: "@ag-grid-community/client-side-row-model@npm:25.3.0"
+"@ag-grid-community/client-side-row-model@npm:26.0.0":
+  version: 26.0.0
+  resolution: "@ag-grid-community/client-side-row-model@npm:26.0.0"
   dependencies:
-    "@ag-grid-community/core": ~25.3.0
-  checksum: 829b6996ddd2c6087c095dcc86788076044e1da39e65eb32b99b2c59fa842fcfc3ebef99d8749124887b2b35c29861436cb617ef364e9038cb54a7e2982613d9
+    "@ag-grid-community/core": ~26.0.0
+  checksum: 9e9f812b2f749497942515bd0a2c7589405c9cbc819aec6ac25594c29444e63bcd856b3a1c4b0303e81fe19ab3b84d8b841c489fc3b2d64d0102ccba6ee77ff2
   languageName: node
   linkType: hard
 
-"@ag-grid-community/core@npm:25.3.0, @ag-grid-community/core@npm:~25.3.0":
-  version: 25.3.0
-  resolution: "@ag-grid-community/core@npm:25.3.0"
-  checksum: f3511b030d85c03d058a703b39cc201ad64dd8712d49b0bc098a7d7f1a613984e11f4ac6089c77d1fa065649fe290c483e7ea694371713df34c9e1e689cb46f7
+"@ag-grid-community/core@npm:26.0.0, @ag-grid-community/core@npm:~26.0.0":
+  version: 26.0.0
+  resolution: "@ag-grid-community/core@npm:26.0.0"
+  checksum: b6294c96c40a57a63c55b3b82fc8c74dbb1e407a94d3da19bfccb9a275f604ca0a578a6c394c0c9f1fc89f6190bc1b7bff8f64d3d575da58c26c5e41a3f04f3b
   languageName: node
   linkType: hard
 
-"@ag-grid-community/react@npm:25.3.0":
-  version: 25.3.0
-  resolution: "@ag-grid-community/react@npm:25.3.0"
+"@ag-grid-community/react@npm:26.0.0":
+  version: 26.0.0
+  resolution: "@ag-grid-community/react@npm:26.0.0"
   dependencies:
     prop-types: ^15.6.2
   peerDependencies:
-    "@ag-grid-community/core": ~25.3.0
+    "@ag-grid-community/core": ~26.0.0
     react: ^16.3.0 || ^17.0.0
     react-dom: ^16.3.0 || ^17.0.0
-  checksum: dc50bc75843c823940cc42386798f1eab7dc3792ac52ac07181cd14c4a3007bce7e97892c89b03aaf1c5334c545084534097b92308db26e31b3e8d6deabecc16
+  checksum: cf196783ceef5e1dde105856bf3712b15af49cbabb77876301e843b4ad4a06d571556ba36d5d11804ab9d3316001aace365e96f0ec6b71064ba59d244571ce0f
   languageName: node
   linkType: hard
 
@@ -2124,7 +2124,7 @@ __metadata:
     "@changesets/read": 0.4.7
     "@changesets/write": 0.1.4
     "@manypkg/get-packages": 1.1.1
-    "@pmmmwh/react-refresh-webpack-plugin": 0.5.0-rc.3
+    "@pmmmwh/react-refresh-webpack-plugin": 0.5.0-rc.4
     autoprefixer: 10.3.1
     babel-jest: 27.0.6
     babel-loader: 8.2.2
@@ -2134,7 +2134,7 @@ __metadata:
     cosmiconfig: 7.0.0
     cross-env: 7.0.3
     css-loader: 6.2.0
-    cssnano: 5.0.7
+    cssnano: 5.0.8
     eslint: 7.32.0
     fork-ts-checker-webpack-plugin: 6.3.2
     html-webpack-plugin: 5.3.2
@@ -2261,11 +2261,11 @@ __metadata:
     webpack: 5.50.0
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.8.0
-    webpack-dev-server: 4.0.0-rc.1
+    webpack-dev-server: 4.0.0
   languageName: unknown
   linkType: soft
 
-"@finos/legend-sdlc@workspace:packages/legend-sdlc":
+"@finos/legend-sdlc@workspace:*, @finos/legend-sdlc@workspace:packages/legend-sdlc":
   version: 0.0.0-use.local
   resolution: "@finos/legend-sdlc@workspace:packages/legend-sdlc"
   dependencies:
@@ -2340,7 +2340,7 @@ __metadata:
     webpack: 5.50.0
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.8.0
-    webpack-dev-server: 4.0.0-rc.1
+    webpack-dev-server: 4.0.0
   languageName: unknown
   linkType: soft
 
@@ -2350,6 +2350,7 @@ __metadata:
   dependencies:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@types/react": 17.0.18
@@ -2371,6 +2372,7 @@ __metadata:
   dependencies:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@types/react": 17.0.18
@@ -2439,9 +2441,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 25.3.0
-    "@ag-grid-community/core": 25.3.0
-    "@ag-grid-community/react": 25.3.0
+    "@ag-grid-community/client-side-row-model": 26.0.0
+    "@ag-grid-community/core": 26.0.0
+    "@ag-grid-community/react": 26.0.0
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
@@ -2486,6 +2488,7 @@ __metadata:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.1.0
@@ -2996,9 +2999,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pmmmwh/react-refresh-webpack-plugin@npm:0.5.0-rc.3":
-  version: 0.5.0-rc.3
-  resolution: "@pmmmwh/react-refresh-webpack-plugin@npm:0.5.0-rc.3"
+"@pmmmwh/react-refresh-webpack-plugin@npm:0.5.0-rc.4":
+  version: 0.5.0-rc.4
+  resolution: "@pmmmwh/react-refresh-webpack-plugin@npm:0.5.0-rc.4"
   dependencies:
     ansi-html: ^0.0.7
     core-js-pure: ^3.8.1
@@ -3029,7 +3032,7 @@ __metadata:
       optional: true
     webpack-plugin-serve:
       optional: true
-  checksum: a766a114e2c77935f7976069e15b7d94127a501eb592c194cb74b1089d8480d9ec0baa9e2c674fad4fdd6e6ff58b5c2bce9113f2a26ca735b7c125e1a3ca86ad
+  checksum: 2cfdbb713f15ba5fc7d9596661884ea7564d69e3435cd05c88e20716373b2f5ad57c2f1ec3a9fb6e6986b0ac7b70b3288f86e5c82dcb5c548d276bb0b61b927a
   languageName: node
   linkType: hard
 
@@ -3376,10 +3379,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.6.1":
-  version: 16.6.1
-  resolution: "@types/node@npm:16.6.1"
-  checksum: c13aa0da0c2bf9070e521d1b537ba38f64b213dd1b8aeec66c279fc21f8c0ccaf380364f6dc2ec8f84440c4cd1460b67dfe47de2cafcb6eaf4b648817cb27dc4
+"@types/node@npm:16.6.2":
+  version: 16.6.2
+  resolution: "@types/node@npm:16.6.2"
+  checksum: 2245e50058ac49ab3d76af5ded7fc655d783a88a800139dad6caaf962f15c909287853012c9461b49600741bcc2b09042f94ce734f0440b6ad444d838e62904a
   languageName: node
   linkType: hard
 
@@ -5289,6 +5292,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"colord@npm:^2.6":
+  version: 2.7.0
+  resolution: "colord@npm:2.7.0"
+  checksum: 8366539ab254c565926b2f80579d57dfc399aa7e0ffa823922d85defb342df03d61b3aab4ec71f4ad1cb1feb8f651e8dac3d1b0b7cdd8ca95abdd951a6bd974e
+  languageName: node
+  linkType: hard
+
 "colorette@npm:^1.2.1, colorette@npm:^1.2.2":
   version: 1.2.2
   resolution: "colorette@npm:1.2.2"
@@ -5562,13 +5572,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-color-names@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "css-color-names@npm:0.0.4"
-  checksum: 9c6106320430a9da3a13daab8d8b4def39113edbfb68042444585d9a214af5fd5cb384b9be45124bc75f88261d461b517e00e278f4d2e0ab5a619b182f9f0e2d
-  languageName: node
-  linkType: hard
-
 "css-color-names@npm:^1.0.1":
   version: 1.0.1
   resolution: "css-color-names@npm:1.0.1"
@@ -5661,9 +5664,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano-preset-default@npm:^5.1.3":
-  version: 5.1.3
-  resolution: "cssnano-preset-default@npm:5.1.3"
+"cssnano-preset-default@npm:^5.1.4":
+  version: 5.1.4
+  resolution: "cssnano-preset-default@npm:5.1.4"
   dependencies:
     css-declaration-sorter: ^6.0.3
     cssnano-utils: ^2.0.1
@@ -5677,7 +5680,7 @@ __metadata:
     postcss-merge-longhand: ^5.0.2
     postcss-merge-rules: ^5.0.2
     postcss-minify-font-values: ^5.0.1
-    postcss-minify-gradients: ^5.0.1
+    postcss-minify-gradients: ^5.0.2
     postcss-minify-params: ^5.0.1
     postcss-minify-selectors: ^5.1.0
     postcss-normalize-charset: ^5.0.1
@@ -5696,7 +5699,7 @@ __metadata:
     postcss-unique-selectors: ^5.0.1
   peerDependencies:
     postcss: ^8.2.15
-  checksum: 0ad3ea5e3df0e1249cae7cc495d939bd9b33bfa19fe33b87a68a05c83ffc5dca7877136125d892caf2b9b862883aa30f212a30fed1b5585977a8dbd4eac6f37a
+  checksum: feeed9e46988d4679f69db2ed858fb746331d035ac63527bdaa2910b875aaeef2903ac9de77d4cfecab0ca5f0b6be0ce8d9016d269d35f67cd19fa40beed71c4
   languageName: node
   linkType: hard
 
@@ -5709,17 +5712,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano@npm:5.0.7":
-  version: 5.0.7
-  resolution: "cssnano@npm:5.0.7"
+"cssnano@npm:5.0.8":
+  version: 5.0.8
+  resolution: "cssnano@npm:5.0.8"
   dependencies:
-    cssnano-preset-default: ^5.1.3
+    cssnano-preset-default: ^5.1.4
     is-resolvable: ^1.1.0
     lilconfig: ^2.0.3
     yaml: ^1.10.2
   peerDependencies:
     postcss: ^8.2.15
-  checksum: 6058e285bc25345c3d404385300e343a1489af2b7e2d8c62161d42d46958d43a705786f887677d86cb634ed580278022a7c3d59da2f1e75694c35d3cdd9dda14
+  checksum: 18d6496accecf8aa428ed8ef27fbc41cd1c2cad26e64b335711fafd23b2d03d5854023d3fbfda7da9718e416ae94d6b38357df20a6289e1db1c422421d819684
   languageName: node
   linkType: hard
 
@@ -7715,13 +7718,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hex-color-regex@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "hex-color-regex@npm:1.1.0"
-  checksum: 44fa1b7a26d745012f3bfeeab8015f60514f72d2fcf10dce33068352456b8d71a2e6bc5a17f933ab470da2c5ab1e3e04b05caf3fefe3c1cabd7e02e516fc8784
-  languageName: node
-  linkType: hard
-
 "history@npm:5.0.1":
   version: 5.0.1
   resolution: "history@npm:5.0.1"
@@ -7779,20 +7775,6 @@ __metadata:
     readable-stream: ^2.0.1
     wbuf: ^1.1.0
   checksum: 2de144115197967ad6eeee33faf41096c6ba87078703c5cb011632dcfbffeb45784569e0cf02c317bd79c48375597c8ec88c30fff5bb0b023e8f654fb6e9c06e
-  languageName: node
-  linkType: hard
-
-"hsl-regex@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "hsl-regex@npm:1.0.0"
-  checksum: de9ee1bf39de1b83cc3fa0fa1cc337f29f14911e79411d66347365c54fab6b109eea2dd741eaa02486e24de31627ad7bf4453f22224fb55a2fe2b58166fa63b8
-  languageName: node
-  linkType: hard
-
-"hsla-regex@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "hsla-regex@npm:1.0.0"
-  checksum: 9aa6eb9ff6c102d2395435aa5d1d91eae20043c4b1497c543d8db501c05f3edacd9a07fb34a987059d7902dba415af4cb4e610f751859ae8e7525df4ffcd085f
   languageName: node
   linkType: hard
 
@@ -8337,20 +8319,6 @@ __metadata:
   bin:
     is-ci: bin.js
   checksum: 4b45aef32dd42dcb1f6fb3cd4b3a7ee7e18ea47516d2129005f46c3f36983506bb471382bac890973cf48a2f60d926a24461674ca2d9dc10744d82d4a876c26b
-  languageName: node
-  linkType: hard
-
-"is-color-stop@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "is-color-stop@npm:1.1.0"
-  dependencies:
-    css-color-names: ^0.0.4
-    hex-color-regex: ^1.1.0
-    hsl-regex: ^1.0.0
-    hsla-regex: ^1.0.0
-    rgb-regex: ^1.0.1
-    rgba-regex: ^1.0.0
-  checksum: 778dd52a603ab8da827925aa4200fe6733b667b216495a04110f038b925dc5ef58babe759b94ffc4e44fcf439328695770873937f59d6045f676322b97f3f92d
   languageName: node
   linkType: hard
 
@@ -9763,7 +9731,7 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 27.0.1
-    "@types/node": 16.6.1
+    "@types/node": 16.6.2
     chalk: 4.1.2
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -11785,16 +11753,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-minify-gradients@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "postcss-minify-gradients@npm:5.0.1"
+"postcss-minify-gradients@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "postcss-minify-gradients@npm:5.0.2"
   dependencies:
+    colord: ^2.6
     cssnano-utils: ^2.0.1
-    is-color-stop: ^1.1.0
     postcss-value-parser: ^4.1.0
   peerDependencies:
     postcss: ^8.2.15
-  checksum: 6a5a8faf5e1b6815b76ad590e8b3212951a76d7250160f8247227e29fb0c8dde085a3bda37f7314fb6bc38929543da0a7fe50f519b2108bc8366d99cc608bc0b
+  checksum: f6c655e1850e6ab24bac66a0339cf8fd7638e2550bf1d9bbb7235dbb31022654f9dfdcc0289ba15312bf3048c914d2bbd92eed8df51d00294cc86d40b48fd696
   languageName: node
   linkType: hard
 
@@ -13038,20 +13006,6 @@ resolve@^2.0.0-next.3:
   version: 1.0.4
   resolution: "reusify@npm:1.0.4"
   checksum: c3076ebcc22a6bc252cb0b9c77561795256c22b757f40c0d8110b1300723f15ec0fc8685e8d4ea6d7666f36c79ccc793b1939c748bf36f18f542744a4e379fcc
-  languageName: node
-  linkType: hard
-
-"rgb-regex@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "rgb-regex@npm:1.0.1"
-  checksum: b270ce8bc14782d2d21d3184c1e6c65b465476d8f03e72b93ef57c95710a452b2fe280e1d516c88873aec06efd7f71373e673f114b9d99f3a4f9a0393eb00126
-  languageName: node
-  linkType: hard
-
-"rgba-regex@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "rgba-regex@npm:1.0.0"
-  checksum: 7f2cd271572700faea50753d82524cb2b98f17a5b9722965c7076f6cd674fe545f28145b7ef2cccabc9eca2475c793db16862cd5e7b3784a9f4b8d6496431057
   languageName: node
   linkType: hard
 
@@ -15157,9 +15111,9 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"webpack-dev-server@npm:4.0.0-rc.1":
-  version: 4.0.0-rc.1
-  resolution: "webpack-dev-server@npm:4.0.0-rc.1"
+"webpack-dev-server@npm:4.0.0":
+  version: 4.0.0
+  resolution: "webpack-dev-server@npm:4.0.0"
   dependencies:
     ansi-html: ^0.0.7
     bonjour: ^3.5.0
@@ -15193,7 +15147,7 @@ typescript@4.3.5:
       optional: true
   bin:
     webpack-dev-server: bin/webpack-dev-server.js
-  checksum: 5510bf65d048fd4ccfbc129b1c0dffe0160ddaa23b458412bc481ed761cd0c73481639bc9b14c7bb6ad77e4d29645095c61aaf488cb3cd7a06f57deb7168655a
+  checksum: abf88fb940b8fcb3fc6bae6a218ecfc001c7da5b7df3db45f5ee684be1c9e05bd9e491b044f81b1e3df6d33796264b6aebce358a18522e407a62fd6cbcc9f705
   languageName: node
   linkType: hard
 

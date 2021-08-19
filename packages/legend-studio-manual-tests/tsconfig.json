@@ -13,8 +13,9 @@
     "studio.config.js"
   ],
   "references": [
+    { "path": "../legend-shared" },
     { "path": "../legend-studio" },
-    { "path": "../legend-application-components" },
-    { "path": "../legend-shared" }
+    { "path": "../legend-sdlc" },
+    { "path": "../legend-application-components" }
   ]
 }

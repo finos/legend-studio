@@ -38,9 +38,9 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "25.3.0",
-    "@ag-grid-community/core": "25.3.0",
-    "@ag-grid-community/react": "25.3.0",
+    "@ag-grid-community/client-side-row-model": "26.0.0",
+    "@ag-grid-community/core": "26.0.0",
+    "@ag-grid-community/react": "26.0.0",
     "@finos/legend-application-components": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
