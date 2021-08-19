@@ -8,7 +8,7 @@
     { "path": "packages/legend-shared" },
     { "path": "packages/legend-application-components" },
     { "path": "packages/legend-model-storage" },
-    { "path": "packages/legend-metadata" },
+    { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-sdlc" },
     { "path": "packages/legend-graph" },
     { "path": "packages/legend-graph-manager" },

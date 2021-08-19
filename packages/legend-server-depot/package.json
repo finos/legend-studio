@@ -1,20 +1,20 @@
 {
-  "name": "@finos/legend-metadata",
+  "name": "@finos/legend-server-depot",
   "version": "0.0.1",
   "description": "Legend metadata",
   "keywords": [
     "legend",
-    "legend-metadata",
+    "legend-server-depot",
     "metadata"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-metadata",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-server-depot",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-metadata"
+    "directory": "packages/legend-server-depot"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

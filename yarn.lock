@@ -2200,27 +2200,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-metadata@workspace:packages/legend-metadata":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-metadata@workspace:packages/legend-metadata"
-  dependencies:
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    mobx: 6.3.2
-    mobx-react-lite: 3.2.0
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    react-dom: 17.0.2
-    rimraf: 3.0.2
-    typescript: 4.3.5
-  peerDependencies:
-    react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-model-storage@workspace:*, @finos/legend-model-storage@workspace:packages/legend-model-storage":
   version: 0.0.0-use.local
   resolution: "@finos/legend-model-storage@workspace:packages/legend-model-storage"
@@ -2264,6 +2243,27 @@ __metadata:
 "@finos/legend-sdlc@workspace:*, @finos/legend-sdlc@workspace:packages/legend-sdlc":
   version: 0.0.0-use.local
   resolution: "@finos/legend-sdlc@workspace:packages/legend-sdlc"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    react-dom: 17.0.2
+    rimraf: 3.0.2
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-server-depot@workspace:packages/legend-server-depot":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-server-depot@workspace:packages/legend-server-depot"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"

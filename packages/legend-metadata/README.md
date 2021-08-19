@@ -1,1 +1,0 @@
-# @finos/legend-metadata
