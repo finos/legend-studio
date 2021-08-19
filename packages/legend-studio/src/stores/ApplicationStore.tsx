@@ -38,7 +38,7 @@ import type { WebApplicationNavigator } from './application/WebApplicationNaviga
 import { useLocalObservable } from 'mobx-react-lite';
 import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
-import { MetadataServerClient } from '../models/metadata/MetadataServerClient';
+import { DepotServerClient } from '../models/metadata/DepotServerClient';
 import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
 
 export enum ActionAlertType {
@@ -110,14 +110,14 @@ export class Notification {
 
 export class NetworkClientManager {
   sdlcClient!: SDLCServerClient;
-  metadataClient!: MetadataServerClient;
+  depotClient!: DepotServerClient;
 
   constructor(config: ApplicationConfig) {
     this.sdlcClient = new SDLCServerClient({
       env: config.env,
       serverUrl: config.sdlcServerUrl,
     });
-    this.metadataClient = new MetadataServerClient({
+    this.depotClient = new DepotServerClient({
       serverUrl: config.metadataServerUrl,
     });
   }

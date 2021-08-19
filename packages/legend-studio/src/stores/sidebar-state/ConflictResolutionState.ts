@@ -206,7 +206,7 @@ export class ConflictResolutionState {
       'Editor must be in conflict resolution mode to call this method',
     );
     const projectConfiguration =
-      (yield this.sdlcState.sdlcClient.getConfigurationOfWorkspaceInConflictResolutionMode(
+      (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfigurationOfWorkspaceInConflictResolutionMode(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       )) as PlainObject<ProjectConfiguration>;
@@ -347,7 +347,7 @@ export class ConflictResolutionState {
     try {
       // fetch latest revision
       const latestRevision = Revision.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.getConflictResolutionRevision(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConflictResolutionRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.CURRENT,
@@ -359,7 +359,7 @@ export class ConflictResolutionState {
         `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
       );
       const entities =
-        (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           this.sdlcState.currentRevisionId,
@@ -392,7 +392,7 @@ export class ConflictResolutionState {
     );
     try {
       const workspaceBaseEntities =
-        (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.BASE,
@@ -457,7 +457,7 @@ export class ConflictResolutionState {
       });
       const entityChanges =
         this.editorStore.graphState.computeLocalEntityChanges();
-      yield this.sdlcState.sdlcClient.acceptConflictResolution(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.acceptConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
         {
@@ -522,7 +522,7 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.sdlcState.sdlcClient.discardConflictResolutionChanges(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.discardConflictResolutionChanges(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
@@ -576,7 +576,7 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.sdlcState.sdlcClient.abortConflictResolution(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.abortConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );

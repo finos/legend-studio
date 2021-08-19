@@ -24,12 +24,12 @@ import type {
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities';
 
-interface MetadataServerClientConfig {
+interface DepotServerClientConfig {
   serverUrl: string;
 }
 
-export class MetadataServerClient extends AbstractServerClient {
-  constructor(config: MetadataServerClientConfig) {
+export class DepotServerClient extends AbstractServerClient {
+  constructor(config: DepotServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
     });

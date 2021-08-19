@@ -28,7 +28,6 @@ import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import {
   Build,
   Project,
@@ -58,7 +57,6 @@ export class EditorSdlcState {
       currentProjectId: false,
       currentWorkspaceId: false,
       currentRevisionId: false,
-      sdlcClient: false,
       setCurrentProject: action,
       setCurrentWorkspace: action,
       setCurrentRevision: action,
@@ -69,9 +67,6 @@ export class EditorSdlcState {
 
   get isCurrentProjectInProduction(): boolean {
     return this.currentProject?.projectType === ProjectType.PRODUCTION;
-  }
-  get sdlcClient(): SDLCServerClient {
-    return this.editorStore.applicationStore.networkClientManager.sdlcClient;
   }
 
   get currentProjectId(): string {
@@ -110,7 +105,9 @@ export class EditorSdlcState {
     try {
       this.isFetchingProject = true;
       this.currentProject = Project.serialization.fromJson(
-        (yield this.sdlcClient.getProject(projectId)) as PlainObject<Project>,
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getProject(
+          projectId,
+        )) as PlainObject<Project>,
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
@@ -132,7 +129,7 @@ export class EditorSdlcState {
   ): GeneratorFn<void> {
     try {
       this.currentWorkspace = Workspace.serialization.fromJson(
-        (yield this.sdlcClient.getWorkspace(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getWorkspace(
           projectId,
           workspaceId,
         )) as PlainObject<Workspace>,
@@ -160,7 +157,7 @@ export class EditorSdlcState {
     try {
       this.isFetchingProjectVersions = true;
       this.projectVersions = (
-        (yield this.sdlcClient.getVersions(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersions(
           this.currentProjectId,
         )) as PlainObject<Version>[]
       ).map((version) => Version.serialization.fromJson(version));
@@ -175,7 +172,7 @@ export class EditorSdlcState {
   }
 
   *checkIfCurrentWorkspaceIsInConflictResolutionMode(): GeneratorFn<boolean> {
-    return (yield this.sdlcClient.checkIfWorkspaceIsInConflictResolutionMode(
+    return (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.checkIfWorkspaceIsInConflictResolutionMode(
       this.currentProjectId,
       this.currentWorkspaceId,
     )) as boolean;
@@ -188,12 +185,12 @@ export class EditorSdlcState {
     try {
       this.currentRevision = Revision.serialization.fromJson(
         this.editorStore.isInConflictResolutionMode
-          ? ((yield this.sdlcClient.getConflictResolutionRevision(
+          ? ((yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConflictResolutionRevision(
               projectId,
               workspaceId,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>)
-          : ((yield this.sdlcClient.getRevision(
+          : ((yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
               projectId,
               workspaceId,
               RevisionAlias.CURRENT,
@@ -212,11 +209,11 @@ export class EditorSdlcState {
     try {
       this.isCheckingIfWorkspaceIsOutdated = true;
       this.isWorkspaceOutdated = this.editorStore.isInConflictResolutionMode
-        ? ((yield this.sdlcClient.isConflictResolutionOutdated(
+        ? ((yield this.editorStore.applicationStore.networkClientManager.sdlcClient.isConflictResolutionOutdated(
             this.currentProjectId,
             this.currentWorkspaceId,
           )) as boolean)
-        : ((yield this.sdlcClient.isWorkspaceOutdated(
+        : ((yield this.editorStore.applicationStore.networkClientManager.sdlcClient.isWorkspaceOutdated(
             this.currentProjectId,
             this.currentWorkspaceId,
           )) as boolean);
@@ -254,7 +251,7 @@ export class EditorSdlcState {
         // fetch latest revision
         // NOTE: this check is already covered in conflict resolution mode so we don't need to do it here
         const latestRevision = Revision.serialization.fromJson(
-          (yield this.sdlcClient.getRevision(
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
             this.currentProjectId,
             this.currentWorkspaceId,
             RevisionAlias.CURRENT,
@@ -265,17 +262,19 @@ export class EditorSdlcState {
           latestRevision.id === this.currentRevisionId,
           `Can't run local change detection: current workspace revision is not the latest. Please backup your work and refresh the application`,
         );
-        entities = (yield this.sdlcClient.getEntitiesByRevision(
-          this.currentProjectId,
-          this.currentWorkspaceId,
-          this.currentRevisionId,
-        )) as Entity[];
+        entities =
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
+            this.currentProjectId,
+            this.currentWorkspaceId,
+            this.currentRevisionId,
+          )) as Entity[];
       } else {
-        entities = (yield this.sdlcClient.getEntitiesByRevision(
-          this.currentProjectId,
-          this.currentWorkspaceId,
-          RevisionAlias.CURRENT,
-        )) as Entity[];
+        entities =
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
+            this.currentProjectId,
+            this.currentWorkspaceId,
+            RevisionAlias.CURRENT,
+          )) as Entity[];
       }
       this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
         entities,
@@ -301,7 +300,7 @@ export class EditorSdlcState {
   *buildWorkspaceBaseRevisionEntityHashesIndex(): GeneratorFn<void> {
     try {
       const workspaceBaseEntities =
-        (yield this.sdlcClient.getEntitiesByRevision(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
           this.currentProjectId,
           this.currentWorkspaceId,
           RevisionAlias.BASE,
@@ -329,10 +328,11 @@ export class EditorSdlcState {
 
   *buildProjectLatestRevisionEntityHashesIndex(): GeneratorFn<void> {
     try {
-      const projectLatestEntities = (yield this.sdlcClient.getEntities(
-        this.currentProjectId,
-        undefined,
-      )) as Entity[];
+      const projectLatestEntities =
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
+          this.currentProjectId,
+          undefined,
+        )) as Entity[];
       this.editorStore.changeDetectionState.projectLatestRevisionState.setEntities(
         projectLatestEntities,
       );
@@ -357,7 +357,7 @@ export class EditorSdlcState {
   *fetchWorkspaceBuilds(): GeneratorFn<void> {
     try {
       this.workspaceBuilds = (
-        (yield this.sdlcClient.getBuildsByRevision(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getBuildsByRevision(
           this.currentProjectId,
           this.currentWorkspaceId,
           RevisionAlias.CURRENT,

@@ -194,7 +194,7 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
       const latestRevision = Revision.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.performEntityChanges(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.performEntityChanges(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           {
@@ -228,11 +228,12 @@ export class LocalChangesState {
          * Here we try to rebuild local hash index. If failed, we will use local hash index, but for veracity, it's best to use entities
          * coming from the server.
          */
-        const entities = (yield this.sdlcState.sdlcClient.getEntitiesByRevision(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
-          latestRevision.id,
-        )) as Entity[];
+        const entities =
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
+            this.sdlcState.currentProjectId,
+            this.sdlcState.currentWorkspaceId,
+            latestRevision.id,
+          )) as Entity[];
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
           entities,
         );

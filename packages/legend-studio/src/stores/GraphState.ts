@@ -1008,7 +1008,7 @@ export class GraphState {
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getProjectVersionsDependencyEntities(
+          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getProjectVersionsDependencyEntities(
             directDependencies as PlainObject<DeprecatedProjectVersion>[],
             true,
             true,

@@ -177,7 +177,7 @@ export class CreateQuerySetupState extends QuerySetupState {
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
-        (yield this.queryStore.editorStore.applicationStore.networkClientManager.metadataClient.getProjects()) as PlainObject<ProjectData>[]
+        (yield this.queryStore.editorStore.applicationStore.networkClientManager.depotClient.getProjects()) as PlainObject<ProjectData>[]
       ).map((project) => ProjectData.serialization.fromJson(project));
       this.loadProjectsState.pass();
     } catch (error: unknown) {
@@ -261,7 +261,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
-        (yield this.queryStore.editorStore.applicationStore.networkClientManager.metadataClient.getProjects()) as PlainObject<ProjectData>[]
+        (yield this.queryStore.editorStore.applicationStore.networkClientManager.depotClient.getProjects()) as PlainObject<ProjectData>[]
       ).map((project) => ProjectData.serialization.fromJson(project));
       this.loadProjectsState.pass();
     } catch (error: unknown) {

@@ -353,7 +353,7 @@ export class QueryStore {
 
       const project = ProjectData.serialization.fromJson(
         (yield flowResult(
-          this.editorStore.applicationStore.networkClientManager.metadataClient.getProject(
+          this.editorStore.applicationStore.networkClientManager.depotClient.getProject(
             queryInfoState.query.groupId,
             queryInfoState.query.artifactId,
           ),
@@ -425,7 +425,7 @@ export class QueryStore {
       } else {
         const project = ProjectData.serialization.fromJson(
           (yield flowResult(
-            this.editorStore.applicationStore.networkClientManager.metadataClient.getProject(
+            this.editorStore.applicationStore.networkClientManager.depotClient.getProject(
               groupId,
               artifactId,
             ),
@@ -510,7 +510,7 @@ export class QueryStore {
       } else {
         const project = ProjectData.serialization.fromJson(
           (yield flowResult(
-            this.editorStore.applicationStore.networkClientManager.metadataClient.getProject(
+            this.editorStore.applicationStore.networkClientManager.depotClient.getProject(
               groupId,
               artifactId,
             ),
@@ -615,13 +615,13 @@ export class QueryStore {
 
       if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
         entities =
-          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getLatestRevisionEntities(
+          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getLatestRevisionEntities(
             project.groupId,
             project.artifactId,
           )) as Entity[];
       } else {
         entities =
-          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getVersionEntities(
+          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getVersionEntities(
             project.groupId,
             project.artifactId,
             versionId === LATEST_VERSION_ALIAS
@@ -676,7 +676,7 @@ export class QueryStore {
       let dependencyEntitiesJson: PlainObject<ProjectVersionEntities>[] = [];
       if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
         dependencyEntitiesJson =
-          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getLatestDependencyEntities(
+          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getLatestDependencyEntities(
             project.groupId,
             project.artifactId,
             true,
@@ -684,7 +684,7 @@ export class QueryStore {
           )) as PlainObject<ProjectVersionEntities>[];
       } else {
         dependencyEntitiesJson =
-          (yield this.editorStore.applicationStore.networkClientManager.metadataClient.getDependencyEntities(
+          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getDependencyEntities(
             project.groupId,
             project.artifactId,
             versionId === LATEST_VERSION_ALIAS

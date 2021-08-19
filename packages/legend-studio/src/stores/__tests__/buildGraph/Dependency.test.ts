@@ -169,7 +169,7 @@ const testDependencyElements = async (
   jest
     .spyOn(
       guaranteeNonNullable(
-        editorStore.applicationStore.networkClientManager.metadataClient,
+        editorStore.applicationStore.networkClientManager.depotClient,
       ),
       'getProjectVersionsDependencyEntities',
     )

@@ -75,7 +75,7 @@ export class ProjectOverviewState {
     try {
       this.isFetchingProjectWorkspaces = true;
       this.projectWorkspaces = (
-        (yield this.sdlcState.sdlcClient.getWorkspaces(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getWorkspaces(
           this.sdlcState.currentProjectId,
         )) as PlainObject<Workspace>[]
       ).map((workspace) => Workspace.serialization.fromJson(workspace));
@@ -92,7 +92,7 @@ export class ProjectOverviewState {
   *deleteWorkspace(workspaceId: string): GeneratorFn<void> {
     try {
       this.isDeletingWorkspace = true;
-      yield this.sdlcState.sdlcClient.deleteWorkspace(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.deleteWorkspace(
         this.sdlcState.currentProjectId,
         workspaceId,
       );
@@ -129,7 +129,7 @@ export class ProjectOverviewState {
   ): GeneratorFn<void> {
     try {
       this.isUpdatingProject = true;
-      yield this.sdlcState.sdlcClient.updateProject(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.updateProject(
         this.sdlcState.currentProjectId,
         {
           name,
@@ -154,15 +154,16 @@ export class ProjectOverviewState {
     try {
       this.isFetchingLatestVersion = true;
       // fetch latest version
-      const version = (yield this.sdlcState.sdlcClient.getLatestVersion(
-        this.sdlcState.currentProjectId,
-      )) as PlainObject<Version> | undefined;
+      const version =
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestVersion(
+          this.sdlcState.currentProjectId,
+        )) as PlainObject<Version> | undefined;
       this.latestProjectVersion = version
         ? Version.serialization.fromJson(version)
         : null;
       // fetch current project revision and set release revision ID
       this.currentProjectRevision = Revision.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.getRevision(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
           this.sdlcState.currentProjectId,
           undefined,
           RevisionAlias.CURRENT,
@@ -173,7 +174,7 @@ export class ProjectOverviewState {
       // fetch committed reviews between most recent version and project latest
       if (this.latestProjectVersion) {
         const latestProjectVersionRevision = Revision.serialization.fromJson(
-          (yield this.sdlcState.sdlcClient.getRevision(
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
             this.sdlcState.currentProjectId,
             undefined,
             this.latestProjectVersion.revisionId,
@@ -184,7 +185,7 @@ export class ProjectOverviewState {
         // 2. the revision is the merged/comitted review revision (this usually happens for prototype projects where fast forwarding merging is not default)
         // in those case, we will get the time from the revision
         const latestProjectVersionRevisionReviewObj = getNullableFirstElement(
-          (yield this.sdlcState.sdlcClient.getReviews(
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviews(
             this.sdlcState.currentProjectId,
             ReviewState.COMMITTED,
             [latestProjectVersionRevision.id],
@@ -200,7 +201,7 @@ export class ProjectOverviewState {
               )
             : undefined;
         this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
-          (yield this.sdlcState.sdlcClient.getReviews(
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviews(
             this.sdlcState.currentProjectId,
             ReviewState.COMMITTED,
             undefined,
@@ -235,7 +236,7 @@ export class ProjectOverviewState {
       this.releaseVersion.versionType = versionType;
       this.releaseVersion.validate();
       this.latestProjectVersion = Version.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.createVersion(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.createVersion(
           this.sdlcState.currentProjectId,
           CreateVersionCommand.serialization.toJson(this.releaseVersion),
         )) as PlainObject<Version>,
