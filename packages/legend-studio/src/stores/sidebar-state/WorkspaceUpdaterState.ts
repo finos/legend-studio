@@ -18,7 +18,6 @@ import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -37,13 +36,14 @@ import type {
   WorkspaceUpdateReport,
 } from '@finos/legend-server-sdlc';
 import {
-  WORKSPACE_UPDATE_REPORT_STATUS,
+  WorkspaceUpdateReportStatus,
   EntityDiff,
   Review,
   ReviewState,
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;
@@ -224,7 +224,7 @@ export class WorkspaceUpdaterState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -273,24 +273,24 @@ export class WorkspaceUpdaterState {
           this.sdlcState.currentWorkspaceId,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_UPDATE_WORKSPACE),
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_UPDATED),
         Date.now() - startTime,
         'ms',
       );
       this.sdlcState.isWorkspaceOutdated = false;
       switch (workspaceUpdateReport.status) {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
-        case WORKSPACE_UPDATE_REPORT_STATUS.CONFLICT:
-        case WORKSPACE_UPDATE_REPORT_STATUS.UPDATED:
+        case WorkspaceUpdateReportStatus.CONFLICT:
+        case WorkspaceUpdateReportStatus.UPDATED:
           this.editorStore.applicationStore.navigator.reload();
           break;
-        case WORKSPACE_UPDATE_REPORT_STATUS.NO_OP:
+        case WorkspaceUpdateReportStatus.NO_OP:
         default:
           break;
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -345,7 +345,7 @@ export class WorkspaceUpdaterState {
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -40,7 +40,7 @@ import {
   PROJECT_LATEST_VIEWER_WORKSPACE,
   Review,
   Workspace,
-  WORKSPACE_TYPE,
+  WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
 
 interface ImportProjectSuccessReport {
@@ -293,7 +293,7 @@ export class SetupStore {
           if (
             workspacesInConflictResolutionIds.includes(workspace.workspaceId)
           ) {
-            workspace.type = WORKSPACE_TYPE.CONFLICT_RESOLUTION;
+            workspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
           }
           workspaceMap.set(workspace.workspaceId, workspace);
         });

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-export enum WORKSPACE_UPDATE_REPORT_STATUS {
+export enum WorkspaceUpdateReportStatus {
   NO_OP = 'NO_OP',
   UPDATED = 'UPDATED',
   CONFLICT = 'CONFLICT',
 }
 
 export class WorkspaceUpdateReport {
-  status!: WORKSPACE_UPDATE_REPORT_STATUS;
+  status!: WorkspaceUpdateReportStatus;
   workspaceRevisionId!: string;
   workspaceMergeBaseRevisionId!: string;
 }

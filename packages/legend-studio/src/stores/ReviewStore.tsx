@@ -17,7 +17,6 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
-import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import { makeAutoObservable, action, flowResult } from 'mobx';
@@ -26,6 +25,7 @@ import { useEditorStore } from './EditorStore';
 import { EDITOR_MODE, ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 
 export class ReviewStore {
   editorStore: EditorStore;
@@ -84,7 +84,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -134,7 +134,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -152,7 +152,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -170,7 +170,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -190,7 +190,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -211,7 +211,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -231,7 +231,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -251,7 +251,7 @@ export class ReviewStore {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

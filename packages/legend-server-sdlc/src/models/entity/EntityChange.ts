@@ -30,9 +30,3 @@ export class EntityChange {
   newEntityPath?: string;
   content?: Record<PropertyKey, unknown>;
 }
-
-export interface PerformEntitiesChangesCommand {
-  message: string;
-  entityChanges: EntityChange[];
-  revisionId?: string;
-}

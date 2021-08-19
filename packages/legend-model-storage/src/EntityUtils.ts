@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-export enum METADATA_LOG_EVENT {
-  METADATA_MANAGER_FAILURE = 'METADATA_MANAGER_FAILURE',
-}
+import { findLast, guaranteeNonNullable } from '@finos/legend-shared';
+
+export const ENTITY_PATH_DELIMITER = '::';
+
+export const extractEntityNameFromPath = (fullPath: string): string =>
+  guaranteeNonNullable(findLast(fullPath.split(ENTITY_PATH_DELIMITER)));

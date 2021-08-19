@@ -38,7 +38,6 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '../../../../stores/ApplicationStore';
-import { SDLC_LOG_EVENT } from '../../../../utils/SDLCLogEvent';
 import { flowResult } from 'mobx';
 import { ProjectDependency } from '@finos/legend-server-sdlc';
 import type {
@@ -47,6 +46,7 @@ import type {
   Version,
   VersionSelectOption,
 } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 
 const ProjectDependencyVersionSelector = observer(
   (
@@ -77,7 +77,7 @@ const ProjectDependencyVersionSelector = observer(
           projectDependency.setVersionId(val?.value ?? '');
         } catch (error: unknown) {
           logger.error(
-            LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+            LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
             error,
           );
         }

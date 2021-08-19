@@ -52,7 +52,6 @@ import {
   RuntimePointer,
   ProjectData,
   TAB_SIZE,
-  SDLC_LOG_EVENT,
   EditorStore,
   useApplicationStore,
   ProjectVersionEntities,
@@ -598,7 +597,7 @@ export class QueryStore {
       this.initState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.setBlockingAlert({
@@ -658,7 +657,7 @@ export class QueryStore {
       this.buildGraphState.pass();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -704,7 +703,7 @@ export class QueryStore {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

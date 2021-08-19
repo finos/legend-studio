@@ -32,7 +32,6 @@ import {
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
-import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { ApplicationConfig } from './application/ApplicationConfig';
 import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { useLocalObservable } from 'mobx-react-lite';
@@ -40,6 +39,7 @@ import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
 import { DepotServerClient } from '../models/metadata/DepotServerClient';
 import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -331,7 +331,7 @@ export class ApplicationStore {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.notifyWarning(error.message);
@@ -350,7 +350,7 @@ export class ApplicationStore {
                   // if there is an issue with an endpoint in a non prod env, we return authorized as true
                   // but notify the user of the error
                   this.log.error(
-                    LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+                    LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
                     error,
                   );
                   this.notifyError(error);
@@ -402,7 +402,7 @@ export class ApplicationStore {
       }
     } catch (error: unknown) {
       this.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.notifyError(error);

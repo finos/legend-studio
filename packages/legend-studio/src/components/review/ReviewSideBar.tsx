@@ -30,7 +30,8 @@ import { useApplicationStore } from '../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../const';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
-import { entityDiffSorter, ReviewState } from '@finos/legend-server-sdlc';
+import { ReviewState } from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '../../../stores/EditorSdlcState';
 
 export const ReviewSideBar = observer(() => {
   const reviewStore = useReviewStore();

@@ -74,25 +74,3 @@ export class ImportProjectReport {
     }),
   );
 }
-
-export interface ImportProjectCommand {
-  id: string;
-  type: ProjectType;
-  groupId: string;
-  artifactId: string;
-}
-
-export interface CreateProjectCommand {
-  name: string;
-  description: string;
-  type: ProjectType;
-  groupId: string;
-  artifactId: string;
-  tags: string[];
-}
-
-export interface UpdateProjectCommand {
-  name: string;
-  description: string;
-  tags: string[];
-}

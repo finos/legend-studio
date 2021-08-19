@@ -186,7 +186,6 @@ export { NotificationSnackbar } from './components/application/NotificationSnack
 
 // logging
 export { GRAPH_MANAGER_LOG_EVENT } from './utils/GraphManagerLogEvent';
-export { SDLC_LOG_EVENT } from './utils/SDLCLogEvent';
 
 // test
 export * from './const';

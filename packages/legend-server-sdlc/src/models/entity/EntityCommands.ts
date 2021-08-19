@@ -15,9 +15,16 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
+import type { EntityChange } from './EntityChange';
 
 export interface UpdateEntitiesCommand {
   message: string;
   entities: Entity[];
   replace: boolean;
+}
+
+export interface PerformEntitiesChangesCommand {
+  message: string;
+  entityChanges: EntityChange[];
+  revisionId?: string;
 }

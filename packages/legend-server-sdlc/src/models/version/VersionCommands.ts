@@ -21,14 +21,14 @@ import {
   SerializationFactory,
 } from '@finos/legend-shared';
 
-export enum VERSION_TYPE {
+export enum NewVersionType {
   MAJOR = 'MAJOR',
   MINOR = 'MINOR',
   PATCH = 'PATCH',
 }
 
 export class CreateVersionCommand {
-  versionType = VERSION_TYPE.MAJOR;
+  versionType = NewVersionType.PATCH;
   revisionId = '';
   notes = '';
 

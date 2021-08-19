@@ -20,8 +20,8 @@ import { SerializationFactory } from '@finos/legend-shared';
 export const PROJECT_LATEST_VIEWER_WORKSPACE =
   '-PROJECT_LATEST_VIEWER_WORKSPACE';
 
-export enum WORKSPACE_TYPE {
-  STANDARD = 'STANDARD',
+export enum WorkspaceAccessType {
+  WORKSPACE = 'WORKSPACE',
   CONFLICT_RESOLUTION = 'CONFLICT_RESOLUTION',
   // BACKUP = 'BACKUP',
 }
@@ -30,7 +30,7 @@ export class Workspace {
   projectId!: string;
   workspaceId!: string;
   userId!: string;
-  type = WORKSPACE_TYPE.STANDARD;
+  type = WorkspaceAccessType.WORKSPACE;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Workspace, {
@@ -45,10 +45,6 @@ export class Workspace {
     workspace.projectId = projectId;
     workspace.workspaceId = PROJECT_LATEST_VIEWER_WORKSPACE;
     return workspace;
-  }
-
-  get isWorkspaceWithConflictResolution(): boolean {
-    return this.type === WORKSPACE_TYPE.CONFLICT_RESOLUTION;
   }
 
   get selectOption(): WorkspaceSelectOption {

@@ -36,7 +36,7 @@ import {
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 import type { Workspace } from '@finos/legend-server-sdlc';
-import { VERSION_TYPE } from '@finos/legend-server-sdlc';
+import { NewVersionType } from '@finos/legend-server-sdlc';
 
 const WorkspaceViewerContextMenu = observer<
   {
@@ -176,13 +176,13 @@ const ReleaseEditor = observer(() => {
   const { latestProjectVersion, currentProjectRevision } = projectOverviewState;
   const revisionInput = projectOverviewState.releaseVersion;
   const createMajorRelease = applicationStore.guaranteeSafeAction(() =>
-    flowResult(projectOverviewState.createVersion(VERSION_TYPE.MAJOR)),
+    flowResult(projectOverviewState.createVersion(NewVersionType.MAJOR)),
   );
   const createMinorRelease = applicationStore.guaranteeSafeAction(() =>
-    flowResult(projectOverviewState.createVersion(VERSION_TYPE.MINOR)),
+    flowResult(projectOverviewState.createVersion(NewVersionType.MINOR)),
   );
   const createPatchRelease = applicationStore.guaranteeSafeAction(() =>
-    flowResult(projectOverviewState.createVersion(VERSION_TYPE.PATCH)),
+    flowResult(projectOverviewState.createVersion(NewVersionType.PATCH)),
   );
   const changeNotes: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
     revisionInput.setNotes(event.target.value);

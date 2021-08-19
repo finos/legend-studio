@@ -78,13 +78,3 @@ export class Review {
     }),
   );
 }
-
-export interface CreateReviewCommand {
-  workspaceId: string;
-  title: string;
-  description: string;
-}
-
-export interface CommitReviewCommand {
-  message: string;
-}

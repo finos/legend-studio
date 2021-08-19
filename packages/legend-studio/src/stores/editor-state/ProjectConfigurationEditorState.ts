@@ -31,7 +31,6 @@ import {
   guaranteeNonNullable,
   compareLabelFn,
 } from '@finos/legend-shared';
-import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type {
   ProjectConfiguration,
@@ -44,6 +43,7 @@ import {
   UpdateProjectConfigurationCommand,
   Version,
 } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
@@ -154,7 +154,7 @@ export class ProjectConfigurationEditorState extends EditorState {
             })
             .catch((e) => {
               this.editorStore.applicationStore.log.error(
-                LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+                LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
                 e,
               );
             }),
@@ -173,7 +173,7 @@ export class ProjectConfigurationEditorState extends EditorState {
             })
             .catch((e) => {
               this.editorStore.applicationStore.log.error(
-                LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+                LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
                 e,
               );
             }),
@@ -193,7 +193,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -235,7 +235,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -263,7 +263,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         this.queryHistory.add(query);
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+          LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
         this.editorStore.applicationStore.notifyError(error);
@@ -286,7 +286,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.versionsByProject.set(projectId, versionMap);
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -305,7 +305,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         yield flowResult(this.updateProjectConfiguration(updateCommand));
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+          LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
         this.editorStore.applicationStore.notifyError(error);
@@ -343,7 +343,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -360,7 +360,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -15,7 +15,7 @@
  */
 
 import { makeAutoObservable } from 'mobx';
-import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
@@ -53,7 +53,7 @@ export class WorkspaceBuildsState {
       ).map((build) => Build.serialization.fromJson(build));
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -17,7 +17,6 @@
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
 import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
-import { METADATA_LOG_EVENT } from '../utils/MetadataLogEvent';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import { getGraphManager } from '../models/protocols/pure/Pure';
@@ -1047,9 +1046,9 @@ export class GraphState {
       }
     } catch (error: unknown) {
       assertErrorThrown(error);
-      const message = `Can't fetch dependency entitites. Error: ${error.message}`;
+      const message = `Can't acquire dependency entitites. Error: ${error.message}`;
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(METADATA_LOG_EVENT.METADATA_MANAGER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         message,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -19,7 +19,6 @@ import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 import { DATE_TIME_FORMAT } from '../../const';
 import { TAB_SIZE } from '../EditorConfig';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
@@ -37,6 +36,7 @@ import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/En
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { Entity } from '@finos/legend-model-storage';
 import { EntityDiff, Revision } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 
 export class LocalChangesState {
   editorStore: EditorStore;
@@ -131,7 +131,7 @@ export class LocalChangesState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -216,7 +216,7 @@ export class LocalChangesState {
       const syncFinishedTime = Date.now();
 
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_SYNC_WORKSPACE),
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SYNCED),
         syncFinishedTime - startTime,
         'ms',
       );
@@ -257,7 +257,7 @@ export class LocalChangesState {
         if (error instanceof NetworkClientError) {
           if (error.response.status === HttpStatus.NOT_FOUND) {
             this.editorStore.applicationStore.log.error(
-              LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+              LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
               `Can't fetch entities for the latest workspace revision immediately after syncing`,
               error,
             );
@@ -311,7 +311,7 @@ export class LocalChangesState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (

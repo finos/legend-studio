@@ -20,7 +20,7 @@ import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { LogEvent, getNullableFirstElement } from '@finos/legend-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
-import type { VERSION_TYPE } from '@finos/legend-server-sdlc';
+import type { NewVersionType } from '@finos/legend-server-sdlc';
 import {
   CreateVersionCommand,
   ReviewState,
@@ -30,7 +30,7 @@ import {
   Workspace,
   Review,
 } from '@finos/legend-server-sdlc';
-import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',
@@ -81,7 +81,7 @@ export class ProjectOverviewState {
       ).map((workspace) => Workspace.serialization.fromJson(workspace));
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -114,7 +114,7 @@ export class ProjectOverviewState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -222,7 +222,7 @@ export class ProjectOverviewState {
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -230,7 +230,7 @@ export class ProjectOverviewState {
     }
   }
 
-  *createVersion(versionType: VERSION_TYPE): GeneratorFn<void> {
+  *createVersion(versionType: NewVersionType): GeneratorFn<void> {
     this.isCreatingVersion = true;
     try {
       this.releaseVersion.versionType = versionType;
@@ -244,7 +244,7 @@ export class ProjectOverviewState {
       yield flowResult(this.fetchLatestProjectVersion());
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

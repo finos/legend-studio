@@ -45,7 +45,7 @@ import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '../../../stores/EditorSdlcState';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();

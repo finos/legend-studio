@@ -101,8 +101,3 @@ export class EntityDiff {
     throw new IllegalStateError(errorMessage);
   }
 }
-
-export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
-  extractEntityNameFromPath(a.newPath ?? a.oldPath ?? '').localeCompare(
-    extractEntityNameFromPath(b.newPath ?? b.oldPath ?? ''),
-  );

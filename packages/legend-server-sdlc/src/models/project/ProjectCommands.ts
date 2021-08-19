@@ -14,8 +14,26 @@
  * limitations under the License.
  */
 
-export enum SDLC_LOG_EVENT {
-  SDLC_MANAGER_FAILURE = 'SDLC_MANAGER_FAILURE',
-  SDLC_UPDATE_WORKSPACE = 'SDLC_UPDATE_WORKSPACE',
-  SDLC_SYNC_WORKSPACE = 'SDLC_SYNC_WORKSPACE',
+import type { ProjectType } from './Project';
+
+export interface ImportProjectCommand {
+  id: string;
+  type: ProjectType;
+  groupId: string;
+  artifactId: string;
+}
+
+export interface CreateProjectCommand {
+  name: string;
+  description: string;
+  type: ProjectType;
+  groupId: string;
+  artifactId: string;
+  tags: string[];
+}
+
+export interface UpdateProjectCommand {
+  name: string;
+  description: string;
+  tags: string[];
 }

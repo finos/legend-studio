@@ -18,7 +18,6 @@ import { useContext, createContext } from 'react';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
-import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -43,6 +42,7 @@ import {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 
 export class ViewerStore {
   editorStore: EditorStore;
@@ -289,7 +289,7 @@ export class ViewerStore {
       onLeave(true);
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

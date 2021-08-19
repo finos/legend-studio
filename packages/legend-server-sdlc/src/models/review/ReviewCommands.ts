@@ -14,5 +14,12 @@
  * limitations under the License.
  */
 
-export * from './Entity';
-export * from './EntityUtils';
+export interface CreateReviewCommand {
+  workspaceId: string;
+  title: string;
+  description: string;
+}
+
+export interface CommitReviewCommand {
+  message: string;
+}

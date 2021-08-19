@@ -17,33 +17,36 @@
 import type {
   ImportProjectReport,
   Project,
-  ImportProjectCommand,
-  CreateProjectCommand,
-  UpdateProjectCommand,
   SdlcMode,
   ProjectType,
 } from './models/project/Project';
 import type { Workspace } from './models/workspace/Workspace';
 import type { Revision, RevisionAlias } from './models/revision/Revision';
 import type { Build, BuildStatus } from './models/build/Build';
-import type { UpdateEntitiesCommand } from './models/entity/UpdateEntitiesCommand';
-import type { PerformEntitiesChangesCommand } from './models/entity/EntityChange';
-import type {
-  Review,
-  ReviewState,
-  CreateReviewCommand,
-  CommitReviewCommand,
-} from './models/review/Review';
+import type { Review, ReviewState } from './models/review/Review';
 import type { Version } from './models/version/Version';
 import type { WorkspaceUpdateReport } from './models/workspace/WorkspaceUpdateReport';
 import type { ProjectConfiguration } from './models/configuration/ProjectConfiguration';
-import type { CreateVersionCommand } from './models/version/CreateVersionCommand';
+import type { CreateVersionCommand } from './models/version/VersionCommands';
 import type { ProjectStructureVersion } from './models/configuration/ProjectStructureVersion';
-import type { UpdateProjectConfigurationCommand } from './models/configuration/UpdateProjectConfigurationCommand';
 import type { User } from './models/User';
 import type { PlainObject, TraceData } from '@finos/legend-shared';
 import { AbstractServerClient } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
+import type {
+  CreateProjectCommand,
+  ImportProjectCommand,
+  UpdateProjectCommand,
+} from './models/project/ProjectCommands';
+import type { UpdateProjectConfigurationCommand } from './models/configuration/ProjectConfigurationCommands';
+import type {
+  PerformEntitiesChangesCommand,
+  UpdateEntitiesCommand,
+} from './models/entity/EntityCommands';
+import type {
+  CommitReviewCommand,
+  CreateReviewCommand,
+} from './models/review/ReviewCommands';
 
 enum SDLC_TRACER_SPAN {
   IMPORT_PROJECT = 'import project',

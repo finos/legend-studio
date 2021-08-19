@@ -25,9 +25,10 @@ import {
   assertTrue,
 } from '@finos/legend-shared';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
-import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
+import { extractEntityNameFromPath } from '@finos/legend-model-storage';
+import type { EntityDiff } from '@finos/legend-server-sdlc';
 import {
   Build,
   Project,
@@ -36,8 +37,14 @@ import {
   RevisionAlias,
   Version,
   Workspace,
-  WORKSPACE_TYPE,
+  WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+
+export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
+  extractEntityNameFromPath(a.newPath ?? a.oldPath ?? '').localeCompare(
+    extractEntityNameFromPath(b.newPath ?? b.oldPath ?? ''),
+  );
 
 export class EditorSdlcState {
   editorStore: EditorStore;
@@ -111,7 +118,7 @@ export class EditorSdlcState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (!options?.suppressNotification) {
@@ -139,12 +146,12 @@ export class EditorSdlcState {
       )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setMode(EDITOR_MODE.CONFLICT_RESOLUTION);
-        this.currentWorkspace.type = WORKSPACE_TYPE.CONFLICT_RESOLUTION;
+        this.currentWorkspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
         this.editorStore.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (!options?.suppressNotification) {
@@ -163,7 +170,7 @@ export class EditorSdlcState {
       ).map((version) => Version.serialization.fromJson(version));
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -198,7 +205,7 @@ export class EditorSdlcState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -219,7 +226,7 @@ export class EditorSdlcState {
           )) as boolean);
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -290,7 +297,7 @@ export class EditorSdlcState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -319,7 +326,7 @@ export class EditorSdlcState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -347,7 +354,7 @@ export class EditorSdlcState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -365,7 +372,7 @@ export class EditorSdlcState {
       ).map((build) => Build.serialization.fromJson(build));
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

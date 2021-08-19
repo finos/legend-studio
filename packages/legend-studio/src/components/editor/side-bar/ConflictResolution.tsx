@@ -30,7 +30,7 @@ import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '../../../stores/EditorSdlcState';
 
 export const ConflictResolution = observer(() => {
   const editorStore = useEditorStore();
