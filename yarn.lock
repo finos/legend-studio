@@ -2142,6 +2142,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-graph-manager-preset-external-format-json-schema@workspace:*, @finos/legend-graph-manager-preset-external-format-json-schema@workspace:packages/legend-graph-manager-preset-external-format-json-schema":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-graph-manager-preset-external-format-json-schema@workspace:packages/legend-graph-manager-preset-external-format-json-schema"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    typescript: 4.3.5
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-graph-manager@workspace:packages/legend-graph-manager":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph-manager@workspace:packages/legend-graph-manager"
@@ -2303,10 +2319,10 @@ __metadata:
   resolution: "@finos/legend-studio-app@workspace:packages/legend-studio-app"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph-manager-preset-external-format-json-schema": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-preset-dsl-text": "workspace:*"
-    "@finos/legend-studio-preset-external-format-json-schema": "workspace:*"
     "@finos/legend-studio-preset-query-builder": "workspace:*"
     "@types/react": 17.0.18
     copy-webpack-plugin: 9.0.1
@@ -2398,22 +2414,6 @@ __metadata:
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-preset-external-format-json-schema@workspace:*, @finos/legend-studio-preset-external-format-json-schema@workspace:packages/legend-studio-preset-external-format-json-schema":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-preset-external-format-json-schema@workspace:packages/legend-studio-preset-external-format-json-schema"
-  dependencies:
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    npm-run-all: 4.1.5
-    rimraf: 3.0.2
-    typescript: 4.3.5
   languageName: unknown
   linkType: soft
 

@@ -25,6 +25,6 @@ export default {
   name: packageJson.name,
   rootDir: '../..',
   testMatch: [
-    '<rootDir>/packages/legend-studio-preset-external-format-json-schema/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+    '<rootDir>/packages/legend-graph-manager-preset-external-format-json-schema/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
 };

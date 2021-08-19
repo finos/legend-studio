@@ -16,7 +16,7 @@
     { "path": "../legend-studio" },
     { "path": "../legend-shared" },
     { "path": "../legend-studio-preset-dsl-text" },
-    { "path": "../legend-studio-preset-external-format-json-schema" },
+    { "path": "../legend-graph-manager-preset-external-format-json-schema" },
     { "path": "../legend-studio-preset-query-builder" }
   ]
 }

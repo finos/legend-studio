@@ -1,4 +1,4 @@
-# @finos/legend-studio-preset-external-format-json-schema
+# @finos/legend-graph-manager-preset-external-format-json-schema
 
 ## 0.0.42
 
