@@ -5,7 +5,7 @@
     { "repo": "finos/legend-studio" }
   ],
   "commit": false,
-  "linked": [],
+  "linked": [["@finos/legend-studio-app", "@finos/legend-query-app"]],
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",

@@ -12,7 +12,5 @@
     "src/**/*.json",
     "studio.config.js"
   ],
-  "references": [
-    { "path": "../legend-studio-app" },
-  ]
+  "references": [{ "path": "../legend-studio-app" }]
 }
