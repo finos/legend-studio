@@ -2065,7 +2065,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     "@types/react-select": 4.0.17
     "@types/react-window": 1.8.5
     clsx: 1.1.1
@@ -2137,7 +2137,7 @@ __metadata:
     strip-ansi: 7.0.0
     text-table: 0.2.0
     typescript: 4.3.5
-    webpack: 5.50.0
+    webpack: 5.51.1
     wrap-ansi: 8.0.0
   languageName: unknown
   linkType: soft
@@ -2225,7 +2225,7 @@ __metadata:
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-preset-dsl-text": "workspace:*"
     "@finos/legend-studio-preset-query-builder": "workspace:*"
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     cross-env: 7.0.3
     eslint: 7.32.0
     npm-run-all: 4.1.5
@@ -2250,7 +2250,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.3.5
-    webpack: 5.50.0
+    webpack: 5.51.1
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.8.0
     webpack-dev-server: 4.0.0
@@ -2343,7 +2343,7 @@ __metadata:
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-preset-dsl-text": "workspace:*"
     "@finos/legend-studio-preset-query-builder": "workspace:*"
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     cross-env: 7.0.3
     eslint: 7.32.0
     npm-run-all: 4.1.5
@@ -2368,7 +2368,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.3.5
-    webpack: 5.50.0
+    webpack: 5.51.1
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.8.0
     webpack-dev-server: 4.0.0
@@ -2384,7 +2384,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     axios: 0.21.1
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -2406,7 +2406,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -2434,7 +2434,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     cross-env: 7.0.3
     eslint: 7.32.0
     jest: 27.0.6
@@ -2468,7 +2468,7 @@ __metadata:
     "@testing-library/dom": 8.1.0
     "@testing-library/react": 12.0.0
     "@types/papaparse": 5.2.6
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     "@types/react-dom": 17.0.9
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
@@ -2509,7 +2509,7 @@ __metadata:
     "@testing-library/dom": 8.1.0
     "@testing-library/react": 12.0.0
     "@types/css-font-loading-module": 0.0.6
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     "@types/react-dom": 17.0.9
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
@@ -3550,14 +3550,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:17.0.18":
-  version: 17.0.18
-  resolution: "@types/react@npm:17.0.18"
+"@types/react@npm:17.0.19":
+  version: 17.0.19
+  resolution: "@types/react@npm:17.0.19"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: 0b3d5fe0466b57c5539169671e29c4bdad2e2cf5b3eea25d443845d0153b2ddfbe0ef6d017f2f0a7ae49732d6fd14db189f9578ba0629790b896abe3a3ee44f3
+  checksum: d5af52623dd863e5a9f64eb72979f19c21e03012e25ee93adc93f664ed7976e81b654128dc653b225ad5ba2aaae24e0febe37face272bb051d6289e23ed7177d
   languageName: node
   linkType: hard
 
@@ -15203,9 +15203,9 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.50.0":
-  version: 5.50.0
-  resolution: "webpack@npm:5.50.0"
+"webpack@npm:5.51.1":
+  version: 5.51.1
+  resolution: "webpack@npm:5.51.1"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -15236,7 +15236,7 @@ typescript@4.3.5:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 293bed1d9101ac127605f35a225a5cbc1bc89eac68d6e09e7feb3e284ec2693b3db7c1dd7710fadf6852f89ad39ed09413c35befa1cfc9738074b33299ac2b9e
+  checksum: 20060bc197a5e690f12e453e86bd89da5b91626a2032efa907122fe541fedc688b1d573e9f92f7b66f15c609808653e158408ebf7c94783723dfbf4ac894a4a7
   languageName: node
   linkType: hard
 
