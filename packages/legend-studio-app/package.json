@@ -33,7 +33,6 @@
     "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /studio",
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev",
     "test": "jest",
-    "test:e2e": "cypress open",
     "test:watch": "jest --watch"
   },
   "dependencies": {

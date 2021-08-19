@@ -63,7 +63,7 @@ export default {
     '!**/vendor/**',
     '!**/scripts/**',
     '!<rootDir>/packages/legend-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
-    '!<rootDir>/packages/legend-studio-app/cypress/**', // TODO: update this when restructure `e2e` test suite
+    '!<rootDir>/packages/legend-studio-manual-tests/cypress/**', // TODO: update this when restructure `e2e` test suite
   ],
   coverageDirectory: '<rootDir>/build/coverage',
   watchPathIgnorePatterns: [
