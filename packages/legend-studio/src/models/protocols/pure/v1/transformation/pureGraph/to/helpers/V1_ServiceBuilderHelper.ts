@@ -21,7 +21,6 @@ import {
   assertType,
   assertNonNullable,
 } from '@finos/legend-shared';
-import { GraphError } from '../../../../../../../MetaModelUtils';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../metamodels/pure/graphManager/GraphManagerLogEvent';
 import type { Runtime } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import { RuntimePointer } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
@@ -64,6 +63,7 @@ import {
   V1_PackageableElementPointerType,
 } from '../../../../model/packageableElements/V1_PackageableElement';
 import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
+import { GraphBuilderError } from '../../../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 export const V1_buildServiceTest = (
   serviceTest: V1_ServiceTest,
@@ -98,7 +98,9 @@ export const V1_buildServiceTest = (
     );
     const multiTest = new MultiExecutionTest(parentService);
     if (!serviceTest.tests.length) {
-      throw new GraphError('Service multi execution test must not be empty');
+      throw new GraphBuilderError(
+        'Service multi execution test must not be empty',
+      );
     }
     const executionKeys = new Set(
       parentService.execution.executionParameters.map(
@@ -113,7 +115,7 @@ export const V1_buildServiceTest = (
       );
       // check duplicated key
       if (uniqueKeys.has(test.key)) {
-        throw new GraphError(
+        throw new GraphBuilderError(
           `Service multi execution test with key '${test.key}' already exists`,
         );
       }
@@ -156,7 +158,7 @@ export const V1_buildServiceTest = (
     if (executionKeys.size) {
       context.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
-        new GraphError(
+        new GraphBuilderError(
           `Execution(s) with key '${Array.from(executionKeys.values()).join(
             ', ',
           )}' do not have a corresponding test`,
@@ -168,7 +170,7 @@ export const V1_buildServiceTest = (
           new KeyedSingleExecutionTest(execution.key, parentService, ''),
       );
     } else if (testWithoutExecutionKeys.size) {
-      throw new GraphError(
+      throw new GraphBuilderError(
         `Test(s) with key '${Array.from(testWithoutExecutionKeys.values()).join(
           ', ',
         )}' do not have a corresponding execution`,
@@ -256,7 +258,7 @@ export const V1_buildServiceExecution = (
     );
   } else if (serviceExecution instanceof V1_PureMultiExecution) {
     if (!serviceExecution.executionParameters.length) {
-      throw new GraphError('Service multi execution must not be empty');
+      throw new GraphBuilderError('Service multi execution must not be empty');
     }
     assertNonNullable(
       serviceExecution.func,
@@ -284,7 +286,7 @@ export const V1_buildServiceExecution = (
         );
         // check duplicated key
         if (uniqueKeys.has(keyedExecutionParameter.key)) {
-          throw new GraphError(
+          throw new GraphBuilderError(
             `Service multi execution with key '${keyedExecutionParameter.key}' already exists`,
           );
         }

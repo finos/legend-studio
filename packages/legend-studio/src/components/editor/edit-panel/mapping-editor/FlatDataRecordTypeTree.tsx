@@ -26,7 +26,6 @@ import {
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../../../models/MetaModelConst';
 import type { FlatDataRecordTypeTreeNodeData } from '../../../../stores/shared/TreeUtil';
 import { addUniqueEntry } from '@finos/legend-shared';
 import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
@@ -34,6 +33,7 @@ import type {
   RootFlatDataRecordType,
   FlatDataRecordField,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
+import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../../../models/MetaModelConst';
 
 const getRecordTypeTreeNodeData = (
   field: FlatDataRecordField,

@@ -25,11 +25,11 @@ import type {
 } from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent } from '@finos/legend-shared';
-import { CLIENT_VERSION } from '../models/MetaModelConst';
 import type { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { RawLambda } from '../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { Runtime } from '../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import { GRAPH_MANAGER_LOG_EVENT } from '../models/metamodels/pure/graphManager/GraphManagerLogEvent';
+import { PureClientVersion } from '../models/metamodels/pure/graphManager/GraphManagerUtils';
 
 export enum SQL_DISPLAY_TABS {
   SQL_QUERY = 'SQL_QUERY',
@@ -148,7 +148,7 @@ export class ExecutionPlanState {
           mapping,
           lambda,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
         )) as object;
       this.buildExecutionPlan(rawPlan);
     } catch (error: unknown) {

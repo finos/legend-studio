@@ -16,7 +16,6 @@
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
-import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
@@ -61,6 +60,7 @@ import { ConnectionPointer } from '../../../../models/metamodels/pure/model/pack
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
+import { PureClientVersion } from '../../../../models/metamodels/pure/graphManager/GraphManagerUtils';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -268,7 +268,7 @@ export class TestContainerState {
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
             true,
           )) as ExecutionResult;
         this.setAssertionData(
@@ -313,7 +313,7 @@ export class TestContainerState {
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
             true,
           )) as ExecutionResult;
         this.setTestExecutionResultText({
@@ -454,7 +454,7 @@ export class SingleExecutionTestState {
             executionInput.mapping,
             executionInput.query,
             executionInput.runtime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
           )) as string;
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(

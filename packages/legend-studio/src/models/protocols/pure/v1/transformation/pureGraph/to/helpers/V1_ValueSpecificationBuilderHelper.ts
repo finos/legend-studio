@@ -24,7 +24,6 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   PRIMITIVE_TYPE,
 } from '../../../../../../../MetaModelConst';
-import { GraphError } from '../../../../../../../MetaModelUtils';
 import {
   LambdaFunction,
   FunctionType,
@@ -117,6 +116,7 @@ import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1
 import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit';
 import type { V1_INTERNAL__UnknownValueSpecfication } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
 import { INTERNAL__UnknownValueSpecification } from '../../../../../../../metamodels/pure/model/valueSpecification/INTERNAL__UnknownValueSpecification';
+import { GraphBuilderError } from '../../../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -174,7 +174,7 @@ export class V1_ValueSpecificationBuilder
     } else {
       const vs = this.processingContext.getInferredVariable(variable.name);
       if (!vs) {
-        throw new GraphError(
+        throw new GraphBuilderError(
           `Can't find variable '${variable.name}' in the graph`,
         );
       }

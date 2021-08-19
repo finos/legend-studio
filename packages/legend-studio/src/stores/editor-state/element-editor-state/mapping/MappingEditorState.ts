@@ -23,10 +23,7 @@ import {
   flowResult,
 } from 'mobx';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
-import {
-  PRIMITIVE_TYPE,
-  SOURCE_ID_LABEL,
-} from '../../../../models/MetaModelConst';
+import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import type { EditorStore } from '../../../EditorStore';
 import {
   InstanceSetImplementationState,
@@ -137,6 +134,15 @@ export const generateMappingTestName = (mapping: Mapping): string => {
   );
   return generatedName;
 };
+
+export enum MAPPING_ELEMENT_SOURCE_ID_LABEL {
+  ENUMERATION_MAPPING = 'enumerationMapping',
+  OPERATION_CLASS_MAPPING = 'operationClassMapping',
+  PURE_INSTANCE_CLASS_MAPPING = 'pureInstanceClassMapping',
+  FLAT_DATA_CLASS_MAPPING = 'flatDataClassMapping',
+  RELATIONAL_CLASS_MAPPING = 'relationalClassMapping',
+  AGGREGATION_AWARE_CLASS_MAPPING = 'aggregationAwareClassMapping',
+}
 
 export enum MAPPING_ELEMENT_TYPE {
   CLASS = 'CLASS',
@@ -312,13 +318,13 @@ const getMappingElementByTypeAndId = (
   // NOTE: ID must be unique across all mapping elements of the same type
   switch (type) {
     case MAPPING_ELEMENT_TYPE.CLASS:
-    case SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
-    case SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
-    case SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
       return mapping.allClassMappings.find(
         (classMapping) => classMapping.id.value === id,
       );
-    case SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
       return (
         mapping.allClassMappings.find(
           (classMapping) => classMapping.id.value === id,
@@ -332,7 +338,7 @@ const getMappingElementByTypeAndId = (
           )
           .find((me) => me.id.value === id)
       );
-    case SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
       return (
         mapping.allClassMappings.find(
           (classMapping) => classMapping.id.value === id,

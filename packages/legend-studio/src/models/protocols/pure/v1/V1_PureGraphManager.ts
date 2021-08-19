@@ -39,11 +39,6 @@ import {
   assertErrorThrown,
   promisify,
 } from '@finos/legend-shared';
-import {
-  GraphError,
-  SystemGraphProcessingError,
-  DependencyGraphProcessingError,
-} from '../../../MetaModelUtils';
 import type { TEMP__AbstractEngineConfig } from '../../../metamodels/pure/graphManager/action/TEMP__AbstractEngineConfig';
 import type {
   TEMP__EngineSetupConfig,
@@ -203,6 +198,11 @@ import {
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
 import type { Entity } from '@finos/legend-model-storage';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
+import {
+  DependencyGraphBuilderError,
+  GraphBuilderError,
+  SystemGraphBuilderError,
+} from '../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -510,7 +510,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-      throw new SystemGraphProcessingError(error);
+      throw new SystemGraphBuilderError(error);
     }
   }
 
@@ -623,7 +623,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
       dependencyManager.buildState.fail();
-      throw new DependencyGraphProcessingError(error);
+      throw new DependencyGraphBuilderError(error);
     }
   }
 
@@ -861,10 +861,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
       graph.buildState.fail();
       /**
-       * Wrap all error with `GraphError`, as we throw a lot of assertion error in the graph builder
+       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
        */
-      throw error instanceof GraphError ? error : new GraphError(error);
+      throw error instanceof GraphBuilderError
+        ? error
+        : new GraphBuilderError(error);
     }
   }
 
@@ -951,10 +953,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
       generatedModel.buildState.fail();
       /**
-       * Wrap all error with `GraphError`, as we throw a lot of assertion error in the graph builder
+       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
        */
-      throw error instanceof GraphError ? error : new GraphError(error);
+      throw error instanceof GraphBuilderError
+        ? error
+        : new GraphBuilderError(error);
     }
   }
 
@@ -1490,7 +1494,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
     } catch (err: unknown) {
       assertErrorThrown(err);
-      const error = err instanceof GraphError ? err : new GraphError(err);
+      const error =
+        err instanceof GraphBuilderError ? err : new GraphBuilderError(err);
       error.message = `Error processing element '${element.path}': ${err.message}`;
       throw error;
     }

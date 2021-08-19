@@ -19,13 +19,13 @@ import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { AssertionError } from '@finos/legend-shared';
 import {
   LogEvent,
   IllegalStateError,
   guaranteeNonNullable,
   ActionState,
 } from '@finos/legend-shared';
-import { GraphError } from '../models/MetaModelUtils';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
 import type { ViewerPathParams } from './LegendStudioRouter';
@@ -282,7 +282,7 @@ export class ViewerStore {
         } catch {
           const elementPath = this.elementPath;
           this.elementPath = undefined;
-          throw new GraphError(
+          throw new AssertionError(
             `Can't find element '${elementPath}' in project '${this.editorStore.sdlcState.currentProjectId}'`,
           );
         }

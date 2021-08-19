@@ -15,10 +15,7 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import {
-  LAMBDA_START,
-  SOURCE_ID_LABEL,
-} from '../../../../models/MetaModelConst';
+import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   InstanceSetImplementationState,
@@ -48,6 +45,7 @@ import { InferableMappingElementIdExplicitValue } from '../../../../models/metam
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
 
 export class FlatDataPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -59,7 +57,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     instanceSetImplementationState: FlatDataInstanceSetImplementationState,
     propertyMapping: AbstractFlatDataPropertyMapping,
   ) {
-    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_START);
+    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_PIPE);
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -67,7 +65,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.propertyMapping.owner.parent.path,
-      SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
+      MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
       this.propertyMapping.owner.id.value,
       this.propertyMapping.property.value.name,
       this.uuid, // in case of duplications

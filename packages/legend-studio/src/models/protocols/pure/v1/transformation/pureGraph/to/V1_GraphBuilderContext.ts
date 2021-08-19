@@ -24,7 +24,6 @@ import {
   assertNonEmptyString,
   guaranteeType,
 } from '@finos/legend-shared';
-import { GraphError } from '../../../../../../MetaModelUtils';
 import { GenericType } from '../../../../../../metamodels/pure/model/packageableElements/domain/GenericType';
 import type { PackageableElement } from '../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { PureModel } from '../../../../../../metamodels/pure/graph/PureModel';
@@ -76,6 +75,7 @@ import type { BasicModel } from '../../../../../../metamodels/pure/graph/BasicMo
 import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graphManager/AbstractPureGraphManager';
 import { DataType } from '../../../../../../metamodels/pure/model/packageableElements/domain/DataType';
+import { GraphBuilderError } from '../../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 interface ResolutionResult<T> {
   /**
@@ -164,7 +164,7 @@ export class V1_GraphBuilderContext {
       case 1:
         return Array.from(results.values())[0];
       default:
-        throw new GraphError(
+        throw new GraphBuilderError(
           undefined,
           `Can't resolve element with path '${path}' - multiple matches found [${Array.from(
             results.keys(),

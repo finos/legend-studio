@@ -26,10 +26,7 @@ import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
-import {
-  CLIENT_VERSION,
-  LAMBDA_START,
-} from '../../../../models/MetaModelConst';
+import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import {
   decorateRuntimeWithNewMapping,
@@ -57,6 +54,7 @@ import type { ExecutionResult } from '../../../../models/metamodels/pure/graphMa
 import { TAB_SIZE } from '../../../EditorConfig';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import { PureClientVersion } from '../../../../models/metamodels/pure/graphManager/GraphManagerUtils';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -133,7 +131,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
   isInitializingLambda = false;
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       execution: observable,
@@ -312,7 +310,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           true,
         )) as ExecutionResult;
       this.setExecutionResultText(

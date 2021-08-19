@@ -21,7 +21,6 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { CORE_ELEMENT_PATH } from '../../../../../../MetaModelConst';
-import { GraphError } from '../../../../../../MetaModelUtils';
 import { Class } from '../../../../../../metamodels/pure/model/packageableElements/domain/Class';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type {
@@ -53,6 +52,7 @@ import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Me
 import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
+import { GraphBuilderError } from '../../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -97,7 +97,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
         } catch (error: unknown) {
           assertErrorThrown(error);
           // NOTE: reconsider this as we might need to get elements from `system` and `platform` as well
-          throw new GraphError(
+          throw new GraphBuilderError(
             `Can't find supertype '${type}' of class '${this.context.graph.buildPath(
               element.package,
               element.name,

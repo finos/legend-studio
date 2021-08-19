@@ -31,7 +31,6 @@ import {
   assertErrorThrown,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { GraphDataParserError } from '../../../../../MetaModelUtils';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';
 import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement';
@@ -46,6 +45,7 @@ import type { V1_PureModelContext } from '../../model/context/V1_PureModelContex
 import { V1_packageableElementPointerDeserrializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin';
 import type { Entity } from '@finos/legend-model-storage';
+import { GraphDataDeserializationError } from '../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 enum V1_SdlcType {
   ALLOY = 'alloy',
@@ -94,7 +94,7 @@ export const V1_entitiesToPureModelContextData = async (
   } catch (error: unknown) {
     assertErrorThrown(error);
     // wrap all de-serializer error so we can handle them downstream
-    throw new GraphDataParserError(error);
+    throw new GraphDataDeserializationError(error);
   }
 };
 

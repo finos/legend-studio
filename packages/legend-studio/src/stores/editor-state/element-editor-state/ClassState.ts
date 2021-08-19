@@ -15,7 +15,7 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
+import { LAMBDA_PIPE } from '../../../models/MetaModelConst';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
@@ -28,12 +28,15 @@ import type { Constraint } from '../../../models/metamodels/pure/model/packageab
 import type { DerivedProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
 import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 
+export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
+export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
+
 export class DerivedPropertyState extends LambdaEditorState {
   derivedProperty: DerivedProperty;
   editorStore: EditorStore;
 
   constructor(derivedProperty: DerivedProperty, editorStore: EditorStore) {
-    super(`${LAMBDA_START}''`, '');
+    super(`${LAMBDA_PIPE}''`, '');
 
     makeObservable(this, {
       derivedProperty: observable,
@@ -48,7 +51,7 @@ export class DerivedPropertyState extends LambdaEditorState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.derivedProperty.owner.path,
-      SOURCE_ID_LABEL.DERIVED_PROPERTY,
+      DERIVED_PROPERTY_SOURCE_ID_LABEL,
       this.derivedProperty.name,
       this.uuid, // in case of duplications
     ]);
@@ -126,7 +129,7 @@ export class ConstraintState extends LambdaEditorState {
   editorStore: EditorStore;
 
   constructor(constraint: Constraint, editorStore: EditorStore) {
-    super('true', LAMBDA_START);
+    super('true', LAMBDA_PIPE);
 
     makeObservable(this, {
       constraint: observable,
@@ -140,7 +143,7 @@ export class ConstraintState extends LambdaEditorState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.constraint.owner.path,
-      SOURCE_ID_LABEL.CONSTRAINT,
+      CONSTRAINT_SOURCE_ID_LABEL,
       this.constraint.name,
       this.uuid, // in case of duplications
     ]);

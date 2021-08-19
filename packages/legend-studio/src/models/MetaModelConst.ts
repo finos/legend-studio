@@ -18,26 +18,8 @@ export const SOURCE_INFORMATION_KEY = 'sourceInformation';
 export const MULTIPLICITY_INFINITE = '*';
 export const ELEMENT_PATH_DELIMITER = '::';
 export const UNIT_PATH_DELIMITER = '~';
-export const LAMBDA_START = '|';
+export const LAMBDA_PIPE = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
-
-// TODO: move to graph manager
-export enum SOURCE_ID_LABEL {
-  CONSTRAINT = 'constraint',
-  DERIVED_PROPERTY = 'derivedProperty',
-  ENUMERATION_MAPPING = 'enumerationMapping',
-  OPERATION_CLASS_MAPPING = 'operationClassMapping',
-  PURE_INSTANCE_CLASS_MAPPING = 'pureInstanceClassMapping',
-  FLAT_DATA_CLASS_MAPPING = 'flatDataClassMapping',
-  RELATIONAL_CLASS_MAPPING = 'relationalClassMapping',
-  AGGREGATION_AWARE_CLASS_MAPPING = 'aggregationAwareClassMapping',
-}
-
-// TODO: move to graph manager
-export enum CLIENT_VERSION {
-  V1_0_0 = 'v1_0_0',
-  VX_X_X = 'vX_X_X',
-}
 
 export enum ROOT_PACKAGE_NAME {
   CORE = 'CORE',

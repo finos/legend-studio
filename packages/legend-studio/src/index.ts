@@ -35,12 +35,10 @@ export * from './models/MetaModelUtils';
 export { DependencyManager } from './models/metamodels/pure/graph/DependencyManager';
 export {
   PRIMITIVE_TYPE,
-  CLIENT_VERSION,
-  LAMBDA_START,
-  DEFAULT_SOURCE_PARAMETER_NAME,
   CORE_ELEMENT_PATH,
   TYPICAL_MULTIPLICITY_TYPE,
   MULTIPLICITY_INFINITE,
+  LAMBDA_PIPE,
 } from './models/MetaModelConst';
 export * from './models/metamodels/pure/model/Stubable'; // TODO: to be removed
 export { BasicModel } from './models/metamodels/pure/graph/BasicModel';
@@ -102,6 +100,7 @@ export * from './models/metamodels/pure/model/packageableElements/domain/Propert
 export { getRootSetImplementation } from './models/metamodels/pure/helpers/MappingResolutionHelper';
 
 // graph manager
+export { PureClientVersion } from './models/metamodels/pure/graphManager/GraphManagerUtils';
 export { GRAPH_MANAGER_LOG_EVENT } from './models/metamodels/pure/graphManager/GraphManagerLogEvent';
 export {
   ExecutionResult,

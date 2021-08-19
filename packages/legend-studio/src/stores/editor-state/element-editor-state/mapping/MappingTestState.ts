@@ -48,10 +48,7 @@ import {
   flowResult,
 } from 'mobx';
 import { TAB_SIZE } from '../../../EditorConfig';
-import {
-  CLIENT_VERSION,
-  LAMBDA_START,
-} from '../../../../models/MetaModelConst';
+import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
@@ -90,6 +87,7 @@ import { View } from '../../../../models/metamodels/pure/model/packageableElemen
 import { LambdaEditorState } from '../LambdaEditorState';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import { PureClientVersion } from '../../../../models/metamodels/pure/graphManager/GraphManagerUtils';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -105,7 +103,7 @@ export class MappingTestQueryState extends LambdaEditorState {
   query: RawLambda;
 
   constructor(editorStore: EditorStore, test: MappingTest, query: RawLambda) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       query: observable,
@@ -569,7 +567,7 @@ export class MappingTestState {
           this.mappingEditorState.mapping,
           query,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           true,
         )) as ExecutionResult;
       if (
@@ -623,7 +621,7 @@ export class MappingTestState {
           this.mappingEditorState.mapping,
           this.test.query,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           true,
         )) as ExecutionResult;
       this.testExecutionResultText = losslessStringify(

@@ -51,7 +51,7 @@ import type {
 import {
   GRAPH_MANAGER_LOG_EVENT,
   TdsExecutionResult,
-  CLIENT_VERSION,
+  PureClientVersion,
   PRIMITIVE_TYPE,
   extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
@@ -645,7 +645,7 @@ export class QueryBuilderProjectionState {
                 ),
               ),
               this.queryBuilderState.querySetupState.runtime,
-              CLIENT_VERSION.VX_X_X,
+              PureClientVersion.VX_X_X,
               false,
             )) as ExecutionResult;
           assertType(
@@ -684,7 +684,7 @@ export class QueryBuilderProjectionState {
                 ),
               ),
               this.queryBuilderState.querySetupState.runtime,
-              CLIENT_VERSION.VX_X_X,
+              PureClientVersion.VX_X_X,
               false,
             )) as ExecutionResult;
           assertType(

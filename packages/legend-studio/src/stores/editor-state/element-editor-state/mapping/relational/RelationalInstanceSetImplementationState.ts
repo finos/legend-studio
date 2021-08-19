@@ -36,10 +36,10 @@ import type { CompilationError } from '../../../../../models/metamodels/pure/gra
 import { ParserError } from '../../../../../models/metamodels/pure/graphManager/action/EngineError';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { MappingElementDecorator } from '../MappingElementDecorator';
-import { SOURCE_ID_LABEL } from '../../../../../models/MetaModelConst';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { SourceInformation } from '../../../../../models/metamodels/pure/graphManager/action/SourceInformation';
 import { buildSourceInformationSourceId } from '../../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from '../MappingEditorState';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -65,7 +65,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     return buildSourceInformationSourceId(
       [
         this.propertyMapping.owner.parent.path,
-        SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING,
+        MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING,
         this.propertyMapping.owner.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,

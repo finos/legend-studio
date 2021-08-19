@@ -32,7 +32,6 @@ import { useDrag } from 'react-dnd';
 import { TypeDragSource, CORE_DND_TYPE } from '../../stores/shared/DnDUtil';
 import { EnumValueIcon, getClassPropertyIcon } from './Icon';
 import type { TypeTreeNodeData } from '../../stores/shared/TreeUtil';
-import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../models/MetaModelConst';
 import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import type { Enum } from '../../models/metamodels/pure/model/packageableElements/domain/Enum';
@@ -42,6 +41,7 @@ import {
   getClassPropertyType,
 } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { AbstractProperty } from '../../models/metamodels/pure/model/packageableElements/domain/AbstractProperty';
+import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../models/MetaModelConst';
 
 const getEnumTypeTreeNodeData = (
   _enum: Enum,

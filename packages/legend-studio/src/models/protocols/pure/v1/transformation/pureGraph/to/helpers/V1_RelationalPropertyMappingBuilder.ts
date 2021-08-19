@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { GraphError } from '../../../../../../../MetaModelUtils';
 import { guaranteeType } from '@finos/legend-shared';
 import type { InstanceSetImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
@@ -29,6 +28,7 @@ import type { SetImplementation } from '../../../../../../../metamodels/pure/mod
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
 import { V1_getInferredClassMappingId } from '../../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
+import { GraphBuilderError } from '../../../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 export const V1_buildEmbeddedRelationalMappingProperty = (
   propertyMapping: V1_EmbeddedRelationalPropertyMapping,
@@ -53,7 +53,7 @@ export const V1_buildEmbeddedRelationalMappingProperty = (
   ) {
     propertyOwnerClass = immediateParent.class.value;
   } else {
-    throw new GraphError(
+    throw new GraphBuilderError(
       `Can't find property owner class for property '${propertyMapping.property.property}'`,
     );
   }

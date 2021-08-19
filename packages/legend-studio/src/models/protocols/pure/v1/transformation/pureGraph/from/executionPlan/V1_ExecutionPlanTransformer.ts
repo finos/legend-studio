@@ -54,12 +54,12 @@ import { DataTypeResultType } from '../../../../../../../metamodels/pure/model/e
 import { TDSResultType } from '../../../../../../../metamodels/pure/model/executionPlan/result/TDSResultType';
 import type { TDSColumn } from '../../../../../../../metamodels/pure/model/executionPlan/result/TDSColumn';
 import { V1_TDSColumn } from '../../../../model/executionPlan/results/V1_TDSColumn';
-import { CLIENT_VERSION } from '../../../../../../../MetaModelConst';
 import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan';
 import { V1_Protocol } from '../../../../model/V1_Protocol';
 import { V1_transformMultiplicity } from '../V1_CoreTransformerHelper';
 import { V1_transformConnection } from '../V1_ConnectionTransformer';
 import { V1_DatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
+import { PureClientVersion } from '../../../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 const stringifyDataType = (dataType: DataType): string => {
   if (dataType instanceof Integer) {
@@ -235,7 +235,7 @@ export const V1_transformExecutionPlan = (
   context: V1_GraphTransformerContext,
 ): V1_ExecutionPlan => {
   const protocol = new V1_SimpleExecutionPlan();
-  protocol.serializer = new V1_Protocol('pure', CLIENT_VERSION.VX_X_X);
+  protocol.serializer = new V1_Protocol('pure', PureClientVersion.VX_X_X);
   protocol.authDependent = metamodel.authDependent;
   protocol.kerberos = metamodel.kerberos;
   protocol.templateFunctions = metamodel.processingTemplateFunctions;

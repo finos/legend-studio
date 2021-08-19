@@ -48,10 +48,7 @@ import {
   losslessStringify,
   guaranteeType,
 } from '@finos/legend-shared';
-import {
-  CLIENT_VERSION,
-  LAMBDA_START,
-} from '../../../../models/MetaModelConst';
+import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
@@ -104,6 +101,7 @@ import type { SetImplementation } from '../../../../models/metamodels/pure/model
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import { PureClientVersion } from '../../../../models/metamodels/pure/graphManager/GraphManagerUtils';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -111,7 +109,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
   query: RawLambda;
 
   constructor(editorStore: EditorStore, query: RawLambda) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       query: observable,
@@ -638,7 +636,7 @@ export class MappingExecutionState {
             this.mappingEditorState.mapping,
             query,
             runtime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
             true,
           )) as ExecutionResult;
         this.setExecutionResultText(

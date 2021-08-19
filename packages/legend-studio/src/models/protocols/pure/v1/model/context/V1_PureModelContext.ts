@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { CLIENT_VERSION } from '../../../../../MetaModelConst';
+import { PureClientVersion } from '../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 export class V1_PureModelContext {
-  version = CLIENT_VERSION.V1_0_0;
+  version = PureClientVersion.V1_0_0;
 }

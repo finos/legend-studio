@@ -26,7 +26,7 @@ import type {
 } from '@finos/legend-studio';
 import {
   GRAPH_MANAGER_LOG_EVENT,
-  CLIENT_VERSION,
+  PureClientVersion,
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
@@ -100,7 +100,7 @@ export class QueryBuilderResultState {
           mapping,
           query,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           false,
         )) as ExecutionResult;
       this.setExecutionResult(result);
@@ -130,7 +130,7 @@ export class QueryBuilderResultState {
           mapping,
           query,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
         )) as ExecutionResult;
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;

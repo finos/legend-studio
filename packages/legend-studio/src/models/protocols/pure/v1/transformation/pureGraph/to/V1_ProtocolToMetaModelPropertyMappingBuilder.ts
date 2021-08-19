@@ -24,7 +24,6 @@ import {
   returnUndefOnError,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../metamodels/pure/graphManager/GraphManagerLogEvent';
-import { GraphError } from '../../../../../../MetaModelUtils';
 import type { PropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import { PurePropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 import { RelationalPropertyMapping } from '../../../../../../metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
@@ -84,6 +83,7 @@ import {
   getClassMappingById,
   getClassMappingsByClass,
 } from '../../../../../../metamodels/pure/helpers/MappingHelper';
+import { GraphBuilderError } from '../../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -268,7 +268,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     ) {
       propertyOwnerClass = this.immediateParent.class.value;
     } else {
-      throw new GraphError(
+      throw new GraphBuilderError(
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
@@ -340,7 +340,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     ) {
       propertyOwnerClass = this.immediateParent.class.value;
     } else {
-      throw new GraphError(
+      throw new GraphBuilderError(
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
@@ -427,7 +427,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     ) {
       propertyOwner = this.immediateParent.class.value;
     } else {
-      throw new GraphError(
+      throw new GraphBuilderError(
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
@@ -542,7 +542,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     ) {
       propertyOwnerClass = this.immediateParent.class.value;
     } else {
-      throw new GraphError(
+      throw new GraphBuilderError(
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }

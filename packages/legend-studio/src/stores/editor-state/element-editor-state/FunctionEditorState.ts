@@ -21,7 +21,7 @@ import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, guaranteeType, assertType } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
-import { LAMBDA_START } from '../../../models/MetaModelConst';
+import { LAMBDA_PIPE } from '../../../models/MetaModelConst';
 import type { CompilationError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
 import { ParserError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
@@ -44,7 +44,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
     functionElement: ConcreteFunctionDefinition,
     editorStore: EditorStore,
   ) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       functionElement: observable,

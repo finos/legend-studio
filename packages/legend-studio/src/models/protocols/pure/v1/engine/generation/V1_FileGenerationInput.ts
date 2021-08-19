@@ -15,10 +15,10 @@
  */
 
 import { createModelSchema, optional, primitive, raw } from 'serializr';
-import { CLIENT_VERSION } from '../../../../../MetaModelConst';
 import { SerializationFactory } from '@finos/legend-shared';
 import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 import { V1_pureModelContextDataPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization';
+import { PureClientVersion } from '../../../../../metamodels/pure/graphManager/GraphManagerUtils';
 
 export class V1_GenerateFileInput {
   clientVersion?: string;
@@ -29,7 +29,7 @@ export class V1_GenerateFileInput {
     model: V1_PureModelContextData,
     config?: Record<PropertyKey, unknown>,
   ) {
-    this.clientVersion = CLIENT_VERSION.V1_0_0;
+    this.clientVersion = PureClientVersion.V1_0_0;
     this.model = model;
     this.config = config;
   }

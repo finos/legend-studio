@@ -19,9 +19,13 @@ import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../MetaModelConst';
-import { hashArray, assertTrue, addUniqueEntry } from '@finos/legend-shared';
+import {
+  hashArray,
+  assertTrue,
+  addUniqueEntry,
+  AssertionError,
+} from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import { GraphError } from '../../../../../MetaModelUtils';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
 
@@ -94,7 +98,7 @@ export class Package extends PackageableElement implements Hashable {
     );
     if (!node) {
       if (!insert) {
-        throw new GraphError(
+        throw new AssertionError(
           `Can't find packageable element '${str}' in package '${packagePath}'`,
         );
       }

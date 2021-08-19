@@ -15,10 +15,7 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import {
-  LAMBDA_START,
-  SOURCE_ID_LABEL,
-} from '../../../../models/MetaModelConst';
+import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   InstanceSetImplementationState,
@@ -33,6 +30,7 @@ import type { PureInstanceSetImplementation } from '../../../../models/metamodel
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, isNonNullable } from '@finos/legend-shared';
 import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -44,7 +42,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
     instanceSetImplementationState: PureInstanceSetImplementationState,
     propertyMapping: PurePropertyMapping,
   ) {
-    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_START);
+    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_PIPE);
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -53,7 +51,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
     return buildSourceInformationSourceId(
       [
         this.propertyMapping.owner.parent.path,
-        SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
+        MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
         this.propertyMapping.owner.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,

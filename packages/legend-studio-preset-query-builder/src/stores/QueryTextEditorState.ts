@@ -19,7 +19,7 @@ import {
   GRAPH_MANAGER_LOG_EVENT,
   buildSourceInformationSourceId,
   LambdaEditorState,
-  LAMBDA_START,
+  LAMBDA_PIPE,
   ParserError,
   RawLambda,
   TAB_SIZE,
@@ -64,7 +64,7 @@ export class QueryTextEditorState extends LambdaEditorState {
   readOnlylambdaJson = '';
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       rawLambdaState: observable,

@@ -33,10 +33,6 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
-import {
-  GraphDataParserError,
-  DependencyGraphProcessingError,
-} from '../models/MetaModelUtils';
 import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
@@ -99,6 +95,10 @@ import {
   EntityChangeType,
   ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
+import {
+  DependencyGraphBuilderError,
+  GraphDataDeserializationError,
+} from '../models/metamodels/pure/graphManager/GraphManagerUtils';
 
 export class GraphState {
   editorStore: EditorStore;
@@ -377,14 +377,14 @@ export class GraphState {
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      if (error instanceof DependencyGraphProcessingError) {
+      if (error instanceof DependencyGraphBuilderError) {
         this.graph.buildState.fail();
         // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
         this.editorStore.setBlockingAlert({
           message: `Can't initialize dependency models. Error: ${error.message}`,
         });
-      } else if (error instanceof GraphDataParserError) {
+      } else if (error instanceof GraphDataDeserializationError) {
         // if something goes wrong with de-serialization, redirect to model loader to fix
         this.redirectToModelLoaderForDebugging(error);
       } else if (error instanceof NetworkClientError) {
@@ -1052,7 +1052,7 @@ export class GraphState {
         message,
       );
       this.editorStore.applicationStore.notifyError(error);
-      throw new DependencyGraphProcessingError(error);
+      throw new DependencyGraphBuilderError(error);
     }
     return dependencyEntitiesMap;
   }
