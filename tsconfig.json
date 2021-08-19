@@ -14,7 +14,7 @@
     { "path": "packages/legend-graph-manager" },
     { "path": "packages/legend-studio" },
     { "path": "packages/legend-studio-app" },
-    { "path": "packages/legend-application-plugin-tracer-zipkin" },
+    { "path": "packages/legend-tracer-plugin-zipkin" },
     { "path": "packages/legend-studio-plugin-management" },
     { "path": "packages/legend-studio-preset-dsl-text" },
     { "path": "packages/legend-studio-preset-query-builder" },
