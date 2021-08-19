@@ -29,13 +29,9 @@ import {
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
-  compareLabelFn,
 } from '@finos/legend-shared';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type {
-  ProjectConfiguration,
-  ProjectSelectOption,
-} from '@finos/legend-server-sdlc';
+import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
   Project,
   ProjectStructureVersion,
@@ -82,7 +78,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       isFetchingAssociatedProjectsAndVersions: observable,
       latestProjectStructureVersion: observable,
       originalConfig: computed,
-      projectOptions: computed,
       setOriginalProjectConfiguration: action,
       setProjectConfiguration: action,
       setSelectedTab: action,
@@ -130,12 +125,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.originalProjectConfiguration,
       'Original project configuration is not set',
     );
-  }
-
-  get projectOptions(): ProjectSelectOption[] {
-    return Array.from(this.projects.values())
-      .map((p) => p.selectOption)
-      .sort(compareLabelFn);
   }
 
   *fectchAssociatedProjectsAndVersions(

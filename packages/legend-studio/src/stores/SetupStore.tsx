@@ -29,15 +29,10 @@ import {
   compareLabelFn,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from './LegendStudioRouter';
-import type {
-  ProjectSelectOption,
-  WorkspaceSelectOption,
-} from '@finos/legend-server-sdlc';
 import {
-  ImportProjectReport,
+  ImportReport,
   Project,
   ProjectType,
-  PROJECT_LATEST_VIEWER_WORKSPACE,
   Review,
   Workspace,
   WorkspaceAccessType,
@@ -48,6 +43,31 @@ interface ImportProjectSuccessReport {
   projectName: string;
   reviewUrl: string;
 }
+
+export interface ProjectOption {
+  label: string;
+  value: string;
+  disabled?: boolean;
+  tag: string;
+}
+
+const buildProjectOption = (project: Project): ProjectOption => ({
+  label: project.name,
+  value: project.projectId,
+  disabled: false,
+  tag: project.projectType,
+});
+
+export interface WorkspaceOption {
+  label: string;
+  value: string;
+  __isNew__?: boolean;
+}
+
+const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
+  label: workspace.workspaceId,
+  value: workspace.workspaceId,
+});
 
 export class SetupStore {
   applicationStore: ApplicationStore;
@@ -212,7 +232,7 @@ export class SetupStore {
   ): GeneratorFn<void> {
     this.createOrImportProjectState.inProgress();
     try {
-      const report = ImportProjectReport.serialization.fromJson(
+      const report = ImportReport.serialization.fromJson(
         (yield this.applicationStore.networkClientManager.sdlcClient.importProject(
           {
             id,
@@ -220,7 +240,7 @@ export class SetupStore {
             groupId,
             artifactId,
           },
-        )) as PlainObject<ImportProjectReport>,
+        )) as PlainObject<ImportReport>,
       );
       const importReview = Review.serialization.fromJson(
         (yield this.applicationStore.networkClientManager.sdlcClient.getReview(
@@ -243,31 +263,24 @@ export class SetupStore {
     }
   }
 
-  get projectOptions(): ProjectSelectOption[] {
+  get projectOptions(): ProjectOption[] {
     return this.projects
       ? Array.from(this.projects.values())
-          .map((project) => {
-            const option = project.selectOption;
-            return {
-              ...option,
-              disabled:
-                project.projectType === ProjectType.PROTOTYPE &&
-                this.applicationStore.config.options
-                  .TEMPORARY__useSDLCProductionProjectsOnly,
-            };
-          })
+          .map((project) => ({
+            ...buildProjectOption(project),
+            disabled:
+              project.projectType === ProjectType.PROTOTYPE &&
+              this.applicationStore.config.options
+                .TEMPORARY__useSDLCProductionProjectsOnly,
+          }))
           .sort(compareLabelFn)
       : [];
   }
 
-  get currentProjectWorkspaceOptions(): WorkspaceSelectOption[] {
+  get currentProjectWorkspaceOptions(): WorkspaceOption[] {
     return this.currentProjectWorkspaces
       ? Array.from(this.currentProjectWorkspaces.values())
-          .filter(
-            (workspace) =>
-              workspace.workspaceId !== PROJECT_LATEST_VIEWER_WORKSPACE,
-          )
-          .map((workspace) => workspace.selectOption)
+          .map(buildWorkspaceOption)
           .sort(compareLabelFn)
       : [];
   }

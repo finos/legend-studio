@@ -45,8 +45,3 @@ export class Stereotype implements Stubable {
     return !this.value;
   }
 }
-
-export interface StereotypeSelectOption {
-  label: string;
-  value: Stereotype;
-}

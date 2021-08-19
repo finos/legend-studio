@@ -25,14 +25,8 @@ import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
-import type {
-  Stereotype,
-  StereotypeSelectOption,
-} from '../../../model/packageableElements/domain/Stereotype';
-import type {
-  Tag,
-  TagSelectOption,
-} from '../../../model/packageableElements/domain/Tag';
+import type { Stereotype } from '../../../model/packageableElements/domain/Stereotype';
+import type { Tag } from '../../../model/packageableElements/domain/Tag';
 import type { Stubable } from '../../../model/Stubable';
 import { isStubArray } from '../../../model/Stubable';
 
@@ -55,25 +49,18 @@ export class Profile extends PackageableElement implements Hashable, Stubable {
     });
   }
 
-  get tagOptions(): TagSelectOption[] {
-    return this.tags.map((tag) => ({ label: tag.value, value: tag }));
-  }
-  get stereotypeOptions(): StereotypeSelectOption[] {
-    return this.stereotypes.map((stereotype) => ({
-      label: stereotype.value,
-      value: stereotype,
-    }));
-  }
-
   addTag(value: Tag): void {
     addUniqueEntry(this.tags, value);
   }
+
   deleteTag(value: Tag): void {
     deleteEntry(this.tags, value);
   }
+
   addStereotype(value: Stereotype): void {
     addUniqueEntry(this.stereotypes, value);
   }
+
   deleteStereotype(value: Stereotype): void {
     deleteEntry(this.stereotypes, value);
   }

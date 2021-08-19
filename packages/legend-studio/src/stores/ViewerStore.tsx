@@ -126,9 +126,10 @@ export class ViewerStore {
       yield flowResult(
         this.editorStore.sdlcState.fetchCurrentProject(projectId),
       );
-      this.editorStore.sdlcState.setCurrentWorkspace(
-        Workspace.createProjectLatestViewerWorkspace(projectId),
-      );
+      const stubWorkspace = new Workspace();
+      stubWorkspace.projectId = projectId;
+      stubWorkspace.workspaceId = '';
+      this.editorStore.sdlcState.setCurrentWorkspace(stubWorkspace);
 
       // get current revision so we can show how "outdated" the `current view` of the project is
       this.currentRevision = Revision.serialization.fromJson(

@@ -24,8 +24,13 @@ import {
 } from '@finos/legend-application-components';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import type { StereotypeSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
 import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
+import type { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
+
+interface StereotypeOption {
+  label: string;
+  value: Stereotype;
+}
 
 export const StereotypeSelector = observer(
   (props: {
@@ -59,17 +64,22 @@ export const StereotypeSelector = observer(
     const visitProfile = (): void =>
       editorStore.openElement(selectedProfile.value);
     // Stereotype
-    const stereotypeOptions = selectedProfile.value.stereotypeOptions;
+    const stereotypeOptions = selectedProfile.value.stereotypes.map(
+      (stereotype) => ({
+        label: stereotype.value,
+        value: stereotype,
+      }),
+    );
     const stereotypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: StereotypeSelectOption): string => option.label,
+      stringify: (option: StereotypeOption): string => option.label,
     });
     const selectedStereotype = {
       value: stereotype.value,
       label: stereotype.value.value,
     };
-    const updateStereotype = (val: StereotypeSelectOption): void =>
+    const updateStereotype = (val: StereotypeOption): void =>
       stereotype.setValue(val.value);
     return (
       <div className="stereotype-selector">

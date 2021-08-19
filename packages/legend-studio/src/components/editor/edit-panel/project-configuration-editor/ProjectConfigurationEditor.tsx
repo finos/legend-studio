@@ -16,7 +16,12 @@
 
 import { useEffect, useMemo } from 'react';
 import { useEditorStore } from '../../../../stores/EditorStore';
-import { LogEvent, debounce, prettyCONSTName } from '@finos/legend-shared';
+import {
+  LogEvent,
+  debounce,
+  prettyCONSTName,
+  compareLabelFn,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
   FaPlus,
@@ -42,18 +47,37 @@ import { flowResult } from 'mobx';
 import { ProjectDependency } from '@finos/legend-server-sdlc';
 import type {
   ProjectConfiguration,
-  ProjectSelectOption,
   Version,
-  VersionSelectOption,
+  Project,
 } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
+
+interface VersionOption {
+  label: string;
+  value: string;
+}
+
+const buildVersionOption = (version: Version): VersionOption => ({
+  label: version.id.id,
+  value: version.id.id,
+});
+
+interface ProjectOption {
+  label: string;
+  value: string;
+}
+
+const buildProjectOption = (project: Project): ProjectOption => ({
+  label: project.name,
+  value: project.projectId,
+});
 
 const ProjectDependencyVersionSelector = observer(
   (
     props: {
       projectDependency: ProjectDependency;
-      selectedVersionOption: VersionSelectOption | null;
-      versionOptions: VersionSelectOption[] | null;
+      selectedVersionOption: VersionOption | null;
+      versionOptions: VersionOption[] | null;
       disabled: boolean;
     },
     ref: React.Ref<SelectComponent>,
@@ -66,7 +90,7 @@ const ProjectDependencyVersionSelector = observer(
       selectedVersionOption,
       versionOptions,
     } = props;
-    const onSelectionChange = (val: ProjectSelectOption | null): void => {
+    const onSelectionChange = (val: ProjectOption | null): void => {
       if (
         (val !== null || selectedVersionOption !== null) &&
         (!val ||
@@ -114,7 +138,7 @@ const ProjectDependencyProjectQuerySelector = observer(
   (
     props: {
       projectDependency: ProjectDependency;
-      selectedProjectOption: ProjectSelectOption | null;
+      selectedProjectOption: ProjectOption | null;
       disabled: boolean;
     },
     ref: React.Ref<SelectComponent>,
@@ -133,7 +157,10 @@ const ProjectDependencyProjectQuerySelector = observer(
         }, 500),
       [applicationStore, configurationEditorState],
     );
-    const onSelectionChange = (val: ProjectSelectOption | null): void => {
+    const options = Array.from(configurationEditorState.projects.values())
+      .map(buildProjectOption)
+      .sort(compareLabelFn);
+    const onSelectionChange = (val: ProjectOption | null): void => {
       if (
         (val !== null || selectedProjectOption !== null) &&
         (!val ||
@@ -154,7 +181,7 @@ const ProjectDependencyProjectQuerySelector = observer(
         className="project-dependency-editor__selector"
         ref={ref}
         disabled={disabled}
-        options={configurationEditorState.projectOptions}
+        options={options}
         isClearable={true}
         escapeClearsValue={true}
         onChange={onSelectionChange}
@@ -292,19 +319,21 @@ const ProjectDependencyEditor = observer(
       editorStore.projectConfigurationEditorState;
     const { projectDependency, deleteValue, isReadOnly } = props;
     const version = projectDependency.versionId;
-    const selectedProjectOption =
-      configurationEditorState.projectOptions.find(
-        (option) => option.value === projectDependency.projectId,
-      ) ?? null;
+    const selectedProject = configurationEditorState.projects.get(
+      projectDependency.projectId,
+    );
+    const selectedProjectOption = selectedProject
+      ? buildProjectOption(selectedProject)
+      : null;
     const versionMap = configurationEditorState.versionsByProject.get(
       projectDependency.projectId,
     );
     const versionOptions = versionMap
-      ? Array.from(versionMap.values()).map((v) => v.versionOption)
+      ? Array.from(versionMap.values()).map(buildVersionOption)
       : [];
     const selectedVersion: Version | undefined = versionMap?.get(version.id);
     const selectedVersionOption = selectedVersion
-      ? selectedVersion.versionOption
+      ? buildVersionOption(selectedVersion)
       : null;
     const versionDisabled =
       Boolean(

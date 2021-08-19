@@ -24,6 +24,7 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
 } from '@finos/legend-application-components';
+import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from '../../stores/SetupStore';
 import { useParams } from 'react-router';
 import { CORE_TEST_ID } from '../../const';
@@ -40,7 +41,6 @@ import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
-import type { ProjectSelectOption } from '@finos/legend-server-sdlc';
 import { ProjectType } from '@finos/legend-server-sdlc';
 
 const CreateProjectModal = observer(() => {
@@ -483,7 +483,7 @@ const CreateWorkspaceModal = observer(() => {
   const dispatchingActions =
     createWorkspaceState.isInProgress ||
     createOrImportProjectState.isInProgress;
-  const onSelectionChange = (val: ProjectSelectOption | null): void => {
+  const onSelectionChange = (val: ProjectOption | null): void => {
     if (
       (val !== null || selectedOption !== null) &&
       (!val || !selectedOption || val.value !== selectedOption.value)

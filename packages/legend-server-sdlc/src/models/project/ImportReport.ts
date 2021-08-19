@@ -14,26 +14,18 @@
  * limitations under the License.
  */
 
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+import { Project } from './Project';
 
-export enum WorkspaceAccessType {
-  WORKSPACE = 'WORKSPACE',
-  CONFLICT_RESOLUTION = 'CONFLICT_RESOLUTION',
-  // BACKUP = 'BACKUP',
-}
-
-export class Workspace {
-  projectId!: string;
-  workspaceId!: string;
-  userId!: string;
-  type = WorkspaceAccessType.WORKSPACE;
+export class ImportReport {
+  project!: Project;
+  reviewId!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(Workspace, {
-      projectId: primitive(),
-      userId: primitive(),
-      workspaceId: primitive(),
+    createModelSchema(ImportReport, {
+      project: usingModelSchema(Project.serialization.schema),
+      reviewId: primitive(),
     }),
   );
 }

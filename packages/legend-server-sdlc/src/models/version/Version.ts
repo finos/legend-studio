@@ -15,14 +15,9 @@
  */
 
 import { createModelSchema, primitive } from 'serializr';
-import { computed, observable, makeObservable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import { VersionId } from '../version/VersionId';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-
-export interface VersionSelectOption {
-  label: string;
-  value: string;
-}
 
 export class Version {
   projectId!: string;
@@ -36,7 +31,6 @@ export class Version {
       revisionId: observable,
       notes: observable,
       id: observable,
-      versionOption: computed,
     });
   }
 
@@ -48,11 +42,4 @@ export class Version {
       revisionId: primitive(),
     }),
   );
-
-  get versionOption(): VersionSelectOption {
-    return {
-      label: this.id.id,
-      value: this.id.id,
-    };
-  }
 }

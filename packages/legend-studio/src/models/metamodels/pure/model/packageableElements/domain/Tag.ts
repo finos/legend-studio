@@ -44,8 +44,3 @@ export class Tag implements Stubable {
     return !this.value;
   }
 }
-
-export interface TagSelectOption {
-  label: string;
-  value: Tag;
-}

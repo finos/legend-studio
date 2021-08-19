@@ -30,8 +30,13 @@ import {
 } from '@finos/legend-application-components';
 import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import type { TagSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
 import type { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
+import type { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
+
+interface TagOption {
+  label: string;
+  value: Tag;
+}
 
 export const TaggedValueEditor = observer(
   (props: {
@@ -72,19 +77,21 @@ export const TaggedValueEditor = observer(
     const visitProfile = (): void =>
       editorStore.openElement(selectedProfile.value);
     // Tag
-    const tagOptions = selectedProfile.value.tagOptions;
+    const tagOptions = selectedProfile.value.tags.map((tag) => ({
+      label: tag.value,
+      value: tag,
+    }));
     const inferableTag = taggedValue.tag;
     const tagFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: TagSelectOption): string => option.label,
+      stringify: (option: TagOption): string => option.label,
     });
     const selectedTag = {
       value: inferableTag.value,
       label: inferableTag.value.value,
     };
-    const changeTag = (val: TagSelectOption): void =>
-      taggedValue.setTag(val.value);
+    const changeTag = (val: TagOption): void => taggedValue.setTag(val.value);
     // Value
     const [isExpanded, setIsExpanded] = useState(false);
     const toggleExpandedMode = (): void => setIsExpanded(!isExpanded);

@@ -25,6 +25,7 @@ export * from './models/review/ReviewCommands';
 export * from './models/build/Build';
 
 export * from './models/project/Project';
+export * from './models/project/ImportReport';
 export * from './models/project/ProjectCommands';
 
 export * from './models/workspace/Workspace';

@@ -15,7 +15,7 @@
  */
 
 import { list, primitive, createModelSchema } from 'serializr';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 
 // TODO: consider removing this when SDLC finally get rid of project type and environment flags
 export enum ProjectType {
@@ -43,34 +43,6 @@ export class Project {
       projectId: primitive(),
       projectType: primitive(),
       tags: list(primitive()),
-    }),
-  );
-
-  get selectOption(): ProjectSelectOption {
-    return {
-      label: this.name,
-      value: this.projectId,
-      disabled: false,
-      tag: this.projectType,
-    };
-  }
-}
-
-export interface ProjectSelectOption {
-  label: string;
-  value: string;
-  disabled?: boolean;
-  tag: string;
-}
-
-export class ImportProjectReport {
-  project!: Project;
-  reviewId!: string;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(ImportProjectReport, {
-      project: usingModelSchema(Project.serialization.schema),
-      reviewId: primitive(),
     }),
   );
 }

@@ -17,6 +17,7 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaPlus } from 'react-icons/fa';
+import type { ProjectOption } from '../../stores/SetupStore';
 import { useSetupStore } from '../../stores/SetupStore';
 import type { SelectComponent } from '@finos/legend-application-components';
 import {
@@ -26,9 +27,8 @@ import {
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
-import type { ProjectSelectOption } from '@finos/legend-server-sdlc';
 
-const formatOptionLabel = (option: ProjectSelectOption): React.ReactNode => (
+const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   <div className="setup__project__label">
     <div
       className={clsx([
@@ -59,7 +59,7 @@ export const ProjectSelector = observer(
       options.find((option) => option.value === currentProjectId) ?? null;
     const isLoadingOptions = setupStore.loadProjectsState.isInProgress;
 
-    const onSelectionChange = (val: ProjectSelectOption | null): void => {
+    const onSelectionChange = (val: ProjectOption | null): void => {
       if (
         (val !== null || selectedOption !== null) &&
         (!val || !selectedOption || val.value !== selectedOption.value)
