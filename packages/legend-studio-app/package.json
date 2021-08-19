@@ -38,8 +38,9 @@
   },
   "dependencies": {
     "@finos/legend-graph-manager-preset-external-format-json-schema": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-app": "workspace:*",
+    "@finos/legend-studio-preset-dsl-text": "workspace:*",
     "@finos/legend-studio-preset-query-builder": "workspace:*",
     "@types/react": "17.0.18",
     "react": "17.0.2"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getTestApplicationConfig, LegendStudio } from '@finos/legend-studio';
+import { LegendStudio } from '../LegendStudio';
 import type { AbstractPluginManager } from '@finos/legend-shared';
 import {
   AbstractPreset,
@@ -22,6 +22,7 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
+import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
 
 class Dummy_Preset extends AbstractPreset {
   constructor() {
@@ -48,7 +49,7 @@ test(
       .setup({ baseUrl: '/' })
       .withPresets([new Dummy_Preset()])
       .start()
-      .catch((e) => {
+      .catch((e: unknown) => {
         throw e;
       });
   },
