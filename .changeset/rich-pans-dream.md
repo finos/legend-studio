@@ -4,7 +4,7 @@
 '@finos/legend-model-storage': patch
 '@finos/legend-query-app': patch
 '@finos/legend-studio': patch
-'@finos/legend-studio-app': patch
+'@finos/legend-studio-deployment': patch
 '@finos/legend-application-components': patch
 '@finos/legend-dev-utils': patch
 '@finos/legend-studio-plugin-management': patch

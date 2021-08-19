@@ -12,7 +12,7 @@ on:
 
 jobs:
   check-docker-image-studio:
-    name: Run Image Checks (@finos/legend-studio-app)
+    name: Run Image Checks (@finos/legend-studio-deployment)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Build image
-        run: yarn workspace @finos/legend-studio-app build-dry:docker ${{ github.sha }}
+        run: yarn workspace @finos/legend-studio-deployment build-dry:docker ${{ github.sha }}
       - name: Scan image for security issues
         uses: Azure/container-scan@v0
         env:

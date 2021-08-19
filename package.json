@@ -21,7 +21,7 @@
     "clean": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean",
     "dev": "yarn dev:studio",
     "dev:query": "yarn workspace @finos/legend-query-app dev",
-    "dev:studio": "yarn workspace @finos/legend-studio-app dev",
+    "dev:studio": "yarn workspace @finos/legend-studio-deployment dev",
     "dev:tsc": "tsc --build --watch",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
     "fix:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js --update",

@@ -2,7 +2,7 @@
 '@finos/eslint-plugin-legend-studio': patch
 '@finos/legend-query-app': patch
 '@finos/legend-studio': patch
-'@finos/legend-studio-app': patch
+'@finos/legend-studio-deployment': patch
 '@finos/legend-application-components': patch
 '@finos/legend-studio-manual-tests': patch
 '@finos/legend-studio-plugin-management': patch

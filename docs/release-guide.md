@@ -47,11 +47,11 @@ git push --follow-tags
 # at fixed versions.
 
 # 2. Try to dry-build Docker image
-yarn workspace @finos/legend-studio-app build-dry:docker
+yarn workspace @finos/legend-studio-deployment build-dry:docker
 
 # 3. Login to Docker
 docker login
 
 # 4. Build image and publish to Docker Hub
-yarn workspace @finos/legend-studio-app publish:docker
+yarn workspace @finos/legend-studio-deployment publish:docker
 ```
