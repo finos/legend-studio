@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-deployment",
-  "version": "0.2.56",
+  "version": "0.0.1",
   "private": true,
   "description": "Legend Studio web application deployment",
   "keywords": [
@@ -37,11 +37,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-graph-manager-preset-external-format-json-schema": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-preset-dsl-text": "workspace:*",
-    "@finos/legend-studio-preset-query-builder": "workspace:*",
-    "@types/react": "17.0.18",
+    "@finos/legend-studio-app": "workspace:*",
     "react": "17.0.2"
   },
   "devDependencies": {

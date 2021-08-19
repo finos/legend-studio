@@ -13,10 +13,6 @@
     "studio.config.js"
   ],
   "references": [
-    { "path": "../legend-studio" },
-    { "path": "../legend-shared" },
-    { "path": "../legend-studio-preset-dsl-text" },
-    { "path": "../legend-graph-manager-preset-external-format-json-schema" },
-    { "path": "../legend-studio-preset-query-builder" }
+    { "path": "../legend-studio-app" },
   ]
 }

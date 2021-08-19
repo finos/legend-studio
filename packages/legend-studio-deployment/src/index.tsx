@@ -14,23 +14,8 @@
  * limitations under the License.
  */
 
-import { LegendStudio } from '@finos/legend-studio';
-import { QueryBuilder_Preset } from '@finos/legend-studio-preset-query-builder';
-import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
-import { EFJSONSchema_Preset } from '@finos/legend-graph-manager-preset-external-format-json-schema';
-import studioConfig from '../studio.config';
-import { BrowserConsole } from '@finos/legend-shared';
+import { LegendStudioApplication } from '@finos/legend-studio-app';
+import config from '../studio.config';
 import './index.scss';
 
-LegendStudio.create()
-  .setup({ baseUrl: studioConfig.baseUrl })
-  .withPresets([
-    new DSLText_Preset(),
-    new EFJSONSchema_Preset(),
-    new QueryBuilder_Preset(),
-  ])
-  .withLoggers([new BrowserConsole()])
-  .start()
-  .catch((e) => {
-    throw e;
-  });
+LegendStudioApplication.run(config.baseUrl);
