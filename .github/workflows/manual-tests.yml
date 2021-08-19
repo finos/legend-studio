@@ -68,4 +68,4 @@ jobs:
           java -cp legend-engine-server/target/*-shaded.jar org.finos.legend.engine.server.Server server ../packages/legend-studio-manual-tests/engine-config.json &
       - name: Test
         # TODO: we should consider building only relevant workspaces to reduce build time
-        run: yarn && yarn build:setup && yarn workspace @finos/legend-studio-manual-tests test:manual
+        run: yarn && yarn build && yarn workspace @finos/legend-studio-manual-tests test:manual
