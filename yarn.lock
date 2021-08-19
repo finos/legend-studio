@@ -2314,9 +2314,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-app@workspace:packages/legend-studio-deployment":
+"@finos/legend-studio-deployment@workspace:packages/legend-studio-deployment":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-app@workspace:packages/legend-studio-deployment"
+  resolution: "@finos/legend-studio-deployment@workspace:packages/legend-studio-deployment"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph-manager-preset-external-format-json-schema": "workspace:*"

@@ -1,8 +1,8 @@
 {
-  "name": "@finos/legend-studio-app",
+  "name": "@finos/legend-studio-deployment",
   "version": "0.2.56",
   "private": true,
-  "description": "Legend Studio web application",
+  "description": "Legend Studio web application deployment",
   "keywords": [
     "legend",
     "legend-studio",
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-studio-app"
+    "directory": "packages/legend-studio-deployment"
   },
   "license": "Apache-2.0",
   "type": "module",

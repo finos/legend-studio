@@ -11,8 +11,26 @@ on:
       - '**'
 
 jobs:
+  build-test:
+    name: Test CI
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - node-version: 10.x
+            site: "prod"
+            datacenter: "site-a"
+          - node-version: 12.x
+            site: "dev"
+            datacenter: "site-b"
+    steps:
+      - name: Echo site details
+        env:
+          SITE: ${{ matrix.site }}
+          DATACENTER: ${{ matrix.datacenter }}
+        run: echo $SITE $DATACENTER
   check-docker-image-studio:
-    name: Run Image Checks (@finos/legend-studio-deployment)
+    name: Run Docker Image Checks (finos/legend-studio)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -46,7 +64,7 @@ jobs:
           image-name: local/legend-studio:${{ github.sha }}
           severity-threshold: CRITICAL
   check-docker-image-query:
-    name: Run Image Checks (@finos/legend-query-deployment)
+    name: Run Docker Image Checks (finos/legend-query)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

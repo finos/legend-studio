@@ -35,6 +35,6 @@ export default {
       '@finos/legend-application-components/lib/testMocks/MockedMonacoEditor.js',
   },
   testMatch: [
-    '<rootDir>/packages/legend-studio-app/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+    '<rootDir>/packages/legend-studio-deployment/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
 };
