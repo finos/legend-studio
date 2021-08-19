@@ -26,8 +26,8 @@ import {
 import { observable, action, makeObservable, override } from 'mobx';
 import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { GenerationProperty } from '../../../action/generation/GenerationConfigurationDescription';
-import { GenerationPropertyItemType } from '../../../action/generation/GenerationConfigurationDescription';
+import type { GenerationProperty } from '../../../graphManager/action/generation/GenerationConfigurationDescription';
+import { GenerationPropertyItemType } from '../../../graphManager/action/generation/GenerationConfigurationDescription';
 import { ConfigurationProperty } from './ConfigurationProperty';
 import type {
   PackageableElementVisitor,

@@ -40,7 +40,7 @@ import { Database } from '../../models/metamodels/pure/model/packageableElements
 import { RelationalDatabaseConnection } from '../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import { ServiceStore } from '../../models/metamodels/pure/model/packageableElements/store/relational/model/ServiceStore';
 import type { DSL_EditorPlugin_Extension } from '../EditorPlugin';
-import type { EngineError } from '../../models/metamodels/pure/action/EngineError';
+import type { EngineError } from '../../models/metamodels/pure/graphManager/action/EngineError';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,

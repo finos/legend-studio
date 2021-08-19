@@ -79,7 +79,7 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';

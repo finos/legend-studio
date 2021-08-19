@@ -19,7 +19,7 @@ import type {
   TracerServicePlugin,
 } from '@finos/legend-shared';
 import { AbstractPluginManager } from '@finos/legend-shared';
-import type { PureGraphManagerPlugin } from '../models/metamodels/pure/graph/PureGraphManagerPlugin';
+import type { PureGraphManagerPlugin } from '../models/metamodels/pure/graphManager/PureGraphManagerPlugin';
 import type { PureProtocolProcessorPlugin } from '../models/protocols/pure/PureProtocolProcessorPlugin';
 import type { EditorPlugin } from '../stores/EditorPlugin';
 

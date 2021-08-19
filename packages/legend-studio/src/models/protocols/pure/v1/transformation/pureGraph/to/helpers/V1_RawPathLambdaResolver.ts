@@ -19,7 +19,7 @@ import {
   assertErrorThrown,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../metamodels/pure/graphManager/GraphManagerLogEvent';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementReference } from '../../../../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
 import { RawLambda } from '../../../../../../../metamodels/pure/model/rawValueSpecification/RawLambda';

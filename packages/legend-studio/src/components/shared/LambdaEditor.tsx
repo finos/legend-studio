@@ -38,8 +38,8 @@ import type { DebouncedFunc, GeneratorFn } from '@finos/legend-shared';
 import { debounce } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../const';
 import { useApplicationStore } from '../../stores/ApplicationStore';
-import type { EngineError } from '../../models/metamodels/pure/action/EngineError';
-import { ParserError } from '../../models/metamodels/pure/action/EngineError';
+import type { EngineError } from '../../models/metamodels/pure/graphManager/action/EngineError';
+import { ParserError } from '../../models/metamodels/pure/graphManager/action/EngineError';
 import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { flowResult } from 'mobx';
 

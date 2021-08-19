@@ -15,13 +15,13 @@
  */
 
 import type { EditorStore } from '../../EditorStore';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import { ELEMENT_NATIVE_VIEW_MODE, TAB_SIZE } from '../../EditorConfig';
 import { EditorState } from '../../editor-state/EditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, assertErrorThrown } from '@finos/legend-shared';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
+import type { CompilationError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 
 const generateMultiLineCommentForError = (

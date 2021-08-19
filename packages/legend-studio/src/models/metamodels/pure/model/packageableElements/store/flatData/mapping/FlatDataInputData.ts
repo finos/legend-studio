@@ -20,8 +20,8 @@ import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../../../model/packageableElements/mapping/InputData';
 import type { FlatData } from '../../../../../model/packageableElements/store/flatData/model/FlatData';
-import type { ValidationIssue } from '../../../../../action/validator/ValidationResult';
-import { createValidationError } from '../../../../../action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../../../graphManager/action/validator/ValidationResult';
+import { createValidationError } from '../../../../../graphManager/action/validator/ValidationResult';
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
 import {
   PACKAGEABLE_ELEMENT_POINTER_TYPE,

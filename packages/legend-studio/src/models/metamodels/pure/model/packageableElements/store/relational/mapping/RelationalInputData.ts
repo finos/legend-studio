@@ -19,8 +19,8 @@ import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../../../model/packageableElements/mapping/InputData';
-import type { ValidationIssue } from '../../../../../action/validator/ValidationResult';
-import { createValidationError } from '../../../../../action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../../../graphManager/action/validator/ValidationResult';
+import { createValidationError } from '../../../../../graphManager/action/validator/ValidationResult';
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
 import type { Database } from '../model/Database';
 

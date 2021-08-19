@@ -15,7 +15,7 @@
  */
 
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../metamodels/pure/graphManager/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import {
   ELEMENT_PATH_DELIMITER,
@@ -44,18 +44,18 @@ import {
   SystemGraphProcessingError,
   DependencyGraphProcessingError,
 } from '../../../MetaModelUtils';
-import type { TEMP__AbstractEngineConfig } from '../../../metamodels/pure/action/TEMP__AbstractEngineConfig';
+import type { TEMP__AbstractEngineConfig } from '../../../metamodels/pure/graphManager/action/TEMP__AbstractEngineConfig';
 import type {
   TEMP__EngineSetupConfig,
   GraphBuilderOptions,
-} from '../../../metamodels/pure/graph/AbstractPureGraphManager';
-import { AbstractPureGraphManager } from '../../../metamodels/pure/graph/AbstractPureGraphManager';
+} from '../../../metamodels/pure/graphManager/AbstractPureGraphManager';
+import { AbstractPureGraphManager } from '../../../metamodels/pure/graphManager/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import type {
   ImportConfigurationDescription,
   ImportMode,
-} from '../../../metamodels/pure/action/generation/ImportConfigurationDescription';
+} from '../../../metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
 import type { PackageableElement } from '../../../metamodels/pure/model/packageableElements/PackageableElement';
 import type {
   SystemModel,
@@ -72,13 +72,13 @@ import type {
   FileGenerationSpecification,
   GenerationMode,
 } from '../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationConfigurationDescription } from '../../../metamodels/pure/action/generation/GenerationConfigurationDescription';
-import type { ServiceTestResult } from '../../../metamodels/pure/action/service/ServiceTestResult';
-import type { ServiceRegistrationResult } from '../../../metamodels/pure/action/service/ServiceRegistrationResult';
-import type { ExecutionResult } from '../../../metamodels/pure/action/execution/ExecutionResult';
-import type { GenerationOutput } from '../../../metamodels/pure/action/generation/GenerationOutput';
+import type { GenerationConfigurationDescription } from '../../../metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
+import type { ServiceTestResult } from '../../../metamodels/pure/graphManager/action/service/ServiceTestResult';
+import type { ServiceRegistrationResult } from '../../../metamodels/pure/graphManager/action/service/ServiceRegistrationResult';
+import type { ExecutionResult } from '../../../metamodels/pure/graphManager/action/execution/ExecutionResult';
+import type { GenerationOutput } from '../../../metamodels/pure/graphManager/action/generation/GenerationOutput';
 import type { ValueSpecification } from '../../../metamodels/pure/model/valueSpecification/ValueSpecification';
-import { ServiceExecutionMode } from '../../../metamodels/pure/action/service/ServiceExecutionMode';
+import { ServiceExecutionMode } from '../../../metamodels/pure/graphManager/action/service/ServiceExecutionMode';
 import { PureSingleExecution } from '../../../metamodels/pure/model/packageableElements/service/ServiceExecution';
 import {
   V1_deserializeRawValueSpecification,
@@ -150,11 +150,11 @@ import type { PluginManager } from '../../../../application/PluginManager';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
 import { V1_GraphBuilderExtensions } from './transformation/pureGraph/to/V1_GraphBuilderExtensions';
 import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin';
-import type { PureGraphManagerPlugin } from '../../../metamodels/pure/graph/PureGraphManagerPlugin';
+import type { PureGraphManagerPlugin } from '../../../metamodels/pure/graphManager/PureGraphManagerPlugin';
 import type {
   DatabaseBuilderInput,
   DatabasePattern,
-} from '../../../metamodels/pure/action/generation/DatabaseBuilderInput';
+} from '../../../metamodels/pure/graphManager/action/generation/DatabaseBuilderInput';
 import {
   V1_DatabaseBuilderConfig,
   V1_DatabaseBuilderInput,
@@ -191,7 +191,7 @@ import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_Executio
 import type {
   LightQuery,
   Query,
-} from '../../../metamodels/pure/action/query/Query';
+} from '../../../metamodels/pure/graphManager/action/query/Query';
 import {
   V1_buildQuery,
   V1_buildServiceTestResult,

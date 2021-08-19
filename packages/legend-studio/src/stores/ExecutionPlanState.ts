@@ -29,7 +29,7 @@ import { CLIENT_VERSION } from '../models/MetaModelConst';
 import type { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import type { RawLambda } from '../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { Runtime } from '../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 
 export enum SQL_DISPLAY_TABS {
   SQL_QUERY = 'SQL_QUERY',

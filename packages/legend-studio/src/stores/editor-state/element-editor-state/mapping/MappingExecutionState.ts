@@ -52,7 +52,7 @@ import {
   CLIENT_VERSION,
   LAMBDA_START,
 } from '../../../../models/MetaModelConst';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
@@ -81,7 +81,7 @@ import { PureSingleExecution } from '../../../../models/metamodels/pure/model/pa
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import type { Connection } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
+import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
 import { LambdaEditorState } from '../LambdaEditorState';
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
@@ -102,7 +102,7 @@ import {
 } from '../../../ApplicationStore';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
 
 export class MappingExecutionQueryState extends LambdaEditorState {

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { AbstractPureGraphManager } from '../../metamodels/pure/graph/AbstractPureGraphManager';
+import type { AbstractPureGraphManager } from '../../metamodels/pure/graphManager/AbstractPureGraphManager';
 import { V1_PureGraphManager } from './v1/V1_PureGraphManager';
 import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
-import type { PureGraphManagerPlugin } from '../../metamodels/pure/graph/PureGraphManagerPlugin';
+import type { PureGraphManagerPlugin } from '../../metamodels/pure/graphManager/PureGraphManagerPlugin';
 import type { Log } from '@finos/legend-shared';
 
 export const getGraphManager = (

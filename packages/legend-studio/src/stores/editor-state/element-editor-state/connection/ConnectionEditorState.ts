@@ -45,8 +45,8 @@ import {
   StaticDatasourceSpecification,
   RedshiftDatasourceSpecification,
 } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import type { ValidationIssue } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
-import { createValidationError } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../../models/metamodels/pure/graphManager/action/validator/ValidationResult';
+import { createValidationError } from '../../../../models/metamodels/pure/graphManager/action/validator/ValidationResult';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../StoreRelational_EditorPlugin_Extension';
 import { DatabaseBuilderState } from './DatabaseBuilderState';
 

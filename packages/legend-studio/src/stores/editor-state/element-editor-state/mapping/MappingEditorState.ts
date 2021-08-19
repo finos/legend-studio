@@ -22,7 +22,7 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   PRIMITIVE_TYPE,
   SOURCE_ID_LABEL,
@@ -65,8 +65,8 @@ import type {
   TreeData,
 } from '@finos/legend-application-components';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
-import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
-import { extractSourceInformationCoordinates } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import type { CompilationError } from '../../../../models/metamodels/pure/graphManager/action/EngineError';
+import { extractSourceInformationCoordinates } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';

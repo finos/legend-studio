@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { Mapping } from '../../model/packageableElements/mapping/Mapping';
-import type { PackageableElementReference } from '../../model/packageableElements/PackageableElementReference';
-import type { PackageableRuntime } from '../../model/packageableElements/runtime/PackageableRuntime';
+import type { Mapping } from '../../../model/packageableElements/mapping/Mapping';
+import type { PackageableElementReference } from '../../../model/packageableElements/PackageableElementReference';
+import type { PackageableRuntime } from '../../../model/packageableElements/runtime/PackageableRuntime';
 
 export class Query {
   name!: string;

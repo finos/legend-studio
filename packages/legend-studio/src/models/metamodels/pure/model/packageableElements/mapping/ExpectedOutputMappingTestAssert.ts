@@ -24,8 +24,8 @@ import {
 import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { MappingTestAssert } from './MappingTestAssert';
-import type { ValidationIssue } from '../../../action/validator/ValidationResult';
-import { createValidationError } from '../../../action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../graphManager/action/validator/ValidationResult';
+import { createValidationError } from '../../../graphManager/action/validator/ValidationResult';
 
 export class ExpectedOutputMappingTestAssert
   extends MappingTestAssert

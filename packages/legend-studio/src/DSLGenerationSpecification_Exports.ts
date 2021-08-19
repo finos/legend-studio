@@ -15,7 +15,7 @@
  */
 
 // metamodels
-export * from './models/metamodels/pure/graph/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
+export * from './models/metamodels/pure/graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
 export { ModelGenerationSpecification } from './models/metamodels/pure/model/packageableElements/generationSpecification/ModelGenerationSpecification';
 
 // protocols

@@ -20,7 +20,7 @@ import {
   isNonNullable,
   uniq,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../metamodels/pure/graphManager/GraphManagerLogEvent';
 import type { Section } from '../../../../../../../metamodels/pure/model/packageableElements/section/Section';
 import {
   ImportAwareCodeSection,

@@ -27,8 +27,8 @@ import {
   TdsExecutionResult,
   TdsBuilder,
   TDSColumn,
-} from '../../../../metamodels/pure/action/execution/ExecutionResult';
-import type { ExecutionResult } from '../../../../metamodels/pure/action/execution/ExecutionResult';
+} from '../../../../metamodels/pure/graphManager/action/execution/ExecutionResult';
+import type { ExecutionResult } from '../../../../metamodels/pure/graphManager/action/execution/ExecutionResult';
 import type {
   V1_ExecutionResult,
   V1_RelationalExecutionActivity,

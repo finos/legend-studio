@@ -38,7 +38,7 @@ import {
   tryToMinifyJSONString,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   observable,
   flow,
@@ -74,7 +74,7 @@ import { FlatDataConnection } from '../../../../models/metamodels/pure/model/pac
 import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
+import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
 import {
   RelationalInputData,
   RelationalInputType,
@@ -88,7 +88,7 @@ import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/p
 import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
 import { LambdaEditorState } from '../LambdaEditorState';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
 
 export enum TEST_RESULT {

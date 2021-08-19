@@ -74,7 +74,7 @@ import type { V1_TablePtr } from '../../../model/packageableElements/store/relat
 import { V1_getRelation } from './helpers/V1_DatabaseBuilderHelper';
 import type { BasicModel } from '../../../../../../metamodels/pure/graph/BasicModel';
 import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
-import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graph/AbstractPureGraphManager';
+import type { GraphBuilderOptions } from '../../../../../../metamodels/pure/graphManager/AbstractPureGraphManager';
 import { DataType } from '../../../../../../metamodels/pure/model/packageableElements/domain/DataType';
 
 interface ResolutionResult<T> {

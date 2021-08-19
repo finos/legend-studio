@@ -37,8 +37,8 @@ import {
 import type {
   ImportConfigurationDescription,
   ImportMode,
-} from '../models/metamodels/pure/action/generation/ImportConfigurationDescription';
-import type { GenerationConfigurationDescription } from '../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
+} from '../models/metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
+import type { GenerationConfigurationDescription } from '../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
 import { PluginManager } from '../application/PluginManager';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';

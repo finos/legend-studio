@@ -22,7 +22,7 @@ import type {
 } from '@finos/legend-shared';
 import { ContentType, AbstractServerClient } from '@finos/legend-shared';
 import type { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { ImportMode } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
+import type { ImportMode } from '../../../../metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult';
 import type { V1_ServiceTestResult } from './service/V1_ServiceTestResult';

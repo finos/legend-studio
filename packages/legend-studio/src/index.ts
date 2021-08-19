@@ -31,7 +31,6 @@ export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
 
 // metamodels
 export * from './models/metamodels/pure/graph/PureGraphExtension';
-export * from './models/metamodels/pure/graph/PureGraphManagerPlugin';
 export * from './models/MetaModelUtils';
 export { DependencyManager } from './models/metamodels/pure/graph/DependencyManager';
 export {
@@ -46,8 +45,6 @@ export {
 export * from './models/metamodels/pure/model/Stubable'; // TODO: to be removed
 export { BasicModel } from './models/metamodels/pure/graph/BasicModel';
 export { PureModel } from './models/metamodels/pure/graph/PureModel';
-export * from './models/metamodels/pure/action/EngineError';
-export * from './models/metamodels/pure/action/SourceInformationHelper';
 export * from './models/metamodels/pure/model/packageableElements/PackageableElement';
 export * from './models/metamodels/pure/model/packageableElements/PackageableElementReference';
 export { Multiplicity } from './models/metamodels/pure/model/packageableElements/domain/Multiplicity';
@@ -94,10 +91,6 @@ export { ValueSpecification } from './models/metamodels/pure/model/valueSpecific
 export type { ValueSpecificationVisitor } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';
 export type { RawExecutionPlan } from './models/metamodels/pure/model/executionPlan/ExecutionPlan';
 export {
-  ExecutionResult,
-  TdsExecutionResult,
-} from './models/metamodels/pure/action/execution/ExecutionResult';
-export {
   GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
@@ -106,8 +99,18 @@ export {
   RootGraphFetchTreeInstanceValue,
 } from './models/metamodels/pure/model/valueSpecification/GraphFetchTree';
 export * from './models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-export * from './models/metamodels/pure/action/query/Query';
 export { getRootSetImplementation } from './models/metamodels/pure/helpers/MappingResolutionHelper';
+
+// graph manager
+export { GRAPH_MANAGER_LOG_EVENT } from './models/metamodels/pure/graphManager/GraphManagerLogEvent';
+export {
+  ExecutionResult,
+  TdsExecutionResult,
+} from './models/metamodels/pure/graphManager/action/execution/ExecutionResult';
+export * from './models/metamodels/pure/graphManager/action/query/Query';
+export * from './models/metamodels/pure/graphManager/PureGraphManagerPlugin';
+export * from './models/metamodels/pure/graphManager/action/EngineError';
+export * from './models/metamodels/pure/graphManager/action/SourceInformationHelper';
 
 // protocols
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
@@ -184,9 +187,6 @@ export { LambdaEditor } from './components/shared/LambdaEditor';
 export { BlockingAlert } from './components/application/BlockingAlert';
 export { ActionAlert } from './components/application/ActionAlert';
 export { NotificationSnackbar } from './components/application/NotificationSnackbar';
-
-// logging
-export { GRAPH_MANAGER_LOG_EVENT } from './utils/GraphManagerLogEvent';
 
 // test
 export * from './const';

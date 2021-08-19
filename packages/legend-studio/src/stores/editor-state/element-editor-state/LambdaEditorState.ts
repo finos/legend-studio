@@ -17,11 +17,11 @@
 import { observable, action, computed, makeObservable, flow } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { uuid } from '@finos/legend-shared';
-import { SourceInformation } from '../../../models/metamodels/pure/action/SourceInformation';
+import { SourceInformation } from '../../../models/metamodels/pure/graphManager/action/SourceInformation';
 import type {
   ParserError,
   CompilationError,
-} from '../../../models/metamodels/pure/action/EngineError';
+} from '../../../models/metamodels/pure/graphManager/action/EngineError';
 
 /**
  * This is not strictly meant for lambda. The idea is to create an editor that allows

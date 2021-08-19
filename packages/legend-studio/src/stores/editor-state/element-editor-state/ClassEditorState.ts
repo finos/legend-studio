@@ -17,12 +17,12 @@
 import { computed, observable, makeObservable, override } from 'mobx';
 import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState';
 import { LogEvent, guaranteeType } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
 import { ClassState } from './ClassState';
 import type { EditorStore } from '../../EditorStore';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
-import { extractSourceInformationCoordinates } from '../../../models/metamodels/pure/action/SourceInformationHelper';
+import type { CompilationError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
+import { extractSourceInformationCoordinates } from '../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 

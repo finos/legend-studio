@@ -17,7 +17,7 @@
 import { createModelSchema, list, optional, primitive, raw } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { BuilderType } from '../../../../../metamodels/pure/action/execution/ExecutionResult';
+import { BuilderType } from '../../../../../metamodels/pure/graphManager/action/execution/ExecutionResult';
 
 export class V1_ResultBuilder {
   static readonly builderSerialization = new SerializationFactory(

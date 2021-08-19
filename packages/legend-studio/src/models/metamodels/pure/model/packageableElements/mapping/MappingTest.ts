@@ -21,8 +21,8 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { MappingTestAssert } from './MappingTestAssert';
 import type { InputData } from './InputData';
 import type { RawLambda } from '../../../model/rawValueSpecification/RawLambda';
-import type { ValidationIssue } from '../../../action/validator/ValidationResult';
-import { createValidationError } from '../../../action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../graphManager/action/validator/ValidationResult';
+import { createValidationError } from '../../../graphManager/action/validator/ValidationResult';
 
 export class MappingTest implements Hashable {
   uuid = uuid();

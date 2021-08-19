@@ -14,33 +14,33 @@
  * limitations under the License.
  */
 
-import type { ExecutionResult } from '../action/execution/ExecutionResult';
-import type { ServiceRegistrationResult } from '../action/service/ServiceRegistrationResult';
+import type { ExecutionResult } from './action/execution/ExecutionResult';
+import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult';
 import type { Service } from '../model/packageableElements/service/Service';
 import type {
   ImportConfigurationDescription,
   ImportMode,
-} from '../action/generation/ImportConfigurationDescription';
+} from './action/generation/ImportConfigurationDescription';
 import type {
   FileGenerationSpecification,
   GenerationMode,
 } from '../model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationOutput } from '../action/generation/GenerationOutput';
-import type { ServiceTestResult } from '../action/service/ServiceTestResult';
+import type { GenerationOutput } from './action/generation/GenerationOutput';
+import type { ServiceTestResult } from './action/service/ServiceTestResult';
 import type { PackageableElement } from '../model/packageableElements/PackageableElement';
 import type { PureModel, CoreModel, SystemModel } from '../graph/PureModel';
 import type { Mapping } from '../model/packageableElements/mapping/Mapping';
 import type { Runtime } from '../model/packageableElements/runtime/Runtime';
-import type { DependencyManager } from './DependencyManager';
+import type { DependencyManager } from '../graph/DependencyManager';
 import type { Class } from '../model/packageableElements/domain/Class';
 import type { RawLambda } from '../model/rawValueSpecification/RawLambda';
-import type { GenerationConfigurationDescription } from '../action/generation/GenerationConfigurationDescription';
+import type { GenerationConfigurationDescription } from './action/generation/GenerationConfigurationDescription';
 import type { ValueSpecification } from '../model/valueSpecification/ValueSpecification';
 import type { RawValueSpecification } from '../model/rawValueSpecification/RawValueSpecification';
-import type { ServiceExecutionMode } from '../action/service/ServiceExecutionMode';
-import type { TEMP__AbstractEngineConfig } from '../action/TEMP__AbstractEngineConfig';
+import type { ServiceExecutionMode } from './action/service/ServiceExecutionMode';
+import type { TEMP__AbstractEngineConfig } from './action/TEMP__AbstractEngineConfig';
 import type { PluginManager } from '../../../../application/PluginManager';
-import type { DatabaseBuilderInput } from '../action/generation/DatabaseBuilderInput';
+import type { DatabaseBuilderInput } from './action/generation/DatabaseBuilderInput';
 import type { PureProtocolProcessorPlugin } from '../../../protocols/pure/PureProtocolProcessorPlugin';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import type { RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/RawRelationalOperationElement';
@@ -50,7 +50,7 @@ import type {
 } from '../model/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../model/executionPlan/nodes/ExecutionNode';
 import type { GeneratorFn, ServerClientConfig } from '@finos/legend-shared';
-import type { LightQuery, Query } from '../action/query/Query';
+import type { LightQuery, Query } from './action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
 
 export interface TEMP__EngineSetupConfig {

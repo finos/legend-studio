@@ -29,8 +29,8 @@ import {
   assertTrue,
 } from '@finos/legend-shared';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
-import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
+import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/graphManager/action/service/ServiceRegistrationResult';
+import { ServiceExecutionMode } from '../../../../models/metamodels/pure/graphManager/action/service/ServiceExecutionMode';
 import { ServiceRegistrationEnvInfo } from '../../../application/ApplicationConfig';
 import { Version } from '@finos/legend-server-sdlc';
 

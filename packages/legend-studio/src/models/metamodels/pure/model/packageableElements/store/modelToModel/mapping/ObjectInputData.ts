@@ -25,8 +25,8 @@ import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../../../model/packageableElements/mapping/InputData';
 import type { Class } from '../../../../../model/packageableElements/domain/Class';
-import type { ValidationIssue } from '../../../../../action/validator/ValidationResult';
-import { createValidationError } from '../../../../../action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../../../graphManager/action/validator/ValidationResult';
+import { createValidationError } from '../../../../../graphManager/action/validator/ValidationResult';
 import type { PackageableElementReference } from '../../../../../model/packageableElements/PackageableElementReference';
 
 export enum ObjectInputType {

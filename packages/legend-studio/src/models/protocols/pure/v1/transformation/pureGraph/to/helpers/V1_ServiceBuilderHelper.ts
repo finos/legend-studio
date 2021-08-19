@@ -22,7 +22,7 @@ import {
   assertNonNullable,
 } from '@finos/legend-shared';
 import { GraphError } from '../../../../../../../MetaModelUtils';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../metamodels/pure/graphManager/GraphManagerLogEvent';
 import type { Runtime } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import { RuntimePointer } from '../../../../../../../metamodels/pure/model/packageableElements/runtime/Runtime';
 import type { Service } from '../../../../../../../metamodels/pure/model/packageableElements/service/Service';

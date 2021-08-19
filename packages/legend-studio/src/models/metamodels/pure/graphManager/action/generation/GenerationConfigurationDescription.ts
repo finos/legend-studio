@@ -15,7 +15,7 @@
  */
 
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { GenerationMode } from '../../model/packageableElements/fileGeneration/FileGenerationSpecification';
+import type { GenerationMode } from '../../../model/packageableElements/fileGeneration/FileGenerationSpecification';
 
 export enum GenerationPropertyItemType {
   ARRAY = 'ARRAY',

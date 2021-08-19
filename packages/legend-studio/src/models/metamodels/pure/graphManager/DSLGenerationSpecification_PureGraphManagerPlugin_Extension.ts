@@ -16,7 +16,7 @@
 
 import type { ModelGenerationSpecification } from '../model/packageableElements/generationSpecification/ModelGenerationSpecification';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
-import type { PureModel } from './PureModel';
+import type { PureModel } from '../graph/PureModel';
 
 export type ModelGenerationElementGetter = (
   graph: PureModel,

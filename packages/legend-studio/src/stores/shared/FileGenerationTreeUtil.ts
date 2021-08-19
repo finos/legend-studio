@@ -23,7 +23,7 @@ import {
   returnUndefOnError,
   addUniqueEntry,
 } from '@finos/legend-shared';
-import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
+import type { GenerationOutput } from '../../models/metamodels/pure/graphManager/action/generation/GenerationOutput';
 
 export interface GenerationOutputResult {
   generationOutput: GenerationOutput;

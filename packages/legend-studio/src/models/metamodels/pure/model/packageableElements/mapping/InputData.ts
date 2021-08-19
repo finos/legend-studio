@@ -15,7 +15,7 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { ValidationIssue } from '../../../action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../graphManager/action/validator/ValidationResult';
 
 export abstract class InputData implements Hashable {
   private readonly _$nominalTypeBrand!: 'InputData';

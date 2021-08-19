@@ -18,7 +18,7 @@ import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
@@ -35,7 +35,7 @@ import {
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import type { ServiceTestResult } from '../../../../models/metamodels/pure/action/service/ServiceTestResult';
+import type { ServiceTestResult } from '../../../../models/metamodels/pure/graphManager/action/service/ServiceTestResult';
 import type { KeyedSingleExecutionTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
 import {
   TestContainer,
@@ -59,7 +59,7 @@ import { StaticDatasourceSpecification } from '../../../../models/metamodels/pur
 import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import { ConnectionPointer } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
+import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
 
 interface ServiceTestExecutionResult {

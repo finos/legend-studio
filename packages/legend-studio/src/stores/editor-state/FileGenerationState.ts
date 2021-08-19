@@ -38,7 +38,7 @@ import {
   PackageableElementReference,
   PackageableElementExplicitReference,
 } from '../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
+import type { GenerationOutput } from '../../models/metamodels/pure/graphManager/action/generation/GenerationOutput';
 import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent } from '@finos/legend-shared';

@@ -22,7 +22,7 @@ import { createBrowserHistory } from 'history';
 import { PluginManager } from '../application/PluginManager';
 import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
-import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
+import type { GraphBuilderOptions } from '../models/metamodels/pure/graphManager/AbstractPureGraphManager';
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { Log } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';

@@ -22,8 +22,8 @@ import type { Mapping } from '../../../model/packageableElements/mapping/Mapping
 import type { RawLambda } from '../../../model/rawValueSpecification/RawLambda';
 import type { Service } from '../../../model/packageableElements/service/Service';
 import type { Runtime } from '../../../model/packageableElements/runtime/Runtime';
-import type { ValidationIssue } from '../../../action/validator/ValidationResult';
-import { createValidationError } from '../../../action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../graphManager/action/validator/ValidationResult';
+import { createValidationError } from '../../../graphManager/action/validator/ValidationResult';
 import type { PackageableElementReference } from '../../../model/packageableElements/PackageableElementReference';
 
 export abstract class ServiceExecution implements Hashable {

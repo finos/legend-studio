@@ -18,15 +18,15 @@ import { observable, action, flow, makeObservable } from 'mobx';
 import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../EditorStore';
-import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
+import { ParserError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
 import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { Constraint } from '../../../models/metamodels/pure/model/packageableElements/domain/Constraint';
 import type { DerivedProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/action/SourceInformationHelper';
+import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 
 export class DerivedPropertyState extends LambdaEditorState {
   derivedProperty: DerivedProperty;

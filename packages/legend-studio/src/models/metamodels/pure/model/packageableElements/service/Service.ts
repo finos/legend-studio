@@ -23,8 +23,8 @@ import type { ServiceTest } from './ServiceTest';
 import { SingleExecutionTest } from './ServiceTest';
 import type { PackageableElementVisitor } from '../../../model/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../model/packageableElements/PackageableElement';
-import type { ValidationIssue } from '../../../action/validator/ValidationResult';
-import { createValidationError } from '../../../action/validator/ValidationResult';
+import type { ValidationIssue } from '../../../graphManager/action/validator/ValidationResult';
+import { createValidationError } from '../../../graphManager/action/validator/ValidationResult';
 
 export const DEFAULT_SERVICE_PATTERN = '/';
 

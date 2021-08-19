@@ -33,7 +33,7 @@ import {
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
-} from '../../../../models/metamodels/pure/action/generation/DatabaseBuilderInput';
+} from '../../../../models/metamodels/pure/graphManager/action/generation/DatabaseBuilderInput';
 import { getDbNullableTable } from '../../../../models/metamodels/pure/helpers/DatabaseHelper';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';

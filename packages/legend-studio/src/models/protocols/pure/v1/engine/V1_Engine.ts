@@ -28,13 +28,13 @@ import {
   HttpStatus,
   NetworkClientError,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../metamodels/pure/graphManager/GraphManagerLogEvent';
 import { GenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { ImportConfigurationDescription } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
-import { ImportMode } from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
+import type { ImportConfigurationDescription } from '../../../../metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
+import { ImportMode } from '../../../../metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
 import type { RawLambda } from '../../../../metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { GenerationConfigurationDescription } from '../../../../metamodels/pure/action/generation/GenerationConfigurationDescription';
-import { TEMP__AbstractEngineConfig } from '../../../../metamodels/pure/action/TEMP__AbstractEngineConfig';
+import type { GenerationConfigurationDescription } from '../../../../metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
+import { TEMP__AbstractEngineConfig } from '../../../../metamodels/pure/graphManager/action/TEMP__AbstractEngineConfig';
 import { V1_EngineServerClient } from './V1_EngineServerClient';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult';
@@ -80,7 +80,7 @@ import { V1_serializeExecutionResult } from './execution/V1_ExecutionResult';
 import { V1_ServiceStorage } from './service/V1_ServiceStorage';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
-import { ServiceExecutionMode } from '../../../../metamodels/pure/action/service/ServiceExecutionMode';
+import { ServiceExecutionMode } from '../../../../metamodels/pure/graphManager/action/service/ServiceExecutionMode';
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;

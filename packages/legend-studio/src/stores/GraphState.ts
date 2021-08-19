@@ -15,7 +15,7 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { GRAPH_MANAGER_LOG_EVENT } from '../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
@@ -43,15 +43,15 @@ import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
 import {
   CompilationError,
   EngineError,
-} from '../models/metamodels/pure/action/EngineError';
-import { extractSourceInformationCoordinates } from '../models/metamodels/pure/action/SourceInformationHelper';
+} from '../models/metamodels/pure/graphManager/action/EngineError';
+import { extractSourceInformationCoordinates } from '../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import {
   PureModel,
   CoreModel,
   SystemModel,
   GenerationModel,
 } from '../models/metamodels/pure/graph/PureModel';
-import type { AbstractPureGraphManager } from '../models/metamodels/pure/graph/AbstractPureGraphManager';
+import type { AbstractPureGraphManager } from '../models/metamodels/pure/graphManager/AbstractPureGraphManager';
 import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
 import type { SetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { SET_IMPLEMENTATION_TYPE } from '../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';

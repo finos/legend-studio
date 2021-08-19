@@ -18,28 +18,28 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   LightQuery,
   Query,
-} from '../../../../metamodels/pure/action/query/Query';
+} from '../../../../metamodels/pure/graphManager/action/query/Query';
 import type { V1_LightQuery } from './query/V1_Query';
 import { V1_Query } from './query/V1_Query';
 import type { PureModel } from '../../../../metamodels/pure/graph/PureModel';
 import { PackageableElementExplicitReference } from '../../../../metamodels/pure/model/packageableElements/PackageableElementReference';
-import { ServiceTestResult } from '../../../../metamodels/pure/action/service/ServiceTestResult';
+import { ServiceTestResult } from '../../../../metamodels/pure/graphManager/action/service/ServiceTestResult';
 import type { V1_ServiceTestResult } from './service/V1_ServiceTestResult';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
-import { ServiceRegistrationResult } from '../../../../metamodels/pure/action/service/ServiceRegistrationResult';
+import { ServiceRegistrationResult } from '../../../../metamodels/pure/graphManager/action/service/ServiceRegistrationResult';
 import {
   getImportMode,
   ImportConfigurationDescription,
-} from '../../../../metamodels/pure/action/generation/ImportConfigurationDescription';
+} from '../../../../metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
 import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription';
-import { GenerationOutput } from '../../../../metamodels/pure/action/generation/GenerationOutput';
+import { GenerationOutput } from '../../../../metamodels/pure/graphManager/action/generation/GenerationOutput';
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
 import {
   GenerationConfigurationDescription,
   GenerationProperty,
   GenerationPropertyItem,
   getGenerationPropertyItemType,
-} from '../../../../metamodels/pure/action/generation/GenerationConfigurationDescription';
+} from '../../../../metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
 import type { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription';
 import { getGenerationMode } from '../../../../metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { V1_CompilationError } from './compilation/V1_CompilationError';
@@ -47,9 +47,9 @@ import type { V1_ParserError } from './grammar/V1_ParserError';
 import {
   CompilationError,
   ParserError,
-} from '../../../../metamodels/pure/action/EngineError';
+} from '../../../../metamodels/pure/graphManager/action/EngineError';
 import type { V1_SourceInformation } from '../model/V1_SourceInformation';
-import { SourceInformation } from '../../../../metamodels/pure/action/SourceInformation';
+import { SourceInformation } from '../../../../metamodels/pure/graphManager/action/SourceInformation';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,

@@ -19,7 +19,7 @@ import {
   LAMBDA_START,
   SOURCE_ID_LABEL,
 } from '../../../../models/MetaModelConst';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
@@ -33,9 +33,9 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
-import type { SourceInformation } from '../../../../models/metamodels/pure/action/SourceInformation';
-import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
-import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
+import type { SourceInformation } from '../../../../models/metamodels/pure/graphManager/action/SourceInformation';
+import type { CompilationError } from '../../../../models/metamodels/pure/graphManager/action/EngineError';
+import { ParserError } from '../../../../models/metamodels/pure/graphManager/action/EngineError';
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
 import type { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import type { AbstractFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
@@ -47,7 +47,7 @@ import { Class } from '../../../../models/metamodels/pure/model/packageableEleme
 import { InferableMappingElementIdExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 
 export class FlatDataPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;

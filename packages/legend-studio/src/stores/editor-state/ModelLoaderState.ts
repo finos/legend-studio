@@ -25,8 +25,8 @@ import {
 } from '@finos/legend-shared';
 import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
-import type { ImportConfigurationDescription } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
-import { ImportMode } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
+import type { ImportConfigurationDescription } from '../../models/metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
+import { ImportMode } from '../../models/metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
 import type { Entity } from '@finos/legend-model-storage';
 
 export enum MODEL_UPDATER_INPUT_TYPE {

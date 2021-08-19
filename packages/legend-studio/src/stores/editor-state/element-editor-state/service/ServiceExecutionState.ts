@@ -25,7 +25,7 @@ import {
 import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
+import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   CLIENT_VERSION,
   LAMBDA_START,
@@ -53,9 +53,9 @@ import {
   RuntimePointer,
 } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
+import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
 
 export enum SERVICE_EXECUTION_TAB {

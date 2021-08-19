@@ -73,8 +73,8 @@ import {
 } from '../../../../stores/shared/FileGenerationTreeUtil';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../../const';
-import type { GenerationProperty } from '../../../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
-import { GenerationPropertyItemType } from '../../../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
+import type { GenerationProperty } from '../../../../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
+import { GenerationPropertyItemType } from '../../../../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { FileGenerationSpecification } from '../../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import {

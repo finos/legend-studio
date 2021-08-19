@@ -39,7 +39,7 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-application-components';
-import type { ImportConfigurationDescription } from '../../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
+import type { ImportConfigurationDescription } from '../../../models/metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
 import { flowResult } from 'mobx';
 
 export const ModelLoader = observer(() => {
