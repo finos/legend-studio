@@ -1,4 +1,4 @@
-# @finos/legend-query-app
+# @finos/legend-query-deployment
 
 ## 0.0.10
 

@@ -46,7 +46,7 @@ jobs:
           image-name: local/legend-studio:${{ github.sha }}
           severity-threshold: CRITICAL
   check-docker-image-query:
-    name: Run Image Checks (@finos/legend-query-app)
+    name: Run Image Checks (@finos/legend-query-deployment)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -69,7 +69,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Build image
-        run: yarn workspace @finos/legend-query-app build-dry:docker ${{ github.sha }}
+        run: yarn workspace @finos/legend-query-deployment build-dry:docker ${{ github.sha }}
       - name: Scan image for security issues
         uses: Azure/container-scan@v0
         env:

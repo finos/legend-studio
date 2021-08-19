@@ -2215,9 +2215,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-query-app@workspace:packages/legend-query-app":
+"@finos/legend-query-deployment@workspace:packages/legend-query-deployment":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-query-app@workspace:packages/legend-query-app"
+  resolution: "@finos/legend-query-deployment@workspace:packages/legend-query-deployment"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"

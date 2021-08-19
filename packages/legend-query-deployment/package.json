@@ -1,5 +1,5 @@
 {
-  "name": "@finos/legend-query-app",
+  "name": "@finos/legend-query-deployment",
   "version": "0.0.10",
   "private": true,
   "description": "Legend Query web application",
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-query-app"
+    "directory": "packages/legend-query-deployment"
   },
   "license": "Apache-2.0",
   "type": "module",

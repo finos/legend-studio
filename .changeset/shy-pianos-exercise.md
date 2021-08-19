@@ -1,6 +1,6 @@
 ---
 '@finos/eslint-plugin-legend-studio': patch
-'@finos/legend-query-app': patch
+'@finos/legend-query-deployment': patch
 '@finos/legend-studio': patch
 '@finos/legend-studio-deployment': patch
 '@finos/legend-application-components': patch

@@ -20,7 +20,7 @@
     "check:update": "yarn upgrade-interactive",
     "clean": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean",
     "dev": "yarn dev:studio",
-    "dev:query": "yarn workspace @finos/legend-query-app dev",
+    "dev:query": "yarn workspace @finos/legend-query-deployment dev",
     "dev:studio": "yarn workspace @finos/legend-studio-deployment dev",
     "dev:tsc": "tsc --build --watch",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
