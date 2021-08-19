@@ -29,7 +29,6 @@ import {
   EDITOR_LANGUAGE,
 } from '../../../../stores/EditorConfig';
 import { useResizeDetector } from 'react-resize-detector';
-import type { EntityChangeConflict } from '../../../../models/sdlc/models/entity/EntityChangeConflict';
 import type {
   MergeEditorComparisonViewInfo,
   MergeConflict,
@@ -62,6 +61,7 @@ import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import type { EntityChangeConflict } from '@finos/legend-sdlc';
 
 const getConflictSummaryText = (
   conflictEditorState: EntityChangeConflictEditorState,

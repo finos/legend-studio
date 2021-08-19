@@ -17,19 +17,20 @@
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type { VERSION_TYPE } from '../../models/sdlc/models/version/CreateVersionCommand';
-import { CreateVersionCommand } from '../../models/sdlc/models/version/CreateVersionCommand';
-import {
-  Revision,
-  RevisionAlias,
-} from '../../models/sdlc/models/revision/Revision';
-import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
-import { Version } from '../../models/sdlc/models/version/Version';
-import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
-import { Workspace } from '../../models/sdlc/models/workspace/Workspace';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { LogEvent, getNullableFirstElement } from '@finos/legend-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
+import type { VERSION_TYPE } from '@finos/legend-sdlc';
+import {
+  CreateVersionCommand,
+  ReviewState,
+  Revision,
+  RevisionAlias,
+  Version,
+  Workspace,
+  Review,
+} from '@finos/legend-sdlc';
+import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',

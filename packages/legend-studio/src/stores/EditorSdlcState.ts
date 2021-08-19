@@ -26,20 +26,19 @@ import {
 } from '@finos/legend-shared';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
-import { Project, ProjectType } from '../models/sdlc/models/project/Project';
+import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
+import type { Entity } from '@finos/legend-model-storage';
+import type { SDLCServerClient } from '@finos/legend-sdlc';
 import {
+  Build,
+  Project,
+  ProjectType,
+  Revision,
+  RevisionAlias,
+  Version,
   Workspace,
   WORKSPACE_TYPE,
-} from '../models/sdlc/models/workspace/Workspace';
-import { Version } from '../models/sdlc/models/version/Version';
-import {
-  RevisionAlias,
-  Revision,
-} from '../models/sdlc/models/revision/Revision';
-import { Build } from '../models/sdlc/models/build/Build';
-import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
-import type { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
-import type { Entity } from '@finos/legend-model-storage';
+} from '@finos/legend-sdlc';
 
 export class EditorSdlcState {
   editorStore: EditorStore;

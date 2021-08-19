@@ -29,10 +29,10 @@ import {
   assertTrue,
 } from '@finos/legend-shared';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import { Version } from '../../../../models/sdlc/models/version/Version';
 import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
 import { ServiceRegistrationEnvInfo } from '../../../application/ApplicationConfig';
+import { Version } from '@finos/legend-sdlc';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 

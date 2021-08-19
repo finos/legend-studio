@@ -31,22 +31,22 @@ import {
   hashObject,
   deleteEntry,
 } from '@finos/legend-shared';
-import { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
-import {
-  RevisionAlias,
-  Revision,
-} from '../../models/sdlc/models/revision/Revision';
-import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
+import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import { ACTIVITY_MODE } from '../EditorConfig';
+import type { Entity } from '@finos/legend-model-storage';
 import type {
   EntityChangeConflict,
   EntityChangeConflictResolution,
-} from '../../models/sdlc/models/entity/EntityChangeConflict';
-import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { EntityChangeType } from '../../models/sdlc/models/entity/EntityChange';
-import { ACTIVITY_MODE } from '../EditorConfig';
-import type { Entity } from '@finos/legend-model-storage';
+} from '@finos/legend-sdlc';
+import {
+  EntityChangeType,
+  EntityDiff,
+  ProjectConfiguration,
+  Revision,
+  RevisionAlias,
+} from '@finos/legend-sdlc';
 
 export class ConflictResolutionState {
   editorStore: EditorStore;

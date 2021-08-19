@@ -23,6 +23,7 @@ export enum ProjectType {
   PRODUCTION = 'PRODUCTION',
 }
 
+// TODO: consider removing this when SDLC finally get rid of project type and environment flags
 export enum SdlcMode {
   PROD = 'prod',
   UAT = 'uat',

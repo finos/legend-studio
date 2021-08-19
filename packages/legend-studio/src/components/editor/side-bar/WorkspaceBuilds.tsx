@@ -23,7 +23,6 @@ import {
 } from '@finos/legend-application-components';
 import { MdRefresh } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
-import { BuildStatus } from '../../../models/sdlc/models/build/Build';
 import {
   FaCircleNotch,
   FaPauseCircle,
@@ -35,6 +34,7 @@ import {
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
+import { BuildStatus } from '@finos/legend-sdlc';
 
 const getBuildStatusIcon = (buildStatus: BuildStatus): React.ReactNode => {
   switch (buildStatus) {

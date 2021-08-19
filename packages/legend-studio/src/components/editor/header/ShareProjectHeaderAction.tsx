@@ -28,7 +28,7 @@ import {
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { useEditorStore } from '../../../stores/EditorStore';
 import { FiShare } from 'react-icons/fi';
-import type { Version } from '../../../models/sdlc/models/version/Version';
+import type { Version } from '@finos/legend-sdlc';
 
 const ShareModal = observer(
   (props: { open: boolean; closeModal: () => void }) => {

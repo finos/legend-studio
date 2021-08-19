@@ -26,24 +26,28 @@ import {
   hashObject,
 } from '@finos/legend-shared';
 
+// TODO: move to graph manager
 export class GraphError extends EnrichedError {
   constructor(error: string | Error | undefined, message?: string) {
     super('Graph Error', error, message);
   }
 }
 
+// TODO: move to graph manager
 export class GraphDataParserError extends EnrichedError {
   constructor(error: string | Error | undefined, message?: string) {
     super('Graph Data Parser Error', error, message);
   }
 }
 
+// TODO: move to graph manager
 export class DependencyGraphProcessingError extends EnrichedError {
   constructor(error: string | Error | undefined, message?: string) {
     super('Dependency Graph Processing Error', error, message);
   }
 }
 
+// TODO: move to graph manager
 export class SystemGraphProcessingError extends EnrichedError {
   constructor(error: string | Error | undefined, message?: string) {
     super('System Graph Processing Error', error, message);

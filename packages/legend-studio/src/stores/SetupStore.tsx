@@ -20,18 +20,6 @@ import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { useLocalObservable } from 'mobx-react-lite';
 import type { ApplicationStore } from './ApplicationStore';
 import { useApplicationStore } from './ApplicationStore';
-import type { ProjectSelectOption } from '../models/sdlc/models/project/Project';
-import {
-  Project,
-  ProjectType,
-  ImportProjectReport,
-} from '../models/sdlc/models/project/Project';
-import type { WorkspaceSelectOption } from '../models/sdlc/models/workspace/Workspace';
-import {
-  Workspace,
-  WORKSPACE_TYPE,
-  PROJECT_LATEST_VIEWER_WORKSPACE,
-} from '../models/sdlc/models/workspace/Workspace';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -40,8 +28,20 @@ import {
   guaranteeNonNullable,
   compareLabelFn,
 } from '@finos/legend-shared';
-import { Review } from '../models/sdlc/models/review/Review';
 import { generateSetupRoute } from './LegendStudioRouter';
+import type {
+  ProjectSelectOption,
+  WorkspaceSelectOption,
+} from '@finos/legend-sdlc';
+import {
+  ImportProjectReport,
+  Project,
+  ProjectType,
+  PROJECT_LATEST_VIEWER_WORKSPACE,
+  Review,
+  Workspace,
+  WORKSPACE_TYPE,
+} from '@finos/legend-sdlc';
 
 interface ImportProjectSuccessReport {
   projectId: string;

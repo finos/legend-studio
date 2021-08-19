@@ -22,7 +22,6 @@ import {
   testAutoImportsWithSystemProfiles,
 } from '../roundtrip/RoundtripTestData';
 import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
-import { ProjectConfiguration } from '../../../models/sdlc/models/configuration/ProjectConfiguration';
 import { waitFor } from '@testing-library/dom';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { simpleCoreModelData } from './CoreTestData';
@@ -31,6 +30,7 @@ import { PackageableElementReference } from '../../../models/metamodels/pure/mod
 import { DeprecatedProjectVersionEntities } from '../../../models/metadata/models/ProjectVersionEntities';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
+import { ProjectConfiguration } from '@finos/legend-sdlc';
 
 const testDependingOnDifferentProjectVersions = [
   {

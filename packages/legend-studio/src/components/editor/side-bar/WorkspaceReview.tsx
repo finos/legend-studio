@@ -26,8 +26,6 @@ import {
 import { Link } from 'react-router-dom';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import type { EntityDiff } from '../../../models/sdlc/models/comparison/EntityDiff';
-import { entityDiffSorter } from '../../../models/sdlc/models/comparison/EntityDiff';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -44,6 +42,8 @@ import {
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
+import type { EntityDiff } from '@finos/legend-sdlc';
+import { entityDiffSorter } from '@finos/legend-sdlc';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();

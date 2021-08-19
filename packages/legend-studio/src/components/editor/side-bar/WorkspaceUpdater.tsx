@@ -17,8 +17,6 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../stores/EditorStore';
-import type { EntityDiff } from '../../../models/sdlc/models/comparison/EntityDiff';
-import { entityDiffSorter } from '../../../models/sdlc/models/comparison/EntityDiff';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import { FaInfoCircle } from 'react-icons/fa';
@@ -33,7 +31,6 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-application-components';
 import { Link } from 'react-router-dom';
-import type { EntityChangeConflict } from '../../../models/sdlc/models/entity/EntityChangeConflict';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
 import {
   ActionAlertType,
@@ -44,6 +41,8 @@ import { EntityChangeConflictEditorState } from '../../../stores/editor-state/en
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
+import type { EntityChangeConflict, EntityDiff } from '@finos/legend-sdlc';
+import { entityDiffSorter } from '@finos/legend-sdlc';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();

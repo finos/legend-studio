@@ -23,10 +23,10 @@ import {
   clsx,
   CustomSelectorInput,
 } from '@finos/legend-application-components';
-import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import type { ProjectSelectOption } from '@finos/legend-sdlc';
 
 const formatOptionLabel = (option: ProjectSelectOption): React.ReactNode => (
   <div className="setup__project__label">

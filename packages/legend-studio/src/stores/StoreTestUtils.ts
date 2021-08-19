@@ -19,7 +19,6 @@ import { ApplicationConfig } from './application/ApplicationConfig';
 import { ApplicationStore } from './ApplicationStore';
 import { EditorStore } from './EditorStore';
 import { createBrowserHistory } from 'history';
-import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
 import { PluginManager } from '../application/PluginManager';
 import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
@@ -27,6 +26,7 @@ import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/Abstra
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { Log } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
+import { EntityChangeType } from '@finos/legend-sdlc';
 
 export const testApplicationConfigData = {
   appName: 'test-app',

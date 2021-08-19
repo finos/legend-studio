@@ -24,22 +24,15 @@ import {
   FaCheckCircle,
   FaExclamationCircle,
 } from 'react-icons/fa';
-import { ProjectDependency } from '../../../../models/sdlc/models/configuration/ProjectDependency';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
 } from '../../../../stores/editor-state/ProjectConfigurationEditorState';
-import type { ProjectConfiguration } from '../../../../models/sdlc/models/configuration/ProjectConfiguration';
-import type {
-  Version,
-  VersionSelectOption,
-} from '../../../../models/sdlc/models/version/Version';
 import type { SelectComponent } from '@finos/legend-application-components';
 import {
   clsx,
   CustomSelectorInput,
 } from '@finos/legend-application-components';
-import type { ProjectSelectOption } from '../../../../models/sdlc/models/project/Project';
 import {
   useApplicationStore,
   ActionAlertActionType,
@@ -47,6 +40,13 @@ import {
 } from '../../../../stores/ApplicationStore';
 import { SDLC_LOG_EVENT } from '../../../../utils/SDLCLogEvent';
 import { flowResult } from 'mobx';
+import { ProjectDependency } from '@finos/legend-sdlc';
+import type {
+  ProjectConfiguration,
+  ProjectSelectOption,
+  Version,
+  VersionSelectOption,
+} from '@finos/legend-sdlc';
 
 const ProjectDependencyVersionSelector = observer(
   (

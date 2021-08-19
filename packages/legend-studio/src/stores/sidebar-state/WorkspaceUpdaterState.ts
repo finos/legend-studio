@@ -17,16 +17,8 @@
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
-import type { WorkspaceUpdateReport } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
-import { WORKSPACE_UPDATE_REPORT_STATUS } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
-import {
-  Revision,
-  RevisionAlias,
-} from '../../models/sdlc/models/revision/Revision';
-import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
-import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -38,9 +30,20 @@ import {
 } from '@finos/legend-shared';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import type { EntityChangeConflict } from '../../models/sdlc/models/entity/EntityChangeConflict';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import type { Entity } from '@finos/legend-model-storage';
+import type {
+  EntityChangeConflict,
+  WorkspaceUpdateReport,
+} from '@finos/legend-sdlc';
+import {
+  WORKSPACE_UPDATE_REPORT_STATUS,
+  EntityDiff,
+  Review,
+  ReviewState,
+  Revision,
+  RevisionAlias,
+} from '@finos/legend-sdlc';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;

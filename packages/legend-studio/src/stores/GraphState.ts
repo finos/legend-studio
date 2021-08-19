@@ -20,9 +20,6 @@ import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { METADATA_LOG_EVENT } from '../utils/MetadataLogEvent';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
-import type { EntityChange } from '../models/sdlc/models/entity/EntityChange';
-import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
-import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import { getGraphManager } from '../models/protocols/pure/Pure';
 import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -98,6 +95,8 @@ import type { DeprecatedProjectVersion } from '../models/metadata/models/Project
 import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
 import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { Entity } from '@finos/legend-model-storage';
+import type { EntityChange } from '@finos/legend-sdlc';
+import { EntityChangeType, ProjectConfiguration } from '@finos/legend-sdlc';
 
 export class GraphState {
   editorStore: EditorStore;

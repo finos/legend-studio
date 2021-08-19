@@ -18,11 +18,6 @@ import { useContext, createContext } from 'react';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
-import {
-  Revision,
-  RevisionAlias,
-} from '../models/sdlc/models/revision/Revision';
-import { Version } from '../models/sdlc/models/version/Version';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -31,7 +26,6 @@ import {
   guaranteeNonNullable,
   ActionState,
 } from '@finos/legend-shared';
-import { Workspace } from '../models/sdlc/models/workspace/Workspace';
 import { GraphError } from '../models/MetaModelUtils';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
@@ -41,8 +35,14 @@ import {
   generateVieweRevisionRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
-import { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
 import type { Entity } from '@finos/legend-model-storage';
+import {
+  ProjectConfiguration,
+  Revision,
+  RevisionAlias,
+  Version,
+  Workspace,
+} from '@finos/legend-sdlc';
 
 export class ViewerStore {
   editorStore: EditorStore;

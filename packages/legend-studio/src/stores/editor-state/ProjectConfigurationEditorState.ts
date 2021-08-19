@@ -24,7 +24,6 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -33,12 +32,18 @@ import {
   compareLabelFn,
 } from '@finos/legend-shared';
 import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
-import { UpdateProjectConfigurationCommand } from '../../models/sdlc/models/configuration/UpdateProjectConfigurationCommand';
-import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
-import { Project, ProjectType } from '../../models/sdlc/models/project/Project';
-import { Version } from '../../models/sdlc/models/version/Version';
-import { ProjectStructureVersion } from '../../models/sdlc/models/configuration/ProjectStructureVersion';
 import type { EditorSdlcState } from '../EditorSdlcState';
+import type {
+  ProjectConfiguration,
+  ProjectSelectOption,
+} from '@finos/legend-sdlc';
+import {
+  Project,
+  ProjectStructureVersion,
+  ProjectType,
+  UpdateProjectConfigurationCommand,
+  Version,
+} from '@finos/legend-sdlc';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',

@@ -21,6 +21,7 @@ export const UNIT_PATH_DELIMITER = '~';
 export const LAMBDA_START = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
 
+// TODO: move to graph manager
 export enum SOURCE_ID_LABEL {
   CONSTRAINT = 'constraint',
   DERIVED_PROPERTY = 'derivedProperty',
@@ -32,6 +33,7 @@ export enum SOURCE_ID_LABEL {
   AGGREGATION_AWARE_CLASS_MAPPING = 'aggregationAwareClassMapping',
 }
 
+// TODO: move to graph manager
 export enum CLIENT_VERSION {
   V1_0_0 = 'v1_0_0',
   VX_X_X = 'vX_X_X',

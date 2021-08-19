@@ -36,12 +36,10 @@ import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import type { ApplicationConfig } from './application/ApplicationConfig';
 import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { useLocalObservable } from 'mobx-react-lite';
-import { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
-import { User } from '../models/sdlc/models/User';
-import { SdlcMode } from '../models/sdlc/models/project/Project';
 import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
 import { MetadataServerClient } from '../models/metadata/MetadataServerClient';
+import { User, SdlcMode, SDLCServerClient } from '@finos/legend-sdlc';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',

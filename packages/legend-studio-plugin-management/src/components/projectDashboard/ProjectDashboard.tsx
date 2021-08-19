@@ -30,14 +30,11 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult, makeAutoObservable } from 'mobx';
 import type { ApplicationStore } from '@finos/legend-studio';
 import {
-  Build,
-  BuildStatus,
-  Project,
-  ProjectType,
   useApplicationStore,
   AppHeader,
   AppHeaderMenu,
 } from '@finos/legend-studio';
+import { Build, BuildStatus, Project, ProjectType } from '@finos/legend-sdlc';
 
 class ProjectDashboardStore {
   applicationStore: ApplicationStore;

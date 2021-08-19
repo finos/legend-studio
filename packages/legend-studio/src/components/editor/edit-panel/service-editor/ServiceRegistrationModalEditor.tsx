@@ -25,11 +25,11 @@ import {
 } from '@finos/legend-application-components';
 import { Dialog } from '@material-ui/core';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { Version } from '../../../../models/sdlc/models/version/Version';
 import { CORE_TEST_ID } from '../../../../const';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
+import { Version } from '@finos/legend-sdlc';
 
 export const ServiceRegistrationModalEditor = observer(() => {
   const editorStore = useEditorStore();

@@ -29,8 +29,6 @@ import { useParams } from 'react-router';
 import { CORE_TEST_ID } from '../../const';
 import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import Dialog from '@material-ui/core/Dialog';
-import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
-import { ProjectType } from '../../models/sdlc/models/project/Project';
 import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
 import type { SetupPathParams } from '../../stores/LegendStudioRouter';
@@ -42,6 +40,8 @@ import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import type { ProjectSelectOption } from '@finos/legend-sdlc';
+import { ProjectType } from '@finos/legend-sdlc';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();

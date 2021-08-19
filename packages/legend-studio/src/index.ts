@@ -150,14 +150,6 @@ export { V1_deserializeRawValueSpecification } from './models/protocols/pure/v1/
 export { V1_serializeRawValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 
-// SDLC
-export { EntityChangeType } from './models/sdlc/models/entity/EntityChange';
-export { Build, BuildStatus } from './models/sdlc/models/build/Build';
-export { Project, ProjectType } from './models/sdlc/models/project/Project';
-export { Version } from './models/sdlc/models/version/Version';
-export { SDLCServerClient } from './models/sdlc/SDLCServerClient';
-export { ProjectConfiguration } from './models/sdlc/models/configuration/ProjectConfiguration';
-
 // Metadata
 export { ProjectData } from './models/metadata/models/ProjectData';
 export { ProjectVersionEntities } from './models/metadata/models/ProjectVersionEntities';

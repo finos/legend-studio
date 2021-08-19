@@ -19,9 +19,6 @@ import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
-import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
-import type { Revision } from '../../models/sdlc/models/revision/Revision';
-import { RevisionAlias } from '../../models/sdlc/models/revision/Revision';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -30,11 +27,17 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { ActionAlertActionType } from '../ApplicationStore';
-import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { generateSetupRoute } from '../LegendStudioRouter';
 import type { Entity } from '@finos/legend-model-storage';
+import type { Revision } from '@finos/legend-sdlc';
+import {
+  EntityDiff,
+  Review,
+  ReviewState,
+  RevisionAlias,
+} from '@finos/legend-sdlc';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;

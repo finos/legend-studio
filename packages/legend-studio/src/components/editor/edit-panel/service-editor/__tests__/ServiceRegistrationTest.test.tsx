@@ -37,18 +37,16 @@ import {
   getMockedApplicationStore,
 } from '../../../../ComponentTestUtils';
 import { CORE_TEST_ID } from '../../../../../const';
-import type { Project } from '../../../../../models/sdlc/models/project/Project';
-import type { Workspace } from '../../../../../models/sdlc/models/workspace/Workspace';
 import type { PlainObject } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { NOTIFCATION_SEVERITY } from '../../../../../stores/ApplicationStore';
 import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState';
-import type { Version } from '../../../../../models/sdlc/models/version/Version';
 import { ServiceExecutionMode } from '../../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
 import { ServiceRegistrationResult } from '../../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
 import { getTestApplicationConfig } from '../../../../../stores/StoreTestUtils';
 import { flowResult } from 'mobx';
+import type { Project, Version, Workspace } from '@finos/legend-sdlc';
 
 let renderResult: RenderResult;
 

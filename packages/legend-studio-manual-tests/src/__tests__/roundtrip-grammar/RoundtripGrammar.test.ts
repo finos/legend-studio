@@ -45,13 +45,10 @@ import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import type { V1_PackageableElement } from '@finos/legend-studio';
-import {
-  EntityChangeType,
-  getTestEditorStore,
-  buildGraphBasic,
-} from '@finos/legend-studio';
+import { getTestEditorStore, buildGraphBasic } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { EntityChangeType } from '@finos/legend-sdlc';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {

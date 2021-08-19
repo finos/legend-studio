@@ -35,11 +35,13 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import type { GraphState } from './GraphState';
-import { EntityDiff } from '../models/sdlc/models/comparison/EntityDiff';
-import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
-import type { EntityChangeConflictResolution } from '../models/sdlc/models/entity/EntityChangeConflict';
-import { EntityChangeConflict } from '../models/sdlc/models/entity/EntityChangeConflict';
 import type { Entity } from '@finos/legend-model-storage';
+import type { EntityChangeConflictResolution } from '@finos/legend-sdlc';
+import {
+  EntityChangeConflict,
+  EntityChangeType,
+  EntityDiff,
+} from '@finos/legend-sdlc';
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;

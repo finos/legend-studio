@@ -26,12 +26,6 @@ import { CORE_TEST_ID } from '../const';
 import { ELEMENT_PATH_DELIMITER } from '../models/MetaModelConst';
 import { EditorStore } from '../stores/EditorStore';
 import { Editor } from './editor/Editor';
-import type { Project } from '../models/sdlc/models/project/Project';
-import type { Workspace } from '../models/sdlc/models/workspace/Workspace';
-import type { Version } from '../models/sdlc/models/version/Version';
-import type { ProjectConfiguration } from '../models/sdlc/models/configuration/ProjectConfiguration';
-import type { ProjectStructureVersion } from '../models/sdlc/models/configuration/ProjectStructureVersion';
-import type { Revision } from '../models/sdlc/models/revision/Revision';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
 import { getTestApplicationConfig } from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-shared';
@@ -49,6 +43,14 @@ import { PluginManager } from '../application/PluginManager';
 import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 import type { Entity } from '@finos/legend-model-storage';
+import type {
+  Project,
+  ProjectConfiguration,
+  ProjectStructureVersion,
+  Revision,
+  Version,
+  Workspace,
+} from '@finos/legend-sdlc';
 
 export const SDLC_TestData = {
   project: {

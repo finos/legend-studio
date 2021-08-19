@@ -46,6 +46,7 @@ export class EntityDiff {
   get entityName(): string {
     return extractEntityNameFromPath(this.entityPath);
   }
+
   get entityPath(): string {
     return guaranteeNonNullable(
       this.entityChangeType === EntityChangeType.DELETE
@@ -54,6 +55,7 @@ export class EntityDiff {
       `Can't find diff entity path`,
     );
   }
+
   get key(): string {
     return `old-${this.oldPath ?? ''}--new-${this.newPath ?? ''}`;
   }
@@ -77,6 +79,7 @@ export class EntityDiff {
     diff.entityChangeType === EntityChangeType.DELETE ||
     diff.entityChangeType === EntityChangeType.MODIFY ||
     diff.entityChangeType === EntityChangeType.RENAME;
+
   static shouldNewEntityExist = (diff: EntityDiff): boolean =>
     diff.entityChangeType === EntityChangeType.CREATE ||
     diff.entityChangeType === EntityChangeType.MODIFY ||

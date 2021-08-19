@@ -22,14 +22,12 @@ import { FaInfoCircle, FaTimes } from 'react-icons/fa';
 import { MdModeEdit } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
 import { Link } from 'react-router-dom';
-import { VERSION_TYPE } from '../../../models/sdlc/models/version/CreateVersionCommand';
 import {
   clsx,
   PanelLoadingIndicator,
   ContextMenu,
 } from '@finos/legend-application-components';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
-import type { Workspace } from '../../../models/sdlc/models/workspace/Workspace';
 import {
   generateEditorRoute,
   generateViewVersionRoute,
@@ -37,6 +35,8 @@ import {
 } from '../../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import type { Workspace } from '@finos/legend-sdlc';
+import { VERSION_TYPE } from '@finos/legend-sdlc';
 
 const WorkspaceViewerContextMenu = observer<
   {
