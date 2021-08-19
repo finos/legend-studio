@@ -35,7 +35,7 @@ With this, we could start shaping our codebase in monorepo structure. The follow
 
 ### Monorepo Workspaces Manager: Yarn
 
-We use [Yarn](https://yarnpkg.com/) as our monorepo manager. At the time of speaking, `lerna` is still a very popular choice, but `Yarn@2` has made a lot of `lerna` features redundant (e.g. [bootstraping](https://github.com/lerna/lerna/tree/main/commands/bootstrap), running scripts in parallel or [topological order](https://yarnpkg.com/cli/workspaces/foreach)).
+We use [Yarn](https://yarnpkg.com/) as our monorepo manager. At the time of speaking, `lerna` is still a very popular choice, but `Yarn@berry` has made a lot of `lerna` features redundant (e.g. [bootstraping](https://github.com/lerna/lerna/tree/main/commands/bootstrap), running scripts in parallel or [topological order](https://yarnpkg.com/cli/workspaces/foreach)).
 
 > Yarn 2 has many niche features such as [Plug n Play](https://yarnpkg.com/features/pnp/#gatsby-focus-wrapper), but this currently [does not work well ESM](https://github.com/yarnpkg/berry/issues/638) so we will explore that option later.
 
@@ -107,7 +107,7 @@ As such, the strategy we go with is to compile sass file and output to the `lib`
 
 [lerna](https://github.com/lerna/lerna) does a great job at managing version, it also helps with [generating changelogs using conventional commit](https://github.com/lerna/lerna/tree/main/commands/version#--conventional-commits). However, as mentioned, most of its feature set are already covered by Yarn, so we decide to use Yarn instead as our version manager and publisher.
 
-We use [changesets](https://github.com/atlassian/changesets) for versioning and documenting changes (creating changelogs) and `Yarn` for publishing. `changesets` is still a pretty _young_ project and requires more work to [integrate better](https://github.com/atlassian/changesets/issues/432) with `Yarn@2`. What we really like about `changesets` is its [fresh take on monorepo release process](https://github.com/atlassian/changesets/blob/master/docs/detailed-explanation.md), such as how it creates separate `CHANGELOG.md` files and release tags for each package. `Yarn@2` is also considering to [unify its releasing workflow](https://github.com/yarnpkg/berry/issues/1510) with that of `changesets`, so we might only need `Yarn` in the future.
+We use [changesets](https://github.com/atlassian/changesets) for versioning and documenting changes (creating changelogs) and `Yarn` for publishing. `changesets` is still a pretty _young_ project and requires more work to [integrate better](https://github.com/atlassian/changesets/issues/432) with `Yarn@berry`. What we really like about `changesets` is its [fresh take on monorepo release process](https://github.com/atlassian/changesets/blob/master/docs/detailed-explanation.md), such as how it creates separate `CHANGELOG.md` files and release tags for each package. `Yarn@berry` is also considering to [unify its releasing workflow](https://github.com/yarnpkg/berry/issues/1510) with that of `changesets`, so we might only need `Yarn` in the future.
 
 ### IDE: Visual Studio Code
 
