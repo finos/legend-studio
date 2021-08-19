@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  LegendQuery,
-  QueryBuilder_Preset,
-} from '@finos/legend-studio-preset-query-builder';
-import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
-import appConfig from '../query.config';
+import { LegendQueryApplication } from '@finos/legend-query-app';
+import config from '../query.config';
 import './index.scss';
-import { BrowserConsole } from '@finos/legend-shared';
 
-LegendQuery.create()
-  .setup({ baseUrl: appConfig.baseUrl })
-  .withPresets([new DSLText_Preset(), new QueryBuilder_Preset()])
-  .withLoggers([new BrowserConsole()])
-  .start()
-  .catch((e) => {
-    throw e;
-  });
+LegendQueryApplication.run(config.baseUrl);

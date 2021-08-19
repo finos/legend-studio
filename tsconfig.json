@@ -10,7 +10,9 @@
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
     { "path": "packages/legend-graph-manager" },
-    { "path": "packages/legend-graph-manager-preset-external-format-json-schema" },
+    {
+      "path": "packages/legend-graph-manager-preset-external-format-json-schema"
+    },
     { "path": "packages/legend-application-components" },
     { "path": "packages/legend-tracer-plugin-zipkin" },
     { "path": "packages/legend-model-storage" },
@@ -21,6 +23,7 @@
     { "path": "packages/legend-studio-preset-dsl-text" },
     { "path": "packages/legend-studio-preset-query-builder" },
     { "path": "packages/legend-studio-manual-tests" },
+    { "path": "packages/legend-query-app" },
     { "path": "packages/legend-query-deployment" }
   ]
 }

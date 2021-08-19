@@ -14,4 +14,20 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-query-app/lib/index.css';
+import { generateBundleCopyrightText } from '../../scripts/copyright/PackageCopyrightHelper.js';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export default {
+  publish: {
+    typescript: {
+      main: './tsconfig.build.json',
+      others: ['./tsconfig.package.json'],
+    },
+  },
+  build: {
+    copyrightText: generateBundleCopyrightText(__dirname),
+  },
+};

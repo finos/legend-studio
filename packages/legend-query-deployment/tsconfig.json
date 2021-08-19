@@ -12,10 +12,5 @@
     "src/**/*.json",
     "query.config.js"
   ],
-  "references": [
-    { "path": "../legend-studio" },
-    { "path": "../legend-shared" },
-    { "path": "../legend-studio-preset-dsl-text" },
-    { "path": "../legend-studio-preset-query-builder" }
-  ]
+  "references": [{ "path": "../legend-query-app" }]
 }

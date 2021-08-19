@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-import { LegendStudio } from '@finos/legend-studio';
-import { QueryBuilder_Preset } from '@finos/legend-studio-preset-query-builder';
+import {
+  LegendQuery,
+  QueryBuilder_Preset,
+} from '@finos/legend-studio-preset-query-builder';
 import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
 import { EFJSONSchema_Preset } from '@finos/legend-graph-manager-preset-external-format-json-schema';
 import { BrowserConsole } from '@finos/legend-shared';
 
-export class LegendStudioApplication {
+export class LegendQueryApplication {
   static run(baseUrl: string): void {
-    LegendStudio.create()
+    LegendQuery.create()
       .setup({ baseUrl })
       .withPresets([
         new DSLText_Preset(),

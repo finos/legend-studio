@@ -35,12 +35,10 @@
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev"
   },
   "dependencies": {
-    "@finos/legend-studio-app": "workspace:*",
-    "react": "17.0.2"
+    "@finos/legend-studio-app": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@finos/legend-shared": "workspace:*",
     "copy-webpack-plugin": "9.0.1",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
