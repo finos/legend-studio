@@ -2266,6 +2266,7 @@ __metadata:
   resolution: "@finos/legend-server-sdlc@workspace:packages/legend-server-sdlc"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -2276,6 +2277,7 @@ __metadata:
     react: 17.0.2
     react-dom: 17.0.2
     rimraf: 3.0.2
+    serializr: 2.0.5
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
