@@ -33,20 +33,23 @@ class Dummy_Preset extends AbstractPreset {
   }
 }
 
-test(integrationTest('Application can start with a dummy preset'), async () => {
-  const application = LegendStudio.create();
+test(
+  integrationTest('Legend Studio can start with a dummy preset'),
+  async () => {
+    const application = LegendStudio.create();
 
-  MOBX__enableSpyOrMock();
-  jest
-    .spyOn(application, 'fetchApplicationConfiguration')
-    .mockResolvedValue([getTestApplicationConfig(), {}]);
-  MOBX__disableSpyOrMock();
+    MOBX__enableSpyOrMock();
+    jest
+      .spyOn(application, 'fetchApplicationConfiguration')
+      .mockResolvedValue([getTestApplicationConfig(), {}]);
+    MOBX__disableSpyOrMock();
 
-  application
-    .setup({ baseUrl: '/' })
-    .withPresets([new Dummy_Preset()])
-    .start()
-    .catch((e) => {
-      throw e;
-    });
-});
+    application
+      .setup({ baseUrl: '/' })
+      .withPresets([new Dummy_Preset()])
+      .start()
+      .catch((e) => {
+        throw e;
+      });
+  },
+);

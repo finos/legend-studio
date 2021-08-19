@@ -8,6 +8,7 @@
     "legend-query",
     "query",
     "app",
+    "deployment",
     "webapp"
   ],
   "repository": {
