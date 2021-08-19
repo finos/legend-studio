@@ -34,9 +34,7 @@
     "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
-    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
   },
   "dependencies": {
     "@finos/legend-graph-manager-preset-external-format-json-schema": "workspace:*",
@@ -50,7 +48,6 @@
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
-    "jest": "27.0.6",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.38.0",
