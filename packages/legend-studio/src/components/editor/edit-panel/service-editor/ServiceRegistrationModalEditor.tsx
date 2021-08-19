@@ -29,7 +29,7 @@ import { CORE_TEST_ID } from '../../../../const';
 import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
-import { Version } from '@finos/legend-sdlc';
+import { Version } from '@finos/legend-server-sdlc';
 
 export const ServiceRegistrationModalEditor = observer(() => {
   const editorStore = useEditorStore();

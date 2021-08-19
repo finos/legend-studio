@@ -1,11 +1,11 @@
 {
   "name": "@finos/legend-server-depot",
   "version": "0.0.1",
-  "description": "Legend metadata",
+  "description": "Legend Depot server client",
   "keywords": [
     "legend",
     "legend-server-depot",
-    "metadata"
+    "depot"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-server-depot",
   "bugs": {

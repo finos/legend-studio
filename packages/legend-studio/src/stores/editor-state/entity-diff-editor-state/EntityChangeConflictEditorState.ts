@@ -31,7 +31,7 @@ import { mergeDiff3 } from 'node-diff3';
 import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
-import { EntityChangeConflictResolution } from '@finos/legend-sdlc';
+import { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 
 const START_HEADER_MARKER = '<<<<<<<';
 const COMMON_BASE_MARKER = '|||||||';

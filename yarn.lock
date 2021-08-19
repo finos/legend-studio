@@ -2240,9 +2240,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-sdlc@workspace:*, @finos/legend-sdlc@workspace:packages/legend-sdlc":
+"@finos/legend-server-depot@workspace:packages/legend-server-depot":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-sdlc@workspace:packages/legend-sdlc"
+  resolution: "@finos/legend-server-depot@workspace:packages/legend-server-depot"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2261,9 +2261,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-server-depot@workspace:packages/legend-server-depot":
+"@finos/legend-server-sdlc@workspace:*, @finos/legend-server-sdlc@workspace:packages/legend-server-sdlc":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-server-depot@workspace:packages/legend-server-depot"
+  resolution: "@finos/legend-server-sdlc@workspace:packages/legend-server-sdlc"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2346,7 +2346,7 @@ __metadata:
   dependencies:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-sdlc": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@types/react": 17.0.18
@@ -2368,7 +2368,7 @@ __metadata:
   dependencies:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-sdlc": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@types/react": 17.0.18
@@ -2468,7 +2468,7 @@ __metadata:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
-    "@finos/legend-sdlc": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.1.0

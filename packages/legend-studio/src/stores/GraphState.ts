@@ -95,8 +95,11 @@ import type { DeprecatedProjectVersion } from '../models/metadata/models/Project
 import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
 import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { Entity } from '@finos/legend-model-storage';
-import type { EntityChange } from '@finos/legend-sdlc';
-import { EntityChangeType, ProjectConfiguration } from '@finos/legend-sdlc';
+import type { EntityChange } from '@finos/legend-server-sdlc';
+import {
+  EntityChangeType,
+  ProjectConfiguration,
+} from '@finos/legend-server-sdlc';
 
 export class GraphState {
   editorStore: EditorStore;

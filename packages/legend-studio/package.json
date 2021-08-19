@@ -39,7 +39,7 @@
   "dependencies": {
     "@finos/legend-application-components": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
-    "@finos/legend-sdlc": "workspace:*",
+    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
     "@testing-library/react": "12.0.0",

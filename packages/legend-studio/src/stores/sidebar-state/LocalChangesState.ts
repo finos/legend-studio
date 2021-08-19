@@ -36,7 +36,7 @@ import { ActionAlertType, ActionAlertActionType } from '../ApplicationStore';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { Entity } from '@finos/legend-model-storage';
-import { EntityDiff, Revision } from '@finos/legend-sdlc';
+import { EntityDiff, Revision } from '@finos/legend-server-sdlc';
 
 export class LocalChangesState {
   editorStore: EditorStore;

@@ -1,21 +1,21 @@
 {
-  "name": "@finos/legend-sdlc",
+  "name": "@finos/legend-server-sdlc",
   "version": "0.0.1",
-  "description": "Legend SDLC",
+  "description": "Legend SDLC server client",
   "keywords": [
     "legend",
-    "legend-sdlc",
+    "legend-server-sdlc",
     "storage",
     "sdlc"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-sdlc",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-server-sdlc",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-sdlc"
+    "directory": "packages/legend-server-sdlc"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

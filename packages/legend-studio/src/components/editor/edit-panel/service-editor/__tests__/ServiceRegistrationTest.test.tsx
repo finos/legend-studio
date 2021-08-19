@@ -46,7 +46,7 @@ import { ServiceExecutionMode } from '../../../../../models/metamodels/pure/acti
 import { ServiceRegistrationResult } from '../../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
 import { getTestApplicationConfig } from '../../../../../stores/StoreTestUtils';
 import { flowResult } from 'mobx';
-import type { Project, Version, Workspace } from '@finos/legend-sdlc';
+import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
 
 let renderResult: RenderResult;
 

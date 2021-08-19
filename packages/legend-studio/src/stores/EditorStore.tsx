@@ -125,7 +125,7 @@ import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
-import { ProjectConfiguration } from '@finos/legend-sdlc';
+import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';

@@ -25,7 +25,7 @@ import type { EditorStore } from './EditorStore';
 import { useEditorStore } from './EditorStore';
 import { EDITOR_MODE, ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
-import { Project, Review } from '@finos/legend-sdlc';
+import { Project, Review } from '@finos/legend-server-sdlc';
 
 export class ReviewStore {
   editorStore: EditorStore;

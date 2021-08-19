@@ -41,8 +41,11 @@ import { EntityChangeConflictEditorState } from '../../../stores/editor-state/en
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
-import type { EntityChangeConflict, EntityDiff } from '@finos/legend-sdlc';
-import { entityDiffSorter } from '@finos/legend-sdlc';
+import type {
+  EntityChangeConflict,
+  EntityDiff,
+} from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '@finos/legend-server-sdlc';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();

@@ -34,7 +34,12 @@ import {
   AppHeader,
   AppHeaderMenu,
 } from '@finos/legend-studio';
-import { Build, BuildStatus, Project, ProjectType } from '@finos/legend-sdlc';
+import {
+  Build,
+  BuildStatus,
+  Project,
+  ProjectType,
+} from '@finos/legend-server-sdlc';
 
 class ProjectDashboardStore {
   applicationStore: ApplicationStore;

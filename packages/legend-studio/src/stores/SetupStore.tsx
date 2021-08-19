@@ -32,7 +32,7 @@ import { generateSetupRoute } from './LegendStudioRouter';
 import type {
   ProjectSelectOption,
   WorkspaceSelectOption,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 import {
   ImportProjectReport,
   Project,
@@ -41,7 +41,7 @@ import {
   Review,
   Workspace,
   WORKSPACE_TYPE,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 interface ImportProjectSuccessReport {
   projectId: string;

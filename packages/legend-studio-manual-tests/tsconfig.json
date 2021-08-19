@@ -15,7 +15,7 @@
   "references": [
     { "path": "../legend-shared" },
     { "path": "../legend-studio" },
-    { "path": "../legend-sdlc" },
+    { "path": "../legend-server-sdlc" },
     { "path": "../legend-application-components" }
   ]
 }

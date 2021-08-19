@@ -40,13 +40,13 @@ import {
 } from '../../../../stores/ApplicationStore';
 import { SDLC_LOG_EVENT } from '../../../../utils/SDLCLogEvent';
 import { flowResult } from 'mobx';
-import { ProjectDependency } from '@finos/legend-sdlc';
+import { ProjectDependency } from '@finos/legend-server-sdlc';
 import type {
   ProjectConfiguration,
   ProjectSelectOption,
   Version,
   VersionSelectOption,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 const ProjectDependencyVersionSelector = observer(
   (

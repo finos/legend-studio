@@ -42,8 +42,8 @@ import {
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
-import type { EntityDiff } from '@finos/legend-sdlc';
-import { entityDiffSorter } from '@finos/legend-sdlc';
+import type { EntityDiff } from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '@finos/legend-server-sdlc';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();

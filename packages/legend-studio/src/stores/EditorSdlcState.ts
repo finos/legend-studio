@@ -28,7 +28,7 @@ import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { SDLC_LOG_EVENT } from '../utils/SDLCLogEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
-import type { SDLCServerClient } from '@finos/legend-sdlc';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import {
   Build,
   Project,
@@ -38,7 +38,7 @@ import {
   Version,
   Workspace,
   WORKSPACE_TYPE,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 export class EditorSdlcState {
   editorStore: EditorStore;

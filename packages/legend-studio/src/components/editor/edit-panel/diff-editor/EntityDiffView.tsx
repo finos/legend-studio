@@ -29,8 +29,8 @@ import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
-import type { EntityDiff } from '@finos/legend-sdlc';
-import { EntityChangeType } from '@finos/legend-sdlc';
+import type { EntityDiff } from '@finos/legend-server-sdlc';
+import { EntityChangeType } from '@finos/legend-server-sdlc';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {

@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@finos/legend-application-components": "workspace:*",
-    "@finos/legend-sdlc": "workspace:*",
+    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@types/react": "17.0.18",

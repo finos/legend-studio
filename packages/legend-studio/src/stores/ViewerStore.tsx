@@ -42,7 +42,7 @@ import {
   RevisionAlias,
   Version,
   Workspace,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 export class ViewerStore {
   editorStore: EditorStore;

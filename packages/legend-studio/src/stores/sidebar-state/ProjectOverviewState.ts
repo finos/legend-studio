@@ -20,7 +20,7 @@ import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { LogEvent, getNullableFirstElement } from '@finos/legend-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
-import type { VERSION_TYPE } from '@finos/legend-sdlc';
+import type { VERSION_TYPE } from '@finos/legend-server-sdlc';
 import {
   CreateVersionCommand,
   ReviewState,
@@ -29,7 +29,7 @@ import {
   Version,
   Workspace,
   Review,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {

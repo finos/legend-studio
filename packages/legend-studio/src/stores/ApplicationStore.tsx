@@ -39,7 +39,7 @@ import { useLocalObservable } from 'mobx-react-lite';
 import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
 import { MetadataServerClient } from '../models/metadata/MetadataServerClient';
-import { User, SdlcMode, SDLCServerClient } from '@finos/legend-sdlc';
+import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',

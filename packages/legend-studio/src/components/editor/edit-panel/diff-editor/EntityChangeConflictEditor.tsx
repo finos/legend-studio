@@ -61,7 +61,7 @@ import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
-import type { EntityChangeConflict } from '@finos/legend-sdlc';
+import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
 
 const getConflictSummaryText = (
   conflictEditorState: EntityChangeConflictEditorState,

@@ -39,14 +39,14 @@ import type { Entity } from '@finos/legend-model-storage';
 import type {
   EntityChangeConflict,
   EntityChangeConflictResolution,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 import {
   EntityChangeType,
   EntityDiff,
   ProjectConfiguration,
   Revision,
   RevisionAlias,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 export class ConflictResolutionState {
   editorStore: EditorStore;

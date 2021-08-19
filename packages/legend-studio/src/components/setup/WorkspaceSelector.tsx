@@ -22,7 +22,7 @@ import { CustomSelectorInput } from '@finos/legend-application-components';
 import { FaPlus } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../stores/ApplicationStore';
-import type { WorkspaceSelectOption } from '@finos/legend-sdlc';
+import type { WorkspaceSelectOption } from '@finos/legend-server-sdlc';
 
 export const WorkspaceSelector = observer(
   (

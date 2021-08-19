@@ -31,13 +31,13 @@ import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/En
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { generateSetupRoute } from '../LegendStudioRouter';
 import type { Entity } from '@finos/legend-model-storage';
-import type { Revision } from '@finos/legend-sdlc';
+import type { Revision } from '@finos/legend-server-sdlc';
 import {
   EntityDiff,
   Review,
   ReviewState,
   RevisionAlias,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;

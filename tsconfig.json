@@ -9,7 +9,7 @@
     { "path": "packages/legend-application-components" },
     { "path": "packages/legend-model-storage" },
     { "path": "packages/legend-server-depot" },
-    { "path": "packages/legend-sdlc" },
+    { "path": "packages/legend-server-sdlc" },
     { "path": "packages/legend-graph" },
     { "path": "packages/legend-graph-manager" },
     { "path": "packages/legend-studio" },

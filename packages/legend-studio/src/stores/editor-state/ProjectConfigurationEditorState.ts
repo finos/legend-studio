@@ -36,14 +36,14 @@ import type { EditorSdlcState } from '../EditorSdlcState';
 import type {
   ProjectConfiguration,
   ProjectSelectOption,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 import {
   Project,
   ProjectStructureVersion,
   ProjectType,
   UpdateProjectConfigurationCommand,
   Version,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',

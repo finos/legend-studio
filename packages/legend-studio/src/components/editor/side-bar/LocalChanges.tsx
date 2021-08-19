@@ -28,8 +28,8 @@ import { GoSync } from 'react-icons/go';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
-import type { EntityDiff } from '@finos/legend-sdlc';
-import { entityDiffSorter } from '@finos/legend-sdlc';
+import type { EntityDiff } from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '@finos/legend-server-sdlc';
 
 export const LocalChanges = observer(() => {
   const editorStore = useEditorStore();

@@ -40,8 +40,8 @@ import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
-import type { ProjectSelectOption } from '@finos/legend-sdlc';
-import { ProjectType } from '@finos/legend-sdlc';
+import type { ProjectSelectOption } from '@finos/legend-server-sdlc';
+import { ProjectType } from '@finos/legend-server-sdlc';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();

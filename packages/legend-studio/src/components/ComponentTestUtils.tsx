@@ -50,7 +50,7 @@ import type {
   Revision,
   Version,
   Workspace,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 export const SDLC_TestData = {
   project: {

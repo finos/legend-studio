@@ -34,7 +34,7 @@ import {
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
-import { BuildStatus } from '@finos/legend-sdlc';
+import { BuildStatus } from '@finos/legend-server-sdlc';
 
 const getBuildStatusIcon = (buildStatus: BuildStatus): React.ReactNode => {
   switch (buildStatus) {

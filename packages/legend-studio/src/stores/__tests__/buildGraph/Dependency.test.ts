@@ -30,7 +30,7 @@ import { PackageableElementReference } from '../../../models/metamodels/pure/mod
 import { DeprecatedProjectVersionEntities } from '../../../models/metadata/models/ProjectVersionEntities';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
-import { ProjectConfiguration } from '@finos/legend-sdlc';
+import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 
 const testDependingOnDifferentProjectVersions = [
   {

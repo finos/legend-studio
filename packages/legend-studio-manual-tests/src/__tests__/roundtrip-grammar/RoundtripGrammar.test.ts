@@ -48,7 +48,7 @@ import type { V1_PackageableElement } from '@finos/legend-studio';
 import { getTestEditorStore, buildGraphBasic } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { EntityChangeType } from '@finos/legend-sdlc';
+import { EntityChangeType } from '@finos/legend-server-sdlc';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {

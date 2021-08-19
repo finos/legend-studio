@@ -20,7 +20,7 @@ import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { LogEvent } from '@finos/legend-shared';
-import { Build } from '@finos/legend-sdlc';
+import { Build } from '@finos/legend-server-sdlc';
 
 export class WorkspaceBuildsState {
   editorStore: EditorStore;

@@ -26,7 +26,7 @@ import type { GraphBuilderOptions } from '../models/metamodels/pure/graph/Abstra
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { Log } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
-import { EntityChangeType } from '@finos/legend-sdlc';
+import { EntityChangeType } from '@finos/legend-server-sdlc';
 
 export const testApplicationConfigData = {
   appName: 'test-app',

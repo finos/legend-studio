@@ -31,7 +31,7 @@ import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { WebApplicationNavigator } from '../../stores/application/WebApplicationNavigator';
 import { createMemoryHistory } from 'history';
-import { SDLCServerClient } from '@finos/legend-sdlc';
+import { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 let applicationStore: ApplicationStore;
 

@@ -36,12 +36,12 @@ import {
 import type { EditorStore } from './EditorStore';
 import type { GraphState } from './GraphState';
 import type { Entity } from '@finos/legend-model-storage';
-import type { EntityChangeConflictResolution } from '@finos/legend-sdlc';
+import type { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import {
   EntityChangeConflict,
   EntityChangeType,
   EntityDiff,
-} from '@finos/legend-sdlc';
+} from '@finos/legend-server-sdlc';
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;

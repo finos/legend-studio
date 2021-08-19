@@ -35,8 +35,8 @@ import {
 } from '../../../stores/LegendStudioRouter';
 import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
-import type { Workspace } from '@finos/legend-sdlc';
-import { VERSION_TYPE } from '@finos/legend-sdlc';
+import type { Workspace } from '@finos/legend-server-sdlc';
+import { VERSION_TYPE } from '@finos/legend-server-sdlc';
 
 const WorkspaceViewerContextMenu = observer<
   {
