@@ -37,7 +37,7 @@
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
   },
   "dependencies": {
-    "@finos/legend-graph-manager-preset-external-format-json-schema": "workspace:*",
+    "@finos/legend-graph-preset-external-format-json-schema": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-preset-dsl-text": "workspace:*",

@@ -4,7 +4,7 @@
 '@finos/legend-application-components': patch
 '@finos/legend-dev-utils': patch
 '@finos/legend-graph': patch
-'@finos/legend-graph-manager-preset-external-format-json-schema': patch
+'@finos/legend-graph-preset-external-format-json-schema': patch
 '@finos/legend-model-storage': patch
 '@finos/legend-query-app': patch
 '@finos/legend-query-deployment': patch

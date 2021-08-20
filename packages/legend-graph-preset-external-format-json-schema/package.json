@@ -1,5 +1,5 @@
 {
-  "name": "@finos/legend-graph-manager-preset-external-format-json-schema",
+  "name": "@finos/legend-graph-preset-external-format-json-schema",
   "version": "0.0.42",
   "description": "Legend Studio preset for JSON Schema external format",
   "keywords": [
@@ -12,14 +12,14 @@
     "preset-external-format-json-schema",
     "json-schema"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-graph-manager-preset-external-format-json-schema",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-graph-preset-external-format-json-schema",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-graph-manager-preset-external-format-json-schema"
+    "directory": "packages/legend-graph-preset-external-format-json-schema"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

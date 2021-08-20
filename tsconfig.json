@@ -10,7 +10,7 @@
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
     {
-      "path": "packages/legend-graph-manager-preset-external-format-json-schema"
+      "path": "packages/legend-graph-preset-external-format-json-schema"
     },
     { "path": "packages/legend-application-components" },
     { "path": "packages/legend-tracer-plugin-zipkin" },
