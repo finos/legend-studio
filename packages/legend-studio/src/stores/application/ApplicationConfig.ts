@@ -22,14 +22,14 @@ import {
   primitive,
   SKIP,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   AssertionError,
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   SerializationFactory,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
 import { URL_PATH_PLACEHOLDER } from '../LegendStudioRouter';
 

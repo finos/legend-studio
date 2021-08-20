@@ -15,15 +15,17 @@
  */
 
 import { relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
-import { unitTest, guaranteeType } from '@finos/legend-studio-shared';
-import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
+import { unitTest, guaranteeType } from '@finos/legend-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
-import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
 import type { Entity } from '@finos/legend-model-storage';
+import {
+  PRIMITIVE_TYPE,
+  Database,
+  RootRelationalInstanceSetImplementation,
+  EmbeddedRelationalInstanceSetImplementation,
+  RelationalPropertyMapping,
+  getClassMappingsByClass,
+} from '@finos/legend-graph';
 
 const editorStore = getTestEditorStore();
 

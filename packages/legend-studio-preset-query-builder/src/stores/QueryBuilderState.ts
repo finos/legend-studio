@@ -15,14 +15,14 @@
  */
 
 import { action, flow, flowResult, observable, makeObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
   changeEntry,
   guaranteeNonNullable,
   guaranteeType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterState';
 import { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState';
@@ -36,16 +36,15 @@ import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
 import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
+import type { LambdaFunction } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
-  EditorExtensionState,
   CompilationError,
   extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
   QueryBuilderFilterOperator_NotEqual,
@@ -75,6 +74,8 @@ import {
   QueryBuilderFilterOperator_NotIn,
 } from './filterOperators/QueryBuilderFilterOperator_In';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
+import type { EditorStore } from '@finos/legend-studio';
+import { EditorExtensionState } from '@finos/legend-studio';
 
 export class QueryBuilderState extends EditorExtensionState {
   editorStore: EditorStore;

@@ -16,7 +16,6 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
@@ -27,7 +26,7 @@ import type {
   UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
   clsx,
@@ -36,7 +35,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { CORE_TEST_ID } from '../../../../const';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
@@ -48,14 +47,16 @@ import {
   FaFire,
   FaArrowCircleRight,
 } from 'react-icons/fa';
-import type { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Enum } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enum';
-import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type { Enumeration, StereotypeReference } from '@finos/legend-graph';
+import {
+  Enum,
+  Profile,
+  Tag,
+  TaggedValue,
+  Stereotype,
+  StereotypeExplicitReference,
+} from '@finos/legend-graph';
 
 const EnumBasicEditor = observer(
   (props: {

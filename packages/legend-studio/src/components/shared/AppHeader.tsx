@@ -15,9 +15,9 @@
  */
 
 import { Link } from 'react-router-dom';
-import { LegendLogo } from '@finos/legend-studio-components';
-import { useApplicationStore } from '../../stores/ApplicationStore';
+import { LegendLogo } from '@finos/legend-application-components';
 import type { ApplicationConfig } from '../../stores/application/ApplicationConfig';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 export const AppHeader: React.FC<{
   children?: React.ReactNode;

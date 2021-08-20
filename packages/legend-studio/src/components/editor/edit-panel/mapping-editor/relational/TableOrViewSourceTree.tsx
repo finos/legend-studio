@@ -20,28 +20,25 @@ import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { TableJoinIcon } from '../../../../shared/Icon';
 import {
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   addUniqueEntry,
   assertTrue,
   guaranteeType,
   isNonNullable,
-} from '@finos/legend-studio-shared';
-import type { Type } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import type { Table } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { Column } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Column';
-import type { Join } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Join';
-import type { View } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
+} from '@finos/legend-shared';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
 } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper';
+import type { Type, Table, Join, View } from '@finos/legend-graph';
+import { Column } from '@finos/legend-graph';
 
 export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
 

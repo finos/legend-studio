@@ -27,11 +27,11 @@ import {
   TimesIcon,
   CheckSquareIcon,
   SquareIcon,
-} from '@finos/legend-studio-components';
-import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
+import type { TreeNodeContainerProps } from '@finos/legend-application-components';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import { getClassPropertyIcon } from '@finos/legend-studio';
 import type {
   QueryBuilderGraphFetchTreeData,

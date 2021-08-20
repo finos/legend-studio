@@ -15,11 +15,13 @@
  */
 
 import { DiagramRenderer } from '../../shared/diagram-viewer/DiagramRenderer';
-import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
-import { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { uuid } from '@finos/legend-studio-shared';
+import { uuid } from '@finos/legend-shared';
+import type { Class } from '@finos/legend-graph';
+import {
+  Diagram,
+  ClassView,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 
 export class InheritanceDiagramRenderer extends DiagramRenderer {
   constructor(div: HTMLDivElement, _class: Class) {

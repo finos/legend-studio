@@ -23,13 +23,12 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { MappingEditor } from './mapping-editor/MappingEditor';
 import { UMLEditor } from './uml-editor/UMLEditor';
 import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { UMLEditorState } from '../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { ElementEditorState } from '../../../stores/editor-state/element-editor-state/ElementEditorState';
-import { useEditorStore } from '../../../stores/EditorStore';
 import { CORE_TEST_ID } from '../../../const';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/EditorConfig';
 import { useResizeDetector } from 'react-resize-detector';
@@ -57,7 +56,7 @@ import { PackageableConnectionEditorState } from '../../../stores/editor-state/e
 import { PackageableConnectionEditor } from './connection-editor/ConnectionEditor';
 import { FileGenerationEditorState } from '../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
 import { FileGenerationEditor } from './element-generation-editor/FileGenerationEditor';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { EntityChangeConflictEditor } from './diff-editor/EntityChangeConflictEditor';
 import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState';
@@ -68,6 +67,7 @@ import { GenerationSpecificationEditor } from './GenerationSpecificationEditor';
 import { FileGenerationViewerState } from '../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationViewer } from '../../editor/edit-panel/FileGenerationViewer';
 import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import { useEditorStore } from '../EditorStoreProvider';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;

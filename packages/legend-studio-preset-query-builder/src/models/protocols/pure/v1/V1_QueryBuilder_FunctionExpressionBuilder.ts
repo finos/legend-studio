@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
+import {
+  assertErrorThrown,
+  assertNonNullable,
+  assertTrue,
+  assertType,
+  guaranteeType,
+  returnUndefOnError,
+} from '@finos/legend-shared';
+import { SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const';
 import type {
   V1_GraphBuilderContext,
   V1_ProcessingContext,
   V1_ValueSpecification,
   ValueSpecification,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   extractElementNameFromPath,
   V1_AppliedProperty,
@@ -40,16 +49,7 @@ import {
   AbstractPropertyExpression,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
-} from '@finos/legend-studio';
-import {
-  assertErrorThrown,
-  assertNonNullable,
-  assertTrue,
-  assertType,
-  guaranteeType,
-  returnUndefOnError,
-} from '@finos/legend-studio-shared';
-import { SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const';
+} from '@finos/legend-graph';
 
 const buildBaseSimpleFunctionExpression = (
   processedParameters: ValueSpecification[],

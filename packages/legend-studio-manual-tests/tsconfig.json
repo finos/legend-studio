@@ -13,8 +13,10 @@
     "studio.config.js"
   ],
   "references": [
+    { "path": "../legend-shared" },
+    { "path": "../legend-graph" },
     { "path": "../legend-studio" },
-    { "path": "../legend-studio-components" },
-    { "path": "../legend-studio-shared" }
+    { "path": "../legend-server-sdlc" },
+    { "path": "../legend-application-components" }
   ]
 }

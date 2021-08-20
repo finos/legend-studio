@@ -15,17 +15,16 @@
  */
 
 import type { EditorStore } from '@finos/legend-studio';
+import { LambdaEditorState, TAB_SIZE } from '@finos/legend-studio';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   buildSourceInformationSourceId,
-  LambdaEditorState,
-  LAMBDA_START,
+  LAMBDA_PIPE,
   ParserError,
   RawLambda,
-  TAB_SIZE,
-} from '@finos/legend-studio';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { LogEvent } from '@finos/legend-studio-shared';
+} from '@finos/legend-graph';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent } from '@finos/legend-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 
@@ -64,7 +63,7 @@ export class QueryTextEditorState extends LambdaEditorState {
   readOnlylambdaJson = '';
 
   constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       rawLambdaState: observable,

@@ -22,7 +22,7 @@ import type {
 import type {
   ValueSpecification,
   SimpleFunctionExpression,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   CollectionInstanceValue,
   GenericTypeExplicitReference,
@@ -30,7 +30,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   Enumeration,
   PRIMITIVE_TYPE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   buildFilterConditionState,
   buildNotExpression,

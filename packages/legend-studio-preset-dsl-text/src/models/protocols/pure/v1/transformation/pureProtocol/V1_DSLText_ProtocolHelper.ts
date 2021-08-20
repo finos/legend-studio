@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { usingConstantValueSchema } from '@finos/legend-studio-shared';
+import { usingConstantValueSchema } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
 import { V1_Text } from '../../model/packageableElements/V1_Text';
 

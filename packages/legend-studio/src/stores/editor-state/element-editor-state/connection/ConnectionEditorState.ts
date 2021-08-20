@@ -20,15 +20,20 @@ import {
   guaranteeType,
   uuid,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PackageableConnection } from '../../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import type { Connection } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import type { StoreRelational_EditorPlugin_Extension } from '../../../StoreRelational_EditorPlugin_Extension';
+import { DatabaseBuilderState } from './DatabaseBuilderState';
+import type {
+  PackageableElement,
+  Connection,
+  ValidationIssue,
+} from '@finos/legend-graph';
 import {
+  PackageableConnection,
+  JsonModelConnection,
+  FlatDataConnection,
+  RelationalDatabaseConnection,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
@@ -36,19 +41,14 @@ import {
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
   BigQueryDatasourceSpecification,
   StaticDatasourceSpecification,
   RedshiftDatasourceSpecification,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import type { ValidationIssue } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
-import { createValidationError } from '../../../../models/metamodels/pure/action/validator/ValidationResult';
-import type { StoreRelational_EditorPlugin_Extension } from '../../../StoreRelational_EditorPlugin_Extension';
-import { DatabaseBuilderState } from './DatabaseBuilderState';
+  createValidationError,
+} from '@finos/legend-graph';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;

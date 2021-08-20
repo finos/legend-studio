@@ -1,0 +1,67 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { UnsupportedOperationError } from '@finos/legend-shared';
+import type { PackageableElementImplicitReference } from '../../../PackageableElementReference';
+import type { Database } from './Database';
+import { Table } from './Table';
+import type { Relation } from './RelationalOperationElement';
+import { ViewExplicitReference, ViewImplicitReference } from './ViewReference';
+import { View } from './View';
+import type { Schema } from './Schema';
+import {
+  TableExplicitReference,
+  TableImplicitReference,
+} from './TableReference';
+
+export const getSchemaFromRelation = (value: Relation): Schema => {
+  if (value instanceof Table || value instanceof View) {
+    return value.schema;
+  }
+  throw new UnsupportedOperationError(
+    `Can't derive schema for relation`,
+    value,
+  );
+};
+
+export const createExplicitRelationReference = (
+  value: Relation,
+): TableExplicitReference | ViewExplicitReference => {
+  if (value instanceof Table) {
+    return TableExplicitReference.create(value);
+  } else if (value instanceof View) {
+    return ViewExplicitReference.create(value);
+  }
+  throw new UnsupportedOperationError(
+    `Can't create explicit reference for relation`,
+    value,
+  );
+};
+
+export const createImplicitRelationReference = (
+  ownerReference: PackageableElementImplicitReference<Database>,
+  value: Relation,
+): TableImplicitReference | ViewImplicitReference => {
+  if (value instanceof Table) {
+    return TableImplicitReference.create(ownerReference, value);
+  } else if (value instanceof View) {
+    return ViewImplicitReference.create(ownerReference, value);
+  }
+  throw new UnsupportedOperationError(
+    `Can't create implicit reference for relation`,
+    value,
+  );
+};

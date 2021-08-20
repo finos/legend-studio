@@ -29,20 +29,19 @@ import {
 } from 'react-icons/fa';
 import { MdSettingsEthernet, MdLink } from 'react-icons/md';
 import { FiPackage } from 'react-icons/fi';
-import { returnUndefOnError } from '@finos/legend-studio-shared';
+import { returnUndefOnError } from '@finos/legend-shared';
 import { RiShapeLine } from 'react-icons/ri';
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { EditorStore } from '../../stores/EditorStore';
-import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
+import type { DSL_EditorPlugin_Extension } from '../../stores/EditorPlugin';
+import type { PackageableElement, Type } from '@finos/legend-graph';
 import {
+  PACKAGEABLE_ELEMENT_TYPE,
   Measure,
   Unit,
-} from '../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { PrimitiveType } from '../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Class } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { DSL_EditorPlugin_Extension } from '../../stores/EditorPlugin';
+  Enumeration,
+  PrimitiveType,
+  Class,
+} from '@finos/legend-graph';
 
 export const PrimitiveTypeIcon: React.FC = () => (
   <div className="icon icon--primitive color--primitive">p</div>

@@ -31,26 +31,29 @@ import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
 import { CORE_TEST_ID } from '../../const';
 import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
-import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
-} from '@finos/legend-studio-components';
-import { isNonNullable } from '@finos/legend-studio-shared';
+} from '@finos/legend-application-components';
+import { isNonNullable } from '@finos/legend-shared';
 import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { useViewerStore, ViewerStoreProvider } from '../../stores/ViewerStore';
+import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
 import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import {
+  EditorStoreProvider,
+  useEditorStore,
+} from '../editor/EditorStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();

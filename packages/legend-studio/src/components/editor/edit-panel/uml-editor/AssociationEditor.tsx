@@ -16,7 +16,6 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
@@ -43,31 +42,34 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { getElementIcon } from '../../../shared/Icon';
-import { prettyCONSTName, guaranteeType } from '@finos/legend-studio-shared';
+import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../../../const';
-import { MULTIPLICITY_INFINITE } from '../../../../models/MetaModelConst';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { PropertyEditor } from './PropertyEditor';
-import type { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type {
+  Association,
+  Property,
+  StereotypeReference,
+} from '@finos/legend-graph';
 import {
+  MULTIPLICITY_INFINITE,
+  TaggedValue,
+  Stereotype,
+  Profile,
+  Tag,
+  Multiplicity,
   Class,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { PrimitiveType } from '../../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Unit } from '../../../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
+  PrimitiveType,
+  Unit,
+  StereotypeExplicitReference,
+} from '@finos/legend-graph';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {
@@ -94,16 +96,14 @@ const AssociationPropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Class>): string =>
+      stringify: (option: PackageableElementOption<Class>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Class>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Class>): void => {
       association.changePropertyType(
         property,
         guaranteeType(

@@ -23,7 +23,7 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';

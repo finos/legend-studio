@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-model-storage",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Legend storage models",
   "keywords": [
     "legend",
@@ -34,10 +34,10 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-studio-shared": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
   },
   "devDependencies": {
-    "@finos/legend-studio-dev-utils": "workspace:*",
+    "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
     "jest": "27.0.6",

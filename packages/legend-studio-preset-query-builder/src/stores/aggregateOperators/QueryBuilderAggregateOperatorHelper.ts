@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import type { PureModel, ValueSpecification } from '@finos/legend-studio';
+import type { PureModel, ValueSpecification } from '@finos/legend-graph';
 import {
   SimpleFunctionExpression,
   extractElementNameFromPath,
   matchFunctionName,
   VariableExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
-import { guaranteeType, assertTrue } from '@finos/legend-studio-shared';
+} from '@finos/legend-graph';
+import { guaranteeType, assertTrue } from '@finos/legend-shared';
 import type { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
 import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';

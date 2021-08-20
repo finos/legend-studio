@@ -17,9 +17,9 @@
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
@@ -30,23 +30,23 @@ import {
   HttpStatus,
   hashObject,
   deleteEntry,
-} from '@finos/legend-studio-shared';
-import { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
-import {
-  RevisionAlias,
-  Revision,
-} from '../../models/sdlc/models/revision/Revision';
-import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
+} from '@finos/legend-shared';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
+import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import { ACTIVITY_MODE } from '../EditorConfig';
+import type { Entity } from '@finos/legend-model-storage';
 import type {
   EntityChangeConflict,
   EntityChangeConflictResolution,
-} from '../../models/sdlc/models/entity/EntityChangeConflict';
-import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { EntityChangeType } from '../../models/sdlc/models/entity/EntityChange';
-import { ACTIVITY_MODE } from '../EditorConfig';
-import type { Entity } from '@finos/legend-model-storage';
+} from '@finos/legend-server-sdlc';
+import {
+  EntityChangeType,
+  EntityDiff,
+  ProjectConfiguration,
+  Revision,
+  RevisionAlias,
+} from '@finos/legend-server-sdlc';
 
 export class ConflictResolutionState {
   editorStore: EditorStore;
@@ -206,7 +206,7 @@ export class ConflictResolutionState {
       'Editor must be in conflict resolution mode to call this method',
     );
     const projectConfiguration =
-      (yield this.sdlcState.sdlcClient.getConfigurationOfWorkspaceInConflictResolutionMode(
+      (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfigurationOfWorkspaceInConflictResolutionMode(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       )) as PlainObject<ProjectConfiguration>;
@@ -249,7 +249,7 @@ export class ConflictResolutionState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -332,7 +332,7 @@ export class ConflictResolutionState {
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -347,7 +347,7 @@ export class ConflictResolutionState {
     try {
       // fetch latest revision
       const latestRevision = Revision.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.getConflictResolutionRevision(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConflictResolutionRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.CURRENT,
@@ -359,7 +359,7 @@ export class ConflictResolutionState {
         `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
       );
       const entities =
-        (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           this.sdlcState.currentRevisionId,
@@ -378,7 +378,7 @@ export class ConflictResolutionState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -392,7 +392,7 @@ export class ConflictResolutionState {
     );
     try {
       const workspaceBaseEntities =
-        (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.BASE,
@@ -411,7 +411,7 @@ export class ConflictResolutionState {
       this.editorStore.refreshCurrentEntityDiffEditorState();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -457,7 +457,7 @@ export class ConflictResolutionState {
       });
       const entityChanges =
         this.editorStore.graphState.computeLocalEntityChanges();
-      yield this.sdlcState.sdlcClient.acceptConflictResolution(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.acceptConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
         {
@@ -476,7 +476,7 @@ export class ConflictResolutionState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -522,7 +522,7 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.sdlcState.sdlcClient.discardConflictResolutionChanges(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.discardConflictResolutionChanges(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
@@ -530,7 +530,7 @@ export class ConflictResolutionState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -576,7 +576,7 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.sdlcState.sdlcClient.abortConflictResolution(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.abortConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
@@ -584,7 +584,7 @@ export class ConflictResolutionState {
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

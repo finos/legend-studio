@@ -21,13 +21,12 @@ import {
   isCamelCase,
   prettyCamelCase,
   prettyCONSTName,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   AbstractProperty,
-  EditorStore,
   PureModel,
   ValueSpecification,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
   CollectionInstanceValue,
@@ -40,8 +39,9 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   VariableExpression,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
+import type { EditorStore } from '@finos/legend-studio';
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);

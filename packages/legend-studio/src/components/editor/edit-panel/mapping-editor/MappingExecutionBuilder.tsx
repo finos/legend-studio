@@ -15,7 +15,6 @@
  */
 
 import { Fragment, useState, useRef, useCallback } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { flowResult } from 'mobx';
 import {
   ResizablePanelGroup,
@@ -30,10 +29,10 @@ import {
   PlayIcon,
   FlaskIcon,
   ResizablePanelSplitterLine,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-application-components';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   getMappingElementSource,
@@ -50,7 +49,7 @@ import {
   uniq,
   compareLabelFn,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,
@@ -62,13 +61,16 @@ import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
   ActionAlertActionType,
   ActionAlertType,
-  useApplicationStore,
 } from '../../../../stores/ApplicationStore';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import {
+  Class,
+  RawLambda,
+  SetImplementation,
+  OperationSetImplementation,
+} from '@finos/legend-graph';
 
 interface ClassMappingSelectOption {
   label: string;

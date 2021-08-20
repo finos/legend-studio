@@ -17,21 +17,18 @@
 import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import { LambdaEditorState } from './LambdaEditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import {
-  LogEvent,
-  guaranteeType,
-  assertType,
-} from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent, guaranteeType, assertType } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
-import { LAMBDA_START } from '../../../models/MetaModelConst';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
-import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/action/SourceInformationHelper';
+import type { CompilationError, PackageableElement } from '@finos/legend-graph';
+import {
+  GRAPH_MANAGER_LOG_EVENT,
+  LAMBDA_PIPE,
+  ParserError,
+  ConcreteFunctionDefinition,
+  RawLambda,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
 
 export enum FUNCTION_SPEC_TAB {
   GENERAL = 'GENERAL',
@@ -48,7 +45,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
     functionElement: ConcreteFunctionDefinition,
     editorStore: EditorStore,
   ) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       functionElement: observable,

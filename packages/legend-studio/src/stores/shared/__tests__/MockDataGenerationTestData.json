@@ -1,6 +1,62 @@
 [
   {
     "classifierPath": "meta::pure::metamodel::type::Class",
+    "path": "myPackage::test::Misc",
+    "content": {
+      "_type": "class",
+      "name": "Misc",
+      "package": "myPackage::test",
+      "properties": [
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "string",
+          "type": "String"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "boolean",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "float",
+          "type": "Float"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "decimal",
+          "type": "Decimal"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "number",
+          "type": "Number"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "integer",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "date",
+          "type": "Date"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "strictDate",
+          "type": "StrictDate"
+        },
+        {
+          "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "name": "dateTime",
+          "type": "DateTime"
+        }
+      ]
+    }
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Class",
     "path": "myPackage::test::shared::src::Address",
     "content": {
       "_type": "class",

@@ -15,48 +15,44 @@
  */
 
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   losslessStringify,
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
-import {
-  CLIENT_VERSION,
-  LAMBDA_START,
-} from '../../../../models/MetaModelConst';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import { TAB_SIZE } from '../../../EditorConfig';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
 import type {
   ServiceExecution,
   KeyedExecutionParameter,
   PureExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
+  ServiceTest,
+  Mapping,
+  Runtime,
+  ExecutionResult,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
+  LAMBDA_PIPE,
+  RawLambda,
   PureSingleExecution,
   PureMultiExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { ServiceTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
-import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
   EngineRuntime,
   RuntimePointer,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
-import { TAB_SIZE } from '../../../EditorConfig';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
+  PackageableElementExplicitReference,
+  buildSourceInformationSourceId,
+  PureClientVersion,
+} from '@finos/legend-graph';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -133,7 +129,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
   isInitializingLambda = false;
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       execution: observable,
@@ -312,7 +308,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           true,
         )) as ExecutionResult;
       this.setExecutionResultText(

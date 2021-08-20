@@ -19,7 +19,6 @@ import { ClassFormEditor } from '../uml-editor/ClassEditor';
 import { useResizeDetector } from 'react-resize-detector';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { FaRegKeyboard } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
@@ -42,7 +41,7 @@ import {
   CORE_DND_TYPE,
   ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
   getControlledResizablePanelProps,
   BasePopover,
@@ -61,10 +60,24 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanel,
-} from '@finos/legend-studio-components';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+} from '@finos/legend-application-components';
+import type { Type } from '@finos/legend-graph';
+import {
+  Class,
+  Point,
+  DerivedProperty,
+  Property,
+  Multiplicity,
+  ELEMENT_PATH_DELIMITER,
+  MULTIPLICITY_INFINITE,
+  GenericType,
+  createPath,
+  isValidFullPath,
+  isValidPathIdentifier,
+  resolvePackagePathAndElementName,
+  cleanUpDeadReferencesInDiagram,
+} from '@finos/legend-graph';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import {
   FiMinus,
   FiMousePointer,
@@ -77,25 +90,10 @@ import {
 } from 'react-icons/fi';
 import { IoResize } from 'react-icons/io5';
 import { Dialog } from '@material-ui/core';
-import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
-import {
-  ELEMENT_PATH_DELIMITER,
-  MULTIPLICITY_INFINITE,
-} from '../../../../models/MetaModelConst';
-import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { GenericType } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
-import {
-  createPath,
-  isValidFullPath,
-  isValidPathIdentifier,
-  resolvePackagePathAndElementName,
-} from '../../../../models/MetaModelUtils';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { cleanUpDeadReferencesInDiagram } from '../../../../models/metamodels/pure/helpers/DiagramHelper';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -1003,16 +1001,14 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     const propertyTypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: currentPropertyType,
       label: currentPropertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Type>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Type>): void => {
       if (property instanceof Property || property instanceof DerivedProperty) {
         property.setGenericType(new GenericType(val.value));
       }

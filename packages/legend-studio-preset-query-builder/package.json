@@ -38,16 +38,18 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "25.3.0",
-    "@ag-grid-community/core": "25.3.0",
-    "@ag-grid-community/react": "25.3.0",
+    "@ag-grid-community/client-side-row-model": "26.0.0",
+    "@ag-grid-community/core": "26.0.0",
+    "@ag-grid-community/react": "26.0.0",
+    "@finos/legend-application-components": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
+    "@finos/legend-server-depot": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-components": "workspace:*",
-    "@finos/legend-studio-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
     "@types/papaparse": "5.2.6",
-    "@types/react": "17.0.18",
+    "@types/react": "17.0.19",
     "@types/react-dom": "17.0.9",
     "@types/react-router-dom": "5.1.8",
     "date-fns": "2.23.0",
@@ -65,7 +67,7 @@
     "react-router-dom": "5.2.0"
   },
   "devDependencies": {
-    "@finos/legend-studio-dev-utils": "workspace:*",
+    "@finos/legend-dev-utils": "workspace:*",
     "@testing-library/dom": "8.1.0",
     "@testing-library/react": "12.0.0",
     "cross-env": "7.0.3",

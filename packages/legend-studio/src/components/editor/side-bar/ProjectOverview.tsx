@@ -16,27 +16,27 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import { CORE_TEST_ID } from '../../../const';
 import { FaInfoCircle, FaTimes } from 'react-icons/fa';
 import { MdModeEdit } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
 import { Link } from 'react-router-dom';
-import { VERSION_TYPE } from '../../../models/sdlc/models/version/CreateVersionCommand';
 import {
   clsx,
   PanelLoadingIndicator,
   ContextMenu,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
-import type { Workspace } from '../../../models/sdlc/models/workspace/Workspace';
 import {
   generateEditorRoute,
   generateViewVersionRoute,
   generateReviewRoute,
 } from '../../../stores/LegendStudioRouter';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import type { Workspace } from '@finos/legend-server-sdlc';
+import { NewVersionType } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const WorkspaceViewerContextMenu = observer<
   {
@@ -176,13 +176,13 @@ const ReleaseEditor = observer(() => {
   const { latestProjectVersion, currentProjectRevision } = projectOverviewState;
   const revisionInput = projectOverviewState.releaseVersion;
   const createMajorRelease = applicationStore.guaranteeSafeAction(() =>
-    flowResult(projectOverviewState.createVersion(VERSION_TYPE.MAJOR)),
+    flowResult(projectOverviewState.createVersion(NewVersionType.MAJOR)),
   );
   const createMinorRelease = applicationStore.guaranteeSafeAction(() =>
-    flowResult(projectOverviewState.createVersion(VERSION_TYPE.MINOR)),
+    flowResult(projectOverviewState.createVersion(NewVersionType.MINOR)),
   );
   const createPatchRelease = applicationStore.guaranteeSafeAction(() =>
-    flowResult(projectOverviewState.createVersion(VERSION_TYPE.PATCH)),
+    flowResult(projectOverviewState.createVersion(NewVersionType.PATCH)),
   );
   const changeNotes: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
     revisionInput.setNotes(event.target.value);

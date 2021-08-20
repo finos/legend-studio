@@ -18,23 +18,26 @@ import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { SDLC_LOG_EVENT } from '../../utils/SDLCLogEvent';
-import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
-import type { Revision } from '../../models/sdlc/models/revision/Revision';
-import { RevisionAlias } from '../../models/sdlc/models/revision/Revision';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
   assertNonNullable,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ActionAlertActionType } from '../ApplicationStore';
-import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { generateSetupRoute } from '../LegendStudioRouter';
 import type { Entity } from '@finos/legend-model-storage';
+import type { Revision } from '@finos/legend-server-sdlc';
+import {
+  EntityDiff,
+  Review,
+  ReviewState,
+  RevisionAlias,
+} from '@finos/legend-server-sdlc';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;
@@ -140,7 +143,7 @@ export class WorkspaceReviewState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -154,19 +157,20 @@ export class WorkspaceReviewState {
     try {
       this.isFetchingCurrentWorkspaceReview = true;
       const currentWorkspaceRevision =
-        (yield this.sdlcState.sdlcClient.getRevision(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.CURRENT,
         )) as Revision;
-      const reviews = (yield this.sdlcState.sdlcClient.getReviews(
-        this.sdlcState.currentProjectId,
-        ReviewState.OPEN,
-        [currentWorkspaceRevision.id, currentWorkspaceRevision.id],
-        undefined,
-        undefined,
-        1,
-      )) as Review[];
+      const reviews =
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviews(
+          this.sdlcState.currentProjectId,
+          ReviewState.OPEN,
+          [currentWorkspaceRevision.id, currentWorkspaceRevision.id],
+          undefined,
+          undefined,
+          1,
+        )) as Review[];
       const review = reviews.find(
         (r) => r.workspaceId === this.sdlcState.currentWorkspaceId,
       ) as PlainObject<Review> | undefined;
@@ -187,7 +191,7 @@ export class WorkspaceReviewState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -205,14 +209,14 @@ export class WorkspaceReviewState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.sdlcState.sdlcClient.createWorkspace(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.createWorkspace(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
       this.editorStore.applicationStore.navigator.reload();
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -228,14 +232,14 @@ export class WorkspaceReviewState {
     }
     this.isClosingWorkspaceReview = true;
     try {
-      yield this.sdlcState.sdlcClient.rejectReview(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.rejectReview(
         this.sdlcState.currentProjectId,
         this.workspaceReview.id,
       );
       this.workspaceReview = undefined;
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -257,7 +261,7 @@ export class WorkspaceReviewState {
         reviewDescription ??
         `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.currentWorkspaceId}`;
       this.workspaceReview = Review.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.createReview(
+        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.createReview(
           this.sdlcState.currentProjectId,
           {
             workspaceId: this.sdlcState.currentWorkspaceId,
@@ -268,7 +272,7 @@ export class WorkspaceReviewState {
       );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -300,7 +304,7 @@ export class WorkspaceReviewState {
     }
 
     try {
-      yield this.sdlcState.sdlcClient.commitReview(
+      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.commitReview(
         this.sdlcState.currentProjectId,
         review.id,
         { message: `${review.title} [review]` },
@@ -334,7 +338,7 @@ export class WorkspaceReviewState {
       });
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(SDLC_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -24,7 +24,7 @@ import {
   makeObservable,
 } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   IllegalStateError,
@@ -32,14 +32,16 @@ import {
   noop,
   assertErrorThrown,
   hashObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import type { GraphState } from './GraphState';
-import { EntityDiff } from '../models/sdlc/models/comparison/EntityDiff';
-import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
-import type { EntityChangeConflictResolution } from '../models/sdlc/models/entity/EntityChangeConflict';
-import { EntityChangeConflict } from '../models/sdlc/models/entity/EntityChangeConflict';
 import type { Entity } from '@finos/legend-model-storage';
+import type { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
+import {
+  EntityChangeConflict,
+  EntityChangeType,
+  EntityDiff,
+} from '@finos/legend-server-sdlc';
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;

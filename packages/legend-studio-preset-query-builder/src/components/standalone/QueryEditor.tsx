@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { RuntimePointer, useApplicationStore } from '@finos/legend-studio';
+import { useApplicationStore } from '@finos/legend-studio';
 import {
   ArrowLeftIcon,
   PanelLoadingIndicator,
   RobotIcon,
-} from '@finos/legend-studio-components';
-import { getQueryParameters } from '@finos/legend-studio-shared';
+} from '@finos/legend-application-components';
+import { getQueryParameters } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -43,9 +43,10 @@ import {
   ExistingQueryInfoState,
   ServiceQueryInfoState,
   CreateQueryInfoState,
-  useQueryStore,
 } from '../../stores/QueryStore';
 import { QueryBuilder } from '../QueryBuilder';
+import { useQueryStore } from '../QueryStoreProvider';
+import { RuntimePointer } from '@finos/legend-graph';
 
 const QueryExportInner = observer(
   (props: { queryExportState: QueryExportState }) => {

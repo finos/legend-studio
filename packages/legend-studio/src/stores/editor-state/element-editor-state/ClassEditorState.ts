@@ -16,15 +16,19 @@
 
 import { computed, observable, makeObservable, override } from 'mobx';
 import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState';
-import { LogEvent, guaranteeType } from '@finos/legend-studio-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
-import { SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
-import { ClassState } from './ClassState';
+import { LogEvent, guaranteeType } from '@finos/legend-shared';
+import {
+  ClassState,
+  CONSTRAINT_SOURCE_ID_LABEL,
+  DERIVED_PROPERTY_SOURCE_ID_LABEL,
+} from './ClassState';
 import type { EditorStore } from '../../EditorStore';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
-import { extractSourceInformationCoordinates } from '../../../models/metamodels/pure/action/SourceInformationHelper';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { CompilationError, PackageableElement } from '@finos/legend-graph';
+import {
+  GRAPH_MANAGER_LOG_EVENT,
+  extractSourceInformationCoordinates,
+  Class,
+} from '@finos/legend-graph';
 
 export class ClassEditorState extends UMLEditorState {
   classState: ClassState;
@@ -59,7 +63,7 @@ export class ClassEditorState extends UMLEditorState {
         if (elementCoordinates) {
           const sourceId = compilationError.sourceInformation.sourceId;
           const classTab = elementCoordinates[1];
-          if (classTab === SOURCE_ID_LABEL.CONSTRAINT) {
+          if (classTab === CONSTRAINT_SOURCE_ID_LABEL) {
             this.setSelectedTab(UML_EDITOR_TAB.CONSTRAINTS);
             const constraintState = this.classState.constraintStates.find(
               (state) => state.lambdaId === sourceId,
@@ -68,7 +72,7 @@ export class ClassEditorState extends UMLEditorState {
               constraintState.setCompilationError(compilationError);
               return true;
             }
-          } else if (classTab === SOURCE_ID_LABEL.DERIVED_PROPERTY) {
+          } else if (classTab === DERIVED_PROPERTY_SOURCE_ID_LABEL) {
             this.setSelectedTab(UML_EDITOR_TAB.DERIVED_PROPERTIES);
             const derivedPropertyState =
               this.classState.derivedPropertyStates.find(

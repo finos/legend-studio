@@ -22,15 +22,15 @@ import {
   FaRegWindowMaximize,
   FaRegWindowRestore,
 } from 'react-icons/fa';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx } from '@finos/legend-application-components';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryBuilder } from './QueryBuilder';
 import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
-import { noop } from '@finos/legend-studio-shared';
+import { noop } from '@finos/legend-shared';
 
 /**
- * NOTE: Query builder is by right its own mini-app so we have it hosted in a full-screen modal dialog
+ * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
  * See https://material.io/components/dialogs#full-screen-dialog
  */
 export const QueryBuilderDialog = observer(() => {

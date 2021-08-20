@@ -15,7 +15,6 @@
  */
 
 import { action, observable, makeObservable } from 'mobx';
-import { ROOT_PACKAGE_NAME } from '../models/MetaModelConst';
 import type { EditorStore } from './EditorStore';
 import {
   LogEvent,
@@ -24,7 +23,7 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
   ActionState,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   getPackableElementTreeData,
   openNode,
@@ -35,13 +34,16 @@ import {
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
+import type { TreeData } from '@finos/legend-application-components';
 import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
 import { getGenerationTreeData } from './shared/FileGenerationTreeUtil';
-import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
-import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Unit } from '../models/metamodels/pure/model/packageableElements/domain/Measure';
-import { PrimitiveType } from '../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
+import type { PackageableElement } from '@finos/legend-graph';
+import {
+  ROOT_PACKAGE_NAME,
+  Package,
+  Unit,
+  PrimitiveType,
+} from '@finos/legend-graph';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',

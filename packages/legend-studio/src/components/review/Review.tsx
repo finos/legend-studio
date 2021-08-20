@@ -16,7 +16,7 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ReviewStoreProvider, useReviewStore } from '../../stores/ReviewStore';
+import { ReviewStoreProvider, useReviewStore } from './ReviewStoreProvider';
 import { useParams } from 'react-router';
 import { ReviewSideBar } from './ReviewSideBar';
 import { ReviewPanel } from './ReviewPanel';
@@ -30,8 +30,7 @@ import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
-import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import type { ResizablePanelHandlerProps } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
   getControlledResizablePanelProps,
   clsx,
@@ -39,7 +38,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateViewProjectRoute,
@@ -47,8 +46,12 @@ import {
 } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import {
+  EditorStoreProvider,
+  useEditorStore,
+} from '../editor/EditorStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();

@@ -22,8 +22,8 @@ import type {
 import type {
   ValueSpecification,
   SimpleFunctionExpression,
-} from '@finos/legend-studio';
-import { PRIMITIVE_TYPE } from '@finos/legend-studio';
+} from '@finos/legend-graph';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
   buildNotExpression,

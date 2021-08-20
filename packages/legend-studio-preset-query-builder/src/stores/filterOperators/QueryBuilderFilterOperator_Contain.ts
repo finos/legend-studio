@@ -22,9 +22,9 @@ import type {
 import type {
   ValueSpecification,
   SimpleFunctionExpression,
-} from '@finos/legend-studio';
-import { PRIMITIVE_TYPE } from '@finos/legend-studio';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+} from '@finos/legend-graph';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildNotExpression,

@@ -17,10 +17,7 @@
 import type { RenderResult } from '@testing-library/react';
 import { getByText } from '@testing-library/react';
 import m2mGraphEntities from '../../../../stores/__tests__/buildGraph/M2MGraphEntitiesTestData.json';
-import {
-  integrationTest,
-  guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+import { integrationTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   openAndAssertPathWithElement,
   getMockedEditorStore,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import base from '../../scripts/jest/jest.config.base.js';
 
 const packageJson = loadJSON('./package.json');
@@ -37,9 +37,9 @@ export default {
     '^dnd-core$': 'dnd-core/dist/cjs',
     '^react-dnd$': 'react-dnd/dist/cjs',
     '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
-    // manual mocks - TODO: we might eventually want to move these to `@finos/legend-studio-components` or `@finos/legend-studio-test-mocks`, etc.
+    // manual mocks - TODO: we might eventually want to move these to `@finos/legend-application-components` or `@finos/legend-studio-test-mocks`, etc.
     '^monaco-editor$':
-      '@finos/legend-studio-components/lib/testMocks/MockedMonacoEditor.js',
+      '@finos/legend-application-components/lib/testMocks/MockedMonacoEditor.js',
   },
   testMatch: [
     '<rootDir>/packages/legend-studio/src/**/__tests__/**/*(*.)test.[jt]s?(x)',

@@ -16,8 +16,8 @@
 
 import { existsSync } from 'fs';
 import { resolve } from 'path';
-import { exitWithError } from '@finos/legend-studio-dev-utils/DevUtils';
-import { addCopyrightHeaderToBundledOutput } from '@finos/legend-studio-dev-utils/CopyrightUtils';
+import { exitWithError } from '@finos/legend-dev-utils/DevUtils';
+import { addCopyrightHeaderToBundledOutput } from '@finos/legend-dev-utils/CopyrightUtils';
 
 const file = process.argv[2];
 

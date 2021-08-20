@@ -15,25 +15,28 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { LogEvent, guaranteeNonNullable } from '@finos/legend-studio-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../utils/GraphManagerLogEvent';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../EditorStore';
-import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
-import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { Constraint } from '../../../models/metamodels/pure/model/packageableElements/domain/Constraint';
-import type { DerivedProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/action/SourceInformationHelper';
+import type { Class, Constraint, DerivedProperty } from '@finos/legend-graph';
+import {
+  LAMBDA_PIPE,
+  GRAPH_MANAGER_LOG_EVENT,
+  ParserError,
+  RawLambda,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
+
+export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
+export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
 
 export class DerivedPropertyState extends LambdaEditorState {
   derivedProperty: DerivedProperty;
   editorStore: EditorStore;
 
   constructor(derivedProperty: DerivedProperty, editorStore: EditorStore) {
-    super(`${LAMBDA_START}''`, '');
+    super(`${LAMBDA_PIPE}''`, '');
 
     makeObservable(this, {
       derivedProperty: observable,
@@ -48,7 +51,7 @@ export class DerivedPropertyState extends LambdaEditorState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.derivedProperty.owner.path,
-      SOURCE_ID_LABEL.DERIVED_PROPERTY,
+      DERIVED_PROPERTY_SOURCE_ID_LABEL,
       this.derivedProperty.name,
       this.uuid, // in case of duplications
     ]);
@@ -126,7 +129,7 @@ export class ConstraintState extends LambdaEditorState {
   editorStore: EditorStore;
 
   constructor(constraint: Constraint, editorStore: EditorStore) {
-    super('true', LAMBDA_START);
+    super('true', LAMBDA_PIPE);
 
     makeObservable(this, {
       constraint: observable,
@@ -140,7 +143,7 @@ export class ConstraintState extends LambdaEditorState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.constraint.owner.path,
-      SOURCE_ID_LABEL.CONSTRAINT,
+      CONSTRAINT_SOURCE_ID_LABEL,
       this.constraint.name,
       this.uuid, // in case of duplications
     ]);

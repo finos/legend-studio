@@ -19,23 +19,22 @@ import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
 import { getElementIcon } from '../../../shared/Icon';
 import { useDrop } from 'react-dnd';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   getTextContent,
   getEditorLanguageFromFormat,
 } from '../../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
-import type { DebouncedFunc } from '@finos/legend-studio-shared';
+import type { DebouncedFunc } from '@finos/legend-shared';
 import {
   UnsupportedOperationError,
   debounce,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -46,7 +45,7 @@ import {
   BlankPanelContent,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   FaTimes,
   FaCheckSquare,
@@ -71,20 +70,21 @@ import {
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../../const';
-import type { GenerationProperty } from '../../../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
-import { GenerationPropertyItemType } from '../../../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { FileGenerationSpecification } from '../../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type {
+  GenerationProperty,
+  PackageableElement,
+  FileGenerationSpecification,
+} from '@finos/legend-graph';
 import {
+  GenerationPropertyItemType,
   PackageableElementReference,
   PackageableElementExplicitReference,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import {
   isValidFullPath,
   resolvePackagePathAndElementName,
-} from '../../../../models/MetaModelUtils';
+} from '@finos/legend-graph';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -1259,11 +1259,15 @@ export const FileGenerationConfigurationEditor = observer(
       [fileGenerationState],
     );
     const update = (
-      AbstractGenerationProperty: GenerationProperty,
+      generationProperty: GenerationProperty,
       newValue: object,
     ): void => {
       debouncedRegenerate.cancel();
-      fileGeneration.updateParameters(AbstractGenerationProperty, newValue);
+      fileGenerationState.updateFileGenerationParameters(
+        fileGeneration,
+        generationProperty,
+        newValue,
+      );
       debouncedRegenerate()?.catch(applicationStore.alertIllegalUnhandledError);
     };
     const showFileGenerationModal = (): void => {

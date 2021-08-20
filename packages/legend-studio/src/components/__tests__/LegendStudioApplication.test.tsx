@@ -19,7 +19,7 @@ import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
 import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
 import {
@@ -27,11 +27,11 @@ import {
   TEST__ApplicationStoreProvider,
 } from '../ComponentTestUtils';
 import type { ApplicationStore } from '../../stores/ApplicationStore';
-import { SDLCServerClient } from '../../models/sdlc/SDLCServerClient';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { WebApplicationNavigator } from '../../stores/application/WebApplicationNavigator';
 import { createMemoryHistory } from 'history';
+import { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 let applicationStore: ApplicationStore;
 

@@ -16,7 +16,6 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { MdMoreVert } from 'react-icons/md';
 import {
   FaTimes,
@@ -27,11 +26,15 @@ import {
   clsx,
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import type { TagSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import type { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
+} from '@finos/legend-application-components';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type { Profile, TaggedValue, Tag } from '@finos/legend-graph';
+
+interface TagOption {
+  label: string;
+  value: Tag;
+}
 
 export const TaggedValueEditor = observer(
   (props: {
@@ -52,18 +55,16 @@ export const TaggedValueEditor = observer(
     const profileFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Profile>): string =>
+      stringify: (option: PackageableElementOption<Profile>): string =>
         option.value.path,
     });
     const [selectedProfile, setSelectedProfile] = useState<
-      PackageableElementSelectOption<Profile>
+      PackageableElementOption<Profile>
     >({
       value: taggedValue.tag.value.owner,
       label: taggedValue.tag.value.owner.name,
     });
-    const changeProfile = (
-      val: PackageableElementSelectOption<Profile>,
-    ): void => {
+    const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.tags.length) {
         setSelectedProfile(val);
         taggedValue.setTag(val.value.tags[0]);
@@ -72,19 +73,21 @@ export const TaggedValueEditor = observer(
     const visitProfile = (): void =>
       editorStore.openElement(selectedProfile.value);
     // Tag
-    const tagOptions = selectedProfile.value.tagOptions;
+    const tagOptions = selectedProfile.value.tags.map((tag) => ({
+      label: tag.value,
+      value: tag,
+    }));
     const inferableTag = taggedValue.tag;
     const tagFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: TagSelectOption): string => option.label,
+      stringify: (option: TagOption): string => option.label,
     });
     const selectedTag = {
       value: inferableTag.value,
       label: inferableTag.value.value,
     };
-    const changeTag = (val: TagSelectOption): void =>
-      taggedValue.setTag(val.value);
+    const changeTag = (val: TagOption): void => taggedValue.setTag(val.value);
     // Value
     const [isExpanded, setIsExpanded] = useState(false);
     const toggleExpandedMode = (): void => setIsExpanded(!isExpanded);

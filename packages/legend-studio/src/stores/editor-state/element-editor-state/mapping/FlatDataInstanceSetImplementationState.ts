@@ -16,38 +16,40 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import {
-  LAMBDA_START,
-  SOURCE_ID_LABEL,
-} from '../../../../models/MetaModelConst';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
-import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   UnsupportedOperationError,
   guaranteeType,
   IllegalStateError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
-import type { SourceInformation } from '../../../../models/metamodels/pure/action/SourceInformation';
-import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
-import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import type { AbstractFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
-import { FlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { InferableMappingElementIdExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import type {
+  SourceInformation,
+  CompilationError,
+  FlatDataInstanceSetImplementation,
+  AbstractFlatDataPropertyMapping,
+  PropertyMapping,
+  Property,
+} from '@finos/legend-graph';
+import {
+  LAMBDA_PIPE,
+  GRAPH_MANAGER_LOG_EVENT,
+  ParserError,
+  RawLambda,
+  FlatDataPropertyMapping,
+  EmbeddedFlatDataPropertyMapping,
+  Class,
+  InferableMappingElementIdExplicitValue,
+  PackageableElementExplicitReference,
+  PropertyExplicitReference,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
 
 export class FlatDataPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -59,7 +61,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     instanceSetImplementationState: FlatDataInstanceSetImplementationState,
     propertyMapping: AbstractFlatDataPropertyMapping,
   ) {
-    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_START);
+    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_PIPE);
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -67,7 +69,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.propertyMapping.owner.parent.path,
-      SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
+      MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
       this.propertyMapping.owner.id.value,
       this.propertyMapping.property.value.name,
       this.uuid, // in case of duplications

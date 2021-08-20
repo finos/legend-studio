@@ -20,7 +20,7 @@ import {
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
   Log,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
@@ -39,7 +39,7 @@ import {
   generateSetupRoute,
   URL_PATH_PLACEHOLDER,
 } from '../../stores/LegendStudioRouter';
-import { WebApplicationNavigatorProvider } from '../../stores/application/WebApplicationNavigator';
+import { WebApplicationNavigatorProvider } from '../application/WebApplicationNavigatorProvider';
 
 let applicationStore: ApplicationStore;
 

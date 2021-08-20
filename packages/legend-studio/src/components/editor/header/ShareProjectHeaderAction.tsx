@@ -24,11 +24,11 @@ import {
 import {
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
-import { useEditorStore } from '../../../stores/EditorStore';
+} from '@finos/legend-application-components';
 import { FiShare } from 'react-icons/fi';
-import type { Version } from '../../../models/sdlc/models/version/Version';
+import type { Version } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const ShareModal = observer(
   (props: { open: boolean; closeModal: () => void }) => {

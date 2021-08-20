@@ -22,11 +22,6 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
-import {
-  PRIMITIVE_TYPE,
-  SOURCE_ID_LABEL,
-} from '../../../../models/MetaModelConst';
 import type { EditorStore } from '../../../EditorStore';
 import {
   InstanceSetImplementationState,
@@ -40,8 +35,7 @@ import {
   TEST_RESULT,
 } from './MappingTestState';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   deleteEntry,
@@ -54,70 +48,68 @@ import {
   UnsupportedOperationError,
   assertTrue,
   addUniqueEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState';
 import {
   FlatDataInstanceSetImplementationState,
   RootFlatDataInstanceSetImplementationState,
 } from './FlatDataInstanceSetImplementationState';
-import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+import type {
+  TreeNodeData,
+  TreeData,
+} from '@finos/legend-application-components';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
-import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
-import { extractSourceInformationCoordinates } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
+import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
+import { LambdaEditorState } from '../LambdaEditorState';
+import type {
+  CompilationError,
+  PackageableElement,
+  AbstractFlatDataPropertyMapping,
+  InputData,
+  Type,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
+  PRIMITIVE_TYPE,
+  fromElementPathToMappingElementId,
+  extractSourceInformationCoordinates,
+  Class,
+  Enumeration,
+  Mapping,
+  EnumerationMapping,
   BASIC_SET_IMPLEMENTATION_TYPE,
   SetImplementation,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
-import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
-import {
+  PureInstanceSetImplementation,
+  MappingTest,
+  ExpectedOutputMappingTestAssert,
   ObjectInputData,
   ObjectInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { AbstractFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
-import type { InputData } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InputData';
-import { FlatDataInputData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import {
+  FlatDataInstanceSetImplementation,
+  InstanceSetImplementation,
+  EmbeddedFlatDataPropertyMapping,
+  FlatDataInputData,
+  RootFlatDataRecordType,
   PackageableElementExplicitReference,
   OptionalPackageableElementExplicitReference,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { RootFlatDataRecordTypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference';
-import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { TableAlias } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
-import { TableExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/TableReference';
-import { ViewExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/ViewReference';
-import {
+  RootFlatDataRecordTypeExplicitReference,
+  RootRelationalInstanceSetImplementation,
+  EmbeddedRelationalInstanceSetImplementation,
+  AggregationAwareSetImplementation,
+  Table,
+  View,
+  TableAlias,
+  TableExplicitReference,
+  ViewExplicitReference,
   RelationalInputData,
   RelationalInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
-import {
   OperationSetImplementation,
   OperationType,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import { LambdaEditorState } from '../LambdaEditorState';
-import { AssociationImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
-import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { InferableMappingElementIdExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
-import { InferableMappingElementRootExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementRoot';
-import {
+  AssociationImplementation,
+  InferableMappingElementIdExplicitValue,
+  InferableMappingElementRootExplicitValue,
   updateRootSetImplementationOnCreate,
   updateRootSetImplementationOnDelete,
-} from '../../../../models/metamodels/pure/helpers/MappingResolutionHelper';
+} from '@finos/legend-graph';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -134,6 +126,15 @@ export const generateMappingTestName = (mapping: Mapping): string => {
   );
   return generatedName;
 };
+
+export enum MAPPING_ELEMENT_SOURCE_ID_LABEL {
+  ENUMERATION_MAPPING = 'enumerationMapping',
+  OPERATION_CLASS_MAPPING = 'operationClassMapping',
+  PURE_INSTANCE_CLASS_MAPPING = 'pureInstanceClassMapping',
+  FLAT_DATA_CLASS_MAPPING = 'flatDataClassMapping',
+  RELATIONAL_CLASS_MAPPING = 'relationalClassMapping',
+  AGGREGATION_AWARE_CLASS_MAPPING = 'aggregationAwareClassMapping',
+}
 
 export enum MAPPING_ELEMENT_TYPE {
   CLASS = 'CLASS',
@@ -309,13 +310,13 @@ const getMappingElementByTypeAndId = (
   // NOTE: ID must be unique across all mapping elements of the same type
   switch (type) {
     case MAPPING_ELEMENT_TYPE.CLASS:
-    case SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
-    case SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
-    case SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
       return mapping.allClassMappings.find(
         (classMapping) => classMapping.id.value === id,
       );
-    case SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
       return (
         mapping.allClassMappings.find(
           (classMapping) => classMapping.id.value === id,
@@ -329,7 +330,7 @@ const getMappingElementByTypeAndId = (
           )
           .find((me) => me.id.value === id)
       );
-    case SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
       return (
         mapping.allClassMappings.find(
           (classMapping) => classMapping.id.value === id,

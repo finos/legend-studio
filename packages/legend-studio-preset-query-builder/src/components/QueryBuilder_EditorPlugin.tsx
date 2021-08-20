@@ -19,7 +19,6 @@ import type {
   EditorExtensionState,
   EditorExtensionStateCreator,
   EditorStore,
-  PackageableElement,
   PluginManager,
   EditorExtensionComponentRendererConfiguration,
   ExplorerContextMenuItemRendererConfiguration,
@@ -31,8 +30,8 @@ import type {
   MappingTestState,
   EditorPluginSetup,
 } from '@finos/legend-studio';
-import { Class, EditorPlugin } from '@finos/legend-studio';
-import { MenuContentItem } from '@finos/legend-studio-components';
+import { EditorPlugin } from '@finos/legend-studio';
+import { MenuContentItem } from '@finos/legend-application-components';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder';
 import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';
@@ -41,6 +40,8 @@ import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { Class } from '@finos/legend-graph';
+import type { PackageableElement } from '@finos/legend-graph';
 
 export class QueryBuilder_EditorPlugin extends EditorPlugin {
   constructor() {

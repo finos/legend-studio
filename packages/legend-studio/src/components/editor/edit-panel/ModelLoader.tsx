@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   ModelLoaderState,
   MODEL_UPDATER_INPUT_TYPE,
@@ -26,21 +25,22 @@ import {
   FaCheckSquare,
   FaTruckLoading,
 } from 'react-icons/fa';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { EDITOR_LANGUAGE } from '../../../stores/EditorConfig';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import {
   ActionAlertType,
   ActionAlertActionType,
-  useApplicationStore,
 } from '../../../stores/ApplicationStore';
 import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
-import type { ImportConfigurationDescription } from '../../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
+} from '@finos/legend-application-components';
+import type { ImportConfigurationDescription } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();

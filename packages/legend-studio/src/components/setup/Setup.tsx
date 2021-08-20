@@ -19,19 +19,18 @@ import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-application-components';
 import {
   CustomSelectorInput,
   PanelLoadingIndicator,
-} from '@finos/legend-studio-components';
-import { SetupStoreProvider, useSetupStore } from '../../stores/SetupStore';
+} from '@finos/legend-application-components';
+import type { ProjectOption } from '../../stores/SetupStore';
+import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
 import { CORE_TEST_ID } from '../../const';
 import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import Dialog from '@material-ui/core/Dialog';
-import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
-import { ProjectType } from '../../models/sdlc/models/project/Project';
-import { isNumber } from '@finos/legend-studio-shared';
+import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
 import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {
@@ -40,8 +39,9 @@ import {
 } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import { ProjectType } from '@finos/legend-server-sdlc';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
@@ -483,7 +483,7 @@ const CreateWorkspaceModal = observer(() => {
   const dispatchingActions =
     createWorkspaceState.isInProgress ||
     createOrImportProjectState.isInProgress;
-  const onSelectionChange = (val: ProjectSelectOption | null): void => {
+  const onSelectionChange = (val: ProjectOption | null): void => {
     if (
       (val !== null || selectedOption !== null) &&
       (!val || !selectedOption || val.value !== selectedOption.value)

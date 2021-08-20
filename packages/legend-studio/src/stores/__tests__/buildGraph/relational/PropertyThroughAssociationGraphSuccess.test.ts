@@ -19,16 +19,16 @@ import {
   unitTest,
   guaranteeNonNullable,
   guaranteeType,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
+import type { Entity } from '@finos/legend-model-storage';
 import {
   DynaFunction,
   TableAliasColumn,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
-import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
-import type { Entity } from '@finos/legend-model-storage';
+  RootRelationalInstanceSetImplementation,
+  RelationalPropertyMapping,
+  getClassMappingsByClass,
+} from '@finos/legend-graph';
 
 const editorStore = getTestEditorStore();
 

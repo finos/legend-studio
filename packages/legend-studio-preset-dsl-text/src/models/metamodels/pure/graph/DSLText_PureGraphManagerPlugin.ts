@@ -15,10 +15,11 @@
  */
 
 import packageJson from '../../../../../package.json';
-import { PureGraphManagerPlugin } from '@finos/legend-studio';
 import { Text } from '../model/packageableElements/Text';
-import type { Clazz } from '@finos/legend-studio-shared';
-import type { PluginManager, PackageableElement } from '@finos/legend-studio';
+import type { Clazz } from '@finos/legend-shared';
+import type { PluginManager } from '@finos/legend-studio';
+import type { PackageableElement } from '@finos/legend-graph';
+import { PureGraphManagerPlugin } from '@finos/legend-graph';
 
 export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {

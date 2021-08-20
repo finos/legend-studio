@@ -29,7 +29,6 @@ import {
 } from '@finos/legend-studio';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
-import { QueryStoreProvider, useQueryStore } from '../../stores/QueryStore';
 import {
   CreateQueryLoader,
   ExistingQueryLoader,
@@ -39,8 +38,9 @@ import { flowResult } from 'mobx';
 import {
   LegendMaterialUITheme,
   PanelLoadingIndicator,
-} from '@finos/legend-studio-components';
-import type { Log } from '@finos/legend-studio-shared';
+} from '@finos/legend-application-components';
+import type { Log } from '@finos/legend-shared';
+import { QueryStoreProvider, useQueryStore } from '../QueryStoreProvider';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useQueryStore();

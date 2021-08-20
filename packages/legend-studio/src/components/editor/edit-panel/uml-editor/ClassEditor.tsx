@@ -18,8 +18,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import { InheritanceDiagramRenderer } from '../../../shared/diagram-viewer/InheritanceDiagramRenderer';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
 import { useDrop } from 'react-dnd';
 import type {
@@ -46,43 +45,44 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { CORE_TEST_ID } from '../../../../const';
-import {
-  PRIMITIVE_TYPE,
-  MULTIPLICITY_INFINITE,
-} from '../../../../models/MetaModelConst';
 import { getElementIcon } from '../../../shared/Icon';
 import { PropertyEditor } from './PropertyEditor';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type {
+  StereotypeReference,
+  GenericTypeReference,
+} from '@finos/legend-graph';
 import {
+  PRIMITIVE_TYPE,
+  MULTIPLICITY_INFINITE,
   Class,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import { GenericType } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
-import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
-import { Constraint } from '../../../../models/metamodels/pure/model/packageableElements/domain/Constraint';
-import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { PrimitiveType } from '../../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Unit } from '../../../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import type { GenericTypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
-import { GenericTypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
-import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
-import { flowResult } from 'mobx';
+  Property,
+  DerivedProperty,
+  GenericType,
+  Profile,
+  Tag,
+  TaggedValue,
+  Stereotype,
+  Multiplicity,
+  Constraint,
+  Type,
+  PrimitiveType,
+  Unit,
+  StereotypeExplicitReference,
+  GenericTypeExplicitReference,
+  Association,
+} from '@finos/legend-graph';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -110,16 +110,14 @@ const PropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Type>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Type>): void => {
       property.setGenericType(new GenericType(val.value));
       setIsEditingType(false);
     };
@@ -373,16 +371,14 @@ const DerivedPropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Type>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Type>): void => {
       derivedProperty.setGenericType(new GenericType(val.value));
       setIsEditingType(false);
     };
@@ -736,11 +732,11 @@ const SuperTypeEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Class>): string =>
+      stringify: (option: PackageableElementOption<Class>): string =>
         option.value.path,
     });
     const selectedType = { value: rawType, label: rawType.name };
-    const changeType = (val: PackageableElementSelectOption<Class>): void =>
+    const changeType = (val: PackageableElementOption<Class>): void =>
       superType.setValue(new GenericType(val.value));
     const visitDerivationSource = (): void => editorStore.openElement(rawType);
 

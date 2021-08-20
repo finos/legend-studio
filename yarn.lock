@@ -5,32 +5,32 @@ __metadata:
   version: 4
   cacheKey: 8
 
-"@ag-grid-community/client-side-row-model@npm:25.3.0":
-  version: 25.3.0
-  resolution: "@ag-grid-community/client-side-row-model@npm:25.3.0"
+"@ag-grid-community/client-side-row-model@npm:26.0.0":
+  version: 26.0.0
+  resolution: "@ag-grid-community/client-side-row-model@npm:26.0.0"
   dependencies:
-    "@ag-grid-community/core": ~25.3.0
-  checksum: 829b6996ddd2c6087c095dcc86788076044e1da39e65eb32b99b2c59fa842fcfc3ebef99d8749124887b2b35c29861436cb617ef364e9038cb54a7e2982613d9
+    "@ag-grid-community/core": ~26.0.0
+  checksum: 9e9f812b2f749497942515bd0a2c7589405c9cbc819aec6ac25594c29444e63bcd856b3a1c4b0303e81fe19ab3b84d8b841c489fc3b2d64d0102ccba6ee77ff2
   languageName: node
   linkType: hard
 
-"@ag-grid-community/core@npm:25.3.0, @ag-grid-community/core@npm:~25.3.0":
-  version: 25.3.0
-  resolution: "@ag-grid-community/core@npm:25.3.0"
-  checksum: f3511b030d85c03d058a703b39cc201ad64dd8712d49b0bc098a7d7f1a613984e11f4ac6089c77d1fa065649fe290c483e7ea694371713df34c9e1e689cb46f7
+"@ag-grid-community/core@npm:26.0.0, @ag-grid-community/core@npm:~26.0.0":
+  version: 26.0.0
+  resolution: "@ag-grid-community/core@npm:26.0.0"
+  checksum: b6294c96c40a57a63c55b3b82fc8c74dbb1e407a94d3da19bfccb9a275f604ca0a578a6c394c0c9f1fc89f6190bc1b7bff8f64d3d575da58c26c5e41a3f04f3b
   languageName: node
   linkType: hard
 
-"@ag-grid-community/react@npm:25.3.0":
-  version: 25.3.0
-  resolution: "@ag-grid-community/react@npm:25.3.0"
+"@ag-grid-community/react@npm:26.0.0":
+  version: 26.0.0
+  resolution: "@ag-grid-community/react@npm:26.0.0"
   dependencies:
     prop-types: ^15.6.2
   peerDependencies:
-    "@ag-grid-community/core": ~25.3.0
+    "@ag-grid-community/core": ~26.0.0
     react: ^16.3.0 || ^17.0.0
     react-dom: ^16.3.0 || ^17.0.0
-  checksum: dc50bc75843c823940cc42386798f1eab7dc3792ac52ac07181cd14c4a3007bce7e97892c89b03aaf1c5334c545084534097b92308db26e31b3e8d6deabecc16
+  checksum: cf196783ceef5e1dde105856bf3712b15af49cbabb77876301e843b4ad4a06d571556ba36d5d11804ab9d3316001aace365e96f0ec6b71064ba59d244571ce0f
   languageName: node
   linkType: hard
 
@@ -2045,8 +2045,8 @@ __metadata:
     cross-env: 7.0.3
     eslint: 7.32.0
     eslint-config-prettier: 8.3.0
-    eslint-plugin-import: 2.24.0
-    eslint-plugin-prettier: 3.4.0
+    eslint-plugin-import: 2.24.1
+    eslint-plugin-prettier: 3.4.1
     eslint-plugin-react: 7.24.0
     eslint-plugin-react-hooks: 4.2.0
     micromatch: 4.0.4
@@ -2058,80 +2058,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-model-storage@workspace:*, @finos/legend-model-storage@workspace:packages/legend-model-storage":
+"@finos/legend-application-components@workspace:*, @finos/legend-application-components@workspace:packages/legend-application-components":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-model-storage@workspace:packages/legend-model-storage"
+  resolution: "@finos/legend-application-components@workspace:packages/legend-application-components"
   dependencies:
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    lodash: 4.17.21
-    rimraf: 3.0.2
-    typescript: 4.3.5
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-query-app@workspace:packages/legend-query-app":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-query-app@workspace:packages/legend-query-app"
-  dependencies:
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-preset-dsl-text": "workspace:*"
-    "@finos/legend-studio-preset-query-builder": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.18
-    copy-webpack-plugin: 9.0.1
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    rimraf: 3.0.2
-    typescript: 4.3.5
-    webpack: 5.50.0
-    webpack-bundle-analyzer: 4.4.2
-    webpack-cli: 4.8.0
-    webpack-dev-server: 4.0.0-rc.1
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-app@workspace:packages/legend-studio-app":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-app@workspace:packages/legend-studio-app"
-  dependencies:
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-preset-dsl-text": "workspace:*"
-    "@finos/legend-studio-preset-external-format-json-schema": "workspace:*"
-    "@finos/legend-studio-preset-query-builder": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.18
-    copy-webpack-plugin: 9.0.1
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    rimraf: 3.0.2
-    typescript: 4.3.5
-    webpack: 5.50.0
-    webpack-bundle-analyzer: 4.4.2
-    webpack-cli: 4.8.0
-    webpack-dev-server: 4.0.0-rc.1
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-components@workspace:*, @finos/legend-studio-components@workspace:packages/legend-studio-components":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-components@workspace:packages/legend-studio-components"
-  dependencies:
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     "@types/react-select": 4.0.17
     "@types/react-window": 1.8.5
     clsx: 1.1.1
@@ -2157,9 +2091,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-dev-utils@workspace:*, @finos/legend-studio-dev-utils@workspace:packages/legend-studio-dev-utils":
+"@finos/legend-dev-utils@workspace:*, @finos/legend-dev-utils@workspace:packages/legend-dev-utils":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-dev-utils@workspace:packages/legend-studio-dev-utils"
+  resolution: "@finos/legend-dev-utils@workspace:packages/legend-dev-utils"
   dependencies:
     "@babel/core": 7.15.0
     "@changesets/changelog-github": 0.4.0
@@ -2170,7 +2104,7 @@ __metadata:
     "@changesets/read": 0.4.7
     "@changesets/write": 0.1.4
     "@manypkg/get-packages": 1.1.1
-    "@pmmmwh/react-refresh-webpack-plugin": 0.5.0-rc.3
+    "@pmmmwh/react-refresh-webpack-plugin": 0.5.0-rc.4
     autoprefixer: 10.3.1
     babel-jest: 27.0.6
     babel-loader: 8.2.2
@@ -2180,7 +2114,7 @@ __metadata:
     cosmiconfig: 7.0.0
     cross-env: 7.0.3
     css-loader: 6.2.0
-    cssnano: 5.0.7
+    cssnano: 5.0.8
     eslint: 7.32.0
     fork-ts-checker-webpack-plugin: 6.3.2
     html-webpack-plugin: 5.3.2
@@ -2203,171 +2137,142 @@ __metadata:
     strip-ansi: 7.0.0
     text-table: 0.2.0
     typescript: 4.3.5
-    webpack: 5.50.0
+    webpack: 5.51.1
     wrap-ansi: 8.0.0
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests":
+"@finos/legend-graph-preset-external-format-json-schema@workspace:*, @finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests"
+  resolution: "@finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema"
   dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.18
-    axios: 0.21.1
     cross-env: 7.0.3
     eslint: 7.32.0
     jest: 27.0.6
-    mobx: 6.3.2
     npm-run-all: 4.1.5
-    react: 17.0.2
     rimraf: 3.0.2
     typescript: 4.3.5
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management":
+"@finos/legend-graph@workspace:*, @finos/legend-graph@workspace:packages/legend-graph":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management"
+  resolution: "@finos/legend-graph@workspace:packages/legend-graph"
   dependencies:
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.18
-    "@types/react-router-dom": 5.1.8
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    mobx: 6.3.2
-    mobx-react-lite: 3.2.0
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    react-icons: 4.2.0
-    react-router-dom: 5.2.0
-    rimraf: 3.0.2
-    sass: 1.38.0
-    typescript: 4.3.5
-  peerDependencies:
-    react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-plugin-tracer-zipkin@workspace:packages/legend-studio-plugin-tracer-zipkin":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-plugin-tracer-zipkin@workspace:packages/legend-studio-plugin-tracer-zipkin"
-  dependencies:
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@types/zipkin-javascript-opentracing": 1.6.0
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    opentracing: 0.14.5
-    rimraf: 3.0.2
-    typescript: 4.3.5
-    zipkin: 0.22.0
-    zipkin-javascript-opentracing: 3.0.0
-    zipkin-transport-http: 0.22.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-preset-dsl-text@workspace:*, @finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
-  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@types/react": 17.0.18
+    "@finos/legend-shared": "workspace:*"
     cross-env: 7.0.3
     eslint: 7.32.0
     jest: 27.0.6
     mobx: 6.3.2
-    mobx-react-lite: 3.2.0
-    monaco-editor: 0.27.0
     npm-run-all: 4.1.5
-    react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.38.0
     serializr: 2.0.5
     typescript: 4.3.5
-  peerDependencies:
-    react: ^17.0.0
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-preset-external-format-json-schema@workspace:*, @finos/legend-studio-preset-external-format-json-schema@workspace:packages/legend-studio-preset-external-format-json-schema":
+"@finos/legend-model-storage@workspace:*, @finos/legend-model-storage@workspace:packages/legend-model-storage":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-preset-external-format-json-schema@workspace:packages/legend-studio-preset-external-format-json-schema"
+  resolution: "@finos/legend-model-storage@workspace:packages/legend-model-storage"
   dependencies:
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
     cross-env: 7.0.3
     eslint: 7.32.0
     jest: 27.0.6
-    npm-run-all: 4.1.5
+    lodash: 4.17.21
     rimraf: 3.0.2
     typescript: 4.3.5
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-preset-query-builder@workspace:*, @finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder":
+"@finos/legend-query-app@workspace:*, @finos/legend-query-app@workspace:packages/legend-query-app":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder"
+  resolution: "@finos/legend-query-app@workspace:packages/legend-query-app"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 25.3.0
-    "@ag-grid-community/core": 25.3.0
-    "@ag-grid-community/react": 25.3.0
-    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph-preset-external-format-json-schema": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
-    "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.1.0
-    "@testing-library/react": 12.0.0
-    "@types/papaparse": 5.2.6
-    "@types/react": 17.0.18
-    "@types/react-dom": 17.0.9
-    "@types/react-router-dom": 5.1.8
+    "@finos/legend-studio-preset-dsl-text": "workspace:*"
+    "@finos/legend-studio-preset-query-builder": "workspace:*"
+    "@types/react": 17.0.19
     cross-env: 7.0.3
-    date-fns: 2.23.0
     eslint: 7.32.0
-    jest: 27.0.6
-    mobx: 6.3.2
-    mobx-react-lite: 3.2.0
-    monaco-editor: 0.27.0
     npm-run-all: 4.1.5
-    papaparse: 5.3.1
     react: 17.0.2
-    react-dnd: 14.0.3
-    react-dnd-html5-backend: 14.0.1
-    react-dom: 17.0.2
-    react-hotkeys: 2.0.0
-    react-icons: 4.2.0
-    react-router: 5.2.0
-    react-router-dom: 5.2.0
     rimraf: 3.0.2
     sass: 1.38.0
     typescript: 4.3.5
-  peerDependencies:
-    react: ^17.0.0
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-shared@workspace:*, @finos/legend-studio-shared@workspace:packages/legend-studio-shared":
+"@finos/legend-query-deployment@workspace:packages/legend-query-deployment":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-shared@workspace:packages/legend-studio-shared"
+  resolution: "@finos/legend-query-deployment@workspace:packages/legend-query-deployment"
   dependencies:
-    "@finos/legend-studio-dev-utils": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-query-app": "workspace:*"
+    copy-webpack-plugin: 9.0.1
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    typescript: 4.3.5
+    webpack: 5.51.1
+    webpack-bundle-analyzer: 4.4.2
+    webpack-cli: 4.8.0
+    webpack-dev-server: 4.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-server-depot@workspace:*, @finos/legend-server-depot@workspace:packages/legend-server-depot":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-server-depot@workspace:packages/legend-server-depot"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    serializr: 2.0.5
+    typescript: 4.3.5
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-server-sdlc@workspace:*, @finos/legend-server-sdlc@workspace:packages/legend-server-sdlc":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-server-sdlc@workspace:packages/legend-server-sdlc"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    serializr: 2.0.5
+    typescript: 4.3.5
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-shared@workspace:*, @finos/legend-shared@workspace:packages/legend-shared":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-shared@workspace:packages/legend-shared"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
     "@types/lodash-es": 4.17.4
     "@types/lossless-json": 1.0.1
     "@types/object-hash": 2.1.1
@@ -2395,19 +2300,187 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-studio-app@workspace:*, @finos/legend-studio-app@workspace:packages/legend-studio-app":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-studio-app@workspace:packages/legend-studio-app"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph-preset-external-format-json-schema": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@finos/legend-studio-preset-dsl-text": "workspace:*"
+    "@finos/legend-studio-preset-query-builder": "workspace:*"
+    "@types/react": 17.0.19
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    rimraf: 3.0.2
+    sass: 1.38.0
+    typescript: 4.3.5
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-studio-deployment@workspace:packages/legend-studio-deployment":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-studio-deployment@workspace:packages/legend-studio-deployment"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-studio-app": "workspace:*"
+    copy-webpack-plugin: 9.0.1
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    typescript: 4.3.5
+    webpack: 5.51.1
+    webpack-bundle-analyzer: 4.4.2
+    webpack-cli: 4.8.0
+    webpack-dev-server: 4.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests"
+  dependencies:
+    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@types/react": 17.0.19
+    axios: 0.21.1
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    rimraf: 3.0.2
+    typescript: 4.3.5
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management"
+  dependencies:
+    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@types/react": 17.0.19
+    "@types/react-router-dom": 5.1.8
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    react-icons: 4.2.0
+    react-router-dom: 5.2.0
+    rimraf: 3.0.2
+    sass: 1.38.0
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-studio-preset-dsl-text@workspace:*, @finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
+  dependencies:
+    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@types/react": 17.0.19
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.27.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    rimraf: 3.0.2
+    sass: 1.38.0
+    serializr: 2.0.5
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-studio-preset-query-builder@workspace:*, @finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder"
+  dependencies:
+    "@ag-grid-community/client-side-row-model": 26.0.0
+    "@ag-grid-community/core": 26.0.0
+    "@ag-grid-community/react": 26.0.0
+    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@material-ui/core": 4.12.3
+    "@testing-library/dom": 8.1.0
+    "@testing-library/react": 12.0.0
+    "@types/papaparse": 5.2.6
+    "@types/react": 17.0.19
+    "@types/react-dom": 17.0.9
+    "@types/react-router-dom": 5.1.8
+    cross-env: 7.0.3
+    date-fns: 2.23.0
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.27.0
+    npm-run-all: 4.1.5
+    papaparse: 5.3.1
+    react: 17.0.2
+    react-dnd: 14.0.3
+    react-dnd-html5-backend: 14.0.1
+    react-dom: 17.0.2
+    react-hotkeys: 2.0.0
+    react-icons: 4.2.0
+    react-router: 5.2.0
+    react-router-dom: 5.2.0
+    rimraf: 3.0.2
+    sass: 1.38.0
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-studio@workspace:*, @finos/legend-studio@workspace:packages/legend-studio":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
   dependencies:
+    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
-    "@finos/legend-studio-components": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
-    "@finos/legend-studio-shared": "workspace:*"
+    "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.1.0
     "@testing-library/react": 12.0.0
     "@types/css-font-loading-module": 0.0.6
-    "@types/react": 17.0.18
+    "@types/react": 17.0.19
     "@types/react-dom": 17.0.9
     "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
@@ -2438,6 +2511,26 @@ __metadata:
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-tracer-plugin-zipkin@workspace:packages/legend-tracer-plugin-zipkin":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-tracer-plugin-zipkin@workspace:packages/legend-tracer-plugin-zipkin"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@types/zipkin-javascript-opentracing": 1.6.0
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    opentracing: 0.14.5
+    rimraf: 3.0.2
+    typescript: 4.3.5
+    zipkin: 0.22.0
+    zipkin-javascript-opentracing: 3.0.0
+    zipkin-transport-http: 0.22.0
   languageName: unknown
   linkType: soft
 
@@ -2912,9 +3005,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pmmmwh/react-refresh-webpack-plugin@npm:0.5.0-rc.3":
-  version: 0.5.0-rc.3
-  resolution: "@pmmmwh/react-refresh-webpack-plugin@npm:0.5.0-rc.3"
+"@pmmmwh/react-refresh-webpack-plugin@npm:0.5.0-rc.4":
+  version: 0.5.0-rc.4
+  resolution: "@pmmmwh/react-refresh-webpack-plugin@npm:0.5.0-rc.4"
   dependencies:
     ansi-html: ^0.0.7
     core-js-pure: ^3.8.1
@@ -2945,7 +3038,7 @@ __metadata:
       optional: true
     webpack-plugin-serve:
       optional: true
-  checksum: a766a114e2c77935f7976069e15b7d94127a501eb592c194cb74b1089d8480d9ec0baa9e2c674fad4fdd6e6ff58b5c2bce9113f2a26ca735b7c125e1a3ca86ad
+  checksum: 2cfdbb713f15ba5fc7d9596661884ea7564d69e3435cd05c88e20716373b2f5ad57c2f1ec3a9fb6e6986b0ac7b70b3288f86e5c82dcb5c548d276bb0b61b927a
   languageName: node
   linkType: hard
 
@@ -3292,10 +3385,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.6.1":
-  version: 16.6.1
-  resolution: "@types/node@npm:16.6.1"
-  checksum: c13aa0da0c2bf9070e521d1b537ba38f64b213dd1b8aeec66c279fc21f8c0ccaf380364f6dc2ec8f84440c4cd1460b67dfe47de2cafcb6eaf4b648817cb27dc4
+"@types/node@npm:16.7.0":
+  version: 16.7.0
+  resolution: "@types/node@npm:16.7.0"
+  checksum: 8fa8e04a12a09ce6fe89a20bc304489b88734395d4b1bce7885e74d3f630e5eac55be301555330648f48061326b0ae79d27abf9affb74ae287658560147688dd
   languageName: node
   linkType: hard
 
@@ -3428,14 +3521,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:17.0.18":
-  version: 17.0.18
-  resolution: "@types/react@npm:17.0.18"
+"@types/react@npm:17.0.19":
+  version: 17.0.19
+  resolution: "@types/react@npm:17.0.19"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: 0b3d5fe0466b57c5539169671e29c4bdad2e2cf5b3eea25d443845d0153b2ddfbe0ef6d017f2f0a7ae49732d6fd14db189f9578ba0629790b896abe3a3ee44f3
+  checksum: d5af52623dd863e5a9f64eb72979f19c21e03012e25ee93adc93f664ed7976e81b654128dc653b225ad5ba2aaae24e0febe37face272bb051d6289e23ed7177d
   languageName: node
   linkType: hard
 
@@ -5205,6 +5298,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"colord@npm:^2.6":
+  version: 2.7.0
+  resolution: "colord@npm:2.7.0"
+  checksum: 8366539ab254c565926b2f80579d57dfc399aa7e0ffa823922d85defb342df03d61b3aab4ec71f4ad1cb1feb8f651e8dac3d1b0b7cdd8ca95abdd951a6bd974e
+  languageName: node
+  linkType: hard
+
 "colorette@npm:^1.2.1, colorette@npm:^1.2.2":
   version: 1.2.2
   resolution: "colorette@npm:1.2.2"
@@ -5478,13 +5578,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-color-names@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "css-color-names@npm:0.0.4"
-  checksum: 9c6106320430a9da3a13daab8d8b4def39113edbfb68042444585d9a214af5fd5cb384b9be45124bc75f88261d461b517e00e278f4d2e0ab5a619b182f9f0e2d
-  languageName: node
-  linkType: hard
-
 "css-color-names@npm:^1.0.1":
   version: 1.0.1
   resolution: "css-color-names@npm:1.0.1"
@@ -5577,9 +5670,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano-preset-default@npm:^5.1.3":
-  version: 5.1.3
-  resolution: "cssnano-preset-default@npm:5.1.3"
+"cssnano-preset-default@npm:^5.1.4":
+  version: 5.1.4
+  resolution: "cssnano-preset-default@npm:5.1.4"
   dependencies:
     css-declaration-sorter: ^6.0.3
     cssnano-utils: ^2.0.1
@@ -5593,7 +5686,7 @@ __metadata:
     postcss-merge-longhand: ^5.0.2
     postcss-merge-rules: ^5.0.2
     postcss-minify-font-values: ^5.0.1
-    postcss-minify-gradients: ^5.0.1
+    postcss-minify-gradients: ^5.0.2
     postcss-minify-params: ^5.0.1
     postcss-minify-selectors: ^5.1.0
     postcss-normalize-charset: ^5.0.1
@@ -5612,7 +5705,7 @@ __metadata:
     postcss-unique-selectors: ^5.0.1
   peerDependencies:
     postcss: ^8.2.15
-  checksum: 0ad3ea5e3df0e1249cae7cc495d939bd9b33bfa19fe33b87a68a05c83ffc5dca7877136125d892caf2b9b862883aa30f212a30fed1b5585977a8dbd4eac6f37a
+  checksum: feeed9e46988d4679f69db2ed858fb746331d035ac63527bdaa2910b875aaeef2903ac9de77d4cfecab0ca5f0b6be0ce8d9016d269d35f67cd19fa40beed71c4
   languageName: node
   linkType: hard
 
@@ -5625,17 +5718,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano@npm:5.0.7":
-  version: 5.0.7
-  resolution: "cssnano@npm:5.0.7"
+"cssnano@npm:5.0.8":
+  version: 5.0.8
+  resolution: "cssnano@npm:5.0.8"
   dependencies:
-    cssnano-preset-default: ^5.1.3
+    cssnano-preset-default: ^5.1.4
     is-resolvable: ^1.1.0
     lilconfig: ^2.0.3
     yaml: ^1.10.2
   peerDependencies:
     postcss: ^8.2.15
-  checksum: 6058e285bc25345c3d404385300e343a1489af2b7e2d8c62161d42d46958d43a705786f887677d86cb634ed580278022a7c3d59da2f1e75694c35d3cdd9dda14
+  checksum: 18d6496accecf8aa428ed8ef27fbc41cd1c2cad26e64b335711fafd23b2d03d5854023d3fbfda7da9718e416ae94d6b38357df20a6289e1db1c422421d819684
   languageName: node
   linkType: hard
 
@@ -6431,13 +6524,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-import-resolver-node@npm:^0.3.5":
-  version: 0.3.5
-  resolution: "eslint-import-resolver-node@npm:0.3.5"
+"eslint-import-resolver-node@npm:^0.3.6":
+  version: 0.3.6
+  resolution: "eslint-import-resolver-node@npm:0.3.6"
   dependencies:
     debug: ^3.2.7
     resolve: ^1.20.0
-  checksum: 93a8176205f18c40d2c11c444fab89aa3990c5a5eed226ef03a893b5779e7cd4d1f5f52b2bbbbbe4b13fb2a75ef629278be0b52099480cbe6e7024888d9982dd
+  checksum: 6266733af1e112970e855a5bcc2d2058fb5ae16ad2a6d400705a86b29552b36131ffc5581b744c23d550de844206fb55e9193691619ee4dbf225c4bde526b1c8
   languageName: node
   linkType: hard
 
@@ -6451,34 +6544,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-import@npm:2.24.0":
-  version: 2.24.0
-  resolution: "eslint-plugin-import@npm:2.24.0"
+"eslint-plugin-import@npm:2.24.1":
+  version: 2.24.1
+  resolution: "eslint-plugin-import@npm:2.24.1"
   dependencies:
     array-includes: ^3.1.3
     array.prototype.flat: ^1.2.4
     debug: ^2.6.9
     doctrine: ^2.1.0
-    eslint-import-resolver-node: ^0.3.5
+    eslint-import-resolver-node: ^0.3.6
     eslint-module-utils: ^2.6.2
     find-up: ^2.0.0
     has: ^1.0.3
-    is-core-module: ^2.4.0
+    is-core-module: ^2.6.0
     minimatch: ^3.0.4
-    object.values: ^1.1.3
+    object.values: ^1.1.4
     pkg-up: ^2.0.0
     read-pkg-up: ^3.0.0
     resolve: ^1.20.0
-    tsconfig-paths: ^3.9.0
+    tsconfig-paths: ^3.10.1
   peerDependencies:
     eslint: ^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0
-  checksum: 79fb1094197cd1dc720725bd29e5c5fe7d123fd9dd31eb182849993a81a8c18e2bfbc4d267a2caabe02bd4d21aafb1eca1da2f55aca7e5df99fd8ba908e7b869
+  checksum: 6a43dc2c045d8f70a370fead2ed342a4b009685bb75818c0e4dab8bb118b853a77d532c63684f5c0b808239809a5a7289c968e45b5cc56960963be5b8cf1ee54
   languageName: node
   linkType: hard
 
-"eslint-plugin-prettier@npm:3.4.0":
-  version: 3.4.0
-  resolution: "eslint-plugin-prettier@npm:3.4.0"
+"eslint-plugin-prettier@npm:3.4.1":
+  version: 3.4.1
+  resolution: "eslint-plugin-prettier@npm:3.4.1"
   dependencies:
     prettier-linter-helpers: ^1.0.0
   peerDependencies:
@@ -6487,7 +6580,7 @@ __metadata:
   peerDependenciesMeta:
     eslint-config-prettier:
       optional: true
-  checksum: 30a07e8d12637d2988e371f6a20ff4c86fd7fdc3596d1d18d62c0367804f38e06a65052d0281234aeb2552e4d1908dcb2de20543413e038251a2717a46400a9d
+  checksum: fa6a89f0d7cba1cc87064352f5a4a68dc3739448dd279bec2bced1bfa3b704467e603d13b69dcec853f8fa30b286b8b715912898e9da776e1b016cf0ee48bd99
   languageName: node
   linkType: hard
 
@@ -7631,13 +7724,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hex-color-regex@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "hex-color-regex@npm:1.1.0"
-  checksum: 44fa1b7a26d745012f3bfeeab8015f60514f72d2fcf10dce33068352456b8d71a2e6bc5a17f933ab470da2c5ab1e3e04b05caf3fefe3c1cabd7e02e516fc8784
-  languageName: node
-  linkType: hard
-
 "history@npm:5.0.1":
   version: 5.0.1
   resolution: "history@npm:5.0.1"
@@ -7695,20 +7781,6 @@ __metadata:
     readable-stream: ^2.0.1
     wbuf: ^1.1.0
   checksum: 2de144115197967ad6eeee33faf41096c6ba87078703c5cb011632dcfbffeb45784569e0cf02c317bd79c48375597c8ec88c30fff5bb0b023e8f654fb6e9c06e
-  languageName: node
-  linkType: hard
-
-"hsl-regex@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "hsl-regex@npm:1.0.0"
-  checksum: de9ee1bf39de1b83cc3fa0fa1cc337f29f14911e79411d66347365c54fab6b109eea2dd741eaa02486e24de31627ad7bf4453f22224fb55a2fe2b58166fa63b8
-  languageName: node
-  linkType: hard
-
-"hsla-regex@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "hsla-regex@npm:1.0.0"
-  checksum: 9aa6eb9ff6c102d2395435aa5d1d91eae20043c4b1497c543d8db501c05f3edacd9a07fb34a987059d7902dba415af4cb4e610f751859ae8e7525df4ffcd085f
   languageName: node
   linkType: hard
 
@@ -8256,26 +8328,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-color-stop@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "is-color-stop@npm:1.1.0"
-  dependencies:
-    css-color-names: ^0.0.4
-    hex-color-regex: ^1.1.0
-    hsl-regex: ^1.0.0
-    hsla-regex: ^1.0.0
-    rgb-regex: ^1.0.1
-    rgba-regex: ^1.0.0
-  checksum: 778dd52a603ab8da827925aa4200fe6733b667b216495a04110f038b925dc5ef58babe759b94ffc4e44fcf439328695770873937f59d6045f676322b97f3f92d
-  languageName: node
-  linkType: hard
-
-"is-core-module@npm:^2.2.0, is-core-module@npm:^2.4.0":
+"is-core-module@npm:^2.2.0":
   version: 2.5.0
   resolution: "is-core-module@npm:2.5.0"
   dependencies:
     has: ^1.0.3
   checksum: e007de6ca5c391f8a669b9335192967d8815f9119f97d81fc4cde07febe09143263bc0146e86e813120223ea9a034cf0608d15b53b0269e19b4dc0a220ce0b4f
+  languageName: node
+  linkType: hard
+
+"is-core-module@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "is-core-module@npm:2.6.0"
+  dependencies:
+    has: ^1.0.3
+  checksum: 183b3b96fed19822b13959876b0317e61fc2cb5ebcbc21639904c81f7ae328af57f8e18cc4750a9c4abebd686130c70d34a89521e57dbe002edfa4614507ce18
   languageName: node
   linkType: hard
 
@@ -9675,11 +9742,11 @@ __metadata:
     "@changesets/cli": 2.16.0
     "@finos/babel-preset-legend-studio": "workspace:*"
     "@finos/eslint-plugin-legend-studio": "workspace:*"
-    "@finos/legend-studio-dev-utils": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 27.0.1
-    "@types/node": 16.6.1
+    "@types/node": 16.7.0
     chalk: 4.1.2
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -10980,7 +11047,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object.values@npm:^1.1.3, object.values@npm:^1.1.4":
+"object.values@npm:^1.1.4":
   version: 1.1.4
   resolution: "object.values@npm:1.1.4"
   dependencies:
@@ -11701,16 +11768,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-minify-gradients@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "postcss-minify-gradients@npm:5.0.1"
+"postcss-minify-gradients@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "postcss-minify-gradients@npm:5.0.2"
   dependencies:
+    colord: ^2.6
     cssnano-utils: ^2.0.1
-    is-color-stop: ^1.1.0
     postcss-value-parser: ^4.1.0
   peerDependencies:
     postcss: ^8.2.15
-  checksum: 6a5a8faf5e1b6815b76ad590e8b3212951a76d7250160f8247227e29fb0c8dde085a3bda37f7314fb6bc38929543da0a7fe50f519b2108bc8366d99cc608bc0b
+  checksum: f6c655e1850e6ab24bac66a0339cf8fd7638e2550bf1d9bbb7235dbb31022654f9dfdcc0289ba15312bf3048c914d2bbd92eed8df51d00294cc86d40b48fd696
   languageName: node
   linkType: hard
 
@@ -12954,20 +13021,6 @@ resolve@^2.0.0-next.3:
   version: 1.0.4
   resolution: "reusify@npm:1.0.4"
   checksum: c3076ebcc22a6bc252cb0b9c77561795256c22b757f40c0d8110b1300723f15ec0fc8685e8d4ea6d7666f36c79ccc793b1939c748bf36f18f542744a4e379fcc
-  languageName: node
-  linkType: hard
-
-"rgb-regex@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "rgb-regex@npm:1.0.1"
-  checksum: b270ce8bc14782d2d21d3184c1e6c65b465476d8f03e72b93ef57c95710a452b2fe280e1d516c88873aec06efd7f71373e673f114b9d99f3a4f9a0393eb00126
-  languageName: node
-  linkType: hard
-
-"rgba-regex@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "rgba-regex@npm:1.0.0"
-  checksum: 7f2cd271572700faea50753d82524cb2b98f17a5b9722965c7076f6cd674fe545f28145b7ef2cccabc9eca2475c793db16862cd5e7b3784a9f4b8d6496431057
   languageName: node
   linkType: hard
 
@@ -14484,7 +14537,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"tsconfig-paths@npm:^3.9.0":
+"tsconfig-paths@npm:^3.10.1":
   version: 3.10.1
   resolution: "tsconfig-paths@npm:3.10.1"
   dependencies:
@@ -14634,11 +14687,11 @@ typescript@4.3.5:
 
 "typescript@patch:typescript@4.3.5#~builtin<compat/typescript>":
   version: 4.3.5
-  resolution: "typescript@patch:typescript@npm%3A4.3.5#~builtin<compat/typescript>::version=4.3.5&hash=34ad7d"
+  resolution: "typescript@patch:typescript@npm%3A4.3.5#~builtin<compat/typescript>::version=4.3.5&hash=d8b4e7"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 94acb9409712c7073eaecb328cf9be872e4882c62d991cc3d9b53d59f4844d72afbf75818471e086bfb26c444e3a411667a9517f2be2518f8be95bab9fa50ae9
+  checksum: bc2c4fdf0f1557fdafe4ef74848c72ebd9c8c60829568248f869121aea2bb20e16649a252431d0acb185ec118143be22bed73d08f64379557810d82756afedde
   languageName: node
   linkType: hard
 
@@ -15073,9 +15126,9 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"webpack-dev-server@npm:4.0.0-rc.1":
-  version: 4.0.0-rc.1
-  resolution: "webpack-dev-server@npm:4.0.0-rc.1"
+"webpack-dev-server@npm:4.0.0":
+  version: 4.0.0
+  resolution: "webpack-dev-server@npm:4.0.0"
   dependencies:
     ansi-html: ^0.0.7
     bonjour: ^3.5.0
@@ -15109,7 +15162,7 @@ typescript@4.3.5:
       optional: true
   bin:
     webpack-dev-server: bin/webpack-dev-server.js
-  checksum: 5510bf65d048fd4ccfbc129b1c0dffe0160ddaa23b458412bc481ed761cd0c73481639bc9b14c7bb6ad77e4d29645095c61aaf488cb3cd7a06f57deb7168655a
+  checksum: abf88fb940b8fcb3fc6bae6a218ecfc001c7da5b7df3db45f5ee684be1c9e05bd9e491b044f81b1e3df6d33796264b6aebce358a18522e407a62fd6cbcc9f705
   languageName: node
   linkType: hard
 
@@ -15130,9 +15183,9 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.50.0":
-  version: 5.50.0
-  resolution: "webpack@npm:5.50.0"
+"webpack@npm:5.51.1":
+  version: 5.51.1
+  resolution: "webpack@npm:5.51.1"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -15163,7 +15216,7 @@ typescript@4.3.5:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 293bed1d9101ac127605f35a225a5cbc1bc89eac68d6e09e7feb3e284ec2693b3db7c1dd7710fadf6852f89ad39ed09413c35befa1cfc9738074b33299ac2b9e
+  checksum: 20060bc197a5e690f12e453e86bd89da5b91626a2032efa907122fe541fedc688b1d573e9f92f7b66f15c609808653e158408ebf7c94783723dfbf4ac894a4a7
   languageName: node
   linkType: hard
 
@@ -15364,8 +15417,8 @@ typescript@4.3.5:
   linkType: hard
 
 "ws@npm:^8.1.0":
-  version: 8.1.0
-  resolution: "ws@npm:8.1.0"
+  version: 8.2.0
+  resolution: "ws@npm:8.2.0"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ^5.0.2
@@ -15374,7 +15427,7 @@ typescript@4.3.5:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: ead344f11f2b9f01646e796a7c3bcf8090be91b9b880ed705a589bde842fd1fe951862012e2ecc60538ab29220fb6c8335537f027c089afb839fd1a2584d3040
+  checksum: 7cd544312a48dafcb8158c9b4e5f20986cce980d516e0ef0602665911b0e95c5e0dea2846a4bb3153a1e2c839aa3d92fb7e69dd864fe432e881eee9d4e8cf70b
   languageName: node
   linkType: hard
 

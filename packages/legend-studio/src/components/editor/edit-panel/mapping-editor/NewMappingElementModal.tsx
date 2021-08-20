@@ -17,14 +17,11 @@
 import { useState, useRef } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
-import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
+} from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-application-components';
 import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   createClassMapping,
@@ -35,15 +32,18 @@ import {
 import {
   UnsupportedOperationError,
   compareLabelFn,
-} from '@finos/legend-studio-shared';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
-import type {
-  PackageableElementSelectOption,
-  PackageableElement,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+} from '@finos/legend-shared';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type { PackageableElement } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  fromElementPathToMappingElementId,
+  Class,
+  Enumeration,
+  Association,
+  BASIC_SET_IMPLEMENTATION_TYPE,
+} from '@finos/legend-graph';
 
 interface ClassMappingSubTypeOption {
   label: string;
@@ -72,7 +72,7 @@ export const NewMappingElementModal = observer(() => {
 
   // Target
   const targetSelectorRef = useRef<SelectComponent>(null);
-  const options: PackageableElementSelectOption<PackageableElement>[] = [
+  const options: PackageableElementOption<PackageableElement>[] = [
     ...editorStore.enumerationOptions,
     ...editorStore.associationOptions,
     ...editorStore.classOptions,
@@ -80,15 +80,14 @@ export const NewMappingElementModal = observer(() => {
   const filterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (
-      option: PackageableElementSelectOption<PackageableElement>,
-    ): string => option.value.path,
+    stringify: (option: PackageableElementOption<PackageableElement>): string =>
+      option.value.path,
   });
   const selectedOption = spec?.target
     ? { label: spec.target.name, value: spec.target.path }
     : null;
   const handleTargetChange = (
-    val: PackageableElementSelectOption<PackageableElement> | null,
+    val: PackageableElementOption<PackageableElement> | null,
   ): void => {
     mappingEditorState.createMappingElement({
       target: val?.value,

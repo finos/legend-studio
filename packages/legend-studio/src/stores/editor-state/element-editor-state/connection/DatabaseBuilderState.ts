@@ -15,8 +15,11 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import type { TreeData, TreeNodeData } from '@finos/legend-studio-components';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type {
+  TreeData,
+  TreeNodeData,
+} from '@finos/legend-application-components';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   addUniqueEntry,
@@ -24,26 +27,26 @@ import {
   assertTrue,
   guaranteeNonNullable,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
+import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
+import type { EditorStore } from '../../../EditorStore';
+import type {
+  RelationalDatabaseConnection,
+  Schema,
+  Table,
+} from '@finos/legend-graph';
 import {
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
-} from '../../../../models/metamodels/pure/action/generation/DatabaseBuilderInput';
-import { getDbNullableTable } from '../../../../models/metamodels/pure/helpers/DatabaseHelper';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { Column } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Column';
-import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import type { Schema } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Schema';
-import type { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import {
+  getDbNullableTable,
+  PackageableElementExplicitReference,
+  Column,
+  Database,
   isValidFullPath,
   resolvePackagePathAndElementName,
-} from '../../../../models/MetaModelUtils';
-import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import type { EditorStore } from '../../../EditorStore';
+} from '@finos/legend-graph';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean;

@@ -19,43 +19,41 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
-import {
-  getDecoratedSetImplementationPropertyMappings,
-  getLeafSetImplementations,
-} from '../../../../models/metamodels/pure/helpers/MappingResolutionHelper';
+} from '@finos/legend-shared';
 import type {
   SetImplementationVisitor,
   SetImplementation,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import type { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import type { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import { EnumValueMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumValueMapping';
-import { PrimitiveType } from '../../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { FlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
-import type { AbstractFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
+  OperationSetImplementation,
+  PureInstanceSetImplementation,
+  FlatDataInstanceSetImplementation,
+  EnumerationMapping,
+  Property,
+  AbstractFlatDataPropertyMapping,
+  RelationalInstanceSetImplementation,
+  RootRelationalInstanceSetImplementation,
+  AggregationAwareSetImplementation,
+  PropertyMapping,
+} from '@finos/legend-graph';
 import {
+  getDecoratedSetImplementationPropertyMappings,
+  getLeafSetImplementations,
+  PurePropertyMapping,
+  EmbeddedFlatDataPropertyMapping,
+  EnumValueMapping,
+  PrimitiveType,
+  RawLambda,
+  Enumeration,
+  Class,
+  FlatDataPropertyMapping,
   Measure,
   Unit,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import type { RelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
-import type { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { EnumValueExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/EnumValueReference';
-import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-import type { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { createStubRelationalOperationElement } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { getEnumerationMappingsByEnumeration } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+  EnumValueExplicitReference,
+  PropertyExplicitReference,
+  RelationalPropertyMapping,
+  createStubRelationalOperationElement,
+  EmbeddedRelationalInstanceSetImplementation,
+  getEnumerationMappingsByEnumeration,
+} from '@finos/legend-graph';
 
 /* @MARKER: ACTION ANALYTICS */
 /**

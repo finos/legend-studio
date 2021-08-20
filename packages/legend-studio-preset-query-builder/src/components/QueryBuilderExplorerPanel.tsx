@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import type {
   TreeNodeContainerProps,
   TreeNodeViewProps,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   clsx,
   TreeView,
@@ -40,7 +40,7 @@ import {
   CompressIcon,
   EyeIcon,
   InfoCircleIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type {
   QueryBuilderExplorerTreeDragSource,
   QueryBuilderExplorerTreeNodeData,
@@ -56,15 +56,9 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type { Type } from '@finos/legend-studio';
 import {
-  Class,
-  DerivedProperty,
-  Enumeration,
   getClassPropertyIcon,
-  PrimitiveType,
   useApplicationStore,
-  PRIMITIVE_TYPE,
   ClassIcon,
   CheckIcon,
 } from '@finos/legend-studio';
@@ -73,6 +67,14 @@ import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderP
 import { flowResult } from 'mobx';
 import { Dialog } from '@material-ui/core';
 import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState';
+import type { Type } from '@finos/legend-graph';
+import {
+  Class,
+  DerivedProperty,
+  PrimitiveType,
+  PRIMITIVE_TYPE,
+  Enumeration,
+} from '@finos/legend-graph';
 
 const QueryBuilderExplorerPreviewDataModal = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

@@ -18,36 +18,36 @@ import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaTimes, FaArrowAltCircleRight, FaPlus } from 'react-icons/fa';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   clsx,
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type {
   OperationSetImplementationDropTarget,
   MappingElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
-import { noop } from '@finos/legend-studio-shared';
+import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
+  Mapping,
   OperationSetImplementation,
   OperationType,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { SetImplementationContainer } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementationContainer';
-import { InferableMappingElementIdExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { SetImplementationExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementationReference';
-import { InferableMappingElementRootExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementRoot';
-import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+  SetImplementation,
+  Class,
+  SetImplementationContainer,
+  InferableMappingElementIdExplicitValue,
+  PackageableElementExplicitReference,
+  SetImplementationExplicitReference,
+  InferableMappingElementRootExplicitValue,
+  getClassMappingsByClass,
+} from '@finos/legend-graph';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 interface SetImplementationOption {
   value: SetImplementation;

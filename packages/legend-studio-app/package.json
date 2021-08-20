@@ -1,62 +1,60 @@
 {
   "name": "@finos/legend-studio-app",
-  "version": "0.2.56",
-  "private": true,
-  "description": "Legend Studio web application",
+  "version": "0.0.0",
+  "description": "Legend Studio web application deployment",
   "keywords": [
     "legend",
     "legend-studio",
     "studio",
     "app",
+    "deployment",
     "webapp"
   ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-app",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
     "directory": "packages/legend-studio-app"
   },
   "license": "Apache-2.0",
+  "sideEffects": false,
   "type": "module",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
-    "build": "yarn clean && yarn build:tsc && yarn build:webpack && node ./scripts/setup.js ./dist/studio",
-    "build:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
+    "build": "yarn clean && yarn build:sass && yarn build:tsc",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD sass ./style/index.scss ./lib/index.css --style=compressed && node ../../scripts/copyright/addBundledCodeCopyrightHeader.js ./lib/index.css",
     "build:tsc": "tsc --project ./tsconfig.build.json",
-    "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
-    "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-studio ./dist/studio",
-    "clean": "rimraf \"dist\" \"build\"",
-    "dev": "npm-run-all --parallel dev:tsc dev:webpack",
-    "dev:advanced": "cross-env NODE_ENV=development DEVELOPMENT_MODE=advanced webpack serve --mode development",
+    "clean": "rimraf \"lib\" \"build\"",
+    "dev": "npm-run-all --parallel dev:sass dev:tsc",
+    "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
-    "dev:webpack": "cross-env NODE_ENV=development webpack serve --mode development",
-    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
-    "publish:docker": "echo 'Building webapp content...' && yarn build && ../../scripts/docker/publish-docker.sh finos/legend-studio",
-    "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /studio",
-    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev",
-    "test": "jest",
-    "test:e2e": "cypress open",
-    "test:watch": "jest --watch"
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
   },
   "dependencies": {
+    "@finos/legend-graph-preset-external-format-json-schema": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-preset-dsl-text": "workspace:*",
-    "@finos/legend-studio-preset-external-format-json-schema": "workspace:*",
     "@finos/legend-studio-preset-query-builder": "workspace:*",
-    "@types/react": "17.0.18",
+    "@types/react": "17.0.19",
     "react": "17.0.2"
   },
   "devDependencies": {
-    "@finos/legend-studio-dev-utils": "workspace:*",
-    "@finos/legend-studio-shared": "workspace:*",
-    "copy-webpack-plugin": "9.0.1",
+    "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
-    "jest": "27.0.6",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "typescript": "4.3.5",
-    "webpack": "5.50.0",
-    "webpack-bundle-analyzer": "4.4.2",
-    "webpack-cli": "4.8.0",
-    "webpack-dev-server": "4.0.0-rc.1"
+    "sass": "1.38.0",
+    "typescript": "4.3.5"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
   }
 }

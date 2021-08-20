@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
+import { getText } from '../../../../../metamodels/pure/graph/DSLText_GraphManagerHelper';
+import type { Text } from '../../../../../metamodels/pure/model/packageableElements/Text';
 import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,
-} from '@finos/legend-studio';
-import { getText } from '../../../../../metamodels/pure/graph/DSLText_GraphManagerHelper';
-import type { Text } from '../../../../../metamodels/pure/model/packageableElements/Text';
+} from '@finos/legend-graph';
 
 export const V1_resolveText = (
   path: string,

@@ -24,46 +24,46 @@ import {
   uniq,
   addUniqueEntry,
   assertErrorThrown,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
+import type { TreeData } from '@finos/legend-application-components';
 import { ConnectionEditorState } from './connection/ConnectionEditorState';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PackageableRuntime } from '../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
+import { getMappingElementSource } from './mapping/MappingEditorState';
+import type {
+  PackageableElement,
+  Mapping,
+  Connection,
+  PackageableConnection,
+  SetImplementation,
+  PureModel,
+  PackageableElementReference,
+} from '@finos/legend-graph';
 import {
+  PackageableRuntime,
   Runtime,
   EngineRuntime,
   IdentifiedConnection,
   RuntimePointer,
-} from '../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import type { Mapping } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Connection } from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import { ConnectionPointer } from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { ModelStore } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/model/ModelStore';
-import { PureModelConnection } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/PureModelConnection';
-import { JsonModelConnection } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { XmlModelConnection } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/XmlModelConnection';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { PackageableConnection } from '../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import type { SetImplementation } from '../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import type { PureModel } from '../../../models/metamodels/pure/graph/PureModel';
-import { RootFlatDataRecordType } from '../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { FlatData } from '../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import { FlatDataConnection } from '../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { Table } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { View } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { Database } from '../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import {
+  ConnectionPointer,
+  Store,
+  ModelStore,
+  PureModelConnection,
+  JsonModelConnection,
+  XmlModelConnection,
+  Class,
+  RootFlatDataRecordType,
+  FlatData,
+  FlatDataConnection,
+  PackageableElementExplicitReference,
+  Table,
+  View,
+  Database,
   DatabaseType,
   RelationalDatabaseConnection,
-} from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { StaticDatasourceSpecification } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import { DefaultH2AuthenticationStrategy } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import { getMappingElementSource } from './mapping/MappingEditorState';
+  StaticDatasourceSpecification,
+  DefaultH2AuthenticationStrategy,
+} from '@finos/legend-graph';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (

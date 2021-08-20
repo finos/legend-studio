@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { unitTest } from '@finos/legend-studio-shared';
+import { unitTest } from '@finos/legend-shared';
 import {
   testInferenceDefaultMappingElementID,
   testImportResolutionMultipleMatchesFound,

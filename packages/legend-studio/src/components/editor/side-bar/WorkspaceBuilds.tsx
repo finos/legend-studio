@@ -16,11 +16,12 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  clsx,
+  PanelLoadingIndicator,
+} from '@finos/legend-application-components';
 import { MdRefresh } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
-import { BuildStatus } from '../../../models/sdlc/models/build/Build';
 import {
   FaCircleNotch,
   FaPauseCircle,
@@ -29,9 +30,11 @@ import {
   FaTimesCircle,
   FaCheckCircle,
 } from 'react-icons/fa';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
+import { BuildStatus } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const getBuildStatusIcon = (buildStatus: BuildStatus): React.ReactNode => {
   switch (buildStatus) {

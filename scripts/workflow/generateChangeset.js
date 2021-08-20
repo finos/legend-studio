@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generateChangeset } from '@finos/legend-studio-dev-utils/ChangesetUtils';
+import { generateChangeset } from '@finos/legend-dev-utils/ChangesetUtils';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
 

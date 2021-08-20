@@ -17,26 +17,28 @@
 import { useRef, useState, useEffect } from 'react';
 import { Dialog } from '@material-ui/core';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
-import { resolvePackagePathAndElementName } from '../../../../models/MetaModelUtils';
+import {
+  ELEMENT_PATH_DELIMITER,
+  resolvePackagePathAndElementName,
+  Package,
+} from '@finos/legend-graph';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import {
   GenerationResultViewer,
   FileGenerationConfigurationEditor,
 } from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { FaArrowAltCircleLeft } from 'react-icons/fa';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
 import { flowResult } from 'mobx';
 import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const NewFileGenerationModal = observer(
   (props: {

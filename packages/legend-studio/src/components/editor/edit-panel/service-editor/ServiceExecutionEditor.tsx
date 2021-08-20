@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useCallback } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import {
@@ -30,7 +29,7 @@ import {
 import {
   prettyCONSTName,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
 import { VscError } from 'react-icons/vsc';
@@ -41,7 +40,6 @@ import type {
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import {
   clsx,
   BlankPanelContent,
@@ -51,22 +49,23 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
 import { MappingIcon, RuntimeIcon } from '../../../shared/Icon';
 import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
-import type { KeyedExecutionParameter } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type { KeyedExecutionParameter, Runtime } from '@finos/legend-graph';
 import {
   PureSingleExecution,
   PureMultiExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { RuntimePointer } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { PackageableRuntime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { flowResult } from 'mobx';
+  Mapping,
+  RuntimePointer,
+  PackageableRuntime,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {
@@ -99,7 +98,7 @@ const PureSingleExecutionConfigurationEditor = observer(
       label: isMappingEmpty ? noMappingLabel : mapping.path,
     };
     const onMappingSelectionChange = (
-      val: PackageableElementSelectOption<Mapping>,
+      val: PackageableElementOption<Mapping>,
     ): void => {
       if (val.value !== mapping) {
         selectedExecution.setMapping(val.value);

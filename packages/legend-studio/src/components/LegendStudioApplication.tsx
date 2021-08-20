@@ -20,17 +20,13 @@ import { Setup } from './setup/Setup';
 import { Editor } from './editor/Editor';
 import { Review } from './review/Review';
 import { Viewer } from './viewer/Viewer';
-import {
-  useApplicationStore,
-  ApplicationStoreProvider,
-} from '../stores/ApplicationStore';
 import { NotificationSnackbar } from './application/NotificationSnackbar';
 import { observer } from 'mobx-react-lite';
 import {
   CustomSelectorInput,
   LegendMaterialUITheme,
   PanelLoadingIndicator,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
 import {
   generateSetupRoute,
@@ -47,10 +43,14 @@ import type {
   SDLCServerOption,
 } from '../stores/application/ApplicationConfig';
 import type { PluginManager } from '../application/PluginManager';
-import type { Log } from '@finos/legend-studio-shared';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import type { Log } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { useWebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
+import {
+  ApplicationStoreProvider,
+  useApplicationStore,
+} from './application/ApplicationStoreProvider';
+import { useWebApplicationNavigator } from './application/WebApplicationNavigatorProvider';
 
 export const LegendStudioApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore();

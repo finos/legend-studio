@@ -18,7 +18,7 @@ import type {
   AbstractPropertyExpression,
   PureModel,
   ValueSpecification,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   matchFunctionName,
   SimpleFunctionExpression,
@@ -29,8 +29,8 @@ import {
   GenericTypeExplicitReference,
   GenericType,
   PRIMITIVE_TYPE,
-} from '@finos/legend-studio';
-import { assertTrue, guaranteeType } from '@finos/legend-studio-shared';
+} from '@finos/legend-graph';
+import { assertTrue, guaranteeType } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   QueryBuilderAggregateColumnState,

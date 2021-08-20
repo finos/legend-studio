@@ -15,12 +15,26 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
+import { observer } from 'mobx-react-lite';
+import {
+  clsx,
+  CustomSelectorInput,
+  PencilIcon,
+} from '@finos/legend-application-components';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  returnUndefOnError,
+  uniq,
+} from '@finos/legend-shared';
+import CSVParser from 'papaparse';
 import type {
   Enum,
   PureModel,
   Type,
   ValueSpecification,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   Enumeration,
   GenericType,
@@ -32,21 +46,7 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
-import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
-import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  CustomSelectorInput,
-  PencilIcon,
-} from '@finos/legend-studio-components';
-import {
-  guaranteeNonNullable,
-  isNonNullable,
-  returnUndefOnError,
-  uniq,
-} from '@finos/legend-studio-shared';
-import CSVParser from 'papaparse';
+} from '@finos/legend-graph';
 
 const StringPrimitiveInstanceValueEditor = observer(
   (props: { valueSpecification: PrimitiveInstanceValue }) => {

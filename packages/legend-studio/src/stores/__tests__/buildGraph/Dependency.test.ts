@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
-import { unitTest, guaranteeNonNullable } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
+import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   simpleDebuggingCase,
   testAutoImportsWithAny,
   testAutoImportsWithSystemProfiles,
 } from '../roundtrip/RoundtripTestData';
 import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
-import { ProjectConfiguration } from '../../../models/sdlc/models/configuration/ProjectConfiguration';
 import { waitFor } from '@testing-library/dom';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { simpleCoreModelData } from './CoreTestData';
-import { DependencyManager } from '../../../models/metamodels/pure/graph/DependencyManager';
-import { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { DeprecatedProjectVersionEntities } from '../../../models/metadata/models/ProjectVersionEntities';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
+import { ProjectConfiguration } from '@finos/legend-server-sdlc';
+import { DeprecatedProjectVersionEntities } from '@finos/legend-server-depot';
+import {
+  DependencyManager,
+  PackageableElementReference,
+} from '@finos/legend-graph';
 
 const testDependingOnDifferentProjectVersions = [
   {
@@ -169,7 +171,7 @@ const testDependencyElements = async (
   jest
     .spyOn(
       guaranteeNonNullable(
-        editorStore.applicationStore.networkClientManager.metadataClient,
+        editorStore.applicationStore.networkClientManager.depotClient,
       ),
       'getProjectVersionsDependencyEntities',
     )

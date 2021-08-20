@@ -22,14 +22,14 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   assertTrue,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
 import type {
   GenerationTreeNodeData,
@@ -45,25 +45,33 @@ import {
   buildGenerationDirectory,
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
+import type { TreeData } from '@finos/legend-application-components';
 import type { EditorStore } from '../EditorStore';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState';
 import { FileGenerationViewerState } from './FileGenerationViewerState';
 import type { EditorState } from './EditorState';
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
-import type { GenerationConfigurationDescription } from '../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
-import {
-  DEFAULT_GENERATION_SPECIFICATION_NAME,
-  GenerationSpecification,
-} from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import type { FileGenerationTypeOption } from '../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { Class } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
-import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../models/metamodels/pure/graph/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
-import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
 import type { Entity } from '@finos/legend-model-storage';
+import type {
+  GenerationConfigurationDescription,
+  GenerationOutput,
+  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+} from '@finos/legend-graph';
+import {
+  GenerationSpecification,
+  Class,
+  Enumeration,
+  ELEMENT_PATH_DELIMITER,
+} from '@finos/legend-graph';
+
+export const DEFAULT_GENERATION_SPECIFICATION_NAME =
+  'MyGenerationSpecification';
+
+export type FileGenerationTypeOption = {
+  value: string;
+  label: string;
+};
 
 export class GraphGenerationState {
   editorStore: EditorStore;

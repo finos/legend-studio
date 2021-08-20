@@ -19,19 +19,22 @@ import {
   addUniqueEntry,
   guaranteeNonNullable,
   deleteEntry,
-} from '@finos/legend-studio-shared';
-import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+} from '@finos/legend-shared';
+import type {
+  TreeNodeData,
+  TreeData,
+} from '@finos/legend-application-components';
 import type {
   AbstractProperty,
   GraphFetchTree,
   Type,
   RootGraphFetchTree,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   PropertyExplicitReference,
   Class,
   PropertyGraphFetchTree,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import type { QueryBuilderExplorerTreeNodeData } from './QueryBuilderExplorerState';
 import { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 

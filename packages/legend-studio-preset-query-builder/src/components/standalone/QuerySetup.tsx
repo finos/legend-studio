@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  LightQuery,
-  Mapping,
-  PackageableElementSelectOption,
-  PackageableRuntime,
-  ProjectData,
-} from '@finos/legend-studio';
+import type { PackageableElementOption } from '@finos/legend-studio';
 import { useApplicationStore } from '@finos/legend-studio';
 import {
   ArrowLeftIcon,
@@ -33,8 +27,8 @@ import {
   PlusIcon,
   RobotIcon,
   UserIcon,
-} from '@finos/legend-studio-components';
-import { debounce } from '@finos/legend-studio-shared';
+} from '@finos/legend-application-components';
+import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
@@ -50,9 +44,7 @@ import type { ServiceExecutionOption } from '../../stores/QuerySetupStore';
 import {
   CreateQuerySetupState,
   ExistingQuerySetupState,
-  QuerySetupStoreProvider,
   ServiceQuerySetupState,
-  useQuerySetupStore,
 } from '../../stores/QuerySetupStore';
 import {
   CreateQueryInfoState,
@@ -60,8 +52,18 @@ import {
   LATEST_SNAPSHOT_VERSION_ALIAS,
   LATEST_VERSION_ALIAS,
   ServiceQueryInfoState,
-  useQueryStore,
 } from '../../stores/QueryStore';
+import {
+  QuerySetupStoreProvider,
+  useQuerySetupStore,
+} from '../QuerySetupStoreProvider';
+import { useQueryStore } from '../QueryStoreProvider';
+import type { ProjectData } from '@finos/legend-server-depot';
+import type {
+  LightQuery,
+  Mapping,
+  PackageableRuntime,
+} from '@finos/legend-graph';
 
 type QueryOption = { label: string; value: LightQuery };
 const buildQueryOption = (query: LightQuery): QueryOption => ({
@@ -631,7 +633,7 @@ const CreateQuerySetup = observer(
       ? 'Choose a mapping'
       : 'No mapping available';
     const onMappingOptionChange = (
-      option: PackageableElementSelectOption<Mapping> | null,
+      option: PackageableElementOption<Mapping> | null,
     ): void => {
       querySetupState.setCurrentMapping(option?.value);
       // cascade
@@ -660,7 +662,7 @@ const CreateQuerySetup = observer(
       ? 'Choose a runtime'
       : 'No runtime available';
     const onRuntimeOptionChange = (
-      option: PackageableElementSelectOption<PackageableRuntime> | null,
+      option: PackageableElementOption<PackageableRuntime> | null,
     ): void => {
       querySetupState.setCurrentRuntime(option?.value);
     };

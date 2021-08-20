@@ -21,14 +21,14 @@ import {
   getByText,
   getByPlaceholderText,
 } from '@testing-library/react';
-import { integrationTest, toTitleCase } from '@finos/legend-studio-shared';
+import { integrationTest, toTitleCase } from '@finos/legend-shared';
 import {
   getMockedEditorStore,
   setUpEditorWithDefaultSDLCData,
 } from '../../../ComponentTestUtils';
 import { CORE_TEST_ID } from '../../../../const';
 import type { EditorStore } from '../../../../stores/EditorStore';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { PACKAGEABLE_ELEMENT_TYPE } from '@finos/legend-graph';
 
 const addRootPackage = (packagePath: string, result: RenderResult): void => {
   fireEvent.click(result.getByTitle('New Element...', { exact: false }));

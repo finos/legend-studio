@@ -16,7 +16,8 @@
 
 import { makeAutoObservable, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type { EditorStore, RawLambda } from '@finos/legend-studio';
+import type { EditorStore } from '@finos/legend-studio';
+import type { RawLambda } from '@finos/legend-graph';
 
 export class QueryBuilderUnsupportedState {
   editorStore: EditorStore;

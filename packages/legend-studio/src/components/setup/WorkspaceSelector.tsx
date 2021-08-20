@@ -16,13 +16,13 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useSetupStore } from '../../stores/SetupStore';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import { CustomSelectorInput } from '@finos/legend-studio-components';
-import type { WorkspaceSelectOption } from '../../models/sdlc/models/workspace/Workspace';
+import type { WorkspaceOption } from '../../stores/SetupStore';
+import type { SelectComponent } from '@finos/legend-application-components';
+import { CustomSelectorInput } from '@finos/legend-application-components';
 import { FaPlus } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
-import { useApplicationStore } from '../../stores/ApplicationStore';
+import { useSetupStore } from './SetupStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 export const WorkspaceSelector = observer(
   (
@@ -43,7 +43,7 @@ export const WorkspaceSelector = observer(
       setupStore.loadProjectsState.isInProgress ||
       setupStore.loadWorkspacesState.isInProgress;
 
-    const onSelectionChange = (val: WorkspaceSelectOption | null): void => {
+    const onSelectionChange = (val: WorkspaceOption | null): void => {
       if (
         (val !== null || selectedOption !== null) &&
         (!val || !selectedOption || val.value !== selectedOption.value)

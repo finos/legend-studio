@@ -16,22 +16,23 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "build": "echo '(Skipped)'",
     "clean": "rimraf \"dist\" \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
     "test:manual": "jest --config jest.config.manual.js",
     "test:watch": "jest --config jest.config.manual.js --watch"
   },
   "dependencies": {
+    "@finos/legend-application-components": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-server-sdlc": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-components": "workspace:*",
-    "@finos/legend-studio-shared": "workspace:*",
-    "@types/react": "17.0.18",
+    "@types/react": "17.0.19",
     "mobx": "6.3.2",
     "react": "17.0.2"
   },
   "devDependencies": {
-    "@finos/legend-studio-dev-utils": "workspace:*",
+    "@finos/legend-dev-utils": "workspace:*",
     "axios": "0.21.1",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",

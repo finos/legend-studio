@@ -16,7 +16,7 @@
 
 import { useCallback } from 'react';
 import Dialog from '@material-ui/core/Dialog';
-import { clsx, InfoCircleIcon } from '@finos/legend-studio-components';
+import { clsx, InfoCircleIcon } from '@finos/legend-application-components';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import type {
@@ -31,8 +31,8 @@ import type {
   QueryBuilderExplorerTreePropertyNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
-import { Class, Enumeration, PrimitiveType } from '@finos/legend-studio';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
+import { Class, Enumeration, PrimitiveType } from '@finos/legend-graph';
 
 const DerivedPropertyExpressionEditor = observer(
   (props: {

@@ -15,12 +15,14 @@
  */
 
 import type {
+  PureGraphManagerPlugin,
+  PureProtocolProcessorPlugin,
+} from '@finos/legend-graph';
+import type {
   TelemetryServicePlugin,
   TracerServicePlugin,
-} from '@finos/legend-studio-shared';
-import { AbstractPluginManager } from '@finos/legend-studio-shared';
-import type { PureGraphManagerPlugin } from '../models/metamodels/pure/graph/PureGraphManagerPlugin';
-import type { PureProtocolProcessorPlugin } from '../models/protocols/pure/PureProtocolProcessorPlugin';
+} from '@finos/legend-shared';
+import { AbstractPluginManager } from '@finos/legend-shared';
 import type { EditorPlugin } from '../stores/EditorPlugin';
 
 export class PluginManager extends AbstractPluginManager {

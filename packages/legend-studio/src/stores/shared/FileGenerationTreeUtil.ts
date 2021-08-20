@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+import type {
+  TreeNodeData,
+  TreeData,
+} from '@finos/legend-application-components';
 import {
   isNonNullable,
   returnUndefOnError,
   addUniqueEntry,
-} from '@finos/legend-studio-shared';
-import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
+} from '@finos/legend-shared';
+import type { GenerationOutput } from '@finos/legend-graph';
 
 export interface GenerationOutputResult {
   generationOutput: GenerationOutput;

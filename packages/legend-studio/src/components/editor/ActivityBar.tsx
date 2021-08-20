@@ -28,7 +28,6 @@ import {
   GoEye,
   GoCloudDownload,
 } from 'react-icons/go';
-import { useEditorStore } from '../../stores/EditorStore';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { CORE_TEST_ID } from '../../const';
 import { CheckIcon } from '../shared/Icon';
@@ -39,7 +38,8 @@ import {
   MenuContentItem,
   MenuContentItemIcon,
   MenuContentItemLabel,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
+import { useEditorStore } from './EditorStoreProvider';
 
 const SettingsMenu = observer(
   (props, ref: React.Ref<HTMLDivElement>) => {

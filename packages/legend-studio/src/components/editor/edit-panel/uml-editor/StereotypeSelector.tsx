@@ -16,16 +16,23 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
 import {
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import type { StereotypeSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
+} from '@finos/legend-application-components';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type {
+  Profile,
+  StereotypeReference,
+  Stereotype,
+} from '@finos/legend-graph';
+
+interface StereotypeOption {
+  label: string;
+  value: Stereotype;
+}
 
 export const StereotypeSelector = observer(
   (props: {
@@ -42,15 +49,13 @@ export const StereotypeSelector = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Profile>): string =>
+      stringify: (option: PackageableElementOption<Profile>): string =>
         option.value.path,
     });
     const [selectedProfile, setSelectedProfile] = useState<
-      PackageableElementSelectOption<Profile>
+      PackageableElementOption<Profile>
     >({ value: stereotype.value.owner, label: stereotype.value.owner.name });
-    const changeProfile = (
-      val: PackageableElementSelectOption<Profile>,
-    ): void => {
+    const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.stereotypes.length) {
         setSelectedProfile(val);
         stereotype.setValue(val.value.stereotypes[0]);
@@ -59,17 +64,22 @@ export const StereotypeSelector = observer(
     const visitProfile = (): void =>
       editorStore.openElement(selectedProfile.value);
     // Stereotype
-    const stereotypeOptions = selectedProfile.value.stereotypeOptions;
+    const stereotypeOptions = selectedProfile.value.stereotypes.map(
+      (stereotype) => ({
+        label: stereotype.value,
+        value: stereotype,
+      }),
+    );
     const stereotypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: StereotypeSelectOption): string => option.label,
+      stringify: (option: StereotypeOption): string => option.label,
     });
     const selectedStereotype = {
       value: stereotype.value,
       label: stereotype.value.value,
     };
-    const updateStereotype = (val: StereotypeSelectOption): void =>
+    const updateStereotype = (val: StereotypeOption): void =>
       stereotype.setValue(val.value);
     return (
       <div className="stereotype-selector">

@@ -25,10 +25,10 @@ import {
   disableEditorHotKeys,
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
-} from '@finos/legend-studio-components';
-import { useEditorStore } from '../../stores/EditorStore';
-import { useApplicationStore } from '../../stores/ApplicationStore';
+} from '@finos/legend-application-components';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 export const TextInputEditor: React.FC<{
   inputValue: string;

@@ -15,23 +15,23 @@
  */
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { LogEvent, guaranteeNonNullable } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
-  EditorStore,
   RawExecutionPlan,
   ExecutionResult,
   RawLambda,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
-  CLIENT_VERSION,
+  PureClientVersion,
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
+import type { EditorStore } from '@finos/legend-studio';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -100,7 +100,7 @@ export class QueryBuilderResultState {
           mapping,
           query,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           false,
         )) as ExecutionResult;
       this.setExecutionResult(result);
@@ -130,7 +130,7 @@ export class QueryBuilderResultState {
           mapping,
           query,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
         )) as ExecutionResult;
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;

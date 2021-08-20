@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getConfigLoader } from '@finos/legend-studio-dev-utils/DevUtils';
+import { getConfigLoader } from '@finos/legend-dev-utils/DevUtils';
 
 // NOTE: `cosmiconfig` does not work with ESM config so unfortunately
 // we cannot rely on this right now to load config, we will temporarily

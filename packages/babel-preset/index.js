@@ -29,6 +29,7 @@ module.exports = declare((api, opts) => {
     development = false,
     useTypescript = false,
     useReact = false,
+    useReactFastRefresh = false,
     useBabelRuntime = false,
   } = opts;
 
@@ -94,7 +95,10 @@ module.exports = declare((api, opts) => {
           //  2. When we allow this to process non-jsx files, it would throw errors like the following potentially because we force HMR on modules that HMR does not support (?):
           //  `[HMR] Error: Aborted because something.js is not accepted`
           //  See https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672816401
-          useReact && development && 'react-refresh/babel',
+          useReact &&
+            useReactFastRefresh &&
+            development &&
+            'react-refresh/babel',
         ].filter(Boolean),
       },
     ],

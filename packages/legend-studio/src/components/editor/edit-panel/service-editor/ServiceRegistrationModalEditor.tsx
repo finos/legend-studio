@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import {
   clsx,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { Dialog } from '@material-ui/core';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { Version } from '../../../../models/sdlc/models/version/Version';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../../../const';
-import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
+import { ServiceExecutionMode } from '@finos/legend-graph';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
+import { Version } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 export const ServiceRegistrationModalEditor = observer(() => {
   const editorStore = useEditorStore();

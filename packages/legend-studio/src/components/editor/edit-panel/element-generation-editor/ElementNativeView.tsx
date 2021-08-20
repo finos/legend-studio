@@ -22,8 +22,8 @@ import {
   ELEMENT_NATIVE_VIEW_MODE,
 } from '../../../../stores/EditorConfig';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 export const ElementNativeView = observer(
   (props: { currentElementState: ElementEditorState }) => {

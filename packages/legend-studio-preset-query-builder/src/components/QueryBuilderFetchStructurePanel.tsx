@@ -19,9 +19,9 @@ import {
   clsx,
   BlankPanelContent,
   PlusIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
 import { CgOptions } from 'react-icons/cg';
 import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel';

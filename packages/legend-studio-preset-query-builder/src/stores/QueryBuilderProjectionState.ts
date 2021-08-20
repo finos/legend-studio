@@ -21,7 +21,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   assertType,
@@ -34,7 +34,7 @@ import {
   addUniqueEntry,
   guaranteeNonNullable,
   findLast,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 import { buildPropertyExpressionFromExplorerTreeNodeData } from './QueryBuilderExplorerState';
 import {
@@ -45,20 +45,18 @@ import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   AbstractPropertyExpression,
   CompilationError,
-  EditorStore,
   ExecutionResult,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   TdsExecutionResult,
-  CLIENT_VERSION,
+  PureClientVersion,
   PRIMITIVE_TYPE,
   extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
-  LambdaEditorState,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
@@ -80,6 +78,8 @@ import {
   buildNumericPreviewDataQuery,
 } from './QueryBuilderPreviewDataHelper';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+import type { EditorStore } from '@finos/legend-studio';
+import { LambdaEditorState } from '@finos/legend-studio';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
@@ -645,7 +645,7 @@ export class QueryBuilderProjectionState {
                 ),
               ),
               this.queryBuilderState.querySetupState.runtime,
-              CLIENT_VERSION.VX_X_X,
+              PureClientVersion.VX_X_X,
               false,
             )) as ExecutionResult;
           assertType(
@@ -684,7 +684,7 @@ export class QueryBuilderProjectionState {
                 ),
               ),
               this.queryBuilderState.querySetupState.runtime,
-              CLIENT_VERSION.VX_X_X,
+              PureClientVersion.VX_X_X,
               false,
             )) as ExecutionResult;
           assertType(

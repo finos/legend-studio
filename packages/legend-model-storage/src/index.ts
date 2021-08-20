@@ -15,3 +15,4 @@
  */
 
 export * from './Entity';
+export * from './EntityUtils';

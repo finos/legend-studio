@@ -23,7 +23,7 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type {
   ElementDragSource,
   MappingElementSourceDropTarget,
@@ -35,41 +35,43 @@ import {
   MappingElementState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { guaranteeNonNullable, noop } from '@finos/legend-studio-shared';
+import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   getMappingElementSource,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { TypeTree } from '../../../shared/TypeTree';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
 import { PropertyMappingsEditor } from './PropertyMappingsEditor';
 import { useDrop } from 'react-dnd';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import {
-  ActionAlertActionType,
-  useApplicationStore,
-} from '../../../../stores/ApplicationStore';
+import { ActionAlertActionType } from '../../../../stores/ApplicationStore';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree';
-import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
 import {
   getSourceElementLabel,
   InstanceSetImplementationSourceSelectorModal,
 } from './InstanceSetImplementationSourceSelectorModal';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type {
+  InstanceSetImplementation,
+  Property,
+  PackageableElement,
+} from '@finos/legend-graph';
+import {
+  Class,
+  Type,
+  FlatData,
+  RootFlatDataRecordType,
+  View,
+  Table,
+  Database,
+} from '@finos/legend-graph';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {

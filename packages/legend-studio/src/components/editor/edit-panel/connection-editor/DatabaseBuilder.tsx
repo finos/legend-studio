@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import Dialog from '@material-ui/core/Dialog';
-import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
+import type { TreeNodeContainerProps } from '@finos/legend-application-components';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -26,7 +26,7 @@ import {
   FireIcon,
   clsx,
   TreeView,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { useEffect } from 'react';
 import type {
   DatabaseBuilderState,
@@ -45,7 +45,7 @@ import {
   FaChevronRight,
   FaRegCircle,
 } from 'react-icons/fa';
-import { capitalize } from '@finos/legend-studio-shared';
+import { capitalize } from '@finos/legend-shared';
 import { SchemaIcon, TableIcon } from '../../../shared/Icon';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';

@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import {
   prettyCONSTName,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   useEditorStore,
   EDITOR_LANGUAGE,
@@ -32,7 +32,7 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { TEXT_TYPE } from '../models/metamodels/pure/model/packageableElements/Text';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {

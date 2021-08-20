@@ -12,7 +12,7 @@ DSL is a very common use case where we have extension on, as each DSL are meant 
 
 When working on extensions, your setup is most likely going be something like this:
 
-1. A module that acts as the entry point to boot up Studio application (similar to [@finos/legend-studio-app](https://github.com/finos/legend-studio/tree/master/packages/legend-studio-app))
+1. A module that acts as the entry point to boot up Studio application (similar to [@finos/legend-studio-deployment](https://github.com/finos/legend-studio/tree/master/packages/legend-studio-deployment))
 2. Other extensions modules that the entry points load
 
 Sometimes, you could see problems being reported from within Studio core, but you don't really have the code to debug the issue. Following are several debugging methods that we recommend:

@@ -33,7 +33,7 @@ import { BsFillTriangleFill } from 'react-icons/bs';
 import type {
   TreeNodeContainerProps,
   TreeNodeViewProps,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   clsx,
   ContextMenu,
@@ -41,7 +41,7 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import type {
   QueryBuilderFilterConditionDragSource,
   QueryBuilderFilterDropTarget,
@@ -70,7 +70,7 @@ import {
 } from '../stores/QueryBuilderExplorerState';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { assertErrorThrown } from '@finos/legend-studio-shared';
+import { assertErrorThrown } from '@finos/legend-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import { useApplicationStore } from '@finos/legend-studio';

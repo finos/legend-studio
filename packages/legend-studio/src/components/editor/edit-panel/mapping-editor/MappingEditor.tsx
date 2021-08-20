@@ -15,9 +15,8 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
-import { toSentenceCase } from '@finos/legend-studio-shared';
+import { toSentenceCase } from '@finos/legend-shared';
 import {
   clsx,
   ContextMenu,
@@ -29,7 +28,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { ClassMappingEditor } from './ClassMappingEditor';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor';
 import {
@@ -54,16 +53,17 @@ import { MappingExplorer } from './MappingExplorer';
 import { MappingTestEditor } from './MappingTestEditor';
 import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingTestsExplorer } from './MappingTestsExplorer';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../../const';
-import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
 import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type {
+  SetImplementation,
+  EnumerationMapping,
+} from '@finos/legend-graph';
+import { Class, Enumeration, Association } from '@finos/legend-graph';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;

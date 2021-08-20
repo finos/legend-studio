@@ -20,7 +20,6 @@ import type {
   PluginManager,
   NewElementFromStateCreator,
   PureGrammarElementLabeler,
-  PackageableElement,
   EditorStore,
   ElementEditorState,
   ElementEditorStateCreator,
@@ -31,10 +30,11 @@ import type {
   DSL_EditorPlugin_Extension,
   NewElementState,
 } from '@finos/legend-studio';
-import { FileIcon } from '@finos/legend-studio-components';
+import { FileIcon } from '@finos/legend-application-components';
 import { Text } from '../models/metamodels/pure/model/packageableElements/Text';
 import { TextEditorState } from '../stores/TextEditorState';
 import { TextElementEditor } from './TextElementEditor';
+import type { PackageableElement } from '@finos/legend-graph';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';

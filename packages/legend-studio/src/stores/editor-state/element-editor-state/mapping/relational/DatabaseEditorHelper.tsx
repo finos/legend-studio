@@ -21,12 +21,9 @@ import {
   NumberTypeIcon,
   StringTypeIcon,
   UnknownTypeIcon,
-} from '@finos/legend-studio-components';
-import {
-  getClass,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
-import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
+} from '@finos/legend-application-components';
+import { getClass, UnsupportedOperationError } from '@finos/legend-shared';
+import type { RelationalDataType } from '@finos/legend-graph';
 import {
   Real,
   Binary,
@@ -45,9 +42,9 @@ import {
   TinyInt,
   SmallInt,
   BigInt,
-} from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
+} from '@finos/legend-graph';
 
-export const generateColumnTypeLabel = (type: DataType): string => {
+export const generateColumnTypeLabel = (type: RelationalDataType): string => {
   if (type instanceof VarChar) {
     return `VARCHAR(${type.size})`;
   } else if (type instanceof Char) {
@@ -88,7 +85,9 @@ export const generateColumnTypeLabel = (type: DataType): string => {
   );
 };
 
-export const renderColumnTypeIcon = (type: DataType): React.ReactNode => {
+export const renderColumnTypeIcon = (
+  type: RelationalDataType,
+): React.ReactNode => {
   if (type instanceof VarChar || type instanceof Char) {
     return (
       <StringTypeIcon className="relation-source-tree__icon relation-source-tree__icon__string" />

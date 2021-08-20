@@ -17,7 +17,6 @@
 import type {
   LambdaEditorOnKeyDownEventHandler,
   LambdaEditorState,
-  Type,
 } from '@finos/legend-studio';
 import { LambdaEditor, useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
@@ -26,6 +25,7 @@ import type { IKeyboardEvent } from 'monaco-editor';
 import { KeyCode } from 'monaco-editor';
 import { useCallback, useMemo } from 'react';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { Type } from '@finos/legend-graph';
 
 export const QueryBuilderLambdaEditor = observer(
   (props: {

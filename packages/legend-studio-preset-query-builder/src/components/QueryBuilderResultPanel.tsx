@@ -19,19 +19,19 @@ import Dialog from '@material-ui/core/Dialog';
 import {
   BlankPanelContent,
   PanelLoadingIndicator,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';
 import { flowResult } from 'mobx';
-import type { ExecutionResult } from '@finos/legend-studio';
 import {
   EDITOR_LANGUAGE,
   TAB_SIZE,
-  TdsExecutionResult,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-studio';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { ExecutionResult } from '@finos/legend-graph';
+import { TdsExecutionResult } from '@finos/legend-graph';
 
 const QueryBuilderResultValues = observer(
   (props: { executionResult: ExecutionResult }) => {

@@ -20,8 +20,8 @@
 // will generate empty array, however, in Studio, we avoid that to lessen the size of the serialized graph
 // to save bandwidth, as such the best action is just to mock these methods so in the scope of this test, Studio
 // serializers return empty array for these fields just like the parser's
-jest.mock('@finos/legend-studio-shared', () => ({
-  ...jest.requireActual('@finos/legend-studio-shared'),
+jest.mock('@finos/legend-shared', () => ({
+  ...jest.requireActual('@finos/legend-shared'),
   /* eslint-disable @typescript-eslint/no-explicit-any */
   serializeArray: (
     values: any,
@@ -44,14 +44,11 @@ jest.mock('@finos/legend-studio-shared', () => ({
 import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios from 'axios';
-import type { V1_PackageableElement } from '@finos/legend-studio';
-import {
-  EntityChangeType,
-  getTestEditorStore,
-  buildGraphBasic,
-} from '@finos/legend-studio';
-import type { PlainObject } from '@finos/legend-studio-shared';
+import { getTestEditorStore, buildGraphBasic } from '@finos/legend-studio';
+import type { PlainObject } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { EntityChangeType } from '@finos/legend-server-sdlc';
+import type { V1_PackageableElement } from '@finos/legend-graph';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {

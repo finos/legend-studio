@@ -15,27 +15,29 @@
  */
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   getNullableFirstElement,
   isNonNullable,
   uniq,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   Class,
-  EditorStore,
   Mapping,
   PackageableRuntime,
   RawLambda,
   Runtime,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
-  decorateRuntimeWithNewMapping,
   EngineRuntime,
   PackageableElementExplicitReference,
-  RuntimeEditorState,
   RuntimePointer,
+} from '@finos/legend-graph';
+import type { EditorStore } from '@finos/legend-studio';
+import {
+  decorateRuntimeWithNewMapping,
+  RuntimeEditorState,
 } from '@finos/legend-studio';
 
 export class QueryBuilderSetupState {

@@ -34,33 +34,31 @@ import {
   CheckSquareIcon,
   SquareIcon,
   TimesIcon,
-} from '@finos/legend-studio-components';
-import { capitalize, prettyCONSTName } from '@finos/legend-studio-shared';
-import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { DatabaseType } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+} from '@finos/legend-application-components';
+import { capitalize, prettyCONSTName } from '@finos/legend-shared';
+import type { RelationalDatabaseConnection, Store } from '@finos/legend-graph';
 import {
+  DatabaseType,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
   StaticDatasourceSpecification,
   BigQueryDatasourceSpecification,
   RedshiftDatasourceSpecification,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 import { runInAction } from 'mobx';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { Store } from '../../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import type { EditorPlugin } from '../../../../stores/EditorPlugin';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { DatabaseBuilder } from './DatabaseBuilder';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -749,14 +747,14 @@ const RelationalConnectionStoreEditor = observer(
       </div>
     );
     const stores = connectionValueState.editorStore.graphState.graph.ownStores;
-    const options = stores.map((e) => e.selectOption);
+    const options = stores.map(buildElementOption);
     const store = connection.store.value;
     const selectedStore = {
       value: store,
       label: isStoreEmpty ? noStoreLabel : store.path,
     };
     const onStoreChange = (
-      val: PackageableElementSelectOption<Store> | null,
+      val: PackageableElementOption<Store> | null,
     ): void => {
       if (val) {
         connection.setStore(

@@ -17,7 +17,7 @@
 import { action, computed, makeAutoObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   ActionState,
@@ -27,12 +27,12 @@ import {
   UnsupportedOperationError,
   getNullableFirstElement,
   assertTrue,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import { Version } from '../../../../models/sdlc/models/version/Version';
-import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
-import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
 import { ServiceRegistrationEnvInfo } from '../../../application/ApplicationConfig';
+import { Version } from '@finos/legend-server-sdlc';
+import type { ServiceRegistrationResult } from '@finos/legend-graph';
+import { ServiceExecutionMode } from '@finos/legend-graph';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 

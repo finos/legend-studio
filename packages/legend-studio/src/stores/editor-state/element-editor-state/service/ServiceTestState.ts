@@ -16,11 +16,9 @@
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
-import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../utils/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   losslessStringify,
@@ -33,34 +31,34 @@ import {
   toGrammarString,
   fromGrammarString,
   createUrlStringFromData,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import type { ServiceTestResult } from '../../../../models/metamodels/pure/action/service/ServiceTestResult';
-import type { KeyedSingleExecutionTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
+import { TAB_SIZE } from '../../../EditorConfig';
+import type {
+  ServiceTestResult,
+  KeyedSingleExecutionTest,
+  Runtime,
+  ExecutionResult,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   TestContainer,
   SingleExecutionTest,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
-import { PureSingleExecution } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
+  PureSingleExecution,
   IdentifiedConnection,
   EngineRuntime,
   RuntimePointer,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { XmlModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/XmlModelConnection';
-import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import {
+  JsonModelConnection,
+  XmlModelConnection,
+  FlatDataConnection,
   RelationalDatabaseConnection,
   DatabaseType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { StaticDatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import { ConnectionPointer } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
-import { TAB_SIZE } from '../../../EditorConfig';
+  StaticDatasourceSpecification,
+  DefaultH2AuthenticationStrategy,
+  ConnectionPointer,
+  PackageableElementExplicitReference,
+  PureClientVersion,
+} from '@finos/legend-graph';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -268,7 +266,7 @@ export class TestContainerState {
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
             true,
           )) as ExecutionResult;
         this.setAssertionData(
@@ -313,7 +311,7 @@ export class TestContainerState {
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
             true,
           )) as ExecutionResult;
         this.setTestExecutionResultText({
@@ -454,7 +452,7 @@ export class SingleExecutionTestState {
             executionInput.mapping,
             executionInput.query,
             executionInput.runtime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
           )) as string;
       } catch (error: unknown) {
         this.editorStore.applicationStore.log.error(

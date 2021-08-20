@@ -16,7 +16,7 @@
 
 import completeGraphEntities from './MockDataGenerationTestData.json';
 import { classHasCycle, createMockClassInstance } from '../MockDataUtil';
-import { unitTest } from '@finos/legend-studio-shared';
+import { unitTest } from '@finos/legend-shared';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
@@ -30,6 +30,21 @@ beforeAll(async () => {
       completeGraphEntities as Entity[],
     ),
   );
+});
+
+test(unitTest('Class with hierarchy cycle is detected'), () => {
+  const _class = editorStore.graphState.graph.getClass('myPackage::test::Misc');
+  expect(createMockClassInstance(_class)).toContainAllKeys([
+    'string',
+    'boolean',
+    'float',
+    'decimal',
+    'number',
+    'integer',
+    'date',
+    'dateTime',
+    'strictDate',
+  ]);
 });
 
 test(unitTest('Class with hierarchy cycle is detected'), () => {

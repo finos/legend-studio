@@ -15,7 +15,6 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import {
   FaLock,
@@ -30,14 +29,15 @@ import {
   ServiceEditorState,
   SERVICE_TAB,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { clsx } from '@finos/legend-studio-components';
+import { clsx } from '@finos/legend-application-components';
 import { MdModeEdit } from 'react-icons/md';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor';
 import { CORE_TEST_ID } from '../../../../const';
 import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/service-editor/ServiceRegistrationModalEditor';
-import { validateServicePattern } from '../../../../models/metamodels/pure/model/packageableElements/service/Service';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { validateServicePattern } from '@finos/legend-graph';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();

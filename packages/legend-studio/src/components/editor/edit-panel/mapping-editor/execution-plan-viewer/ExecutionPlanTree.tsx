@@ -15,25 +15,25 @@
  */
 
 import { useState } from 'react';
-
 import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
 import {
   clsx,
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
-} from '@finos/legend-studio-components';
-
-import { ExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
-import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
-import type { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
-import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
-import { addUniqueEntry, isNonNullable } from '@finos/legend-studio-shared';
+} from '@finos/legend-application-components';
+import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
+import {
+  ExecutionNode,
+  SQLExecutionNode,
+  RelationalTDSInstantiationExecutionNode,
+} from '@finos/legend-graph';
+import type { ExecutionPlan } from '@finos/legend-graph';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;

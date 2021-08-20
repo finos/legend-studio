@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-studio-shared';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   assertNonNullable,
   assertTrue,
@@ -26,7 +26,7 @@ import {
   isString,
   returnUndefOnError,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import {
   COLUMN_SORT_TYPE,
@@ -53,7 +53,7 @@ import type {
   ValueSpecificationVisitor,
   InstanceValue,
   INTERNAL__UnknownValueSpecification,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   DerivedProperty,
   RawLambda,
@@ -69,7 +69,7 @@ import {
   AbstractPropertyExpression,
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 import {
   QueryBuilderDerivationProjectionColumnState,

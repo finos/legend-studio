@@ -15,7 +15,7 @@
  */
 
 import base from '../../scripts/jest/jest.config.base.js';
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const packageJson = loadJSON('./package.json');
 
@@ -32,7 +32,7 @@ export default {
   moduleNameMapper: {
     ...base.moduleNameMapper,
     '^monaco-editor$':
-      '@finos/legend-studio-components/lib/testMocks/MockedMonacoEditor.js',
+      '@finos/legend-application-components/lib/testMocks/MockedMonacoEditor.js',
   },
   testMatch: [
     '<rootDir>/packages/legend-studio-preset-dsl-text/src/**/__tests__/**/*(*.)test.[jt]s?(x)',

@@ -26,18 +26,18 @@ import {
   resolvePackageAndElementName,
   CONNECTION_TYPE,
 } from '../../../stores/NewElementState';
-import { CustomSelectorInput } from '@finos/legend-studio-components';
-import { ELEMENT_PATH_DELIMITER } from '../../../models/MetaModelConst';
+import { CustomSelectorInput } from '@finos/legend-application-components';
 import type { EditorStore } from '../../../stores/EditorStore';
-import { useEditorStore } from '../../../stores/EditorStore';
-import { compareLabelFn, prettyCONSTName } from '@finos/legend-studio-shared';
-import type { FileGenerationTypeOption } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { Mapping } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
-import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
+import { compareLabelFn, prettyCONSTName } from '@finos/legend-shared';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import { useEditorStore } from '../EditorStoreProvider';
+import type { Mapping, Store, Class } from '@finos/legend-graph';
+import {
+  ELEMENT_PATH_DELIMITER,
+  PACKAGEABLE_ELEMENT_TYPE,
+} from '@finos/legend-graph';
+import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,
@@ -112,7 +112,7 @@ const NewRuntimeDriverEditor = observer(() => {
   const mappingOptions = editorStore.mappingOptions;
   const selectedMappingOption = { label: mapping?.path ?? '', value: mapping };
   const onMappingSelectionChange = (
-    val: PackageableElementSelectOption<Mapping>,
+    val: PackageableElementOption<Mapping>,
   ): void => {
     if (val.value !== mapping) {
       newRuntimeDriver.setMapping(val.value);

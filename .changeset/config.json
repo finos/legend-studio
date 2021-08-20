@@ -1,11 +1,18 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@1.5.0/schema.json",
   "changelog": [
-    "@finos/legend-studio-dev-utils/ChangesetChangelogUtils",
+    "@finos/legend-dev-utils/ChangesetChangelogUtils",
     { "repo": "finos/legend-studio" }
   ],
   "commit": false,
-  "linked": [],
+  "linked": [
+    [
+      "@finos/legend-studio-app",
+      "@finos/legend-studio-deployment",
+      "@finos/legend-query-app",
+      "@finos/legend-query-deployment"
+    ]
+  ],
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",

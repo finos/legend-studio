@@ -20,20 +20,20 @@ import { PrimitiveTypeIcon } from '../../../shared/Icon';
 import type {
   TreeNodeContainerProps,
   TreeData,
-} from '@finos/legend-studio-components';
-import { clsx, TreeView } from '@finos/legend-studio-components';
+} from '@finos/legend-application-components';
+import { clsx, TreeView } from '@finos/legend-application-components';
 import {
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../../../models/MetaModelConst';
 import type { FlatDataRecordTypeTreeNodeData } from '../../../../stores/shared/TreeUtil';
-import { addUniqueEntry } from '@finos/legend-studio-shared';
-import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
+import { addUniqueEntry } from '@finos/legend-shared';
 import type {
+  Type,
   RootFlatDataRecordType,
   FlatDataRecordField,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
+} from '@finos/legend-graph';
+import { DEFAULT_SOURCE_PARAMETER_NAME } from '@finos/legend-graph';
 
 const getRecordTypeTreeNodeData = (
   field: FlatDataRecordField,

@@ -17,20 +17,22 @@
 import { LegendStudio } from '@finos/legend-studio';
 import { QueryBuilder_Preset } from '@finos/legend-studio-preset-query-builder';
 import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
-import { EFJSONSchema_Preset } from '@finos/legend-studio-preset-external-format-json-schema';
-import studioConfig from '../studio.config';
-import { BrowserConsole } from '@finos/legend-studio-shared';
-import './index.scss';
+import { EFJSONSchema_Preset } from '@finos/legend-graph-preset-external-format-json-schema';
+import { BrowserConsole } from '@finos/legend-shared';
 
-LegendStudio.create()
-  .setup({ baseUrl: studioConfig.baseUrl })
-  .withPresets([
-    new DSLText_Preset(),
-    new EFJSONSchema_Preset(),
-    new QueryBuilder_Preset(),
-  ])
-  .withLoggers([new BrowserConsole()])
-  .start()
-  .catch((e) => {
-    throw e;
-  });
+export class LegendStudioApplication {
+  static run(baseUrl: string): void {
+    LegendStudio.create()
+      .setup({ baseUrl })
+      .withPresets([
+        new DSLText_Preset(),
+        new EFJSONSchema_Preset(),
+        new QueryBuilder_Preset(),
+      ])
+      .withLoggers([new BrowserConsole()])
+      .start()
+      .catch((e: unknown) => {
+        throw e;
+      });
+  }
+}

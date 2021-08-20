@@ -15,20 +15,23 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useReviewStore } from '../../stores/ReviewStore';
 import { EntityDiffSideBarItem } from '../editor/edit-panel/diff-editor/EntityDiffView';
-import { ReviewState } from '../../models/sdlc/models/review/Review';
 import { FaInfoCircle, FaTimes, FaArrowUp, FaCheck } from 'react-icons/fa';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import {
+  clsx,
+  PanelLoadingIndicator,
+} from '@finos/legend-application-components';
 import { formatDistanceToNow } from 'date-fns';
 import { FiGitMerge } from 'react-icons/fi';
-import type { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
-import { entityDiffSorter } from '../../models/sdlc/models/comparison/EntityDiff';
-import { useEditorStore } from '../../stores/EditorStore';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../const';
 import { flowResult } from 'mobx';
+import type { EntityDiff } from '@finos/legend-server-sdlc';
+import { ReviewState } from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '../../stores/EditorSdlcState';
+import { useReviewStore } from './ReviewStoreProvider';
+import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 export const ReviewSideBar = observer(() => {
   const reviewStore = useReviewStore();

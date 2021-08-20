@@ -27,16 +27,16 @@ import {
   disposeDiffEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
-} from '@finos/legend-studio-components';
-import { useEditorStore } from '../../stores/EditorStore';
+} from '@finos/legend-application-components';
 import {
   isString,
   losslessStringify,
   tryToFormatJSONString,
   tryToFormatLosslessJSONString,
-} from '@finos/legend-studio-shared';
-import { useApplicationStore } from '../../stores/ApplicationStore';
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 export const TextDiffView = observer(
   (props: { language: EDITOR_LANGUAGE; from?: string; to?: string }) => {
