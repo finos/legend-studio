@@ -86,6 +86,76 @@ import {
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
+// updateParameters(
+//   generationProperty: GenerationProperty,
+//   newValue: unknown,
+// ): void {
+//   if (generationProperty.type === GenerationPropertyItemType.MAP) {
+//     this.handleMapParameterUpdate(generationProperty, newValue);
+//   } else {
+//     const configProperty = this.getConfig(generationProperty.name);
+//     const newConfigValue = this.compareDefaultValue(
+//       generationProperty,
+//       newValue,
+//     )
+//       ? undefined
+//       : newValue;
+//     if (newConfigValue !== undefined) {
+//       if (configProperty) {
+//         configProperty.setValue(newConfigValue);
+//       } else {
+//         const newItem = new ConfigurationProperty(
+//           generationProperty.name,
+//           newConfigValue,
+//         );
+//         addUniqueEntry(this.configurationProperties, newItem);
+//       }
+//     } else {
+//       this.configurationProperties = this.configurationProperties.filter(
+//         (e) => e.name !== generationProperty.name,
+//       );
+//     }
+//   }
+// }
+
+// handleMapParameterUpdate(
+//   generationProperty: GenerationProperty,
+//   newValue: unknown,
+// ): void {
+//   if (
+//     !newValue ||
+//     isEmpty(newValue) ||
+//     deepEqual(newValue, generationProperty.defaultValue)
+//   ) {
+//     this.configurationProperties = this.configurationProperties.filter(
+//       (e) => e.name !== generationProperty.name,
+//     );
+//   } else {
+//     const configProperty = this.getConfig(generationProperty.name);
+//     if (configProperty) {
+//       configProperty.setValue({ ...(newValue as object) });
+//     } else {
+//       const newItem = new ConfigurationProperty(
+//         generationProperty.name,
+//         newValue,
+//       );
+//       addUniqueEntry(this.configurationProperties, newItem);
+//     }
+//   }
+// }
+
+// compareDefaultValue(
+//   generationProperty: GenerationProperty,
+//   value: unknown,
+// ): boolean {
+//   if (generationProperty.type === GenerationPropertyItemType.BOOLEAN) {
+//     return (
+//       (generationProperty.defaultValue === 'true') === (value as boolean)
+//     );
+//   }
+//   return generationProperty.defaultValue === value;
+// }
+
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     GenerationTreeNodeData,
