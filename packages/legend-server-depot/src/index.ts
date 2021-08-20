@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
-export const dummy = 1;
+export * from './models/ProjectData';
+export * from './models/ProjectVersionEntities';
+
+export * from './DepotServerClient';

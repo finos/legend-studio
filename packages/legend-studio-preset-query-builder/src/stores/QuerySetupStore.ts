@@ -36,12 +36,9 @@ import type {
   PackageableRuntime,
   Service,
 } from '@finos/legend-studio';
-import {
-  PureSingleExecution,
-  PureMultiExecution,
-  ProjectData,
-} from '@finos/legend-studio';
+import { PureSingleExecution, PureMultiExecution } from '@finos/legend-studio';
 import type { QueryStore } from './QueryStore';
+import { ProjectData } from '@finos/legend-server-depot';
 
 export abstract class QuerySetupState {
   queryStore: QueryStore;

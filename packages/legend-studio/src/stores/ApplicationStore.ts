@@ -34,9 +34,9 @@ import type { ApplicationConfig } from './application/ApplicationConfig';
 import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
-import { DepotServerClient } from '../models/metadata/DepotServerClient';
 import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { DepotServerClient } from '@finos/legend-server-depot';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',

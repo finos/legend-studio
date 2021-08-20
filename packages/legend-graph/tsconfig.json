@@ -7,5 +7,8 @@
     "jsx": "react-jsxdev"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
-  "references": [{ "path": "../legend-shared" }]
+  "references": [
+    { "path": "../legend-shared" },
+    { "path": "../legend-model-storage" }
+  ]
 }

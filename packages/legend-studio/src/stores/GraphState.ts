@@ -86,8 +86,6 @@ import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import type { PropertyMapping } from '../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import { AssociationImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import type { DeprecatedProjectVersion } from '../models/metadata/models/ProjectVersionEntities';
-import { DeprecatedProjectVersionEntities } from '../models/metadata/models/ProjectVersionEntities';
 import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { Entity } from '@finos/legend-model-storage';
 import type { EntityChange } from '@finos/legend-server-sdlc';
@@ -99,6 +97,8 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
 } from '../models/metamodels/pure/graphManager/GraphManagerUtils';
+import type { DeprecatedProjectVersion } from '@finos/legend-server-depot';
+import { DeprecatedProjectVersionEntities } from '@finos/legend-server-depot';
 
 export class GraphState {
   editorStore: EditorStore;

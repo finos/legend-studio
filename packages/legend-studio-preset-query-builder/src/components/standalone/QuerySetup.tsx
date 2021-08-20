@@ -19,7 +19,6 @@ import type {
   Mapping,
   PackageableElementOption,
   PackageableRuntime,
-  ProjectData,
 } from '@finos/legend-studio';
 import { useApplicationStore } from '@finos/legend-studio';
 import {
@@ -64,6 +63,7 @@ import {
   useQuerySetupStore,
 } from '../QuerySetupStoreProvider';
 import { useQueryStore } from '../QueryStoreProvider';
+import type { ProjectData } from '@finos/legend-server-depot';
 
 type QueryOption = { label: string; value: LightQuery };
 const buildQueryOption = (query: LightQuery): QueryOption => ({

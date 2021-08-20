@@ -50,9 +50,7 @@ import {
   PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
-  ProjectData,
   TAB_SIZE,
-  ProjectVersionEntities,
   DependencyManager,
 } from '@finos/legend-studio';
 import { QueryBuilderState } from './QueryBuilderState';
@@ -64,6 +62,10 @@ import type {
 import { generateExistingQueryRoute } from './LegendQueryRouter';
 import { QUERY_LOG_EVENT } from '../QueryLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
+import {
+  ProjectData,
+  ProjectVersionEntities,
+} from '@finos/legend-server-depot';
 
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';

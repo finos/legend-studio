@@ -151,10 +151,6 @@ export { V1_deserializeRawValueSpecification } from './models/protocols/pure/v1/
 export { V1_serializeRawValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 
-// Metadata
-export { ProjectData } from './models/metadata/models/ProjectData';
-export { ProjectVersionEntities } from './models/metadata/models/ProjectVersionEntities';
-
 // stores
 export * from './stores/shared/PackageableElementOptionUtil';
 export * from './stores/EditorPlugin';
