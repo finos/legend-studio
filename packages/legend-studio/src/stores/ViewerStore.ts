@@ -17,8 +17,12 @@
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { AssertionError } from '@finos/legend-shared';
-import { LogEvent, IllegalStateError, ActionState } from '@finos/legend-shared';
+import {
+  AssertionError,
+  LogEvent,
+  IllegalStateError,
+  ActionState,
+} from '@finos/legend-shared';
 import { TAB_SIZE } from './EditorConfig';
 import type { ViewerPathParams } from './LegendStudioRouter';
 import {
