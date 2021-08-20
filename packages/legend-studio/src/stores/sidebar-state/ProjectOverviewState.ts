@@ -218,7 +218,16 @@ export class ProjectOverviewState {
               review.id !== latestProjectVersionRevisionReview.id,
           ); // make sure to exclude the base review
       } else {
-        this.committedReviewsBetweenMostRecentVersionAndProjectLatest = [];
+        this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
+          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviews(
+            this.sdlcState.currentProjectId,
+            ReviewState.COMMITTED,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          )) as PlainObject<Review>[]
+        ).map((review) => Review.serialization.fromJson(review));
       }
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(
