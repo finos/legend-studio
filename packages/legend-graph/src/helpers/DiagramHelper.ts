@@ -17,6 +17,21 @@
 import type { PureModel } from '../graph/PureModel';
 import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/ClassView';
 import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
+import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/Point';
+
+/**
+ * Get absolute position of element on the screen by recursively walking up element tree
+ */
+export const getElementPosition = (element: HTMLElement): Point => {
+  let xPosition = 0;
+  let yPosition = 0;
+  while (element.offsetParent) {
+    xPosition += element.offsetLeft - element.scrollLeft + element.clientLeft;
+    yPosition += element.offsetTop - element.scrollTop + element.clientTop;
+    element = element.offsetParent as HTMLElement;
+  }
+  return new Point(xPosition, yPosition);
+};
 
 export const getClassView = (
   diagram: Diagram,

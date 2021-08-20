@@ -17,8 +17,8 @@
 import type { TooltipProps } from '@material-ui/core';
 import { Tooltip } from '@material-ui/core';
 import { StubTransition } from '@finos/legend-application-components';
-import type { AbstractProperty, Multiplicity } from '@finos/legend-studio';
-import { DerivedProperty, MULTIPLICITY_INFINITE } from '@finos/legend-studio';
+import type { AbstractProperty, Multiplicity } from '@finos/legend-graph';
+import { DerivedProperty, MULTIPLICITY_INFINITE } from '@finos/legend-graph';
 
 const getMultiplicityDescription = (multiplicity: Multiplicity): string => {
   if (multiplicity.lowerBound === multiplicity.upperBound) {

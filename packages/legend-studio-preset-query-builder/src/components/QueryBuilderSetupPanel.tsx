@@ -25,21 +25,19 @@ import {
 } from '@finos/legend-application-components';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type {
-  Class,
-  Mapping,
-  PackageableElementOption,
-  Runtime,
-} from '@finos/legend-studio';
+import type { PackageableElementOption } from '@finos/legend-studio';
 import {
-  PackageableElementExplicitReference,
-  RuntimePointer,
   EmbeddedRuntimeEditor,
   ClassIcon,
   MappingIcon,
   RuntimeIcon,
 } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
+import type { Class, Mapping, Runtime } from '@finos/legend-graph';
+import {
+  PackageableElementExplicitReference,
+  RuntimePointer,
+} from '@finos/legend-graph';
 
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

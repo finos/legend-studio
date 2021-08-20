@@ -15,11 +15,9 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { GRAPH_MANAGER_LOG_EVENT } from '../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
-import { getGraphManager } from '../models/protocols/pure/Pure';
 import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -36,56 +34,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
-import {
-  CompilationError,
-  EngineError,
-} from '../models/metamodels/pure/graphManager/action/EngineError';
-import { extractSourceInformationCoordinates } from '../models/metamodels/pure/graphManager/action/SourceInformationHelper';
-import {
-  PureModel,
-  CoreModel,
-  SystemModel,
-  GenerationModel,
-} from '../models/metamodels/pure/graph/PureModel';
-import type { AbstractPureGraphManager } from '../models/metamodels/pure/graphManager/AbstractPureGraphManager';
-import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
-import type { SetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { SET_IMPLEMENTATION_TYPE } from '../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { PureInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import { Profile } from '../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { OperationSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import { PrimitiveType } from '../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Enumeration } from '../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Class } from '../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Association } from '../models/metamodels/pure/model/packageableElements/domain/Association';
-import { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Diagram } from '../models/metamodels/pure/model/packageableElements/diagram/Diagram';
-import { ConcreteFunctionDefinition } from '../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { Service } from '../models/metamodels/pure/model/packageableElements/service/Service';
-import { FlatData } from '../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import { FlatDataInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import { EmbeddedFlatDataPropertyMapping } from '../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import { InstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import { PackageableConnection } from '../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import { PackageableRuntime } from '../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
-import { FileGenerationSpecification } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { GenerationSpecification } from '../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import {
-  Measure,
-  Unit,
-} from '../models/metamodels/pure/model/packageableElements/domain/Measure';
-import { Database } from '../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/relational/model/ServiceStore';
-import { SectionIndex } from '../models/metamodels/pure/model/packageableElements/section/SectionIndex';
-import { RootRelationalInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { EmbeddedRelationalInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { DependencyManager } from '../models/metamodels/pure/graph/DependencyManager';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
-import type { PropertyMapping } from '../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import { AssociationImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
-import { AggregationAwareSetImplementation } from '../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { Entity } from '@finos/legend-model-storage';
 import type { EntityChange } from '@finos/legend-server-sdlc';
@@ -93,12 +42,59 @@ import {
   EntityChangeType,
   ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
-import {
-  DependencyGraphBuilderError,
-  GraphDataDeserializationError,
-} from '../models/metamodels/pure/graphManager/GraphManagerUtils';
 import type { DeprecatedProjectVersion } from '@finos/legend-server-depot';
 import { DeprecatedProjectVersionEntities } from '@finos/legend-server-depot';
+import type {
+  AbstractPureGraphManager,
+  SetImplementation,
+  PackageableElement,
+  PropertyMapping,
+} from '@finos/legend-graph';
+import {
+  GRAPH_MANAGER_LOG_EVENT,
+  getGraphManager,
+  CompilationError,
+  EngineError,
+  extractSourceInformationCoordinates,
+  PureModel,
+  CoreModel,
+  SystemModel,
+  GenerationModel,
+  Package,
+  SET_IMPLEMENTATION_TYPE,
+  PureInstanceSetImplementation,
+  Profile,
+  OperationSetImplementation,
+  PrimitiveType,
+  Enumeration,
+  Class,
+  Association,
+  Mapping,
+  Diagram,
+  ConcreteFunctionDefinition,
+  Service,
+  FlatData,
+  FlatDataInstanceSetImplementation,
+  EmbeddedFlatDataPropertyMapping,
+  InstanceSetImplementation,
+  PackageableConnection,
+  PackageableRuntime,
+  FileGenerationSpecification,
+  GenerationSpecification,
+  Measure,
+  Unit,
+  Database,
+  ServiceStore,
+  SectionIndex,
+  RootRelationalInstanceSetImplementation,
+  EmbeddedRelationalInstanceSetImplementation,
+  PACKAGEABLE_ELEMENT_TYPE,
+  DependencyManager,
+  AssociationImplementation,
+  AggregationAwareSetImplementation,
+  DependencyGraphBuilderError,
+  GraphDataDeserializationError,
+} from '@finos/legend-graph';
 
 export class GraphState {
   editorStore: EditorStore;

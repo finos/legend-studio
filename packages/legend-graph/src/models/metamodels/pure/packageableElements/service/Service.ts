@@ -23,24 +23,11 @@ import type { ServiceTest } from './ServiceTest';
 import { SingleExecutionTest } from './ServiceTest';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import { PackageableElement } from '../PackageableElement';
-import type { ValidationIssue } from '../../../../../helpers/ValidationHelper';
-import { createValidationError } from '../../../../../helpers/ValidationHelper';
 
 export const DEFAULT_SERVICE_PATTERN = '/';
 
-export const validateServicePattern = (pattern: string): ValidationIssue => {
-  const errors: string[] = [];
-  if (!pattern) {
-    addUniqueEntry(errors, 'Pattern must not be empty');
-  } else if (!pattern.startsWith('/')) {
-    addUniqueEntry(errors, `Pattern must start with a '/'`);
-  }
-  // TODO: potentially do more validation
-  return createValidationError(errors);
-};
-
 export class Service extends PackageableElement implements Hashable {
-  pattern = DEFAULT_SERVICE_PATTERN;
+  pattern = '/';
   owners: string[] = [];
   documentation = '';
   autoActivateUpdates = true;
@@ -84,33 +71,42 @@ export class Service extends PackageableElement implements Hashable {
   setExecution(value: ServiceExecution): void {
     this.execution = value;
   }
+
   setTest(value: ServiceTest): void {
     this.test = value;
   }
+
   setPattern(value: string): void {
     this.pattern = value;
   }
+
   setDocumentation(value: string): void {
     this.documentation = value;
   }
+
   setAutoActivateUpdates(value: boolean): void {
     this.autoActivateUpdates = value;
   }
+
   addOwner(value: string): void {
     addUniqueEntry(this.owners, value);
   }
+
   updateOwner(value: string, idx: number): void {
     this.owners[idx] = value;
   }
+
   deleteOwner(idx: number): void {
     this.owners.splice(idx, 1);
   }
+
   removePatternParameter(value: string): void {
     const newPattern = this.pattern
       .replace(new RegExp(`\\/\\{${value}\\}`, 'ug'), '')
       .replace(/\/{2,}/gu, '/');
     this.pattern = newPattern !== '' ? newPattern : DEFAULT_SERVICE_PATTERN;
   }
+
   get patternParameters(): string[] {
     return uniq(
       (this.pattern.match(/\{\w+\}/gu) ?? []).map((parameter) =>

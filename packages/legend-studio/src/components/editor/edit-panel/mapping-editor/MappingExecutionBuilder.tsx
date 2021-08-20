@@ -62,13 +62,15 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '../../../../stores/ApplicationStore';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import {
+  Class,
+  RawLambda,
+  SetImplementation,
+  OperationSetImplementation,
+} from '@finos/legend-graph';
 
 interface ClassMappingSelectOption {
   label: string;

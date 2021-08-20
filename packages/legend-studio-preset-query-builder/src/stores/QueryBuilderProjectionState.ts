@@ -45,9 +45,8 @@ import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   AbstractPropertyExpression,
   CompilationError,
-  EditorStore,
   ExecutionResult,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   TdsExecutionResult,
@@ -57,8 +56,7 @@ import {
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
-  LambdaEditorState,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
@@ -80,6 +78,8 @@ import {
   buildNumericPreviewDataQuery,
 } from './QueryBuilderPreviewDataHelper';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+import type { EditorStore } from '@finos/legend-studio';
+import { LambdaEditorState } from '@finos/legend-studio';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',

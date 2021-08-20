@@ -15,25 +15,10 @@
  */
 
 import packageJson from '../../../../package.json';
-import {
-  V1_ElementBuilder,
-  PureProtocolProcessorPlugin,
-  V1_initPackageableElement,
-} from '@finos/legend-studio';
 import { V1_Text } from './v1/model/packageableElements/V1_Text';
 import type { PlainObject } from '@finos/legend-shared';
 import { assertType } from '@finos/legend-shared';
-import type {
-  PluginManager,
-  PackageableElement,
-  V1_PackageableElement,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_GraphBuilderContext,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_GraphTransformerContext,
-} from '@finos/legend-studio';
+import type { PluginManager } from '@finos/legend-studio';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_textModelSchema,
@@ -44,6 +29,21 @@ import {
   Text,
   TEXT_TYPE,
 } from '../../metamodels/pure/model/packageableElements/Text';
+import type {
+  PackageableElement,
+  V1_ElementProtocolClassifierPathGetter,
+  V1_ElementProtocolDeserializer,
+  V1_ElementProtocolSerializer,
+  V1_ElementTransformer,
+  V1_GraphBuilderContext,
+  V1_GraphTransformerContext,
+  V1_PackageableElement,
+} from '@finos/legend-graph';
+import {
+  PureProtocolProcessorPlugin,
+  V1_ElementBuilder,
+  V1_initPackageableElement,
+} from '@finos/legend-graph';
 
 const TEXT_ELEMENT_CLASSIFIER_PATH = 'meta::pure::metamodel::text::Text';
 

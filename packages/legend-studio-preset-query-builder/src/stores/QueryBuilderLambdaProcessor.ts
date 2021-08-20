@@ -53,7 +53,7 @@ import type {
   ValueSpecificationVisitor,
   InstanceValue,
   INTERNAL__UnknownValueSpecification,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   DerivedProperty,
   RawLambda,
@@ -69,7 +69,7 @@ import {
   AbstractPropertyExpression,
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 import {
   QueryBuilderDerivationProjectionColumnState,

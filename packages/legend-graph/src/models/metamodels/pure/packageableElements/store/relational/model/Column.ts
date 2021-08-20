@@ -20,12 +20,12 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-shared';
 import type { Relation } from './RelationalOperationElement';
 import { RelationalOperationElement } from './RelationalOperationElement';
-import type { DataType } from './RelationalDataType';
+import type { RelationalDataType } from './RelationalDataType';
 
 export class Column extends RelationalOperationElement implements Hashable {
   owner!: Relation;
   name!: string;
-  type!: DataType;
+  type!: RelationalDataType;
   nullable?: boolean;
 
   constructor() {

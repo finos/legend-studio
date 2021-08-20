@@ -42,6 +42,7 @@
     "@ag-grid-community/core": "26.0.0",
     "@ag-grid-community/react": "26.0.0",
     "@finos/legend-application-components": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",

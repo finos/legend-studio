@@ -31,15 +31,13 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
-import {
-  RawLambda,
-  setUpEditorWithDefaultSDLCData,
-} from '@finos/legend-studio';
+import { setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import type { Entity } from '@finos/legend-model-storage';
+import { RawLambda } from '@finos/legend-graph';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;

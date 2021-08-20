@@ -22,11 +22,6 @@ import {
   makeAutoObservable,
 } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import {
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
-  ELEMENT_PATH_DELIMITER,
-} from '../models/MetaModelConst';
 import type { Clazz } from '@finos/legend-shared';
 import {
   IllegalStateError,
@@ -35,47 +30,50 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
-import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
-import { Class } from '../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Association } from '../models/metamodels/pure/model/packageableElements/domain/Association';
-import { Enumeration } from '../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { ConcreteFunctionDefinition } from '../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { Profile } from '../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { FlatData } from '../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import { Diagram } from '../models/metamodels/pure/model/packageableElements/diagram/Diagram';
-import { Service } from '../models/metamodels/pure/model/packageableElements/service/Service';
-import { PackageableConnection } from '../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import { PackageableRuntime } from '../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
-import { PureSingleExecution } from '../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import { RawLambda } from '../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { Runtime } from '../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { EngineRuntime } from '../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import type { Store } from '../models/metamodels/pure/model/packageableElements/store/Store';
-import type { ModelStore } from '../models/metamodels/pure/model/packageableElements/store/modelToModel/model/ModelStore';
-import type { Connection } from '../models/metamodels/pure/model/packageableElements/connection/Connection';
-import type { PureModelConnection } from '../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/PureModelConnection';
-import { JsonModelConnection } from '../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import type { FileGenerationTypeOption } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { FileGenerationSpecification } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import type { FileGenerationTypeOption } from './editor-state/GraphGenerationState';
+import { DEFAULT_GENERATION_SPECIFICATION_NAME } from './editor-state/GraphGenerationState';
+import type {
+  PackageableElement,
+  Runtime,
+  Store,
+  ModelStore,
+  Connection,
+  PureModelConnection,
+} from '@finos/legend-graph';
 import {
+  PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
+  ELEMENT_PATH_DELIMITER,
+  PACKAGEABLE_ELEMENT_TYPE,
+  Package,
+  Class,
+  Association,
+  Enumeration,
+  ConcreteFunctionDefinition,
+  Profile,
+  Mapping,
+  FlatData,
+  Diagram,
+  Service,
+  PackageableConnection,
+  PackageableRuntime,
+  PureSingleExecution,
+  RawLambda,
+  EngineRuntime,
+  JsonModelConnection,
+  FileGenerationSpecification,
   GenerationSpecification,
-  DEFAULT_GENERATION_SPECIFICATION_NAME,
-} from '../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import { FlatDataConnection } from '../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import { Database } from '../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import { PackageableElementExplicitReference } from '../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/relational/model/ServiceStore';
-import {
+  FlatDataConnection,
+  Database,
+  PackageableElementExplicitReference,
+  ServiceStore,
   RelationalDatabaseConnection,
   DatabaseType,
-} from '../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { StaticDatasourceSpecification } from '../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
-import { DefaultH2AuthenticationStrategy } from '../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import { ModelGenerationSpecification } from '../models/metamodels/pure/model/packageableElements/generationSpecification/ModelGenerationSpecification';
+  StaticDatasourceSpecification,
+  DefaultH2AuthenticationStrategy,
+  ModelGenerationSpecification,
+} from '@finos/legend-graph';
 
 export const resolvePackageAndElementName = (
   _package: Package,

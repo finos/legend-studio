@@ -19,11 +19,13 @@ import type { GeneratorFn } from '@finos/legend-shared';
 import { uuid } from '@finos/legend-shared';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../../EditorStore';
-import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import type { MappingElement } from './MappingEditorState';
+import type {
+  PropertyMapping,
+  InstanceSetImplementation,
+  SetImplementation,
+  Type,
+} from '@finos/legend-graph';
 
 export class MappingElementState {
   uuid = uuid();

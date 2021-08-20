@@ -17,13 +17,11 @@
 import { useState, useRef } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
-import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import {
   CustomSelectorInput,
   createFilter,
 } from '@finos/legend-application-components';
 import type { SelectComponent } from '@finos/legend-application-components';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   createClassMapping,
@@ -35,13 +33,17 @@ import {
   UnsupportedOperationError,
   compareLabelFn,
 } from '@finos/legend-shared';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type { PackageableElement } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  fromElementPathToMappingElementId,
+  Class,
+  Enumeration,
+  Association,
+  BASIC_SET_IMPLEMENTATION_TYPE,
+} from '@finos/legend-graph';
 
 interface ClassMappingSubTypeOption {
   label: string;

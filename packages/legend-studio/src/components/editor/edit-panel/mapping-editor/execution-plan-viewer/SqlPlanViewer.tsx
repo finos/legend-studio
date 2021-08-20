@@ -15,10 +15,20 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { SQLResultColumn } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLResultColumn';
 import { TextInputEditor } from '../../../../shared/TextInputEditor';
 import { EDITOR_LANGUAGE } from '../../../../../stores/EditorConfig';
-
+import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
+import { SQL_DISPLAY_TABS } from '../../../../../stores/ExecutionPlanState';
+import { prettyCONSTName } from '@finos/legend-shared';
+import { clsx } from '@finos/legend-application-components';
+import { RelationalDatabaseConnectionEditor } from '../../connection-editor/RelationalDatabaseConnectionEditor';
+import { format } from 'sql-formatter';
+import { RelationalDatabaseConnectionValueState } from '../../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+import type {
+  SQLResultColumn,
+  RelationalDataType,
+  DatabaseConnection,
+} from '@finos/legend-graph';
 import {
   Real,
   Binary,
@@ -37,17 +47,8 @@ import {
   TinyInt,
   SmallInt,
   BigInt,
-} from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
-import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
-import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
-import { SQL_DISPLAY_TABS } from '../../../../../stores/ExecutionPlanState';
-import { prettyCONSTName } from '@finos/legend-shared';
-import { clsx } from '@finos/legend-application-components';
-import type { DatabaseConnection } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { RelationalDatabaseConnection } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { RelationalDatabaseConnectionEditor } from '../../connection-editor/RelationalDatabaseConnectionEditor';
-import { format } from 'sql-formatter';
-import { RelationalDatabaseConnectionValueState } from '../../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+  RelationalDatabaseConnection,
+} from '@finos/legend-graph';
 
 interface QueryProps {
   query: string;
@@ -58,7 +59,9 @@ interface resultColumnsProps {
   resultColumns: SQLResultColumn[];
 }
 
-const generateDataTypeLabel = (type: DataType | undefined): string => {
+const generateDataTypeLabel = (
+  type: RelationalDataType | undefined,
+): string => {
   if (type === undefined) {
     return `UNDEFINED`;
   } else if (type instanceof VarChar) {

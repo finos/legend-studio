@@ -47,15 +47,16 @@ import {
   FaFire,
   FaArrowCircleRight,
 } from 'react-icons/fa';
-import type { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Enum } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enum';
-import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type { Enumeration, StereotypeReference } from '@finos/legend-graph';
+import {
+  Enum,
+  Profile,
+  Tag,
+  TaggedValue,
+  Stereotype,
+  StereotypeExplicitReference,
+} from '@finos/legend-graph';
 
 const EnumBasicEditor = observer(
   (props: {

@@ -13,6 +13,7 @@
     { "path": "../legend-model-storage" },
     { "path": "../legend-server-depot" },
     { "path": "../legend-server-sdlc" },
-    { "path": "../legend-application-components" }
+    { "path": "../legend-application-components" },
+    { "path": "../legend-graph" }
   ]
 }

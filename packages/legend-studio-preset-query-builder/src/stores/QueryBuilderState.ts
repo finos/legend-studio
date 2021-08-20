@@ -36,16 +36,15 @@ import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
 import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
+import type { LambdaFunction } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
-  EditorExtensionState,
   CompilationError,
   extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
   QueryBuilderFilterOperator_NotEqual,
@@ -75,6 +74,8 @@ import {
   QueryBuilderFilterOperator_NotIn,
 } from './filterOperators/QueryBuilderFilterOperator_In';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
+import type { EditorStore } from '@finos/legend-studio';
+import { EditorExtensionState } from '@finos/legend-studio';
 
 export class QueryBuilderState extends EditorExtensionState {
   editorStore: EditorStore;

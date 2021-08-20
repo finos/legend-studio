@@ -48,60 +48,54 @@ import {
   losslessStringify,
   guaranteeType,
 } from '@finos/legend-shared';
-import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import {
-  ObjectInputData,
-  ObjectInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
-  IdentifiedConnection,
-  EngineRuntime,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import type { InputData } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InputData';
-import { FlatDataInputData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
-import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Service } from '../../../../models/metamodels/pure/model/packageableElements/service/Service';
-import {
-  SingleExecutionTest,
-  TestContainer,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
-import { PureSingleExecution } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import type { Connection } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
 import { TAB_SIZE } from '../../../EditorConfig';
 import { LambdaEditorState } from '../LambdaEditorState';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import {
-  DatabaseType,
-  RelationalDatabaseConnection,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { LocalH2DatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import {
-  RelationalInputData,
-  RelationalInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
 import {
   ActionAlertActionType,
   ActionAlertType,
 } from '../../../ApplicationStore';
-import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import { PureClientVersion } from '../../../../models/metamodels/pure/graphManager/GraphManagerUtils';
+import type {
+  Runtime,
+  InputData,
+  Mapping,
+  Connection,
+  ExecutionResult,
+  SetImplementation,
+} from '@finos/legend-graph';
+import {
+  LAMBDA_PIPE,
+  GRAPH_MANAGER_LOG_EVENT,
+  MappingTest,
+  Class,
+  ObjectInputData,
+  ObjectInputType,
+  ExpectedOutputMappingTestAssert,
+  RawLambda,
+  IdentifiedConnection,
+  EngineRuntime,
+  JsonModelConnection,
+  FlatDataConnection,
+  FlatDataInputData,
+  Service,
+  SingleExecutionTest,
+  TestContainer,
+  PureSingleExecution,
+  RootFlatDataRecordType,
+  PackageableElementExplicitReference,
+  Table,
+  View,
+  DatabaseType,
+  RelationalDatabaseConnection,
+  LocalH2DatasourceSpecification,
+  DefaultH2AuthenticationStrategy,
+  RelationalInputData,
+  RelationalInputType,
+  OperationSetImplementation,
+  buildSourceInformationSourceId,
+  PureClientVersion,
+} from '@finos/legend-graph';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;

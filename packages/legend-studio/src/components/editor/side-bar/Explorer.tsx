@@ -55,10 +55,6 @@ import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtil';
 import { CORE_TEST_ID } from '../../../const';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
-import {
-  ELEMENT_PATH_DELIMITER,
-  ROOT_PACKAGE_NAME,
-} from '../../../models/MetaModelConst';
 import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
 import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerationTreeUtil';
@@ -66,13 +62,18 @@ import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerati
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
 import { isNonNullable, toTitleCase } from '@finos/legend-shared';
-import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { Dialog } from '@material-ui/core';
-import { isValidFullPath, isValidPath } from '../../../models/MetaModelUtils';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import {
+  ELEMENT_PATH_DELIMITER,
+  ROOT_PACKAGE_NAME,
+  Package,
+  PACKAGEABLE_ELEMENT_TYPE,
+  isValidFullPath,
+  isValidPath,
+} from '@finos/legend-graph';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;

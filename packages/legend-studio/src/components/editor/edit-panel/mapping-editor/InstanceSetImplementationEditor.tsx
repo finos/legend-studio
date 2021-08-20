@@ -50,17 +50,7 @@ import { ActionAlertActionType } from '../../../../stores/ApplicationStore';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { FlatData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
 import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree';
-import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
 import {
   getSourceElementLabel,
   InstanceSetImplementationSourceSelectorModal,
@@ -68,6 +58,20 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type {
+  InstanceSetImplementation,
+  Property,
+  PackageableElement,
+} from '@finos/legend-graph';
+import {
+  Class,
+  Type,
+  FlatData,
+  RootFlatDataRecordType,
+  View,
+  Table,
+  Database,
+} from '@finos/legend-graph';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {

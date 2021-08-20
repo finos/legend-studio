@@ -17,8 +17,8 @@
 import fileGenerationTestData from './FileGenerationTestData.json';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
-import { PackageableElementReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import type { Entity } from '@finos/legend-model-storage';
+import { PackageableElementReference } from '@finos/legend-graph';
 
 const editorStore = getTestEditorStore();
 

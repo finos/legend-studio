@@ -21,7 +21,6 @@ import type {
   TraceData,
 } from '@finos/legend-shared';
 import { ContentType, AbstractServerClient } from '@finos/legend-shared';
-import type { GenerationMode } from '../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult';
@@ -45,6 +44,7 @@ import type { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
 import type { V1_LightQuery, V1_Query } from './query/V1_Query';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage';
+import type { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',

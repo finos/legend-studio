@@ -2147,6 +2147,7 @@ __metadata:
   resolution: "@finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     cross-env: 7.0.3
@@ -2158,7 +2159,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-graph@workspace:packages/legend-graph":
+"@finos/legend-graph@workspace:*, @finos/legend-graph@workspace:packages/legend-graph":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph@workspace:packages/legend-graph"
   dependencies:
@@ -2345,6 +2346,7 @@ __metadata:
   dependencies:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
@@ -2395,6 +2397,7 @@ __metadata:
   dependencies:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
@@ -2425,6 +2428,7 @@ __metadata:
     "@ag-grid-community/react": 26.0.0
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2467,6 +2471,7 @@ __metadata:
   dependencies:
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"

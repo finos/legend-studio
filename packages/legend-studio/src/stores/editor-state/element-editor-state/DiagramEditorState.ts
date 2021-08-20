@@ -23,25 +23,27 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
 import type { DiagramRenderer } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { DIAGRAM_INTERACTION_MODE } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { ClassEditorState } from './ClassEditorState';
 import { PanelDisplayState } from '@finos/legend-application-components';
-import type { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
-import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
+import type {
+  PackageableElement,
+  ClassView,
+  AbstractProperty,
+  Point,
+  PropertyHolderView,
+  PropertyReference,
+} from '@finos/legend-graph';
 import {
+  Diagram,
+  GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '../../../models/MetaModelConst';
-import { Property } from '../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { GenericType } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
-import type { AbstractProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/AbstractProperty';
-import type { Point } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
-import type { PropertyHolderView } from '../../../models/metamodels/pure/model/packageableElements/diagram/PropertyHolderView';
-import type { PropertyReference } from '../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-import { PropertyExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
+  Property,
+  GenericType,
+  PropertyExplicitReference,
+} from '@finos/legend-graph';
 
 enum DIAGRAM_EDITOR_HOTKEY {
   RECENTER = 'RECENTER',

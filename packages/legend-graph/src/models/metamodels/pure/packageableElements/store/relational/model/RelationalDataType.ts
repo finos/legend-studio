@@ -18,11 +18,11 @@ import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-shared';
 
-export abstract class DataType {
+export abstract class RelationalDataType {
   abstract get hashCode(): string;
 }
 
-export class BigInt extends DataType {
+export class BigInt extends RelationalDataType {
   constructor() {
     super();
 
@@ -36,7 +36,7 @@ export class BigInt extends DataType {
   }
 }
 
-export class SmallInt extends DataType {
+export class SmallInt extends RelationalDataType {
   constructor() {
     super();
 
@@ -50,7 +50,7 @@ export class SmallInt extends DataType {
   }
 }
 
-export class TinyInt extends DataType {
+export class TinyInt extends RelationalDataType {
   constructor() {
     super();
 
@@ -64,7 +64,7 @@ export class TinyInt extends DataType {
   }
 }
 
-export class Integer extends DataType {
+export class Integer extends RelationalDataType {
   constructor() {
     super();
 
@@ -78,7 +78,7 @@ export class Integer extends DataType {
   }
 }
 
-export class Float extends DataType {
+export class Float extends RelationalDataType {
   constructor() {
     super();
 
@@ -92,7 +92,7 @@ export class Float extends DataType {
   }
 }
 
-export class Double extends DataType {
+export class Double extends RelationalDataType {
   constructor() {
     super();
 
@@ -106,7 +106,7 @@ export class Double extends DataType {
   }
 }
 
-export class VarChar extends DataType {
+export class VarChar extends RelationalDataType {
   size: number;
 
   constructor(size: number) {
@@ -128,7 +128,7 @@ export class VarChar extends DataType {
   }
 }
 
-export class Char extends DataType {
+export class Char extends RelationalDataType {
   size: number;
 
   constructor(size: number) {
@@ -150,7 +150,7 @@ export class Char extends DataType {
   }
 }
 
-export class VarBinary extends DataType {
+export class VarBinary extends RelationalDataType {
   size: number;
 
   constructor(size: number) {
@@ -172,7 +172,7 @@ export class VarBinary extends DataType {
   }
 }
 
-export class Decimal extends DataType {
+export class Decimal extends RelationalDataType {
   precision: number;
   scale: number;
 
@@ -198,7 +198,7 @@ export class Decimal extends DataType {
   }
 }
 
-export class Numeric extends DataType {
+export class Numeric extends RelationalDataType {
   precision: number;
   scale: number;
 
@@ -224,7 +224,7 @@ export class Numeric extends DataType {
   }
 }
 
-export class Timestamp extends DataType {
+export class Timestamp extends RelationalDataType {
   constructor() {
     super();
 
@@ -238,7 +238,7 @@ export class Timestamp extends DataType {
   }
 }
 
-export class Date extends DataType {
+export class Date extends RelationalDataType {
   constructor() {
     super();
 
@@ -252,7 +252,7 @@ export class Date extends DataType {
   }
 }
 
-export class Other extends DataType {
+export class Other extends RelationalDataType {
   constructor() {
     super();
 
@@ -266,7 +266,7 @@ export class Other extends DataType {
   }
 }
 
-export class Bit extends DataType {
+export class Bit extends RelationalDataType {
   constructor() {
     super();
 
@@ -280,7 +280,7 @@ export class Bit extends DataType {
   }
 }
 
-export class Binary extends DataType {
+export class Binary extends RelationalDataType {
   size: number;
 
   constructor(size: number) {
@@ -302,7 +302,7 @@ export class Binary extends DataType {
   }
 }
 
-export class Real extends DataType {
+export class Real extends RelationalDataType {
   constructor() {
     super();
 

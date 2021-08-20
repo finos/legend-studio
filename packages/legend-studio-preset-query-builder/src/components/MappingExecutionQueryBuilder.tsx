@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import type { MappingExecutionState, RawLambda } from '@finos/legend-studio';
-import {
-  EngineRuntime,
-  PackageableElementExplicitReference,
-  useApplicationStore,
-  useEditorStore,
-} from '@finos/legend-studio';
+import type { MappingExecutionState } from '@finos/legend-studio';
+import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
+import {
+  EngineRuntime,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
+import type { RawLambda } from '@finos/legend-graph';
 
 export const MappingExecutionQueryBuilder = observer(
   (props: { executionState: MappingExecutionState }) => {

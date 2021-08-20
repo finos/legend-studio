@@ -60,11 +60,11 @@ import type { Class } from '../../../metamodels/pure/packageableElements/domain/
 import { RawLambda } from '../../../metamodels/pure/rawValueSpecification/RawLambda';
 import type { RawValueSpecification } from '../../../metamodels/pure/rawValueSpecification/RawValueSpecification';
 import type { Service } from '../../../metamodels/pure/packageableElements/service/Service';
+import type { FileGenerationSpecification } from '../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type {
-  FileGenerationSpecification,
+  GenerationConfigurationDescription,
   GenerationMode,
-} from '../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationConfigurationDescription } from '../../../../graphManager/action/generation/GenerationConfigurationDescription';
+} from '../../../../graphManager/action/generation/GenerationConfigurationDescription';
 import type { ServiceTestResult } from '../../../../graphManager/action/service/ServiceTestResult';
 import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult';
 import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult';

@@ -24,18 +24,20 @@ import {
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   Class,
-  EditorStore,
   Mapping,
   PackageableRuntime,
   RawLambda,
   Runtime,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
-  decorateRuntimeWithNewMapping,
   EngineRuntime,
   PackageableElementExplicitReference,
-  RuntimeEditorState,
   RuntimePointer,
+} from '@finos/legend-graph';
+import type { EditorStore } from '@finos/legend-studio';
+import {
+  decorateRuntimeWithNewMapping,
+  RuntimeEditorState,
 } from '@finos/legend-studio';
 
 export class QueryBuilderSetupState {

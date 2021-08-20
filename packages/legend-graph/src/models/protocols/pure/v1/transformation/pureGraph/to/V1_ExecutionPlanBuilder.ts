@@ -44,7 +44,7 @@ import {
   SmallInt,
   BigInt,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
-import type { DataType } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
+import type { RelationalDataType } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import type { V1_ExecutionNode } from '../../../model/executionPlan/nodes/V1_ExecutionNode';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
 import { V1_SQLExecutionNode } from '../../../model/executionPlan/nodes/V1_SQLExecutionNode';
@@ -63,7 +63,7 @@ import { TDSColumn } from '../../../../../../metamodels/pure/executionPlan/resul
 import type { V1_TDSColumn } from '../../../model/executionPlan/results/V1_TDSColumn';
 import { CORE_ELEMENT_PATH } from '../../../../../../../MetaModelConst';
 
-const parseDataType = (val: string): DataType => {
+const parseDataType = (val: string): RelationalDataType => {
   const getTypeParams = (typeVal: string): number[] =>
     typeVal
       .replace(/^.*\((?<params>.*)\)$/u, '$<params>')

@@ -27,12 +27,14 @@ import type {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { getMappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import Dialog from '@material-ui/core/Dialog';
-import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../models/MetaModelConst';
+import type { InstanceSetImplementation } from '@finos/legend-graph';
+import {
+  Class,
+  RootFlatDataRecordType,
+  View,
+  Table,
+  DEFAULT_DATABASE_SCHEMA_NAME,
+} from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';

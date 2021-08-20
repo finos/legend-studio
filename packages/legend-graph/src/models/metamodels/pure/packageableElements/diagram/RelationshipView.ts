@@ -26,20 +26,6 @@ import type { Diagram } from './Diagram';
 import { ClassViewExplicitReference } from './ClassViewReference';
 
 /**
- * Get absolute position of element on the screen by recursively walking up element tree
- */
-export const getElementPosition = (element: HTMLElement): Point => {
-  let xPosition = 0;
-  let yPosition = 0;
-  while (element.offsetParent) {
-    xPosition += element.offsetLeft - element.scrollLeft + element.clientLeft;
-    yPosition += element.offsetTop - element.scrollTop + element.clientTop;
-    element = element.offsetParent as HTMLElement;
-  }
-  return new Point(xPosition, yPosition);
-};
-
-/**
  * For a path, only counts the points which lie outside of the 2 class views
  */
 export const manageInsidePointsDynamically = (

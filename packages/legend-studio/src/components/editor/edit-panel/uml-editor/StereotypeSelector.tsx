@@ -22,10 +22,12 @@ import {
   createFilter,
 } from '@finos/legend-application-components';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import type { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type {
+  Profile,
+  StereotypeReference,
+  Stereotype,
+} from '@finos/legend-graph';
 
 interface StereotypeOption {
   label: string;

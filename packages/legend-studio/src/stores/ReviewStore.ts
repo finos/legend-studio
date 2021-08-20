@@ -65,7 +65,6 @@ export class ReviewStore {
       // setup engine
       yield flowResult(
         this.editorStore.graphState.graphManager.initialize(
-          this.editorStore.applicationStore.pluginManager,
           {
             env: this.editorStore.applicationStore.config.env,
             tabSize: TAB_SIZE,
@@ -76,6 +75,10 @@ export class ReviewStore {
                 this.editorStore.applicationStore.config
                   .engineAutoReAuthenticationUrl,
             },
+          },
+          {
+            tracerServicePlugins:
+              this.editorStore.applicationStore.pluginManager.getTracerServicePlugins(),
           },
         ),
       );

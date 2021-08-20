@@ -16,9 +16,9 @@
 
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import type { V1_PackageableElementVisitor } from '@finos/legend-studio';
-import { V1_PackageableElement } from '@finos/legend-studio';
 import { TEXT_HASH_STRUCTURE } from '../../../../../DSLText_ModelUtils';
+import type { V1_PackageableElementVisitor } from '@finos/legend-graph';
+import { V1_PackageableElement } from '@finos/legend-graph';
 
 export class V1_Text extends V1_PackageableElement implements Hashable {
   type!: string;

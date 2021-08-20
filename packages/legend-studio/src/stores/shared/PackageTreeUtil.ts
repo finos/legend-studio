@@ -14,37 +14,37 @@
  * limitations under the License.
  */
 
-import { ROOT_PACKAGE_NAME } from '../../models/MetaModelConst';
 import { isNonNullable, addUniqueEntry } from '@finos/legend-shared';
 import type { PackageTreeNodeData } from './TreeUtil';
 import type {
   TreeNodeData,
   TreeData,
 } from '@finos/legend-application-components';
-import { Package } from '../../models/metamodels/pure/model/packageableElements/domain/Package';
-import { Class } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Profile } from '../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Association } from '../../models/metamodels/pure/model/packageableElements/domain/Association';
-import { ConcreteFunctionDefinition } from '../../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import {
-  Measure,
-  Unit,
-} from '../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import { Database } from '../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import { ServiceStore } from '../../models/metamodels/pure/model/packageableElements/store/relational/model/ServiceStore';
-import { FlatData } from '../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import { Mapping } from '../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Diagram } from '../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
-import { Service } from '../../models/metamodels/pure/model/packageableElements/service/Service';
-import { PackageableRuntime } from '../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
-import { PackageableConnection } from '../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import { FileGenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { GenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { EditorStore } from '../EditorStore';
 import { CORE_DND_TYPE } from './DnDUtil';
 import type { DSL_EditorPlugin_Extension } from '../EditorPlugin';
+import type { PackageableElement } from '@finos/legend-graph';
+import {
+  ROOT_PACKAGE_NAME,
+  Package,
+  Class,
+  Enumeration,
+  Profile,
+  Association,
+  ConcreteFunctionDefinition,
+  Measure,
+  Unit,
+  Database,
+  ServiceStore,
+  FlatData,
+  Mapping,
+  Diagram,
+  Service,
+  PackageableRuntime,
+  PackageableConnection,
+  FileGenerationSpecification,
+  GenerationSpecification,
+} from '@finos/legend-graph';
 
 /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 const getElementProjectExplorerDnDType = (

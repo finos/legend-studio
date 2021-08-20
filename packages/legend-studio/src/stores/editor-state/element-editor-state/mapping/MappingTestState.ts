@@ -38,7 +38,6 @@ import {
   tryToMinifyJSONString,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   observable,
   flow,
@@ -48,46 +47,43 @@ import {
   flowResult,
 } from 'mobx';
 import { TAB_SIZE } from '../../../EditorConfig';
-import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
-import type { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
+import { LambdaEditorState } from '../LambdaEditorState';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import type {
+  MappingTest,
+  RawLambda,
+  Runtime,
+  InputData,
+  MappingTestAssert,
+  Mapping,
+  ExecutionResult,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
+  LAMBDA_PIPE,
+  Class,
+  ExpectedOutputMappingTestAssert,
   ObjectInputData,
   ObjectInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
   IdentifiedConnection,
   EngineRuntime,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import type { InputData } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InputData';
-import { FlatDataInputData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
-import type { MappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTestAssert';
-import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
-import {
+  FlatDataInputData,
+  JsonModelConnection,
+  FlatDataConnection,
+  RootFlatDataRecordType,
+  PackageableElementExplicitReference,
   RelationalInputData,
   RelationalInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
-import {
   DatabaseType,
   RelationalDatabaseConnection,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { LocalH2DatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { LambdaEditorState } from '../LambdaEditorState';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import { PureClientVersion } from '../../../../models/metamodels/pure/graphManager/GraphManagerUtils';
+  LocalH2DatasourceSpecification,
+  DefaultH2AuthenticationStrategy,
+  Table,
+  View,
+  buildSourceInformationSourceId,
+  PureClientVersion,
+} from '@finos/legend-graph';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

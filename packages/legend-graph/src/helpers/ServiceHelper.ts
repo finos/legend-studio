@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { addUniqueEntry } from '@finos/legend-shared';
+import type { ValidationIssue } from './ValidationHelper';
+import { createValidationError } from './ValidationHelper';
 
-// metamodels
-export { Service } from './models/metamodels/pure/model/packageableElements/service/Service';
-export {
-  PureExecution,
-  PureSingleExecution,
-  PureMultiExecution,
-} from './models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-
-// stores
-export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
-
-// components
-export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal';
+export const validateServicePattern = (pattern: string): ValidationIssue => {
+  const errors: string[] = [];
+  if (!pattern) {
+    addUniqueEntry(errors, 'Pattern must not be empty');
+  } else if (!pattern.startsWith('/')) {
+    addUniqueEntry(errors, `Pattern must start with a '/'`);
+  }
+  // TODO: potentially do more validation
+  return createValidationError(errors);
+};

@@ -38,31 +38,33 @@ import {
   createFilter,
 } from '@finos/legend-application-components';
 import { CORE_TEST_ID } from '../../../const';
-import {
-  PRIMITIVE_TYPE,
-  MULTIPLICITY_INFINITE,
-} from '../../../models/MetaModelConst';
 import { getElementIcon } from '../../shared/Icon';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
-import { TaggedValue } from '../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Tag } from '../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import { Profile } from '../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Stereotype } from '../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import { Type } from '../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { RawVariableExpression } from '../../../models/metamodels/pure/model/rawValueSpecification/RawVariableExpression';
-import { Multiplicity } from '../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
-import { Enumeration } from '../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { PrimitiveType } from '../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Unit } from '../../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import type { StereotypeReference } from '../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import type {
+  ConcreteFunctionDefinition,
+  StereotypeReference,
+} from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  MULTIPLICITY_INFINITE,
+  TaggedValue,
+  Tag,
+  Profile,
+  Stereotype,
+  Unit,
+  RawVariableExpression,
+  Type,
+  Multiplicity,
+  Enumeration,
+  Class,
+  PrimitiveType,
+  StereotypeExplicitReference,
+} from '@finos/legend-graph';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

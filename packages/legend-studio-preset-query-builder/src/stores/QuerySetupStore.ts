@@ -32,13 +32,13 @@ import {
 import type {
   LightQuery,
   Mapping,
-  PackageableElementOption,
   PackageableRuntime,
   Service,
-} from '@finos/legend-studio';
-import { PureSingleExecution, PureMultiExecution } from '@finos/legend-studio';
+} from '@finos/legend-graph';
+import { PureSingleExecution, PureMultiExecution } from '@finos/legend-graph';
 import type { QueryStore } from './QueryStore';
 import { ProjectData } from '@finos/legend-server-depot';
+import type { PackageableElementOption } from '@finos/legend-studio';
 
 export abstract class QuerySetupState {
   queryStore: QueryStore;

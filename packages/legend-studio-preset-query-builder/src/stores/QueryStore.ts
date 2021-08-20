@@ -39,10 +39,8 @@ import type {
   RawLambda,
   Service,
   PackageableElement,
-  EditorStore,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
-  APPLICATION_LOG_EVENT,
   toLightQuery,
   Query,
   PureExecution,
@@ -50,9 +48,8 @@ import {
   PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
-  TAB_SIZE,
   DependencyManager,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import { QueryBuilderState } from './QueryBuilderState';
 import type {
   CreateQueryPathParams,
@@ -66,6 +63,8 @@ import {
   ProjectData,
   ProjectVersionEntities,
 } from '@finos/legend-server-depot';
+import type { EditorStore } from '@finos/legend-studio';
+import { APPLICATION_LOG_EVENT, TAB_SIZE } from '@finos/legend-studio';
 
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
@@ -585,7 +584,6 @@ export class QueryStore {
       this.initState.inProgress();
       yield flowResult(
         this.editorStore.graphState.graphManager.initialize(
-          this.editorStore.applicationStore.pluginManager,
           {
             env: this.editorStore.applicationStore.config.env,
             tabSize: TAB_SIZE,
@@ -596,6 +594,10 @@ export class QueryStore {
                 this.editorStore.applicationStore.config
                   .engineAutoReAuthenticationUrl,
             },
+          },
+          {
+            tracerServicePlugins:
+              this.editorStore.applicationStore.pluginManager.getTracerServicePlugins(),
           },
         ),
       );

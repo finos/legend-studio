@@ -55,10 +55,10 @@ import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import type { TestContainer } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type { TestContainer } from '@finos/legend-graph';
 
 const TestContainerContextMenu = observer(
   (

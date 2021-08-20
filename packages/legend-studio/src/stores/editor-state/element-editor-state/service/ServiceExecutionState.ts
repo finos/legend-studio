@@ -25,36 +25,34 @@ import {
 import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
-import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
 import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import { TAB_SIZE } from '../../../EditorConfig';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
 import type {
   ServiceExecution,
   KeyedExecutionParameter,
   PureExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
+  ServiceTest,
+  Mapping,
+  Runtime,
+  ExecutionResult,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
+  LAMBDA_PIPE,
+  RawLambda,
   PureSingleExecution,
   PureMultiExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { ServiceTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
-import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
   EngineRuntime,
   RuntimePointer,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
-import { TAB_SIZE } from '../../../EditorConfig';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import { PureClientVersion } from '../../../../models/metamodels/pure/graphManager/GraphManagerUtils';
+  PackageableElementExplicitReference,
+  buildSourceInformationSourceId,
+  PureClientVersion,
+} from '@finos/legend-graph';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',

@@ -71,20 +71,20 @@ import {
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
 import { CORE_TEST_ID } from '../../../../const';
-import type { GenerationProperty } from '../../../../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
-import { GenerationPropertyItemType } from '../../../../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { FileGenerationSpecification } from '../../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import {
-  PackageableElementReference,
-  PackageableElementExplicitReference,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import {
-  isValidFullPath,
-  resolvePackagePathAndElementName,
-} from '../../../../models/MetaModelUtils';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type {
+  GenerationProperty,
+  PackageableElement,
+  FileGenerationSpecification,
+} from '@finos/legend-graph';
+import {
+  GenerationPropertyItemType,
+  PackageableElementReference,
+  PackageableElementExplicitReference,
+  isValidFullPath,
+  resolvePackagePathAndElementName,
+} from '@finos/legend-graph';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -1259,11 +1259,15 @@ export const FileGenerationConfigurationEditor = observer(
       [fileGenerationState],
     );
     const update = (
-      AbstractGenerationProperty: GenerationProperty,
+      generationProperty: GenerationProperty,
       newValue: object,
     ): void => {
       debouncedRegenerate.cancel();
-      fileGeneration.updateParameters(AbstractGenerationProperty, newValue);
+      fileGenerationState.updateFileGenerationParameters(
+        fileGeneration,
+        generationProperty,
+        newValue,
+      );
       debouncedRegenerate()?.catch(applicationStore.alertIllegalUnhandledError);
     };
     const showFileGenerationModal = (): void => {

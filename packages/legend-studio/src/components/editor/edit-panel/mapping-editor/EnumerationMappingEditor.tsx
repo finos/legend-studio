@@ -39,7 +39,6 @@ import {
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import { EnumerationIcon } from '../../../shared/Icon';
 import { CORE_TEST_ID } from '../../../../const';
 import { MdModeEdit } from 'react-icons/md';
@@ -49,16 +48,16 @@ import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { SourceValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumValueMapping';
-import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import { Enum } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enum';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import type { OptionalPackageableElementReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type {
+  PackageableElement,
+  SourceValue,
+  EnumerationMapping,
+  OptionalPackageableElementReference,
+} from '@finos/legend-graph';
+import { PRIMITIVE_TYPE, Type, Enum, Enumeration } from '@finos/legend-graph';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {

@@ -36,12 +36,12 @@ import { GenerationOutput } from '../../../../../graphManager/action/generation/
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
 import {
   GenerationConfigurationDescription,
+  GenerationMode,
   GenerationProperty,
   GenerationPropertyItem,
   getGenerationPropertyItemType,
 } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
 import type { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription';
-import { getGenerationMode } from '../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { V1_CompilationError } from './compilation/V1_CompilationError';
 import type { V1_ParserError } from './grammar/V1_ParserError';
 import {
@@ -242,11 +242,11 @@ export const V1_buildGenerationConfigurationDescription = (
     property.required = _property.required;
     return property;
   });
-  metamodel.generationMode = getGenerationMode(
-    guaranteeNonNullable(
-      protocol.generationMode,
-      'Generation configuration description mode is missing',
+  metamodel.generationMode = guaranteeNonNullable(
+    Object.values(GenerationMode).find(
+      (mode) => mode === protocol.generationMode,
     ),
+    `Generation configuration description mode is missing or not supported`,
   );
   return metamodel;
 };

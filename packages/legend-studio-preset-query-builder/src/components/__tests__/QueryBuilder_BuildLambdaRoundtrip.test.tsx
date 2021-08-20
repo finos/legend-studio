@@ -38,10 +38,7 @@ import {
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
 import type { PlainObject } from '@finos/legend-shared';
-import {
-  RawLambda,
-  setUpEditorWithDefaultSDLCData,
-} from '@finos/legend-studio';
+import { setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
@@ -70,6 +67,7 @@ import {
 
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import type { Entity } from '@finos/legend-model-storage';
+import { RawLambda } from '@finos/legend-graph';
 
 type RoundtripTestCase = [
   string,

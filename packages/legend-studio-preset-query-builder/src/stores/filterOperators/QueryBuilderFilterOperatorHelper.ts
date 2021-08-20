@@ -19,7 +19,7 @@ import type {
   PrimitiveType,
   Type,
   ValueSpecification,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   extractElementNameFromPath,
   matchFunctionName,
@@ -33,7 +33,7 @@ import {
   SimpleFunctionExpression,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   guaranteeType,
   guaranteeNonNullable,

@@ -28,10 +28,8 @@ import {
   createFilter,
 } from '@finos/legend-application-components';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import type { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import type { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type { Profile, TaggedValue, Tag } from '@finos/legend-graph';
 
 interface TagOption {
   label: string;

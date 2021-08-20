@@ -21,10 +21,7 @@ import type {
   ImportConfigurationDescription,
   ImportMode,
 } from './action/generation/ImportConfigurationDescription';
-import type {
-  FileGenerationSpecification,
-  GenerationMode,
-} from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
+import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { GenerationOutput } from './action/generation/GenerationOutput';
 import type { ServiceTestResult } from './action/service/ServiceTestResult';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
@@ -34,7 +31,10 @@ import type { Runtime } from '../models/metamodels/pure/packageableElements/runt
 import type { DependencyManager } from '../graph/DependencyManager';
 import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import type { RawLambda } from '../models/metamodels/pure/rawValueSpecification/RawLambda';
-import type { GenerationConfigurationDescription } from './action/generation/GenerationConfigurationDescription';
+import type {
+  GenerationConfigurationDescription,
+  GenerationMode,
+} from './action/generation/GenerationConfigurationDescription';
 import type { ValueSpecification } from '../models/metamodels/pure/valueSpecification/ValueSpecification';
 import type { RawValueSpecification } from '../models/metamodels/pure/rawValueSpecification/RawValueSpecification';
 import type { ServiceExecutionMode } from './action/service/ServiceExecutionMode';

@@ -16,7 +16,10 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import { uuid, isNumber, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE, PRIMITIVE_TYPE } from '../../../../../MetaModelConst';
+import {
+  CORE_HASH_STRUCTURE,
+  PRIMITIVE_TYPE,
+} from '../../../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-shared';
 import { Enum } from '../domain/Enum';
 import type { Stubable } from '../../../../../helpers/Stubable';

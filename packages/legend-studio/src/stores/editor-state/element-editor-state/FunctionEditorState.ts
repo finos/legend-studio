@@ -20,14 +20,15 @@ import { LambdaEditorState } from './LambdaEditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, guaranteeType, assertType } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
-import { LAMBDA_PIPE } from '../../../models/MetaModelConst';
-import type { CompilationError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
-import { ParserError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
+import type { CompilationError, PackageableElement } from '@finos/legend-graph';
+import {
+  GRAPH_MANAGER_LOG_EVENT,
+  LAMBDA_PIPE,
+  ParserError,
+  ConcreteFunctionDefinition,
+  RawLambda,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
 
 export enum FUNCTION_SPEC_TAB {
   GENERAL = 'GENERAL',

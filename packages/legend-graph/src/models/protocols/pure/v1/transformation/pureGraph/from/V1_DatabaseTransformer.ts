@@ -16,7 +16,7 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
-import type { DataType } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
+import type { RelationalDataType } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import {
   Real,
   Binary,
@@ -105,7 +105,9 @@ import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
 
-const transformRelationalDataType = (type: DataType): V1_RelationalDataType => {
+const transformRelationalDataType = (
+  type: RelationalDataType,
+): V1_RelationalDataType => {
   if (type instanceof VarChar) {
     const protocol = new V1_VarChar();
     protocol.size = type.size;

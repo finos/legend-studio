@@ -17,7 +17,6 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
@@ -34,33 +33,32 @@ import {
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import type { ServiceTestResult } from '../../../../models/metamodels/pure/graphManager/action/service/ServiceTestResult';
-import type { KeyedSingleExecutionTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
+import { TAB_SIZE } from '../../../EditorConfig';
+import type {
+  ServiceTestResult,
+  KeyedSingleExecutionTest,
+  Runtime,
+  ExecutionResult,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   TestContainer,
   SingleExecutionTest,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
-import { PureSingleExecution } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
+  PureSingleExecution,
   IdentifiedConnection,
   EngineRuntime,
   RuntimePointer,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { XmlModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/XmlModelConnection';
-import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import {
+  JsonModelConnection,
+  XmlModelConnection,
+  FlatDataConnection,
   RelationalDatabaseConnection,
   DatabaseType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { StaticDatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import { ConnectionPointer } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/graphManager/action/execution/ExecutionResult';
-import { TAB_SIZE } from '../../../EditorConfig';
-import { PureClientVersion } from '../../../../models/metamodels/pure/graphManager/GraphManagerUtils';
+  StaticDatasourceSpecification,
+  DefaultH2AuthenticationStrategy,
+  ConnectionPointer,
+  PackageableElementExplicitReference,
+  PureClientVersion,
+} from '@finos/legend-graph';
 
 interface ServiceTestExecutionResult {
   expected: string;

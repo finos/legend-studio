@@ -16,20 +16,24 @@
 
 import type { EditorStore } from './EditorStore';
 import { observable, action, makeObservable, flow } from 'mobx';
-import type { RawExecutionPlan } from '../models/metamodels/pure/model/executionPlan/ExecutionPlan';
-import { ExecutionPlan } from '../models/metamodels/pure/model/executionPlan/ExecutionPlan';
-import { ExecutionNode } from '../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
 import type {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent } from '@finos/legend-shared';
-import type { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { RawLambda } from '../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { Runtime } from '../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { GRAPH_MANAGER_LOG_EVENT } from '../models/metamodels/pure/graphManager/GraphManagerLogEvent';
-import { PureClientVersion } from '../models/metamodels/pure/graphManager/GraphManagerUtils';
+import type {
+  RawExecutionPlan,
+  Mapping,
+  RawLambda,
+  Runtime,
+} from '@finos/legend-graph';
+import {
+  ExecutionPlan,
+  ExecutionNode,
+  GRAPH_MANAGER_LOG_EVENT,
+  PureClientVersion,
+} from '@finos/legend-graph';
 
 export enum SQL_DISPLAY_TABS {
   SQL_QUERY = 'SQL_QUERY',

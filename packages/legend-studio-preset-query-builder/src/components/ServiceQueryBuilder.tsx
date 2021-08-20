@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import type {
-  ServicePureExecutionState,
-  RawLambda,
-} from '@finos/legend-studio';
+import type { ServicePureExecutionState } from '@finos/legend-studio';
 import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { RawLambda } from '@finos/legend-graph';
 
 export const ServiceQueryBuilder = observer(
   (props: {

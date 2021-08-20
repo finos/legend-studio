@@ -32,16 +32,26 @@ import {
   buildGenerationDirectory,
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
-import type { FileGenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  addUniqueEntry,
+  deepEqual,
+  isEmpty,
+  LogEvent,
+} from '@finos/legend-shared';
+import type {
+  FileGenerationSpecification,
+  GenerationOutput,
+  GenerationProperty,
+} from '@finos/legend-graph';
+import {
+  ConfigurationProperty,
+  GenerationPropertyItemType,
+  PackageableElement,
   PackageableElementReference,
   PackageableElementExplicitReference,
-} from '../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { GenerationOutput } from '../../models/metamodels/pure/graphManager/action/generation/GenerationOutput';
-import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
-import type { GeneratorFn } from '@finos/legend-shared';
-import { LogEvent } from '@finos/legend-shared';
+  ELEMENT_PATH_DELIMITER,
+} from '@finos/legend-graph';
 
 export class FileGenerationState {
   editorStore: EditorStore;
@@ -70,6 +80,7 @@ export class FileGenerationState {
       onTreeNodeSelect: action,
       addScopeElement: action,
       deleteScopeElement: action,
+      updateFileGenerationParameters: action,
     });
 
     this.editorStore = editorStore;
@@ -209,14 +220,15 @@ export class FileGenerationState {
     this.setDirectoryTreeData({ ...treeData });
   }
 
-  getScopeElement = (
+  getScopeElement(
     element: PackageableElement | string,
-  ): PackageableElementReference<PackageableElement> | string | undefined =>
-    this.fileGeneration.scopeElements.find((el) =>
+  ): PackageableElementReference<PackageableElement> | string | undefined {
+    return this.fileGeneration.scopeElements.find((el) =>
       el instanceof PackageableElementReference
         ? el.value === element
         : element === el,
     );
+  }
 
   addScopeElement(element: PackageableElement | string): void {
     const el = this.getScopeElement(element);
@@ -233,6 +245,63 @@ export class FileGenerationState {
     const el = this.getScopeElement(element);
     if (el) {
       this.fileGeneration.deleteScopeElement(el);
+    }
+  }
+
+  updateFileGenerationParameters(
+    fileGeneration: FileGenerationSpecification,
+    generationProperty: GenerationProperty,
+    newValue: unknown,
+  ): void {
+    if (generationProperty.type === GenerationPropertyItemType.MAP) {
+      if (
+        !newValue ||
+        isEmpty(newValue) ||
+        deepEqual(newValue, generationProperty.defaultValue)
+      ) {
+        fileGeneration.configurationProperties =
+          fileGeneration.configurationProperties.filter(
+            (e) => e.name !== generationProperty.name,
+          );
+      } else {
+        const configProperty = fileGeneration.getConfig(
+          generationProperty.name,
+        );
+        if (configProperty) {
+          configProperty.setValue({ ...(newValue as object) });
+        } else {
+          const newItem = new ConfigurationProperty(
+            generationProperty.name,
+            newValue,
+          );
+          addUniqueEntry(fileGeneration.configurationProperties, newItem);
+        }
+      }
+    } else {
+      const configProperty = fileGeneration.getConfig(generationProperty.name);
+      let useDefaultValue = generationProperty.defaultValue === newValue;
+      if (generationProperty.type === GenerationPropertyItemType.BOOLEAN) {
+        useDefaultValue =
+          (generationProperty.defaultValue === 'true') ===
+          (newValue as boolean);
+      }
+      const newConfigValue = useDefaultValue ? undefined : newValue;
+      if (newConfigValue !== undefined) {
+        if (configProperty) {
+          configProperty.setValue(newConfigValue);
+        } else {
+          const newItem = new ConfigurationProperty(
+            generationProperty.name,
+            newConfigValue,
+          );
+          addUniqueEntry(fileGeneration.configurationProperties, newItem);
+        }
+      } else {
+        fileGeneration.configurationProperties =
+          fileGeneration.configurationProperties.filter(
+            (e) => e.name !== generationProperty.name,
+          );
+      }
     }
   }
 }

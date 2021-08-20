@@ -73,7 +73,6 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { GRAPH_MANAGER_LOG_EVENT } from '../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
@@ -90,35 +89,36 @@ import {
   NonBlockingDialogState,
   PanelDisplayState,
 } from '@finos/legend-application-components';
-import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PrimitiveType } from '../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Class } from '../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Profile } from '../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Association } from '../models/metamodels/pure/model/packageableElements/domain/Association';
-import { ConcreteFunctionDefinition } from '../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { Measure } from '../models/metamodels/pure/model/packageableElements/domain/Measure';
-import { Database } from '../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/relational/model/ServiceStore';
-import { FlatData } from '../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import { Mapping } from '../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Diagram } from '../models/metamodels/pure/model/packageableElements/diagram/Diagram';
-import { Service } from '../models/metamodels/pure/model/packageableElements/service/Service';
-import { PackageableRuntime } from '../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
-import { PackageableConnection } from '../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import { FileGenerationSpecification } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { GenerationSpecification } from '../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import { PRIMITIVE_TYPE } from '../models/MetaModelConst';
-import type { Type } from '../models/metamodels/pure/model/packageableElements/domain/Type';
-import type { Store } from '../models/metamodels/pure/model/packageableElements/store/Store';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
-import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
+import type { PackageableElement, Type, Store } from '@finos/legend-graph';
+import {
+  GRAPH_MANAGER_LOG_EVENT,
+  PACKAGEABLE_ELEMENT_TYPE,
+  PrimitiveType,
+  Class,
+  Enumeration,
+  Profile,
+  Association,
+  ConcreteFunctionDefinition,
+  Measure,
+  Database,
+  ServiceStore,
+  FlatData,
+  Mapping,
+  Diagram,
+  Service,
+  PackageableRuntime,
+  PackageableConnection,
+  FileGenerationSpecification,
+  GenerationSpecification,
+  PRIMITIVE_TYPE,
+  Package,
+} from '@finos/legend-graph';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -646,7 +646,6 @@ export class EditorStore {
       this.preloadTextEditorFont(),
       this.graphState.initializeSystem(), // this can be moved inside of `setupEngine`
       this.graphState.graphManager.initialize(
-        this.applicationStore.pluginManager,
         {
           env: this.applicationStore.config.env,
           tabSize: TAB_SIZE,
@@ -656,6 +655,10 @@ export class EditorStore {
             autoReAuthenticateUrl:
               this.applicationStore.config.engineAutoReAuthenticationUrl,
           },
+        },
+        {
+          tracerServicePlugins:
+            this.applicationStore.pluginManager.getTracerServicePlugins(),
         },
       ),
     ]);

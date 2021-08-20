@@ -35,16 +35,16 @@ import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
+import { useEditorStore } from '../../EditorStoreProvider';
 import { guaranteeType } from '@finos/legend-shared';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import { FlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
-import { getEnumerationMappingsByEnumeration } from '../../../../models/metamodels/pure/helpers/MappingHelper';
-import { useEditorStore } from '../../EditorStoreProvider';
+  Enumeration,
+  EnumerationMapping,
+  FlatDataPropertyMapping,
+  getEnumerationMappingsByEnumeration,
+} from '@finos/legend-graph';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

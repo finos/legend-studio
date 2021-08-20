@@ -29,9 +29,11 @@ import {
   action,
 } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import type { GenerationTreeNode } from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import { GenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type {
+  GenerationTreeNode,
+  PackageableElement,
+} from '@finos/legend-graph';
+import { GenerationSpecification } from '@finos/legend-graph';
 
 export interface GenerationSpecNodeDragSource {
   nodeState: GenerationTreeNodeState;

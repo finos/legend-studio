@@ -37,7 +37,7 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-application-components';
-import type { ImportConfigurationDescription } from '../../../models/metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
+import type { ImportConfigurationDescription } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '../../application/ApplicationStoreProvider';

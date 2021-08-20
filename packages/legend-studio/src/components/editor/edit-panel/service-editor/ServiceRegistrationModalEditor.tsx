@@ -24,7 +24,7 @@ import {
 import { Dialog } from '@material-ui/core';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../../../const';
-import { ServiceExecutionMode } from '../../../../models/metamodels/pure/graphManager/action/service/ServiceExecutionMode';
+import { ServiceExecutionMode } from '@finos/legend-graph';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';

@@ -56,11 +56,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '../../../../stores/ApplicationStore';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
-import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
@@ -70,6 +66,12 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import {
+  Class,
+  RawLambda,
+  SetImplementation,
+  OperationSetImplementation,
+} from '@finos/legend-graph';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {

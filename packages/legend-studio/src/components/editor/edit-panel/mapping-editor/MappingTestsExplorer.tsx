@@ -38,12 +38,12 @@ import { clsx, ContextMenu } from '@finos/legend-application-components';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { Randomizer } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { SetImplementation } from '@finos/legend-graph';
 
 const addTestPromps = [
   "Let's add some test!",

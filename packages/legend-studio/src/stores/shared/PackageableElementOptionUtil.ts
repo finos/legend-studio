@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '@finos/legend-graph';
 
 export interface PackageableElementOption<T extends PackageableElement> {
   label: string;

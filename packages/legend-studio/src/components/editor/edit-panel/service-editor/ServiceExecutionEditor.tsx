@@ -53,20 +53,19 @@ import {
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
 import { MappingIcon, RuntimeIcon } from '../../../shared/Icon';
 import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
-import type { KeyedExecutionParameter } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import {
-  PureSingleExecution,
-  PureMultiExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { RuntimePointer } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { PackageableRuntime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import type { KeyedExecutionParameter, Runtime } from '@finos/legend-graph';
+import {
+  PureSingleExecution,
+  PureMultiExecution,
+  Mapping,
+  RuntimePointer,
+  PackageableRuntime,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {

@@ -34,19 +34,19 @@ import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import {
+  Mapping,
   OperationSetImplementation,
   OperationType,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { SetImplementationContainer } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementationContainer';
-import { InferableMappingElementIdExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { SetImplementationExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementationReference';
-import { InferableMappingElementRootExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementRoot';
-import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+  SetImplementation,
+  Class,
+  SetImplementationContainer,
+  InferableMappingElementIdExplicitValue,
+  PackageableElementExplicitReference,
+  SetImplementationExplicitReference,
+  InferableMappingElementRootExplicitValue,
+  getClassMappingsByClass,
+} from '@finos/legend-graph';
 import { useEditorStore } from '../../EditorStoreProvider';
 
 interface SetImplementationOption {

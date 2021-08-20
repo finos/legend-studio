@@ -38,7 +38,7 @@ import {
   TinyInt,
   SmallInt,
   BigInt,
-  DataType,
+  RelationalDataType,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import type { V1_ExecutionNode } from '../../../../model/executionPlan/nodes/V1_ExecutionNode';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
@@ -61,7 +61,7 @@ import { V1_transformConnection } from '../V1_ConnectionTransformer';
 import { V1_DatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import { PureClientVersion } from '../../../../../../../../graphManager/GraphManagerUtils';
 
-const stringifyDataType = (dataType: DataType): string => {
+const stringifyDataType = (dataType: RelationalDataType): string => {
   if (dataType instanceof Integer) {
     return 'INTEGER';
   } else if (dataType instanceof Float) {
@@ -123,7 +123,7 @@ const transformTDSColumn = (
   protocol.doc = metamodel.documentation;
   protocol.type = metamodel.type?.valueForSerialization ?? '';
   protocol.relationalType =
-    metamodel.sourceDataType instanceof DataType
+    metamodel.sourceDataType instanceof RelationalDataType
       ? stringifyDataType(metamodel.sourceDataType)
       : undefined;
   return protocol;

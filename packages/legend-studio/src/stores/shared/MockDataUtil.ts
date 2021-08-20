@@ -15,20 +15,18 @@
  */
 
 import { DATE_TIME_FORMAT, DATE_FORMAT } from '../../const';
-import { PRIMITIVE_TYPE } from '../../models/MetaModelConst';
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
-import type { PrimitiveType } from '../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import type { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import type { Enum } from '../../models/metamodels/pure/model/packageableElements/domain/Enum';
-import {
-  Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
-} from '../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore';
 import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState';
+import type { PrimitiveType, Enumeration, Enum } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  Class,
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '@finos/legend-graph';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,

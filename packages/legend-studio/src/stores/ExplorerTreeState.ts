@@ -15,7 +15,6 @@
  */
 
 import { action, observable, makeObservable } from 'mobx';
-import { ROOT_PACKAGE_NAME } from '../models/MetaModelConst';
 import type { EditorStore } from './EditorStore';
 import {
   LogEvent,
@@ -38,10 +37,13 @@ import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-application-components';
 import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
 import { getGenerationTreeData } from './shared/FileGenerationTreeUtil';
-import { Package } from '../models/metamodels/pure/model/packageableElements/domain/Package';
-import type { PackageableElement } from '../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Unit } from '../models/metamodels/pure/model/packageableElements/domain/Measure';
-import { PrimitiveType } from '../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
+import type { PackageableElement } from '@finos/legend-graph';
+import {
+  ROOT_PACKAGE_NAME,
+  Package,
+  Unit,
+  PrimitiveType,
+} from '@finos/legend-graph';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',

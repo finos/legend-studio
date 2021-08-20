@@ -52,18 +52,26 @@ import { FileGenerationViewerState } from './FileGenerationViewerState';
 import type { EditorState } from './EditorState';
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
-import type { GenerationConfigurationDescription } from '../../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
-import {
-  DEFAULT_GENERATION_SPECIFICATION_NAME,
-  GenerationSpecification,
-} from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import type { FileGenerationTypeOption } from '../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { Class } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import type { GenerationOutput } from '../../models/metamodels/pure/graphManager/action/generation/GenerationOutput';
-import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../models/metamodels/pure/graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
-import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
 import type { Entity } from '@finos/legend-model-storage';
+import type {
+  GenerationConfigurationDescription,
+  GenerationOutput,
+  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+} from '@finos/legend-graph';
+import {
+  GenerationSpecification,
+  Class,
+  Enumeration,
+  ELEMENT_PATH_DELIMITER,
+} from '@finos/legend-graph';
+
+export const DEFAULT_GENERATION_SPECIFICATION_NAME =
+  'MyGenerationSpecification';
+
+export type FileGenerationTypeOption = {
+  value: string;
+  label: string;
+};
 
 export class GraphGenerationState {
   editorStore: EditorStore;

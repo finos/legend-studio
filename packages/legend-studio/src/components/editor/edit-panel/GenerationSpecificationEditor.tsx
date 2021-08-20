@@ -42,19 +42,23 @@ import type {
   FileGenerationSourceDropTarget,
 } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
-import { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { GenerationTreeNode } from '../../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../../models/metamodels/pure/graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
 import type { DSLGenerationSpecification_EditorPlugin_Extension } from '../../../stores/DSLGenerationSpecification_EditorPlugin_Extension';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import type {
+  PackageableElement,
+  PackageableElementReference,
+  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+} from '@finos/legend-graph';
+import {
+  FileGenerationSpecification,
+  PackageableElementExplicitReference,
+  GenerationTreeNode,
+} from '@finos/legend-graph';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

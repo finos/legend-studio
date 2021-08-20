@@ -75,28 +75,26 @@ import type { ConnectionEditorState } from '../../../stores/editor-state/element
 import { Dialog } from '@material-ui/core';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import type { PackageableElementReference } from '@finos/legend-graph';
 import {
   Connection,
   ConnectionPointer,
-} from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import {
   Runtime,
   IdentifiedConnection,
   RuntimePointer,
-} from '../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { ModelStore } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/model/ModelStore';
-import { Mapping } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { PackageableConnection } from '../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import { JsonModelConnection } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { XmlModelConnection } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/XmlModelConnection';
-import { FlatDataConnection } from '../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { RelationalDatabaseConnection } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+  ModelStore,
+  Mapping,
+  Class,
+  Store,
+  PackageableConnection,
+  JsonModelConnection,
+  XmlModelConnection,
+  FlatDataConnection,
+  RelationalDatabaseConnection,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 
 const getConnectionTooltipText = (connection: Connection): string => {
   const connectionValue =

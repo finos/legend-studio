@@ -15,24 +15,6 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import type {
-  Enum,
-  PureModel,
-  Type,
-  ValueSpecification,
-} from '@finos/legend-studio';
-import {
-  Enumeration,
-  GenericType,
-  GenericTypeExplicitReference,
-  PrimitiveType,
-  CollectionInstanceValue,
-  EnumValueExplicitReference,
-  EnumValueInstanceValue,
-  PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
 import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
@@ -47,6 +29,24 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import CSVParser from 'papaparse';
+import type {
+  Enum,
+  PureModel,
+  Type,
+  ValueSpecification,
+} from '@finos/legend-graph';
+import {
+  Enumeration,
+  GenericType,
+  GenericTypeExplicitReference,
+  PrimitiveType,
+  CollectionInstanceValue,
+  EnumValueExplicitReference,
+  EnumValueInstanceValue,
+  PrimitiveInstanceValue,
+  PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
+} from '@finos/legend-graph';
 
 const StringPrimitiveInstanceValueEditor = observer(
   (props: { valueSpecification: PrimitiveInstanceValue }) => {

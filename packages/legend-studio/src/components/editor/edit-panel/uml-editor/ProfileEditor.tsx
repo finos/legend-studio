@@ -23,10 +23,9 @@ import { observer } from 'mobx-react-lite';
 import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
 import { clsx } from '@finos/legend-application-components';
 import { CORE_TEST_ID } from '../../../../const';
-import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type { Profile } from '@finos/legend-graph';
+import { Tag, Stereotype } from '@finos/legend-graph';
 
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {

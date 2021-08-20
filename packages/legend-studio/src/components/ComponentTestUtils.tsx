@@ -20,7 +20,6 @@ import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import { ApplicationStore } from '../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../const';
-import { ELEMENT_PATH_DELIMITER } from '../models/MetaModelConst';
 import { EditorStore } from '../stores/EditorStore';
 import { Editor } from './editor/Editor';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
@@ -31,13 +30,7 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import type {
-  ImportConfigurationDescription,
-  ImportMode,
-} from '../models/metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
-import type { GenerationConfigurationDescription } from '../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
 import { PluginManager } from '../application/PluginManager';
-import type { GenerationMode } from '../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
@@ -49,6 +42,13 @@ import type {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import { ApplicationStoreProvider } from './application/ApplicationStoreProvider';
+import type {
+  ImportConfigurationDescription,
+  ImportMode,
+  GenerationConfigurationDescription,
+  GenerationMode,
+} from '@finos/legend-graph';
+import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 
 export const SDLC_TestData = {
   project: {

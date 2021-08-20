@@ -36,27 +36,24 @@ import {
   TimesIcon,
 } from '@finos/legend-application-components';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
-import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { DatabaseType } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import type { RelationalDatabaseConnection, Store } from '@finos/legend-graph';
 import {
+  DatabaseType,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
   StaticDatasourceSpecification,
   BigQueryDatasourceSpecification,
   RedshiftDatasourceSpecification,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 import { runInAction } from 'mobx';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { Store } from '../../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import type { EditorPlugin } from '../../../../stores/EditorPlugin';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';

@@ -29,10 +29,10 @@ import {
   NetworkClientError,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../graphManager/GraphManagerLogEvent';
-import { GenerationMode } from '../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { ImportConfigurationDescription } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { RawLambda } from '../../../../metamodels/pure/rawValueSpecification/RawLambda';
+import { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
 import type { GenerationConfigurationDescription } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
 import { TEMP__AbstractEngineConfig } from '../../../../../graphManager/action/TEMP__AbstractEngineConfig';
 import { V1_EngineServerClient } from './V1_EngineServerClient';

@@ -43,19 +43,19 @@ import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEdito
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   AbstractPropertyExpression,
-  EditorStore,
   ValueSpecification,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   extractElementNameFromPath,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+import type { EditorStore } from '@finos/legend-studio';
 
 export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
   AND = 'and',

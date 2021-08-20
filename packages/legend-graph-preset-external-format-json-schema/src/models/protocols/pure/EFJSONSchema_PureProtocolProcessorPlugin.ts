@@ -15,13 +15,11 @@
  */
 
 import packageJson from '../../../../package.json';
-import type {
-  PluginManager,
-  V1_PureModelContextData,
-} from '@finos/legend-studio';
-import { PureProtocolProcessorPlugin } from '@finos/legend-studio';
+import type { PluginManager } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-shared';
 import V1_SYSTEM_MODELS from './v1/V1_EFJSONSchema_SystemModels.json';
+import type { V1_PureModelContextData } from '@finos/legend-graph';
+import { PureProtocolProcessorPlugin } from '@finos/legend-graph';
 
 export class EFJSONSchema_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {

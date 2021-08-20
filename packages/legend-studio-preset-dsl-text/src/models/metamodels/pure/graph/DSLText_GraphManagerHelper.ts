@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PureModel } from '@finos/legend-studio';
+import type { PureModel } from '@finos/legend-graph';
 import { Text } from '../model/packageableElements/Text';
 
 export const getText = (path: string, graph: PureModel): Text =>

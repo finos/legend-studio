@@ -14,6 +14,21 @@
  * limitations under the License.
  */
 
+// metamodels
 export { FlatData } from './models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
 export { FlatDataSection } from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
-export * from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSectionReference';
+export {
+  FlatDataSectionReference,
+  FlatDataSectionExplicitReference,
+} from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSectionReference';
+export { RootFlatDataRecordTypeExplicitReference } from './models/metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference';
+export { FlatDataInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
+export { AbstractFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
+export { EmbeddedFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
+export { FlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
+export { FlatDataConnection } from './models/metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
+export {
+  RootFlatDataRecordType,
+  FlatDataRecordField,
+} from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
+export { FlatDataInputData } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData';

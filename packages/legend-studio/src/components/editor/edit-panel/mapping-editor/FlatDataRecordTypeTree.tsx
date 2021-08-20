@@ -28,12 +28,12 @@ import {
 } from '../../../../stores/shared/DnDUtil';
 import type { FlatDataRecordTypeTreeNodeData } from '../../../../stores/shared/TreeUtil';
 import { addUniqueEntry } from '@finos/legend-shared';
-import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
 import type {
+  Type,
   RootFlatDataRecordType,
   FlatDataRecordField,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../../../models/MetaModelConst';
+} from '@finos/legend-graph';
+import { DEFAULT_SOURCE_PARAMETER_NAME } from '@finos/legend-graph';
 
 const getRecordTypeTreeNodeData = (
   field: FlatDataRecordField,

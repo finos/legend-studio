@@ -28,10 +28,10 @@ import { EntityDiffEditorState } from './EntityDiffEditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { mergeDiff3 } from 'node-diff3';
-import { ParserError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 import { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
+import { ParserError } from '@finos/legend-graph';
 
 const START_HEADER_MARKER = '<<<<<<<';
 const COMMON_BASE_MARKER = '|||||||';

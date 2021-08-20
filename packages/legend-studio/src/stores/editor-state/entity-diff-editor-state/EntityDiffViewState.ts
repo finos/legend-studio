@@ -25,10 +25,10 @@ import {
 import type { EditorStore } from '../../EditorStore';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 import { STUDIO_LOG_EVENT } from '../../../utils/StudioLogEvent';
+import type { PackageableElement } from '@finos/legend-graph';
 
 /**
  * NOTE: when we support comparison between entities, we should create a new editor state

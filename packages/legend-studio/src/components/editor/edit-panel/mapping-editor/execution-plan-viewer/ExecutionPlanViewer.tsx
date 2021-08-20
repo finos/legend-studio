@@ -30,10 +30,6 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from '@finos/legend-application-components';
-import { ExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
-import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
-import type { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
-import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
 import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { observer } from 'mobx-react-lite';
@@ -41,6 +37,12 @@ import { ExecutionNodesViewer } from './ExecutionNodesViewer';
 import Dialog from '@material-ui/core/Dialog';
 import { TextInputEditor } from '../../../../shared/TextInputEditor';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../../../stores/EditorConfig';
+import type { ExecutionPlan } from '@finos/legend-graph';
+import {
+  ExecutionNode,
+  SQLExecutionNode,
+  RelationalTDSInstantiationExecutionNode,
+} from '@finos/legend-graph';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;

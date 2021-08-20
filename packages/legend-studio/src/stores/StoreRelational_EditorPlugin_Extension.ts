@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-import type { DatasourceSpecification } from '../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import type { AuthenticationStrategy } from '../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import type {
+  DatasourceSpecification,
+  AuthenticationStrategy,
+} from '@finos/legend-graph';
 
 // connection datasource specification
 

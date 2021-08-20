@@ -19,19 +19,19 @@ import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
-  EditorStore,
   RawExecutionPlan,
   ExecutionResult,
   RawLambda,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   PureClientVersion,
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
+import type { EditorStore } from '@finos/legend-studio';
 
 const DEFAULT_LIMIT = 1000;
 

@@ -15,22 +15,26 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { LAMBDA_PIPE } from '../../../../models/MetaModelConst';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
-import { ParserError } from '../../../../models/metamodels/pure/graphManager/action/EngineError';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
-import type { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, isNonNullable } from '@finos/legend-shared';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
+import type {
+  PurePropertyMapping,
+  PureInstanceSetImplementation,
+} from '@finos/legend-graph';
+import {
+  LAMBDA_PIPE,
+  GRAPH_MANAGER_LOG_EVENT,
+  ParserError,
+  RawLambda,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;

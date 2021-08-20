@@ -16,7 +16,7 @@
 
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import type { EditorStore } from '../EditorStore';
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '@finos/legend-graph';
 
 export class UnsupportedElementEditorState extends ElementEditorState {
   reprocess(

@@ -27,19 +27,23 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore';
-import type { PropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import type { RelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
-import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import type { RawRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import { createStubRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import type { CompilationError } from '../../../../../models/metamodels/pure/graphManager/action/EngineError';
-import { ParserError } from '../../../../../models/metamodels/pure/graphManager/action/EngineError';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import { MappingElementDecorator } from '../MappingElementDecorator';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import type { SourceInformation } from '../../../../../models/metamodels/pure/graphManager/action/SourceInformation';
-import { buildSourceInformationSourceId } from '../../../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
 import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from '../MappingEditorState';
+import type {
+  PropertyMapping,
+  RelationalInstanceSetImplementation,
+  RawRelationalOperationElement,
+  CompilationError,
+  SourceInformation,
+} from '@finos/legend-graph';
+import {
+  RelationalPropertyMapping,
+  createStubRelationalOperationElement,
+  ParserError,
+  GRAPH_MANAGER_LOG_EVENT,
+  EmbeddedRelationalInstanceSetImplementation,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;

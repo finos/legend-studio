@@ -17,17 +17,18 @@
 import { computed, observable, makeObservable, override } from 'mobx';
 import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState';
 import { LogEvent, guaranteeType } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../models/metamodels/pure/graphManager/GraphManagerLogEvent';
 import {
   ClassState,
   CONSTRAINT_SOURCE_ID_LABEL,
   DERIVED_PROPERTY_SOURCE_ID_LABEL,
 } from './ClassState';
 import type { EditorStore } from '../../EditorStore';
-import type { CompilationError } from '../../../models/metamodels/pure/graphManager/action/EngineError';
-import { extractSourceInformationCoordinates } from '../../../models/metamodels/pure/graphManager/action/SourceInformationHelper';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { CompilationError, PackageableElement } from '@finos/legend-graph';
+import {
+  GRAPH_MANAGER_LOG_EVENT,
+  extractSourceInformationCoordinates,
+  Class,
+} from '@finos/legend-graph';
 
 export class ClassEditorState extends UMLEditorState {
   classState: ClassState;

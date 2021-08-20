@@ -17,7 +17,6 @@
 import { observer } from 'mobx-react-lite';
 import { InstanceSetImplementationEditor } from './InstanceSetImplementationEditor';
 import { OperationSetImplementationEditor } from './OperationSetImplementationEditor';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
 import { FaRegSquare, FaCheckSquare } from 'react-icons/fa';
 import {
   clsx,
@@ -25,18 +24,21 @@ import {
 } from '@finos/legend-application-components';
 import { ClassIcon, getElementTypeIcon } from '../../../shared/Icon';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type {
+  SetImplementation,
+  PureInstanceSetImplementation,
+  FlatDataInstanceSetImplementation,
+  EmbeddedFlatDataPropertyMapping,
+  RootRelationalInstanceSetImplementation,
+} from '@finos/legend-graph';
 import {
+  fromElementPathToMappingElementId,
+  SET_IMPLEMENTATION_TYPE,
   OperationSetImplementation,
   OperationType,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import type { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import type { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { nominateRootSetImplementation } from '../../../../models/metamodels/pure/helpers/MappingResolutionHelper';
-import { useEditorStore } from '../../EditorStoreProvider';
+  nominateRootSetImplementation,
+} from '@finos/legend-graph';
 
 export const OperatorSelector = observer(
   (props: {

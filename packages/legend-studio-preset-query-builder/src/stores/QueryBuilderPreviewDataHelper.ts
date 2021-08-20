@@ -18,7 +18,7 @@ import type {
   AbstractPropertyExpression,
   Class,
   PureModel,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   GenericType,
   GenericTypeExplicitReference,
@@ -32,7 +32,7 @@ import {
   Multiplicity,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   SUPPORTED_FUNCTIONS,

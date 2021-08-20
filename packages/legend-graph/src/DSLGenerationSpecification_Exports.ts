@@ -14,4 +14,15 @@
  * limitations under the License.
  */
 
+// metamodels
 export { ModelGenerationSpecification } from './models/metamodels/pure/packageableElements/generationSpecification/ModelGenerationSpecification';
+export {
+  GenerationSpecification,
+  GenerationTreeNode,
+} from './models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
+export { FileGenerationSpecification } from './models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
+export { ConfigurationProperty } from './models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
+
+// protocols
+export * from './models/protocols/pure/DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
+export { V1_ModelGenerationSpecification } from './models/protocols/pure/v1/model/packageableElements/generationSpecification/V1_ModelGenerationSpecification';

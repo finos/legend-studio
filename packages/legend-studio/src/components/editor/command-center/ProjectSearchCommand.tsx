@@ -27,7 +27,7 @@ import {
   CustomSelectorInput,
 } from '@finos/legend-application-components';
 import { getElementTypeIcon } from '../../shared/Icon';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { PackageableElement } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../EditorStoreProvider';

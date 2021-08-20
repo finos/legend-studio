@@ -46,28 +46,30 @@ import {
 import { getElementIcon } from '../../../shared/Icon';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../../../const';
-import { MULTIPLICITY_INFINITE } from '../../../../models/MetaModelConst';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { PropertyEditor } from './PropertyEditor';
-import type { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type {
+  Association,
+  Property,
+  StereotypeReference,
+} from '@finos/legend-graph';
 import {
+  MULTIPLICITY_INFINITE,
+  TaggedValue,
+  Stereotype,
+  Profile,
+  Tag,
+  Multiplicity,
   Class,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { PrimitiveType } from '../../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Unit } from '../../../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { useEditorStore } from '../../EditorStoreProvider';
+  PrimitiveType,
+  Unit,
+  StereotypeExplicitReference,
+} from '@finos/legend-graph';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {

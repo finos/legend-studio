@@ -18,12 +18,12 @@ import { action, makeAutoObservable } from 'mobx';
 import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-shared';
 import type {
   AbstractPropertyExpression,
-  EditorStore,
   PureModel,
   SimpleFunctionExpression,
   ValueSpecification,
   VariableExpression,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
+import type { EditorStore } from '@finos/legend-studio';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 import type {
   QueryBuilderProjectionColumnState,

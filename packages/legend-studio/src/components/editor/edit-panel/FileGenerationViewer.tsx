@@ -22,7 +22,7 @@ import {
 } from '../../../stores/editor-state/FileGenerationViewerState';
 import { FaLock, FaFire, FaArrowCircleRight } from 'react-icons/fa';
 import { TextInputEditor } from '../../shared/TextInputEditor';
-import type { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import type { FileGenerationSpecification } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider';
 
 export const FileGenerationViewer = observer(() => {

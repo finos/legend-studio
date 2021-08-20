@@ -53,7 +53,7 @@ import {
   RelationalOperationElementWithJoin,
   getJoinType,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import type { DataType } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
+import type { RelationalDataType } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import {
   Real,
   Binary,
@@ -337,7 +337,7 @@ export const V1_buildRelationalOperationElement = (
 // Datatypes
 export const V1_transformDatabaseDataType = (
   dataType: V1_RelationalDataType,
-): DataType => {
+): RelationalDataType => {
   if (dataType instanceof V1_VarChar) {
     assertNonNullable(dataType.size, 'VARCHAR size is missing');
     return new VarChar(dataType.size);

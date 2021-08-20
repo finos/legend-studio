@@ -25,13 +25,12 @@ import {
 } from '@finos/legend-shared';
 import type {
   AbstractProperty,
-  EditorStore,
   Mapping,
   PropertyMapping,
   PureModel,
   SetImplementation,
   Type,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   getRootSetImplementation,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -43,11 +42,12 @@ import {
   Property,
   VariableExpression,
   PureInstanceSetImplementation,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
+import type { EditorStore } from '@finos/legend-studio';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',

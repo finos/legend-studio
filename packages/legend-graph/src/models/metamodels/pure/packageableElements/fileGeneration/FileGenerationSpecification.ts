@@ -15,7 +15,6 @@
  */
 
 import {
-  guaranteeNonNullable,
   hashArray,
   addUniqueEntry,
   deleteEntry,
@@ -31,22 +30,6 @@ import type {
 import { PackageableElementReference } from '../PackageableElementReference';
 import { AbstractGenerationSpecification } from '../generationSpecification/AbstractGenerationSpecification';
 import type { ConfigurationProperty } from './ConfigurationProperty';
-
-export type FileGenerationTypeOption = {
-  value: string;
-  label: string;
-};
-
-export enum GenerationMode {
-  CODE_GENERATION = 'codeGeneration',
-  SCHEMA_GENERATION = 'schemaGeneration',
-}
-
-export const getGenerationMode = (value: string): GenerationMode =>
-  guaranteeNonNullable(
-    Object.values(GenerationMode).find((mode) => mode === value),
-    `Encountered unsupported generation mode '${value}'`,
-  );
 
 export class FileGenerationSpecification
   extends AbstractGenerationSpecification

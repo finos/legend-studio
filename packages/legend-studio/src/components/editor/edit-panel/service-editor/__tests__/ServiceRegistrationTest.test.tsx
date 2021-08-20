@@ -42,11 +42,13 @@ import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { NOTIFCATION_SEVERITY } from '../../../../../stores/ApplicationStore';
 import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState';
-import { ServiceExecutionMode } from '../../../../../models/metamodels/pure/graphManager/action/service/ServiceExecutionMode';
-import { ServiceRegistrationResult } from '../../../../../models/metamodels/pure/graphManager/action/service/ServiceRegistrationResult';
 import { getTestApplicationConfig } from '../../../../../stores/StoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
+import {
+  ServiceExecutionMode,
+  ServiceRegistrationResult,
+} from '@finos/legend-graph';
 
 let renderResult: RenderResult;
 

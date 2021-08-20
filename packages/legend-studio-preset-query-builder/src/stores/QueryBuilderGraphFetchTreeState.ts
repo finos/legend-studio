@@ -20,7 +20,7 @@ import type { EditorStore } from '@finos/legend-studio';
 import {
   PackageableElementExplicitReference,
   RootGraphFetchTree,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import type { QueryBuilderGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
 import {
   addQueryBuilderPropertyNode,

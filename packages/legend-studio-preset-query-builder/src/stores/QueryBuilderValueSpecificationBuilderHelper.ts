@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import type { PureModel, ValueSpecification } from '@finos/legend-studio';
+import type { PureModel, ValueSpecification } from '@finos/legend-graph';
 import {
   CORE_ELEMENT_PATH,
-  DATE_FORMAT,
   FunctionType,
   LambdaFunction,
   LambdaFunctionInstanceValue,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
+import { DATE_FORMAT } from '@finos/legend-studio';
 import format from 'date-fns/format';
 
 export const generateDefaultValueForPrimitiveType = (

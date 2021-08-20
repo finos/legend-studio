@@ -22,7 +22,7 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type { EditorStore, LambdaFunction } from '@finos/legend-studio';
+import type { LambdaFunction } from '@finos/legend-graph';
 import {
   extractElementNameFromPath,
   matchFunctionName,
@@ -34,8 +34,9 @@ import {
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import type { EditorStore } from '@finos/legend-studio';
 
 export enum COLUMN_SORT_TYPE {
   ASC,

@@ -38,18 +38,18 @@ import {
 import { getAllByText, waitFor } from '@testing-library/dom';
 import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
-import {
-  AbstractPropertyExpression,
-  getRootSetImplementation,
-  RawLambda,
-  setUpEditorWithDefaultSDLCData,
-} from '@finos/legend-studio';
+import { setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
+import {
+  AbstractPropertyExpression,
+  getRootSetImplementation,
+  RawLambda,
+} from '@finos/legend-graph';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;

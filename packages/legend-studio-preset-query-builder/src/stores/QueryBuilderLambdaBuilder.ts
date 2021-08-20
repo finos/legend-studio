@@ -18,7 +18,7 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { Class, ValueSpecification } from '@finos/legend-studio';
+import type { Class, ValueSpecification } from '@finos/legend-graph';
 import {
   Multiplicity,
   INTERNAL__UnknownValueSpecification,
@@ -39,7 +39,7 @@ import {
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';

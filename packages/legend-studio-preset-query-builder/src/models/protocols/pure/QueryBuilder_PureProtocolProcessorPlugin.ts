@@ -14,19 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  PluginManager,
-  V1_GraphBuilderContext,
-  V1_ProcessingContext,
-  V1_FunctionExpressionBuilder,
-  V1_ValueSpecification,
-  ValueSpecification,
-  SimpleFunctionExpression,
-} from '@finos/legend-studio';
-import {
-  PureProtocolProcessorPlugin,
-  matchFunctionName,
-} from '@finos/legend-studio';
+import type { PluginManager } from '@finos/legend-studio';
 import packageJson from '../../../../package.json';
 import { SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const';
 import {
@@ -37,6 +25,18 @@ import {
   V1_buildGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
 } from './v1/V1_QueryBuilder_FunctionExpressionBuilder';
+import type {
+  V1_GraphBuilderContext,
+  V1_ProcessingContext,
+  V1_FunctionExpressionBuilder,
+  V1_ValueSpecification,
+  ValueSpecification,
+  SimpleFunctionExpression,
+} from '@finos/legend-graph';
+import {
+  PureProtocolProcessorPlugin,
+  matchFunctionName,
+} from '@finos/legend-graph';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {

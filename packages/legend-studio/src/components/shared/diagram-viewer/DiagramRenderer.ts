@@ -24,31 +24,33 @@ import {
   findLast,
   uniqBy,
 } from '@finos/legend-shared';
-import { PositionedRectangle } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/PositionedRectangle';
-import { Point } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
-import { Rectangle } from '../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Rectangle';
-import { ClassView } from '../../../models/metamodels/pure/model/packageableElements/diagram/ClassView';
-import type { Diagram } from '../../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
-import { GeneralizationView } from '../../../models/metamodels/pure/model/packageableElements/diagram/GeneralizationView';
-import type { RelationshipView } from '../../../models/metamodels/pure/model/packageableElements/diagram/RelationshipView';
+import type {
+  Diagram,
+  RelationshipView,
+  PropertyHolderView,
+  AbstractProperty,
+} from '@finos/legend-graph';
 import {
+  PositionedRectangle,
+  Point,
+  Rectangle,
+  ClassView,
+  GeneralizationView,
   manageInsidePointsDynamically,
   getElementPosition,
-} from '../../../models/metamodels/pure/model/packageableElements/diagram/RelationshipView';
-import { PropertyView } from '../../../models/metamodels/pure/model/packageableElements/diagram/PropertyView';
-import type { PropertyHolderView } from '../../../models/metamodels/pure/model/packageableElements/diagram/PropertyHolderView';
-import { AssociationView } from '../../../models/metamodels/pure/model/packageableElements/diagram/AssociationView';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { PrimitiveType } from '../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import type { AbstractProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/AbstractProperty';
-import { DerivedProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PropertyExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
-import { GenericType } from '../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
-import { Property } from '../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { Multiplicity } from '../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
+  PropertyView,
+  AssociationView,
+  Class,
+  Enumeration,
+  PrimitiveType,
+  DerivedProperty,
+  PackageableElementExplicitReference,
+  PropertyExplicitReference,
+  GenericTypeExplicitReference,
+  GenericType,
+  Property,
+  Multiplicity,
+} from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
 
 export enum DIAGRAM_INTERACTION_MODE {

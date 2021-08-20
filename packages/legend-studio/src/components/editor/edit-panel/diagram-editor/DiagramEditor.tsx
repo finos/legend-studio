@@ -61,8 +61,22 @@ import {
   ResizablePanelSplitter,
   ResizablePanel,
 } from '@finos/legend-application-components';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Point } from '../../../../models/metamodels/pure/model/packageableElements/diagram/geometry/Point';
+import type { Type } from '@finos/legend-graph';
+import {
+  Class,
+  Point,
+  DerivedProperty,
+  Property,
+  Multiplicity,
+  ELEMENT_PATH_DELIMITER,
+  MULTIPLICITY_INFINITE,
+  GenericType,
+  createPath,
+  isValidFullPath,
+  isValidPathIdentifier,
+  resolvePackagePathAndElementName,
+  cleanUpDeadReferencesInDiagram,
+} from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import {
   FiMinus,
@@ -76,24 +90,8 @@ import {
 } from 'react-icons/fi';
 import { IoResize } from 'react-icons/io5';
 import { Dialog } from '@material-ui/core';
-import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
-import {
-  ELEMENT_PATH_DELIMITER,
-  MULTIPLICITY_INFINITE,
-} from '../../../../models/MetaModelConst';
-import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { GenericType } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
-import {
-  createPath,
-  isValidFullPath,
-  isValidPathIdentifier,
-  resolvePackagePathAndElementName,
-} from '../../../../models/MetaModelUtils';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { cleanUpDeadReferencesInDiagram } from '../../../../models/metamodels/pure/helpers/DiagramHelper';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 

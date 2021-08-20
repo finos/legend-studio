@@ -25,12 +25,14 @@ import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
 import { waitFor } from '@testing-library/dom';
 import { getTestEditorStore } from '../../StoreTestUtils';
 import { simpleCoreModelData } from './CoreTestData';
-import { DependencyManager } from '../../../models/metamodels/pure/graph/DependencyManager';
-import { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import { DeprecatedProjectVersionEntities } from '@finos/legend-server-depot';
+import {
+  DependencyManager,
+  PackageableElementReference,
+} from '@finos/legend-graph';
 
 const testDependingOnDifferentProjectVersions = [
   {

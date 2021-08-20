@@ -17,11 +17,13 @@
 import { otherwiseEmbeddedRelationalTestData } from './RelationalEntitiesTestData';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
 import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
-import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
-import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
 import type { Entity } from '@finos/legend-model-storage';
+import {
+  RootRelationalInstanceSetImplementation,
+  OtherwiseEmbeddedRelationalInstanceSetImplementation,
+  RelationalPropertyMapping,
+  getClassMappingsByClass,
+} from '@finos/legend-graph';
 
 const editorStore = getTestEditorStore();
 

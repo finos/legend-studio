@@ -20,3 +20,6 @@ export {
   PureSingleExecution,
   PureMultiExecution,
 } from './models/metamodels/pure/packageableElements/service/ServiceExecution';
+export * from './models/metamodels/pure/packageableElements/service/ServiceTest';
+export * from './models/metamodels/pure/packageableElements/service/ServiceExecution';
+export { ServiceStore } from './models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';

@@ -21,10 +21,6 @@ import type {
   RootRelationalInstanceSetImplementationState,
 } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 import { EmbeddedRelationalInstanceSetImplementationState } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
-import {
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
-} from '../../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { MappingElement } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
@@ -36,15 +32,19 @@ import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import { StudioLambdaEditor } from '../../../../shared/LambdaEditor';
 import { guaranteeType } from '@finos/legend-shared';
-import { Enumeration } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { EnumerationMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import {
   TableOrViewTreeNodeDragSource,
   TABLE_ELEMENT_DND_TYPE,
 } from './TableOrViewSourceTree';
-import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { getEnumerationMappingsByEnumeration } from '../../../../../models/metamodels/pure/helpers/MappingHelper';
 import { useEditorStore } from '../../../EditorStoreProvider';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+  Enumeration,
+  EnumerationMapping,
+  RelationalPropertyMapping,
+  getEnumerationMappingsByEnumeration,
+} from '@finos/legend-graph';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

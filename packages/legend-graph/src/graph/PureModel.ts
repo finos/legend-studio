@@ -53,7 +53,10 @@ import { PackageableRuntime } from '../models/metamodels/pure/packageableElement
 import { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import { ModelStore } from '../models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
 import { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
-import { Measure, Unit } from '../models/metamodels/pure/packageableElements/domain/Measure';
+import {
+  Measure,
+  Unit,
+} from '../models/metamodels/pure/packageableElements/domain/Measure';
 import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import { cleanUpDeadReferencesInDiagram } from '../helpers/DiagramHelper';
 

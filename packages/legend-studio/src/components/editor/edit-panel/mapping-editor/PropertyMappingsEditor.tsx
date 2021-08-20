@@ -26,35 +26,31 @@ import {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import {
-  getRootSetImplementation,
-  nominateRootSetImplementation,
-} from '../../../../models/metamodels/pure/helpers/MappingResolutionHelper';
 import { clsx } from '@finos/legend-application-components';
 import { guaranteeType } from '@finos/legend-shared';
 import type { FlatDataPropertyMappingState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor';
 import { RelationalPropertyMappingEditor } from './relational/RelationalPropertyMappingEditor';
-import {
-  Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import {
-  SetImplementation,
-  SET_IMPLEMENTATION_TYPE,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { PrimitiveType } from '../../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type {
   RelationalPropertyMappingState,
   RootRelationalInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type { Property } from '@finos/legend-graph';
+import {
+  getRootSetImplementation,
+  nominateRootSetImplementation,
+  Class,
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+  SetImplementation,
+  SET_IMPLEMENTATION_TYPE,
+  PrimitiveType,
+  PureInstanceSetImplementation,
+  EmbeddedFlatDataPropertyMapping,
+} from '@finos/legend-graph';
 
 export const PropertyMappingsEditor = observer(
   (props: {

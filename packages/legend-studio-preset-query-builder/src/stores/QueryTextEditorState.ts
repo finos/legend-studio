@@ -15,15 +15,14 @@
  */
 
 import type { EditorStore } from '@finos/legend-studio';
+import { LambdaEditorState, TAB_SIZE } from '@finos/legend-studio';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   buildSourceInformationSourceId,
-  LambdaEditorState,
   LAMBDA_PIPE,
   ParserError,
   RawLambda,
-  TAB_SIZE,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent } from '@finos/legend-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';

@@ -36,12 +36,11 @@ import type { LambdaEditorState } from '../../stores/editor-state/element-editor
 import type { DebouncedFunc, GeneratorFn } from '@finos/legend-shared';
 import { debounce } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../const';
-import type { EngineError } from '../../models/metamodels/pure/graphManager/action/EngineError';
-import { ParserError } from '../../models/metamodels/pure/graphManager/action/EngineError';
-import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '../application/ApplicationStoreProvider';
 import { useEditorStore } from '../editor/EditorStoreProvider';
+import type { EngineError, Type } from '@finos/legend-graph';
+import { ParserError } from '@finos/legend-graph';
 
 export type LambdaEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;

@@ -20,8 +20,8 @@ import type {
   VariableExpression,
   AbstractPropertyExpression,
   PureModel,
-} from '@finos/legend-studio';
-import { PRIMITIVE_TYPE } from '@finos/legend-studio';
+} from '@finos/legend-graph';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';

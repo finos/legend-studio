@@ -20,8 +20,10 @@ import { action, flowResult, makeAutoObservable } from 'mobx';
 import { ElementEditorState } from './ElementEditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { AssertionError, uuid } from '@finos/legend-shared';
-import { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import {
+  FileGenerationSpecification,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 
 export class ElementFileGenerationState {
   uuid = uuid();

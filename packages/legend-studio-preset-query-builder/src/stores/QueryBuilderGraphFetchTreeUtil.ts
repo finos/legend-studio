@@ -29,12 +29,12 @@ import type {
   GraphFetchTree,
   Type,
   RootGraphFetchTree,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import {
   PropertyExplicitReference,
   Class,
   PropertyGraphFetchTree,
-} from '@finos/legend-studio';
+} from '@finos/legend-graph';
 import type { QueryBuilderExplorerTreeNodeData } from './QueryBuilderExplorerState';
 import { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 

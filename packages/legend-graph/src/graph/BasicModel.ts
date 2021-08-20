@@ -44,7 +44,10 @@ import { PackageableRuntime } from '../models/metamodels/pure/packageableElement
 import { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
 import { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
-import { Unit, Measure } from '../models/metamodels/pure/packageableElements/domain/Measure';
+import {
+  Unit,
+  Measure,
+} from '../models/metamodels/pure/packageableElements/domain/Measure';
 import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
 import type { Section } from '../models/metamodels/pure/packageableElements/section/Section';
