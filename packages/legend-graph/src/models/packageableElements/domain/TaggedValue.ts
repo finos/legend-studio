@@ -19,7 +19,7 @@ import { hashArray, uuid } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../MetaModelConst';
 import type { Tag } from './Tag';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import type { TagReference } from './TagReference';
 import { TagExplicitReference } from './TagReference';
 

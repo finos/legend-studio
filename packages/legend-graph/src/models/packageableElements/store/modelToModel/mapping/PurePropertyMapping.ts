@@ -25,7 +25,7 @@ import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { SetImplementation } from '../../../mapping/SetImplementation';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
-import type { Stubable } from '../../../../Stubable';
+import type { Stubable } from '../../../../../helpers/Stubable';
 
 export class PurePropertyMapping
   extends PropertyMapping

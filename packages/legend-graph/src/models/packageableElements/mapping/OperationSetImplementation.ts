@@ -30,8 +30,8 @@ import { SetImplementation } from './SetImplementation';
 import type { SetImplementationContainer } from './SetImplementationContainer';
 import type { Mapping } from './Mapping';
 import type { Class } from '../domain/Class';
-import type { Stubable } from '../../Stubable';
-import { isStubArray } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
+import { isStubArray } from '../../../helpers/Stubable';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 

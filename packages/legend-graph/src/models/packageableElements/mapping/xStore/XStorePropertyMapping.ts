@@ -18,7 +18,7 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 import type { RawLambda } from '../../../rawValueSpecification/RawLambda';
-import type { Stubable } from '../../../Stubable';
+import type { Stubable } from '../../../../helpers/Stubable';
 import type { PropertyMappingVisitor } from '../PropertyMapping';
 import { PropertyMapping } from '../PropertyMapping';
 

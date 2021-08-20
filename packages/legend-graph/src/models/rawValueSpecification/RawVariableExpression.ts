@@ -20,7 +20,7 @@ import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../MetaModelConst';
 import type { Type } from '../packageableElements/domain/Type';
 import { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { Stubable } from '../Stubable';
+import type { Stubable } from '../../helpers/Stubable';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
 import { PackageableElementExplicitReference } from '../packageableElements/PackageableElementReference';
 import type { RawValueSpecificationVisitor } from './RawValueSpecification';

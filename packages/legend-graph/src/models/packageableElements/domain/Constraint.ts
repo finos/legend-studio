@@ -20,7 +20,7 @@ import { CORE_HASH_STRUCTURE } from '../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-shared';
 import { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Class } from './Class';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 
 export class Constraint implements Hashable, Stubable {
   uuid = uuid();

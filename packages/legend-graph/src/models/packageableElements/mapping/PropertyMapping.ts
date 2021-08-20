@@ -21,7 +21,7 @@ import { CORE_HASH_STRUCTURE } from '../../../MetaModelConst';
 import type { PropertyReference } from '../domain/PropertyReference';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';
 import type { SetImplementation } from './SetImplementation';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import type { PurePropertyMapping } from '../store/modelToModel/mapping/PurePropertyMapping';
 import type { FlatDataPropertyMapping } from '../store/flatData/mapping/FlatDataPropertyMapping';
 import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping';

@@ -23,7 +23,7 @@ import type {
 } from '../PackageableElementReference';
 import { PackageableElementExplicitReference } from '../PackageableElementReference';
 import type { Profile } from './Profile';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 import type { Stereotype } from './Stereotype';
 

@@ -23,8 +23,8 @@ import type { SetImplementation } from './SetImplementation';
 import type { AssociationImplementation } from './AssociationImplementation';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import { PackageableElement } from '../PackageableElement';
-import type { Stubable } from '../../Stubable';
-import { isStubArray } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
+import { isStubArray } from '../../../helpers/Stubable';
 import type { MappingTest } from './MappingTest';
 import type { MappingInclude } from './MappingInclude';
 

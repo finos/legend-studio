@@ -32,7 +32,7 @@ import type { AnnotatedElement } from './AnnotatedElement';
 import { GenericType } from './GenericType';
 import type { Class } from './Class';
 import type { Type } from './Type';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
 import type { GenericTypeReference } from './GenericTypeReference';
 import { GenericTypeExplicitReference } from './GenericTypeReference';

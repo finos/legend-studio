@@ -31,8 +31,8 @@ import type { Mapping, MappingElementLabel } from './Mapping';
 import type { Enumeration } from '../domain/Enumeration';
 import type { EnumValueMapping } from './EnumValueMapping';
 import type { Type } from '../domain/Type';
-import type { Stubable } from '../../Stubable';
-import { isStubArray } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
+import { isStubArray } from '../../../helpers/Stubable';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 import { InferableMappingElementIdExplicitValue } from './InferableMappingElementId';
 

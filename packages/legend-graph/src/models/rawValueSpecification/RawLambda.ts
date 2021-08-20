@@ -21,7 +21,7 @@ import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../MetaModelConst';
 import type { RawValueSpecificationVisitor } from './RawValueSpecification';
 import { RawValueSpecification } from './RawValueSpecification';
-import type { Stubable } from '../Stubable';
+import type { Stubable } from '../../helpers/Stubable';
 
 export class RawLambda
   extends RawValueSpecification

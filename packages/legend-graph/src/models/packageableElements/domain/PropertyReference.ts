@@ -22,7 +22,7 @@ import type {
   PackageableElementImplicitReference,
 } from '../PackageableElementReference';
 import { PackageableElementExplicitReference } from '../PackageableElementReference';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 import type { AbstractProperty } from './AbstractProperty';
 import type { Class } from './Class';

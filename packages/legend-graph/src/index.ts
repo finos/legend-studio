@@ -28,7 +28,7 @@ export { BasicModel } from './graph/BasicModel';
 export { PureModel } from './graph/PureModel';
 export * from './graph/PureGraphExtension';
 
-export * from './models/Stubable'; // TODO: to be removed
+export * from './helpers/Stubable'; // TODO: to be removed
 export * from './models/packageableElements/PackageableElement';
 export * from './models/packageableElements/PackageableElementReference';
 export { Multiplicity } from './models/packageableElements/domain/Multiplicity';

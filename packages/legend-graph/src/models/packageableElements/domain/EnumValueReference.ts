@@ -22,7 +22,7 @@ import type {
 import { PackageableElementExplicitReference } from '../PackageableElementReference';
 import type { Enumeration } from './Enumeration';
 import type { Enum } from './Enum';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 
 export abstract class EnumValueReference

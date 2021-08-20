@@ -32,8 +32,8 @@ import type { Class } from './Class';
 import type { AbstractProperty, PropertyOwner } from './AbstractProperty';
 import type { AnnotatedElement } from './AnnotatedElement';
 import type { TaggedValue } from './TaggedValue';
-import type { Stubable } from '../../Stubable';
-import { isStubArray } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
+import { isStubArray } from '../../../helpers/Stubable';
 import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';
 

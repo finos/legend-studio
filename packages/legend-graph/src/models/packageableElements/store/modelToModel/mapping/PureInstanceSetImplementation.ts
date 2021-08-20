@@ -22,8 +22,8 @@ import type { Class } from '../../../domain/Class';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { PurePropertyMapping } from './PurePropertyMapping';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
-import type { Stubable } from '../../../../Stubable';
-import { isStubArray } from '../../../../Stubable';
+import type { Stubable } from '../../../../../helpers/Stubable';
+import { isStubArray } from '../../../../../helpers/Stubable';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
 import type {
   PackageableElementReference,

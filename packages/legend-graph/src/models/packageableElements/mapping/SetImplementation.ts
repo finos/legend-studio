@@ -23,7 +23,7 @@ import type { PackageableElementReference } from '../PackageableElementReference
 import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation';
 import type { Class } from '../domain/Class';
 import type { Mapping, MappingElementLabel } from './Mapping';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import type { OperationSetImplementation } from './OperationSetImplementation';
 import type { PureInstanceSetImplementation } from '../store/modelToModel/mapping/PureInstanceSetImplementation';
 import type { FlatDataInstanceSetImplementation } from '../store/flatData/mapping/FlatDataInstanceSetImplementation';

@@ -27,8 +27,8 @@ import type { PackageableElementVisitor } from '../PackageableElement';
 import { PackageableElement } from '../PackageableElement';
 import type { Stereotype } from './Stereotype';
 import type { Tag } from './Tag';
-import type { Stubable } from '../../Stubable';
-import { isStubArray } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
+import { isStubArray } from '../../../helpers/Stubable';
 
 export class Profile extends PackageableElement implements Hashable, Stubable {
   stereotypes: Stereotype[] = [];

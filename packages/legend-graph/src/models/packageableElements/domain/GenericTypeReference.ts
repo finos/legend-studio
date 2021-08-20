@@ -20,7 +20,7 @@ import type {
   PackageableElementImplicitReference,
 } from '../PackageableElementReference';
 import { PackageableElementExplicitReference } from '../PackageableElementReference';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 import type { GenericType } from './GenericType';
 import type { Type } from './Type';

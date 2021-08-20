@@ -18,7 +18,7 @@ import { observable, action, computed, makeObservable } from 'mobx';
 import type { Clazz } from '@finos/legend-shared';
 import { guaranteeType, uuid } from '@finos/legend-shared';
 import type { Type } from './Type';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 
 export class GenericType implements Stubable {
   uuid = uuid();

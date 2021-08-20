@@ -27,7 +27,7 @@ import {
   ELEMENT_PATH_DELIMITER,
 } from '../../MetaModelConst';
 import type { Package } from './domain/Package';
-import type { Stubable } from '../Stubable';
+import type { Stubable } from '../../helpers/Stubable';
 import type { Profile } from './domain/Profile';
 import type { Enumeration } from './domain/Enumeration';
 import type { Class } from './domain/Class';

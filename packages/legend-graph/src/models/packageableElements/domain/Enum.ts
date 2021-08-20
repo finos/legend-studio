@@ -27,7 +27,7 @@ import type { Hashable } from '@finos/legend-shared';
 import type { Enumeration } from './Enumeration';
 import type { TaggedValue } from './TaggedValue';
 import type { AnnotatedElement } from './AnnotatedElement';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
 
 export class Enum implements AnnotatedElement, Hashable, Stubable {

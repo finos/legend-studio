@@ -17,7 +17,7 @@
 import type { Hashable } from '@finos/legend-shared';
 import type { GenericTypeReference } from './GenericTypeReference';
 import type { Multiplicity } from './Multiplicity';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import type { Class } from './Class';
 import type { Association } from './Association';
 

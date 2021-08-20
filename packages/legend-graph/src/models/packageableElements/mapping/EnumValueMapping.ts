@@ -19,7 +19,7 @@ import { uuid, isNumber, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE, PRIMITIVE_TYPE } from '../../../MetaModelConst';
 import type { Hashable } from '@finos/legend-shared';
 import { Enum } from '../domain/Enum';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import { Type } from '../domain/Type';
 import { Enumeration } from '../domain/Enumeration';
 import type { EnumValueReference } from '../domain/EnumValueReference';

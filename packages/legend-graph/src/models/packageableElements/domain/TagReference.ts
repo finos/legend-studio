@@ -24,7 +24,7 @@ import type {
 import { PackageableElementExplicitReference } from '../PackageableElementReference';
 import type { Profile } from './Profile';
 import type { Tag } from './Tag';
-import type { Stubable } from '../../Stubable';
+import type { Stubable } from '../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 
 export abstract class TagReference
