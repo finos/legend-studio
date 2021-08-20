@@ -29,38 +29,38 @@ export { PureModel } from './graph/PureModel';
 export * from './graph/PureGraphExtension';
 
 export * from './helpers/Stubable'; // TODO: to be removed
-export * from './models/packageableElements/PackageableElement';
-export * from './models/packageableElements/PackageableElementReference';
-export { Multiplicity } from './models/packageableElements/domain/Multiplicity';
-export { Type } from './models/packageableElements/domain/Type';
-export { PrimitiveType } from './models/packageableElements/domain/PrimitiveType';
-export { GenericTypeExplicitReference } from './models/packageableElements/domain/GenericTypeReference';
-export { GenericType } from './models/packageableElements/domain/GenericType';
+export * from './models/metamodels/pure/packageableElements/PackageableElement';
+export * from './models/metamodels/pure/packageableElements/PackageableElementReference';
+export { Multiplicity } from './models/metamodels/pure/packageableElements/domain/Multiplicity';
+export { Type } from './models/metamodels/pure/packageableElements/domain/Type';
+export { PrimitiveType } from './models/metamodels/pure/packageableElements/domain/PrimitiveType';
+export { GenericTypeExplicitReference } from './models/metamodels/pure/packageableElements/domain/GenericTypeReference';
+export { GenericType } from './models/metamodels/pure/packageableElements/domain/GenericType';
 export {
   Class,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from './models/packageableElements/domain/Class';
-export { Enumeration } from './models/packageableElements/domain/Enumeration';
-export { Enum } from './models/packageableElements/domain/Enum';
-export * from './models/packageableElements/domain/EnumValueReference';
-export type { AbstractProperty } from './models/packageableElements/domain/AbstractProperty';
-export { DerivedProperty } from './models/packageableElements/domain/DerivedProperty';
-export { Property } from './models/packageableElements/domain/Property';
-export { RawLambda } from './models/rawValueSpecification/RawLambda';
-export { INTERNAL__UnknownValueSpecification } from './models/valueSpecification/INTERNAL__UnknownValueSpecification';
-export { VariableExpression } from './models/valueSpecification/VariableExpression';
+} from './models/metamodels/pure/packageableElements/domain/Class';
+export { Enumeration } from './models/metamodels/pure/packageableElements/domain/Enumeration';
+export { Enum } from './models/metamodels/pure/packageableElements/domain/Enum';
+export * from './models/metamodels/pure/packageableElements/domain/EnumValueReference';
+export type { AbstractProperty } from './models/metamodels/pure/packageableElements/domain/AbstractProperty';
+export { DerivedProperty } from './models/metamodels/pure/packageableElements/domain/DerivedProperty';
+export { Property } from './models/metamodels/pure/packageableElements/domain/Property';
+export { RawLambda } from './models/metamodels/pure/rawValueSpecification/RawLambda';
+export { INTERNAL__UnknownValueSpecification } from './models/metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
+export { VariableExpression } from './models/metamodels/pure/valueSpecification/VariableExpression';
 export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   FunctionExpression,
-} from './models/valueSpecification/SimpleFunctionExpression';
+} from './models/metamodels/pure/valueSpecification/SimpleFunctionExpression';
 export {
   FunctionType,
   LambdaFunction,
   LambdaFunctionInstanceValue,
-} from './models/valueSpecification/LambdaFunction';
-export { AlloySerializationConfigInstanceValue } from './models/valueSpecification/AlloySerializationConfig';
+} from './models/metamodels/pure/valueSpecification/LambdaFunction';
+export { AlloySerializationConfigInstanceValue } from './models/metamodels/pure/valueSpecification/AlloySerializationConfig';
 export {
   EnumValueInstanceValue,
   MappingInstanceValue,
@@ -70,10 +70,10 @@ export {
   InstanceValue,
   CollectionInstanceValue,
   PrimitiveInstanceValue,
-} from './models/valueSpecification/InstanceValue';
-export { ValueSpecification } from './models/valueSpecification/ValueSpecification';
-export type { ValueSpecificationVisitor } from './models/valueSpecification/ValueSpecification';
-export type { RawExecutionPlan } from './models/executionPlan/ExecutionPlan';
+} from './models/metamodels/pure/valueSpecification/InstanceValue';
+export { ValueSpecification } from './models/metamodels/pure/valueSpecification/ValueSpecification';
+export type { ValueSpecificationVisitor } from './models/metamodels/pure/valueSpecification/ValueSpecification';
+export type { RawExecutionPlan } from './models/metamodels/pure/executionPlan/ExecutionPlan';
 export {
   GraphFetchTree,
   PropertyGraphFetchTree,
@@ -81,8 +81,8 @@ export {
   GraphFetchTreeInstanceValue,
   PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
-} from './models/valueSpecification/GraphFetchTree';
-export * from './models/packageableElements/domain/PropertyReference';
+} from './models/metamodels/pure/valueSpecification/GraphFetchTree';
+export * from './models/metamodels/pure/packageableElements/domain/PropertyReference';
 
 export * from './helpers/DiagramHelper';
 export * from './helpers/DatabaseHelper';

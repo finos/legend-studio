@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-export { Service } from './models/packageableElements/service/Service';
+export { Service } from './models/metamodels/pure/packageableElements/service/Service';
 export {
   PureExecution,
   PureSingleExecution,
   PureMultiExecution,
-} from './models/packageableElements/service/ServiceExecution';
+} from './models/metamodels/pure/packageableElements/service/ServiceExecution';

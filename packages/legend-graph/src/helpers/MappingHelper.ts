@@ -15,12 +15,12 @@
  */
 
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { EnumerationMapping } from '../models/packageableElements/mapping/EnumerationMapping';
-import type { SetImplementation } from '../models/packageableElements/mapping/SetImplementation';
-import type { Class } from '../models/packageableElements/domain/Class';
-import type { Enumeration } from '../models/packageableElements/domain/Enumeration';
-import type { Mapping } from '../models/packageableElements/mapping/Mapping';
-import { AggregationAwareSetImplementation } from '../models/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+import type { EnumerationMapping } from '../models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
+import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
+import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
+import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
+import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
+import { AggregationAwareSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 
 export const extractClassMappingsFromAggregationAwareClassMappings = (
   mapping: Mapping,

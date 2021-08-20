@@ -15,8 +15,8 @@
  */
 
 import type { PureModel } from '../graph/PureModel';
-import type { ClassView } from '../models/packageableElements/diagram/ClassView';
-import type { Diagram } from '../models/packageableElements/diagram/Diagram';
+import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/ClassView';
+import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
 
 export const getClassView = (
   diagram: Diagram,

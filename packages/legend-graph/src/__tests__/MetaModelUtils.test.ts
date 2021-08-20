@@ -30,13 +30,13 @@ import {
   unitTest,
 } from '@finos/legend-shared';
 import { ROOT_PACKAGE_NAME } from '../MetaModelConst';
-import { Package } from '../models/packageableElements/domain/Package';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import {
   ObjectInputData,
   ObjectInputType,
-} from '../models/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import { Class } from '../models/packageableElements/domain/Class';
-import { PackageableElementExplicitReference } from '../models/packageableElements/PackageableElementReference';
+} from '../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
+import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
+import { PackageableElementExplicitReference } from '../models/metamodels/pure/packageableElements/PackageableElementReference';
 
 test(unitTest('Create valid and invalid packages on a root package'), () => {
   const _root = new Package(ROOT_PACKAGE_NAME.MAIN);

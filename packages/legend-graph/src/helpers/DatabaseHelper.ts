@@ -15,10 +15,10 @@
  */
 
 import { guaranteeType } from '@finos/legend-shared';
-import { Database } from '../models/packageableElements/store/relational/model/Database';
-import type { Filter } from '../models/packageableElements/store/relational/model/Filter';
-import type { Schema } from '../models/packageableElements/store/relational/model/Schema';
-import type { Table } from '../models/packageableElements/store/relational/model/Table';
+import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
+import type { Filter } from '../models/metamodels/pure/packageableElements/store/relational/model/Filter';
+import type { Schema } from '../models/metamodels/pure/packageableElements/store/relational/model/Schema';
+import type { Table } from '../models/metamodels/pure/packageableElements/store/relational/model/Table';
 
 const collectIncludedDBs = (
   results: Set<Database>,

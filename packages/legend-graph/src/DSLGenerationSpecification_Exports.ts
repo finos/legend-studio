@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export { ModelGenerationSpecification } from './models/packageableElements/generationSpecification/ModelGenerationSpecification';
+export { ModelGenerationSpecification } from './models/metamodels/pure/packageableElements/generationSpecification/ModelGenerationSpecification';

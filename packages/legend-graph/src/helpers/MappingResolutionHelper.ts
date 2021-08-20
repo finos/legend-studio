@@ -15,13 +15,13 @@
  */
 
 import { findLast } from '@finos/legend-shared';
-import type { SetImplementation } from '../models/packageableElements/mapping/SetImplementation';
-import { OperationSetImplementation } from '../models/packageableElements/mapping/OperationSetImplementation';
-import type { InstanceSetImplementation } from '../models/packageableElements/mapping/InstanceSetImplementation';
-import type { PropertyMapping } from '../models/packageableElements/mapping/PropertyMapping';
-import type { Property } from '../models/packageableElements/domain/Property';
-import type { Mapping } from '../models/packageableElements/mapping/Mapping';
-import type { Class } from '../models/packageableElements/domain/Class';
+import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
+import { OperationSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+import type { InstanceSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
+import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping';
+import type { Property } from '../models/metamodels/pure/packageableElements/domain/Property';
+import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
+import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { getClassMappingsByClass } from './MappingHelper';
 
 /**

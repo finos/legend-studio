@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export { FlatData } from './models/packageableElements/store/flatData/model/FlatData';
-export { FlatDataSection } from './models/packageableElements/store/flatData/model/FlatDataSection';
-export * from './models/packageableElements/store/flatData/model/FlatDataSectionReference';
+export { FlatData } from './models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
+export { FlatDataSection } from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
+export * from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSectionReference';

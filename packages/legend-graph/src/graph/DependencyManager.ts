@@ -22,28 +22,28 @@ import {
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
-import type { PackageableElement } from '../models/packageableElements/PackageableElement';
-import type { Enumeration } from '../models/packageableElements/domain/Enumeration';
-import type { Type } from '../models/packageableElements/domain/Type';
-import type { Class } from '../models/packageableElements/domain/Class';
-import type { Mapping } from '../models/packageableElements/mapping/Mapping';
-import type { Profile } from '../models/packageableElements/domain/Profile';
-import { Package } from '../models/packageableElements/domain/Package';
-import type { Diagram } from '../models/packageableElements/diagram/Diagram';
-import type { ConcreteFunctionDefinition } from '../models/packageableElements/domain/ConcreteFunctionDefinition';
-import type { Store } from '../models/packageableElements/store/Store';
-import type { Association } from '../models/packageableElements/domain/Association';
-import type { Service } from '../models/packageableElements/service/Service';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
+import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
+import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
+import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
+import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
+import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
+import type { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
+import type { Store } from '../models/metamodels/pure/packageableElements/store/Store';
+import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
+import type { Service } from '../models/metamodels/pure/packageableElements/service/Service';
 import { BasicModel } from '../graph/BasicModel';
-import type { PackageableRuntime } from '../models/packageableElements/runtime/PackageableRuntime';
-import type { PackageableConnection } from '../models/packageableElements/connection/PackageableConnection';
-import type { FileGenerationSpecification } from '../models/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationSpecification } from '../models/packageableElements/generationSpecification/GenerationSpecification';
+import type { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
+import type { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
+import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
+import type { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
 import type {
   Measure,
   Unit,
-} from '../models/packageableElements/domain/Measure';
-import type { SectionIndex } from '../models/packageableElements/section/SectionIndex';
+} from '../models/metamodels/pure/packageableElements/domain/Measure';
+import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
 import type { Entity } from '@finos/legend-model-storage';
 
 class DependencyModel extends BasicModel {

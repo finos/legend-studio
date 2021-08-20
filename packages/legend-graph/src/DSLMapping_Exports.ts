@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-export { Store } from './models/packageableElements/store/Store';
-export { Mapping } from './models/packageableElements/mapping/Mapping';
+export { Store } from './models/metamodels/pure/packageableElements/store/Store';
+export { Mapping } from './models/metamodels/pure/packageableElements/mapping/Mapping';
 export {
   Runtime,
   EngineRuntime,
   RuntimePointer,
-} from './models/packageableElements/runtime/Runtime';
-export { PackageableRuntime } from './models/packageableElements/runtime/PackageableRuntime';
-export { SetImplementation } from './models/packageableElements/mapping/SetImplementation';
-export { PureInstanceSetImplementation } from './models/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-export { OperationSetImplementation } from './models/packageableElements/mapping/OperationSetImplementation';
-export { PropertyMapping } from './models/packageableElements/mapping/PropertyMapping';
+} from './models/metamodels/pure/packageableElements/runtime/Runtime';
+export { PackageableRuntime } from './models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
+export { SetImplementation } from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
+export { PureInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
+export { OperationSetImplementation } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+export { PropertyMapping } from './models/metamodels/pure/packageableElements/mapping/PropertyMapping';

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-export { Other } from './models/packageableElements/store/relational/model/RelationalDataType';
-export { Database } from './models/packageableElements/store/relational/model/Database';
-export { Table } from './models/packageableElements/store/relational/model/Table';
-export { Column } from './models/packageableElements/store/relational/model/Column';
-export * from './models/packageableElements/store/relational/model/ViewReference';
-export * from './models/packageableElements/store/relational/model/TableReference';
-export * from './models/packageableElements/store/relational/model/ColumnReference';
-export type { Mapper } from './models/packageableElements/store/relational/connection/postprocessor/Mapper';
-export { PostProcessor } from './models/packageableElements/store/relational/connection/postprocessor/PostProcessor';
-export { DatasourceSpecification } from './models/packageableElements/store/relational/connection/DatasourceSpecification';
-export { AuthenticationStrategy } from './models/packageableElements/store/relational/connection/AuthenticationStrategy';
-export { Milestoning } from './models/packageableElements/store/relational/model/milestoning/Milestoning';
+export { Other } from './models/metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
+export { Database } from './models/metamodels/pure/packageableElements/store/relational/model/Database';
+export { Table } from './models/metamodels/pure/packageableElements/store/relational/model/Table';
+export { Column } from './models/metamodels/pure/packageableElements/store/relational/model/Column';
+export * from './models/metamodels/pure/packageableElements/store/relational/model/ViewReference';
+export * from './models/metamodels/pure/packageableElements/store/relational/model/TableReference';
+export * from './models/metamodels/pure/packageableElements/store/relational/model/ColumnReference';
+export type { Mapper } from './models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/Mapper';
+export { PostProcessor } from './models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor';
+export { DatasourceSpecification } from './models/metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
+export { AuthenticationStrategy } from './models/metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
+export { Milestoning } from './models/metamodels/pure/packageableElements/store/relational/model/milestoning/Milestoning';

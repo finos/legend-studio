@@ -28,33 +28,33 @@ import {
   returnUndefOnError,
   getClass,
 } from '@finos/legend-shared';
-import { PrimitiveType } from '../models/packageableElements/domain/PrimitiveType';
-import { Enumeration } from '../models/packageableElements/domain/Enumeration';
-import { Multiplicity } from '../models/packageableElements/domain/Multiplicity';
-import { Association } from '../models/packageableElements/domain/Association';
-import { Package } from '../models/packageableElements/domain/Package';
-import { Type } from '../models/packageableElements/domain/Type';
-import { Class } from '../models/packageableElements/domain/Class';
-import { Mapping } from '../models/packageableElements/mapping/Mapping';
-import { Profile } from '../models/packageableElements/domain/Profile';
-import { Diagram } from '../models/packageableElements/diagram/Diagram';
-import type { Stereotype } from '../models/packageableElements/domain/Stereotype';
-import type { Tag } from '../models/packageableElements/domain/Tag';
-import type { PackageableElement } from '../models/packageableElements/PackageableElement';
-import { Store } from '../models/packageableElements/store/Store';
+import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
+import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
+import { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity';
+import { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
+import { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
+import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
+import { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
+import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
+import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
+import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
+import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import { Store } from '../models/metamodels/pure/packageableElements/store/Store';
 import { DependencyManager } from '../graph/DependencyManager';
-import { ConcreteFunctionDefinition } from '../models/packageableElements/domain/ConcreteFunctionDefinition';
-import { Service } from '../models/packageableElements/service/Service';
+import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
+import { Service } from '../models/metamodels/pure/packageableElements/service/Service';
 import { BasicModel } from './BasicModel';
-import { FlatData } from '../models/packageableElements/store/flatData/model/FlatData';
-import { Database } from '../models/packageableElements/store/relational/model/Database';
-import { PackageableConnection } from '../models/packageableElements/connection/PackageableConnection';
-import { PackageableRuntime } from '../models/packageableElements/runtime/PackageableRuntime';
-import { FileGenerationSpecification } from '../models/packageableElements/fileGeneration/FileGenerationSpecification';
-import { ModelStore } from '../models/packageableElements/store/modelToModel/model/ModelStore';
-import { GenerationSpecification } from '../models/packageableElements/generationSpecification/GenerationSpecification';
-import { Measure, Unit } from '../models/packageableElements/domain/Measure';
-import { ServiceStore } from '../models/packageableElements/store/relational/model/ServiceStore';
+import { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
+import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
+import { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
+import { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
+import { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
+import { ModelStore } from '../models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
+import { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
+import { Measure, Unit } from '../models/metamodels/pure/packageableElements/domain/Measure';
+import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import { cleanUpDeadReferencesInDiagram } from '../helpers/DiagramHelper';
 
 /**
