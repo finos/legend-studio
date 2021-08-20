@@ -33,6 +33,7 @@ export default (env, arg) => {
     indexHtmlPath: resolve(__dirname, './src/index.html'),
     appConfig,
     babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
+    enableReactFastRefresh: true,
   });
   const config = {
     ...baseConfig,

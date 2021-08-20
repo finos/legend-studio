@@ -307,6 +307,7 @@ export const getWebAppBaseWebpackConfig = (
      * For that reason, we always default to include `/@finos\/legend-studio/` in the list of include patterns
      */
     extraBabelLoaderIncludePatterns = [],
+    enableReactFastRefresh,
   },
 ) => {
   if (!dirname) {
@@ -393,7 +394,9 @@ export const getWebAppBaseWebpackConfig = (
       : baseConfig.optimization,
     plugins: [
       ...baseConfig.plugins,
-      isEnvDevelopment && new ReactRefreshWebpackPlugin(),
+      isEnvDevelopment &&
+        enableReactFastRefresh &&
+        new ReactRefreshWebpackPlugin(),
       new MiniCssExtractPlugin({
         filename: `${staticPath}/${
           isEnvDevelopment ? '[name].css' : '[name].[contenthash:8].css'

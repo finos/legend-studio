@@ -30,7 +30,7 @@ import { flowResult } from 'mobx';
 import { noop } from '@finos/legend-shared';
 
 /**
- * NOTE: Query builder is by right its own mini-app so we have it hosted in a full-screen modal dialog
+ * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
  * See https://material.io/components/dialogs#full-screen-dialog
  */
 export const QueryBuilderDialog = observer(() => {
