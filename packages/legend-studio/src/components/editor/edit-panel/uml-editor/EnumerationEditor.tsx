@@ -16,7 +16,6 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
@@ -56,6 +55,7 @@ import { TaggedValue } from '../../../../models/metamodels/pure/model/packageabl
 import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
 import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const EnumBasicEditor = observer(
   (props: {

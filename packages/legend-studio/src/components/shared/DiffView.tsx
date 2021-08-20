@@ -28,15 +28,15 @@ import {
   disableEditorHotKeys,
   baseTextEditorSettings,
 } from '@finos/legend-application-components';
-import { useEditorStore } from '../../stores/EditorStore';
 import {
   isString,
   losslessStringify,
   tryToFormatJSONString,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 export const TextDiffView = observer(
   (props: { language: EDITOR_LANGUAGE; from?: string; to?: string }) => {

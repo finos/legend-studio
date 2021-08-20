@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
 import { getElementIcon } from '../../../shared/Icon';
 import { useDrop } from 'react-dnd';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   getTextContent,
   getEditorLanguageFromFormat,
@@ -71,7 +70,6 @@ import {
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../../const';
 import type { GenerationProperty } from '../../../../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
 import { GenerationPropertyItemType } from '../../../../models/metamodels/pure/graphManager/action/generation/GenerationConfigurationDescription';
@@ -85,6 +83,8 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

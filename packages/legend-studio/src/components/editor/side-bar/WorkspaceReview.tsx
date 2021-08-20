@@ -16,7 +16,6 @@
 
 import { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   FaInfoCircle,
   FaTimes,
@@ -37,13 +36,14 @@ import { FiGitMerge } from 'react-icons/fi';
 import {
   ActionAlertType,
   ActionAlertActionType,
-  useApplicationStore,
 } from '../../../stores/ApplicationStore';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();

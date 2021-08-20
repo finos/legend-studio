@@ -18,10 +18,7 @@ import type { RenderResult } from '@testing-library/react';
 import { render, fireEvent, waitFor, getByText } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
-import {
-  ApplicationStoreProvider,
-  ApplicationStore,
-} from '../stores/ApplicationStore';
+import { ApplicationStore } from '../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../const';
 import { ELEMENT_PATH_DELIMITER } from '../models/MetaModelConst';
 import { EditorStore } from '../stores/EditorStore';
@@ -51,6 +48,7 @@ import type {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
+import { ApplicationStoreProvider } from './application/ApplicationStoreProvider';
 
 export const SDLC_TestData = {
   project: {
@@ -143,7 +141,7 @@ export const getMockedApplicationStore = (
     new WebApplicationNavigator(createMemoryHistory()),
     new Log(),
   );
-  const MockedApplicationStore = require('../stores/ApplicationStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedApplicationStore = require('./application/ApplicationStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedApplicationStore.useApplicationStore = jest.fn();
   MockedApplicationStore.useApplicationStore.mockReturnValue(
     mockedApplicationStore,
@@ -155,7 +153,7 @@ export const getMockedWebApplicationNavigator = (
   history = createMemoryHistory(),
 ): WebApplicationNavigator => {
   const mock = new WebApplicationNavigator(history);
-  const MockWebApplicationNavigator = require('../stores/application/WebApplicationNavigator'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockWebApplicationNavigator = require('./application/WebApplicationNavigatorProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockWebApplicationNavigator.useWebApplicationNavigator = jest.fn();
   MockWebApplicationNavigator.useWebApplicationNavigator.mockReturnValue(mock);
   return mock;
@@ -167,7 +165,7 @@ export const getMockedEditorStore = (
   const mockedEditorStore = new EditorStore(
     applicationStore ?? getMockedApplicationStore(),
   );
-  const MockedEditorStore = require('../stores/EditorStore'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedEditorStore = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStore.useEditorStore = jest.fn();
   MockedEditorStore.useEditorStore.mockReturnValue(mockedEditorStore);
   return mockedEditorStore;

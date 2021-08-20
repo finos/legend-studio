@@ -26,9 +26,7 @@ import type {
   MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { getMappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import Dialog from '@material-ui/core/Dialog';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
@@ -38,6 +36,8 @@ import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../models/MetaModelConst'
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSourceFilterText = (

@@ -39,7 +39,7 @@ import {
   generateSetupRoute,
   URL_PATH_PLACEHOLDER,
 } from '../../stores/LegendStudioRouter';
-import { WebApplicationNavigatorProvider } from '../../stores/application/WebApplicationNavigator';
+import { WebApplicationNavigatorProvider } from '../application/WebApplicationNavigatorProvider';
 
 let applicationStore: ApplicationStore;
 

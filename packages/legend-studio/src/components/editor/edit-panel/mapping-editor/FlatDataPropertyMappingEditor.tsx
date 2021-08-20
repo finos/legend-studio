@@ -27,7 +27,6 @@ import type {
   FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   clsx,
   CustomSelectorInput,
@@ -45,6 +44,7 @@ import { Enumeration } from '../../../../models/metamodels/pure/model/packageabl
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { FlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import { getEnumerationMappingsByEnumeration } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -25,11 +24,12 @@ import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/Entit
 import { FaInfoCircle, FaDownload } from 'react-icons/fa';
 import { MdRefresh } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const LocalChanges = observer(() => {
   const editorStore = useEditorStore();

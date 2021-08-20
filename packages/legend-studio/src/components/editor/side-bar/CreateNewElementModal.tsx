@@ -29,7 +29,6 @@ import {
 import { CustomSelectorInput } from '@finos/legend-application-components';
 import { ELEMENT_PATH_DELIMITER } from '../../../models/MetaModelConst';
 import type { EditorStore } from '../../../stores/EditorStore';
-import { useEditorStore } from '../../../stores/EditorStore';
 import { compareLabelFn, prettyCONSTName } from '@finos/legend-shared';
 import type { FileGenerationTypeOption } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
@@ -38,6 +37,7 @@ import type { Mapping } from '../../../models/metamodels/pure/model/packageableE
 import type { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
 import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import { useEditorStore } from '../EditorStoreProvider';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,

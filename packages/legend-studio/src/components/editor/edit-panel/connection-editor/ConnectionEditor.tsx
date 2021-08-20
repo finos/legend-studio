@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { FlatDataConnectionEditor } from './FlatDataConnectionEditor';
 import { RelationalDatabaseConnectionEditor } from './RelationalDatabaseConnectionEditor';
 import {
@@ -29,6 +28,7 @@ import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedEl
 import type { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { FaLock } from 'react-icons/fa';
 import { CustomSelectorInput } from '@finos/legend-application-components';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const ModelConnectionEditor = observer(
   (props: {

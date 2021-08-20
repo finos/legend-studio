@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
 import {
   action,
   computed,
@@ -23,7 +22,6 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { useLocalObservable } from 'mobx-react-lite';
 import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -41,8 +39,10 @@ import type {
   RawLambda,
   Service,
   PackageableElement,
+  EditorStore,
 } from '@finos/legend-studio';
 import {
+  APPLICATION_LOG_EVENT,
   toLightQuery,
   Query,
   PureExecution,
@@ -52,8 +52,6 @@ import {
   RuntimePointer,
   ProjectData,
   TAB_SIZE,
-  EditorStore,
-  useApplicationStore,
   ProjectVersionEntities,
   DependencyManager,
 } from '@finos/legend-studio';
@@ -568,6 +566,14 @@ export class QueryStore {
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
+      // eslint-disable-next-line no-process-env
+      if (process.env.NODE_ENV === 'development') {
+        this.editorStore.applicationStore.log.info(
+          LogEvent.create(APPLICATION_LOG_EVENT.DEVELOPMENT_ISSUE),
+          `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall...`,
+        );
+        return;
+      }
       this.editorStore.applicationStore.notifyIllegalState(
         `Query store is already initialized`,
       );
@@ -720,27 +726,3 @@ export class QueryStore {
     );
   }
 }
-
-const QueryStoreContext = createContext<QueryStore | undefined>(undefined);
-
-export const QueryStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const applicationStore = useApplicationStore();
-  const store = useLocalObservable(
-    () => new QueryStore(new EditorStore(applicationStore)),
-  );
-  return (
-    <QueryStoreContext.Provider value={store}>
-      {children}
-    </QueryStoreContext.Provider>
-  );
-};
-
-export const useQueryStore = (): QueryStore =>
-  guaranteeNonNullable(
-    useContext(QueryStoreContext),
-    'useQueryStore() hook must be used inside QueryBuilderStore context provider',
-  );

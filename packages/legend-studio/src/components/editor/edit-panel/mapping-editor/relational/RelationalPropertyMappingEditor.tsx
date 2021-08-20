@@ -27,7 +27,6 @@ import {
 } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import type { MappingElement } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../../stores/EditorStore';
 import {
   clsx,
   CustomSelectorInput,
@@ -45,6 +44,7 @@ import {
 } from './TableOrViewSourceTree';
 import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { getEnumerationMappingsByEnumeration } from '../../../../../models/metamodels/pure/helpers/MappingHelper';
+import { useEditorStore } from '../../../EditorStoreProvider';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { InstanceSetImplementationEditor } from './InstanceSetImplementationEditor';
 import { OperationSetImplementationEditor } from './OperationSetImplementationEditor';
 import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
@@ -37,6 +36,7 @@ import type { FlatDataInstanceSetImplementation } from '../../../../models/metam
 import type { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { nominateRootSetImplementation } from '../../../../models/metamodels/pure/helpers/MappingResolutionHelper';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 export const OperatorSelector = observer(
   (props: {

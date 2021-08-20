@@ -16,7 +16,6 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import type {
   MappingExplorerDropTarget,
   ElementDragSource,
@@ -56,13 +55,14 @@ import {
 import { CORE_TEST_ID } from '../../../../const';
 import { getElementIcon } from '../../../shared/Icon';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
 import { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 export const MappingExplorerContextMenu = observer(
   (

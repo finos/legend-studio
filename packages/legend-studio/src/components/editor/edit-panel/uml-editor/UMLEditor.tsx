@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { UMLEditorState } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { ClassEditor } from './ClassEditor';
@@ -25,6 +24,7 @@ import { Class } from '../../../../models/metamodels/pure/model/packageableEleme
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
 import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 export const UMLEditor = observer(() => {
   const editorStore = useEditorStore();

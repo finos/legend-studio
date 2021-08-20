@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { toSentenceCase } from '@finos/legend-shared';
 import {
@@ -54,7 +53,6 @@ import { MappingExplorer } from './MappingExplorer';
 import { MappingTestEditor } from './MappingTestEditor';
 import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingTestsExplorer } from './MappingTestsExplorer';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../../const';
 import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
 import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
@@ -64,6 +62,8 @@ import { Association } from '../../../../models/metamodels/pure/model/packageabl
 import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;

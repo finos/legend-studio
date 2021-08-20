@@ -17,12 +17,12 @@
 import Dialog from '@material-ui/core/Dialog';
 import type { ActionAlertInfo } from '../../stores/ApplicationStore';
 import {
-  useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
 } from '../../stores/ApplicationStore';
 import { observer } from 'mobx-react-lite';
 import { noop } from '@finos/legend-shared';
+import { useApplicationStore } from './ApplicationStoreProvider';
 
 const getActionButtonClassName = (type: ActionAlertActionType): string => {
   switch (type) {

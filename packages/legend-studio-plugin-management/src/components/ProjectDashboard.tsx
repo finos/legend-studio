@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { useEffect, createContext, useContext } from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
+import { useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import {
   FaQuestionCircle,
   FaTimesCircle,
@@ -25,122 +25,17 @@ import {
   FaBan,
 } from 'react-icons/fa';
 import { PanelLoadingIndicator } from '@finos/legend-application-components';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { flowResult, makeAutoObservable } from 'mobx';
-import type { ApplicationStore } from '@finos/legend-studio';
+import { flowResult } from 'mobx';
 import {
   useApplicationStore,
   AppHeader,
   AppHeaderMenu,
 } from '@finos/legend-studio';
+import { Build, BuildStatus, ProjectType } from '@finos/legend-server-sdlc';
 import {
-  Build,
-  BuildStatus,
-  Project,
-  ProjectType,
-} from '@finos/legend-server-sdlc';
-
-class ProjectDashboardStore {
-  applicationStore: ApplicationStore;
-  projects: Map<string, Project> = new Map<string, Project>();
-  /**
-   * `undefined` when we are loading the build
-   * `null` when there are no builds available
-   */
-  currentBuildByProject: Map<string, Build | undefined | null> = new Map<
-    string,
-    Build | undefined | null
-  >();
-  isFetchingProjects = false;
-
-  constructor(applicationStore: ApplicationStore) {
-    makeAutoObservable(this, {
-      applicationStore: false,
-    });
-
-    this.applicationStore = applicationStore;
-  }
-
-  *fetchProjects(): GeneratorFn<void> {
-    this.isFetchingProjects = true;
-    try {
-      yield Promise.all([
-        this.fetchProjectByType(ProjectType.PRODUCTION),
-        this.fetchProjectByType(ProjectType.PROTOTYPE),
-      ]);
-    } catch (error: unknown) {
-      this.applicationStore.notifyError(error);
-    } finally {
-      this.isFetchingProjects = false;
-    }
-  }
-
-  *fetchProjectByType(projectType: ProjectType): GeneratorFn<void> {
-    const projects = (
-      (yield this.applicationStore.networkClientManager.sdlcClient.getProjects(
-        projectType,
-        false,
-        undefined,
-        undefined,
-      )) as PlainObject<Project>[]
-    ).map((project) => Project.serialization.fromJson(project));
-    projects.forEach((project) =>
-      this.projects.set(project.projectId, project),
-    );
-    projects.forEach((project) =>
-      this.currentBuildByProject.set(project.projectId, undefined),
-    );
-    yield Promise.all(
-      projects.map((project) => this.fetchProjectCurrentBuildStatus(project)),
-    );
-  }
-
-  *fetchProjectCurrentBuildStatus(project: Project): GeneratorFn<void> {
-    try {
-      const builds =
-        (yield this.applicationStore.networkClientManager.sdlcClient.getBuilds(
-          project.projectId,
-          undefined,
-          undefined,
-          undefined,
-          1,
-        )) as PlainObject<Build>[];
-      this.currentBuildByProject.set(
-        project.projectId,
-        builds.length !== 0 ? Build.serialization.fromJson(builds[0]) : null,
-      );
-    } catch (error: unknown) {
-      this.applicationStore.notifyError(error);
-    }
-  }
-}
-
-const ProjectDashboardStoreContext = createContext<
-  ProjectDashboardStore | undefined
->(undefined);
-
-const ProjectDashboardStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const applicationStore = useApplicationStore();
-  const store = useLocalObservable(
-    () => new ProjectDashboardStore(applicationStore),
-  );
-  return (
-    <ProjectDashboardStoreContext.Provider value={store}>
-      {children}
-    </ProjectDashboardStoreContext.Provider>
-  );
-};
-
-const useProjectDashboardStore = (): ProjectDashboardStore =>
-  guaranteeNonNullable(
-    useContext(ProjectDashboardStoreContext),
-    'useProjectDashboardStore() hook must be used inside ProjectDashboardStoreContext context provider',
-  );
+  ProjectDashboardStoreProvider,
+  useProjectDashboardStore,
+} from './ProjectDashboardStoreProvider';
 
 const renderBuildStatus = (data: Build): React.ReactElement => {
   switch (data.status) {

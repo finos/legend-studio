@@ -26,8 +26,8 @@ import {
   DIFF_VIEW_MODE,
 } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffView } from '../editor/edit-panel/diff-editor/EntityDiffView';
-import { useEditorStore } from '../../stores/EditorStore';
 import type { EditorState } from '../../stores/editor-state/EditorState';
+import { useEditorStore } from '../editor/EditorStoreProvider';
 
 export const ReviewPanelSplashScreen: React.FC = () => (
   <div className="review-panel__splash-screen"></div>

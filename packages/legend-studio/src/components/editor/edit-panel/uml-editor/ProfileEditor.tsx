@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   UMLEditorState,
@@ -27,6 +26,7 @@ import { CORE_TEST_ID } from '../../../../const';
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
 import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {

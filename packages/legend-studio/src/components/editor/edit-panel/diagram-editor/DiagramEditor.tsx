@@ -19,7 +19,6 @@ import { ClassFormEditor } from '../uml-editor/ClassEditor';
 import { useResizeDetector } from 'react-resize-detector';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { FaRegKeyboard } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
@@ -93,9 +92,10 @@ import {
   resolvePackagePathAndElementName,
 } from '../../../../models/MetaModelUtils';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 import { cleanUpDeadReferencesInDiagram } from '../../../../models/metamodels/pure/helpers/DiagramHelper';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {

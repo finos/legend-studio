@@ -29,7 +29,6 @@ import {
 } from '@finos/legend-studio';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
-import { QueryStoreProvider, useQueryStore } from '../../stores/QueryStore';
 import {
   CreateQueryLoader,
   ExistingQueryLoader,
@@ -41,6 +40,7 @@ import {
   PanelLoadingIndicator,
 } from '@finos/legend-application-components';
 import type { Log } from '@finos/legend-shared';
+import { QueryStoreProvider, useQueryStore } from '../QueryStoreProvider';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useQueryStore();

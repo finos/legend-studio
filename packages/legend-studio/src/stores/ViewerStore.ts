@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-import { useContext, createContext } from 'react';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import { useEditorStore } from './EditorStore';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { AssertionError } from '@finos/legend-shared';
-import {
-  LogEvent,
-  IllegalStateError,
-  guaranteeNonNullable,
-  ActionState,
-} from '@finos/legend-shared';
-import { useLocalObservable } from 'mobx-react-lite';
-import { EDITOR_MODE, TAB_SIZE } from './EditorConfig';
+import { LogEvent, IllegalStateError, ActionState } from '@finos/legend-shared';
+import { TAB_SIZE } from './EditorConfig';
 import type { ViewerPathParams } from './LegendStudioRouter';
 import {
   generateViewVersionRoute,
@@ -298,26 +290,3 @@ export class ViewerStore {
     }
   }
 }
-
-const ViewerStoreContext = createContext<ViewerStore | undefined>(undefined);
-
-export const ViewerStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const editorStore = useEditorStore();
-  editorStore.setMode(EDITOR_MODE.VIEWER);
-  const store = useLocalObservable(() => new ViewerStore(editorStore));
-  return (
-    <ViewerStoreContext.Provider value={store}>
-      {children}
-    </ViewerStoreContext.Provider>
-  );
-};
-
-export const useViewerStore = (): ViewerStore =>
-  guaranteeNonNullable(
-    useContext(ViewerStoreContext),
-    'useViewerStore() hook must be used inside ReviewStore context provider',
-  );

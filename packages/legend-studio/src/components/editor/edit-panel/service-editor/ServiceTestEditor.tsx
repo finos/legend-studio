@@ -53,12 +53,12 @@ import { MdRefresh, MdCompareArrows } from 'react-icons/md';
 import { LinearProgress } from '@material-ui/core';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import type { TestContainer } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const TestContainerContextMenu = observer(
   (

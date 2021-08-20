@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
 import {
   action,
   computed,
@@ -24,7 +23,6 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { useLocalObservable } from 'mobx-react-lite';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   ActionState,
@@ -44,7 +42,6 @@ import {
   ProjectData,
 } from '@finos/legend-studio';
 import type { QueryStore } from './QueryStore';
-import { useQueryStore } from './QueryStore';
 
 export abstract class QuerySetupState {
   queryStore: QueryStore;
@@ -293,27 +290,3 @@ export class QuerySetupStore {
     this.queryStore.reset();
   }
 }
-
-const QuerySetupStoreContext = createContext<QuerySetupStore | undefined>(
-  undefined,
-);
-
-export const QuerySetupStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const queryStore = useQueryStore();
-  const store = useLocalObservable(() => new QuerySetupStore(queryStore));
-  return (
-    <QuerySetupStoreContext.Provider value={store}>
-      {children}
-    </QuerySetupStoreContext.Provider>
-  );
-};
-
-export const useQuerySetupStore = (): QuerySetupStore =>
-  guaranteeNonNullable(
-    useContext(QuerySetupStoreContext),
-    'useQuerySetupStore() hook must be used inside QueryBuilderStore context provider',
-  );

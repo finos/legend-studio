@@ -16,7 +16,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   FunctionEditorState,
   FUNCTION_SPEC_TAB,
@@ -46,7 +45,6 @@ import {
 import { getElementIcon } from '../../shared/Icon';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { TaggedValue } from '../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
 import { Tag } from '../../../models/metamodels/pure/model/packageableElements/domain/Tag';
 import { Profile } from '../../../models/metamodels/pure/model/packageableElements/domain/Profile';
@@ -63,6 +61,8 @@ import { Unit } from '../../../models/metamodels/pure/model/packageableElements/
 import type { StereotypeReference } from '../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import { StereotypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

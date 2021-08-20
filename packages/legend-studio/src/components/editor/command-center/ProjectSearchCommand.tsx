@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { compareLabelFn } from '@finos/legend-shared';
 import { FaCaretDown } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
-import { useEditorStore } from '../../../stores/EditorStore';
 import type { SelectComponent } from '@finos/legend-application-components';
 import {
   DropdownMenu,
@@ -31,6 +30,7 @@ import { getElementTypeIcon } from '../../shared/Icon';
 import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../EditorStoreProvider';
 
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();

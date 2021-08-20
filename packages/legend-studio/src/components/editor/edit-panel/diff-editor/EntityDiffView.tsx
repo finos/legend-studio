@@ -16,7 +16,6 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,
@@ -27,10 +26,11 @@ import { VscGoToFile } from 'react-icons/vsc';
 import { clsx } from '@finos/legend-application-components';
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {

@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   ModelLoaderState,
   MODEL_UPDATER_INPUT_TYPE,
@@ -32,7 +31,6 @@ import { TextInputEditor } from '../../shared/TextInputEditor';
 import {
   ActionAlertType,
   ActionAlertActionType,
-  useApplicationStore,
 } from '../../../stores/ApplicationStore';
 import {
   DropdownMenu,
@@ -41,6 +39,8 @@ import {
 } from '@finos/legend-application-components';
 import type { ImportConfigurationDescription } from '../../../models/metamodels/pure/graphManager/action/generation/ImportConfigurationDescription';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();

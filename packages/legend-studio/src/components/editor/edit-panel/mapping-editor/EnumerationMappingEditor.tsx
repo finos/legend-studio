@@ -42,7 +42,6 @@ import {
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import { EnumerationIcon } from '../../../shared/Icon';
 import { CORE_TEST_ID } from '../../../../const';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { MdModeEdit } from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
 import { noop } from '@finos/legend-shared';
@@ -59,6 +58,7 @@ import type { EnumerationMapping } from '../../../../models/metamodels/pure/mode
 import { Enum } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enum';
 import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
 import type { OptionalPackageableElementReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {

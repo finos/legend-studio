@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
-import { useLocalObservable } from 'mobx-react-lite';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type {
   ApplicationStore,
   ActionAlertInfo,
   BlockingAlertInfo,
 } from './ApplicationStore';
-import {
-  useApplicationStore,
-  ActionAlertActionType,
-  ActionAlertType,
-} from './ApplicationStore';
+import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import { ExplorerTreeState } from './ExplorerTreeState';
@@ -1378,25 +1372,3 @@ export class EditorStore {
     );
   }
 }
-
-const EditorStoreContext = createContext<EditorStore | undefined>(undefined);
-
-export const EditorStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const applicationStore = useApplicationStore();
-  const store = useLocalObservable(() => new EditorStore(applicationStore));
-  return (
-    <EditorStoreContext.Provider value={store}>
-      {children}
-    </EditorStoreContext.Provider>
-  );
-};
-
-export const useEditorStore = (): EditorStore =>
-  guaranteeNonNullable(
-    useContext(EditorStoreContext),
-    'useEditorStore() hook must be used inside EditorStore context provider',
-  );

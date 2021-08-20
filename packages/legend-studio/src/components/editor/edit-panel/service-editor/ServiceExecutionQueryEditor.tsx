@@ -15,7 +15,6 @@
  */
 
 import { Fragment, useEffect } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';
 import type { ServicePureExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
@@ -34,6 +33,7 @@ import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
 import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const ServiceExecutionModals = observer(
   (props: { executionState: ServicePureExecutionState }) => {

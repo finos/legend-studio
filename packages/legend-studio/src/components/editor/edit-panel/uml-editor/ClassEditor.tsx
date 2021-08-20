@@ -18,7 +18,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import { InheritanceDiagramRenderer } from '../../../shared/diagram-viewer/InheritanceDiagramRenderer';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
 import { useDrop } from 'react-dnd';
@@ -58,7 +57,6 @@ import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import {
   Class,
   CLASS_PROPERTY_TYPE,
@@ -83,6 +81,8 @@ import type { GenericTypeReference } from '../../../../models/metamodels/pure/mo
 import { GenericTypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
 import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const PropertyBasicEditor = observer(
   (props: {

@@ -25,7 +25,7 @@ import {
   PanelLoadingIndicator,
 } from '@finos/legend-application-components';
 import type { ProjectOption } from '../../stores/SetupStore';
-import { SetupStoreProvider, useSetupStore } from '../../stores/SetupStore';
+import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
 import { CORE_TEST_ID } from '../../const';
 import { NotificationSnackbar } from '../application/NotificationSnackbar';
@@ -39,9 +39,9 @@ import {
 } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 import { ProjectType } from '@finos/legend-server-sdlc';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();

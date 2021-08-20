@@ -16,7 +16,6 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import type { IDisposable } from 'monaco-editor';
 import {
   editor as monacoEditorAPI,
@@ -59,9 +58,10 @@ import {
 import { TextDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const getConflictSummaryText = (
   conflictEditorState: EntityChangeConflictEditorState,

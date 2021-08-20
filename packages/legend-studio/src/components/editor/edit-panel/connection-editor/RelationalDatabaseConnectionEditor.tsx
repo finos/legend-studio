@@ -60,8 +60,8 @@ import { PackageableElementExplicitReference } from '../../../../models/metamode
 import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import type { EditorPlugin } from '../../../../stores/EditorPlugin';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { DatabaseBuilder } from './DatabaseBuilder';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor

@@ -16,7 +16,6 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -31,10 +30,11 @@ import {
   FaTimesCircle,
   FaCheckCircle,
 } from 'react-icons/fa';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
 import { BuildStatus } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const getBuildStatusIcon = (buildStatus: BuildStatus): React.ReactNode => {
   switch (buildStatus) {

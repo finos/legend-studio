@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
-import { useLocalObservable } from 'mobx-react-lite';
 import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import { makeAutoObservable, action, flowResult } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import { useEditorStore } from './EditorStore';
-import { EDITOR_MODE, ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
+import { ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
@@ -260,26 +257,3 @@ export class ReviewStore {
     }
   }
 }
-
-const ReviewStoreContext = createContext<ReviewStore | undefined>(undefined);
-
-export const ReviewStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const editorStore = useEditorStore();
-  editorStore.setMode(EDITOR_MODE.REVIEW);
-  const store = useLocalObservable(() => new ReviewStore(editorStore));
-  return (
-    <ReviewStoreContext.Provider value={store}>
-      {children}
-    </ReviewStoreContext.Provider>
-  );
-};
-
-export const useReviewStore = (): ReviewStore =>
-  guaranteeNonNullable(
-    useContext(ReviewStoreContext),
-    'useReviewStore() hook must be used inside ReviewStore context provider',
-  );

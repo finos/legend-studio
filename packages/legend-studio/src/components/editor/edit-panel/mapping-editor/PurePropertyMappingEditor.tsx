@@ -27,7 +27,6 @@ import type {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   clsx,
   CustomSelectorInput,
@@ -45,6 +44,7 @@ import { EnumerationMapping } from '../../../../models/metamodels/pure/model/pac
 import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
 import { getEnumerationMappingsByEnumeration } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

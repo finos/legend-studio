@@ -16,7 +16,6 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { MdMoreVert } from 'react-icons/md';
 import {
   FaTimes,
@@ -32,6 +31,7 @@ import type { PackageableElementOption } from '../../../../stores/shared/Package
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import type { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
 import type { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 interface TagOption {
   label: string;

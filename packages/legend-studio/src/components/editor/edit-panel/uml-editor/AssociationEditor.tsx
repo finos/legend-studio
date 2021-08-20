@@ -16,7 +16,6 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
@@ -68,6 +67,7 @@ import { PrimitiveType } from '../../../../models/metamodels/pure/model/packagea
 import { Unit } from '../../../../models/metamodels/pure/model/packageableElements/domain/Measure';
 import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {

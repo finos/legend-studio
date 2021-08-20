@@ -25,7 +25,6 @@ import {
   IdentifiedConnectionsPerStoreEditorTabState,
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
-import { useEditorStore } from '../../../stores/EditorStore';
 import type { TreeNodeContainerProps } from '@finos/legend-application-components';
 import {
   ResizablePanel,
@@ -96,7 +95,8 @@ import { FlatDataConnection } from '../../../models/metamodels/pure/model/packag
 import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { RelationalDatabaseConnection } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const getConnectionTooltipText = (connection: Connection): string => {
   const connectionValue =

@@ -15,7 +15,6 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import {
   FaLock,
@@ -37,7 +36,8 @@ import { ServiceExecutionEditor } from './ServiceExecutionEditor';
 import { CORE_TEST_ID } from '../../../../const';
 import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/service-editor/ServiceRegistrationModalEditor';
 import { validateServicePattern } from '../../../../models/metamodels/pure/model/packageableElements/service/Service';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();

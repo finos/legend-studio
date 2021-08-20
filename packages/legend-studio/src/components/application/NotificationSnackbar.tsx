@@ -19,7 +19,6 @@ import type { SnackbarCloseReason } from '@material-ui/core/Snackbar';
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import {
-  useApplicationStore,
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
 } from '../../stores/ApplicationStore';
@@ -31,6 +30,7 @@ import {
   FaExclamationTriangle,
   FaBug,
 } from 'react-icons/fa';
+import { useApplicationStore } from './ApplicationStoreProvider';
 
 export const NotificationSnackbar = observer(() => {
   const applicationStore = useApplicationStore();

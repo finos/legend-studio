@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import { GoCloudDownload } from 'react-icons/go';
@@ -23,7 +22,6 @@ import { FaCheck, FaTimes, FaBan, FaInfoCircle } from 'react-icons/fa';
 import { PanelLoadingIndicator } from '@finos/legend-application-components';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { CORE_TEST_ID } from '../../../const';
 import { flowResult } from 'mobx';
 import type {
@@ -31,6 +29,8 @@ import type {
   EntityDiff,
 } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const ConflictResolution = observer(() => {
   const editorStore = useEditorStore();

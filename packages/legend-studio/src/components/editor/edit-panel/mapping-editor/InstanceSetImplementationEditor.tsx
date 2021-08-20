@@ -41,16 +41,12 @@ import {
   getMappingElementSource,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { TypeTree } from '../../../shared/TypeTree';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
 import { PropertyMappingsEditor } from './PropertyMappingsEditor';
 import { useDrop } from 'react-dnd';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import {
-  ActionAlertActionType,
-  useApplicationStore,
-} from '../../../../stores/ApplicationStore';
+import { ActionAlertActionType } from '../../../../stores/ApplicationStore';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
@@ -70,6 +66,8 @@ import {
   InstanceSetImplementationSourceSelectorModal,
 } from './InstanceSetImplementationSourceSelectorModal';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {

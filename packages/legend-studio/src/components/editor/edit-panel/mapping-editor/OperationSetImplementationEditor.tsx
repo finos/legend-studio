@@ -18,7 +18,6 @@ import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaTimes, FaArrowAltCircleRight, FaPlus } from 'react-icons/fa';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   clsx,
   CustomSelectorInput,
@@ -48,6 +47,7 @@ import { PackageableElementExplicitReference } from '../../../../models/metamode
 import { SetImplementationExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementationReference';
 import { InferableMappingElementRootExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementRoot';
 import { getClassMappingsByClass } from '../../../../models/metamodels/pure/helpers/MappingHelper';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 interface SetImplementationOption {
   value: SetImplementation;

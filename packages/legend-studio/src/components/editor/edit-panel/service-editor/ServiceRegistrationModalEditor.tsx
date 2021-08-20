@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -30,6 +28,8 @@ import { ServiceExecutionMode } from '../../../../models/metamodels/pure/graphMa
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 export const ServiceRegistrationModalEditor = observer(() => {
   const editorStore = useEditorStore();

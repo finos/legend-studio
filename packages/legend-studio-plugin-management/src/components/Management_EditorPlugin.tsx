@@ -20,10 +20,10 @@ import type {
   ApplicationPageRenderEntry,
 } from '@finos/legend-studio';
 import { EditorPlugin } from '@finos/legend-studio';
-import { ProjectDashboard } from './projectDashboard/ProjectDashboard';
+import { ProjectDashboard } from './ProjectDashboard';
 import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
 
-export class ManagementPlugin extends EditorPlugin {
+export class Management_EditorPlugin extends EditorPlugin {
   constructor() {
     super(packageJson.name, packageJson.version);
   }

@@ -16,7 +16,6 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import { FaInfoCircle } from 'react-icons/fa';
@@ -35,7 +34,6 @@ import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-ed
 import {
   ActionAlertType,
   ActionAlertActionType,
-  useApplicationStore,
 } from '../../../stores/ApplicationStore';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
@@ -46,6 +44,8 @@ import type {
   EntityDiff,
 } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();

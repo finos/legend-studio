@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useCallback } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import {
@@ -41,7 +40,6 @@ import type {
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import {
   clsx,
   BlankPanelContent,
@@ -67,6 +65,8 @@ import { RuntimePointer } from '../../../../models/metamodels/pure/model/package
 import { PackageableRuntime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
 import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {

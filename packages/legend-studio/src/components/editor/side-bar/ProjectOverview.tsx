@@ -16,7 +16,6 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import { CORE_TEST_ID } from '../../../const';
 import { FaInfoCircle, FaTimes } from 'react-icons/fa';
 import { MdModeEdit } from 'react-icons/md';
@@ -33,10 +32,11 @@ import {
   generateViewVersionRoute,
   generateReviewRoute,
 } from '../../../stores/LegendStudioRouter';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 import type { Workspace } from '@finos/legend-server-sdlc';
 import { NewVersionType } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const WorkspaceViewerContextMenu = observer<
   {

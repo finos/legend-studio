@@ -16,7 +16,6 @@
 
 import { clsx } from '@finos/legend-application-components';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { Explorer } from './Explorer';
 import { LocalChanges } from './LocalChanges';
@@ -25,6 +24,7 @@ import { WorkspaceUpdater } from './WorkspaceUpdater';
 import { ConflictResolution } from './ConflictResolution';
 import { ProjectOverview } from './ProjectOverview';
 import { WorkspaceBuilds } from './WorkspaceBuilds';
+import { useEditorStore } from '../EditorStoreProvider';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.

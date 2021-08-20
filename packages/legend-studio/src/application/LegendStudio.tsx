@@ -50,8 +50,8 @@ import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { PluginManager } from './PluginManager';
 import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';
-import { WebApplicationNavigatorProvider } from '../stores/application/WebApplicationNavigator';
 import { configureComponents } from '@finos/legend-application-components';
+import { WebApplicationNavigatorProvider } from '../components/application/WebApplicationNavigatorProvider';
 
 // This is not considered side-effect that hinders tree-shaking because the effectful calls
 // are embedded in the function

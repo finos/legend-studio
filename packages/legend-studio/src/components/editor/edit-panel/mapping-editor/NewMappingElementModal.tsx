@@ -18,7 +18,6 @@ import { useState, useRef } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
 import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   CustomSelectorInput,
   createFilter,
@@ -42,6 +41,7 @@ import { Association } from '../../../../models/metamodels/pure/model/packageabl
 import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 interface ClassMappingSubTypeOption {
   label: string;

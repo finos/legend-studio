@@ -25,10 +25,10 @@ import {
   PanelLoadingIndicator,
   CustomSelectorInput,
 } from '@finos/legend-application-components';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
-import { useEditorStore } from '../../../stores/EditorStore';
 import { FiShare } from 'react-icons/fi';
 import type { Version } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const ShareModal = observer(
   (props: { open: boolean; closeModal: () => void }) => {

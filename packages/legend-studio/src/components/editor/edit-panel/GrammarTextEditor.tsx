@@ -17,7 +17,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   ContextMenu,
   revealError,
@@ -35,13 +34,14 @@ import {
 import { useResizeDetector } from 'react-resize-detector';
 import { FaUserSecret } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import type { ElementDragSource } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   (props: {}, ref: React.Ref<HTMLDivElement>) => {

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
 import type {
   GeneratorFn,
   Log,
@@ -24,7 +23,6 @@ import type {
 import {
   LogEvent,
   assertErrorThrown,
-  guaranteeNonNullable,
   isString,
   ApplicationError,
   ActionState,
@@ -34,7 +32,6 @@ import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { ApplicationConfig } from './application/ApplicationConfig';
 import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
-import { useLocalObservable } from 'mobx-react-lite';
 import type { PluginManager } from '../application/PluginManager';
 import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
 import { DepotServerClient } from '../models/metadata/DepotServerClient';
@@ -490,36 +487,3 @@ export class ApplicationStore {
     this.notifyWarning(`Unsupported feature: ${featureName}`);
   }
 }
-
-const ApplicationStoreContext = createContext<ApplicationStore | undefined>(
-  undefined,
-);
-
-export const ApplicationStoreProvider = ({
-  children,
-  config,
-  pluginManager,
-  navigator,
-  log,
-}: {
-  children: React.ReactNode;
-  config: ApplicationConfig;
-  pluginManager: PluginManager;
-  navigator: WebApplicationNavigator;
-  log: Log;
-}): React.ReactElement => {
-  const applicationStore = useLocalObservable(
-    () => new ApplicationStore(config, pluginManager, navigator, log),
-  );
-  return (
-    <ApplicationStoreContext.Provider value={applicationStore}>
-      {children}
-    </ApplicationStoreContext.Provider>
-  );
-};
-
-export const useApplicationStore = (): ApplicationStore =>
-  guaranteeNonNullable(
-    useContext(ApplicationStoreContext),
-    'useApplicationStore() hook must be used inside ApplicationStore context provider',
-  );

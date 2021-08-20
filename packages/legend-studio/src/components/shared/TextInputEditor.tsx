@@ -26,9 +26,9 @@ import {
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
 } from '@finos/legend-application-components';
-import { useEditorStore } from '../../stores/EditorStore';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 export const TextInputEditor: React.FC<{
   inputValue: string;

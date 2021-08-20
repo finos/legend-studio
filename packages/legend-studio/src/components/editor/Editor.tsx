@@ -40,13 +40,11 @@ import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
-import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
 import Backdrop from '@material-ui/core/Backdrop';
 import type { EditorPathParams } from '../../stores/LegendStudioRouter';
 import {
   ActionAlertType,
   ActionAlertActionType,
-  useApplicationStore,
 } from '../../stores/ApplicationStore';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
@@ -54,6 +52,8 @@ import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAct
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { EditorStoreProvider, useEditorStore } from './EditorStoreProvider';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],

@@ -16,7 +16,6 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import type {
   GenerationSpecNodeDragSource,
   GenerationSpecNodeDropTarget,
@@ -29,7 +28,6 @@ import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import { useDragLayer, useDrag, useDrop } from 'react-dnd';
 import { FileGenerationIcon, getElementIcon } from '../../shared/Icon';
 import { MdRefresh } from 'react-icons/md';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import {
   clsx,
   BlankPanelContent,
@@ -55,6 +53,8 @@ import { getNullableFirstElement } from '@finos/legend-shared';
 import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../../models/metamodels/pure/graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
 import type { DSLGenerationSpecification_EditorPlugin_Extension } from '../../../stores/DSLGenerationSpecification_EditorPlugin_Extension';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

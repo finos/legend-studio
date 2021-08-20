@@ -15,14 +15,13 @@
  */
 
 // application
+export * from './components/application/ApplicationStoreProvider';
+export * from './components/application/WebApplicationNavigatorProvider';
+export * from './utils/ApplicationLogEvent';
 export * from './application/LegendStudio';
 export * from './application/PluginManager';
 export { ApplicationConfig } from './stores/application/ApplicationConfig';
-export {
-  WebApplicationNavigator,
-  WebApplicationNavigatorProvider,
-  useWebApplicationNavigator,
-} from './stores/application/WebApplicationNavigator';
+export { WebApplicationNavigator } from './stores/application/WebApplicationNavigator';
 
 // network
 export * from './stores/network/Telemetry';
@@ -175,6 +174,7 @@ export {
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 
 // components
+export * from './components/editor/EditorStoreProvider';
 export * from './components/shared/TextInputEditor';
 export * from './components/shared/AppHeader';
 export * from './components/shared/Icon'; // TODO: we might want to move all of these to @finos/legend-application-components

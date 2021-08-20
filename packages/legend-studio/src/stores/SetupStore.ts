@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
-import { useLocalObservable } from 'mobx-react-lite';
 import type { ApplicationStore } from './ApplicationStore';
-import { useApplicationStore } from './ApplicationStore';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   ActionState,
   assertNonNullable,
-  guaranteeNonNullable,
   compareLabelFn,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from './LegendStudioRouter';
@@ -358,25 +354,3 @@ export class SetupStore {
     }
   }
 }
-
-const SetupStoreContext = createContext<SetupStore | undefined>(undefined);
-
-export const SetupStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const applicationStore = useApplicationStore();
-  const store = useLocalObservable(() => new SetupStore(applicationStore));
-  return (
-    <SetupStoreContext.Provider value={store}>
-      {children}
-    </SetupStoreContext.Provider>
-  );
-};
-
-export const useSetupStore = (): SetupStore =>
-  guaranteeNonNullable(
-    useContext(SetupStoreContext),
-    'useSetupStore() hook must be used inside SetupStore context provider',
-  );

@@ -50,9 +50,7 @@ import type { ServiceExecutionOption } from '../../stores/QuerySetupStore';
 import {
   CreateQuerySetupState,
   ExistingQuerySetupState,
-  QuerySetupStoreProvider,
   ServiceQuerySetupState,
-  useQuerySetupStore,
 } from '../../stores/QuerySetupStore';
 import {
   CreateQueryInfoState,
@@ -60,8 +58,12 @@ import {
   LATEST_SNAPSHOT_VERSION_ALIAS,
   LATEST_VERSION_ALIAS,
   ServiceQueryInfoState,
-  useQueryStore,
 } from '../../stores/QueryStore';
+import {
+  QuerySetupStoreProvider,
+  useQuerySetupStore,
+} from '../QuerySetupStoreProvider';
+import { useQueryStore } from '../QueryStoreProvider';
 
 type QueryOption = { label: string; value: LightQuery };
 const buildQueryOption = (query: LightQuery): QueryOption => ({

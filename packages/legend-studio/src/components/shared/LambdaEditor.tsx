@@ -18,7 +18,6 @@ import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import type { IDisposable, IKeyboardEvent } from 'monaco-editor';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../stores/EditorStore';
 import { useResizeDetector } from 'react-resize-detector';
 import {
   TAB_SIZE,
@@ -37,11 +36,12 @@ import type { LambdaEditorState } from '../../stores/editor-state/element-editor
 import type { DebouncedFunc, GeneratorFn } from '@finos/legend-shared';
 import { debounce } from '@finos/legend-shared';
 import { CORE_TEST_ID } from '../../const';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import type { EngineError } from '../../models/metamodels/pure/graphManager/action/EngineError';
 import { ParserError } from '../../models/metamodels/pure/graphManager/action/EngineError';
 import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
 import { flowResult } from 'mobx';
+import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useEditorStore } from '../editor/EditorStoreProvider';
 
 export type LambdaEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;

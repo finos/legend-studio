@@ -43,9 +43,9 @@ import {
   ExistingQueryInfoState,
   ServiceQueryInfoState,
   CreateQueryInfoState,
-  useQueryStore,
 } from '../../stores/QueryStore';
 import { QueryBuilder } from '../QueryBuilder';
+import { useQueryStore } from '../QueryStoreProvider';
 
 const QueryExportInner = observer(
   (props: { queryExportState: QueryExportState }) => {

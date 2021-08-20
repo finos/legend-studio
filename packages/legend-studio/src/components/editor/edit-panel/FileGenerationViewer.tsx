@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import {
   FileGenerationViewerState,
@@ -24,6 +23,7 @@ import {
 import { FaLock, FaFire, FaArrowCircleRight } from 'react-icons/fa';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import type { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import { useEditorStore } from '../EditorStoreProvider';
 
 export const FileGenerationViewer = observer(() => {
   const editorStore = useEditorStore();

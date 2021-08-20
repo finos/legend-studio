@@ -21,7 +21,6 @@ import { PurePropertyMappingEditor } from './PurePropertyMappingEditor';
 import { getElementIcon } from '../../../shared/Icon';
 import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import type { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import {
   PurePropertyMappingState,
@@ -54,7 +53,8 @@ import type {
   RelationalPropertyMappingState,
   RootRelationalInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 export const PropertyMappingsEditor = observer(
   (props: {

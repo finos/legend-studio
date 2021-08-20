@@ -16,8 +16,6 @@
 
 import type { History } from 'history';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { createContext, useContext } from 'react';
-import { useHistory } from 'react-router';
 
 /**
  * This is an initial attempt to try to generalize the application
@@ -72,28 +70,3 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
     );
   }
 }
-
-const WebApplicationNavigatorContext = createContext<
-  WebApplicationNavigator | undefined
->(undefined);
-
-export const WebApplicationNavigatorProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const history = useHistory();
-  return (
-    <WebApplicationNavigatorContext.Provider
-      value={new WebApplicationNavigator(history)}
-    >
-      {children}
-    </WebApplicationNavigatorContext.Provider>
-  );
-};
-
-export const useWebApplicationNavigator = (): WebApplicationNavigator =>
-  guaranteeNonNullable(
-    useContext(WebApplicationNavigatorContext),
-    `Can't find web application navigator in context`,
-  );

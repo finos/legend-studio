@@ -16,7 +16,6 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
 import {
   CustomSelectorInput,
@@ -26,6 +25,7 @@ import type { PackageableElementOption } from '../../../../stores/shared/Package
 import type { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
 import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
 import type { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 interface StereotypeOption {
   label: string;

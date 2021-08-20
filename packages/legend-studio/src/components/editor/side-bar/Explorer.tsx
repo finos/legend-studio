@@ -16,7 +16,6 @@
 
 import React, { Fragment, useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   FaChevronDown,
   FaChevronRight,
@@ -65,7 +64,6 @@ import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
 import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerationTreeUtil';
 import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerationTreeUtil';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
 import { isNonNullable, toTitleCase } from '@finos/legend-shared';
 import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
@@ -73,6 +71,8 @@ import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/
 import { Dialog } from '@material-ui/core';
 import { isValidFullPath, isValidPath } from '../../../models/MetaModelUtils';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;

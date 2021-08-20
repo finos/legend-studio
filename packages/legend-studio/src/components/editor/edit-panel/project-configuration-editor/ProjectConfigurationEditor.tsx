@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useMemo } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   LogEvent,
   debounce,
@@ -39,7 +38,6 @@ import {
   CustomSelectorInput,
 } from '@finos/legend-application-components';
 import {
-  useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
 } from '../../../../stores/ApplicationStore';
@@ -51,6 +49,8 @@ import type {
   Project,
 } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 interface VersionOption {
   label: string;

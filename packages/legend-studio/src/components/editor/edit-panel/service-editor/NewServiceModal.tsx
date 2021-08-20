@@ -16,14 +16,14 @@
 
 import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
 import { resolvePackagePathAndElementName } from '../../../../models/MetaModelUtils';
 import { guaranteeType } from '@finos/legend-shared';
 import Dialog from '@material-ui/core/Dialog';
 import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
 import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 export const NewServiceModal = observer(
   (props: {

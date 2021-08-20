@@ -27,7 +27,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { FaScroll, FaWrench } from 'react-icons/fa';
 import { JsonDiffView } from '../../../shared/DiffView';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -56,7 +55,6 @@ import { VscError } from 'react-icons/vsc';
 import {
   ActionAlertActionType,
   ActionAlertType,
-  useApplicationStore,
 } from '../../../../stores/ApplicationStore';
 import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
 import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
@@ -70,6 +68,8 @@ import {
   getMappingElementSource,
   getMappingElementTarget,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
