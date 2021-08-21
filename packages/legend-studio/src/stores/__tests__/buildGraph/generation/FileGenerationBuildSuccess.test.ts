@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-import fileGenerationTestData from './FileGenerationTestData.json';
+import TEST_DATA__fileGeneration from './TEST_DATA__FileGeneration.json';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
-import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../../../StoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import { PackageableElementReference } from '@finos/legend-graph';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await buildGraphBasic(fileGenerationTestData as Entity[], editorStore);
+  await TEST__buildGraphBasic(
+    TEST_DATA__fileGeneration as Entity[],
+    editorStore,
+  );
 });
 
 test(unitTest('File Generation Graph Success'), () => {

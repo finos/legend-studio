@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const simpleProjection = {
+export const TEST_DATA__simpleProjection = {
   _type: 'lambda',
   body: [
     {
@@ -113,7 +113,7 @@ export const simpleProjection = {
   parameters: [],
 };
 
-export const projectionWithChainedProperty = {
+export const TEST_DATA__projectionWithChainedProperty = {
   _type: 'lambda',
   body: [
     {
@@ -189,7 +189,7 @@ export const projectionWithChainedProperty = {
   parameters: [],
 };
 
-export const projectWithDerivedProperty = {
+export const TEST_DATA__projectWithDerivedProperty = {
   _type: 'lambda',
   body: [
     {
@@ -267,7 +267,7 @@ export const projectWithDerivedProperty = {
   parameters: [],
 };
 
-export const projectionWithResultSetModifiers = {
+export const TEST_DATA__projectionWithResultSetModifiers = {
   _type: 'lambda',
   body: [
     {
@@ -464,7 +464,7 @@ export const projectionWithResultSetModifiers = {
   parameters: [],
 };
 
-export const getAllWithOneConditionFilter = {
+export const TEST_DATA__getAllWithOneConditionFilter = {
   _type: 'lambda',
   body: [
     {
@@ -522,7 +522,7 @@ export const getAllWithOneConditionFilter = {
   parameters: [],
 };
 
-export const getAllWithGroupedFilter = {
+export const TEST_DATA__getAllWithGroupedFilter = {
   _type: 'lambda',
   body: [
     {
@@ -610,7 +610,7 @@ export const getAllWithGroupedFilter = {
   parameters: [],
 };
 
-export const fullComplexProjectionQuery = {
+export const TEST_DATA__fullComplexProjectionQuery = {
   _type: 'lambda',
   body: [
     {
@@ -888,7 +888,7 @@ export const fullComplexProjectionQuery = {
   parameters: [],
 };
 
-export const simpleGraphFetch = {
+export const TEST_DATA__simpleGraphFetch = {
   _type: 'lambda',
   body: [
     {
@@ -941,7 +941,7 @@ export const simpleGraphFetch = {
   parameters: [],
 };
 
-export const complexGraphFetch = {
+export const TEST_DATA__complexGraphFetch = {
   _type: 'lambda',
   body: [
     {

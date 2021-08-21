@@ -23,7 +23,10 @@ import { CORE_TEST_ID } from '../const';
 import { EditorStore } from '../stores/EditorStore';
 import { Editor } from './editor/Editor';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
-import { getTestApplicationConfig } from '../stores/StoreTestUtils';
+import {
+  TEST__getTestApplicationConfig,
+  TEST__getTestApplicationStore as TEST__getTestApplicationStore,
+} from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   Log,
@@ -59,7 +62,7 @@ import {
 } from '@finos/legend-server-depot';
 import { StudioStoreProvider } from './StudioStoreProvider';
 
-export const SDLC_TestData = {
+export const TEST_DATA__DefaultSDLCInfo = {
   project: {
     projectId: 'UAT-2689',
     description: 'sdlcTesting',
@@ -132,7 +135,7 @@ export const TEST__ApplicationStoreProvider = ({
   children: React.ReactNode;
 }): React.ReactElement => (
   <ApplicationStoreProvider
-    config={getTestApplicationConfig()}
+    config={TEST__getTestApplicationConfig()}
     navigator={new WebApplicationNavigator(createMemoryHistory())}
     log={new Log()}
   >
@@ -150,8 +153,8 @@ export const TEST__StudioStoreProvider = ({
   </StudioStoreProvider>
 );
 
-export const getMockedApplicationStore = (
-  config = getTestApplicationConfig(),
+export const TEST__provideMockedApplicationStore = (
+  config = TEST__getTestApplicationConfig(),
 ): ApplicationStore => {
   const mockedApplicationStore = new ApplicationStore(
     config,
@@ -166,7 +169,7 @@ export const getMockedApplicationStore = (
   return mockedApplicationStore;
 };
 
-export const getMockedWebApplicationNavigator = (
+export const TEST__provideMockedWebApplicationNavigator = (
   history = createMemoryHistory(),
 ): WebApplicationNavigator => {
   const mock = new WebApplicationNavigator(history);
@@ -178,12 +181,12 @@ export const getMockedWebApplicationNavigator = (
   return mock;
 };
 
-export const getMockedEditorStore = (
+export const TEST__provideMockedEditorStore = (
   applicationStore?: ApplicationStore,
   pluginManager?: StudioPluginManager,
 ): EditorStore => {
   const mockedEditorStore = new EditorStore(
-    applicationStore ?? getMockedApplicationStore(),
+    applicationStore ?? TEST__getTestApplicationStore(),
     TEST__getTestSDLCServerClient(),
     TEST__getTestDepotServerClient(),
     pluginManager ?? StudioPluginManager.create(),
@@ -194,7 +197,7 @@ export const getMockedEditorStore = (
   return mockedEditorStore;
 };
 
-export const openAndAssertPathWithElement = async (
+export const TEST__openAndAssertPathWithElement = async (
   path: string,
   renderResult: RenderResult,
   closePackage = true,
@@ -215,12 +218,12 @@ export const openAndAssertPathWithElement = async (
   }
 };
 
-export const openElementFromExplorerTree = async (
+export const TEST__openElementFromExplorerTree = async (
   path: string,
   renderResult: RenderResult,
 ): Promise<void> => {
   const packageExplorer = renderResult.getByTestId(CORE_TEST_ID.EXPLORER_TREES);
-  await openAndAssertPathWithElement(path, renderResult, false);
+  await TEST__openAndAssertPathWithElement(path, renderResult, false);
   const elementName = path.split(ELEMENT_PATH_DELIMITER).pop() as string;
   fireEvent.click(getByText(packageExplorer, elementName));
 };
@@ -234,7 +237,7 @@ export const openElementFromExplorerTree = async (
  * cases, such as for the SDLC flow, we might want to customize this method or have a completely different
  * setup method
  */
-export const setUpEditor = async (
+export const TEST__setUpEditor = async (
   mockedEditorStore: EditorStore,
   data: {
     project: PlainObject<Project>;
@@ -384,7 +387,7 @@ export const setUpEditor = async (
   return renderResult;
 };
 
-export const setUpEditorWithDefaultSDLCData = (
+export const TEST__setUpEditorWithDefaultSDLCData = (
   mockedEditorStore: EditorStore,
   overrides?: {
     project?: PlainObject<Project>;
@@ -398,21 +401,22 @@ export const setUpEditorWithDefaultSDLCData = (
     availableImportDescriptions?: ImportConfigurationDescription[];
   },
 ): Promise<RenderResult> =>
-  setUpEditor(mockedEditorStore, {
-    project: SDLC_TestData.project,
-    workspace: SDLC_TestData.workspace,
-    curentRevision: SDLC_TestData.currentRevision,
+  TEST__setUpEditor(mockedEditorStore, {
+    project: TEST_DATA__DefaultSDLCInfo.project,
+    workspace: TEST_DATA__DefaultSDLCInfo.workspace,
+    curentRevision: TEST_DATA__DefaultSDLCInfo.currentRevision,
     projectVersions: [],
     entities: [],
-    projectConfiguration: SDLC_TestData.projectConfig,
-    latestProjectStructureVersion: SDLC_TestData.latestProjectStructureVersion,
+    projectConfiguration: TEST_DATA__DefaultSDLCInfo.projectConfig,
+    latestProjectStructureVersion:
+      TEST_DATA__DefaultSDLCInfo.latestProjectStructureVersion,
     availableGenerationDescriptions: [
-      ...SDLC_TestData.availableSchemaGenerations,
-      ...SDLC_TestData.availableCodeGenerations,
+      ...TEST_DATA__DefaultSDLCInfo.availableSchemaGenerations,
+      ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
     ],
     availableImportDescriptions: [
-      ...SDLC_TestData.availableSchemaImports,
-      ...SDLC_TestData.availableCodeImports,
+      ...TEST_DATA__DefaultSDLCInfo.availableSchemaImports,
+      ...TEST_DATA__DefaultSDLCInfo.availableCodeImports,
     ],
     ...overrides,
   });

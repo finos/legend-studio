@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const testInferenceDefaultMappingElementID = [
+export const TEST_DATA__InferenceDefaultMappingElementID = [
   {
     path: 'test::A',
     content: {
@@ -69,7 +69,7 @@ export const testInferenceDefaultMappingElementID = [
   },
 ];
 
-export const testImportResolutionMultipleMatchesFound = [
+export const TEST_DATA__ImportResolutionMultipleMatchesFound = [
   {
     path: 'test::A',
     content: {
@@ -117,7 +117,7 @@ export const testImportResolutionMultipleMatchesFound = [
   },
 ];
 
-export const testReferenceWithoutSection = {
+export const TEST_DATA__ReferenceWithoutSection = {
   original: [
     {
       path: '__internal__::SectionIndex',
@@ -301,7 +301,7 @@ export const testReferenceWithoutSection = {
   ],
 };
 
-export const testReferenceModification = {
+export const TEST_DATA__ReferenceModification = {
   original: [
     {
       path: 'test::tEnum',

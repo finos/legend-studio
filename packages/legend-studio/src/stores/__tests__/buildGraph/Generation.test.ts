@@ -16,13 +16,16 @@
 
 import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  simpleDebuggingCase,
-  testAutoImportsWithAny,
-  testAutoImportsWithSystemProfiles,
+  TEST_DATA__simpleDebuggingCase,
+  TEST_DATA__AutoImportsWithAny,
+  TEST_DATA__AutoImportsWithSystemProfiles,
 } from '../roundtrip/RoundtripTestData';
-import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
-import { buildGraphBasic, getTestEditorStore } from '../../StoreTestUtils';
-import { simpleCoreModelData } from './CoreTestData';
+import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../../StoreTestUtils';
+import { TEST_DATA__SimpleGraph } from './CoreTestData';
 import { waitFor } from '@testing-library/dom';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
@@ -51,8 +54,8 @@ const testGeneratedElements = async (
 ): Promise<void> => {
   entities.push(buildParentElement());
   const generatedElementPaths = generatedEntities.map((e) => e.path);
-  const editorStore = getTestEditorStore();
-  await buildGraphBasic(entities, editorStore, {
+  const editorStore = TEST__getTestEditorStore();
+  await TEST__buildGraphBasic(entities, editorStore, {
     TEMPORARY__keepSectionIndex: true,
   });
   await waitFor(() =>
@@ -108,21 +111,30 @@ const testGeneratedElements = async (
 };
 
 test(unitTest('M2M graph generation check'), async () => {
-  await testGeneratedElements([] as Entity[], m2mGraphEntities as Entity[]);
-  await testGeneratedElements([] as Entity[], simpleDebuggingCase as Entity[]);
+  await testGeneratedElements(
+    [] as Entity[],
+    TEST_DATA__m2mGraphEntities as Entity[],
+  );
+  await testGeneratedElements(
+    [] as Entity[],
+    TEST_DATA__simpleDebuggingCase as Entity[],
+  );
 });
 
 test(unitTest('Auto-imports generation check'), async () => {
   await testGeneratedElements(
     [] as Entity[],
-    testAutoImportsWithSystemProfiles as Entity[],
+    TEST_DATA__AutoImportsWithSystemProfiles as Entity[],
   );
   await testGeneratedElements(
     [] as Entity[],
-    testAutoImportsWithAny as Entity[],
+    TEST_DATA__AutoImportsWithAny as Entity[],
   );
 });
 
 test(unitTest('Core model generations check'), async () => {
-  await testGeneratedElements([] as Entity[], simpleCoreModelData as Entity[]);
+  await testGeneratedElements(
+    [] as Entity[],
+    TEST_DATA__SimpleGraph as Entity[],
+  );
 });

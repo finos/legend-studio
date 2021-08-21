@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const simpleCoreModelData = [
+export const TEST_DATA__SimpleGraph = [
   {
     path: 'demo::Firm',
     content: {

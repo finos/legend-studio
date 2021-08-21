@@ -17,7 +17,7 @@
 // References to resolve in GenerationSpecification
 // - GenerationTreeNode - generation element
 // - FileGeneration pointer
-export const testGenerationSpecificationRoundtrip = [
+export const TEST_DATA__GenerationSpecificationRoundtrip = [
   {
     path: 'test::tMapping',
     content: {

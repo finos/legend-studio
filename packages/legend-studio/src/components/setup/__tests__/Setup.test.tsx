@@ -22,7 +22,7 @@ import {
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
 import {
-  SDLC_TestData,
+  TEST_DATA__DefaultSDLCInfo,
   TEST__ApplicationStoreProvider,
 } from '../../ComponentTestUtils';
 import { MemoryRouter } from 'react-router-dom';
@@ -45,7 +45,7 @@ test(
     MOBX__enableSpyOrMock();
     jest
       .spyOn(sdlcServerClient, 'getProjects')
-      .mockResolvedValueOnce([SDLC_TestData.project])
+      .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
       .mockResolvedValueOnce([]);
     MOBX__disableSpyOrMock();
 

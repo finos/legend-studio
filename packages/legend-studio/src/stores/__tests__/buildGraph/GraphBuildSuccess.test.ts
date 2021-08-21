@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
+import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { unitTest } from '@finos/legend-shared';
-import { buildGraphBasic, getTestEditorStore } from '../../StoreTestUtils';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../../StoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   PureInstanceSetImplementation,
@@ -29,10 +32,13 @@ import {
   Enum,
 } from '@finos/legend-graph';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await buildGraphBasic(m2mGraphEntities as Entity[], editorStore);
+  await TEST__buildGraphBasic(
+    TEST_DATA__m2mGraphEntities as Entity[],
+    editorStore,
+  );
 });
 
 test(unitTest('Graph has been initialized properly'), () => {

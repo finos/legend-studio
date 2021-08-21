@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-import { otherwiseEmbeddedRelationalTestData } from './RelationalEntitiesTestData';
+import { TEST_DATA__otherwiseEmbeddedRelationalTestData } from './RelationalEntitiesTestData';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
-import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../../../StoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   RootRelationalInstanceSetImplementation,
@@ -25,11 +28,11 @@ import {
   getClassMappingsByClass,
 } from '@finos/legend-graph';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await buildGraphBasic(
-    otherwiseEmbeddedRelationalTestData as Entity[],
+  await TEST__buildGraphBasic(
+    TEST_DATA__otherwiseEmbeddedRelationalTestData as Entity[],
     editorStore,
   );
 });

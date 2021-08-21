@@ -16,23 +16,23 @@
 
 import { unitTest } from '@finos/legend-shared';
 import {
-  testInferenceDefaultMappingElementID,
-  testImportResolutionMultipleMatchesFound,
-  testReferenceWithoutSection,
-  testReferenceModification,
+  TEST_DATA__InferenceDefaultMappingElementID,
+  TEST_DATA__ImportResolutionMultipleMatchesFound,
+  TEST_DATA__ReferenceWithoutSection,
+  TEST_DATA__ReferenceModification,
 } from '../__tests__/InferenceTestData';
 import {
-  getTestEditorStore,
-  excludeSectionIndex,
-  buildGraphBasic,
+  TEST__getTestEditorStore,
+  TEST__excludeSectionIndex,
+  TEST__buildGraphBasic,
 } from '../StoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 
 test(unitTest('Infer default mapping element ID'), async () => {
-  const editorStore = getTestEditorStore();
-  await buildGraphBasic(
-    testInferenceDefaultMappingElementID as Entity[],
+  const editorStore = TEST__getTestEditorStore();
+  await TEST__buildGraphBasic(
+    TEST_DATA__InferenceDefaultMappingElementID as Entity[],
     editorStore,
     {
       TEMPORARY__keepSectionIndex: true,
@@ -42,20 +42,22 @@ test(unitTest('Infer default mapping element ID'), async () => {
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   expect(transformedEntities).toIncludeSameMembers(
-    excludeSectionIndex(testInferenceDefaultMappingElementID as Entity[]),
+    TEST__excludeSectionIndex(
+      TEST_DATA__InferenceDefaultMappingElementID as Entity[],
+    ),
   );
 });
 
 test(
   unitTest('Import resolution throws when multiple matches found'),
   async () => {
-    const editorStore = getTestEditorStore();
+    const editorStore = TEST__getTestEditorStore();
     await flowResult(editorStore.graphState.initializeSystem());
     await expect(() =>
       flowResult(
         editorStore.graphState.graphManager.buildGraph(
           editorStore.graphState.graph,
-          testImportResolutionMultipleMatchesFound as Entity[],
+          TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
           { TEMPORARY__keepSectionIndex: true },
         ),
       ),
@@ -70,16 +72,16 @@ test(
     'Reference without section index should resolve all reference to full path during serialization',
   ),
   async () => {
-    const editorStore = getTestEditorStore();
-    await buildGraphBasic(
-      testReferenceWithoutSection.original as Entity[],
+    const editorStore = TEST__getTestEditorStore();
+    await TEST__buildGraphBasic(
+      TEST_DATA__ReferenceWithoutSection.original as Entity[],
       editorStore,
     );
     const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
       (element) => editorStore.graphState.graphManager.elementToEntity(element),
     );
     expect(transformedEntities).toIncludeSameMembers(
-      testReferenceWithoutSection.withoutSection,
+      TEST_DATA__ReferenceWithoutSection.withoutSection,
     );
   },
 );
@@ -88,9 +90,9 @@ test(
   unitTest('Modified reference should resolve serialization path properly'),
   async () => {
     // If the reference owner does not change, the serialized path is kept as user input
-    let editorStore = getTestEditorStore();
-    await buildGraphBasic(
-      testReferenceModification.original as Entity[],
+    let editorStore = TEST__getTestEditorStore();
+    await TEST__buildGraphBasic(
+      TEST_DATA__ReferenceModification.original as Entity[],
       editorStore,
       {
         TEMPORARY__keepSectionIndex: true,
@@ -106,14 +108,14 @@ test(
         editorStore.graphState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
-      excludeSectionIndex(
-        testReferenceModification.sameProfileModification as Entity[],
+      TEST__excludeSectionIndex(
+        TEST_DATA__ReferenceModification.sameProfileModification as Entity[],
       ),
     );
     // If the reference owner changes, the serialized path is fully-resolved
-    editorStore = getTestEditorStore();
-    await buildGraphBasic(
-      testReferenceModification.original as Entity[],
+    editorStore = TEST__getTestEditorStore();
+    await TEST__buildGraphBasic(
+      TEST_DATA__ReferenceModification.original as Entity[],
       editorStore,
       {
         TEMPORARY__keepSectionIndex: true,
@@ -128,8 +130,8 @@ test(
         editorStore.graphState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
-      excludeSectionIndex(
-        testReferenceModification.differentProfileModification as Entity[],
+      TEST__excludeSectionIndex(
+        TEST_DATA__ReferenceModification.differentProfileModification as Entity[],
       ),
     );
   },

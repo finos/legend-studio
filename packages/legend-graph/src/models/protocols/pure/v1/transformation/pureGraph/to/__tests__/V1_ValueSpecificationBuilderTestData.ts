@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const V1_unsupportedFunctionExpression = {
+export const V1_TEST_DATA__unsupportedFunctionExpression = {
   _type: 'lambda',
   body: [
     {

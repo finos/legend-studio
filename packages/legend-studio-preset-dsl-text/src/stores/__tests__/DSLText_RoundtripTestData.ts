@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const roundtripTestData = [
+export const TEST_DATA__roundtrip = [
   {
     path: 'anything::text',
     content: {

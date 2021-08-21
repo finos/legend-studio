@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const relationalCompleteGraphEntities = [
+export const TEST_DATA__relationalCompleteGraphEntities = [
   {
     path: 'meta::pure::tests::model::simple::Person',
     content: {
@@ -8852,7 +8852,7 @@ export const relationalCompleteGraphEntities = [
   },
 ];
 
-export const targetSetImplementationThroughAssociation = [
+export const TEST_DATA__targetSetImplementationThroughAssociation = [
   {
     path: 'apps::pure::studio::model::simple::Firm',
     content: {
@@ -9481,7 +9481,7 @@ export const targetSetImplementationThroughAssociation = [
   },
 ];
 
-export const embeddedRelationalTestData = [
+export const TEST_DATA__embeddedRelationalTestData = [
   {
     path: 'meta::pure::tests::model::simple::Person',
     content: {
@@ -13110,7 +13110,7 @@ export const embeddedRelationalTestData = [
   },
 ];
 
-export const otherwiseEmbeddedRelationalTestData = [
+export const TEST_DATA__otherwiseEmbeddedRelationalTestData = [
   {
     path: 'other::Person',
     content: {
@@ -13521,7 +13521,7 @@ export const otherwiseEmbeddedRelationalTestData = [
   },
 ];
 
-export const inlineEmbeddedRelationalTestData = [
+export const TEST_DATA__inlineEmbeddedRelationalTestData = [
   {
     path: 'other::Person',
     content: {

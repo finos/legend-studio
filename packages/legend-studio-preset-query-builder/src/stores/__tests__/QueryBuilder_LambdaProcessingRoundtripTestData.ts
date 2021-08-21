@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const simpleAllFunc = {
+export const TEST_DATA__simpleAllFunc = {
   _type: 'lambda',
   body: [
     {
@@ -31,7 +31,7 @@ export const simpleAllFunc = {
   parameters: [],
 };
 
-export const simpleFilterFunc = {
+export const TEST_DATA__simpleFilterFunc = {
   _type: 'lambda',
   body: [
     {
@@ -89,7 +89,7 @@ export const simpleFilterFunc = {
   parameters: [],
 };
 
-export const simpleProjection = {
+export const TEST_DATA__simpleProjection = {
   _type: 'lambda',
   body: [
     {
@@ -159,7 +159,7 @@ export const simpleProjection = {
   parameters: [],
 };
 
-export const projectWithCols = {
+export const TEST_DATA__projectWithCols = {
   _type: 'lambda',
   body: [
     {
@@ -258,7 +258,7 @@ export const projectWithCols = {
   parameters: [],
 };
 
-export const simpleProjectionWithFilter = {
+export const TEST_DATA__simpleProjectionWithFilter = {
   _type: 'lambda',
   body: [
     {
@@ -369,7 +369,7 @@ export const simpleProjectionWithFilter = {
   parameters: [],
 };
 
-export const ComplexRelationalModel = [
+export const TEST_DATA__complexRelationalModel = [
   {
     path: 'test::Person',
     content: {
@@ -553,7 +553,7 @@ export const ComplexRelationalModel = [
   },
 ];
 
-export const simpleGraphFetch = {
+export const TEST_DATA__simpleGraphFetch = {
   _type: 'lambda',
   body: [
     {
@@ -606,7 +606,7 @@ export const simpleGraphFetch = {
   parameters: [],
 };
 
-export const firmPersonGraphFetch = {
+export const TEST_DATA__firmPersonGraphFetch = {
   _type: 'lambda',
   body: [
     {
@@ -697,7 +697,7 @@ export const firmPersonGraphFetch = {
   parameters: [],
 };
 
-export const M2MModel = [
+export const TEST_DATA__M2MModel = [
   {
     path: 'demo::other::IncType',
     content: {
@@ -1143,7 +1143,7 @@ export const M2MModel = [
   },
 ];
 
-export const simpleGroupBy = {
+export const TEST_DATA__simpleGroupBy = {
   _type: 'lambda',
   body: [
     {

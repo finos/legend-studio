@@ -17,20 +17,20 @@
 /// <reference types="jest-extended" />
 import { getByText } from '@testing-library/react';
 import {
-  simpleProjection,
-  projectionWithChainedProperty,
-  projectionWithResultSetModifiers,
-  getAllWithGroupedFilter,
-  getAllWithOneConditionFilter,
-  projectWithDerivedProperty,
-  fullComplexProjectionQuery,
-  complexGraphFetch,
-  simpleGraphFetch,
+  TEST_DATA__simpleProjection,
+  TEST_DATA__projectionWithChainedProperty,
+  TEST_DATA__projectionWithResultSetModifiers,
+  TEST_DATA__getAllWithGroupedFilter,
+  TEST_DATA__getAllWithOneConditionFilter,
+  TEST_DATA__projectWithDerivedProperty,
+  TEST_DATA__fullComplexProjectionQuery,
+  TEST_DATA__complexGraphFetch,
+  TEST_DATA__simpleGraphFetch,
 } from './QueryBuilder_TestData';
-import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
-import ComplexM2MModel from './QueryBuilder_Model_ComplexM2M.json';
-import COVIDDataSimpleModel from './QueryBuilder_Model_COVID.json';
-import SimpleM2MModel from './QueryBuilder_Model_SimpleM2M.json';
+import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
+import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
+import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
+import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M.json';
 import {
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
@@ -38,7 +38,7 @@ import {
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
 import type { PlainObject } from '@finos/legend-shared';
-import { setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
+import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
 import { QueryBuilderState } from '../../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
@@ -83,7 +83,7 @@ type RoundtripTestCase = [
 ];
 
 const projectionCtx = {
-  entities: ComplexRelationalModel,
+  entities: TEST_DATA__ComplexRelationalModel,
   targetClassPath: 'model::pure::tests::model::simple::Person',
   className: 'Person',
   mappingName: 'simpleRelationalMapping',
@@ -91,7 +91,7 @@ const projectionCtx = {
 };
 
 const graphFetchCtx = {
-  entities: ComplexM2MModel,
+  entities: TEST_DATA__ComplexM2MModel,
   targetClassPath: 'model::target::NPerson',
   className: 'NPerson',
   mappingName: 'MyMapping',
@@ -99,7 +99,7 @@ const graphFetchCtx = {
 };
 
 const relationalFilterCtx = {
-  entities: COVIDDataSimpleModel,
+  entities: TEST_DATA__COVIDDataSimpleModel,
   targetClassPath: 'domain::COVIDData',
   className: 'COVIDData',
   mappingName: 'CovidDataMapping',
@@ -107,7 +107,7 @@ const relationalFilterCtx = {
 };
 
 const m2mFilterCtx = {
-  entities: SimpleM2MModel,
+  entities: TEST_DATA__SimpleM2MModel,
   targetClassPath: 'model::target::_Person',
   className: '_Person',
   mappingName: 'mapping',
@@ -116,24 +116,29 @@ const m2mFilterCtx = {
 
 const cases: RoundtripTestCase[] = [
   // projection
-  ['Simple projection', projectionCtx, simpleProjection, undefined],
-  ['Complex filter', projectionCtx, fullComplexProjectionQuery, undefined],
+  ['Simple projection', projectionCtx, TEST_DATA__simpleProjection, undefined],
+  [
+    'Complex filter',
+    projectionCtx,
+    TEST_DATA__fullComplexProjectionQuery,
+    undefined,
+  ],
   [
     'Projection with property chain',
     projectionCtx,
-    projectionWithChainedProperty,
+    TEST_DATA__projectionWithChainedProperty,
     undefined,
   ],
   [
     'Projection with result set modifiers',
     projectionCtx,
-    projectionWithResultSetModifiers,
+    TEST_DATA__projectionWithResultSetModifiers,
     undefined,
   ],
   [
     'Projection with derived property',
     projectionCtx,
-    projectWithDerivedProperty,
+    TEST_DATA__projectWithDerivedProperty,
     undefined,
   ],
   [
@@ -143,8 +148,13 @@ const cases: RoundtripTestCase[] = [
     lambda_input_projectionWithFullPathFunctions,
   ],
   // graph fetch
-  ['Simple graph fetch', graphFetchCtx, simpleGraphFetch, undefined],
-  ['Complex graph fetch', graphFetchCtx, complexGraphFetch, undefined],
+  ['Simple graph fetch', graphFetchCtx, TEST_DATA__simpleGraphFetch, undefined],
+  [
+    'Complex graph fetch',
+    graphFetchCtx,
+    TEST_DATA__complexGraphFetch,
+    undefined,
+  ],
   [
     '(auto-fix) Graph-fetch with full-path functions',
     graphFetchCtx,
@@ -161,7 +171,7 @@ const cases: RoundtripTestCase[] = [
   [
     'Filter with a single condition',
     projectionCtx,
-    getAllWithOneConditionFilter,
+    TEST_DATA__getAllWithOneConditionFilter,
     undefined,
   ],
   // group condition
@@ -180,7 +190,7 @@ const cases: RoundtripTestCase[] = [
   [
     'Filter with complex group conditions',
     projectionCtx,
-    getAllWithGroupedFilter,
+    TEST_DATA__getAllWithGroupedFilter,
     undefined,
   ],
   // operator
@@ -236,7 +246,7 @@ describe(
       const { entities, targetClassPath, className, mappingName, runtimeName } =
         context;
       const mockedEditorStore = buildQueryBuilderMockedEditorStore();
-      const renderResult = await setUpEditorWithDefaultSDLCData(
+      const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
         mockedEditorStore,
         {
           entities,

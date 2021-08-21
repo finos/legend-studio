@@ -17,14 +17,14 @@
 import type { PlainObject } from '@finos/legend-shared';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  simpleDebuggingCase,
-  testAutoImportsWithAny,
-  testAutoImportsWithSystemProfiles,
+  TEST_DATA__simpleDebuggingCase,
+  TEST_DATA__AutoImportsWithAny,
+  TEST_DATA__AutoImportsWithSystemProfiles,
 } from '../roundtrip/RoundtripTestData';
-import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
+import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { waitFor } from '@testing-library/dom';
-import { getTestEditorStore } from '../../StoreTestUtils';
-import { simpleCoreModelData } from './CoreTestData';
+import { TEST__getTestEditorStore } from '../../StoreTestUtils';
+import { TEST_DATA__SimpleGraph } from './CoreTestData';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
@@ -163,7 +163,7 @@ const testDependencyElements = async (
       buildFileGenerationDepentOnDependencyElements(dependencyElementPaths),
     );
   }
-  const editorStore = getTestEditorStore();
+  const editorStore = TEST__getTestEditorStore();
   editorStore.projectConfigurationEditorState.setProjectConfiguration(
     ProjectConfiguration.serialization.fromJson(PROJECT_CONFIG),
   );
@@ -275,12 +275,12 @@ const buildProjectVersionEntities = (
 test(unitTest('M2M graph dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(m2mGraphEntities as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__m2mGraphEntities as Entity[]),
     true,
   );
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(simpleDebuggingCase as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__simpleDebuggingCase as Entity[]),
     true,
   );
 });
@@ -288,12 +288,14 @@ test(unitTest('M2M graph dependency check'), async () => {
 test(unitTest('Auto-imports dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(testAutoImportsWithSystemProfiles as Entity[]),
+    buildProjectVersionEntities(
+      TEST_DATA__AutoImportsWithSystemProfiles as Entity[],
+    ),
     true,
   );
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(testAutoImportsWithAny as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__AutoImportsWithAny as Entity[]),
     true,
   );
 });
@@ -301,7 +303,7 @@ test(unitTest('Auto-imports dependency check'), async () => {
 test(unitTest('Core model dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(simpleCoreModelData as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__SimpleGraph as Entity[]),
     true,
   );
 });

@@ -17,7 +17,7 @@
 // References to resolve in Database
 // - Includes
 // - Filter
-export const testDatabaseRoundtrip = [
+export const TEST_DATA__DatabaseRoundtrip = [
   {
     path: 'model::relational::tests::db',
     content: {
@@ -2980,7 +2980,7 @@ export const testDatabaseRoundtrip = [
   },
 ];
 
-export const testDatabaseWithSelfJoin = [
+export const TEST_DATA__DatabaseWithSelfJoin = [
   {
     path: 'apps::meta::relational::tests::dbInc',
     content: {
@@ -3131,7 +3131,7 @@ export const testDatabaseWithSelfJoin = [
   },
 ];
 
-export const simpleEmbeddedRelationalRoundtrip = [
+export const TEST_DATA__simpleEmbeddedRelationalRoundtrip = [
   {
     path: 'other::Address',
     content: {
@@ -3454,7 +3454,7 @@ export const simpleEmbeddedRelationalRoundtrip = [
   },
 ];
 
-export const multiLevelEmbeddedRelationalRoundtrip = [
+export const TEST_DATA__multiLevelEmbeddedRelationalRoundtrip = [
   {
     path: 'other::Address',
     content: {
@@ -3785,13 +3785,13 @@ export const multiLevelEmbeddedRelationalRoundtrip = [
 // - JoinPointer
 // - ColumnPointer
 // - FilterPointer
-export const testRelationalMappingRoundtrip = [
+export const TEST_DATA__RelationalMappingRoundtrip = [
   // TODO
 ];
 
 // References to resolve in Relational Database Connection
 // - Connection store
-export const testRelationalDatabaseConnectionRoundtrip = [
+export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
   {
     path: 'apps::pure::studio::relational::tests::dbInc',
     content: {
@@ -4009,11 +4009,11 @@ export const testRelationalDatabaseConnectionRoundtrip = [
   },
 ];
 
-export const testRelationalInputData = [
+export const TEST_DATA__RelationalInputData = [
   // TODO
 ];
 
-export const testRelationalAssociationMapping = [
+export const TEST_DATA__RelationalAssociationMapping = [
   {
     path: 'apps::meta::pure::tests::model::simple::GeographicEntityType',
     content: {
@@ -9442,7 +9442,7 @@ export const testRelationalAssociationMapping = [
   },
 ];
 
-export const testXStoreAssociationMapping = [
+export const TEST_DATA__XStoreAssociationMapping = [
   {
     path: 'test::Firm',
     content: {

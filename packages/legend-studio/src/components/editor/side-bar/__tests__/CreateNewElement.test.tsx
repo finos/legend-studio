@@ -23,8 +23,8 @@ import {
 } from '@testing-library/react';
 import { integrationTest, toTitleCase } from '@finos/legend-shared';
 import {
-  getMockedEditorStore,
-  setUpEditorWithDefaultSDLCData,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../ComponentTestUtils';
 import { CORE_TEST_ID } from '../../../../const';
 import type { EditorStore } from '../../../../stores/EditorStore';
@@ -69,8 +69,8 @@ let renderResult: RenderResult;
 let mockedEditorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = getMockedEditorStore();
-  renderResult = await setUpEditorWithDefaultSDLCData(mockedEditorStore);
+  mockedEditorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore);
 });
 
 test(

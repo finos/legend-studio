@@ -29,26 +29,29 @@ import {
   waitFor,
   fireEvent,
 } from '@testing-library/react';
-import m2mGraphEntities from '../../../../../stores/__tests__/buildGraph/M2MGraphEntitiesTestData.json';
+import TEST_DATA__m2mGraphEntities from '../../../../../stores/__tests__/buildGraph/TEST_DATA__M2MGraphEntities.json';
 import { integrationTest } from '@finos/legend-shared';
 import {
-  openElementFromExplorerTree,
-  getMockedEditorStore,
-  setUpEditorWithDefaultSDLCData,
+  TEST__openElementFromExplorerTree,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../ComponentTestUtils';
 import { CORE_TEST_ID } from '../../../../../const';
 
 let renderResult: RenderResult;
 
 beforeEach(async () => {
-  const mockedEditorStore = getMockedEditorStore();
-  renderResult = await setUpEditorWithDefaultSDLCData(mockedEditorStore, {
-    entities: m2mGraphEntities,
+  const mockedEditorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+    entities: TEST_DATA__m2mGraphEntities,
   });
 });
 
 test(integrationTest('Profile editor renders properly'), async () => {
-  await openElementFromExplorerTree('ui::test1::ProfileTest', renderResult);
+  await TEST__openElementFromExplorerTree(
+    'ui::test1::ProfileTest',
+    renderResult,
+  );
   const editPanelHeader = renderResult.getByTestId(
     CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
@@ -71,7 +74,7 @@ test(integrationTest('Profile editor renders properly'), async () => {
 test(
   integrationTest('Class editor without constraints and derived properties'),
   async () => {
-    await openElementFromExplorerTree('ui::TestClass', renderResult);
+    await TEST__openElementFromExplorerTree('ui::TestClass', renderResult);
     const editPanelHeader = renderResult.getByTestId(
       CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
     );
@@ -151,7 +154,7 @@ test(
 );
 
 test(integrationTest('Enumeration editor'), async () => {
-  await openElementFromExplorerTree('ui::TestEnumeration', renderResult);
+  await TEST__openElementFromExplorerTree('ui::TestEnumeration', renderResult);
   const editPanelHeader = renderResult.getByTestId(
     CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
@@ -187,7 +190,7 @@ test(integrationTest('Enumeration editor'), async () => {
 });
 
 test(integrationTest('Association editor'), async () => {
-  await openElementFromExplorerTree('ui::TestAssociation', renderResult);
+  await TEST__openElementFromExplorerTree('ui::TestAssociation', renderResult);
   const editPanelHeader = renderResult.getByTestId(
     CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );

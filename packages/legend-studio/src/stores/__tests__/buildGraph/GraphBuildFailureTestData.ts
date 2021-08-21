@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const testMissingSuperType = [
+export const TEST_DATA__MissingSuperType = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     path: 'ui::test1::Animal',
@@ -45,7 +45,7 @@ export const testMissingSuperType = [
   },
 ];
 
-export const testMissingProfile = [
+export const TEST_DATA__MissingProfile = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     path: 'ui::test1::Anyone',
@@ -85,7 +85,7 @@ export const testMissingProfile = [
   },
 ];
 
-export const testMissingStereoType = [
+export const TEST_DATA__MissingStereoType = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     path: 'ui::test2::Broken',
@@ -140,7 +140,7 @@ export const testMissingStereoType = [
   },
 ];
 
-export const testMissingTagValue = [
+export const TEST_DATA__MissingTagValue = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     path: 'ui::test2::milestoning::Broken',
@@ -198,7 +198,7 @@ export const testMissingTagValue = [
   },
 ];
 
-export const testMissingProperty = [
+export const TEST_DATA__MissingProperty = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     path: 'ui::test1::Animal',
@@ -229,7 +229,7 @@ export const testMissingProperty = [
   },
 ];
 
-export const testMissingTargetClassinMapping = [
+export const TEST_DATA__MissingTargetClassinMapping = [
   {
     classifierPath: 'meta::pure::mapping::Mapping',
     path: 'ui::mapping::testMapping',
@@ -444,7 +444,7 @@ export const testMissingTargetClassinMapping = [
   },
 ];
 
-export const testMissingSetImp = [
+export const TEST_DATA__MissingSetImp = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     path: 'ui::test1::SourceClass',
@@ -720,7 +720,7 @@ export const testMissingSetImp = [
   },
 ];
 
-export const testMissingClassInDiagram = [
+export const TEST_DATA__MissingClassInDiagram = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     path: 'ui::test1::Cat',
@@ -773,7 +773,7 @@ export const testMissingClassInDiagram = [
   },
 ];
 
-export const testMissingClassMapping = [
+export const TEST_DATA__MissingClassMapping = [
   {
     path: 'ui::Employeer',
     content: {
@@ -937,7 +937,7 @@ export const testMissingClassMapping = [
   },
 ];
 
-export const testMissingClassMappingWithTargetId = [
+export const TEST_DATA__MissingClassMappingWithTargetId = [
   {
     path: 'ui::Employeer',
     content: {

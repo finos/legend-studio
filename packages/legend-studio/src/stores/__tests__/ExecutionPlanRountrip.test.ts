@@ -16,8 +16,11 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
-import { buildGraphBasic, getTestEditorStore } from '../StoreTestUtils';
-import { simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../StoreTestUtils';
+import { TEST_DATA__simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
 
 type RoundtripTestCase = [
   string,
@@ -28,19 +31,23 @@ type RoundtripTestCase = [
 ];
 
 const ctx = {
-  entities: simpleRelationalPlan.entities,
+  entities: TEST_DATA__simpleRelationalPlan.entities,
 };
 
 const cases: RoundtripTestCase[] = [
-  ['Simple relational execution plan', ctx, simpleRelationalPlan.plan],
+  [
+    'Simple relational execution plan',
+    ctx,
+    TEST_DATA__simpleRelationalPlan.plan,
+  ],
 ];
 
 describe(unitTest('Execution plan processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, executionPlanJson) => {
     const { entities } = context;
     // setup
-    const editorStore = getTestEditorStore();
-    await buildGraphBasic(entities, editorStore, {
+    const editorStore = TEST__getTestEditorStore();
+    await TEST__buildGraphBasic(entities, editorStore, {
       TEMPORARY__keepSectionIndex: true,
     });
     // roundtrip check

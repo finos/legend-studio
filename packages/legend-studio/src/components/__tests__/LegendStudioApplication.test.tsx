@@ -21,9 +21,9 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
-import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
+import { TEST__getTestApplicationConfig } from '../../stores/StoreTestUtils';
 import {
-  getMockedApplicationStore,
+  TEST__provideMockedApplicationStore,
   TEST__ApplicationStoreProvider,
   TEST__StudioStoreProvider,
 } from '../ComponentTestUtils';
@@ -67,12 +67,12 @@ test(integrationTest('App header is displayed properly'), async () => {
   );
 
   expect(
-    queryByText(getTestApplicationConfig().env.toUpperCase()),
+    queryByText(TEST__getTestApplicationConfig().env.toUpperCase()),
   ).not.toBeNull();
 });
 
 test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
-  const applicationStore = getMockedApplicationStore();
+  const applicationStore = TEST__provideMockedApplicationStore();
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
   const stubURL = 'stubUrl';
 

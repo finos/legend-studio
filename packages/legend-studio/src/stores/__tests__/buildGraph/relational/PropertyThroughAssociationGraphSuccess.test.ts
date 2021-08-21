@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import { targetSetImplementationThroughAssociation } from './RelationalEntitiesTestData';
+import { TEST_DATA__targetSetImplementationThroughAssociation } from './RelationalEntitiesTestData';
 import {
   unitTest,
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../../../StoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   DynaFunction,
@@ -30,11 +33,11 @@ import {
   getClassMappingsByClass,
 } from '@finos/legend-graph';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await buildGraphBasic(
-    targetSetImplementationThroughAssociation as Entity[],
+  await TEST__buildGraphBasic(
+    TEST_DATA__targetSetImplementationThroughAssociation as Entity[],
     editorStore,
   );
 });

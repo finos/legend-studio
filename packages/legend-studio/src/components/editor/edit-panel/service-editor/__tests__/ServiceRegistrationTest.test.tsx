@@ -22,7 +22,7 @@ import {
   getByText,
   fireEvent,
 } from '@testing-library/react';
-import serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/ServiceRegistrationTestData.json';
+import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/TEST_DATA__ServiceRegistration.json';
 import {
   integrationTest,
   MOBX__disableSpyOrMock,
@@ -30,11 +30,11 @@ import {
   prettyCONSTName,
 } from '@finos/legend-shared';
 import {
-  SDLC_TestData,
-  openElementFromExplorerTree,
-  getMockedEditorStore,
-  setUpEditor,
-  getMockedApplicationStore,
+  TEST_DATA__DefaultSDLCInfo,
+  TEST__openElementFromExplorerTree,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditor,
+  TEST__provideMockedApplicationStore,
 } from '../../../../ComponentTestUtils';
 import { CORE_TEST_ID } from '../../../../../const';
 import type { PlainObject } from '@finos/legend-shared';
@@ -42,7 +42,7 @@ import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { NOTIFCATION_SEVERITY } from '../../../../../stores/ApplicationStore';
 import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState';
-import { getTestApplicationConfig } from '../../../../../stores/StoreTestUtils';
+import { TEST__getTestApplicationConfig } from '../../../../../stores/StoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
 import {
@@ -57,9 +57,9 @@ const setup = async (
   workspace: PlainObject<Workspace>,
   versions?: PlainObject<Version>[],
 ): Promise<EditorStore> => {
-  const mockedEditorStore = getMockedEditorStore(
-    getMockedApplicationStore(
-      getTestApplicationConfig({
+  const mockedEditorStore = TEST__provideMockedEditorStore(
+    TEST__provideMockedApplicationStore(
+      TEST__getTestApplicationConfig({
         options: {
           core: {
             TEMPORARY__serviceRegistrationConfig: [
@@ -92,21 +92,22 @@ const setup = async (
       }),
     ),
   );
-  renderResult = await setUpEditor(mockedEditorStore, {
+  renderResult = await TEST__setUpEditor(mockedEditorStore, {
     project: project,
     workspace: workspace,
-    curentRevision: SDLC_TestData.currentRevision,
+    curentRevision: TEST_DATA__DefaultSDLCInfo.currentRevision,
     projectVersions: versions ?? [],
-    entities: serviceEntities,
-    projectConfiguration: SDLC_TestData.projectConfig,
-    latestProjectStructureVersion: SDLC_TestData.latestProjectStructureVersion,
+    entities: TEST_DATA__serviceEntities,
+    projectConfiguration: TEST_DATA__DefaultSDLCInfo.projectConfig,
+    latestProjectStructureVersion:
+      TEST_DATA__DefaultSDLCInfo.latestProjectStructureVersion,
     availableGenerationDescriptions: [
-      ...SDLC_TestData.availableSchemaGenerations,
-      ...SDLC_TestData.availableCodeGenerations,
+      ...TEST_DATA__DefaultSDLCInfo.availableSchemaGenerations,
+      ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
     ],
     availableImportDescriptions: [
-      ...SDLC_TestData.availableSchemaImports,
-      ...SDLC_TestData.availableCodeImports,
+      ...TEST_DATA__DefaultSDLCInfo.availableSchemaImports,
+      ...TEST_DATA__DefaultSDLCInfo.availableCodeImports,
     ],
   });
   return mockedEditorStore;
@@ -159,7 +160,7 @@ test(
       .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
       .mockResolvedValue();
     MOBX__disableSpyOrMock();
-    await openElementFromExplorerTree('test::myService', renderResult);
+    await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
       renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );
@@ -227,8 +228,8 @@ test(
   ),
   async () => {
     const mockedEditorStore = await setup(
-      SDLC_TestData.project,
-      SDLC_TestData.workspace,
+      TEST_DATA__DefaultSDLCInfo.project,
+      TEST_DATA__DefaultSDLCInfo.workspace,
     );
     const result = new ServiceRegistrationResult(
       '/example/myTestUrl/testing',
@@ -243,7 +244,7 @@ test(
       .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
       .mockResolvedValue();
     MOBX__disableSpyOrMock();
-    await openElementFromExplorerTree('test::myService', renderResult);
+    await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
       renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );

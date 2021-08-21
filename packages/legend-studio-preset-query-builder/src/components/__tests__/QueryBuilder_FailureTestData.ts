@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const errorInGraphLambda = {
+export const TEST_DATA__errorInGraphLambda = {
   _type: 'lambda',
   body: [
     {
@@ -31,7 +31,7 @@ export const errorInGraphLambda = {
   parameters: [],
 };
 
-export const malformedFilterExpression = {
+export const TEST_DATA__malformedFilterExpression = {
   _type: 'lambda',
   body: [
     {
@@ -54,7 +54,7 @@ export const malformedFilterExpression = {
   parameters: [],
 };
 
-export const unsupportedFunction = {
+export const TEST_DATA__unsupportedFunction = {
   _type: 'lambda',
   body: [
     {
@@ -71,7 +71,7 @@ export const unsupportedFunction = {
   parameters: [],
 };
 
-export const unsupportedFunctionWithFullPath = {
+export const TEST_DATA__unsupportedFunctionWithFullPath = {
   _type: 'lambda',
   body: [
     {
@@ -88,7 +88,7 @@ export const unsupportedFunctionWithFullPath = {
   parameters: [],
 };
 
-export const misplacedTakeFunction = {
+export const TEST_DATA__misplacedTakeFunction = {
   _type: 'lambda',
   body: [
     {

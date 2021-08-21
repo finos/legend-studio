@@ -25,10 +25,10 @@ import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import {
-  TEST__applicationConfigData,
-  testApplicationVersionData,
+  TEST_DATA__applicationConfig,
+  TEST_DATA__applicationVersion,
 } from '../../stores/StoreTestUtils';
-import { getMockedWebApplicationNavigator } from '../ComponentTestUtils';
+import { TEST__provideMockedWebApplicationNavigator } from '../ComponentTestUtils';
 import { ApplicationConfig } from '../../stores/application/ApplicationConfig';
 import {
   generateSetupRoute,
@@ -43,10 +43,10 @@ const getTestApplicationConfigWithMultiSDLCServer = (
 ): ApplicationConfig =>
   new ApplicationConfig(
     {
-      ...TEST__applicationConfigData,
+      ...TEST_DATA__applicationConfig,
       ...extraConfigData,
     },
-    testApplicationVersionData,
+    TEST_DATA__applicationVersion,
     '/studio/',
   );
 
@@ -76,7 +76,7 @@ test(
 
     setup();
 
-    const navigator = getMockedWebApplicationNavigator();
+    const navigator = TEST__provideMockedWebApplicationNavigator();
     MOBX__enableSpyOrMock();
     const goToSpy = jest.spyOn(navigator, 'goTo').mockImplementation();
     MOBX__disableSpyOrMock();
@@ -230,7 +230,7 @@ test(
 
     setup();
 
-    const navigator = getMockedWebApplicationNavigator();
+    const navigator = TEST__provideMockedWebApplicationNavigator();
     MOBX__enableSpyOrMock();
     const goToSpy = jest.spyOn(navigator, 'goTo').mockImplementation();
     MOBX__disableSpyOrMock();

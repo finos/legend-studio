@@ -22,12 +22,12 @@ import {
   getByText,
   fireEvent,
 } from '@testing-library/react';
-import enumerationMappingEntities from '../../../../editor/edit-panel/mapping-editor/__tests__/EnumerationMappingTestData.json';
+import TEST_DATA__enumerationMappingEntities from '../../../../editor/edit-panel/mapping-editor/__tests__/TEST_DATA__EnumerationMapping.json';
 import { integrationTest } from '@finos/legend-shared';
 import {
-  openElementFromExplorerTree,
-  getMockedEditorStore,
-  setUpEditorWithDefaultSDLCData,
+  TEST__openElementFromExplorerTree,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../ComponentTestUtils';
 import { CORE_TEST_ID } from '../../../../../const';
 import type { EditorStore } from '../../../../../stores/EditorStore';
@@ -37,16 +37,16 @@ let renderResult: RenderResult;
 let mockedEditorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = getMockedEditorStore();
-  renderResult = await setUpEditorWithDefaultSDLCData(mockedEditorStore, {
-    entities: enumerationMappingEntities,
+  mockedEditorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+    entities: TEST_DATA__enumerationMappingEntities,
   });
 });
 
 test(
   integrationTest('Enumeration mapping editor basic functionality'),
   async () => {
-    await openElementFromExplorerTree('demo::MyMap', renderResult);
+    await TEST__openElementFromExplorerTree('demo::MyMap', renderResult);
     const editPanelHeader = await waitFor(() =>
       renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );

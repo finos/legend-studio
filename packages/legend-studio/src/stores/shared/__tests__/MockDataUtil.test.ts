@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import completeGraphEntities from './MockDataGenerationTestData.json';
+import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json';
 import { classHasCycle, createMockClassInstance } from '../MockDataUtil';
 import { unitTest } from '@finos/legend-shared';
-import { getTestEditorStore } from '../../StoreTestUtils';
+import { TEST__getTestEditorStore } from '../../StoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
   await flowResult(
     editorStore.graphState.graphManager.buildGraph(
       editorStore.graphState.graph,
-      completeGraphEntities as Entity[],
+      TEST_DATA__completeGraphEntities as Entity[],
     ),
   );
 });

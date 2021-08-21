@@ -32,7 +32,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { TEST__getTestDepotServerClient } from '@finos/legend-server-depot';
 
-export const TEST__applicationConfigData = {
+export const TEST_DATA__applicationConfig = {
   appName: 'test-app',
   env: 'test-env',
   sdlc: {
@@ -49,39 +49,38 @@ export const TEST__applicationConfigData = {
   },
 };
 
-export const testApplicationVersionData = {
+export const TEST_DATA__applicationVersion = {
   buildTime: '2001-01-01T00:00:00-0000',
   version: 'test-version',
   commitSHA: 'test-commit-id',
 };
 
-export const getTestApplicationConfig = (
+export const TEST__getTestApplicationConfig = (
   extraConfigData = {},
 ): ApplicationConfig => {
   const config = new ApplicationConfig(
     {
-      ...TEST__applicationConfigData,
+      ...TEST_DATA__applicationConfig,
       ...extraConfigData,
     },
-    testApplicationVersionData,
+    TEST_DATA__applicationVersion,
     '/studio/',
   );
   config.setSDLCServerKey(URL_PATH_PLACEHOLDER);
   return config;
 };
 
-export const TEST__getApplicationStore = (): ApplicationStore =>
+export const TEST__getTestApplicationStore = (): ApplicationStore =>
   new ApplicationStore(
-    getTestApplicationConfig(),
+    TEST__getTestApplicationConfig(),
     new WebApplicationNavigator(createBrowserHistory()),
     new Log(),
   );
 
-export const getTestEditorStore = (
-  applicationConfig = getTestApplicationConfig(),
+export const TEST__getTestEditorStore = (
   pluginManager = StudioPluginManager.create(),
 ): EditorStore => {
-  const applicationStore = TEST__getApplicationStore();
+  const applicationStore = TEST__getTestApplicationStore();
   return new EditorStore(
     applicationStore,
     TEST__getTestSDLCServerClient(),
@@ -90,10 +89,10 @@ export const getTestEditorStore = (
   );
 };
 
-export const excludeSectionIndex = (entities: Entity[]): Entity[] =>
+export const TEST__excludeSectionIndex = (entities: Entity[]): Entity[] =>
   entities.filter((entity) => entity.path !== '__internal__::SectionIndex');
 
-export const DEBUG_expectToIncludeSameMembers = (
+export const TEST_DEBUG__expectToIncludeSameMembers = (
   expected: Entity[],
   actual: Entity[],
 ): void => {
@@ -107,7 +106,7 @@ export const DEBUG_expectToIncludeSameMembers = (
   }
 };
 
-export const ensureObjectFieldsAreSortedAlphabetically = (
+export const TEST__ensureObjectFieldsAreSortedAlphabetically = (
   obj: Record<PropertyKey, unknown> | unknown[],
 ): void => {
   const checkObjectFieldsAreSortedAlphabetically = (
@@ -148,7 +147,7 @@ export const ensureObjectFieldsAreSortedAlphabetically = (
   checkObjectFieldsAreSortedAlphabetically(obj);
 };
 
-export const buildGraphBasic = async (
+export const TEST__buildGraphBasic = async (
   entities: Entity[],
   editorStore: EditorStore,
   options?: GraphBuilderOptions,
@@ -163,11 +162,11 @@ export const buildGraphBasic = async (
   );
 };
 
-export const checkBuildingElementsRoundtrip = async (
+export const TEST__checkBuildingElementsRoundtrip = async (
   entities: Entity[],
-  editorStore = getTestEditorStore(),
+  editorStore = TEST__getTestEditorStore(),
 ): Promise<void> => {
-  await buildGraphBasic(entities, editorStore, {
+  await TEST__buildGraphBasic(entities, editorStore, {
     TEMPORARY__keepSectionIndex: true,
   });
   const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
@@ -175,11 +174,11 @@ export const checkBuildingElementsRoundtrip = async (
   );
   // ensure that transformed entities have all fields ordered alphabetically
   transformedEntities.forEach((entity) =>
-    ensureObjectFieldsAreSortedAlphabetically(entity.content),
+    TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
   );
   // check if the contents are the same (i.e. roundtrip test)
   expect(transformedEntities).toIncludeSameMembers(
-    excludeSectionIndex(entities),
+    TEST__excludeSectionIndex(entities),
   );
   // check hash
   await flowResult(editorStore.graphState.precomputeHashes());
@@ -199,22 +198,22 @@ export const checkBuildingElementsRoundtrip = async (
   ).toBe(0);
 };
 
-export const checkBuildingResolvedElements = async (
+export const TEST__checkBuildingResolvedElements = async (
   entities: Entity[],
   resolvedEntities: Entity[],
-  editorStore = getTestEditorStore(),
+  editorStore = TEST__getTestEditorStore(),
 ): Promise<void> => {
-  await buildGraphBasic(entities, editorStore);
+  await TEST__buildGraphBasic(entities, editorStore);
   const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
     (element) => editorStore.graphState.graphManager.elementToEntity(element),
   );
   // ensure that transformed entities have all fields ordered alphabetically
   transformedEntities.forEach((entity) =>
-    ensureObjectFieldsAreSortedAlphabetically(entity.content),
+    TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
   );
   // check if the contents are the same (i.e. roundtrip test)
   expect(transformedEntities).toIncludeSameMembers(
-    excludeSectionIndex(resolvedEntities),
+    TEST__excludeSectionIndex(resolvedEntities),
   );
   // check hash
   await flowResult(editorStore.graphState.precomputeHashes());

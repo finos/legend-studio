@@ -16,24 +16,23 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import {
-  buildGraphBasic,
-  getTestApplicationConfig,
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
   StudioPluginManager,
-  getTestEditorStore,
 } from '@finos/legend-studio';
 import { unitTest } from '@finos/legend-shared';
 import { QueryBuilder_Preset } from '../../QueryBuilder_Preset';
 import {
-  M2MModel,
-  ComplexRelationalModel,
-  projectWithCols,
-  simpleAllFunc,
-  simpleFilterFunc,
-  simpleProjection,
-  simpleProjectionWithFilter,
-  simpleGroupBy,
-  simpleGraphFetch,
-  firmPersonGraphFetch,
+  TEST_DATA__M2MModel,
+  TEST_DATA__complexRelationalModel,
+  TEST_DATA__projectWithCols,
+  TEST_DATA__simpleAllFunc,
+  TEST_DATA__simpleFilterFunc,
+  TEST_DATA__simpleProjection,
+  TEST_DATA__simpleProjectionWithFilter,
+  TEST_DATA__simpleGroupBy,
+  TEST_DATA__simpleGraphFetch,
+  TEST_DATA__firmPersonGraphFetch,
 } from './QueryBuilder_LambdaProcessingRoundtripTestData';
 import {
   simpleDerivationProjection,
@@ -53,25 +52,33 @@ type RoundtripTestCase = [
 ];
 
 const relationalCtx = {
-  entities: ComplexRelationalModel,
+  entities: TEST_DATA__complexRelationalModel,
 };
 
 const m2mCtx = {
-  entities: M2MModel,
+  entities: TEST_DATA__M2MModel,
 };
 
 const cases: RoundtripTestCase[] = [
-  ['Simple all() function', relationalCtx, simpleAllFunc],
-  ['Simple filter() function', relationalCtx, simpleFilterFunc],
-  ['Simple project() function', relationalCtx, simpleProjection],
-  ['Simple project() function with columns', relationalCtx, projectWithCols],
-  ['Simple project() and filter()', relationalCtx, simpleProjectionWithFilter],
+  ['Simple all() function', relationalCtx, TEST_DATA__simpleAllFunc],
+  ['Simple filter() function', relationalCtx, TEST_DATA__simpleFilterFunc],
+  ['Simple project() function', relationalCtx, TEST_DATA__simpleProjection],
+  [
+    'Simple project() function with columns',
+    relationalCtx,
+    TEST_DATA__projectWithCols,
+  ],
+  [
+    'Simple project() and filter()',
+    relationalCtx,
+    TEST_DATA__simpleProjectionWithFilter,
+  ],
   [
     'Simple project() with derivation',
     relationalCtx,
     simpleDerivationProjection,
   ],
-  ['Simple groupBy()', relationalCtx, simpleGroupBy],
+  ['Simple groupBy()', relationalCtx, TEST_DATA__simpleGroupBy],
   [
     'groupBy() with derivation projection',
     relationalCtx,
@@ -82,19 +89,16 @@ const cases: RoundtripTestCase[] = [
     relationalCtx,
     groupByWithDerivationAndAggregation,
   ],
-  ['Simple graph fetch', m2mCtx, simpleGraphFetch],
-  ['Complex graph fetch', m2mCtx, firmPersonGraphFetch],
+  ['Simple graph fetch', m2mCtx, TEST_DATA__simpleGraphFetch],
+  ['Complex graph fetch', m2mCtx, TEST_DATA__firmPersonGraphFetch],
 ];
 
 describe(unitTest('Lambda processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, lambdaJson) => {
     const { entities } = context;
     // setup
-    const editorStore = getTestEditorStore(
-      getTestApplicationConfig(),
-      pluginManager,
-    );
-    await buildGraphBasic(entities, editorStore, {
+    const editorStore = TEST__getTestEditorStore(pluginManager);
+    await TEST__buildGraphBasic(entities, editorStore, {
       TEMPORARY__keepSectionIndex: true,
     });
     // roundtrip check

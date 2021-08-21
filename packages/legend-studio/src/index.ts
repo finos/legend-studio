@@ -15,6 +15,7 @@
  */
 
 // application
+export * from './const';
 export * from './components/application/ApplicationStoreProvider';
 export * from './components/StudioStoreProvider';
 export * from './components/application/WebApplicationNavigatorProvider';
@@ -62,18 +63,18 @@ export { ActionAlert } from './components/application/ActionAlert';
 export { NotificationSnackbar } from './components/application/NotificationSnackbar';
 
 // test
-export * from './const';
 export {
-  getTestApplicationConfig,
-  getTestEditorStore,
-  buildGraphBasic,
-  checkBuildingElementsRoundtrip,
+  TEST__getTestApplicationConfig,
+  TEST__getTestApplicationStore,
+  TEST__getTestEditorStore,
+  TEST__buildGraphBasic,
+  TEST__checkBuildingElementsRoundtrip,
 } from './stores/StoreTestUtils';
 export {
-  getMockedApplicationStore,
-  getMockedEditorStore,
-  setUpEditor,
-  setUpEditorWithDefaultSDLCData,
+  TEST__provideMockedApplicationStore,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditor,
+  TEST__setUpEditorWithDefaultSDLCData,
 } from './components/ComponentTestUtils';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------

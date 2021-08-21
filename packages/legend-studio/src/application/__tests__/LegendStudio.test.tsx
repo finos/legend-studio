@@ -22,7 +22,7 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import { getTestApplicationConfig } from '../../stores/StoreTestUtils';
+import { TEST__getTestApplicationConfig } from '../../stores/StoreTestUtils';
 
 class Dummy_Preset extends AbstractPreset {
   constructor() {
@@ -42,7 +42,7 @@ test(
     MOBX__enableSpyOrMock();
     jest
       .spyOn(application, 'fetchApplicationConfiguration')
-      .mockResolvedValue([getTestApplicationConfig(), {}]);
+      .mockResolvedValue([TEST__getTestApplicationConfig(), {}]);
     MOBX__disableSpyOrMock();
 
     application

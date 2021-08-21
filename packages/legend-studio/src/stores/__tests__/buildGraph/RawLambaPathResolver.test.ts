@@ -16,7 +16,7 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
-import { checkBuildingResolvedElements } from '../../StoreTestUtils';
+import { TEST__checkBuildingResolvedElements } from '../../StoreTestUtils';
 
 const getClassEntity = (enumPath: string): Entity => ({
   classifierPath: 'meta::pure::metamodel::type::Class',
@@ -106,7 +106,7 @@ const sectionEntity: Entity = {
 test(
   unitTest(`Raw lambda in a class's derived property has been resolved`),
   async () => {
-    await checkBuildingResolvedElements(
+    await TEST__checkBuildingResolvedElements(
       [getClassEntity('MyEnum'), enumEntity, sectionEntity],
       [getClassEntity('model::MyEnum'), enumEntity],
     );
