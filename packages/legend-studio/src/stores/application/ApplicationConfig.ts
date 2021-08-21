@@ -140,7 +140,7 @@ export interface ConfigurationData {
   appName: string;
   env: string;
   sdlc: { url: string } | SDLCServerOption[];
-  metadata: { url: string };
+  depot: { url: string };
   engine: { url: string; autoReAuthenticationUrl?: string };
   documentation: { url: string };
   options?: Record<PropertyKey, unknown>;
@@ -163,7 +163,7 @@ export class ApplicationConfig {
   sdlcServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
   readonly engineAutoReAuthenticationUrl?: string;
-  readonly metadataServerUrl: string;
+  readonly depotServerUrl: string;
 
   // TODO: consider modifying and/or moving this out when we refactor `version.json`
   readonly appVersion: string;
@@ -237,12 +237,12 @@ export class ApplicationConfig {
     this.engineAutoReAuthenticationUrl =
       configData.engine.autoReAuthenticationUrl;
     assertNonNullable(
-      configData.metadata,
-      `Application configuration failure: 'metadata' field is missing`,
+      configData.depot,
+      `Application configuration failure: 'depot' field is missing`,
     );
-    this.metadataServerUrl = guaranteeNonEmptyString(
-      configData.metadata.url,
-      `Application configuration failure: 'metadata.url' field is missing or empty`,
+    this.depotServerUrl = guaranteeNonEmptyString(
+      configData.depot.url,
+      `Application configuration failure: 'depot.url' field is missing or empty`,
     );
     assertNonNullable(
       configData.documentation,

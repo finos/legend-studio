@@ -41,7 +41,7 @@ export const TEST_DATA__applicationConfig = {
   engine: {
     url: 'https://testEngineUrl',
   },
-  metadata: {
+  depot: {
     url: 'https://testMetadataUrl',
   },
   documentation: {

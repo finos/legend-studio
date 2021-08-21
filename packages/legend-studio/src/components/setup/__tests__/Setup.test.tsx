@@ -28,8 +28,10 @@ import {
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
-import { TEST__SDLCServerClientProvider } from '@finos/legend-server-sdlc';
-import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
+import {
+  TEST__SDLCServerClientProvider,
+  TEST__provideMockedSDLCServerClient,
+} from '@finos/legend-server-sdlc';
 
 let sdlcServerClient: SDLCServerClient;
 

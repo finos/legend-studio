@@ -114,7 +114,7 @@ export const LegendQueryApplication = observer(
         >
           <DepotServerClientProvider
             config={{
-              serverUrl: config.metadataServerUrl,
+              serverUrl: config.depotServerUrl,
             }}
           >
             <QueryStoreProvider pluginManager={pluginManager}>

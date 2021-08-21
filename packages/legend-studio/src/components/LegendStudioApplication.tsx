@@ -256,7 +256,7 @@ export const LegendStudioApplication = observer(
         >
           <DepotServerClientProvider
             config={{
-              serverUrl: config.metadataServerUrl,
+              serverUrl: config.depotServerUrl,
             }}
           >
             <StudioStoreProvider pluginManager={pluginManager}>

@@ -15,8 +15,8 @@
  */
 
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { ActionState } from '@finos/legend-shared';
 import {
+  ActionState,
   LogEvent,
   assertErrorThrown,
   TelemetryService,

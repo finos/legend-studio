@@ -56,7 +56,7 @@ writeFileSync(
       engine: {
         url: 'http://localhost:6060/api',
       },
-      metadata: {
+      depot: {
         url: 'http://localhost:9090/api',
       },
       documentation: {
