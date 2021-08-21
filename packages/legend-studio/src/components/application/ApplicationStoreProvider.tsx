@@ -18,7 +18,6 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { ApplicationStore } from '../../stores/ApplicationStore';
 import type { ApplicationConfig } from '../../stores/application/ApplicationConfig';
-import type { PluginManager } from '../../application/PluginManager';
 import type { Log } from '@finos/legend-shared';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { WebApplicationNavigator } from '../../stores/application/WebApplicationNavigator';
@@ -30,18 +29,16 @@ const ApplicationStoreContext = createContext<ApplicationStore | undefined>(
 export const ApplicationStoreProvider = ({
   children,
   config,
-  pluginManager,
   navigator,
   log,
 }: {
   children: React.ReactNode;
   config: ApplicationConfig;
-  pluginManager: PluginManager;
   navigator: WebApplicationNavigator;
   log: Log;
 }): React.ReactElement => {
   const applicationStore = useLocalObservable(
-    () => new ApplicationStore(config, pluginManager, navigator, log),
+    () => new ApplicationStore(config, navigator, log),
   );
   return (
     <ApplicationStoreContext.Provider value={applicationStore}>
@@ -53,5 +50,5 @@ export const ApplicationStoreProvider = ({
 export const useApplicationStore = (): ApplicationStore =>
   guaranteeNonNullable(
     useContext(ApplicationStoreContext),
-    'useApplicationStore() hook must be used inside ApplicationStore context provider',
+    `Can't find application store in context`,
   );

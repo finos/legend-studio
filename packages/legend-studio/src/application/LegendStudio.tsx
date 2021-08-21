@@ -48,7 +48,7 @@ import {
 } from '@finos/legend-shared';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
-import { PluginManager } from './PluginManager';
+import { StudioPluginManager } from './StudioPluginManager';
 import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';
 import { configureComponents } from '@finos/legend-application-components';
 import { WebApplicationNavigatorProvider } from '../components/application/WebApplicationNavigatorProvider';
@@ -57,7 +57,7 @@ import { WebApplicationNavigatorProvider } from '../components/application/WebAp
 // are embedded in the function
 // See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
 export const setupLegendStudioUILibrary = async (
-  pluginManager: PluginManager,
+  pluginManager: StudioPluginManager,
 ): Promise<void> => {
   // Register Pure as a language in `monaco-editor`
   monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
@@ -238,10 +238,10 @@ export abstract class LegendApplication {
 }
 
 export class LegendStudio extends LegendApplication {
-  declare pluginManager: PluginManager;
+  declare pluginManager: StudioPluginManager;
 
   static create(): LegendStudio {
-    return new LegendStudio(PluginManager.create());
+    return new LegendStudio(StudioPluginManager.create());
   }
 
   async loadApplication(): Promise<void> {

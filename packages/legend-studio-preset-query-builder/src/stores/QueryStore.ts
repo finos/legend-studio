@@ -351,7 +351,7 @@ export class QueryStore {
 
       const project = ProjectData.serialization.fromJson(
         (yield flowResult(
-          this.editorStore.applicationStore.networkClientManager.depotClient.getProject(
+          this.editorStore.depotServerClient.getProject(
             queryInfoState.query.groupId,
             queryInfoState.query.artifactId,
           ),
@@ -423,10 +423,7 @@ export class QueryStore {
       } else {
         const project = ProjectData.serialization.fromJson(
           (yield flowResult(
-            this.editorStore.applicationStore.networkClientManager.depotClient.getProject(
-              groupId,
-              artifactId,
-            ),
+            this.editorStore.depotServerClient.getProject(groupId, artifactId),
           )) as PlainObject<ProjectData>,
         );
         yield flowResult(this.buildGraph(project, versionId));
@@ -508,10 +505,7 @@ export class QueryStore {
       } else {
         const project = ProjectData.serialization.fromJson(
           (yield flowResult(
-            this.editorStore.applicationStore.networkClientManager.depotClient.getProject(
-              groupId,
-              artifactId,
-            ),
+            this.editorStore.depotServerClient.getProject(groupId, artifactId),
           )) as PlainObject<ProjectData>,
         );
         yield flowResult(this.buildGraph(project, versionId));
@@ -597,7 +591,7 @@ export class QueryStore {
           },
           {
             tracerServicePlugins:
-              this.editorStore.applicationStore.pluginManager.getTracerServicePlugins(),
+              this.editorStore.pluginManager.getTracerServicePlugins(),
           },
         ),
       );
@@ -624,19 +618,18 @@ export class QueryStore {
 
       if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
         entities =
-          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getLatestRevisionEntities(
+          (yield this.editorStore.depotServerClient.getLatestRevisionEntities(
             project.groupId,
             project.artifactId,
           )) as Entity[];
       } else {
-        entities =
-          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getVersionEntities(
-            project.groupId,
-            project.artifactId,
-            versionId === LATEST_VERSION_ALIAS
-              ? project.latestVersion
-              : versionId,
-          )) as Entity[];
+        entities = (yield this.editorStore.depotServerClient.getVersionEntities(
+          project.groupId,
+          project.artifactId,
+          versionId === LATEST_VERSION_ALIAS
+            ? project.latestVersion
+            : versionId,
+        )) as Entity[];
       }
 
       // build graph
@@ -685,7 +678,7 @@ export class QueryStore {
       let dependencyEntitiesJson: PlainObject<ProjectVersionEntities>[] = [];
       if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
         dependencyEntitiesJson =
-          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getLatestDependencyEntities(
+          (yield this.editorStore.depotServerClient.getLatestDependencyEntities(
             project.groupId,
             project.artifactId,
             true,
@@ -693,7 +686,7 @@ export class QueryStore {
           )) as PlainObject<ProjectVersionEntities>[];
       } else {
         dependencyEntitiesJson =
-          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getDependencyEntities(
+          (yield this.editorStore.depotServerClient.getDependencyEntities(
             project.groupId,
             project.artifactId,
             versionId === LATEST_VERSION_ALIAS
@@ -724,7 +717,7 @@ export class QueryStore {
 
   private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {
     const pureGraphManagerPlugins =
-      this.editorStore.applicationStore.pluginManager.getPureGraphManagerPlugins();
+      this.editorStore.pluginManager.getPureGraphManagerPlugins();
     return pureGraphManagerPlugins.flatMap(
       (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
     );

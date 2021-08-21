@@ -15,35 +15,44 @@
  */
 
 import { createContext, useContext } from 'react';
-import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-studio';
-import { ProjectDashboardStore } from '../stores/ProjectDashboardStore';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
+import { useDepotServerClient } from '@finos/legend-server-depot';
+import { StudioStore } from '../stores/StudioStore';
+import { useApplicationStore } from './application/ApplicationStoreProvider';
+import type { StudioPluginManager } from '../application/StudioPluginManager';
+import { useLocalObservable } from 'mobx-react-lite';
 
-const ProjectDashboardStoreContext = createContext<
-  ProjectDashboardStore | undefined
->(undefined);
+const StudioStoreContext = createContext<StudioStore | undefined>(undefined);
 
-export const ProjectDashboardStoreProvider = ({
+export const StudioStoreProvider = ({
+  pluginManager,
   children,
 }: {
+  pluginManager: StudioPluginManager;
   children: React.ReactNode;
 }): React.ReactElement => {
   const applicationStore = useApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
-  const store = useLocalObservable(
-    () => new ProjectDashboardStore(applicationStore, sdlcServerClient),
+  const depotServerClient = useDepotServerClient();
+  const studioStore = useLocalObservable(
+    () =>
+      new StudioStore(
+        applicationStore,
+        sdlcServerClient,
+        depotServerClient,
+        pluginManager,
+      ),
   );
   return (
-    <ProjectDashboardStoreContext.Provider value={store}>
+    <StudioStoreContext.Provider value={studioStore}>
       {children}
-    </ProjectDashboardStoreContext.Provider>
+    </StudioStoreContext.Provider>
   );
 };
 
-export const useProjectDashboardStore = (): ProjectDashboardStore =>
+export const useStudioStore = (): StudioStore =>
   guaranteeNonNullable(
-    useContext(ProjectDashboardStoreContext),
-    `Can't find project dashboard store in context`,
+    useContext(StudioStoreContext),
+    `Can't find Studio store in context`,
   );

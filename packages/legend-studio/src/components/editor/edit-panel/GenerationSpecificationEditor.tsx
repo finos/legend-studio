@@ -254,18 +254,17 @@ const ModelGenerationSpecifications = observer(
     const { specState } = props;
     const specNodesStates = specState.generationTreeNodeStates;
     const editorStore = useEditorStore();
-    const modelGenerationElementsInGraph =
-      editorStore.applicationStore.pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
-            ).getExtraModelGenerationElementGetters?.() ?? [],
-        )
-        .flatMap((getter) => getter(editorStore.graphState.graph));
+    const modelGenerationElementsInGraph = editorStore.pluginManager
+      .getPureGraphManagerPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+          ).getExtraModelGenerationElementGetters?.() ?? [],
+      )
+      .flatMap((getter) => getter(editorStore.graphState.graph));
     const extraModelGenerationSpecificationElementDnDTypes =
-      editorStore.applicationStore.pluginManager
+      editorStore.pluginManager
         .getEditorPlugins()
         .flatMap(
           (plugin) =>

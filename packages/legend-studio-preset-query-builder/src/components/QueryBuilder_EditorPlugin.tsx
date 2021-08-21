@@ -19,7 +19,7 @@ import type {
   EditorExtensionState,
   EditorExtensionStateCreator,
   EditorStore,
-  PluginManager,
+  StudioPluginManager,
   EditorExtensionComponentRendererConfiguration,
   ExplorerContextMenuItemRendererConfiguration,
   TEMP__ServiceQueryEditorRendererConfiguration,
@@ -48,13 +48,13 @@ export class QueryBuilder_EditorPlugin extends EditorPlugin {
     super(packageJson.name, packageJson.version);
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     pluginManager.registerEditorPlugin(this);
   }
 
   override getExtraEditorPluginSetups(): EditorPluginSetup[] {
     return [
-      async (pluginManager: PluginManager): Promise<void> => {
+      async (pluginManager: StudioPluginManager): Promise<void> => {
         // Register module extensions for `ag-grid`
         agGrid_ModuleRegistry.registerModules([ClientSideRowModelModule]);
       },

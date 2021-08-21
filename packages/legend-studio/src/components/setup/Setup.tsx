@@ -99,7 +99,9 @@ const CreateProjectModal = observer(() => {
   ): void => {
     event.preventDefault();
     if (importProjectSuccessReport) {
-      window.open(importProjectSuccessReport.reviewUrl, '_blank');
+      applicationStore.navigator.openNewWindow(
+        importProjectSuccessReport.reviewUrl,
+      );
     } else {
       if (projectIdentifier && groupId && artifactId) {
         if (projectType === ProjectType.PROTOTYPE) {

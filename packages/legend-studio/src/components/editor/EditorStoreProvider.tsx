@@ -19,6 +19,9 @@ import { useLocalObservable } from 'mobx-react-lite';
 import { EditorStore } from '../../stores/EditorStore';
 import { useApplicationStore } from '../application/ApplicationStoreProvider';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { useSDLCServerClient } from '@finos/legend-server-sdlc';
+import { useDepotServerClient } from '@finos/legend-server-depot';
+import { useStudioStore } from '../StudioStoreProvider';
 
 const EditorStoreContext = createContext<EditorStore | undefined>(undefined);
 
@@ -28,7 +31,18 @@ export const EditorStoreProvider = ({
   children: React.ReactNode;
 }): React.ReactElement => {
   const applicationStore = useApplicationStore();
-  const store = useLocalObservable(() => new EditorStore(applicationStore));
+  const sdlcServerClient = useSDLCServerClient();
+  const depotServerClient = useDepotServerClient();
+  const studioStore = useStudioStore();
+  const store = useLocalObservable(
+    () =>
+      new EditorStore(
+        applicationStore,
+        sdlcServerClient,
+        depotServerClient,
+        studioStore.pluginManager,
+      ),
+  );
   return (
     <EditorStoreContext.Provider value={store}>
       {children}
@@ -39,5 +53,5 @@ export const EditorStoreProvider = ({
 export const useEditorStore = (): EditorStore =>
   guaranteeNonNullable(
     useContext(EditorStoreContext),
-    'useEditorStore() hook must be used inside EditorStore context provider',
+    `Can't find editor store in context`,
   );

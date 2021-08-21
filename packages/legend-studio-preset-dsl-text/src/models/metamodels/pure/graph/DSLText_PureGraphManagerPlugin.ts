@@ -17,7 +17,7 @@
 import packageJson from '../../../../../package.json';
 import { Text } from '../model/packageableElements/Text';
 import type { Clazz } from '@finos/legend-shared';
-import type { PluginManager } from '@finos/legend-studio';
+import type { StudioPluginManager } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
 import { PureGraphManagerPlugin } from '@finos/legend-graph';
 
@@ -29,7 +29,7 @@ export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
     );
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     pluginManager.registerPureGraphManagerPlugin(this);
   }
 

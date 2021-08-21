@@ -15,7 +15,7 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
-import type { PluginManager } from '../application/PluginManager';
+import type { StudioPluginManager } from '../application/StudioPluginManager';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
@@ -24,7 +24,9 @@ import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { PackageableElement } from '@finos/legend-graph';
 
-export type EditorPluginSetup = (pluginManager: PluginManager) => Promise<void>;
+export type EditorPluginSetup = (
+  pluginManager: StudioPluginManager,
+) => Promise<void>;
 
 export type ApplicationPageRenderEntry = {
   urlPattern: string;

@@ -327,16 +327,15 @@ export class GraphGenerationState {
    */
   addMissingGenerationSpecifications(): void {
     if (!this.editorStore.graphState.graph.ownGenerationSpecifications.length) {
-      const modelGenerationElements =
-        this.editorStore.applicationStore.pluginManager
-          .getPureGraphManagerPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
-              ).getExtraModelGenerationElementGetters?.() ?? [],
-          )
-          .flatMap((getter) => getter(this.editorStore.graphState.graph));
+      const modelGenerationElements = this.editorStore.pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+            ).getExtraModelGenerationElementGetters?.() ?? [],
+        )
+        .flatMap((getter) => getter(this.editorStore.graphState.graph));
       const fileGenerations =
         this.editorStore.graphState.graph.ownFileGenerations;
       if (modelGenerationElements.length || fileGenerations.length) {

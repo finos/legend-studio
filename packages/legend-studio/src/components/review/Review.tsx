@@ -58,8 +58,7 @@ const ReviewStatusBar = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const currentUserId =
-    applicationStore.networkClientManager.sdlcClient.currentUser?.userId ??
-    '(unknown)';
+    editorStore.sdlcServerClient.currentUser?.userId ?? '(unknown)';
   const currentProject = reviewStore.currentProject
     ? reviewStore.currentProject.name
     : reviewStore.projectId;

@@ -19,16 +19,20 @@ import { ApplicationConfig } from './application/ApplicationConfig';
 import { ApplicationStore } from './ApplicationStore';
 import { EditorStore } from './EditorStore';
 import { createBrowserHistory } from 'history';
-import { PluginManager } from '../application/PluginManager';
+import { StudioPluginManager } from '../application/StudioPluginManager';
 import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '@finos/legend-graph';
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { Log } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
-import { EntityChangeType } from '@finos/legend-server-sdlc';
+import {
+  EntityChangeType,
+  TEST__getTestSDLCServerClient,
+} from '@finos/legend-server-sdlc';
+import { TEST__getTestDepotServerClient } from '@finos/legend-server-depot';
 
-export const testApplicationConfigData = {
+export const TEST__applicationConfigData = {
   appName: 'test-app',
   env: 'test-env',
   sdlc: {
@@ -56,7 +60,7 @@ export const getTestApplicationConfig = (
 ): ApplicationConfig => {
   const config = new ApplicationConfig(
     {
-      ...testApplicationConfigData,
+      ...TEST__applicationConfigData,
       ...extraConfigData,
     },
     testApplicationVersionData,
@@ -66,17 +70,24 @@ export const getTestApplicationConfig = (
   return config;
 };
 
-export const getTestEditorStore = (
-  applicationConfig = getTestApplicationConfig(),
-  pluginManager = PluginManager.create(),
-): EditorStore => {
-  const applicationStore = new ApplicationStore(
-    applicationConfig,
-    pluginManager,
+export const TEST__getApplicationStore = (): ApplicationStore =>
+  new ApplicationStore(
+    getTestApplicationConfig(),
     new WebApplicationNavigator(createBrowserHistory()),
     new Log(),
   );
-  return new EditorStore(applicationStore);
+
+export const getTestEditorStore = (
+  applicationConfig = getTestApplicationConfig(),
+  pluginManager = StudioPluginManager.create(),
+): EditorStore => {
+  const applicationStore = TEST__getApplicationStore();
+  return new EditorStore(
+    applicationStore,
+    TEST__getTestSDLCServerClient(),
+    TEST__getTestDepotServerClient(),
+    pluginManager,
+  );
 };
 
 export const excludeSectionIndex = (entities: Entity[]): Entity[] =>

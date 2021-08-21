@@ -17,10 +17,12 @@
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { makeAutoObservable } from 'mobx';
 import type { ApplicationStore } from '@finos/legend-studio';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { Build, Project, ProjectType } from '@finos/legend-server-sdlc';
 
 export class ProjectDashboardStore {
   applicationStore: ApplicationStore;
+  sdlcServerClient: SDLCServerClient;
   projects: Map<string, Project> = new Map<string, Project>();
   /**
    * `undefined` when we are loading the build
@@ -32,12 +34,17 @@ export class ProjectDashboardStore {
   >();
   isFetchingProjects = false;
 
-  constructor(applicationStore: ApplicationStore) {
+  constructor(
+    applicationStore: ApplicationStore,
+    sdlcServerClient: SDLCServerClient,
+  ) {
     makeAutoObservable(this, {
       applicationStore: false,
+      sdlcServerClient: false,
     });
 
     this.applicationStore = applicationStore;
+    this.sdlcServerClient = sdlcServerClient;
   }
 
   *fetchProjects(): GeneratorFn<void> {
@@ -56,7 +63,7 @@ export class ProjectDashboardStore {
 
   *fetchProjectByType(projectType: ProjectType): GeneratorFn<void> {
     const projects = (
-      (yield this.applicationStore.networkClientManager.sdlcClient.getProjects(
+      (yield this.sdlcServerClient.getProjects(
         projectType,
         false,
         undefined,
@@ -76,14 +83,13 @@ export class ProjectDashboardStore {
 
   *fetchProjectCurrentBuildStatus(project: Project): GeneratorFn<void> {
     try {
-      const builds =
-        (yield this.applicationStore.networkClientManager.sdlcClient.getBuilds(
-          project.projectId,
-          undefined,
-          undefined,
-          undefined,
-          1,
-        )) as PlainObject<Build>[];
+      const builds = (yield this.sdlcServerClient.getBuilds(
+        project.projectId,
+        undefined,
+        undefined,
+        undefined,
+        1,
+      )) as PlainObject<Build>[];
       this.currentBuildByProject.set(
         project.projectId,
         builds.length !== 0 ? Build.serialization.fromJson(builds[0]) : null,

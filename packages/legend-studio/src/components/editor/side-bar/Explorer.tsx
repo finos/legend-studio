@@ -184,20 +184,19 @@ const ExplorerContextMenu = observer(
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const extraExplorerContextMenuItems =
-      editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
-        .flatMap(
-          (plugin) =>
-            plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
-            [],
-        )
-        .filter(isNonNullable)
-        .map((config) => (
-          <Fragment key={config.key}>
-            {config.renderer(editorStore, node?.packageableElement)}
-          </Fragment>
-        ));
+    const extraExplorerContextMenuItems = editorStore.pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
+          [],
+      )
+      .filter(isNonNullable)
+      .map((config) => (
+        <Fragment key={config.key}>
+          {config.renderer(editorStore, node?.packageableElement)}
+        </Fragment>
+      ));
     const projectId = editorStore.sdlcState.currentProjectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const _package = node
@@ -221,7 +220,7 @@ const ExplorerContextMenu = observer(
     };
     const openElementInViewerMode = (): void => {
       if (node) {
-        window.open(
+        applicationStore.navigator.openNewWindow(
           applicationStore.navigator.generateLocation(
             generateViewEntityRoute(
               applicationStore.config.sdlcServerKey,

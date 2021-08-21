@@ -39,8 +39,7 @@ export const ReviewSideBar = observer(() => {
   const applicationStore = useApplicationStore();
   // Review infos
   const review = reviewStore.review;
-  const currentUser =
-    applicationStore.networkClientManager.sdlcClient.currentUser;
+  const currentUser = editorStore.sdlcServerClient.currentUser;
   let reviewStatus = '';
   switch (review.state) {
     case ReviewState.OPEN:

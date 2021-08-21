@@ -42,7 +42,7 @@ import type {
   ApplicationConfig,
   SDLCServerOption,
 } from '../stores/application/ApplicationConfig';
-import type { PluginManager } from '../application/PluginManager';
+import type { StudioPluginManager } from '../application/StudioPluginManager';
 import type { Log } from '@finos/legend-shared';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -51,10 +51,14 @@ import {
   useApplicationStore,
 } from './application/ApplicationStoreProvider';
 import { useWebApplicationNavigator } from './application/WebApplicationNavigatorProvider';
+import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
+import { DepotServerClientProvider } from '@finos/legend-server-depot';
+import { StudioStoreProvider, useStudioStore } from './StudioStoreProvider';
 
 export const LegendStudioApplicationRoot = observer(() => {
+  const studioStore = useStudioStore();
   const applicationStore = useApplicationStore();
-  const extraApplicationPageRenderEntries = applicationStore.pluginManager
+  const extraApplicationPageRenderEntries = studioStore.pluginManager
     .getEditorPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? [])
     .filter((entry) => {
@@ -73,17 +77,17 @@ export const LegendStudioApplicationRoot = observer(() => {
     });
 
   useEffect(() => {
-    flowResult(applicationStore.initialize()).catch(
+    flowResult(studioStore.initialize()).catch(
       applicationStore.alertIllegalUnhandledError,
     );
-  }, [applicationStore]);
+  }, [applicationStore, studioStore]);
 
   return (
     <div className="app">
       <BlockingAlert />
       <ActionAlert />
       <NotificationSnackbar />
-      {!applicationStore.isSDLCAuthorized && (
+      {!studioStore.isSDLCAuthorized && (
         <div className="app__page">
           <AppHeader>
             <AppHeaderMenu />
@@ -92,7 +96,7 @@ export const LegendStudioApplicationRoot = observer(() => {
           <div className="app__content" />
         </div>
       )}
-      {applicationStore.isSDLCAuthorized && (
+      {studioStore.isSDLCAuthorized && (
         <Switch>
           <Route
             exact={true}
@@ -202,7 +206,7 @@ const LegendStudioApplicationConfigEditor = observer(
 export const LegendStudioApplication = observer(
   (props: {
     config: ApplicationConfig;
-    pluginManager: PluginManager;
+    pluginManager: StudioPluginManager;
     log: Log;
   }) => {
     const { config, pluginManager, log } = props;
@@ -243,15 +247,25 @@ export const LegendStudioApplication = observer(
       );
     }
     return (
-      <ApplicationStoreProvider
-        config={config}
-        navigator={navigator}
-        pluginManager={pluginManager}
-        log={log}
-      >
-        <ThemeProvider theme={LegendMaterialUITheme}>
-          <LegendStudioApplicationRoot />
-        </ThemeProvider>
+      <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
+        <SDLCServerClientProvider
+          config={{
+            env: config.env,
+            serverUrl: config.sdlcServerUrl,
+          }}
+        >
+          <DepotServerClientProvider
+            config={{
+              serverUrl: config.metadataServerUrl,
+            }}
+          >
+            <StudioStoreProvider pluginManager={pluginManager}>
+              <ThemeProvider theme={LegendMaterialUITheme}>
+                <LegendStudioApplicationRoot />
+              </ThemeProvider>
+            </StudioStoreProvider>
+          </DepotServerClientProvider>
+        </SDLCServerClientProvider>
       </ApplicationStoreProvider>
     );
   },

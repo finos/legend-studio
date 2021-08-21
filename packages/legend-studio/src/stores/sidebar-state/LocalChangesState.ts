@@ -194,7 +194,7 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
       const latestRevision = Revision.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.performEntityChanges(
+        (yield this.editorStore.sdlcServerClient.performEntityChanges(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           {
@@ -229,7 +229,7 @@ export class LocalChangesState {
          * coming from the server.
          */
         const entities =
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
+          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.sdlcState.currentProjectId,
             this.sdlcState.currentWorkspaceId,
             latestRevision.id,

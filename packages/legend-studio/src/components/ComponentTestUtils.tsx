@@ -30,7 +30,7 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import { PluginManager } from '../application/PluginManager';
+import { StudioPluginManager } from '../application/StudioPluginManager';
 import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
@@ -41,6 +41,10 @@ import type {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
+import {
+  TEST__SDLCServerClientProvider,
+  TEST__getTestSDLCServerClient,
+} from '@finos/legend-server-sdlc';
 import { ApplicationStoreProvider } from './application/ApplicationStoreProvider';
 import type {
   ImportConfigurationDescription,
@@ -49,6 +53,11 @@ import type {
   GenerationMode,
 } from '@finos/legend-graph';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import {
+  TEST__DepotServerClientProvider,
+  TEST__getTestDepotServerClient,
+} from '@finos/legend-server-depot';
+import { StudioStoreProvider } from './StudioStoreProvider';
 
 export const SDLC_TestData = {
   project: {
@@ -124,7 +133,6 @@ export const TEST__ApplicationStoreProvider = ({
 }): React.ReactElement => (
   <ApplicationStoreProvider
     config={getTestApplicationConfig()}
-    pluginManager={PluginManager.create()}
     navigator={new WebApplicationNavigator(createMemoryHistory())}
     log={new Log()}
   >
@@ -132,18 +140,27 @@ export const TEST__ApplicationStoreProvider = ({
   </ApplicationStoreProvider>
 );
 
+export const TEST__StudioStoreProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement => (
+  <StudioStoreProvider pluginManager={StudioPluginManager.create()}>
+    {children}
+  </StudioStoreProvider>
+);
+
 export const getMockedApplicationStore = (
   config = getTestApplicationConfig(),
 ): ApplicationStore => {
   const mockedApplicationStore = new ApplicationStore(
     config,
-    PluginManager.create(),
     new WebApplicationNavigator(createMemoryHistory()),
     new Log(),
   );
-  const MockedApplicationStore = require('./application/ApplicationStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedApplicationStore.useApplicationStore = jest.fn();
-  MockedApplicationStore.useApplicationStore.mockReturnValue(
+  const MockedApplicationStoreProvider = require('./application/ApplicationStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MockedApplicationStoreProvider.useApplicationStore = jest.fn();
+  MockedApplicationStoreProvider.useApplicationStore.mockReturnValue(
     mockedApplicationStore,
   );
   return mockedApplicationStore;
@@ -153,21 +170,27 @@ export const getMockedWebApplicationNavigator = (
   history = createMemoryHistory(),
 ): WebApplicationNavigator => {
   const mock = new WebApplicationNavigator(history);
-  const MockWebApplicationNavigator = require('./application/WebApplicationNavigatorProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockWebApplicationNavigator.useWebApplicationNavigator = jest.fn();
-  MockWebApplicationNavigator.useWebApplicationNavigator.mockReturnValue(mock);
+  const MockWebApplicationNavigatorProvider = require('./application/WebApplicationNavigatorProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MockWebApplicationNavigatorProvider.useWebApplicationNavigator = jest.fn();
+  MockWebApplicationNavigatorProvider.useWebApplicationNavigator.mockReturnValue(
+    mock,
+  );
   return mock;
 };
 
 export const getMockedEditorStore = (
   applicationStore?: ApplicationStore,
+  pluginManager?: StudioPluginManager,
 ): EditorStore => {
   const mockedEditorStore = new EditorStore(
     applicationStore ?? getMockedApplicationStore(),
+    TEST__getTestSDLCServerClient(),
+    TEST__getTestDepotServerClient(),
+    pluginManager ?? StudioPluginManager.create(),
   );
-  const MockedEditorStore = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedEditorStore.useEditorStore = jest.fn();
-  MockedEditorStore.useEditorStore.mockReturnValue(mockedEditorStore);
+  const MockedEditorStoreProvider = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MockedEditorStoreProvider.useEditorStore = jest.fn();
+  MockedEditorStoreProvider.useEditorStore.mockReturnValue(mockedEditorStore);
   return mockedEditorStore;
 };
 
@@ -239,56 +262,35 @@ export const setUpEditor = async (
   // mock editor initialization data
   MOBX__enableSpyOrMock();
   jest
-    .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
-      'getProject',
-    )
+    .spyOn(mockedEditorStore.sdlcServerClient, 'getProject')
     .mockResolvedValue(project);
   jest
-    .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
-      'getWorkspace',
-    )
+    .spyOn(mockedEditorStore.sdlcServerClient, 'getWorkspace')
     .mockResolvedValue(workspace);
   jest
-    .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
-      'getVersions',
-    )
+    .spyOn(mockedEditorStore.sdlcServerClient, 'getVersions')
     .mockResolvedValue(projectVersions);
   jest
-    .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
-      'getRevision',
-    )
+    .spyOn(mockedEditorStore.sdlcServerClient, 'getRevision')
     .mockResolvedValue(curentRevision);
   jest
     .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
+      mockedEditorStore.sdlcServerClient,
       'checkIfWorkspaceIsInConflictResolutionMode',
     )
     .mockResolvedValue(false);
   jest
-    .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
-      'isWorkspaceOutdated',
-    )
+    .spyOn(mockedEditorStore.sdlcServerClient, 'isWorkspaceOutdated')
     .mockResolvedValue(false);
   jest
-    .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
-      'getEntities',
-    )
+    .spyOn(mockedEditorStore.sdlcServerClient, 'getEntities')
     .mockResolvedValue(entities);
   jest
-    .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
-      'getConfiguration',
-    )
+    .spyOn(mockedEditorStore.sdlcServerClient, 'getConfiguration')
     .mockResolvedValue(projectConfiguration);
   jest
     .spyOn(
-      mockedEditorStore.applicationStore.networkClientManager.sdlcClient,
+      mockedEditorStore.sdlcServerClient,
       'getLatestProjectStructureVersion',
     )
     .mockResolvedValue(latestProjectStructureVersion);
@@ -337,7 +339,13 @@ export const setUpEditor = async (
   const renderResult = render(
     <Router history={history}>
       <TEST__ApplicationStoreProvider>
-        <Editor />
+        <TEST__SDLCServerClientProvider>
+          <TEST__DepotServerClientProvider>
+            <TEST__StudioStoreProvider>
+              <Editor />
+            </TEST__StudioStoreProvider>
+          </TEST__DepotServerClientProvider>
+        </TEST__SDLCServerClientProvider>
       </TEST__ApplicationStoreProvider>
     </Router>,
   );

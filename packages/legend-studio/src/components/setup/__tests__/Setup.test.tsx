@@ -22,17 +22,19 @@ import {
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
 import {
-  getMockedApplicationStore,
   SDLC_TestData,
   TEST__ApplicationStoreProvider,
 } from '../../ComponentTestUtils';
-import type { ApplicationStore } from '../../../stores/ApplicationStore';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
+import { TEST__SDLCServerClientProvider } from '@finos/legend-server-sdlc';
+import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
 
-let applicationStore: ApplicationStore;
+let sdlcServerClient: SDLCServerClient;
+
 beforeEach(() => {
-  applicationStore = getMockedApplicationStore();
+  sdlcServerClient = TEST__provideMockedSDLCServerClient();
 });
 
 test(
@@ -42,7 +44,7 @@ test(
   async () => {
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(applicationStore.networkClientManager.sdlcClient, 'getProjects')
+      .spyOn(sdlcServerClient, 'getProjects')
       .mockResolvedValueOnce([SDLC_TestData.project])
       .mockResolvedValueOnce([]);
     MOBX__disableSpyOrMock();
@@ -50,7 +52,9 @@ test(
     const { queryByText } = render(
       <MemoryRouter>
         <TEST__ApplicationStoreProvider>
-          <Setup />
+          <TEST__SDLCServerClientProvider>
+            <Setup />
+          </TEST__SDLCServerClientProvider>
         </TEST__ApplicationStoreProvider>
       </MemoryRouter>,
     );
@@ -67,15 +71,15 @@ test(
   integrationTest('Disable project selector when there is no projects'),
   async () => {
     MOBX__enableSpyOrMock();
-    jest
-      .spyOn(applicationStore.networkClientManager.sdlcClient, 'getProjects')
-      .mockResolvedValue([]);
+    jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
     MOBX__disableSpyOrMock();
 
     const { queryByText } = render(
       <MemoryRouter>
         <TEST__ApplicationStoreProvider>
-          <Setup />
+          <TEST__SDLCServerClientProvider>
+            <Setup />
+          </TEST__SDLCServerClientProvider>
         </TEST__ApplicationStoreProvider>
       </MemoryRouter>,
     );

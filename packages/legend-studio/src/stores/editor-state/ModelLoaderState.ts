@@ -179,7 +179,7 @@ export class ModelLoaderState extends EditorState {
       } [${this.replace ? `potentially affected ` : ''} ${
         entities.length
       } entities]`;
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.updateEntities(
+      yield this.editorStore.sdlcServerClient.updateEntities(
         this.editorStore.sdlcState.currentProjectId,
         this.editorStore.sdlcState.currentWorkspaceId,
         { replace: this.replace, entities, message },

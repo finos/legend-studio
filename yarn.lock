@@ -2243,7 +2243,9 @@ __metadata:
     eslint: 7.32.0
     jest: 27.0.6
     mobx: 6.3.2
+    mobx-react-lite: 3.2.0
     npm-run-all: 4.1.5
+    react: 17.0.2
     rimraf: 3.0.2
     serializr: 2.0.5
     typescript: 4.3.5
@@ -2261,7 +2263,9 @@ __metadata:
     eslint: 7.32.0
     jest: 27.0.6
     mobx: 6.3.2
+    mobx-react-lite: 3.2.0
     npm-run-all: 4.1.5
+    react: 17.0.2
     rimraf: 3.0.2
     serializr: 2.0.5
     typescript: 4.3.5
@@ -2431,6 +2435,7 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@material-ui/core": 4.12.3

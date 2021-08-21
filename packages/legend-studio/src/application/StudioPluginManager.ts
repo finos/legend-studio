@@ -15,6 +15,7 @@
  */
 
 import type {
+  GraphPluginManager,
   PureGraphManagerPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
@@ -25,7 +26,10 @@ import type {
 import { AbstractPluginManager } from '@finos/legend-shared';
 import type { EditorPlugin } from '../stores/EditorPlugin';
 
-export class PluginManager extends AbstractPluginManager {
+export class StudioPluginManager
+  extends AbstractPluginManager
+  implements GraphPluginManager
+{
   private telemetryServicePlugins: TelemetryServicePlugin[] = [];
   private tracerServicePlugins: TracerServicePlugin<unknown>[] = [];
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
@@ -36,8 +40,8 @@ export class PluginManager extends AbstractPluginManager {
     super();
   }
 
-  static create(): PluginManager {
-    return new PluginManager();
+  static create(): StudioPluginManager {
+    return new StudioPluginManager();
   }
 
   registerTelemetryServicePlugin(plugin: TelemetryServicePlugin): void {

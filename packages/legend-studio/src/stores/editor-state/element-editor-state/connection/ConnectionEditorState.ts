@@ -138,7 +138,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.REDSHIFT;
     }
     const extraDatasourceSpecificationTypeGetters =
-      this.editorStore.applicationStore.pluginManager
+      this.editorStore.pluginManager
         .getEditorPlugins()
         .flatMap(
           (plugin) =>
@@ -198,7 +198,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       default: {
         const extraDatasourceSpecificationCreators =
-          this.editorStore.applicationStore.pluginManager
+          this.editorStore.pluginManager
             .getEditorPlugins()
             .flatMap(
               (plugin) =>
@@ -240,7 +240,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     }
 
     const extraAuthenticationStrategyTypeGetters =
-      this.editorStore.applicationStore.pluginManager
+      this.editorStore.pluginManager
         .getEditorPlugins()
         .flatMap(
           (plugin) =>
@@ -305,7 +305,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         return;
       default: {
         const extraAuthenticationStrategyCreators =
-          this.editorStore.applicationStore.pluginManager
+          this.editorStore.pluginManager
             .getEditorPlugins()
             .flatMap(
               (plugin) =>

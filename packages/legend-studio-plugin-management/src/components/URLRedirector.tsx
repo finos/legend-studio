@@ -21,6 +21,7 @@ import { getQueryParameters } from '@finos/legend-shared';
 import { useParams } from 'react-router-dom';
 import {
   useApplicationStore,
+  useStudioStore,
   AppHeader,
   AppHeaderMenu,
 } from '@finos/legend-studio';
@@ -45,14 +46,11 @@ interface RedirectPathParams {
  */
 export const URLRedirector = observer(() => {
   const applicationStore = useApplicationStore();
-  const isApplicationLoadConcluded = applicationStore.initState.hasCompleted;
+  const studioStore = useStudioStore();
   const params = useParams<RedirectPathParams>();
 
   useEffect(() => {
-    if (isApplicationLoadConcluded) {
-      if (applicationStore.initState.hasFailed) {
-        applicationStore.setupTelemetryService();
-      }
+    if (studioStore.initState.hasCompleted) {
       const queryParams = getQueryParameters<{
         marketingId?: string;
       }>(applicationStore.navigator.getCurrentLocation(), true);
@@ -66,17 +64,19 @@ export const URLRedirector = observer(() => {
       }
       // report if the link from a marketing campaign is accessed
       if (queryParams.marketingId) {
-        applicationStore.telemetryService.logEvent(
-          EVENT_MARKETING_LINK_ACCESS,
-          {
-            marketingId: queryParams.marketingId,
-            redirectUrl: redirectUrl,
-          },
-        );
+        studioStore.telemetryService.logEvent(EVENT_MARKETING_LINK_ACCESS, {
+          marketingId: queryParams.marketingId,
+          redirectUrl: redirectUrl,
+        });
       }
       applicationStore.navigator.goTo(`/${redirectUrl}`);
     }
-  }, [applicationStore, params, isApplicationLoadConcluded]);
+  }, [
+    applicationStore,
+    studioStore,
+    params,
+    studioStore.initState.hasCompleted,
+  ]);
 
   return (
     <div className="app__page">

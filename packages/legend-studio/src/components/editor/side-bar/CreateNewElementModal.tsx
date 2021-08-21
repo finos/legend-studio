@@ -70,15 +70,14 @@ export const getElementTypeLabel = (
       return 'generation specification';
     default: {
       if (type) {
-        const extraElementTypeLabelGetters =
-          editorStore.applicationStore.pluginManager
-            .getEditorPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as DSL_EditorPlugin_Extension
-                ).getExtraElementTypeLabelGetters?.() ?? [],
-            );
+        const extraElementTypeLabelGetters = editorStore.pluginManager
+          .getEditorPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_EditorPlugin_Extension
+              ).getExtraElementTypeLabelGetters?.() ?? [],
+          );
         for (const typeLabelGetter of extraElementTypeLabelGetters) {
           const label = typeLabelGetter(type);
           if (label) {
@@ -305,15 +304,14 @@ const renderNewElementDriver = (
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
       return <NewFileGenerationDriverEditor />;
     default: {
-      const extraNewElementDriverEditorCreators =
-        editorStore.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSL_EditorPlugin_Extension
-              ).getExtraNewElementDriverEditorCreators?.() ?? [],
-          );
+      const extraNewElementDriverEditorCreators = editorStore.pluginManager
+        .getEditorPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_EditorPlugin_Extension
+            ).getExtraNewElementDriverEditorCreators?.() ?? [],
+        );
       for (const creator of extraNewElementDriverEditorCreators) {
         const editor = creator(type);
         if (editor) {

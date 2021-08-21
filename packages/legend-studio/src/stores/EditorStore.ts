@@ -94,6 +94,7 @@ import { buildElementOption } from './shared/PackageableElementOptionUtil';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import type { PackageableElement, Type, Store } from '@finos/legend-graph';
 import {
@@ -119,6 +120,8 @@ import {
   PRIMITIVE_TYPE,
   Package,
 } from '@finos/legend-graph';
+import type { DepotServerClient } from '@finos/legend-server-depot';
+import type { StudioPluginManager } from '../application/StudioPluginManager';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -142,8 +145,12 @@ export class EditorHotkey {
 
 export class EditorStore {
   applicationStore: ApplicationStore;
-  explorerTreeState: ExplorerTreeState;
+  sdlcServerClient: SDLCServerClient;
+  depotServerClient: DepotServerClient;
+  pluginManager: StudioPluginManager;
+
   editorExtensionStates: EditorExtensionState[] = [];
+  explorerTreeState: ExplorerTreeState;
   sdlcState: EditorSdlcState;
   graphState: GraphState;
   changeDetectionState: ChangeDetectionState;
@@ -157,10 +164,12 @@ export class EditorStore {
   localChangesState: LocalChangesState;
   conflictResolutionState: ConflictResolutionState;
   devToolState: DevToolState;
+
   private _isDisposed = false;
   initState = ActionState.create();
   mode = EDITOR_MODE.STANDARD;
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
+
   // Aux Panel
   activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
   auxPanelDisplayState = new PanelDisplayState({
@@ -175,10 +184,12 @@ export class EditorStore {
     default: 300,
     snap: 150,
   });
+
   // Hot keys
   blockGlobalHotkeys = false;
   defaultHotkeys: EditorHotkey[] = [];
   hotkeys: EditorHotkey[] = [];
+
   // Tabs
   currentEditorState?: EditorState;
   openedEditorStates: EditorState[] = [];
@@ -194,9 +205,16 @@ export class EditorStore {
   ignoreNavigationBlocking = false;
   isDevToolEnabled = true;
 
-  constructor(applicationStore: ApplicationStore) {
+  constructor(
+    applicationStore: ApplicationStore,
+    sdlcServerClient: SDLCServerClient,
+    depotServerClient: DepotServerClient,
+    pluginManager: StudioPluginManager,
+  ) {
     makeAutoObservable(this, {
       applicationStore: false,
+      sdlcServerClient: false,
+      depotServerClient: false,
       setMode: action,
       setDevTool: action,
       setHotkeys: action,
@@ -229,6 +247,10 @@ export class EditorStore {
     });
 
     this.applicationStore = applicationStore;
+    this.sdlcServerClient = sdlcServerClient;
+    this.depotServerClient = depotServerClient;
+    this.pluginManager = pluginManager;
+
     this.sdlcState = new EditorSdlcState(this);
     this.graphState = new GraphState(this);
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
@@ -256,7 +278,7 @@ export class EditorStore {
       this.sdlcState,
     );
     // extensions
-    this.editorExtensionStates = this.applicationStore.pluginManager
+    this.editorExtensionStates = this.pluginManager
       .getEditorPlugins()
       .flatMap(
         (plugin) => plugin.getExtraEditorExtensionStateCreators?.() ?? [],
@@ -576,11 +598,10 @@ export class EditorStore {
             message: 'Creating workspace...',
             prompt: 'Please do not close the application',
           });
-          const workspace =
-            await this.applicationStore.networkClientManager.sdlcClient.createWorkspace(
-              projectId,
-              workspaceId,
-            );
+          const workspace = await this.sdlcServerClient.createWorkspace(
+            projectId,
+            workspaceId,
+          );
           this.applicationStore.setBlockingAlert(undefined);
           this.applicationStore.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
@@ -657,8 +678,7 @@ export class EditorStore {
           },
         },
         {
-          tracerServicePlugins:
-            this.applicationStore.pluginManager.getTracerServicePlugins(),
+          tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
         },
       ),
     ]);
@@ -741,11 +761,11 @@ export class EditorStore {
     try {
       // fetch workspace entities and config at the same time
       const result = (yield Promise.all([
-        this.applicationStore.networkClientManager.sdlcClient.getEntities(
+        this.sdlcServerClient.getEntities(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         ),
-        this.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+        this.sdlcServerClient.getConfiguration(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         ),
@@ -988,7 +1008,7 @@ export class EditorStore {
     } else if (element instanceof FileGenerationSpecification) {
       return new FileGenerationEditorState(this, element);
     }
-    const extraElementEditorStateCreators = this.applicationStore.pluginManager
+    const extraElementEditorStateCreators = this.pluginManager
       .getEditorPlugins()
       .flatMap(
         (plugin) =>
@@ -1249,7 +1269,7 @@ export class EditorStore {
   filterSystemElementOptions<T extends PackageableElement>(
     systemElements: T[],
   ): T[] {
-    const allowedSystemElements = this.applicationStore.pluginManager
+    const allowedSystemElements = this.pluginManager
       .getEditorPlugins()
       .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
     return systemElements.filter((element) =>
@@ -1364,7 +1384,7 @@ export class EditorStore {
         PACKAGEABLE_ELEMENT_TYPE.DATABASE,
       ] as string[]
     ).concat(
-      this.applicationStore.pluginManager
+      this.pluginManager
         .getEditorPlugins()
         .flatMap(
           (plugin) =>

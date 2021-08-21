@@ -14,29 +14,17 @@
  * limitations under the License.
  */
 
-import type {
-  GeneratorFn,
-  Log,
-  PlainObject,
-  SuperGenericFunction,
-} from '@finos/legend-shared';
+import type { Log, SuperGenericFunction } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
   isString,
   ApplicationError,
-  ActionState,
-  TelemetryService,
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { ApplicationConfig } from './application/ApplicationConfig';
 import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
-import type { PluginManager } from '../application/PluginManager';
-import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
-import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
-import { DepotServerClient } from '@finos/legend-server-depot';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -105,49 +93,21 @@ export class Notification {
   }
 }
 
-export class NetworkClientManager {
-  sdlcClient!: SDLCServerClient;
-  depotClient!: DepotServerClient;
-
-  constructor(config: ApplicationConfig) {
-    this.sdlcClient = new SDLCServerClient({
-      env: config.env,
-      serverUrl: config.sdlcServerUrl,
-    });
-    this.depotClient = new DepotServerClient({
-      serverUrl: config.metadataServerUrl,
-    });
-  }
-}
-
-const UNKNOWN_USER_ID = '(unknown)';
-
 export class ApplicationStore {
-  pluginManager: PluginManager;
-  networkClientManager: NetworkClientManager;
-  telemetryService = new TelemetryService();
   navigator: WebApplicationNavigator;
   notification?: Notification;
   log: Log;
   blockingAlertInfo?: BlockingAlertInfo;
   actionAlertInfo?: ActionAlertInfo;
   config: ApplicationConfig;
-  initState = ActionState.create();
-
-  // TODO: move SDLC states out of application
-  isSDLCAuthorized = false;
-  SDLCServerTermsOfServicesUrlsToView: string[] = [];
-  currentSDLCUser = new User(UNKNOWN_USER_ID, UNKNOWN_USER_ID);
 
   constructor(
     config: ApplicationConfig,
-    pluginManager: PluginManager,
     navigator: WebApplicationNavigator,
     log: Log,
   ) {
     makeAutoObservable(this, {
       navigator: false,
-      dismissSDLCServerTermsOfServicesAlert: action,
       setBlockingAlert: action,
       setActionAltertInfo: action,
       setNotification: action,
@@ -159,18 +119,8 @@ export class ApplicationStore {
     });
 
     this.config = config;
-    this.pluginManager = pluginManager;
     this.navigator = navigator;
-    this.networkClientManager = new NetworkClientManager(config);
     this.log = log;
-    // Register plugins
-    this.networkClientManager.sdlcClient.registerTracerServicePlugins(
-      this.pluginManager.getTracerServicePlugins(),
-    );
-  }
-
-  dismissSDLCServerTermsOfServicesAlert(): void {
-    this.SDLCServerTermsOfServicesUrlsToView = [];
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
@@ -189,6 +139,7 @@ export class ApplicationStore {
   setNotification(notification: Notification | undefined): void {
     this.notification = notification;
   }
+
   notify(
     message: string,
     actions?: NotificationAction[],
@@ -205,6 +156,7 @@ export class ApplicationStore {
       ),
     );
   }
+
   notifySuccess(
     message: string,
     actions?: NotificationAction[],
@@ -289,128 +241,6 @@ export class ApplicationStore {
         ),
       );
     }
-  }
-
-  get needsToAcceptSDLCServerTermsOfServices(): boolean {
-    return Boolean(this.SDLCServerTermsOfServicesUrlsToView.length);
-  }
-
-  *initialize(): GeneratorFn<void> {
-    if (!this.initState.isInInitialState) {
-      this.notifyIllegalState('Application store is re-initialized');
-      return;
-    }
-    this.initState.inProgress();
-    yield Promise.all([
-      this.checkSDLCAuthorization(),
-      this.getSDLCCurrentUser(),
-    ]);
-    this.setupTelemetryService();
-    this.telemetryService.logEvent(CORE_TELEMETRY_EVENT.APPLICATION_LOADED, {
-      browser: {
-        userAgent: navigator.userAgent,
-      },
-      screen: {
-        height: window.screen.height,
-        width: window.screen.width,
-      },
-    });
-    this.initState.complete();
-  }
-
-  private *getSDLCCurrentUser(): GeneratorFn<void> {
-    try {
-      const currentUser = User.serialization.fromJson(
-        (yield this.networkClientManager.sdlcClient.getCurrentUser()) as PlainObject<User>,
-      );
-      this.networkClientManager.sdlcClient.setCurrentUser(currentUser);
-      this.currentSDLCUser = currentUser;
-    } catch (error: unknown) {
-      assertErrorThrown(error);
-      this.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.notifyWarning(error.message);
-    }
-  }
-
-  private *checkSDLCAuthorization(): GeneratorFn<void> {
-    try {
-      this.isSDLCAuthorized = (
-        (yield Promise.all(
-          Object.values(SdlcMode).map((mode) =>
-            this.networkClientManager.sdlcClient
-              .isAuthorized(mode)
-              .catch((error) => {
-                if (mode !== SdlcMode.PROD) {
-                  // if there is an issue with an endpoint in a non prod env, we return authorized as true
-                  // but notify the user of the error
-                  this.log.error(
-                    LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-                    error,
-                  );
-                  this.notifyError(error);
-                  return true;
-                }
-                throw error;
-              }),
-          ),
-        )) as boolean[]
-      ).every(Boolean);
-
-      if (!this.isSDLCAuthorized) {
-        this.navigator.jumpTo(
-          SDLCServerClient.authorizeCallbackUrl(
-            this.config.sdlcServerUrl,
-            this.navigator.getCurrentLocation(),
-          ),
-        );
-      } else {
-        // Only proceed to check terms of service agreement status after the passing authorization check
-        this.SDLCServerTermsOfServicesUrlsToView =
-          (yield this.networkClientManager.sdlcClient.hasAcceptedTermsOfService()) as string[];
-        if (this.SDLCServerTermsOfServicesUrlsToView.length) {
-          this.setActionAltertInfo({
-            message: `Please read and accept the SDLC servers' terms of service`,
-            prompt: `Click 'Done' when you have accepted all the terms`,
-            type: ActionAlertType.CAUTION,
-            actions: [
-              {
-                label: 'See terms of services',
-                default: true,
-                handler: (): void =>
-                  this.SDLCServerTermsOfServicesUrlsToView.forEach((url) => {
-                    window.open(url, '_blank');
-                  }),
-                type: ActionAlertActionType.PROCEED,
-              },
-              {
-                label: 'Done',
-                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                handler: (): void => {
-                  this.dismissSDLCServerTermsOfServicesAlert();
-                  this.navigator.reload();
-                },
-              },
-            ],
-          });
-        }
-      }
-    } catch (error: unknown) {
-      this.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.notifyError(error);
-    }
-  }
-
-  setupTelemetryService(): void {
-    this.telemetryService.registerPlugins(
-      this.pluginManager.getTelemetryServicePlugins(),
-    );
-    this.telemetryService.setUserId(this.currentSDLCUser.userId);
   }
 
   /**

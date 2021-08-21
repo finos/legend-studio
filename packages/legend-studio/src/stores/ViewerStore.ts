@@ -129,14 +129,14 @@ export class ViewerStore {
 
       // get current revision so we can show how "outdated" the `current view` of the project is
       this.currentRevision = Revision.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+        (yield this.editorStore.sdlcServerClient.getRevision(
           this.editorStore.sdlcState.currentProjectId,
           undefined,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
       );
       this.latestVersion = Version.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestVersion(
+        (yield this.editorStore.sdlcServerClient.getLatestVersion(
           this.editorStore.sdlcState.currentProjectId,
         )) as PlainObject<Version>,
       );
@@ -158,14 +158,14 @@ export class ViewerStore {
         this.version =
           versionId !== this.latestVersion.id.id
             ? Version.serialization.fromJson(
-                (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersion(
+                (yield this.editorStore.sdlcServerClient.getVersion(
                   this.editorStore.sdlcState.currentProjectId,
                   versionId,
                 )) as PlainObject<Version>,
               )
             : this.latestVersion;
         entities =
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByVersion(
+          (yield this.editorStore.sdlcServerClient.getEntitiesByVersion(
             this.editorStore.sdlcState.currentProjectId,
             versionId,
           )) as Entity[];
@@ -176,7 +176,7 @@ export class ViewerStore {
         this.revision =
           revisionId !== this.currentRevision.id
             ? Revision.serialization.fromJson(
-                (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+                (yield this.editorStore.sdlcServerClient.getRevision(
                   this.editorStore.sdlcState.currentProjectId,
                   undefined,
                   revisionId,
@@ -184,7 +184,7 @@ export class ViewerStore {
               )
             : this.currentRevision;
         entities =
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
+          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.editorStore.sdlcState.currentProjectId,
             undefined,
             revisionId,
@@ -196,11 +196,11 @@ export class ViewerStore {
         try {
           // fetch workspace entities and config at the same time
           const result = (yield Promise.all([
-            this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntities(
+            this.editorStore.sdlcServerClient.getEntities(
               this.editorStore.sdlcState.currentProjectId,
               undefined,
             ),
-            this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+            this.editorStore.sdlcServerClient.getConfiguration(
               this.editorStore.sdlcState.currentProjectId,
               undefined,
             ),
@@ -242,7 +242,7 @@ export class ViewerStore {
           },
           {
             tracerServicePlugins:
-              this.editorStore.applicationStore.pluginManager.getTracerServicePlugins(),
+              this.editorStore.pluginManager.getTracerServicePlugins(),
           },
         ),
       );

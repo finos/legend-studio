@@ -157,20 +157,19 @@ export class WorkspaceReviewState {
     try {
       this.isFetchingCurrentWorkspaceReview = true;
       const currentWorkspaceRevision =
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+        (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.CURRENT,
         )) as Revision;
-      const reviews =
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviews(
-          this.sdlcState.currentProjectId,
-          ReviewState.OPEN,
-          [currentWorkspaceRevision.id, currentWorkspaceRevision.id],
-          undefined,
-          undefined,
-          1,
-        )) as Review[];
+      const reviews = (yield this.editorStore.sdlcServerClient.getReviews(
+        this.sdlcState.currentProjectId,
+        ReviewState.OPEN,
+        [currentWorkspaceRevision.id, currentWorkspaceRevision.id],
+        undefined,
+        undefined,
+        1,
+      )) as Review[];
       const review = reviews.find(
         (r) => r.workspaceId === this.sdlcState.currentWorkspaceId,
       ) as PlainObject<Review> | undefined;
@@ -209,7 +208,7 @@ export class WorkspaceReviewState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.createWorkspace(
+      yield this.editorStore.sdlcServerClient.createWorkspace(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
@@ -232,7 +231,7 @@ export class WorkspaceReviewState {
     }
     this.isClosingWorkspaceReview = true;
     try {
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.rejectReview(
+      yield this.editorStore.sdlcServerClient.rejectReview(
         this.sdlcState.currentProjectId,
         this.workspaceReview.id,
       );
@@ -261,7 +260,7 @@ export class WorkspaceReviewState {
         reviewDescription ??
         `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.currentWorkspaceId}`;
       this.workspaceReview = Review.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.createReview(
+        (yield this.editorStore.sdlcServerClient.createReview(
           this.sdlcState.currentProjectId,
           {
             workspaceId: this.sdlcState.currentWorkspaceId,
@@ -304,7 +303,7 @@ export class WorkspaceReviewState {
     }
 
     try {
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.commitReview(
+      yield this.editorStore.sdlcServerClient.commitReview(
         this.sdlcState.currentProjectId,
         review.id,
         { message: `${review.title} [review]` },

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PluginManager } from '@finos/legend-studio';
+import type { StudioPluginManager } from '@finos/legend-studio';
 import packageJson from '../../../../package.json';
 import { SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const';
 import {
@@ -46,7 +46,7 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
     );
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 

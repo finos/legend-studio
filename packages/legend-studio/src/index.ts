@@ -16,10 +16,11 @@
 
 // application
 export * from './components/application/ApplicationStoreProvider';
+export * from './components/StudioStoreProvider';
 export * from './components/application/WebApplicationNavigatorProvider';
 export * from './utils/ApplicationLogEvent';
 export * from './application/LegendStudio';
-export * from './application/PluginManager';
+export * from './application/StudioPluginManager';
 export { ApplicationConfig } from './stores/application/ApplicationConfig';
 export { WebApplicationNavigator } from './stores/application/WebApplicationNavigator';
 

@@ -278,15 +278,14 @@ export const EditPanel = observer(() => {
           ) {
             return <UnsupportedElementEditor key={currentEditorState.uuid} />;
           }
-          const extraElementEditorCreators =
-            editorStore.applicationStore.pluginManager
-              .getEditorPlugins()
-              .flatMap(
-                (plugin) =>
-                  (
-                    plugin as DSL_EditorPlugin_Extension
-                  ).getExtraElementEditorCreators?.() ?? [],
-              );
+          const extraElementEditorCreators = editorStore.pluginManager
+            .getEditorPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_EditorPlugin_Extension
+                ).getExtraElementEditorCreators?.() ?? [],
+            );
           for (const elementEditorCreators of extraElementEditorCreators) {
             const elementEditor = elementEditorCreators(currentEditorState);
             if (elementEditor) {

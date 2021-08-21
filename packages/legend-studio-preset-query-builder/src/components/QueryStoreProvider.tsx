@@ -17,19 +17,36 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { QueryStore } from '../stores/QueryStore';
+import type { StudioPluginManager } from '@finos/legend-studio';
 import { EditorStore, useApplicationStore } from '@finos/legend-studio';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { useDepotServerClient } from '@finos/legend-server-depot';
+import { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 const QueryStoreContext = createContext<QueryStore | undefined>(undefined);
 
 export const QueryStoreProvider = ({
   children,
+  pluginManager,
 }: {
   children: React.ReactNode;
+  pluginManager: StudioPluginManager;
 }): React.ReactElement => {
   const applicationStore = useApplicationStore();
+  const depotServerClient = useDepotServerClient();
+  // TODO: remove SDLC and its `package.json` dependencies when we refactor QueryBuilder to
+  // no longer depends on `EditorStore`
+  const sdlcServerClient = new SDLCServerClient({ serverUrl: '', env: '' });
   const store = useLocalObservable(
-    () => new QueryStore(new EditorStore(applicationStore)),
+    () =>
+      new QueryStore(
+        new EditorStore(
+          applicationStore,
+          sdlcServerClient,
+          depotServerClient,
+          pluginManager,
+        ),
+      ),
   );
   return (
     <QueryStoreContext.Provider value={store}>
@@ -41,5 +58,5 @@ export const QueryStoreProvider = ({
 export const useQueryStore = (): QueryStore =>
   guaranteeNonNullable(
     useContext(QueryStoreContext),
-    'useQueryStore() hook must be used inside QueryBuilderStore context provider',
+    `Can't find Query store in context`,
   );

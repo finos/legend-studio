@@ -56,7 +56,7 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
   }
 
   openNewWindow(location: string): void {
-    this.window.open(location);
+    this.window.open(location, '_blank');
   }
 
   getCurrentLocation(): string {

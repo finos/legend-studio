@@ -59,7 +59,7 @@ enum SDLC_TRACER_SPAN {
   COMMIT_REVIEW = 'update entities',
 }
 
-interface SDLCServerClientConfig {
+export interface SDLCServerClientConfig {
   env: string;
   serverUrl: string;
 }

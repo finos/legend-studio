@@ -17,7 +17,7 @@
 import type { Entity } from '@finos/legend-model-storage';
 import {
   getTestApplicationConfig,
-  PluginManager,
+  StudioPluginManager,
   getTestEditorStore,
   checkBuildingElementsRoundtrip,
 } from '@finos/legend-studio';
@@ -25,7 +25,7 @@ import { unitTest } from '@finos/legend-shared';
 import { DSLText_Preset } from '../../DSLText_Preset';
 import { roundtripTestData } from './DSLText_RoundtripTestData';
 
-const pluginManager = PluginManager.create();
+const pluginManager = StudioPluginManager.create();
 pluginManager.usePresets([new DSLText_Preset()]).install();
 
 test(unitTest('Text import resolution roundtrip'), async () => {

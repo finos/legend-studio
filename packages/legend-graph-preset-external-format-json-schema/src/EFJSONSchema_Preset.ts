@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../package.json';
-import type { PluginManager } from '@finos/legend-studio';
+import type { StudioPluginManager } from '@finos/legend-studio';
 import { AbstractPreset } from '@finos/legend-shared';
 import { EFJSONSchema_PureProtocolProcessorPlugin } from './models/protocols/pure/EFJSONSchema_PureProtocolProcessorPlugin';
 
@@ -24,7 +24,7 @@ export class EFJSONSchema_Preset extends AbstractPreset {
     super(packageJson.name, packageJson.version);
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     new EFJSONSchema_PureProtocolProcessorPlugin().install(pluginManager);
   }
 }

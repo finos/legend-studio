@@ -77,18 +77,16 @@ export const EditorInner = observer(() => {
   const applicationStore = useApplicationStore();
 
   // Extensions
-  const extraEditorExtensionComponents =
-    editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
-          [],
-      )
-      .filter(isNonNullable)
-      .map((config) => (
-        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
-      ));
+  const extraEditorExtensionComponents = editorStore.pluginManager
+    .getEditorPlugins()
+    .flatMap(
+      (plugin) =>
+        plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],
+    )
+    .filter(isNonNullable)
+    .map((config) => (
+      <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+    ));
 
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();

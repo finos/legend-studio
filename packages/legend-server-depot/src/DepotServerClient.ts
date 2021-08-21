@@ -24,7 +24,7 @@ import type {
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities';
 
-interface DepotServerClientConfig {
+export interface DepotServerClientConfig {
   serverUrl: string;
 }
 

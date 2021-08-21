@@ -17,7 +17,7 @@
 import {
   LegendApplication,
   setupLegendStudioUILibrary,
-  PluginManager,
+  StudioPluginManager,
   WebApplicationNavigatorProvider,
 } from '@finos/legend-studio';
 import ReactDOM from 'react-dom';
@@ -25,10 +25,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/standalone/LegendQueryApplication';
 
 export class LegendQuery extends LegendApplication {
-  declare pluginManager: PluginManager;
+  declare pluginManager: StudioPluginManager;
 
   static create(): LegendQuery {
-    return new LegendQuery(PluginManager.create());
+    return new LegendQuery(StudioPluginManager.create());
   }
 
   async loadApplication(): Promise<void> {

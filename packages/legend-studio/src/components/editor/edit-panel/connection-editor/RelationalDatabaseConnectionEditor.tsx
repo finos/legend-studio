@@ -58,7 +58,7 @@ import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import type { EditorPlugin } from '../../../../stores/EditorPlugin';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -920,8 +920,8 @@ const RelationalConnectionGeneralEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly } = props;
     const connection = connectionValueState.connection;
-    const applicationStore = useApplicationStore();
-    const plugins = applicationStore.pluginManager.getEditorPlugins();
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getEditorPlugins();
     // database type
     const typeOptions = Object.values(DatabaseType).map((e) => ({
       value: e,

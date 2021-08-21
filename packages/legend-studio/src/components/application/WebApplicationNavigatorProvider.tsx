@@ -15,6 +15,7 @@
  */
 
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
 import { useHistory } from 'react-router';
 import { WebApplicationNavigator } from '../../stores/application/WebApplicationNavigator';
@@ -29,10 +30,11 @@ export const WebApplicationNavigatorProvider = ({
   children: React.ReactNode;
 }): React.ReactElement => {
   const history = useHistory();
+  const navigator = useLocalObservable(
+    () => new WebApplicationNavigator(history),
+  );
   return (
-    <WebApplicationNavigatorContext.Provider
-      value={new WebApplicationNavigator(history)}
-    >
+    <WebApplicationNavigatorContext.Provider value={navigator}>
       {children}
     </WebApplicationNavigatorContext.Provider>
   );

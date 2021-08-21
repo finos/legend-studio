@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../../package.json';
-import type { PluginManager } from '@finos/legend-studio';
+import type { StudioPluginManager } from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-shared';
 import V1_SYSTEM_MODELS from './v1/V1_EFJSONSchema_SystemModels.json';
 import type { V1_PureModelContextData } from '@finos/legend-graph';
@@ -29,7 +29,7 @@ export class EFJSONSchema_PureProtocolProcessorPlugin extends PureProtocolProces
     );
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 

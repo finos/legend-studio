@@ -25,51 +25,43 @@ import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import {
-  testApplicationConfigData,
+  TEST__applicationConfigData,
   testApplicationVersionData,
 } from '../../stores/StoreTestUtils';
-import {
-  getMockedApplicationStore,
-  getMockedWebApplicationNavigator,
-} from '../ComponentTestUtils';
-import type { ApplicationStore } from '../../stores/ApplicationStore';
-import { PluginManager } from '../../application/PluginManager';
+import { getMockedWebApplicationNavigator } from '../ComponentTestUtils';
 import { ApplicationConfig } from '../../stores/application/ApplicationConfig';
 import {
   generateSetupRoute,
   URL_PATH_PLACEHOLDER,
 } from '../../stores/LegendStudioRouter';
 import { WebApplicationNavigatorProvider } from '../application/WebApplicationNavigatorProvider';
-
-let applicationStore: ApplicationStore;
+import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
+import { StudioPluginManager } from '../../application/StudioPluginManager';
 
 const getTestApplicationConfigWithMultiSDLCServer = (
   extraConfigData = {},
 ): ApplicationConfig =>
   new ApplicationConfig(
     {
-      ...testApplicationConfigData,
+      ...TEST__applicationConfigData,
       ...extraConfigData,
     },
     testApplicationVersionData,
     '/studio/',
   );
 
-const setupMockedApplicationStoreForSuccessfulLoadding = (): void => {
-  applicationStore = getMockedApplicationStore();
+const setup = (): void => {
+  const sdlcServerClient = TEST__provideMockedSDLCServerClient();
+
   MOBX__enableSpyOrMock();
+  jest.spyOn(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
   jest
-    .spyOn(applicationStore.networkClientManager.sdlcClient, 'isAuthorized')
-    .mockResolvedValueOnce(true);
+    .spyOn(sdlcServerClient, 'getCurrentUser')
+    .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
   jest
-    .spyOn(
-      applicationStore.networkClientManager.sdlcClient,
-      'hasAcceptedTermsOfService',
-    )
-    .mockResolvedValueOnce(['stubUrl']);
-  jest
-    .spyOn(applicationStore.networkClientManager.sdlcClient, 'getProjects')
-    .mockResolvedValue([]);
+    .spyOn(sdlcServerClient, 'hasAcceptedTermsOfService')
+    .mockResolvedValueOnce([]);
+  jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
   MOBX__disableSpyOrMock();
 };
 
@@ -82,7 +74,7 @@ test(
       sdlc: { url: 'https://testSdlcUrl1' },
     });
 
-    setupMockedApplicationStoreForSuccessfulLoadding();
+    setup();
 
     const navigator = getMockedWebApplicationNavigator();
     MOBX__enableSpyOrMock();
@@ -94,7 +86,7 @@ test(
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
-            pluginManager={PluginManager.create()}
+            pluginManager={StudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>
@@ -129,14 +121,14 @@ test(
       ],
     });
 
-    setupMockedApplicationStoreForSuccessfulLoadding();
+    setup();
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/something/']}>
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
-            pluginManager={PluginManager.create()}
+            pluginManager={StudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>
@@ -170,14 +162,14 @@ test(
       ],
     });
 
-    setupMockedApplicationStoreForSuccessfulLoadding();
+    setup();
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/server1/']}>
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
-            pluginManager={PluginManager.create()}
+            pluginManager={StudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>
@@ -203,14 +195,14 @@ test(
       ],
     });
 
-    setupMockedApplicationStoreForSuccessfulLoadding();
+    setup();
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/server1/']}>
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
-            pluginManager={PluginManager.create()}
+            pluginManager={StudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>
@@ -236,7 +228,7 @@ test(
       ],
     });
 
-    setupMockedApplicationStoreForSuccessfulLoadding();
+    setup();
 
     const navigator = getMockedWebApplicationNavigator();
     MOBX__enableSpyOrMock();
@@ -248,7 +240,7 @@ test(
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
-            pluginManager={PluginManager.create()}
+            pluginManager={StudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>

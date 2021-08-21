@@ -14,32 +14,35 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
-import { useLocalObservable } from 'mobx-react-lite';
-import { ReviewStore } from '../../stores/ReviewStore';
-import { EDITOR_MODE } from '../../stores/EditorConfig';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useLocalObservable } from 'mobx-react-lite';
+import { createContext, useContext } from 'react';
+import type { DepotServerClientConfig } from './DepotServerClient';
+import { DepotServerClient } from './DepotServerClient';
 
-const ReviewStoreContext = createContext<ReviewStore | undefined>(undefined);
+const DepotServerClientContext = createContext<DepotServerClient | undefined>(
+  undefined,
+);
 
-export const ReviewStoreProvider = ({
+export const DepotServerClientProvider = ({
   children,
+  config,
 }: {
   children: React.ReactNode;
+  config: DepotServerClientConfig;
 }): React.ReactElement => {
-  const editorStore = useEditorStore();
-  editorStore.setMode(EDITOR_MODE.REVIEW);
-  const store = useLocalObservable(() => new ReviewStore(editorStore));
+  const depotServerClient = useLocalObservable(
+    () => new DepotServerClient(config),
+  );
   return (
-    <ReviewStoreContext.Provider value={store}>
+    <DepotServerClientContext.Provider value={depotServerClient}>
       {children}
-    </ReviewStoreContext.Provider>
+    </DepotServerClientContext.Provider>
   );
 };
 
-export const useReviewStore = (): ReviewStore =>
+export const useDepotServerClient = (): DepotServerClient =>
   guaranteeNonNullable(
-    useContext(ReviewStoreContext),
-    `Can't find review store in context`,
+    useContext(DepotServerClientContext),
+    `Can't find Depot server client in context`,
   );

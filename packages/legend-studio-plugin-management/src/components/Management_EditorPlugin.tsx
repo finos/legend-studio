@@ -16,7 +16,7 @@
 
 import packageJson from '../../package.json';
 import type {
-  PluginManager,
+  StudioPluginManager,
   ApplicationPageRenderEntry,
 } from '@finos/legend-studio';
 import { EditorPlugin } from '@finos/legend-studio';
@@ -28,7 +28,7 @@ export class Management_EditorPlugin extends EditorPlugin {
     super(packageJson.name, packageJson.version);
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     pluginManager.registerEditorPlugin(this);
   }
 

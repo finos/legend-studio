@@ -41,5 +41,5 @@ export const QuerySetupStoreProvider = ({
 export const useQuerySetupStore = (): QuerySetupStore =>
   guaranteeNonNullable(
     useContext(QuerySetupStoreContext),
-    'useQuerySetupStore() hook must be used inside QueryBuilderStore context provider',
+    `Can't find Query setup store in context`,
   );

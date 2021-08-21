@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../package.json';
-import type { PluginManager } from '@finos/legend-studio';
+import type { StudioPluginManager } from '@finos/legend-studio';
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSLText_EditorPlugin } from './components/DSLText_EditorPlugin';
 import { DSLText_PureGraphManagerPlugin } from './models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
@@ -26,7 +26,7 @@ export class DSLText_Preset extends AbstractPreset {
     super(packageJson.name, packageJson.version);
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     new DSLText_EditorPlugin().install(pluginManager);
     new DSLText_PureGraphManagerPlugin().install(pluginManager);
     new DSLText_PureProtocolProcessorPlugin().install(pluginManager);

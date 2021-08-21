@@ -18,7 +18,7 @@ import type { Entity } from '@finos/legend-model-storage';
 import {
   buildGraphBasic,
   getTestApplicationConfig,
-  PluginManager,
+  StudioPluginManager,
   getTestEditorStore,
 } from '@finos/legend-studio';
 import { unitTest } from '@finos/legend-shared';
@@ -41,7 +41,7 @@ import {
   groupByWithDerivationAndAggregation,
 } from './QueryBuilder_ProcessingRoundtrip_TestDerivation';
 
-const pluginManager = PluginManager.create();
+const pluginManager = StudioPluginManager.create();
 pluginManager.usePresets([new QueryBuilder_Preset()]).install();
 
 type RoundtripTestCase = [

@@ -97,18 +97,19 @@ import {
 } from '@finos/legend-graph';
 
 export class GraphState {
-  editorStore: EditorStore;
-  graphGenerationState: GraphGenerationState;
   coreModel: CoreModel;
   systemModel: SystemModel;
+  graph: PureModel;
+  graphManager: AbstractPureGraphManager;
+
+  editorStore: EditorStore;
+  graphGenerationState: GraphGenerationState;
   isInitializingGraph = false;
   isRunningGlobalCompile = false;
   isRunningGlobalGenerate = false;
   isApplicationLeavingTextMode = false;
   isUpdatingGraph = false; // critical synchronous update to refresh the graph
   isUpdatingApplication = false; // including graph update and async operations such as change detection
-  graph: PureModel;
-  graphManager: AbstractPureGraphManager;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
@@ -135,8 +136,8 @@ export class GraphState {
       this.getPureGraphExtensionElementClasses(),
     );
     this.graphManager = getGraphManager(
-      this.editorStore.applicationStore.pluginManager.getPureGraphManagerPlugins(),
-      this.editorStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+      this.editorStore.pluginManager.getPureGraphManagerPlugins(),
+      this.editorStore.pluginManager.getPureProtocolProcessorPlugins(),
       this.editorStore.applicationStore.log,
     );
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
@@ -148,7 +149,7 @@ export class GraphState {
 
   private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {
     const pureGraphManagerPlugins =
-      this.editorStore.applicationStore.pluginManager.getPureGraphManagerPlugins();
+      this.editorStore.pluginManager.getPureGraphManagerPlugins();
     return pureGraphManagerPlugins.flatMap(
       (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
     );
@@ -270,7 +271,7 @@ export class GraphState {
       // build compile context
       this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+          (yield this.editorStore.sdlcServerClient.getConfiguration(
             this.editorStore.sdlcState.currentProjectId,
             undefined,
           )) as PlainObject<ProjectConfiguration>,
@@ -800,7 +801,7 @@ export class GraphState {
       } else {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
           ProjectConfiguration.serialization.fromJson(
-            (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+            (yield this.editorStore.sdlcServerClient.getConfiguration(
               this.editorStore.sdlcState.currentProjectId,
               this.editorStore.sdlcState.currentWorkspaceId,
             )) as PlainObject<ProjectConfiguration>,
@@ -1003,7 +1004,7 @@ export class GraphState {
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield this.editorStore.applicationStore.networkClientManager.depotClient.getProjectVersionsDependencyEntities(
+          (yield this.editorStore.depotServerClient.getProjectVersionsDependencyEntities(
             directDependencies as PlainObject<DeprecatedProjectVersion>[],
             true,
             true,
@@ -1109,15 +1110,14 @@ export class GraphState {
     } else if (element instanceof SectionIndex) {
       return PACKAGEABLE_ELEMENT_TYPE.SECTION_INDEX;
     }
-    const extraElementTypeLabelGetters =
-      this.editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_EditorPlugin_Extension
-            ).getExtraElementTypeGetters?.() ?? [],
-        );
+    const extraElementTypeLabelGetters = this.editorStore.pluginManager
+      .getEditorPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_EditorPlugin_Extension
+          ).getExtraElementTypeGetters?.() ?? [],
+      );
     for (const labelGetter of extraElementTypeLabelGetters) {
       const label = labelGetter(element);
       if (label) {

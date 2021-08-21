@@ -127,7 +127,7 @@ export const GrammarTextEditor = observer(() => {
   }, [editorStore, applicationStore, editor, grammarTextEditorState]);
 
   // Drag and Drop
-  const extraDnDTypes = applicationStore.pluginManager
+  const extraDnDTypes = editorStore.pluginManager
     .getEditorPlugins()
     .flatMap(
       (plugin) =>

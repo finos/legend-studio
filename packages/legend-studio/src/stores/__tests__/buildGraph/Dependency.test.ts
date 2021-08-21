@@ -170,9 +170,7 @@ const testDependencyElements = async (
   // mock version entities api return
   jest
     .spyOn(
-      guaranteeNonNullable(
-        editorStore.applicationStore.networkClientManager.depotClient,
-      ),
+      guaranteeNonNullable(editorStore.depotServerClient),
       'getProjectVersionsDependencyEntities',
     )
     .mockResolvedValue(dependencyEntities);

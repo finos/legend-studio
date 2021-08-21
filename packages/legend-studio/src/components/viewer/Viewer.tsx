@@ -189,18 +189,16 @@ export const ViewerInner = observer(() => {
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
     );
   // Extensions
-  const extraEditorExtensionComponents =
-    editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
-          [],
-      )
-      .filter(isNonNullable)
-      .map((config) => (
-        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
-      ));
+  const extraEditorExtensionComponents = editorStore.pluginManager
+    .getEditorPlugins()
+    .flatMap(
+      (plugin) =>
+        plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],
+    )
+    .filter(isNonNullable)
+    .map((config) => (
+      <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+    ));
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys

@@ -17,7 +17,7 @@
 import packageJson from '../../package.json';
 import { EditorPlugin } from '@finos/legend-studio';
 import type {
-  PluginManager,
+  StudioPluginManager,
   NewElementFromStateCreator,
   PureGrammarElementLabeler,
   EditorStore,
@@ -49,7 +49,7 @@ export class DSLText_EditorPlugin
     super(`${packageJson.pluginPrefix}-editor`, packageJson.version);
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     pluginManager.registerEditorPlugin(this);
   }
 

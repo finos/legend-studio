@@ -26,7 +26,7 @@ import {
   isNonNullable,
   TracerServicePlugin,
 } from '@finos/legend-shared';
-import type { PluginManager } from '@finos/legend-studio';
+import type { StudioPluginManager } from '@finos/legend-studio';
 import { CORE_TRACER_TAG } from '@finos/legend-studio';
 
 interface ZipkinTracerPluginConfigData {
@@ -82,7 +82,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
     return this;
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: StudioPluginManager): void {
     pluginManager.registerTracerServicePlugin(this);
   }
 

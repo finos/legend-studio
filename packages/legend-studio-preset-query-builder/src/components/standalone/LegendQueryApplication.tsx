@@ -18,7 +18,10 @@ import { useEffect } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { ThemeProvider } from '@material-ui/core/styles';
-import type { ApplicationConfig, PluginManager } from '@finos/legend-studio';
+import type {
+  ApplicationConfig,
+  StudioPluginManager,
+} from '@finos/legend-studio';
 import {
   useWebApplicationNavigator,
   useApplicationStore,
@@ -41,6 +44,8 @@ import {
 } from '@finos/legend-application-components';
 import type { Log } from '@finos/legend-shared';
 import { QueryStoreProvider, useQueryStore } from '../QueryStoreProvider';
+import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
+import { DepotServerClientProvider } from '@finos/legend-server-depot';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useQueryStore();
@@ -90,7 +95,7 @@ const LegendQueryApplicationInner = observer(() => {
 export const LegendQueryApplication = observer(
   (props: {
     config: ApplicationConfig;
-    pluginManager: PluginManager;
+    pluginManager: StudioPluginManager;
     log: Log;
   }) => {
     const { config, pluginManager, log } = props;
@@ -100,17 +105,25 @@ export const LegendQueryApplication = observer(
       return null;
     }
     return (
-      <ApplicationStoreProvider
-        config={config}
-        navigator={navigator}
-        pluginManager={pluginManager}
-        log={log}
-      >
-        <QueryStoreProvider>
-          <ThemeProvider theme={LegendMaterialUITheme}>
-            <LegendQueryApplicationInner />
-          </ThemeProvider>
-        </QueryStoreProvider>
+      <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
+        <SDLCServerClientProvider
+          config={{
+            env: config.env,
+            serverUrl: config.sdlcServerUrl,
+          }}
+        >
+          <DepotServerClientProvider
+            config={{
+              serverUrl: config.metadataServerUrl,
+            }}
+          >
+            <QueryStoreProvider pluginManager={pluginManager}>
+              <ThemeProvider theme={LegendMaterialUITheme}>
+                <LegendQueryApplicationInner />
+              </ThemeProvider>
+            </QueryStoreProvider>
+          </DepotServerClientProvider>
+        </SDLCServerClientProvider>
       </ApplicationStoreProvider>
     );
   },

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-export * from './models/ProjectData';
-export * from './models/ProjectVersionEntities';
+import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
+import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
 
-export { DepotServerClient } from './DepotServerClient';
-export * from './DepotServerClientProvider';
-
-export * from './DepotServerClientTestUtils';
+export interface GraphPluginManager {
+  getPureGraphManagerPlugins(): PureGraphManagerPlugin[];
+  getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[];
+}

@@ -14,32 +14,35 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
-import { useLocalObservable } from 'mobx-react-lite';
-import { ReviewStore } from '../../stores/ReviewStore';
-import { EDITOR_MODE } from '../../stores/EditorConfig';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useLocalObservable } from 'mobx-react-lite';
+import { createContext, useContext } from 'react';
+import type { SDLCServerClientConfig } from './SDLCServerClient';
+import { SDLCServerClient } from './SDLCServerClient';
 
-const ReviewStoreContext = createContext<ReviewStore | undefined>(undefined);
+const SDLCServerClientContext = createContext<SDLCServerClient | undefined>(
+  undefined,
+);
 
-export const ReviewStoreProvider = ({
+export const SDLCServerClientProvider = ({
   children,
+  config,
 }: {
   children: React.ReactNode;
+  config: SDLCServerClientConfig;
 }): React.ReactElement => {
-  const editorStore = useEditorStore();
-  editorStore.setMode(EDITOR_MODE.REVIEW);
-  const store = useLocalObservable(() => new ReviewStore(editorStore));
+  const sdlcServerClient = useLocalObservable(
+    () => new SDLCServerClient(config),
+  );
   return (
-    <ReviewStoreContext.Provider value={store}>
+    <SDLCServerClientContext.Provider value={sdlcServerClient}>
       {children}
-    </ReviewStoreContext.Provider>
+    </SDLCServerClientContext.Provider>
   );
 };
 
-export const useReviewStore = (): ReviewStore =>
+export const useSDLCServerClient = (): SDLCServerClient =>
   guaranteeNonNullable(
-    useContext(ReviewStoreContext),
-    `Can't find review store in context`,
+    useContext(SDLCServerClientContext),
+    `Can't find SDLC server client in context`,
   );

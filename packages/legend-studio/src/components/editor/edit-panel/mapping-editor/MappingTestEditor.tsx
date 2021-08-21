@@ -80,7 +80,7 @@ const MappingTestQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = applicationStore.pluginManager
+    const extraQueryEditors = editorStore.pluginManager
       .getEditorPlugins()
       .flatMap(
         (plugin) =>
