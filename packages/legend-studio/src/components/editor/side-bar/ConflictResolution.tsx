@@ -22,7 +22,7 @@ import { FaCheck, FaTimes, FaBan, FaInfoCircle } from 'react-icons/fa';
 import { PanelLoadingIndicator } from '@finos/legend-application-components';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type {
   EntityChangeConflict,
@@ -141,7 +141,7 @@ export const ConflictResolution = observer(() => {
             </div>
             <div
               className="side-bar__panel__header__changes-count"
-              data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+              data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
             >
               {changes.length +
                 (conflictResolutionState.hasResolvedAllConflicts

@@ -22,7 +22,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
 import { clsx } from '@finos/legend-application-components';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { Profile } from '@finos/legend-graph';
 import { Tag, Stereotype } from '@finos/legend-graph';
@@ -153,7 +153,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           </div>
         </div>
         <div
-          data-testid={CORE_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+          data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
           className="panel__header uml-element-editor__tabs__header"
         >
           <div className="uml-element-editor__tabs">

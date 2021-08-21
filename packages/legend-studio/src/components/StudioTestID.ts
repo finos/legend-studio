@@ -14,43 +14,50 @@
  * limitations under the License.
  */
 
-export const DATE_TIME_FORMAT_WITH_MILLISECONDS =
-  "yyyy-MM-dd'T'HH:mm:ss.SSSxxxx";
-export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssxxxx";
-export const DATE_FORMAT = 'yyyy-MM-dd';
-
 // We should keep this as small as possible, minimize the number of times we need to get by the `testId`
 // Because according to our testing philosophy, fixing the DOM structure makes us testing more implementation details
 // than actual app behavior, user won't care about the id of an element or such!
 // See https://testing-library.com/docs/dom-testing-library/api-queries#bytestid
-export enum CORE_TEST_ID {
+export enum STUDIO_TEST_ID {
+  PANEL = 'panel', // TODO: revise
+  PANEL_CONTENT_LIST = 'panel__content__list', // TODO: revise
+  PANEL_CONTENT_FORM_SECTION_LIST_ITEMS = 'panel__content__form__section__list__items', // TODO: revise
+
+  MAIN_EDITOR = 'main-editor',
+
+  ACTIVITY_BAR_ITEM_ICON_INDICATOR = 'activity-bar__item__icon__indicator', // TODO: revise
+
+  SIDEBAR_PANEL_HEADER__CHANGES_COUNT = 'side-bar__panel__header__changes-count',
+  ELEMENT_EXPLORER = 'element-explorer',
   EXPLORER_TREES = 'explorer-trees',
-  PANEL = 'panel',
+  EXPLORER_CONTEXT_MENU = 'explorer__context-menu',
+
+  STATUS_BAR = 'status-bar',
+  EDITOR__STATUS_BAR__RIGHT = 'editor__status-bar__right',
+
   EDIT_PANEL = 'edit-panel',
   EDIT_PANEL_CONTENT = 'edit-panel__content',
   EDIT_PANEL__HEADER_TABS = 'edit-panel__header-tabs',
+  EDIT_PANEL__ELEMENT_VIEW__OPTIONS = 'edit-panel__element-view__options',
+  EDITOR__TABS__HEADER = 'editor__tabs__header',
+
   CLASS_FORM_EDITOR = 'class-form-editor',
   ENUMERATION_EDITOR = 'enumeration-editor',
   ASSOCIATION_EDITOR = 'association-editor',
-  ELEMENT_EXPLORER = 'element-explorer',
-  TYPE_VISIT = 'type-visit',
-  STATUS_BAR = 'status-bar',
-  NEW_ELEMENT_MODAL = 'new-element-modal',
-  SERVICE_REGISTRATION_MODAL = 'service_registration_modal',
   UML_ELEMENT_EDITOR__TABS_HEADER = 'uml-element-editor__tabs__header',
   PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER = 'property-basic-editor__type__label--hover',
-  EDITOR__STATUS_BAR__RIGHT = 'editor__status-bar__right',
-  EDIT_PANEL__ELEMENT_VIEW__OPTIONS = 'edit-panel__element-view__options',
+
+  NEW_ELEMENT_MODAL = 'new-element-modal', // TODO: revise
+
+  SERVICE_REGISTRATION_MODAL = 'service_registration_modal', // TODO: revise
+
   LAMBDA_EDITOR__EDITOR_INPUT = 'lambda-editor__editor__input',
-  MAPPING_EXPLORER = 'mapping-explorer',
-  MAIN_EDITOR = 'main-editor',
-  EDITOR__TABS__HEADER = 'editor__tabs__header',
-  SOURCE_PANEL = 'source-panel',
-  PROJECT_OVERVIEW__ACTIVITY_BAR = 'project-overview__activity-bar',
-  PANEL_CONTENT_LIST = 'panel__content__list',
+
+  MAPPING_EXPLORER = 'mapping-explorer', // TODO: revise
+  SOURCE_PANEL = 'source-panel', // TODO: revise
+  TYPE_VISIT = 'type-visit', // TODO: revise
+
+  PROJECT_OVERVIEW__ACTIVITY_BAR = 'project-overview__activity-bar', // TODO: revise
+
   SETUP__CONTENT = 'setup__content',
-  EXPLORER_CONTEXT_MENU = 'explorer__context-menu',
-  SIDEBAR_PANEL_HEADER__CHANGES_COUNT = 'side-bar__panel__header__changes-count',
-  ACTIVITY_BAR_ITEM_ICON_INDICATOR = 'activity-bar__item__icon__indicator',
-  PANEL_CONTENT_FORM_SECTION_LIST_ITEMS = 'panel__content__form__section__list__items',
 }

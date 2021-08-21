@@ -29,7 +29,7 @@ import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
-import { CORE_TEST_ID } from '../../const';
+import { STUDIO_TEST_ID } from '../StudioTestID';
 import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
 import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
@@ -87,7 +87,7 @@ const ViewerStatusBar = observer(() => {
 
   return (
     <div
-      data-testid={CORE_TEST_ID.STATUS_BAR}
+      data-testid={STUDIO_TEST_ID.STATUS_BAR}
       className="editor__status-bar viewer__status-bar"
     >
       <div className="editor__status-bar__left">

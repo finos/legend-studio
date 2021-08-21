@@ -19,7 +19,6 @@ import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { DATE_TIME_FORMAT } from '../../const';
 import { TAB_SIZE } from '../EditorConfig';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -30,6 +29,7 @@ import {
   ContentType,
   NetworkClientError,
   HttpStatus,
+  DATE_TIME_FORMAT,
 } from '@finos/legend-shared';
 import { ActionAlertType, ActionAlertActionType } from '../ApplicationStore';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';

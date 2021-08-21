@@ -36,7 +36,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../ComponentTestUtils';
-import { CORE_TEST_ID } from '../../../../../const';
+import { STUDIO_TEST_ID } from '../../../../StudioTestID';
 
 let renderResult: RenderResult;
 
@@ -53,11 +53,11 @@ test(integrationTest('Profile editor renders properly'), async () => {
     renderResult,
   );
   const editPanelHeader = renderResult.getByTestId(
-    CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'ProfileTest')).not.toBeNull();
   const editPanelContent = renderResult.getByTestId(
-    CORE_TEST_ID.EDIT_PANEL_CONTENT,
+    STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
   );
   expect(getByText(editPanelContent, 'ProfileTest')).not.toBeNull();
   const taggedValues = ['tag1', 'tag2', 'tag3'];
@@ -76,10 +76,12 @@ test(
   async () => {
     await TEST__openElementFromExplorerTree('ui::TestClass', renderResult);
     const editPanelHeader = renderResult.getByTestId(
-      CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
+      STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
     );
     expect(getByText(editPanelHeader, 'TestClass')).not.toBeNull();
-    const classForm = renderResult.getByTestId(CORE_TEST_ID.CLASS_FORM_EDITOR);
+    const classForm = renderResult.getByTestId(
+      STUDIO_TEST_ID.CLASS_FORM_EDITOR,
+    );
     // Normal properties
     const classProperties = ['a', 'b', 'name', 'person'];
     classProperties.forEach((t) =>
@@ -139,7 +141,7 @@ test(
     const navigateToPropertyButton = buttons[0];
     fireEvent.click(navigateToPropertyButton);
     await waitFor(() => getByText(classForm, 'property'));
-    const subPropertyPanel = getByTestId(classForm, CORE_TEST_ID.PANEL);
+    const subPropertyPanel = getByTestId(classForm, STUDIO_TEST_ID.PANEL);
     expect(
       getByDisplayValue(subPropertyPanel, 'lets write a tag'),
     ).not.toBeNull();
@@ -156,11 +158,11 @@ test(
 test(integrationTest('Enumeration editor'), async () => {
   await TEST__openElementFromExplorerTree('ui::TestEnumeration', renderResult);
   const editPanelHeader = renderResult.getByTestId(
-    CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'TestEnumeration')).not.toBeNull();
   const enumerationEditor = renderResult.getByTestId(
-    CORE_TEST_ID.ENUMERATION_EDITOR,
+    STUDIO_TEST_ID.ENUMERATION_EDITOR,
   );
   const enums = ['enumA', 'enumB', 'enumC'];
   enums.forEach((e) => getByDisplayValue(enumerationEditor, e));
@@ -179,7 +181,7 @@ test(integrationTest('Enumeration editor'), async () => {
   const deleteButton = buttons[1];
   fireEvent.click(navigateButton);
   await waitFor(() => getByText(enumerationEditor, 'enum'));
-  const subPropertyPanel = getByTestId(enumerationEditor, CORE_TEST_ID.PANEL);
+  const subPropertyPanel = getByTestId(enumerationEditor, STUDIO_TEST_ID.PANEL);
   getByDisplayValue(subPropertyPanel, 'enumATag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
@@ -192,11 +194,11 @@ test(integrationTest('Enumeration editor'), async () => {
 test(integrationTest('Association editor'), async () => {
   await TEST__openElementFromExplorerTree('ui::TestAssociation', renderResult);
   const editPanelHeader = renderResult.getByTestId(
-    CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'TestAssociation')).not.toBeNull();
   const associationEditor = renderResult.getByTestId(
-    CORE_TEST_ID.ASSOCIATION_EDITOR,
+    STUDIO_TEST_ID.ASSOCIATION_EDITOR,
   );
   const properties = ['testClassProp', 'testClassSibling'];
   // input fields for association property name are present
@@ -228,7 +230,7 @@ test(integrationTest('Association editor'), async () => {
   expect(queryByDisplayValue(associationEditor, 'ProfileTest')).toBeNull();
   const navigateToPropertyButton = buttons[1];
   fireEvent.click(navigateToPropertyButton);
-  const subPropertyPanel = getByTestId(associationEditor, CORE_TEST_ID.PANEL);
+  const subPropertyPanel = getByTestId(associationEditor, STUDIO_TEST_ID.PANEL);
   getByDisplayValue(subPropertyPanel, 'association tag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));

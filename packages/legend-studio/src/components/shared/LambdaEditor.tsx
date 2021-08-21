@@ -35,7 +35,7 @@ import { FaLongArrowAltDown, FaLongArrowAltUp } from 'react-icons/fa';
 import type { LambdaEditorState } from '../../stores/editor-state/element-editor-state/LambdaEditorState';
 import type { DebouncedFunc, GeneratorFn } from '@finos/legend-shared';
 import { debounce } from '@finos/legend-shared';
-import { CORE_TEST_ID } from '../../const';
+import { STUDIO_TEST_ID } from '../StudioTestID';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '../application/ApplicationStoreProvider';
 import { useEditorStore } from '../editor/EditorStoreProvider';
@@ -341,7 +341,7 @@ const LambdaEditorInner = observer(
         >
           <div
             ref={ref}
-            data-testid={CORE_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
+            data-testid={STUDIO_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
             className="lambda-editor__editor__input"
           >
             <div className="text-editor__body" ref={textInput} />

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export * from './const';
+
 export * from './CommonUtils';
 
 export * from './error/AssertionUtils';

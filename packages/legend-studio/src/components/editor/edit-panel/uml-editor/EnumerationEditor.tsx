@@ -36,7 +36,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
 } from '@finos/legend-application-components';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import {
@@ -199,7 +199,7 @@ const EnumEditor = observer(
 
     return (
       <div className="uml-element-editor enum-editor">
-        <div data-testid={CORE_TEST_ID.PANEL} className="panel">
+        <div data-testid={STUDIO_TEST_ID.PANEL} className="panel">
           <div className="panel__header">
             <div className="panel__header__title">
               {isReadOnly && (
@@ -222,7 +222,7 @@ const EnumEditor = observer(
             </div>
           </div>
           <div
-            data-testid={CORE_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+            data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
             className="panel__header uml-element-editor__tabs__header"
           >
             <div className="uml-element-editor__tabs">
@@ -422,7 +422,7 @@ export const EnumerationEditor = observer(
 
     return (
       <div
-        data-testid={CORE_TEST_ID.ENUMERATION_EDITOR}
+        data-testid={STUDIO_TEST_ID.ENUMERATION_EDITOR}
         className="uml-element-editor enumeration-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
@@ -457,7 +457,7 @@ export const EnumerationEditor = observer(
                 </div>
               </div>
               <div
-                data-testid={CORE_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
                 className="panel__header uml-element-editor__tabs__header"
               >
                 <div className="uml-element-editor__tabs">

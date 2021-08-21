@@ -15,7 +15,7 @@
  */
 
 import { useRef } from 'react';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
 import {
@@ -387,7 +387,7 @@ export const CreateNewElementModal = observer(() => {
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <form
-        data-testid={CORE_TEST_ID.NEW_ELEMENT_MODAL}
+        data-testid={STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
         onSubmit={handleSubmit}
         className="modal search-modal"
       >

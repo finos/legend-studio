@@ -19,7 +19,7 @@ import { render, fireEvent, waitFor, getByText } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import { ApplicationStore } from '../stores/ApplicationStore';
-import { CORE_TEST_ID } from '../const';
+import { STUDIO_TEST_ID } from './StudioTestID';
 import { EditorStore } from '../stores/EditorStore';
 import { Editor } from './editor/Editor';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
@@ -202,7 +202,9 @@ export const TEST__openAndAssertPathWithElement = async (
   renderResult: RenderResult,
   closePackage = true,
 ): Promise<void> => {
-  const packageExplorer = renderResult.getByTestId(CORE_TEST_ID.EXPLORER_TREES);
+  const packageExplorer = renderResult.getByTestId(
+    STUDIO_TEST_ID.EXPLORER_TREES,
+  );
   const packages = path.split(ELEMENT_PATH_DELIMITER);
   const rootPackage = packages.shift() as string;
   fireEvent.click(getByText(packageExplorer, rootPackage));
@@ -222,7 +224,9 @@ export const TEST__openElementFromExplorerTree = async (
   path: string,
   renderResult: RenderResult,
 ): Promise<void> => {
-  const packageExplorer = renderResult.getByTestId(CORE_TEST_ID.EXPLORER_TREES);
+  const packageExplorer = renderResult.getByTestId(
+    STUDIO_TEST_ID.EXPLORER_TREES,
+  );
   await TEST__openAndAssertPathWithElement(path, renderResult, false);
   const elementName = path.split(ELEMENT_PATH_DELIMITER).pop() as string;
   fireEvent.click(getByText(packageExplorer, elementName));
@@ -383,7 +387,7 @@ export const TEST__setUpEditor = async (
       mockedEditorStore.explorerTreeState.buildState.hasCompleted,
     ).toBeTrue(),
   );
-  await waitFor(() => renderResult.getByTestId(CORE_TEST_ID.EXPLORER_TREES));
+  await waitFor(() => renderResult.getByTestId(STUDIO_TEST_ID.EXPLORER_TREES));
   return renderResult;
 };
 

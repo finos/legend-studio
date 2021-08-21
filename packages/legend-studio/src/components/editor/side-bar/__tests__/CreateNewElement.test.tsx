@@ -26,7 +26,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../ComponentTestUtils';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import type { EditorStore } from '../../../../stores/EditorStore';
 import { PACKAGEABLE_ELEMENT_TYPE } from '@finos/legend-graph';
 
@@ -34,7 +34,7 @@ const addRootPackage = (packagePath: string, result: RenderResult): void => {
   fireEvent.click(result.getByTitle('New Element...', { exact: false }));
   const contextMenu = result.getByRole('menu');
   fireEvent.click(getByText(contextMenu, 'New Package...'));
-  const modal = result.getByTestId(CORE_TEST_ID.NEW_ELEMENT_MODAL);
+  const modal = result.getByTestId(STUDIO_TEST_ID.NEW_ELEMENT_MODAL);
   const packageInput = getByPlaceholderText(modal, 'Enter a name', {
     exact: false,
   });
@@ -48,14 +48,14 @@ const createNewElementOnRootPackage = (
   result: RenderResult,
   elementName?: string,
 ): void => {
-  const packageExplorer = result.getByTestId(CORE_TEST_ID.EXPLORER_TREES);
+  const packageExplorer = result.getByTestId(STUDIO_TEST_ID.EXPLORER_TREES);
   const rootPackageDiv = getByText(packageExplorer, rootPackage);
   const rightClick = { button: 2 };
   fireEvent.click(rootPackageDiv, rightClick);
   fireEvent.click(
     result.getByText(`New ${toTitleCase(elementType.toLowerCase())}...`),
   );
-  const modal = result.getByTestId(CORE_TEST_ID.NEW_ELEMENT_MODAL);
+  const modal = result.getByTestId(STUDIO_TEST_ID.NEW_ELEMENT_MODAL);
   const elementInput = getByPlaceholderText(modal, 'Enter a name', {
     exact: false,
   });
@@ -77,7 +77,7 @@ test(
   integrationTest('Model loader shows up if no elements in graph'),
   async () => {
     const packageExplorer = renderResult.getByTestId(
-      CORE_TEST_ID.EXPLORER_TREES,
+      STUDIO_TEST_ID.EXPLORER_TREES,
     );
     getByText(packageExplorer, 'Open Model Loader');
     // TODO

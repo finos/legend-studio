@@ -36,7 +36,7 @@ import {
   TEST__setUpEditor,
   TEST__provideMockedApplicationStore,
 } from '../../../../ComponentTestUtils';
-import { CORE_TEST_ID } from '../../../../../const';
+import { STUDIO_TEST_ID } from '../../../../StudioTestID';
 import type { PlainObject } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
@@ -162,17 +162,17 @@ test(
     MOBX__disableSpyOrMock();
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL__HEADER_TABS),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );
     await waitFor(() => getByText(editPanelHeader, 'myService'));
     const editPanel = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL),
     );
     fireEvent.click(getByTitle(editPanel, 'Register service...'));
     const serviceEditorState =
       mockedEditorStore.getCurrentEditorState(ServiceEditorState);
     const registrationModal = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.SERVICE_REGISTRATION_MODAL),
+      renderResult.getByTestId(STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL),
     );
     await waitFor(() =>
       getByText(
@@ -246,11 +246,11 @@ test(
     MOBX__disableSpyOrMock();
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL__HEADER_TABS),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );
     await waitFor(() => getByText(editPanelHeader, 'myService'));
     const editPanel = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL),
     );
     // labels + values
     await waitFor(() => getByText(editPanel, 'URL Pattern'));
@@ -282,7 +282,7 @@ test(
     // registration
     fireEvent.click(getByTitle(editPanel, 'Register service...'));
     const registrationModal = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.SERVICE_REGISTRATION_MODAL),
+      renderResult.getByTestId(STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL),
     );
     await waitFor(() =>
       getByText(

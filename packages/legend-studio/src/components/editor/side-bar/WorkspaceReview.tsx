@@ -38,7 +38,7 @@ import {
   ActionAlertActionType,
 } from '../../../stores/ApplicationStore';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
@@ -73,7 +73,7 @@ export const WorkspaceReviewDiffs = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
         >
           {changes.length}
         </div>

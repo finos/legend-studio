@@ -15,7 +15,6 @@
  */
 
 // application
-export * from './const';
 export * from './components/application/ApplicationStoreProvider';
 export * from './components/StudioStoreProvider';
 export * from './components/application/WebApplicationNavigatorProvider';

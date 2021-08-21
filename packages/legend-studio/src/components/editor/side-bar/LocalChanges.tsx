@@ -24,7 +24,7 @@ import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/Entit
 import { FaInfoCircle, FaDownload } from 'react-icons/fa';
 import { MdRefresh } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
@@ -132,7 +132,7 @@ export const LocalChanges = observer(() => {
             </div>
             <div
               className="side-bar__panel__header__changes-count"
-              data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+              data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
             >
               {changes.length}
             </div>

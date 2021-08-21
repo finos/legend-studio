@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { FaInfoCircle, FaTimes } from 'react-icons/fa';
 import { MdModeEdit } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
@@ -139,7 +139,7 @@ const WorkspacesViewer = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
         >
           {workspaces.length}
         </div>
@@ -147,7 +147,7 @@ const WorkspacesViewer = observer(() => {
       <div className="panel__content project-overview__panel__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div
-          data-testid={CORE_TEST_ID.PANEL_CONTENT_LIST}
+          data-testid={STUDIO_TEST_ID.PANEL_CONTENT_LIST}
           className="panel__content__list"
         >
           {workspaces.map((workspace) => (
@@ -317,7 +317,9 @@ const ReleaseEditor = observer(() => {
                 </div>
                 <div
                   className="side-bar__panel__header__changes-count"
-                  data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                  data-testid={
+                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                  }
                 >
                   {commitedReviews.length}
                 </div>
@@ -378,7 +380,7 @@ const VersionsViewer = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
         >
           {versions.length}
         </div>
@@ -555,7 +557,7 @@ const OverviewViewer = observer(() => {
             <div className="panel__content__form__section__list"></div>
             <div
               className="panel__content__form__section__list__items"
-              data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+              data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
             >
               {tagsArray.map((value, idx) => (
                 // NOTE: since the value must be unique, we will use it as the key
@@ -691,7 +693,7 @@ export const ProjectOverviewActivityBar = observer(() => {
 
   return (
     <div
-      data-testid={CORE_TEST_ID.PROJECT_OVERVIEW__ACTIVITY_BAR}
+      data-testid={STUDIO_TEST_ID.PROJECT_OVERVIEW__ACTIVITY_BAR}
       className="project-overview__activity-bar"
     >
       <div className="project-overview__activity-bar__items">

@@ -26,7 +26,7 @@ import { FaLock, FaPlus, FaTimes } from 'react-icons/fa';
 import { clsx } from '@finos/legend-application-components';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import type {
@@ -140,7 +140,7 @@ export const PropertyEditor = observer(
     );
     return (
       <div className="uml-element-editor property-editor">
-        <div data-testid={CORE_TEST_ID.PANEL} className="panel">
+        <div data-testid={STUDIO_TEST_ID.PANEL} className="panel">
           <div className="panel__header">
             <div className="panel__header__title">
               {isReadOnly && (

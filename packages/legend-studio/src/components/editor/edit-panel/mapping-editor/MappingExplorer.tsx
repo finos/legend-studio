@@ -52,7 +52,7 @@ import {
   FaChevronRight,
   FaChevronDown,
 } from 'react-icons/fa';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { getElementIcon } from '../../../shared/Icon';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
@@ -409,7 +409,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
 
   return (
     <div
-      data-testid={CORE_TEST_ID.MAPPING_EXPLORER}
+      data-testid={STUDIO_TEST_ID.MAPPING_EXPLORER}
       className="panel mapping-explorer"
     >
       <div className="panel__header">

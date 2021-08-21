@@ -24,8 +24,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
-import { DATE_FORMAT } from '@finos/legend-studio';
+import { UnsupportedOperationError, DATE_FORMAT } from '@finos/legend-shared';
 import format from 'date-fns/format';
 
 export const generateDefaultValueForPrimitiveType = (

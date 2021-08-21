@@ -70,7 +70,7 @@ import {
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type {
@@ -411,7 +411,7 @@ const FileGenerationScopeEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {scopeElements.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -808,7 +808,7 @@ const GenerationArrayPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {arrayValues.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -1016,7 +1016,7 @@ const GenerationMapPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {Array.from(Object.entries(mapValues)).map(([key, value], idx) => (
               // NOTE: since the key must be unique, we will use it to generate the key

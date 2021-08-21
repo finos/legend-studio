@@ -37,7 +37,7 @@ import {
   CustomSelectorInput,
   createFilter,
 } from '@finos/legend-application-components';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { getElementIcon } from '../../shared/Icon';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
@@ -209,7 +209,7 @@ const ParameterBasicEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -241,7 +241,7 @@ const ParameterBasicEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -392,7 +392,7 @@ const ReturnTypeEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -424,7 +424,7 @@ const ReturnTypeEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}

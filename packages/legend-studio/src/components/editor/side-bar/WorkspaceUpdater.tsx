@@ -37,7 +37,7 @@ import {
 } from '../../../stores/ApplicationStore';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type {
   EntityChangeConflict,
@@ -186,7 +186,9 @@ export const WorkspaceUpdater = observer(() => {
                 </div>
                 <div
                   className="side-bar__panel__header__changes-count"
-                  data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                  data-testid={
+                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                  }
                 >
                   {changes.length}
                 </div>
@@ -240,7 +242,9 @@ export const WorkspaceUpdater = observer(() => {
                 </div>
                 <div
                   className="side-bar__panel__header__changes-count"
-                  data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                  data-testid={
+                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                  }
                 >
                   {commitedReviews.length}
                 </div>

@@ -29,7 +29,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../ComponentTestUtils';
-import { CORE_TEST_ID } from '../../../../../const';
+import { STUDIO_TEST_ID } from '../../../../StudioTestID';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 
@@ -48,11 +48,11 @@ test(
   async () => {
     await TEST__openElementFromExplorerTree('demo::MyMap', renderResult);
     const editPanelHeader = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL__HEADER_TABS),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );
     await waitFor(() => getByText(editPanelHeader, 'MyMap'));
     const mappingExplorer = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.MAPPING_EXPLORER),
+      renderResult.getByTestId(STUDIO_TEST_ID.MAPPING_EXPLORER),
     );
     await waitFor(() => getByText(mappingExplorer, 'Enum_1'));
     await waitFor(() => getByText(mappingExplorer, 'Enum_2'));
@@ -61,13 +61,13 @@ test(
     fireEvent.click(getByText(mappingExplorer, 'Enum_1 [enumToEnum]'));
     // Enum_1 [enumToEnum] mapping source values
     let sourcePanel = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.SOURCE_PANEL),
+      renderResult.getByTestId(STUDIO_TEST_ID.SOURCE_PANEL),
     );
     await waitFor(() => getByText(sourcePanel, 'Enum_2'));
     await waitFor(() => getByText(sourcePanel, 'zero'));
     await waitFor(() => getByText(sourcePanel, 'one'));
     let mainEditor = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.MAIN_EDITOR),
+      renderResult.getByTestId(STUDIO_TEST_ID.MAIN_EDITOR),
     );
     // Enum_1 [enumToEnum] mapping source value labels
     await waitFor(() => getByText(mainEditor, '_0'));
@@ -85,11 +85,11 @@ test(
     // open enum_2 enumeration mapping
     fireEvent.click(getByText(mappingExplorer, 'Enum_2'));
     sourcePanel = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.SOURCE_PANEL),
+      renderResult.getByTestId(STUDIO_TEST_ID.SOURCE_PANEL),
     );
     await waitFor(() => getByText(sourcePanel, 'String'));
     mainEditor = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.MAIN_EDITOR),
+      renderResult.getByTestId(STUDIO_TEST_ID.MAIN_EDITOR),
     );
     // enum_2 mapping source value labels
     await waitFor(() => getByText(mainEditor, 'one'));
@@ -107,11 +107,11 @@ test(
     // open enum_1 enumeration mapping
     fireEvent.click(getByText(mappingExplorer, 'Enum_1'));
     sourcePanel = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.SOURCE_PANEL),
+      renderResult.getByTestId(STUDIO_TEST_ID.SOURCE_PANEL),
     );
     await waitFor(() => getByText(sourcePanel, 'String'));
     mainEditor = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.MAIN_EDITOR),
+      renderResult.getByTestId(STUDIO_TEST_ID.MAIN_EDITOR),
     );
     // enum_2 mapping source value labels
     await waitFor(() => getByText(mainEditor, '_0'));
@@ -138,11 +138,11 @@ test(
       mockedEditorStore.getCurrentEditorState(MappingEditorState);
     expect(mappingEditorState.openedTabStates).toHaveLength(3);
     const mappingTabs = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDITOR__TABS__HEADER),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDITOR__TABS__HEADER),
     );
     fireEvent.click(getByText(mappingTabs, 'Enum_1 [enumToEnum]'));
     mainEditor = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.MAIN_EDITOR),
+      renderResult.getByTestId(STUDIO_TEST_ID.MAIN_EDITOR),
     );
     await waitFor(() => getAllByText(mainEditor, 'Enum_2'));
     // close

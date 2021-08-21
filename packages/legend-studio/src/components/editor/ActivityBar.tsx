@@ -29,7 +29,7 @@ import {
   GoCloudDownload,
 } from 'react-icons/go';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import { CORE_TEST_ID } from '../../const';
+import { STUDIO_TEST_ID } from '../StudioTestID';
 import { CheckIcon } from '../shared/Icon';
 import {
   clsx,
@@ -90,14 +90,14 @@ export const ActivityBar = observer(() => {
       editorStore.localChangesState.isSyncingWithWorkspace ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__local-change-counter activity-bar__local-change-counter--waiting"
-        data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+        data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
       >
         <FaRegClock />
       </div>
     ) : localChanges ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__local-change-counter"
-        data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+        data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
       >
         {localChangesDisplayLabel}
       </div>
@@ -120,14 +120,14 @@ export const ActivityBar = observer(() => {
         .isBuildingEntityHashesIndex ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__conflict-resolution-change-counter activity-bar__conflict-resolution-change-counter--waiting"
-        data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+        data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
       >
         <FaRegClock />
       </div>
     ) : conflictResolutionChanges ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__conflict-resolution-change-counter"
-        data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+        data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
       >
         {conflictResolutionChangesDisplayLabel}
       </div>
@@ -148,7 +148,7 @@ export const ActivityBar = observer(() => {
   ) : (
     <div
       className="activity-bar__item__icon__indicator activity-bar__item__icon__indicator__dot activity-bar__item__icon__review-changes__indicator"
-      data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+      data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
     ></div>
   );
   // project latest changes
@@ -171,7 +171,7 @@ export const ActivityBar = observer(() => {
           ? 'activity-bar__item__icon__project-latest-changes__indicator--has-conflicts'
           : ''
       }`}
-      data-testid={CORE_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+      data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
     ></div>
   );
   // tabs

@@ -40,7 +40,7 @@ import {
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
 import { EnumerationIcon } from '../../../shared/Icon';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { MdModeEdit } from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
 import { noop } from '@finos/legend-shared';
@@ -362,7 +362,7 @@ export const EnumerationMappingEditor = observer(
             );
     }, [enumerationMapping, isReadOnly]);
     return (
-      <div data-testid={CORE_TEST_ID.MAIN_EDITOR} className="editor__main">
+      <div data-testid={STUDIO_TEST_ID.MAIN_EDITOR} className="editor__main">
         <div className="mapping-element-editor enumeration-mapping-editor">
           <div className="mapping-element-editor__metadata">
             {/* Target */}
@@ -449,7 +449,7 @@ export const EnumerationMappingEditor = observer(
               <ResizablePanelSplitter />
               <ResizablePanel size={300} minSize={300}>
                 <div
-                  data-testid={CORE_TEST_ID.SOURCE_PANEL}
+                  data-testid={STUDIO_TEST_ID.SOURCE_PANEL}
                   className="panel source-panel"
                 >
                   <div className="panel__header">
