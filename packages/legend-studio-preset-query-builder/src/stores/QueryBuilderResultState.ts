@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import { action, makeAutoObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -26,9 +26,6 @@ import type {
 import {
   GRAPH_MANAGER_LOG_EVENT,
   PureClientVersion,
-  PackageableElementExplicitReference,
-  PureSingleExecution,
-  Service,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 import type { EditorStore } from '@finos/legend-studio';
@@ -144,47 +141,47 @@ export class QueryBuilderResultState {
     }
   }
 
-  *promoteToService(
-    packagePath: string,
-    serviceName: string,
-  ): GeneratorFn<void> {
-    try {
-      const mapping = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.mapping,
-        'Mapping is required to execute query',
-      );
-      const runtime = this.queryBuilderState.querySetupState.runtime;
-      const query = this.queryBuilderState.getQuery();
-      const service = new Service(serviceName);
-      service.initNewService();
-      service.setExecution(
-        new PureSingleExecution(
-          query,
-          service,
-          PackageableElementExplicitReference.create(mapping),
-          runtime,
-        ),
-      );
-      const servicePackage =
-        this.editorStore.graphManagerState.graph.getOrCreatePackage(
-          packagePath,
-        );
-      servicePackage.addElement(service);
-      this.editorStore.graphManagerState.graph.addElement(service);
-      this.editorStore.openElement(service);
-      yield flowResult(this.queryBuilderState.setOpenQueryBuilder(false)).catch(
-        this.editorStore.applicationStore.alertIllegalUnhandledError,
-      );
-      this.queryBuilderState.reset();
-      this.editorStore.applicationStore.notifySuccess(
-        `Service ${service.name} created`,
-      );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notifyError(error);
-    }
-  }
+  // *promoteToService(
+  //   packagePath: string,
+  //   serviceName: string,
+  // ): GeneratorFn<void> {
+  //   try {
+  //     const mapping = guaranteeNonNullable(
+  //       this.queryBuilderState.querySetupState.mapping,
+  //       'Mapping is required to execute query',
+  //     );
+  //     const runtime = this.queryBuilderState.querySetupState.runtime;
+  //     const query = this.queryBuilderState.getQuery();
+  //     const service = new Service(serviceName);
+  //     service.initNewService();
+  //     service.setExecution(
+  //       new PureSingleExecution(
+  //         query,
+  //         service,
+  //         PackageableElementExplicitReference.create(mapping),
+  //         runtime,
+  //       ),
+  //     );
+  //     const servicePackage =
+  //       this.editorStore.graphManagerState.graph.getOrCreatePackage(
+  //         packagePath,
+  //       );
+  //     servicePackage.addElement(service);
+  //     this.editorStore.graphManagerState.graph.addElement(service);
+  //     this.editorStore.openElement(service);
+  //     yield flowResult(this.queryBuilderState.setOpenQueryBuilder(false)).catch(
+  //       this.editorStore.applicationStore.alertIllegalUnhandledError,
+  //     );
+  //     // this.queryBuilderState.reset();
+  //     this.editorStore.applicationStore.notifySuccess(
+  //       `Service ${service.name} created`,
+  //     );
+  //   } catch (error: unknown) {
+  //     this.editorStore.applicationStore.log.error(
+  //       LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+  //       error,
+  //     );
+  //     this.editorStore.applicationStore.notifyError(error);
+  //   }
+  // }
 }

@@ -19,7 +19,6 @@ import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
-  changeEntry,
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
@@ -124,7 +123,6 @@ export class QueryBuilderState extends EditorExtensionState {
       openQueryBuilder: observable,
       isCompiling: observable,
       backdrop: observable,
-      reset: action,
       resetData: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
@@ -207,15 +205,6 @@ export class QueryBuilderState extends EditorExtensionState {
       this.editorStore.setBlockGlobalHotkeys(false);
       this.editorStore.resetHotkeys();
     }
-  }
-
-  // TODO: consider removing this method since it's not encapsulated to within Legend Query
-  reset(): void {
-    changeEntry(
-      this.editorStore.editorExtensionStates,
-      this.editorStore.getEditorExtensionState(QueryBuilderState),
-      new QueryBuilderState(this.editorStore),
-    );
   }
 
   resetData(): void {

@@ -26,8 +26,8 @@ import { clsx } from '@finos/legend-application-components';
 import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryBuilder } from './QueryBuilder';
 import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
-import { flowResult } from 'mobx';
-import { noop } from '@finos/legend-shared';
+import { flowResult, runInAction } from 'mobx';
+import { changeEntry, noop } from '@finos/legend-shared';
 
 /**
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
@@ -44,7 +44,13 @@ export const QueryBuilderDialog = observer(() => {
     flowResult(queryBuilderState.setOpenQueryBuilder(false)).catch(
       applicationStore.alertIllegalUnhandledError,
     );
-    queryBuilderState.reset();
+    runInAction(() => {
+      changeEntry(
+        editorStore.editorExtensionStates,
+        editorStore.getEditorExtensionState(QueryBuilderState),
+        new QueryBuilderState(editorStore),
+      );
+    });
   };
 
   return (
