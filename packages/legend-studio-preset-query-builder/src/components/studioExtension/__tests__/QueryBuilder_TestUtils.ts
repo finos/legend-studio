@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
+import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
 import type { EditorStore } from '@finos/legend-studio';
+import { TEST__provideMockedApplicationStore } from '@finos/legend-studio';
 import {
-  TEST__getTestApplicationStore,
   TEST__provideMockedEditorStore,
   StudioPluginManager,
 } from '@finos/legend-studio';
 import { QueryBuilder_Preset } from '../../../QueryBuilder_Preset';
 
-export const buildQueryBuilderMockedEditorStore = (): EditorStore => {
+export const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = StudioPluginManager.create();
   pluginManager.usePresets([new QueryBuilder_Preset()]).install();
-  return TEST__provideMockedEditorStore(
-    TEST__getTestApplicationStore(),
+
+  return TEST__provideMockedEditorStore({
+    applicationStore: TEST__provideMockedApplicationStore(),
+    graphManagerState: TEST__provideMockedGraphManagerState({ pluginManager }),
     pluginManager,
-  );
+  });
 };

@@ -34,7 +34,7 @@ import { waitFor } from '@testing-library/dom';
 import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../../../QueryBuilder_Const';
 import { flowResult } from 'mobx';
-import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+import { TEST__buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import { RawLambda } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../../../stores/QueryBuilder_EditorExtensionState';
@@ -113,16 +113,18 @@ describe(
           mappingName,
           runtimeName,
         } = context;
-        const mockedEditorStore = buildQueryBuilderMockedEditorStore();
+        const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
         const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
           mockedEditorStore,
           {
             entities,
           },
         );
+
         MOBX__enableSpyOrMock();
         mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
         MOBX__disableSpyOrMock();
+
         const queryBuilderExtension = mockedEditorStore.getEditorExtensionState(
           QueryBuilder_EditorExtensionState,
         );

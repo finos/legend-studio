@@ -15,8 +15,12 @@
  */
 
 import type { GeneratorFn, Log } from '@finos/legend-shared';
-import { LogEvent, uniq } from '@finos/legend-shared';
-import { ActionState, assertErrorThrown } from '@finos/legend-shared';
+import {
+  LogEvent,
+  uniq,
+  ActionState,
+  assertErrorThrown,
+} from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { CoreModel, PureModel, SystemModel } from './graph/PureModel';
 import type { AbstractPureGraphManager } from './graphManager/AbstractPureGraphManager';

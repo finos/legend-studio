@@ -41,7 +41,7 @@ import { FETCH_STRUCTURE_MODE } from '../../../stores/QueryBuilderFetchStructure
 import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../../../QueryBuilder_Const';
 import { flowResult } from 'mobx';
-import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+import { TEST__buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import { COLUMN_SORT_TYPE } from '../../../stores/QueryResultSetModifierState';
 import { QueryBuilderSimpleProjectionColumnState } from '../../../stores/QueryBuilderProjectionState';
 import {
@@ -61,22 +61,25 @@ test(
     'Query builder state is properly set after processing a projection lambda',
   ),
   async () => {
-    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
+    const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
     const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
       mockedEditorStore,
       {
         entities: TEST_DATA__ComplexRelationalModel,
       },
     );
+
     const _personClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Person',
     );
     const _firmClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Firm',
     );
+
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
     MOBX__disableSpyOrMock();
+
     const queryBuilderExtension = mockedEditorStore.getEditorExtensionState(
       QueryBuilder_EditorExtensionState,
     );
@@ -364,7 +367,7 @@ test(
     'Query builder state is properly set after processing a graph-fetch lambda',
   ),
   async () => {
-    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
+    const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
     const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
       mockedEditorStore,
       {
@@ -377,9 +380,11 @@ test(
     const _firmClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::target::NFirm',
     );
+
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
     MOBX__disableSpyOrMock();
+
     const queryBuilderExtension = mockedEditorStore.getEditorExtensionState(
       QueryBuilder_EditorExtensionState,
     );

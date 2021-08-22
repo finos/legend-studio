@@ -57,9 +57,9 @@ const setup = async (
   workspace: PlainObject<Workspace>,
   versions?: PlainObject<Version>[],
 ): Promise<EditorStore> => {
-  const mockedEditorStore = TEST__provideMockedEditorStore(
-    TEST__provideMockedApplicationStore(
-      TEST__getTestApplicationConfig({
+  const mockedEditorStore = TEST__provideMockedEditorStore({
+    applicationStore: TEST__provideMockedApplicationStore({
+      config: TEST__getTestApplicationConfig({
         options: {
           core: {
             TEMPORARY__serviceRegistrationConfig: [
@@ -90,8 +90,8 @@ const setup = async (
           },
         },
       }),
-    ),
-  );
+    }),
+  });
   renderResult = await TEST__setUpEditor(mockedEditorStore, {
     project: project,
     workspace: workspace,

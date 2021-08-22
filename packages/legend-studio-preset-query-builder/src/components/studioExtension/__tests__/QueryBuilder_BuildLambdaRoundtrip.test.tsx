@@ -63,7 +63,7 @@ import {
   TEST_DATA__lambda_input_projectionWithFullPathFunctions,
   TEST_DATA__lambda_output_projectionWithFullPathFunctions,
 } from './QueryBuilder_TestQueriesWithFullPathFunctions';
-import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+import { TEST__buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import { RawLambda } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../../../stores/QueryBuilder_EditorExtensionState';
@@ -244,16 +244,18 @@ describe(
     test.each(cases)('%s', async (testName, context, lambda, inputLambda) => {
       const { entities, targetClassPath, className, mappingName, runtimeName } =
         context;
-      const mockedEditorStore = buildQueryBuilderMockedEditorStore();
+      const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
       const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
         mockedEditorStore,
         {
           entities,
         },
       );
+
       MOBX__enableSpyOrMock();
       mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
       MOBX__disableSpyOrMock();
+
       const queryBuilderExtensionState =
         mockedEditorStore.getEditorExtensionState(
           QueryBuilder_EditorExtensionState,

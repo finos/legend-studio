@@ -38,14 +38,17 @@ export const TEST__getTestGraphManagerState = (
     new Log(),
   );
 
-export const TEST__provideMockedGraphManagerState = (
-  pluginManager?: GraphPluginManager,
-): GraphManagerState => {
-  const mock = TEST__getTestGraphManagerState(pluginManager);
+export const TEST__provideMockedGraphManagerState = (customization?: {
+  mock?: GraphManagerState;
+  pluginManager?: GraphPluginManager;
+}): GraphManagerState => {
+  const value =
+    customization?.mock ??
+    TEST__getTestGraphManagerState(customization?.pluginManager);
   const MockedGraphManagerStateProvider = require('./GraphManagerStateProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedGraphManagerStateProvider.useGraphManagerState = jest.fn();
-  MockedGraphManagerStateProvider.useGraphManagerState.mockReturnValue(mock);
-  return mock;
+  MockedGraphManagerStateProvider.useGraphManagerState.mockReturnValue(value);
+  return value;
 };
 
 export const TEST__GraphManagerStateProvider = ({

@@ -23,12 +23,14 @@ export const TEST__getTestSDLCServerClient = (): SDLCServerClient =>
     env: '',
   });
 
-export const TEST__provideMockedSDLCServerClient = (): SDLCServerClient => {
-  const mock = TEST__getTestSDLCServerClient();
+export const TEST__provideMockedSDLCServerClient = (customization?: {
+  mock?: SDLCServerClient;
+}): SDLCServerClient => {
+  const value = customization?.mock ?? TEST__getTestSDLCServerClient();
   const MockedSDLCServerClientProvider = require('./SDLCServerClientProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedSDLCServerClientProvider.useSDLCServerClient = jest.fn();
-  MockedSDLCServerClientProvider.useSDLCServerClient.mockReturnValue(mock);
-  return mock;
+  MockedSDLCServerClientProvider.useSDLCServerClient.mockReturnValue(value);
+  return value;
 };
 
 export const TEST__SDLCServerClientProvider = ({

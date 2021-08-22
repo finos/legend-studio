@@ -22,12 +22,14 @@ export const TEST__getTestDepotServerClient = (): DepotServerClient =>
     serverUrl: '',
   });
 
-export const TEST__getMockedDepotServerClient = (): DepotServerClient => {
-  const mock = TEST__getTestDepotServerClient();
+export const TEST__provideMockedDepotServerClient = (customization?: {
+  mock?: DepotServerClient;
+}): DepotServerClient => {
+  const value = customization?.mock ?? TEST__getTestDepotServerClient();
   const MockedDepotServerClientProvider = require('./DepotServerClientProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedDepotServerClientProvider.useDepotServerClient = jest.fn();
-  MockedDepotServerClientProvider.useDepotServerClient.mockReturnValue(mock);
-  return mock;
+  MockedDepotServerClientProvider.useDepotServerClient.mockReturnValue(value);
+  return value;
 };
 
 export const TEST__DepotServerClientProvider = ({
