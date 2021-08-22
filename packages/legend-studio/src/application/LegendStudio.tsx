@@ -27,7 +27,7 @@ import {
   generateLanguageMonarch,
   theme,
 } from '../stores/PureLanguageSupport';
-import { EDITOR_THEME, EDITOR_LANGUAGE } from '../stores/EditorConfig';
+import { EDITOR_THEME, EDITOR_LANGUAGE } from '@finos/legend-application';
 import type {
   ConfigurationData,
   LegendApplicationVersionData,

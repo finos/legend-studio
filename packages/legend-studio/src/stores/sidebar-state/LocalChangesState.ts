@@ -19,7 +19,6 @@ import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { TAB_SIZE } from '../EditorConfig';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -29,7 +28,6 @@ import {
   ContentType,
   NetworkClientError,
   HttpStatus,
-  DATE_TIME_FORMAT,
 } from '@finos/legend-shared';
 import { ActionAlertType, ActionAlertActionType } from '../ApplicationStore';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
@@ -37,6 +35,7 @@ import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state
 import type { Entity } from '@finos/legend-model-storage';
 import { EntityDiff, Revision } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { DATE_TIME_FORMAT, TAB_SIZE } from '@finos/legend-application';
 
 export class LocalChangesState {
   editorStore: EditorStore;

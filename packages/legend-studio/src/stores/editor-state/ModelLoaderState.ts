@@ -15,7 +15,6 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import { TAB_SIZE } from '../EditorConfig';
 import { EditorState } from '../editor-state/EditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
@@ -28,6 +27,7 @@ import type { EditorStore } from '../EditorStore';
 import type { Entity } from '@finos/legend-model-storage';
 import type { ImportConfigurationDescription } from '@finos/legend-graph';
 import { ImportMode } from '@finos/legend-graph';
+import { TAB_SIZE } from '@finos/legend-application';
 
 export enum MODEL_UPDATER_INPUT_TYPE {
   ENTITIES = 'ENTITIES',

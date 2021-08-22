@@ -30,7 +30,7 @@ import {
   TAB_SIZE,
   EDITOR_THEME,
   EDITOR_LANGUAGE,
-} from '../../../stores/EditorConfig';
+} from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import { FaUserSecret } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';

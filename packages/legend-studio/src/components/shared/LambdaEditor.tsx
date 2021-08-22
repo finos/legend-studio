@@ -23,7 +23,7 @@ import {
   TAB_SIZE,
   EDITOR_THEME,
   EDITOR_LANGUAGE,
-} from '../../stores/EditorConfig';
+} from '@finos/legend-application';
 import {
   clsx,
   setErrorMarkers,

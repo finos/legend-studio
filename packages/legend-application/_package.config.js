@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-// Dependencies
-@forward 'deps';
+import { generateBundleCopyrightText } from '../../scripts/copyright/PackageCopyrightHelper.js';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-// core
-@forward 'query-builder';
-@forward 'query-builder-explorer';
-@forward 'query-builder-filter';
-@forward 'query-builder-projection';
-@forward 'graph-fetch-tree';
-@forward 'query-setup';
-@forward 'query-editor';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// studio extension
-@forward 'query-builder-dialog';
-@forward 'service-query-builder';
-@forward 'mapping-execution-query-builder';
-@forward 'mapping-test-query-builder';
+export default {
+  publish: {
+    typescript: {
+      main: './tsconfig.build.json',
+      others: ['./tsconfig.package.json'],
+    },
+  },
+  build: {
+    copyrightText: generateBundleCopyrightText(__dirname),
+  },
+};

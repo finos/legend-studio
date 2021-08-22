@@ -18,7 +18,6 @@ import { Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';
 import type { ServicePureExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { Dialog } from '@material-ui/core';
 import {
@@ -34,6 +33,7 @@ import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 
 const ServiceExecutionModals = observer(
   (props: { executionState: ServicePureExecutionState }) => {

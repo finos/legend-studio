@@ -30,9 +30,9 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     super();
 
     makeObservable(this, {
-      // queryBuilderState: observable,
+      queryBuilderState: observable,
       openQueryBuilder: observable,
-      // reset: action,
+      reset: action,
       setOpenQueryBuilder: flow,
       setup: flow,
     });

@@ -48,7 +48,7 @@ import {
 import { capitalize } from '@finos/legend-shared';
 import { SchemaIcon, TableIcon } from '../../../shared/Icon';
 import { TextInputEditor } from '../../../shared/TextInputEditor';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,

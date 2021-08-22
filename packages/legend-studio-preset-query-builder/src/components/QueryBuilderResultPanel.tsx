@@ -23,15 +23,11 @@ import {
 import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';
 import { flowResult } from 'mobx';
-import {
-  EDITOR_LANGUAGE,
-  TAB_SIZE,
-  TextInputEditor,
-  useApplicationStore,
-} from '@finos/legend-studio';
+import { TextInputEditor, useApplicationStore } from '@finos/legend-studio';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type { ExecutionResult } from '@finos/legend-graph';
 import { TdsExecutionResult } from '@finos/legend-graph';
+import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 
 const QueryBuilderResultValues = observer(
   (props: { executionResult: ExecutionResult }) => {

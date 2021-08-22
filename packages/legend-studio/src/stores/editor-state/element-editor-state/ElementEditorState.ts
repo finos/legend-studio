@@ -16,12 +16,13 @@
 
 import type { EditorStore } from '../../EditorStore';
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import { ELEMENT_NATIVE_VIEW_MODE, TAB_SIZE } from '../../EditorConfig';
+import { ELEMENT_NATIVE_VIEW_MODE } from '../../EditorConfig';
 import { EditorState } from '../../editor-state/EditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, assertErrorThrown } from '@finos/legend-shared';
 import type { CompilationError, PackageableElement } from '@finos/legend-graph';
 import { GRAPH_MANAGER_LOG_EVENT } from '@finos/legend-graph';
+import { TAB_SIZE } from '@finos/legend-application';
 
 const generateMultiLineCommentForError = (
   message: string,

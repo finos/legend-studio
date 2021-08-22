@@ -22,7 +22,7 @@ import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from './ExecutionPlanViewer';
-import { EDITOR_LANGUAGE } from '../../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import type { ResultType, DataType } from '@finos/legend-graph';
 import {
   SQLExecutionNode,

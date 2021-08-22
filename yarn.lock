@@ -2091,6 +2091,43 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application@workspace:*, @finos/legend-application@workspace:packages/legend-application":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application@workspace:packages/legend-application"
+  dependencies:
+    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@material-ui/core": 4.12.3
+    "@testing-library/dom": 8.1.0
+    "@testing-library/react": 12.0.0
+    "@types/react": 17.0.19
+    "@types/react-dom": 17.0.9
+    "@types/react-router-dom": 5.1.8
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    history: 5.0.1
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.27.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    react-dom: 17.0.2
+    react-icons: 4.2.0
+    react-resize-detector: 6.7.6
+    react-router: 5.2.0
+    react-router-dom: 5.2.0
+    rimraf: 3.0.2
+    sass: 1.38.0
+    serializr: 2.0.5
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-dev-utils@workspace:*, @finos/legend-dev-utils@workspace:packages/legend-dev-utils":
   version: 0.0.0-use.local
   resolution: "@finos/legend-dev-utils@workspace:packages/legend-dev-utils"
@@ -2432,6 +2469,7 @@ __metadata:
     "@ag-grid-community/client-side-row-model": 26.0.0
     "@ag-grid-community/core": 26.0.0
     "@ag-grid-community/react": 26.0.0
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2475,6 +2513,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"

@@ -33,7 +33,6 @@ import {
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { TAB_SIZE } from '../../../EditorConfig';
 import type {
   ServiceTestResult,
   KeyedSingleExecutionTest,
@@ -59,6 +58,7 @@ import {
   PackageableElementExplicitReference,
   PureClientVersion,
 } from '@finos/legend-graph';
+import { TAB_SIZE } from '@finos/legend-application';
 
 interface ServiceTestExecutionResult {
   expected: string;

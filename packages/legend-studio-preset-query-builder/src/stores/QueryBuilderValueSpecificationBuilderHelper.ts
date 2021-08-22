@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { DATE_FORMAT } from '@finos/legend-application';
 import type { PureModel, ValueSpecification } from '@finos/legend-graph';
 import {
   CORE_ELEMENT_PATH,
@@ -24,7 +25,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError, DATE_FORMAT } from '@finos/legend-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import format from 'date-fns/format';
 
 export const generateDefaultValueForPrimitiveType = (

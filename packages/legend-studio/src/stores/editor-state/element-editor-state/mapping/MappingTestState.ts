@@ -46,7 +46,6 @@ import {
   makeAutoObservable,
   flowResult,
 } from 'mobx';
-import { TAB_SIZE } from '../../../EditorConfig';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { LambdaEditorState } from '../LambdaEditorState';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
@@ -84,6 +83,7 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
 } from '@finos/legend-graph';
+import { TAB_SIZE } from '@finos/legend-application';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

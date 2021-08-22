@@ -22,7 +22,7 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   TAB_SIZE,
-} from '../../stores/EditorConfig';
+} from '@finos/legend-application';
 import {
   disposeDiffEditor,
   disableEditorHotKeys,

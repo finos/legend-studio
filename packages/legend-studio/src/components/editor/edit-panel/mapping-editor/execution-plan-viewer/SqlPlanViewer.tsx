@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { TextInputEditor } from '../../../../shared/TextInputEditor';
-import { EDITOR_LANGUAGE } from '../../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { SQL_DISPLAY_TABS } from '../../../../../stores/ExecutionPlanState';
 import { prettyCONSTName } from '@finos/legend-shared';

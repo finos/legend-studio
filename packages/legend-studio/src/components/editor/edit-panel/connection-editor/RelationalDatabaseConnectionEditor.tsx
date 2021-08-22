@@ -54,11 +54,11 @@ import {
 import { runInAction } from 'mobx';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import type { EditorPlugin } from '../../../../stores/EditorPlugin';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor

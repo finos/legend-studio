@@ -29,8 +29,6 @@ import {
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
-  MONOSPACED_FONT_FAMILY,
-  TAB_SIZE,
   HOTKEY,
   HOTKEY_MAP,
 } from './EditorConfig';
@@ -127,6 +125,7 @@ import {
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
+import { MONOSPACED_FONT_FAMILY, TAB_SIZE } from '@finos/legend-application';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';

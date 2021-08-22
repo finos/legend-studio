@@ -14,20 +14,4 @@
  * limitations under the License.
  */
 
-// Dependencies
-@forward 'deps';
-
-// core
-@forward 'query-builder';
-@forward 'query-builder-explorer';
-@forward 'query-builder-filter';
-@forward 'query-builder-projection';
-@forward 'graph-fetch-tree';
-@forward 'query-setup';
-@forward 'query-editor';
-
-// studio extension
-@forward 'query-builder-dialog';
-@forward 'service-query-builder';
-@forward 'mapping-execution-query-builder';
-@forward 'mapping-test-query-builder';
+export * from './const';

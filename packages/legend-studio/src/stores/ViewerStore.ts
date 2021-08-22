@@ -23,7 +23,6 @@ import {
   IllegalStateError,
   ActionState,
 } from '@finos/legend-shared';
-import { TAB_SIZE } from './EditorConfig';
 import type { ViewerPathParams } from './LegendStudioRouter';
 import {
   generateViewVersionRoute,
@@ -39,6 +38,7 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { TAB_SIZE } from '@finos/legend-application';
 
 export class ViewerStore {
   editorStore: EditorStore;

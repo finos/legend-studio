@@ -16,8 +16,8 @@
 
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
 import type { EditorStore } from '@finos/legend-studio';
-import { TEST__provideMockedApplicationStore } from '@finos/legend-studio';
 import {
+  TEST__provideMockedApplicationStore,
   TEST__provideMockedEditorStore,
   StudioPluginManager,
 } from '@finos/legend-studio';

@@ -16,12 +16,7 @@
 
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
-import {
-  Randomizer,
-  UnsupportedOperationError,
-  DATE_TIME_FORMAT,
-  DATE_FORMAT,
-} from '@finos/legend-shared';
+import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore';
 import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState';
 import type { PrimitiveType, Enumeration, Enum } from '@finos/legend-graph';
@@ -31,6 +26,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '@finos/legend-graph';
+import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,

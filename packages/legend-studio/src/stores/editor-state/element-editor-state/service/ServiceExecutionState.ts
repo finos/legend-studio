@@ -30,7 +30,7 @@ import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState';
-import { TAB_SIZE } from '../../../EditorConfig';
+import { TAB_SIZE } from '@finos/legend-application';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
 import type {
   ServiceExecution,

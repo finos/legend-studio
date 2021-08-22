@@ -1,21 +1,21 @@
 {
-  "name": "@finos/legend-studio",
-  "version": "0.2.10",
-  "description": "Legend Studio core",
+  "name": "@finos/legend-application",
+  "version": "0.0.1",
+  "description": "Legend application core",
   "keywords": [
     "legend",
-    "legend-studio",
-    "studio",
-    "legend-studio-core"
+    "legend-application",
+    "application",
+    "legend-application-core"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio",
+  "homepage": "https://github.com/finos/legend-application/tree/master/packages/legend-application",
   "bugs": {
-    "url": "https://github.com/finos/legend-studio/issues"
+    "url": "https://github.com/finos/legend-application/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-studio"
+    "url": "https://github.com/finos/legend-application.git",
+    "directory": "packages/legend-application"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -37,36 +37,25 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-application": "workspace:*",
     "@finos/legend-application-components": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-model-storage": "workspace:*",
-    "@finos/legend-server-depot": "workspace:*",
-    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
     "@testing-library/react": "12.0.0",
-    "@types/css-font-loading-module": "0.0.6",
     "@types/react": "17.0.19",
     "@types/react-dom": "17.0.9",
     "@types/react-router-dom": "5.1.8",
-    "date-fns": "2.23.0",
     "history": "5.0.1",
     "mobx": "6.3.2",
     "mobx-react-lite": "3.2.0",
     "monaco-editor": "0.27.0",
-    "node-diff3": "3.0.0",
     "react": "17.0.2",
-    "react-dnd": "14.0.3",
-    "react-dnd-html5-backend": "14.0.1",
     "react-dom": "17.0.2",
-    "react-hotkeys": "2.0.0",
     "react-icons": "4.2.0",
     "react-resize-detector": "6.7.6",
     "react-router": "5.2.0",
     "react-router-dom": "5.2.0",
-    "serializr": "2.0.5",
-    "sql-formatter": "4.0.2"
+    "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
@@ -74,8 +63,6 @@
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
     "jest": "27.0.6",
-    "jest-canvas-mock": "2.3.1",
-    "jest-extended": "0.11.5",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.38.0",

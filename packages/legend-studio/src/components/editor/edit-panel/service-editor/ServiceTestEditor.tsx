@@ -46,7 +46,7 @@ import {
 } from '@finos/legend-application-components';
 import type { TestContainerState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
 import { MdRefresh, MdCompareArrows } from 'react-icons/md';

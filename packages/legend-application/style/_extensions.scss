@@ -1,0 +1,203 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:root {
+  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
+  --color-primitive: var(--color-light-blue-200); // blue-200
+  --color-enum-value: var(--color-green-100);
+  // #7fb537 -> darker: #6da025
+  --color-enumeration: var(--color-medium-green-100);
+  --color-measure: var(--color-medium-green-100); // FIXNOW
+  --color-unit: var(--color-medium-green-100); // FIXNOW
+  --color-class: var(--color-purple-100); // purple-200
+  --color-mapping: var(--color-teal-50);
+  --color-function: var(--color-light-blue-20);
+  --color-profile: var(--color-lime-75);
+  --color-diagram: var(--color-magenta-100);
+  --color-generated: var(--color-pink-200);
+  --color-system: var(--color-light-blue-50);
+  --color-dependency: var(--color-lime-50);
+  --color-config: var(--color-orange-100);
+  --color-flat-data: var(--color-orange-100);
+  --color-relational: var(--color-blue-500);
+  --color-file-generation: var(--color-blue-50);
+  --color-database: var(--color-orange-100);
+  --color-schema: var(--color-medium-green-500);
+  --color-table: var(--color-light-blue-200);
+  --color-association: var(--color-light-grey-400);
+  --color-service: var(--color-blue-40);
+  --color-runtime: var(--color-red-180);
+  --color-connection: var(--color-yellow-100);
+}
+
+/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
+.color {
+  &--class {
+    color: var(--color-class);
+  }
+
+  &--enumeration {
+    color: var(--color-enumeration);
+  }
+
+  &--unit {
+    color: var(--color-unit);
+  }
+
+  &--measure {
+    color: var(--color-measure);
+  }
+
+  &--association {
+    color: var(--color-association);
+  }
+
+  &--primitive {
+    color: var(--color-primitive);
+  }
+
+  &--enum-value {
+    color: var(--color-enum-value);
+  }
+
+  &--mapping {
+    color: var(--color-mapping);
+  }
+
+  &--function {
+    color: var(--color-function);
+  }
+
+  &--file-generation {
+    color: var(--color-file-generation);
+  }
+
+  &--profile {
+    color: var(--color-profile);
+  }
+
+  &--diagram {
+    color: var(--color-diagram);
+  }
+
+  &--generated {
+    color: var(--color-generated);
+  }
+
+  &--system {
+    color: var(--color-system);
+  }
+
+  &--dependency {
+    color: var(--color-dependency);
+  }
+
+  &--config {
+    color: var(--color-config);
+  }
+
+  &--flat-data {
+    color: var(--color-flat-data);
+  }
+
+  &--database {
+    color: var(--color-database);
+  }
+
+  &--table {
+    color: var(--color-table);
+  }
+
+  &--schema {
+    color: var(--color-schema);
+  }
+
+  &--service {
+    color: var(--color-service);
+  }
+
+  &--connection {
+    color: var(--color-connection);
+  }
+
+  &--runtime {
+    color: var(--color-runtime);
+  }
+}
+
+/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
+.background {
+  &--pureinstance,
+  &--class {
+    background: var(--color-class);
+  }
+
+  &--enumeration {
+    background: var(--color-enumeration);
+  }
+
+  &--unit {
+    background: var(--color-unit);
+  }
+
+  &--measure {
+    background: var(--color-measure);
+  }
+
+  &--association {
+    background: var(--color-association);
+  }
+
+  &--primitive {
+    background: var(--color-primitive);
+  }
+
+  &--enum-value {
+    background: var(--color-enum-value);
+  }
+
+  &--mapping {
+    background: var(--color-mapping);
+  }
+
+  &--profile {
+    background: var(--color-profile);
+  }
+
+  &--flat-data {
+    background: var(--color-flat-data);
+  }
+
+  &--database {
+    background: var(--color-database);
+  }
+
+  &--service {
+    background: var(--color-service);
+  }
+
+  &--connection {
+    background: var(--color-connection);
+  }
+
+  &--runtime {
+    background: var(--color-runtime);
+  }
+
+  &--relational {
+    background: var(--color-relational);
+  }
+}

@@ -26,7 +26,7 @@ import {
   FaTruckLoading,
 } from 'react-icons/fa';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { EDITOR_LANGUAGE } from '../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { TextInputEditor } from '../../shared/TextInputEditor';
 import {
   ActionAlertType,

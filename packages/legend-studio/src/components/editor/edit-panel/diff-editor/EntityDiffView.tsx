@@ -24,13 +24,13 @@ import { TextDiffView, JsonDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
 import { VscGoToFile } from 'react-icons/vsc';
 import { clsx } from '@finos/legend-application-components';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {

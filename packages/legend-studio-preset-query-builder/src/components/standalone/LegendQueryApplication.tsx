@@ -44,7 +44,6 @@ import {
 } from '@finos/legend-application-components';
 import type { Log } from '@finos/legend-shared';
 import { QueryStoreProvider, useQueryStore } from '../QueryStoreProvider';
-import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 
@@ -107,26 +106,19 @@ export const LegendQueryApplication = observer(
     }
     return (
       <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
-        <SDLCServerClientProvider
+        <DepotServerClientProvider
           config={{
-            env: config.env,
-            serverUrl: config.sdlcServerUrl,
+            serverUrl: config.depotServerUrl,
           }}
         >
-          <DepotServerClientProvider
-            config={{
-              serverUrl: config.depotServerUrl,
-            }}
-          >
-            <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
-              <QueryStoreProvider pluginManager={pluginManager}>
-                <ThemeProvider theme={LegendMaterialUITheme}>
-                  <LegendQueryApplicationInner />
-                </ThemeProvider>
-              </QueryStoreProvider>
-            </GraphManagerStateProvider>
-          </DepotServerClientProvider>
-        </SDLCServerClientProvider>
+          <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
+            <QueryStoreProvider pluginManager={pluginManager}>
+              <ThemeProvider theme={LegendMaterialUITheme}>
+                <LegendQueryApplicationInner />
+              </ThemeProvider>
+            </QueryStoreProvider>
+          </GraphManagerStateProvider>
+        </DepotServerClientProvider>
       </ApplicationStoreProvider>
     );
   },

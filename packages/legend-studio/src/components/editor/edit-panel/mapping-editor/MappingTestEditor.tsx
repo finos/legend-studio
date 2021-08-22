@@ -43,7 +43,7 @@ import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   IllegalStateError,
   isNonNullable,

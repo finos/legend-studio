@@ -16,55 +16,6 @@
 
 @use './mixins' as *;
 
-.query-builder__dialog {
-  height: calc(100vh - 4rem);
-  width: calc(100vw - 4rem);
-  border: none !important;
-
-  &--expanded {
-    height: 100vh !important;
-    width: 100vw !important;
-  }
-
-  &__container__content {
-    max-height: 100vh !important;
-  }
-
-  &__header {
-    @include flexVCenter;
-
-    height: 2.8rem;
-    background: var(--color-yellow-200);
-    justify-content: flex-end;
-  }
-
-  &__header__actions {
-    @include flexVCenter;
-
-    height: 100%;
-  }
-
-  &__header__action {
-    @include flexCenter;
-
-    height: 100%;
-    width: 2.8rem;
-
-    svg {
-      color: var(--color-dark-shade-300);
-    }
-
-    &:hover svg {
-      color: var(--color-dark-shade-800);
-    }
-  }
-
-  &__content {
-    height: calc(100% - 2.8rem);
-    border: 0.1rem solid var(--color-dark-grey-80);
-  }
-}
-
 .query-builder__activity-bar {
   width: 5rem;
   background: var(--color-dark-grey-80);

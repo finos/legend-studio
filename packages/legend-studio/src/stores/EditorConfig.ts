@@ -21,10 +21,6 @@ export enum EDITOR_MODE {
   VIEWER = 'VIEWER',
 }
 
-export const TAB_SIZE = 2;
-
-export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
-
 export enum HOTKEY {
   SYNC_WITH_WORKSPACE = 'SYNC_WITH_WORKSPACE',
   CREATE_ELEMENT = 'CREATE_ELEMENT',
@@ -81,17 +77,4 @@ export enum ELEMENT_NATIVE_VIEW_MODE {
 export enum GRAPH_EDITOR_MODE {
   FORM = 'FORM',
   GRAMMAR_TEXT = 'GRAMMAR_TEXT',
-}
-
-export enum EDITOR_THEME {
-  LEGEND = 'LEGEND',
-}
-
-export enum EDITOR_LANGUAGE {
-  TEXT = 'text',
-  PURE = 'pure',
-  JSON = 'json',
-  JAVA = 'java',
-  MARKDOWN = 'markdown',
-  SQL = 'sql',
 }

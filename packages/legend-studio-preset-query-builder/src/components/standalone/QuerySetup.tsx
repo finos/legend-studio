@@ -32,8 +32,6 @@ import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { FaQuestionCircle } from 'react-icons/fa';
 import {
   generateCreateQueryRoute,
@@ -874,8 +872,6 @@ const QuerySetupInner = observer(() => {
 
 export const QuerySetup: React.FC = () => (
   <QuerySetupStoreProvider>
-    <DndProvider backend={HTML5Backend}>
-      <QuerySetupInner />
-    </DndProvider>
+    <QuerySetupInner />
   </QuerySetupStoreProvider>
 );

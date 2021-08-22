@@ -17,8 +17,8 @@
 import { useState, useRef, useEffect } from 'react';
 import type { IDisposable } from 'monaco-editor';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
-import type { EDITOR_LANGUAGE } from '../../stores/EditorConfig';
-import { TAB_SIZE, EDITOR_THEME } from '../../stores/EditorConfig';
+import type { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { TAB_SIZE, EDITOR_THEME } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import {
   disposeEditor,

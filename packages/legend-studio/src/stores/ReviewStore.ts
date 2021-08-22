@@ -19,10 +19,11 @@ import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import { makeAutoObservable, action, flowResult } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import { ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
+import { ACTIVITY_MODE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { TAB_SIZE } from '@finos/legend-application';
 
 export class ReviewStore {
   editorStore: EditorStore;
