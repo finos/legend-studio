@@ -22,7 +22,6 @@ import type {
 } from './ApplicationStore';
 import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState';
-import { editor as monacoEditorAPI } from 'monaco-editor';
 import { ExplorerTreeState } from './ExplorerTreeState';
 import {
   ACTIVITY_MODE,
@@ -125,7 +124,7 @@ import {
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
-import { MONOSPACED_FONT_FAMILY, TAB_SIZE } from '@finos/legend-application';
+import { TAB_SIZE } from '@finos/legend-application';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -673,7 +672,6 @@ export class EditorStore {
     }
     yield Promise.all([
       this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
-      this.preloadTextEditorFont(),
       this.graphManagerState.initializeSystem(), // this can be moved inside of `setupEngine`
       this.graphManagerState.graphManager.initialize(
         {
@@ -1244,30 +1242,6 @@ export class EditorStore {
         'Editor only support form mode and text mode at the moment',
       );
     }
-  }
-
-  /**
-   * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened
-   * this is to ensure
-   */
-  async preloadTextEditorFont(): Promise<void> {
-    const fontLoadFailureErrorMessage = `Monospaced font '${MONOSPACED_FONT_FAMILY}' has not been loaded properly, text editor display problems might occur`;
-    await document.fonts
-      .load(`1em ${MONOSPACED_FONT_FAMILY}`)
-      .then(() => {
-        if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
-          monacoEditorAPI.remeasureFonts();
-          this.applicationStore.log.info(
-            LogEvent.create(STUDIO_LOG_EVENT.EDITOR_FONT_LOADED),
-            `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
-          );
-        } else {
-          this.applicationStore.notifyError(fontLoadFailureErrorMessage);
-        }
-      })
-      .catch(() =>
-        this.applicationStore.notifyError(fontLoadFailureErrorMessage),
-      );
   }
 
   get enumerationOptions(): PackageableElementOption<Enumeration>[] {

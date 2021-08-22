@@ -42,6 +42,7 @@
     "@finos/legend-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
     "@testing-library/react": "12.0.0",
+    "@types/css-font-loading-module": "0.0.6",
     "@types/react": "17.0.19",
     "@types/react-dom": "17.0.9",
     "@types/react-router-dom": "5.1.8",

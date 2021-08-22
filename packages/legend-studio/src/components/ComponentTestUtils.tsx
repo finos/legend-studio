@@ -342,8 +342,6 @@ export const TEST__setUpEditor = async (
     )
     .mockResolvedValue(availableImportDescriptions);
 
-  // skip font loader (as we have no network access in test)
-  mockedEditorStore.preloadTextEditorFont = jest.fn();
   // mock change detections (since we do not test them now)
   mockedEditorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex =
     jest.fn();

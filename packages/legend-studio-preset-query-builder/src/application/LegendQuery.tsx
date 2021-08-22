@@ -33,7 +33,7 @@ export class LegendQuery extends LegendApplication {
 
   async loadApplication(): Promise<void> {
     // Setup React application libraries
-    await setupLegendStudioUILibrary(this.pluginManager);
+    await setupLegendStudioUILibrary(this.pluginManager, this.log);
 
     // TODO: we can remove this in the future when we modularize core a bit better
     // especially application config

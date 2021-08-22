@@ -27,7 +27,11 @@ import {
   generateLanguageMonarch,
   theme,
 } from '../stores/PureLanguageSupport';
-import { EDITOR_THEME, EDITOR_LANGUAGE } from '@finos/legend-application';
+import {
+  EDITOR_THEME,
+  EDITOR_LANGUAGE,
+  MONOSPACED_FONT_FAMILY,
+} from '@finos/legend-application';
 import type {
   ConfigurationData,
   LegendApplicationVersionData,
@@ -79,8 +83,37 @@ export const setupTextEdtiorAPI = (pluginManager: GraphPluginManager): void => {
 // See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
 export const setupLegendStudioUILibrary = async (
   pluginManager: StudioPluginManager,
+  log: Log,
 ): Promise<void> => {
   setupTextEdtiorAPI(pluginManager);
+
+  /**
+   * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened
+   * this is to ensure
+   */
+  const fontLoadFailureErrorMessage = `Monospaced font '${MONOSPACED_FONT_FAMILY}' has not been loaded properly, text editor display problems might occur`;
+  await document.fonts
+    .load(`1em ${MONOSPACED_FONT_FAMILY}`)
+    .then(() => {
+      if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
+        monacoEditorAPI.remeasureFonts();
+        log.info(
+          LogEvent.create(APPLICATION_LOG_EVENT.TEXT_EDITOR_FONT_LOADED),
+          `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
+        );
+      } else {
+        log.error(
+          LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_SETUP_FAILURE),
+          fontLoadFailureErrorMessage,
+        );
+      }
+    })
+    .catch(() =>
+      log.error(
+        LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_SETUP_FAILURE),
+        fontLoadFailureErrorMessage,
+      ),
+    );
 
   configureMobx({
     // Force state modification to be done via actions
@@ -240,7 +273,7 @@ export class LegendStudio extends LegendApplication {
 
   async loadApplication(): Promise<void> {
     // Setup React application libraries
-    await setupLegendStudioUILibrary(this.pluginManager);
+    await setupLegendStudioUILibrary(this.pluginManager, this.log);
 
     // Render React application
     const root = ((): Element => {
