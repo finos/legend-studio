@@ -18,8 +18,8 @@ import type { ServicePureExecutionState } from '@finos/legend-studio';
 import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilderState } from '../stores/QueryBuilderState';
 import type { RawLambda } from '@finos/legend-graph';
+import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
 
 export const ServiceQueryBuilder = observer(
   (props: {
@@ -29,8 +29,9 @@ export const ServiceQueryBuilder = observer(
     const { executionState } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
-    const queryBuilderState =
-      editorStore.getEditorExtensionState(QueryBuilderState);
+    const queryBuilderExtension = editorStore.getEditorExtensionState(
+      QueryBuilder_EditorExtensionState,
+    );
     const editWithQueryBuilder = async (): Promise<void> => {
       executionState.setOpeningQueryEditor(true);
       if (executionState.selectedExecutionConfiguration) {
@@ -39,7 +40,7 @@ export const ServiceQueryBuilder = observer(
         const runtime = executionState.selectedExecutionConfiguration.runtime;
         if (!mapping.isStub) {
           await flowResult(
-            queryBuilderState.querySetupState.setup(
+            queryBuilderExtension.setup(
               executionState.execution.func,
               mapping,
               runtime,

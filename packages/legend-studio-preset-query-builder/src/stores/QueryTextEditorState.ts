@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '@finos/legend-studio';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-studio';
 import {
   GRAPH_MANAGER_LOG_EVENT,
@@ -52,7 +51,6 @@ export enum QueryTextEditorMode {
 
 export class QueryTextEditorState extends LambdaEditorState {
   queryBuilderState: QueryBuilderState;
-  editorStore: EditorStore;
   rawLambdaState: QueryRawLambdaState;
   isConvertingLambdaToString = false;
   mode: QueryTextEditorMode | undefined;
@@ -62,7 +60,7 @@ export class QueryTextEditorState extends LambdaEditorState {
    */
   readOnlylambdaJson = '';
 
-  constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
+  constructor(queryBuilderState: QueryBuilderState) {
     super('', LAMBDA_PIPE);
 
     makeObservable(this, {
@@ -75,7 +73,6 @@ export class QueryTextEditorState extends LambdaEditorState {
       closeModal: flow,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
     this.rawLambdaState = new QueryRawLambdaState(RawLambda.createStub());
   }
@@ -101,7 +98,7 @@ export class QueryTextEditorState extends LambdaEditorState {
     if (this.lambdaString) {
       try {
         const lambda =
-          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
+          (yield this.queryBuilderState.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
           )) as RawLambda | undefined;
@@ -111,7 +108,7 @@ export class QueryTextEditorState extends LambdaEditorState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
@@ -135,7 +132,7 @@ export class QueryTextEditorState extends LambdaEditorState {
           ),
         );
         const isolatedLambdas =
-          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+          (yield this.queryBuilderState.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -148,7 +145,7 @@ export class QueryTextEditorState extends LambdaEditorState {
         this.clearErrors();
         this.isConvertingLambdaToString = false;
       } catch (error: unknown) {
-        this.editorStore.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
@@ -168,8 +165,8 @@ export class QueryTextEditorState extends LambdaEditorState {
     if (mode === QueryTextEditorMode.JSON) {
       this.setLambdaJson(
         JSON.stringify(
-          this.editorStore.graphManagerState.graphManager.pruneSourceInformation(
-            this.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+          this.queryBuilderState.graphManagerState.graphManager.pruneSourceInformation(
+            this.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
               rawLambda,
             ),
           ),
@@ -185,7 +182,7 @@ export class QueryTextEditorState extends LambdaEditorState {
     if (this.mode === QueryTextEditorMode.TEXT) {
       yield flowResult(this.convertLambdaGrammarStringToObject());
       if (this.parserError) {
-        this.editorStore.applicationStore.notifyError(
+        this.queryBuilderState.applicationStore.notifyError(
           `Can't parse query. Please fix error before closing: ${this.parserError.message}`,
         );
       } else {

@@ -17,7 +17,6 @@
 import { action, makeAutoObservable } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { QueryBuilderGraphFetchTreeState } from './QueryBuilderGraphFetchTreeState';
-import type { EditorStore } from '@finos/legend-studio';
 import { QueryBuilderProjectionState } from './QueryBuilderProjectionState';
 
 export enum FETCH_STRUCTURE_MODE {
@@ -26,28 +25,21 @@ export enum FETCH_STRUCTURE_MODE {
 }
 
 export class QueryBuilderFetchStructureState {
-  editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   fetchStructureMode = FETCH_STRUCTURE_MODE.PROJECTION;
   projectionState: QueryBuilderProjectionState;
   graphFetchTreeState: QueryBuilderGraphFetchTreeState;
 
-  constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
-      editorStore: false,
       queryBuilderState: false,
       setFetchStructureMode: action,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
     // TODO: we probably should modularize this a bit better
-    this.projectionState = new QueryBuilderProjectionState(
-      editorStore,
-      queryBuilderState,
-    );
+    this.projectionState = new QueryBuilderProjectionState(queryBuilderState);
     this.graphFetchTreeState = new QueryBuilderGraphFetchTreeState(
-      editorStore,
       queryBuilderState,
     );
   }

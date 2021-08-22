@@ -78,7 +78,6 @@ import {
   buildNumericPreviewDataQuery,
 } from './QueryBuilderPreviewDataHelper';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
-import type { EditorStore } from '@finos/legend-studio';
 import { LambdaEditorState } from '@finos/legend-studio';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
@@ -91,19 +90,16 @@ export interface QueryBuilderProjectionColumnDragSource {
 
 export abstract class QueryBuilderProjectionColumnState {
   uuid = uuid();
-  editorStore: EditorStore;
   projectionState: QueryBuilderProjectionState;
   isBeingDragged = false;
   columnName: string;
 
   constructor(
-    editorStore: EditorStore,
     projectionState: QueryBuilderProjectionState,
     columnName: string,
   ) {
     makeObservable(this, {
       uuid: false,
-      editorStore: false,
       projectionState: false,
       isBeingDragged: observable,
       columnName: observable,
@@ -111,7 +107,6 @@ export abstract class QueryBuilderProjectionColumnState {
       setColumnName: action,
     });
 
-    this.editorStore = editorStore;
     this.projectionState = projectionState;
     this.columnName = columnName;
   }
@@ -130,11 +125,10 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
   propertyExpressionState: QueryBuilderPropertyExpressionState;
 
   constructor(
-    editorStore: EditorStore,
     projectionState: QueryBuilderProjectionState,
     propertyExpression: AbstractPropertyExpression,
   ) {
-    super(editorStore, projectionState, '');
+    super(projectionState, '');
 
     makeObservable(this, {
       lambdaParameterName: observable,
@@ -143,7 +137,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
       changeProperty: action,
     });
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
-      editorStore,
+      projectionState.queryBuilderState,
       propertyExpression,
     );
     this.columnName = getPropertyChainName(
@@ -157,12 +151,12 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
 
   changeProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
-      this.editorStore,
+      this.projectionState.queryBuilderState,
       buildPropertyExpressionFromExplorerTreeNodeData(
         this.projectionState.queryBuilderState.explorerState
           .nonNullableTreeData,
         node,
-        this.editorStore.graphManagerState.graph,
+        this.projectionState.queryBuilderState.graphManagerState.graph,
       ),
     );
     this.columnName = getPropertyChainName(
@@ -172,7 +166,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
 }
 
 class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
-  editorStore: EditorStore;
+  queryBuilderState: QueryBuilderState;
   derivationProjectionColumnState: QueryBuilderDerivationProjectionColumnState;
   /**
    * This is used to store the JSON string when viewing the query in JSON mode
@@ -181,11 +175,11 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
   readOnlylambdaJson = '';
 
   constructor(
-    editorStore: EditorStore,
+    queryBuilderState: QueryBuilderState,
     derivationProjectionColumnState: QueryBuilderDerivationProjectionColumnState,
   ) {
     super('', '');
-    this.editorStore = editorStore;
+    this.queryBuilderState = queryBuilderState;
     this.derivationProjectionColumnState = derivationProjectionColumnState;
   }
 
@@ -206,7 +200,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
     if (this.lambdaString) {
       try {
         const lambda =
-          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
+          (yield this.queryBuilderState.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
           )) as RawLambda | undefined;
@@ -216,7 +210,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
@@ -239,7 +233,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
           ),
         );
         const isolatedLambdas =
-          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+          (yield this.queryBuilderState.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -251,7 +245,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         );
         this.clearErrors();
       } catch (error: unknown) {
-        this.editorStore.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
@@ -267,12 +261,8 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
   derivationLambdaEditorState: QueryBuilderDerivationProjectionLambdaState;
   lambda: RawLambda;
 
-  constructor(
-    editorStore: EditorStore,
-    projectionState: QueryBuilderProjectionState,
-    lambda: RawLambda,
-  ) {
-    super(editorStore, projectionState, '(derivation)');
+  constructor(projectionState: QueryBuilderProjectionState, lambda: RawLambda) {
+    super(projectionState, '(derivation)');
 
     makeObservable(this, {
       lambda: observable,
@@ -280,7 +270,10 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
     });
 
     this.derivationLambdaEditorState =
-      new QueryBuilderDerivationProjectionLambdaState(editorStore, this);
+      new QueryBuilderDerivationProjectionLambdaState(
+        projectionState.queryBuilderState,
+        this,
+      );
     this.lambda = lambda;
   }
 
@@ -290,15 +283,13 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
 }
 
 export class QueryBuilderProjectionState {
-  editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   columns: QueryBuilderProjectionColumnState[] = [];
   aggregationState: QueryBuilderAggregationState;
   isConvertDerivationProjectionObjects = false;
 
-  constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
-      editorStore: false,
       queryBuilderState: false,
       removeColumn: action,
       addColumn: action,
@@ -306,24 +297,19 @@ export class QueryBuilderProjectionState {
       replaceColumn: action,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
-    this.aggregationState = new QueryBuilderAggregationState(
-      this.editorStore,
-      this,
-      [
-        new QueryBuilderAggregateOperator_Count(),
-        new QueryBuilderAggregateOperator_DistinctCount(),
-        new QueryBuilderAggregateOperator_Distinct(),
-        new QueryBuilderAggregateOperator_Sum(),
-        new QueryBuilderAggregateOperator_Average(),
-        new QueryBuilderAggregateOperator_Min(),
-        new QueryBuilderAggregateOperator_Max(),
-        new QueryBuilderAggregateOperator_StdDev_Population(),
-        new QueryBuilderAggregateOperator_StdDev_Sample(),
-        new QueryBuilderAggregateOperator_JoinString(),
-      ],
-    );
+    this.aggregationState = new QueryBuilderAggregationState(this, [
+      new QueryBuilderAggregateOperator_Count(),
+      new QueryBuilderAggregateOperator_DistinctCount(),
+      new QueryBuilderAggregateOperator_Distinct(),
+      new QueryBuilderAggregateOperator_Sum(),
+      new QueryBuilderAggregateOperator_Average(),
+      new QueryBuilderAggregateOperator_Min(),
+      new QueryBuilderAggregateOperator_Max(),
+      new QueryBuilderAggregateOperator_StdDev_Population(),
+      new QueryBuilderAggregateOperator_StdDev_Sample(),
+      new QueryBuilderAggregateOperator_JoinString(),
+    ]);
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {
@@ -348,7 +334,7 @@ export class QueryBuilderProjectionState {
       this.isConvertDerivationProjectionObjects = true;
       try {
         const isolatedLambdas =
-          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+          (yield this.queryBuilderState.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
@@ -361,7 +347,7 @@ export class QueryBuilderProjectionState {
           );
         });
       } catch (error: unknown) {
-        this.editorStore.applicationStore.log.error(
+        this.queryBuilderState.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
@@ -378,16 +364,15 @@ export class QueryBuilderProjectionState {
     const columnColumnLambda = buildGenericLambdaFunctionInstanceValue(
       simpleProjectionColumnState.lambdaParameterName,
       [simpleProjectionColumnState.propertyExpressionState.propertyExpression],
-      this.editorStore.graphManagerState.graph,
+      this.queryBuilderState.graphManagerState.graph,
     );
     const derivationColumnState =
       new QueryBuilderDerivationProjectionColumnState(
-        this.editorStore,
         this,
         guaranteeType(
-          this.editorStore.graphManagerState.graphManager.buildRawValueSpecification(
+          this.queryBuilderState.graphManagerState.graphManager.buildRawValueSpecification(
             columnColumnLambda,
-            this.editorStore.graphManagerState.graph,
+            this.queryBuilderState.graphManagerState.graph,
           ),
           RawLambda,
         ),
@@ -401,7 +386,7 @@ export class QueryBuilderProjectionState {
       derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
         false,
       ),
-    ).catch(this.editorStore.applicationStore.alertIllegalUnhandledError);
+    ).catch(this.queryBuilderState.applicationStore.alertIllegalUnhandledError);
   }
 
   replaceColumn(
@@ -527,7 +512,6 @@ export class QueryBuilderProjectionState {
 
   addNewBlankDerivation(): void {
     const derivation = new QueryBuilderDerivationProjectionColumnState(
-      this.editorStore,
       this,
       // default lambda for derivation is `x|''`
       new RawLambda(
@@ -599,6 +583,13 @@ export class QueryBuilderProjectionState {
   *previewData(
     node: QueryBuilderExplorerTreePropertyNodeData,
   ): GeneratorFn<void> {
+    const runtime = this.queryBuilderState.querySetupState.runtime;
+    if (!runtime) {
+      this.queryBuilderState.applicationStore.notifyWarning(
+        `Can't preview data for property '${node.property.name}': runtime is not specified`,
+      );
+      return;
+    }
     if (
       !node.mapped ||
       !this.queryBuilderState.querySetupState._class ||
@@ -610,7 +601,7 @@ export class QueryBuilderProjectionState {
       this.queryBuilderState.explorerState.previewDataState
         .isGeneratingPreviewData
     ) {
-      this.editorStore.applicationStore.notifyWarning(
+      this.queryBuilderState.applicationStore.notifyWarning(
         `Can't preview data for property '${node.property.name}': another preview request is being executed`,
       );
       return;
@@ -624,7 +615,7 @@ export class QueryBuilderProjectionState {
     const propertyExpression = buildPropertyExpressionFromExplorerTreeNodeData(
       this.queryBuilderState.explorerState.nonNullableTreeData,
       node,
-      this.editorStore.graphManagerState.graph,
+      this.queryBuilderState.graphManagerState.graph,
     );
     const propertyType = node.property.genericType.value.rawType;
     try {
@@ -634,17 +625,17 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT: {
           const previewResult =
-            (yield this.editorStore.graphManagerState.graphManager.executeMapping(
-              this.editorStore.graphManagerState.graph,
+            (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+              this.queryBuilderState.graphManagerState.graph,
               this.queryBuilderState.querySetupState.mapping,
               this.queryBuilderState.buildRawLambdaFromLambdaFunction(
                 buildNumericPreviewDataQuery(
                   propertyExpression,
                   this.queryBuilderState.querySetupState._class,
-                  this.editorStore.graphManagerState.graph,
+                  this.queryBuilderState.graphManagerState.graph,
                 ),
               ),
-              this.queryBuilderState.querySetupState.runtime,
+              runtime,
               PureClientVersion.VX_X_X,
               false,
             )) as ExecutionResult;
@@ -673,17 +664,17 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.DATETIME: {
           const previewResult =
-            (yield this.editorStore.graphManagerState.graphManager.executeMapping(
-              this.editorStore.graphManagerState.graph,
+            (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+              this.queryBuilderState.graphManagerState.graph,
               this.queryBuilderState.querySetupState.mapping,
               this.queryBuilderState.buildRawLambdaFromLambdaFunction(
                 buildNonNumericPreviewDataQuery(
                   propertyExpression,
                   this.queryBuilderState.querySetupState._class,
-                  this.editorStore.graphManagerState.graph,
+                  this.queryBuilderState.graphManagerState.graph,
                 ),
               ),
-              this.queryBuilderState.querySetupState.runtime,
+              runtime,
               PureClientVersion.VX_X_X,
               false,
             )) as ExecutionResult;
@@ -704,7 +695,7 @@ export class QueryBuilderProjectionState {
       }
     } catch (e: unknown) {
       assertErrorThrown(e);
-      this.editorStore.applicationStore.notifyWarning(
+      this.queryBuilderState.applicationStore.notifyWarning(
         `Can't preview data for property '${node.property.name}'. Error: ${e.message}`,
       );
       this.queryBuilderState.explorerState.previewDataState.setPreviewData(

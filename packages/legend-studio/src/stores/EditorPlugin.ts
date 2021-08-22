@@ -98,14 +98,6 @@ export abstract class EditorPlugin extends AbstractPlugin {
   getExtraMappingTestQueryEditorRendererConfigurations?(): MappingTestQueryEditorRendererConfiguration[];
 
   /**
-   * Many system elements are included when building the graph, but only a few should
-   * be presented in the form view to user as selection options. This method will
-   * provide the allowed list of system element paths that we want the users to be
-   * able to see directly in selection/dropdown menus.
-   */
-  getExtraExposedSystemElementPath?(): string[];
-
-  /**
    * NOTE: this is temporary since we want to eventually move Service out to its own DSL
    * preset/plugin so this should also be moved there
    */

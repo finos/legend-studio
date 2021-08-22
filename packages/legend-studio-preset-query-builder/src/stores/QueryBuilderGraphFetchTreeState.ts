@@ -16,7 +16,6 @@
 
 import type { QueryBuilderState } from './QueryBuilderState';
 import { makeAutoObservable, action } from 'mobx';
-import type { EditorStore } from '@finos/legend-studio';
 import {
   PackageableElementExplicitReference,
   RootGraphFetchTree,
@@ -29,7 +28,6 @@ import {
 import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 
 export class QueryBuilderGraphFetchTreeState {
-  editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   treeData?: QueryBuilderGraphFetchTreeData;
   /**
@@ -39,15 +37,13 @@ export class QueryBuilderGraphFetchTreeState {
    */
   isChecked = false;
 
-  constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
-      editorStore: false,
       queryBuilderState: false,
       setGraphFetchTree: action,
       setChecked: action,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
   }
 

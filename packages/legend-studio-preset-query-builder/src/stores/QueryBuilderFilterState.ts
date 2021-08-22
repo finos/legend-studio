@@ -55,7 +55,6 @@ import {
   SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
-import type { EditorStore } from '@finos/legend-studio';
 
 export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
   AND = 'and',
@@ -106,7 +105,6 @@ export type QueryBuilderFilterConditionRearrangeDropTarget =
   QueryBuilderFilterConditionDragSource;
 
 export class FilterConditionState {
-  editorStore: EditorStore;
   filterState: QueryBuilderFilterState;
   propertyExpressionState: QueryBuilderPropertyExpressionState;
   operator!: QueryBuilderFilterOperator;
@@ -114,12 +112,10 @@ export class FilterConditionState {
   existsLambdaParamNames: string[] = [];
 
   constructor(
-    editorStore: EditorStore,
     filterState: QueryBuilderFilterState,
     propertyExpression: AbstractPropertyExpression,
   ) {
     makeAutoObservable(this, {
-      editorStore: false,
       filterState: false,
       operators: computed,
       changeProperty: action,
@@ -129,10 +125,9 @@ export class FilterConditionState {
       addExistsLambdaParamNames: action,
     });
 
-    this.editorStore = editorStore;
     this.filterState = filterState;
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
-      editorStore,
+      filterState.queryBuilderState,
       propertyExpression,
     );
 
@@ -154,19 +149,15 @@ export class FilterConditionState {
   changeProperty(propertyExpression: AbstractPropertyExpression): void {
     try {
       // first, check if the new property is supported
-      new FilterConditionState(
-        this.editorStore,
-        this.filterState,
-        propertyExpression,
-      );
+      new FilterConditionState(this.filterState, propertyExpression);
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.filterState.queryBuilderState.applicationStore.notifyError(error);
       return;
     }
 
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
-      this.editorStore,
+      this.filterState.queryBuilderState,
       propertyExpression,
     );
     if (!this.operators.includes(this.operator)) {
@@ -328,7 +319,7 @@ const buildFilterConditionExpression = (
     );
   } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
     const multiplicityOne =
-      filterState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+      filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const func = new SimpleFunctionExpression(
@@ -383,7 +374,7 @@ export const buildFilterExpression = (
     return undefined;
   }
   const multiplicityOne =
-    filterState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+    filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   // main filter expression
@@ -398,7 +389,7 @@ export const buildFilterExpression = (
     buildGenericLambdaFunctionInstanceValue(
       filterState.lambdaParameterName,
       filterConditionExpressions,
-      filterState.editorStore.graphManagerState.graph,
+      filterState.queryBuilderState.graphManagerState.graph,
     ),
   );
   return filterExpression;
@@ -407,7 +398,6 @@ export const buildFilterExpression = (
 export class QueryBuilderFilterState
   implements TreeData<QueryBuilderFilterTreeNodeData>
 {
-  editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   lambdaParameterName = DEFAULT_LAMBDA_VARIABLE_NAME;
   rootIds: string[] = [];
@@ -418,12 +408,10 @@ export class QueryBuilderFilterState
   private _suppressClickawayEventListener = false;
 
   constructor(
-    editorStore: EditorStore,
     queryBuilderState: QueryBuilderState,
     operators: QueryBuilderFilterOperator[],
   ) {
     makeAutoObservable(this, {
-      editorStore: false,
       queryBuilderState: false,
       isValidMove: false,
       setLambdaParameterName: action,
@@ -442,7 +430,6 @@ export class QueryBuilderFilterState
       expandTree: action,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
     this.operators = operators;
   }

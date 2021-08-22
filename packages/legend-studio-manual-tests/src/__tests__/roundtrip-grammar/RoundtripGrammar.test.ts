@@ -165,7 +165,7 @@ const checkGrammarRoundtrip = async (
   phase = ROUNTRIP_TEST_PHASES.HASH;
   logPhase(phase, excludes, options?.debug);
   // check hash computation
-  await flowResult(editorStore.graphState.precomputeHashes());
+  await flowResult(editorStore.graphManagerState.precomputeHashes());
   const protocolHashesIndex =
     await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(

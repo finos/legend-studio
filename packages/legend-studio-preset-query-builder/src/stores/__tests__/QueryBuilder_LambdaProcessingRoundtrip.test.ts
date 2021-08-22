@@ -15,12 +15,8 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import {
-  TEST__buildGraphBasic,
-  TEST__getTestEditorStore,
-  StudioPluginManager,
-} from '@finos/legend-studio';
-import { unitTest } from '@finos/legend-shared';
+import { StudioPluginManager } from '@finos/legend-studio';
+import { Log, unitTest } from '@finos/legend-shared';
 import { QueryBuilder_Preset } from '../../QueryBuilder_Preset';
 import {
   TEST_DATA__M2MModel,
@@ -39,6 +35,8 @@ import {
   groupByWithDerivationProjection,
   groupByWithDerivationAndAggregation,
 } from './QueryBuilder_ProcessingRoundtrip_TestDerivation';
+import { GraphManagerState } from '@finos/legend-graph';
+import { flowResult } from 'mobx';
 
 const pluginManager = StudioPluginManager.create();
 pluginManager.usePresets([new QueryBuilder_Preset()]).install();
@@ -97,21 +95,27 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, lambdaJson) => {
     const { entities } = context;
     // setup
-    const editorStore = TEST__getTestEditorStore(pluginManager);
-    await TEST__buildGraphBasic(entities, editorStore, {
-      TEMPORARY__keepSectionIndex: true,
-    });
+    const graphManagerState = new GraphManagerState(pluginManager, new Log());
+    await flowResult(graphManagerState.initializeSystem());
+    await flowResult(
+      graphManagerState.graphManager.buildGraph(
+        graphManagerState.graph,
+        entities,
+        {
+          TEMPORARY__keepSectionIndex: true,
+        },
+      ),
+    );
     // roundtrip check
-    const lambda =
-      editorStore.graphManagerState.graphManager.buildValueSpecification(
-        lambdaJson,
-        editorStore.graphManagerState.graph,
-      );
+    const lambda = graphManagerState.graphManager.buildValueSpecification(
+      lambdaJson,
+      graphManagerState.graph,
+    );
     const _lambdaJson =
-      editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
-        editorStore.graphManagerState.graphManager.buildRawValueSpecification(
+      graphManagerState.graphManager.serializeRawValueSpecification(
+        graphManagerState.graphManager.buildRawValueSpecification(
           lambda,
-          editorStore.graphManagerState.graph,
+          graphManagerState.graph,
         ),
       );
     expect(_lambdaJson).toEqual(lambdaJson);

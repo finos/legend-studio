@@ -63,8 +63,8 @@ const DerivedPropertyExpressionEditor = observer(
             <QueryBuilderValueSpecificationEditor
               valueSpecification={parameterValues[idx]}
               graph={
-                derivedPropertyExpressionState.editorStore.graphManagerState
-                  .graph
+                derivedPropertyExpressionState.queryBuilderState
+                  .graphManagerState.graph
               }
               expectedType={
                 derivedPropertyExpressionState.propertyExpression.func

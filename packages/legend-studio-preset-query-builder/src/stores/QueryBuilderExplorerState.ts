@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-shared';
 import type {
   AbstractProperty,
+  GraphManagerState,
   Mapping,
   PropertyMapping,
   PureModel,
@@ -47,7 +48,6 @@ import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
-import type { EditorStore } from '@finos/legend-studio';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -177,16 +177,16 @@ const resolveSetImplementationForPropertyMapping = (
 };
 
 const resolvePropertyMappingsForSetImpl = (
+  graphManagerState: GraphManagerState,
   setImpl: SetImplementation,
-  editorStore: EditorStore,
 ): PropertyMapping[] => {
   const propertyMappings =
-    editorStore.graphState.getMappingElementPropertyMappings(setImpl);
+    graphManagerState.getMappingElementPropertyMappings(setImpl);
   // Resolve association properties
   // To resolve we look for all association property mappings which match our setImpl
   // and their sourceImpl.
   if (
-    editorStore.graphState.isInstanceSetImplementation(setImpl) &&
+    graphManagerState.isInstanceSetImplementation(setImpl) &&
     setImpl.class.value.propertiesFromAssociations.length
   ) {
     setImpl.parent.associationMappings
@@ -217,7 +217,7 @@ const isAutoMappedProperty = (
 };
 
 const getPropertyMappedData = (
-  editorStore: EditorStore,
+  graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
 ): {
@@ -240,8 +240,8 @@ const getPropertyMappedData = (
       return { mapped: true, skipMappingCheck: true };
     } else if (parentSetImpl) {
       const propertyMappings = resolvePropertyMappingsForSetImpl(
+        graphManagerState,
         parentSetImpl,
-        editorStore,
       );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
@@ -279,11 +279,15 @@ const getPropertyMappedData = (
 };
 
 export const getQueryBuilderPropertyNodeData = (
-  editorStore: EditorStore,
+  graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
 ): QueryBuilderExplorerTreePropertyNodeData => {
-  const mappingData = getPropertyMappedData(editorStore, property, parentNode);
+  const mappingData = getPropertyMappedData(
+    graphManagerState,
+    property,
+    parentNode,
+  );
   const propertyNode = new QueryBuilderExplorerTreePropertyNodeData(
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
@@ -316,7 +320,7 @@ export const getQueryBuilderPropertyNodeData = (
 };
 
 const getQueryBuilderTreeData = (
-  editorStore: EditorStore,
+  graphManagerState: GraphManagerState,
   rootClass: Class,
   mapping: Mapping,
 ): TreeData<QueryBuilderExplorerTreeNodeData> => {
@@ -348,7 +352,7 @@ const getQueryBuilderTreeData = (
     )
     .forEach((property) => {
       const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-        editorStore,
+        graphManagerState,
         property,
         treeRootNode,
       );
@@ -386,16 +390,14 @@ export class QueryBuilderExplorerPreviewDataState {
 }
 
 export class QueryBuilderExplorerState {
-  editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   previewDataState = new QueryBuilderExplorerPreviewDataState();
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData>;
   humanizePropertyName = true;
   showUnmappedProperties = false;
 
-  constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
-      editorStore: false,
       queryBuilderState: false,
       previewDataState: false,
       treeData: observable.ref,
@@ -406,7 +408,6 @@ export class QueryBuilderExplorerState {
       setShowUnmappedProperties: action,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
   }
 
@@ -442,7 +443,11 @@ export class QueryBuilderExplorerState {
     const _mapping = this.queryBuilderState.querySetupState.mapping;
     this.setTreeData(
       _class && _mapping
-        ? getQueryBuilderTreeData(this.editorStore, _class, _mapping)
+        ? getQueryBuilderTreeData(
+            this.queryBuilderState.graphManagerState,
+            _class,
+            _mapping,
+          )
         : undefined,
     );
   }

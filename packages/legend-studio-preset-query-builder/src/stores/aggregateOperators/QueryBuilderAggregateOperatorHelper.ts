@@ -54,7 +54,6 @@ export const buildAggregateColumnState = (
 ): QueryBuilderAggregateColumnState | undefined => {
   if (matchFunctionName(expression.functionName, operatorFunctionFullPath)) {
     const aggregateColumnState = new QueryBuilderAggregateColumnState(
-      projectionColumnState.editorStore,
       projectionColumnState.projectionState.aggregationState,
       projectionColumnState,
       operator,

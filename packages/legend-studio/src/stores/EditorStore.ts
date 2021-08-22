@@ -807,7 +807,7 @@ export class EditorStore {
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
       yield Promise.all([
-        this.graphState.precomputeHashes(), // for local changes detection
+        this.graphManagerState.precomputeHashes(), // for local changes detection
         this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
@@ -1271,23 +1271,6 @@ export class EditorStore {
       );
   }
 
-  /**
-   * Filter the list of system elements that will be shown in selection options
-   * to users. This is helpful to avoid overwhelming and confusing users in form
-   * mode since many system elements are needed to build the graph, but should
-   * not present at all as selection options in form mode.
-   */
-  filterSystemElementOptions<T extends PackageableElement>(
-    systemElements: T[],
-  ): T[] {
-    const allowedSystemElements = this.pluginManager
-      .getEditorPlugins()
-      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
-    return systemElements.filter((element) =>
-      allowedSystemElements.includes(element.path),
-    );
-  }
-
   get enumerationOptions(): PackageableElementOption<Enumeration>[] {
     return this.graphManagerState.graph.ownEnumerations
       .concat(this.graphManagerState.graph.dependencyManager.enumerations)
@@ -1299,7 +1282,7 @@ export class EditorStore {
   get classOptions(): PackageableElementOption<Class>[] {
     return this.graphManagerState.graph.ownClasses
       .concat(
-        this.filterSystemElementOptions(
+        this.graphManagerState.filterSystemElementOptions(
           this.graphManagerState.graph.systemModel.ownClasses,
         ),
       )
@@ -1310,7 +1293,7 @@ export class EditorStore {
   get associationOptions(): PackageableElementOption<Association>[] {
     return this.graphManagerState.graph.ownAssociations
       .concat(
-        this.filterSystemElementOptions(
+        this.graphManagerState.filterSystemElementOptions(
           this.graphManagerState.graph.systemModel.ownAssociations,
         ),
       )
@@ -1323,7 +1306,7 @@ export class EditorStore {
   get profileOptions(): PackageableElementOption<Profile>[] {
     return this.graphManagerState.graph.ownProfiles
       .concat(
-        this.filterSystemElementOptions(
+        this.graphManagerState.filterSystemElementOptions(
           this.graphManagerState.graph.systemModel.ownProfiles,
         ),
       )
@@ -1338,7 +1321,7 @@ export class EditorStore {
       .concat(
         this.graphManagerState.graph.ownTypes
           .concat(
-            this.filterSystemElementOptions(
+            this.graphManagerState.filterSystemElementOptions(
               this.graphManagerState.graph.systemModel.ownTypes,
             ),
           )

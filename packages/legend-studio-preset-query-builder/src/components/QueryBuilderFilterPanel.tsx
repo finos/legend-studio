@@ -175,7 +175,7 @@ const QueryBuilderFilterConditionEditor = observer(
           node.condition.filterState.queryBuilderState.explorerState
             .nonNullableTreeData,
           propertyNode,
-          node.condition.filterState.editorStore.graphManagerState.graph,
+          node.condition.filterState.queryBuilderState.graphManagerState.graph,
         ),
       );
 
@@ -229,7 +229,10 @@ const QueryBuilderFilterConditionEditor = observer(
             <div className="query-builder-filter-tree__condition-node__value">
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                graph={node.condition.editorStore.graphManagerState.graph}
+                graph={
+                  node.condition.filterState.queryBuilderState.graphManagerState
+                    .graph
+                }
                 expectedType={
                   node.condition.propertyExpressionState.propertyExpression.func
                     .genericType.value.rawType
@@ -327,7 +330,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const editorStore = queryBuilderState.editorStore;
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
     const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
@@ -348,12 +350,11 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           let filterConditionState: FilterConditionState;
           try {
             filterConditionState = new FilterConditionState(
-              editorStore,
               filterState,
               buildPropertyExpressionFromExplorerTreeNodeData(
                 filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 dropNode,
-                filterState.editorStore.graphManagerState.graph,
+                filterState.queryBuilderState.graphManagerState.graph,
               ),
             );
           } catch (error: unknown) {
@@ -390,7 +391,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           }
         }
       },
-      [applicationStore, editorStore, filterState, node],
+      [applicationStore, filterState, node],
     );
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
       () => ({
@@ -610,7 +611,6 @@ const QueryBuilderFilterTree = observer(
 export const QueryBuilderFilterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = queryBuilderState.editorStore;
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
     const rootNode = filterState.getRootNode();
@@ -666,12 +666,11 @@ export const QueryBuilderFilterPanel = observer(
         let filterConditionState: FilterConditionState;
         try {
           filterConditionState = new FilterConditionState(
-            editorStore,
             filterState,
             buildPropertyExpressionFromExplorerTreeNodeData(
               filterState.queryBuilderState.explorerState.nonNullableTreeData,
               (item as QueryBuilderExplorerTreeDragSource).node,
-              filterState.editorStore.graphManagerState.graph,
+              filterState.queryBuilderState.graphManagerState.graph,
             ),
           );
         } catch (error: unknown) {
@@ -689,7 +688,7 @@ export const QueryBuilderFilterPanel = observer(
           undefined,
         );
       },
-      [applicationStore, editorStore, filterState],
+      [applicationStore, filterState],
     );
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
       () => ({

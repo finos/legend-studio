@@ -97,7 +97,6 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
   ): QueryBuilderAggregateColumnState | undefined {
     if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.COUNT)) {
       const aggregateColumnState = new QueryBuilderAggregateColumnState(
-        projectionColumnState.editorStore,
         projectionColumnState.projectionState.aggregationState,
         projectionColumnState,
         this,

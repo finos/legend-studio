@@ -15,15 +15,27 @@
  */
 
 import type { GeneratorFn, Log } from '@finos/legend-shared';
+import { LogEvent, uniq } from '@finos/legend-shared';
 import { ActionState, assertErrorThrown } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { CoreModel, PureModel, SystemModel } from './graph/PureModel';
 import type { AbstractPureGraphManager } from './graphManager/AbstractPureGraphManager';
+import { GRAPH_MANAGER_LOG_EVENT } from './graphManager/GraphManagerLogEvent';
 import type { GraphPluginManager } from './GraphPluginManager';
+import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
+import type { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
+import { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
+import { OperationSetImplementation } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+import type { PropertyMapping } from './models/metamodels/pure/packageableElements/mapping/PropertyMapping';
+import type { SetImplementation } from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
+import type { PackageableElement } from './models/metamodels/pure/packageableElements/PackageableElement';
+import { EmbeddedFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
+import { EmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { getGraphManager } from './models/protocols/pure/Pure';
 
 export class GraphManagerState {
   pluginManager: GraphPluginManager;
+  log: Log;
 
   coreModel: CoreModel;
   systemModel: SystemModel;
@@ -40,6 +52,7 @@ export class GraphManagerState {
     });
 
     this.pluginManager = pluginManager;
+    this.log = log;
 
     const extensionElementClasses = this.pluginManager
       .getPureGraphManagerPlugins()
@@ -73,6 +86,23 @@ export class GraphManagerState {
     }
   }
 
+  resetGraph(): void {
+    this.graph = this.createEmptyGraph();
+  }
+
+  // -------------------------------------------------- UTILITIES -----------------------------------------------------
+  /**
+   * NOTE: Notice how this utility draws resources from all of metamodels and uses `instanceof` to classify behavior/response.
+   * As such, methods in this utility cannot be placed in place they should belong to.
+   *
+   * For example: `getSetImplemetnationType` cannot be placed in `SetImplementation` because of circular module dependency
+   * So this utility is born for such purpose, to avoid circular module dependency, and it should just be used for only that
+   * Other utilities that really should reside in the domain-specific meta model should be placed in the meta model module.
+   *
+   * NOTE: We expect the need for these methods will eventually go away as we complete modularization. But we need these
+   * methods here so that we can load plugins.
+   */
+
   createEmptyGraph(): PureModel {
     return new PureModel(
       this.coreModel,
@@ -85,7 +115,85 @@ export class GraphManagerState {
     );
   }
 
-  resetGraph(): void {
-    this.graph = this.createEmptyGraph();
+  isInstanceSetImplementation(
+    setImplementation:
+      | EnumerationMapping
+      | SetImplementation
+      | AssociationImplementation,
+  ): setImplementation is InstanceSetImplementation {
+    return (
+      setImplementation instanceof InstanceSetImplementation ||
+      setImplementation instanceof EmbeddedFlatDataPropertyMapping ||
+      setImplementation instanceof EmbeddedRelationalInstanceSetImplementation
+    );
+  }
+
+  getMappingElementPropertyMappings(
+    mappingElement:
+      | EnumerationMapping
+      | SetImplementation
+      | AssociationImplementation,
+  ): PropertyMapping[] {
+    let mappedProperties: PropertyMapping[] = [];
+    if (
+      this.isInstanceSetImplementation(mappingElement) ||
+      mappingElement instanceof AssociationImplementation
+    ) {
+      mappedProperties = mappingElement.propertyMappings;
+    } else if (mappingElement instanceof OperationSetImplementation) {
+      mappedProperties = mappingElement.leafSetImplementations
+        .filter((me): me is InstanceSetImplementation =>
+          this.isInstanceSetImplementation(me),
+        )
+        .map((si) => si.propertyMappings)
+        .flat();
+    }
+    return uniq(mappedProperties);
+  }
+
+  /**
+   * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
+   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
+   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
+   * not trigger memoization on computed so we need to enable `keepAlive`
+   */
+  *precomputeHashes(): GeneratorFn<void> {
+    const startTime = Date.now();
+    if (this.graph.allOwnElements.length) {
+      yield Promise.all<void>(
+        this.graph.allOwnElements.map(
+          (element) =>
+            new Promise((resolve) =>
+              setTimeout(() => {
+                element.hashCode; // manually trigger hash code recomputation
+                resolve();
+              }, 0),
+            ),
+        ),
+      );
+    }
+    this.log.info(
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PRECOMPUTED),
+      '[ASYNC]',
+      Date.now() - startTime,
+      'ms',
+    );
+  }
+
+  /**
+   * Filter the list of system elements that will be shown in selection options
+   * to users. This is helpful to avoid overwhelming and confusing users in form
+   * mode since many system elements are needed to build the graph, but should
+   * not present at all as selection options in form mode.
+   */
+  filterSystemElementOptions<T extends PackageableElement>(
+    systemElements: T[],
+  ): T[] {
+    const allowedSystemElements = this.pluginManager
+      .getPureGraphManagerPlugins()
+      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
+    return systemElements.filter((element) =>
+      allowedSystemElements.includes(element.path),
+    );
   }
 }

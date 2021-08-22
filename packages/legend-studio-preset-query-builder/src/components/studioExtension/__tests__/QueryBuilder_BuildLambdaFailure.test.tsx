@@ -32,12 +32,12 @@ import {
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
 import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
-import { QueryBuilderState } from '../../stores/QueryBuilderState';
+import { QUERY_BUILDER_TEST_ID } from '../../../QueryBuilder_Const';
 import { flowResult } from 'mobx';
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import { RawLambda } from '@finos/legend-graph';
+import { QueryBuilder_EditorExtensionState } from '../../../stores/QueryBuilder_EditorExtensionState';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
@@ -123,13 +123,14 @@ describe(
         MOBX__enableSpyOrMock();
         mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
         MOBX__disableSpyOrMock();
-        const queryBuilderState =
-          mockedEditorStore.getEditorExtensionState(QueryBuilderState);
-        await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-        queryBuilderState.querySetupState.setClass(
+        const queryBuilderExtension = mockedEditorStore.getEditorExtensionState(
+          QueryBuilder_EditorExtensionState,
+        );
+        await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
+        queryBuilderExtension.queryBuilderState.querySetupState.setClass(
           mockedEditorStore.graphManagerState.graph.getClass(targetClassPath),
         );
-        queryBuilderState.resetData();
+        queryBuilderExtension.queryBuilderState.resetData();
         const queryBuilderSetup = await waitFor(() =>
           renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
         );
@@ -138,7 +139,9 @@ describe(
         await waitFor(() => getByText(queryBuilderSetup, mappingName));
         await waitFor(() => getByText(queryBuilderSetup, runtimeName));
         expect(() =>
-          queryBuilderState.buildStateFromRawLambda(getRawLambda(lambdaJson)),
+          queryBuilderExtension.queryBuilderState.buildStateFromRawLambda(
+            getRawLambda(lambdaJson),
+          ),
         ).toThrowError(errorMessage);
       },
     );

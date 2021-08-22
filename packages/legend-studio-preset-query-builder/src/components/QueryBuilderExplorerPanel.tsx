@@ -209,12 +209,11 @@ const QueryBuilderExplorerContextMenu = observer(
             queryBuilderState.fetchStructureState.projectionState;
           projectionState.addColumn(
             new QueryBuilderSimpleProjectionColumnState(
-              projectionState.editorStore,
               projectionState,
               buildPropertyExpressionFromExplorerTreeNodeData(
                 queryBuilderState.explorerState.nonNullableTreeData,
                 node,
-                projectionState.editorStore.graphManagerState.graph,
+                projectionState.queryBuilderState.graphManagerState.graph,
               ),
             ),
           );
@@ -262,12 +261,11 @@ const QueryBuilderExplorerContextMenu = observer(
               queryBuilderState.fetchStructureState.projectionState;
             projectionState.addColumn(
               new QueryBuilderSimpleProjectionColumnState(
-                projectionState.editorStore,
                 projectionState,
                 buildPropertyExpressionFromExplorerTreeNodeData(
                   queryBuilderState.explorerState.nonNullableTreeData,
                   nodeToAdd,
-                  projectionState.editorStore.graphManagerState.graph,
+                  projectionState.queryBuilderState.graphManagerState.graph,
                 ),
               ),
             );
@@ -588,7 +586,6 @@ const QueryBuilderExplorerTreeNodeView = observer(
 const QueryBuilderExplorerTree = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = queryBuilderState.editorStore;
     const explorerState = queryBuilderState.explorerState;
     const treeData = explorerState.nonNullableTreeData;
     const onNodeSelect = (node: QueryBuilderExplorerTreeNodeData): void => {
@@ -604,7 +601,7 @@ const QueryBuilderExplorerTree = observer(
             .concat(node.type.getAllDerivedProperties())
             .forEach((property) => {
               const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-                editorStore,
+                queryBuilderState.graphManagerState,
                 property,
                 node,
               );

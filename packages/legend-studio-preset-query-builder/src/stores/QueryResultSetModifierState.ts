@@ -36,7 +36,6 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-import type { EditorStore } from '@finos/legend-studio';
 
 export enum COLUMN_SORT_TYPE {
   ASC,
@@ -44,21 +43,21 @@ export enum COLUMN_SORT_TYPE {
 }
 
 export class SortColumnState {
-  editorStore: EditorStore;
+  queryBuilderState: QueryBuilderState;
   columnState: QueryBuilderProjectionColumnState;
   sortType = COLUMN_SORT_TYPE.ASC;
 
   constructor(
-    editorStore: EditorStore,
+    queryBuilderState: QueryBuilderState,
     columnState: QueryBuilderProjectionColumnState,
   ) {
     makeAutoObservable(this, {
-      editorStore: false,
+      queryBuilderState: false,
       setColumnState: action,
       setSortType: action,
     });
 
-    this.editorStore = editorStore;
+    this.queryBuilderState = queryBuilderState;
     this.columnState = columnState;
   }
 
@@ -72,7 +71,7 @@ export class SortColumnState {
 
   buildFunctionExpression(): SimpleFunctionExpression {
     const multiplicityOne =
-      this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+      this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const sortColumnFunction = new SimpleFunctionExpression(
@@ -86,7 +85,7 @@ export class SortColumnState {
     const sortColumnName = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
         new GenericType(
-          this.editorStore.graphManagerState.graph.getPrimitiveType(
+          this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
             PRIMITIVE_TYPE.STRING,
           ),
         ),
@@ -100,16 +99,14 @@ export class SortColumnState {
 }
 
 export class QueryResultSetModifierState {
-  editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   showModal = false;
   limit?: number;
   distinct = false;
   sortColumns: SortColumnState[] = [];
 
-  constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
-      editorStore: false,
       queryBuilderState: false,
       setShowModal: action,
       setLimit: action,
@@ -119,7 +116,6 @@ export class QueryResultSetModifierState {
       updateSortColumns: action,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
   }
 
@@ -161,7 +157,7 @@ export class QueryResultSetModifierState {
     },
   ): LambdaFunction {
     const multiplicityOne =
-      this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+      this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     if (lambda.expressionSequence.length === 1) {
@@ -213,7 +209,7 @@ export class QueryResultSetModifierState {
             const limit = new PrimitiveInstanceValue(
               GenericTypeExplicitReference.create(
                 new GenericType(
-                  this.editorStore.graphManagerState.graph.getPrimitiveType(
+                  this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
                     PRIMITIVE_TYPE.INTEGER,
                   ),
                 ),
@@ -251,7 +247,7 @@ export class QueryResultSetModifierState {
             const limit = new PrimitiveInstanceValue(
               GenericTypeExplicitReference.create(
                 new GenericType(
-                  this.editorStore.graphManagerState.graph.getPrimitiveType(
+                  this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
                     PRIMITIVE_TYPE.INTEGER,
                   ),
                 ),

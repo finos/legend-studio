@@ -83,15 +83,9 @@ export {
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor';
-export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal';
-export { EmbeddedRuntimeEditor } from './components/editor/edit-panel/RuntimeEditor';
 export * from './stores/DSLGenerationSpecification_EditorPlugin_Extension';
 
 export * from './stores/StoreRelational_EditorPlugin_Extension';
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
-export {
-  RuntimeEditorState,
-  decorateRuntimeWithNewMapping,
-} from './stores/editor-state/element-editor-state/RuntimeEditorState';
-export { MappingExecutionState as MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';

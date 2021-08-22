@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../../package.json';
 import type {
   EditorExtensionState,
   EditorExtensionStateCreator,
@@ -36,12 +36,12 @@ import { QueryBuilderDialog } from './QueryBuilderDialog';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder';
 import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';
 import { MappingTestQueryBuilder } from './MappingTestQueryBuilder';
-import { QueryBuilderState } from '../stores/QueryBuilderState';
 import { flowResult } from 'mobx';
 import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { Class } from '@finos/legend-graph';
 import type { PackageableElement } from '@finos/legend-graph';
+import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
 
 export class QueryBuilder_EditorPlugin extends EditorPlugin {
   constructor() {
@@ -77,7 +77,7 @@ export class QueryBuilder_EditorPlugin extends EditorPlugin {
   override getExtraEditorExtensionStateCreators(): EditorExtensionStateCreator[] {
     return [
       (editorStore: EditorStore): EditorExtensionState | undefined =>
-        new QueryBuilderState(editorStore),
+        new QueryBuilder_EditorExtensionState(editorStore),
     ];
   }
 
@@ -91,12 +91,15 @@ export class QueryBuilder_EditorPlugin extends EditorPlugin {
         ): React.ReactNode | undefined => {
           if (element instanceof Class) {
             const buildQuery = async (): Promise<void> => {
-              const queryBuilderState =
-                editorStore.getEditorExtensionState(QueryBuilderState);
-              await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-              if (queryBuilderState.openQueryBuilder) {
-                queryBuilderState.querySetupState.setClass(element);
-                queryBuilderState.resetData();
+              const queryBuilderExtension = editorStore.getEditorExtensionState(
+                QueryBuilder_EditorExtensionState,
+              );
+              await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
+              if (queryBuilderExtension.openQueryBuilder) {
+                queryBuilderExtension.queryBuilderState.querySetupState.setClass(
+                  element,
+                );
+                queryBuilderExtension.queryBuilderState.resetData();
               }
             };
             return (

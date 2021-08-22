@@ -45,7 +45,6 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
-    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@material-ui/core": "4.12.3",

@@ -39,35 +39,34 @@ import {
 import { waitFor } from '@testing-library/dom';
 import type { PlainObject } from '@finos/legend-shared';
 import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
-import { QueryBuilderState } from '../../stores/QueryBuilderState';
+import { QUERY_BUILDER_TEST_ID } from '../../../QueryBuilder_Const';
 import { flowResult } from 'mobx';
 import {
-  lambda_enumerationOperatorFilter,
-  lambda_existsChainFilter,
-  lambda_existsChainFilterWithCustomVariableName,
-  lambda_groupConditionFilter,
-  lambda_groupConditionFilter_withMultipleClauseGroup,
-  lambda_notOperatorFilter,
-  lambda_setOperatorFilter,
-  lambda_simpleSingleConditionFilter,
+  TEST_DATA__lambda_enumerationOperatorFilter,
+  TEST_DATA__lambda_existsChainFilter,
+  TEST_DATA__lambda_existsChainFilterWithCustomVariableName,
+  TEST_DATA__lambda_groupConditionFilter,
+  TEST_DATA__lambda_groupConditionFilter_withMultipleClauseGroup,
+  TEST_DATA__lambda_notOperatorFilter,
+  TEST_DATA__lambda_setOperatorFilter,
+  TEST_DATA__lambda_simpleSingleConditionFilter,
 } from './QueryBuilder_Roundtrip_TestFilterQueries';
 import {
-  lambda_input_filterWithExists,
+  TEST_DATA__lambda_input_filterWithExists,
   lambda_output_filterWithExists,
 } from './QueryBuilder_TestFilterQueriesWithExists';
 import {
-  lambda_input_graphFetchWithFullPathFunctions,
-  lambda_output_graphFetchWithFullPathFunctions,
-  lambda_input_filterWithFullPathFunctions,
-  lambda_output_filterWithFullPathFunctions,
-  lambda_input_projectionWithFullPathFunctions,
-  lambda_output_projectionWithFullPathFunctions,
+  TEST_DATA__lambda_input_graphFetchWithFullPathFunctions,
+  TEST_DATA__lambda_output_graphFetchWithFullPathFunctions,
+  TEST_DATA__lambda_input_filterWithFullPathFunctions,
+  TEST_DATA__lambda_output_filterWithFullPathFunctions,
+  TEST_DATA__lambda_input_projectionWithFullPathFunctions,
+  TEST_DATA__lambda_output_projectionWithFullPathFunctions,
 } from './QueryBuilder_TestQueriesWithFullPathFunctions';
-
 import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import { RawLambda } from '@finos/legend-graph';
+import { QueryBuilder_EditorExtensionState } from '../../../stores/QueryBuilder_EditorExtensionState';
 
 type RoundtripTestCase = [
   string,
@@ -144,8 +143,8 @@ const cases: RoundtripTestCase[] = [
   [
     '(auto-fix) Projection with full-path functions',
     projectionCtx,
-    lambda_output_projectionWithFullPathFunctions,
-    lambda_input_projectionWithFullPathFunctions,
+    TEST_DATA__lambda_output_projectionWithFullPathFunctions,
+    TEST_DATA__lambda_input_projectionWithFullPathFunctions,
   ],
   // graph fetch
   ['Simple graph fetch', graphFetchCtx, TEST_DATA__simpleGraphFetch, undefined],
@@ -158,14 +157,14 @@ const cases: RoundtripTestCase[] = [
   [
     '(auto-fix) Graph-fetch with full-path functions',
     graphFetchCtx,
-    lambda_output_graphFetchWithFullPathFunctions,
-    lambda_input_graphFetchWithFullPathFunctions,
+    TEST_DATA__lambda_output_graphFetchWithFullPathFunctions,
+    TEST_DATA__lambda_input_graphFetchWithFullPathFunctions,
   ],
   // filter
   [
     'Simple filter',
     relationalFilterCtx,
-    lambda_simpleSingleConditionFilter,
+    TEST_DATA__lambda_simpleSingleConditionFilter,
     undefined,
   ],
   [
@@ -178,13 +177,13 @@ const cases: RoundtripTestCase[] = [
   [
     'Filter with group condition',
     relationalFilterCtx,
-    lambda_groupConditionFilter,
+    TEST_DATA__lambda_groupConditionFilter,
     undefined,
   ],
   [
     'Filter with group condition with multiple clauses',
     relationalFilterCtx,
-    lambda_groupConditionFilter_withMultipleClauseGroup,
+    TEST_DATA__lambda_groupConditionFilter_withMultipleClauseGroup,
     undefined,
   ],
   [
@@ -197,45 +196,45 @@ const cases: RoundtripTestCase[] = [
   [
     'Filter with set operator',
     relationalFilterCtx,
-    lambda_setOperatorFilter,
+    TEST_DATA__lambda_setOperatorFilter,
     undefined,
   ],
   [
     'Filter with not() operator',
     relationalFilterCtx,
-    lambda_notOperatorFilter,
+    TEST_DATA__lambda_notOperatorFilter,
     undefined,
   ],
   [
     'Filter with enumeration',
     m2mFilterCtx,
-    lambda_enumerationOperatorFilter,
+    TEST_DATA__lambda_enumerationOperatorFilter,
     undefined,
   ],
   // exists()
   [
     'Filter with exists() chain',
     m2mFilterCtx,
-    lambda_existsChainFilter,
+    TEST_DATA__lambda_existsChainFilter,
     undefined,
   ],
   [
     'Filter with exists() chain with custom lambda variable name',
     m2mFilterCtx,
-    lambda_existsChainFilterWithCustomVariableName,
+    TEST_DATA__lambda_existsChainFilterWithCustomVariableName,
     undefined,
   ],
   [
     '(auto-fix) Filter with outdated exists()',
     m2mFilterCtx,
     lambda_output_filterWithExists,
-    lambda_input_filterWithExists,
+    TEST_DATA__lambda_input_filterWithExists,
   ],
   [
     '(auto-fix) Filter with full-path functions',
     m2mFilterCtx,
-    lambda_output_filterWithFullPathFunctions,
-    lambda_input_filterWithFullPathFunctions,
+    TEST_DATA__lambda_output_filterWithFullPathFunctions,
+    TEST_DATA__lambda_input_filterWithFullPathFunctions,
   ],
 ];
 
@@ -255,13 +254,15 @@ describe(
       MOBX__enableSpyOrMock();
       mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
       MOBX__disableSpyOrMock();
-      const queryBuilderState =
-        mockedEditorStore.getEditorExtensionState(QueryBuilderState);
-      await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-      queryBuilderState.querySetupState.setClass(
+      const queryBuilderExtensionState =
+        mockedEditorStore.getEditorExtensionState(
+          QueryBuilder_EditorExtensionState,
+        );
+      await flowResult(queryBuilderExtensionState.setOpenQueryBuilder(true));
+      queryBuilderExtensionState.queryBuilderState.querySetupState.setClass(
         mockedEditorStore.graphManagerState.graph.getClass(targetClassPath),
       );
-      queryBuilderState.resetData();
+      queryBuilderExtensionState.queryBuilderState.resetData();
       const queryBuilderSetup = await waitFor(() =>
         renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
       );
@@ -273,12 +274,12 @@ describe(
       }
       // do the check using input and output lambda
       const rawLambda = inputLambda ?? lambda;
-      queryBuilderState.buildStateFromRawLambda(
+      queryBuilderExtensionState.queryBuilderState.buildStateFromRawLambda(
         new RawLambda(rawLambda.parameters, rawLambda.body),
       );
       const jsonQuery =
         mockedEditorStore.graphManagerState.graphManager.serializeRawValueSpecification(
-          queryBuilderState.getQuery(),
+          queryBuilderExtensionState.queryBuilderState.getQuery(),
         );
       expect([lambda]).toIncludeSameMembers([jsonQuery]);
     });

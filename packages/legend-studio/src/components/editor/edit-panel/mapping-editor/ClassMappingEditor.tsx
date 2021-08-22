@@ -272,7 +272,7 @@ export const ClassMappingEditor = observer(
               isReadOnly={isReadOnly}
             />
           )}
-          {editorStore.graphState.isInstanceSetImplementation(
+          {editorStore.graphManagerState.isInstanceSetImplementation(
             setImplementation,
           ) && (
             <InstanceSetImplementationEditor

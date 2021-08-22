@@ -41,7 +41,7 @@ import {
   VariableExpression,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
-import type { EditorStore } from '@finos/legend-studio';
+import type { QueryBuilderState } from './QueryBuilderState';
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
@@ -145,7 +145,7 @@ const fillDerivedPropertyArguments = (
 };
 
 export class QueryBuilderDerivedPropertyExpressionState {
-  editorStore: EditorStore;
+  queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
   propertyExpression: AbstractPropertyExpression;
@@ -153,13 +153,13 @@ export class QueryBuilderDerivedPropertyExpressionState {
   parameters: VariableExpression[] = [];
 
   constructor(
-    editorStore: EditorStore,
+    queryBuilderState: QueryBuilderState,
     propertyExpression: AbstractPropertyExpression,
   ) {
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression);
     this.propertyExpression = propertyExpression;
-    this.editorStore = editorStore;
+    this.queryBuilderState = queryBuilderState;
     this.derivedProperty = guaranteeType(
       propertyExpression.func,
       DerivedProperty,
@@ -168,15 +168,18 @@ export class QueryBuilderDerivedPropertyExpressionState {
     if (Array.isArray(this.derivedProperty.parameters)) {
       this.parameters = this.derivedProperty.parameters.map((parameter) =>
         guaranteeType(
-          this.editorStore.graphManagerState.graphManager.buildValueSpecification(
+          this.queryBuilderState.graphManagerState.graphManager.buildValueSpecification(
             parameter,
-            this.editorStore.graphManagerState.graph,
+            this.queryBuilderState.graphManagerState.graph,
           ),
           VariableExpression,
         ),
       );
     }
-    fillDerivedPropertyArguments(this, editorStore.graphManagerState.graph);
+    fillDerivedPropertyArguments(
+      this,
+      queryBuilderState.graphManagerState.graph,
+    );
   }
 
   get property(): AbstractProperty {
@@ -210,7 +213,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
 }
 
 export class QueryBuilderPropertyExpressionState {
-  editorStore: EditorStore;
+  queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
   propertyExpression: AbstractPropertyExpression;
@@ -230,19 +233,19 @@ export class QueryBuilderPropertyExpressionState {
   requiresExistsHandling = false;
 
   constructor(
-    editorStore: EditorStore,
+    queryBuilderState: QueryBuilderState,
     propertyExpression: AbstractPropertyExpression,
   ) {
     makeAutoObservable<
       QueryBuilderPropertyExpressionState,
       'initDerivedPropertyExpressionStates'
     >(this, {
-      editorStore: false,
+      queryBuilderState: false,
       setIsEditingDerivedProperty: action,
       initDerivedPropertyExpressionStates: action,
     });
 
-    this.editorStore = editorStore;
+    this.queryBuilderState = queryBuilderState;
     this.propertyExpression = propertyExpression;
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression);
@@ -274,7 +277,7 @@ export class QueryBuilderPropertyExpressionState {
       if (currentExpression.func instanceof DerivedProperty) {
         const derivedPropertyExpressionState =
           new QueryBuilderDerivedPropertyExpressionState(
-            this.editorStore,
+            this.queryBuilderState,
             currentExpression,
           );
         result.push(derivedPropertyExpressionState);

@@ -204,19 +204,6 @@ export const QueryBuilderResultPanel = observer(
             </div>
           </div>
         </Dialog>
-        {/* {queryBuilderState.querySetupState.mapping && (
-          <NewServiceModal
-            mapping={queryBuilderState.querySetupState.mapping}
-            close={(): void => resultState.setShowServicePathModal(false)}
-            showModal={resultState.showServicePathModal}
-            promoteToService={(
-              name: string,
-              packagePath: string,
-            ): Promise<void> =>
-              flowResult(resultState.promoteToService(name, packagePath))
-            }
-          />
-        )} */}
       </div>
     );
   },

@@ -117,7 +117,7 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.stop();
       yield Promise.all([
         this.sdlcState.buildWorkspaceLatestRevisionEntityHashesIndex(),
-        this.editorStore.graphState.precomputeHashes(),
+        this.editorStore.graphManagerState.precomputeHashes(),
       ]);
       this.editorStore.changeDetectionState.start();
       yield flowResult(
@@ -296,7 +296,7 @@ export class LocalChangesState {
           throw error;
         }
       }
-      yield flowResult(this.editorStore.graphState.precomputeHashes());
+      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield Promise.all([
         this.editorStore.changeDetectionState.computeLocalChanges(true),

@@ -311,7 +311,6 @@ export class QueryBuilderLambdaProcessor
       );
 
       const columnState = new QueryBuilderDerivationProjectionColumnState(
-        projectionState.editorStore,
         projectionState,
         new RawLambda(rawLambdaProtocol.parameters, rawLambdaProtocol.body),
       );
@@ -631,9 +630,8 @@ export class QueryBuilderLambdaProcessor
           (e) => e.columnName === sortColumnName,
         );
       if (queryBuilderProjectionColumnState) {
-        const editorStore = this.queryBuilderState.editorStore;
         const sortColumnState = new SortColumnState(
-          editorStore,
+          this.queryBuilderState,
           queryBuilderProjectionColumnState,
         );
         sortColumnState.sortType = matchFunctionName(
@@ -935,7 +933,6 @@ export class QueryBuilderLambdaProcessor
       const projectionState =
         this.queryBuilderState.fetchStructureState.projectionState;
       const columnState = new QueryBuilderSimpleProjectionColumnState(
-        projectionState.editorStore,
         projectionState,
         valueSpecification,
       );

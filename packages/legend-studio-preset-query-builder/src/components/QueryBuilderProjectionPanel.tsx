@@ -466,12 +466,11 @@ export const QueryBuilderProjectionPanel = observer(
       (item: QueryBuilderExplorerTreeDragSource): void =>
         projectionState.addColumn(
           new QueryBuilderSimpleProjectionColumnState(
-            projectionState.editorStore,
             projectionState,
             buildPropertyExpressionFromExplorerTreeNodeData(
               queryBuilderState.explorerState.nonNullableTreeData,
               item.node,
-              projectionState.editorStore.graphManagerState.graph,
+              projectionState.queryBuilderState.graphManagerState.graph,
             ),
           ),
         ),

@@ -22,7 +22,6 @@ import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertType,
-  uniq,
   UnsupportedOperationError,
   assertErrorThrown,
   assertTrue,
@@ -35,7 +34,6 @@ import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
-import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { Entity } from '@finos/legend-model-storage';
 import type { EntityChange } from '@finos/legend-server-sdlc';
 import {
@@ -47,7 +45,6 @@ import { DeprecatedProjectVersionEntities } from '@finos/legend-server-depot';
 import type {
   SetImplementation,
   PackageableElement,
-  PropertyMapping,
 } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
@@ -71,7 +68,6 @@ import {
   FlatData,
   FlatDataInstanceSetImplementation,
   EmbeddedFlatDataPropertyMapping,
-  InstanceSetImplementation,
   PackageableConnection,
   PackageableRuntime,
   FileGenerationSpecification,
@@ -85,7 +81,6 @@ import {
   EmbeddedRelationalInstanceSetImplementation,
   PACKAGEABLE_ELEMENT_TYPE,
   DependencyManager,
-  AssociationImplementation,
   AggregationAwareSetImplementation,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
@@ -107,7 +102,6 @@ export class EditorGraphState {
       graphGenerationState: false,
       getPackageableElementType: false,
       getSetImplementationType: false,
-      isInstanceSetImplementation: false,
       hasCompilationError: computed,
       clearCompilationError: action,
     });
@@ -872,7 +866,7 @@ export class EditorGraphState {
 
       // ======= (RE)START CHANGE DETECTION =======
       /* @MARKER: MEMORY-SENSITIVE */
-      yield flowResult(this.precomputeHashes());
+      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
@@ -1131,65 +1125,6 @@ export class EditorGraphState {
     throw new UnsupportedOperationError(
       `Can't classify set implementation`,
       setImplementation,
-    );
-  }
-
-  isInstanceSetImplementation(
-    setImplementation: MappingElement,
-  ): setImplementation is InstanceSetImplementation {
-    return (
-      setImplementation instanceof InstanceSetImplementation ||
-      setImplementation instanceof EmbeddedFlatDataPropertyMapping ||
-      setImplementation instanceof EmbeddedRelationalInstanceSetImplementation
-    );
-  }
-
-  getMappingElementPropertyMappings(
-    mappingElement: MappingElement,
-  ): PropertyMapping[] {
-    let mappedProperties: PropertyMapping[] = [];
-    if (
-      this.isInstanceSetImplementation(mappingElement) ||
-      mappingElement instanceof AssociationImplementation
-    ) {
-      mappedProperties = mappingElement.propertyMappings;
-    } else if (mappingElement instanceof OperationSetImplementation) {
-      mappedProperties = mappingElement.leafSetImplementations
-        .filter((me): me is InstanceSetImplementation =>
-          this.isInstanceSetImplementation(me),
-        )
-        .map((si) => si.propertyMappings)
-        .flat();
-    }
-    return uniq(mappedProperties);
-  }
-
-  /**
-   * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
-   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
-   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
-   * not trigger memoization on computed so we need to enable `keepAlive`
-   */
-  *precomputeHashes(): GeneratorFn<void> {
-    const startTime = Date.now();
-    if (this.editorStore.graphManagerState.graph.allOwnElements.length) {
-      yield Promise.all<void>(
-        this.editorStore.graphManagerState.graph.allOwnElements.map(
-          (element) =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                element.hashCode; // manually trigger hash code recomputation
-                resolve();
-              }, 0),
-            ),
-        ),
-      );
-    }
-    this.editorStore.applicationStore.log.info(
-      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PRECOMPUTED),
-      '[ASYNC]',
-      Date.now() - startTime,
-      'ms',
     );
   }
 }

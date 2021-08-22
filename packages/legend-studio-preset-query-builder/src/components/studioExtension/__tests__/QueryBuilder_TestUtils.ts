@@ -20,7 +20,7 @@ import {
   TEST__provideMockedEditorStore,
   StudioPluginManager,
 } from '@finos/legend-studio';
-import { QueryBuilder_Preset } from '../../QueryBuilder_Preset';
+import { QueryBuilder_Preset } from '../../../QueryBuilder_Preset';
 
 export const buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = StudioPluginManager.create();

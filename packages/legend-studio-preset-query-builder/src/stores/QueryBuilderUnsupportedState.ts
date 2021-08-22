@@ -16,23 +16,20 @@
 
 import { makeAutoObservable, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type { EditorStore } from '@finos/legend-studio';
 import type { RawLambda } from '@finos/legend-graph';
 
 export class QueryBuilderUnsupportedState {
-  editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   rawLambda?: RawLambda;
   lambdaError?: Error;
 
-  constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
-      editorStore: false,
+      queryBuilderState: false,
       setRawLambda: action,
       setLambdaError: action,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
   }
 

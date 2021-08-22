@@ -26,12 +26,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type { PackageableElementOption } from '@finos/legend-studio';
-import {
-  EmbeddedRuntimeEditor,
-  ClassIcon,
-  MappingIcon,
-  RuntimeIcon,
-} from '@finos/legend-studio';
+import { ClassIcon, MappingIcon, RuntimeIcon } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import type { Class, Mapping, Runtime } from '@finos/legend-graph';
 import {
@@ -42,7 +37,6 @@ import {
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = queryBuilderState.editorStore;
     const querySetupState = queryBuilderState.querySetupState;
     const toggleShowSetupPanel = (): void =>
       querySetupState.setShowSetupPanel(!querySetupState.showSetupPanel);
@@ -54,7 +48,7 @@ export const QueryBuilderSetupPanel = observer(
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
     // class
-    const classOptions = editorStore.classOptions;
+    const classOptions = queryBuilderState.classOptions;
     const selectedClassOption = querySetupState._class
       ? { value: querySetupState._class, label: querySetupState._class.name }
       : null;
@@ -130,13 +124,10 @@ export const QueryBuilderSetupPanel = observer(
       label: string | React.ReactNode;
       value?: Runtime;
     }): void => {
-      if (val.value === undefined) {
-        querySetupState.useCustomRuntime();
-      } else if (val.value !== runtime) {
+      if (val.value !== runtime) {
         querySetupState.setRuntime(val.value);
       }
     };
-    const openRuntimeEditor = (): void => querySetupState.openRuntimeEditor();
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -236,27 +227,8 @@ export const QueryBuilderSetupPanel = observer(
               darkMode={true}
               filterOption={runtimeFilterOption}
             />
-            {!isRuntimePointer && querySetupState.mapping && (
-              <button
-                className="btn--sm btn--dark service-execution-editor__configuration__item__btn"
-                onClick={openRuntimeEditor}
-                tabIndex={-1}
-                title={
-                  querySetupState.runtimeIsReadOnly
-                    ? 'See runtime'
-                    : 'Configure custom runtime'
-                }
-              >
-                <CogIcon />
-              </button>
-            )}
           </div>
         </div>
-        <EmbeddedRuntimeEditor
-          isReadOnly={querySetupState.runtimeIsReadOnly}
-          runtimeEditorState={querySetupState.runtimeEditorState}
-          onClose={(): void => querySetupState.closeRuntimeEditor()}
-        />
       </div>
     );
   },

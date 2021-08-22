@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const lambda_simpleSingleConditionFilter = {
+export const TEST_DATA__lambda_simpleSingleConditionFilter = {
   _type: 'lambda',
   body: [
     {
@@ -78,7 +78,7 @@ export const lambda_simpleSingleConditionFilter = {
   parameters: [],
 };
 
-export const lambda_notOperatorFilter = {
+export const TEST_DATA__lambda_notOperatorFilter = {
   _type: 'lambda',
   body: [
     {
@@ -148,7 +148,7 @@ export const lambda_notOperatorFilter = {
   parameters: [],
 };
 
-export const lambda_setOperatorFilter = {
+export const TEST_DATA__lambda_setOperatorFilter = {
   _type: 'lambda',
   body: [
     {
@@ -235,7 +235,7 @@ export const lambda_setOperatorFilter = {
   parameters: [],
 };
 
-export const lambda_groupConditionFilter = {
+export const TEST_DATA__lambda_groupConditionFilter = {
   _type: 'lambda',
   body: [
     {
@@ -442,7 +442,7 @@ export const lambda_groupConditionFilter = {
   parameters: [],
 };
 
-export const lambda_groupConditionFilter_withMultipleClauseGroup = {
+export const TEST_DATA__lambda_groupConditionFilter_withMultipleClauseGroup = {
   _type: 'lambda',
   body: [
     {
@@ -589,7 +589,7 @@ export const lambda_groupConditionFilter_withMultipleClauseGroup = {
   parameters: [],
 };
 
-export const lambda_enumerationOperatorFilter = {
+export const TEST_DATA__lambda_enumerationOperatorFilter = {
   _type: 'lambda',
   body: [
     {
@@ -664,7 +664,7 @@ export const lambda_enumerationOperatorFilter = {
   parameters: [],
 };
 
-export const lambda_existsChainFilter = {
+export const TEST_DATA__lambda_existsChainFilter = {
   _type: 'lambda',
   body: [
     {
@@ -749,7 +749,7 @@ export const lambda_existsChainFilter = {
   parameters: [],
 };
 
-export const lambda_existsChainFilterWithCustomVariableName = {
+export const TEST_DATA__lambda_existsChainFilterWithCustomVariableName = {
   _type: 'lambda',
   body: [
     {

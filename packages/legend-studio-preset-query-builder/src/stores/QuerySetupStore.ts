@@ -77,12 +77,12 @@ export class ExistingQuerySetupState extends QuerySetupState {
       try {
         this.loadQueryState.inProgress();
         this.currentQuery =
-          (yield this.queryStore.editorStore.graphManagerState.graphManager.getLightQuery(
+          (yield this.queryStore.graphManagerState.graphManager.getLightQuery(
             queryId,
           )) as LightQuery;
       } catch (error: unknown) {
         assertErrorThrown(error);
-        this.queryStore.editorStore.applicationStore.notifyError(error);
+        this.queryStore.applicationStore.notifyError(error);
       } finally {
         this.loadQueryState.reset();
       }
@@ -101,7 +101,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
     this.loadQueriesState.inProgress();
     try {
       this.queries =
-        (yield this.queryStore.editorStore.graphManagerState.graphManager.getQueries(
+        (yield this.queryStore.graphManagerState.graphManager.getQueries(
           isValidSearchString ? searchText : undefined,
           this.showCurrentUserQueriesOnly,
           10,
@@ -110,7 +110,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.loadQueriesState.fail();
-      this.queryStore.editorStore.applicationStore.notifyError(error);
+      this.queryStore.applicationStore.notifyError(error);
     }
   }
 }
@@ -159,7 +159,7 @@ export class CreateQuerySetupState extends QuerySetupState {
 
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
     return this.currentMapping
-      ? this.queryStore.editorStore.runtimeOptions.filter((option) =>
+      ? this.queryStore.queryBuilderState.runtimeOptions.filter((option) =>
           option.value.runtimeValue.mappings
             .map((mappingReference) => mappingReference.value)
             .includes(guaranteeNonNullable(this.currentMapping)),
@@ -171,13 +171,13 @@ export class CreateQuerySetupState extends QuerySetupState {
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
-        (yield this.queryStore.editorStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
+        (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       ).map((project) => ProjectData.serialization.fromJson(project));
       this.loadProjectsState.pass();
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.loadProjectsState.fail();
-      this.queryStore.editorStore.applicationStore.notifyError(error);
+      this.queryStore.applicationStore.notifyError(error);
     }
   }
 }
@@ -228,40 +228,42 @@ export class ServiceQuerySetupState extends QuerySetupState {
   }
 
   get serviceExecutionOptions(): ServiceExecutionOption[] {
-    return this.queryStore.editorStore.serviceOptions.flatMap((option) => {
-      const service = option.value;
-      const serviceExecution = service.execution;
-      if (serviceExecution instanceof PureSingleExecution) {
-        return {
-          label: service.name,
-          value: {
-            service,
-          },
-        };
-      } else if (serviceExecution instanceof PureMultiExecution) {
-        return serviceExecution.executionParameters.map((parameter) => ({
-          label: `${service.name} [${parameter.key}]`,
-          value: {
-            service,
-            key: parameter.key,
-          },
-        }));
-      }
-      return [];
-    });
+    return this.queryStore.queryBuilderState.serviceOptions.flatMap(
+      (option) => {
+        const service = option.value;
+        const serviceExecution = service.execution;
+        if (serviceExecution instanceof PureSingleExecution) {
+          return {
+            label: service.name,
+            value: {
+              service,
+            },
+          };
+        } else if (serviceExecution instanceof PureMultiExecution) {
+          return serviceExecution.executionParameters.map((parameter) => ({
+            label: `${service.name} [${parameter.key}]`,
+            value: {
+              service,
+              key: parameter.key,
+            },
+          }));
+        }
+        return [];
+      },
+    );
   }
 
   *loadProjects(): GeneratorFn<void> {
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
-        (yield this.queryStore.editorStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
+        (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       ).map((project) => ProjectData.serialization.fromJson(project));
       this.loadProjectsState.pass();
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.loadProjectsState.fail();
-      this.queryStore.editorStore.applicationStore.notifyError(error);
+      this.queryStore.applicationStore.notifyError(error);
     }
   }
 }

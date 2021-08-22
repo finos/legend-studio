@@ -320,7 +320,7 @@ export class ConflictResolutionState {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.editorStore.changeDetectionState.stop();
-      yield flowResult(this.editorStore.graphState.precomputeHashes());
+      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),

@@ -70,14 +70,20 @@ export const QueryBuilderLambdaEditor = observer(
           matcher: (event: IKeyboardEvent): boolean =>
             event.keyCode === KeyCode.F9,
           action: (event: IKeyboardEvent): void => {
-            flowResult(
-              // TODO?: we can genericise this so we don't need to rely on `EditorStore`
-              queryBuilderState.editorStore.graphState.checkLambdaParsingError(
-                lambdaEditorState,
-                !disabled,
-                () => flowResult(queryBuilderState.compileQuery()),
-              ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
+            const handler = async (): Promise<void> => {
+              lambdaEditorState.clearErrors();
+              if (!disabled) {
+                await flowResult(
+                  lambdaEditorState.convertLambdaGrammarStringToObject(),
+                );
+                // abort action if parser error occurred
+                if (lambdaEditorState.parserError) {
+                  return;
+                }
+              }
+              await flowResult(queryBuilderState.compileQuery());
+            };
+            handler().catch(applicationStore.alertIllegalUnhandledError);
           },
         },
       ],

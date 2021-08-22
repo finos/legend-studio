@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
+import { action, makeAutoObservable } from 'mobx';
 import {
   getNullableFirstElement,
   isNonNullable,
@@ -30,57 +29,46 @@ import type {
   Runtime,
 } from '@finos/legend-graph';
 import {
-  EngineRuntime,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
-import type { EditorStore } from '@finos/legend-studio';
-import {
-  decorateRuntimeWithNewMapping,
-  RuntimeEditorState,
-} from '@finos/legend-studio';
 
 export class QueryBuilderSetupState {
-  editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
   _class?: Class;
   mapping?: Mapping;
-  runtime: Runtime;
-  runtimeEditorState?: RuntimeEditorState;
+  runtime?: Runtime;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
   onSave?: (lambda: RawLambda) => Promise<void>;
   showSetupPanel = true;
 
-  constructor(editorStore: EditorStore, queryBuilderState: QueryBuilderState) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
-      editorStore: false,
+      queryBuilderState: false,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
       setRuntime: action,
       setShowSetupPanel: action,
       setOnSaveQuery: action,
-      useCustomRuntime: action,
-      closeRuntimeEditor: action,
-      openRuntimeEditor: action,
     });
 
-    this.editorStore = editorStore;
     this.queryBuilderState = queryBuilderState;
-    this.runtime = new EngineRuntime();
   }
 
   get possibleMappings(): Mapping[] {
     const mappingsWithClassMapped =
-      this.editorStore.graphManagerState.graph.ownMappings.filter((mapping) =>
-        mapping.classMappings.some((cm) => cm.class.value === this._class),
+      this.queryBuilderState.graphManagerState.graph.ownMappings.filter(
+        (mapping) =>
+          mapping.classMappings.some((cm) => cm.class.value === this._class),
       );
     const resolvedMappingIncludes =
-      this.editorStore.graphManagerState.graph.ownMappings.filter((mapping) =>
-        mapping.allIncludedMappings.some((e) =>
-          mappingsWithClassMapped.includes(e),
-        ),
+      this.queryBuilderState.graphManagerState.graph.ownMappings.filter(
+        (mapping) =>
+          mapping.allIncludedMappings.some((e) =>
+            mappingsWithClassMapped.includes(e),
+          ),
       );
     return this._class
       ? uniq([...mappingsWithClassMapped, ...resolvedMappingIncludes])
@@ -89,7 +77,7 @@ export class QueryBuilderSetupState {
 
   get possibleRuntimes(): PackageableRuntime[] {
     return this._class && this.mapping
-      ? this.editorStore.graphManagerState.graph.ownRuntimes
+      ? this.queryBuilderState.graphManagerState.graph.ownRuntimes
           .map((packageableRuntime) =>
             packageableRuntime.runtimeValue.mappings.some((mapping) =>
               this.possibleMappings.includes(mapping.value),
@@ -111,7 +99,7 @@ export class QueryBuilderSetupState {
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
     this.queryBuilderState = queryBuilderState;
   }
-  setRuntime(val: Runtime): void {
+  setRuntime(val: Runtime | undefined): void {
     if (!this.runtimeIsReadOnly) {
       this.runtime = val;
     }
@@ -153,57 +141,9 @@ export class QueryBuilderSetupState {
           ),
         );
       } else {
-        this.useCustomRuntime();
+        // TODO?: we should consider if we allow people to use custom runtime here
+        this.setRuntime(undefined);
       }
-    }
-  }
-
-  *setup(
-    func: RawLambda,
-    mapping: Mapping | undefined,
-    runtime: Runtime,
-    onSave: (lambda: RawLambda) => Promise<void>,
-    disableCompile: boolean,
-  ): GeneratorFn<void> {
-    this.setMapping(mapping);
-    this.setRuntime(runtime);
-    this.queryBuilderState.initialize(func);
-    this.setOnSaveQuery(onSave);
-    yield flowResult(
-      this.queryBuilderState.setOpenQueryBuilder(true, {
-        disableCompile: disableCompile,
-      }),
-    );
-    this.setMappingIsReadOnly(true);
-    this.setRuntimeIsReadOnly(true);
-  }
-
-  closeRuntimeEditor(): void {
-    this.runtimeEditorState = undefined;
-  }
-
-  openRuntimeEditor(): void {
-    if (!(this.runtime instanceof RuntimePointer)) {
-      this.runtimeEditorState = new RuntimeEditorState(
-        this.editorStore,
-        this.runtime,
-        true,
-      );
-    }
-  }
-
-  useCustomRuntime(): void {
-    if (!this.runtimeIsReadOnly && this.mapping) {
-      const customRuntime = new EngineRuntime();
-      customRuntime.addMapping(
-        PackageableElementExplicitReference.create(this.mapping),
-      );
-      decorateRuntimeWithNewMapping(
-        customRuntime,
-        this.mapping,
-        this.editorStore.graphManagerState.graph,
-      );
-      this.setRuntime(customRuntime);
     }
   }
 }

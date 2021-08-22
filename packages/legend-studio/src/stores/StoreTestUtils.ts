@@ -184,7 +184,7 @@ export const TEST__checkBuildingElementsRoundtrip = async (
     TEST__excludeSectionIndex(entities),
   );
   // check hash
-  await flowResult(editorStore.graphState.precomputeHashes());
+  await flowResult(editorStore.graphManagerState.precomputeHashes());
   const protocolHashesIndex =
     await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
@@ -220,7 +220,7 @@ export const TEST__checkBuildingResolvedElements = async (
     TEST__excludeSectionIndex(resolvedEntities),
   );
   // check hash
-  await flowResult(editorStore.graphState.precomputeHashes());
+  await flowResult(editorStore.graphManagerState.precomputeHashes());
   const protocolHashesIndex =
     await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(

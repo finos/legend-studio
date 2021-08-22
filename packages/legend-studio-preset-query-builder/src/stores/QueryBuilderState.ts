@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, flowResult, observable, makeObservable } from 'mobx';
+import { action, flow, observable, makeObservable, computed } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -35,7 +35,14 @@ import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
 import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type { LambdaFunction } from '@finos/legend-graph';
+import type {
+  Class,
+  GraphManagerState,
+  LambdaFunction,
+  Mapping,
+  PackageableRuntime,
+  Service,
+} from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   CompilationError,
@@ -73,11 +80,16 @@ import {
   QueryBuilderFilterOperator_NotIn,
 } from './filterOperators/QueryBuilderFilterOperator_In';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
-import type { EditorStore } from '@finos/legend-studio';
-import { EditorExtensionState } from '@finos/legend-studio';
+import type {
+  ApplicationStore,
+  PackageableElementOption,
+} from '@finos/legend-studio';
+import { buildElementOption } from '@finos/legend-studio';
 
-export class QueryBuilderState extends EditorExtensionState {
-  editorStore: EditorStore;
+export class QueryBuilderState {
+  applicationStore: ApplicationStore;
+  graphManagerState: GraphManagerState;
+
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
   fetchStructureState: QueryBuilderFetchStructureState;
@@ -104,13 +116,13 @@ export class QueryBuilderState extends EditorExtensionState {
     new QueryBuilderFilterOperator_IsEmpty(),
     new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
-  openQueryBuilder = false;
   isCompiling = false;
   backdrop = false;
 
-  constructor(editorStore: EditorStore) {
-    super();
-
+  constructor(
+    applicationStore: ApplicationStore,
+    graphManagerState: GraphManagerState,
+  ) {
     makeObservable(this, {
       querySetupState: observable,
       explorerState: observable,
@@ -120,39 +132,30 @@ export class QueryBuilderState extends EditorExtensionState {
       resultState: observable,
       queryTextEditorState: observable,
       queryUnsupportedState: observable,
-      openQueryBuilder: observable,
       isCompiling: observable,
       backdrop: observable,
+      classOptions: computed,
+      mappingOptions: computed,
+      runtimeOptions: computed,
+      serviceOptions: computed,
       resetData: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
-      setOpenQueryBuilder: flow,
       compileQuery: flow,
     });
 
-    this.editorStore = editorStore;
-    this.querySetupState = new QueryBuilderSetupState(editorStore, this);
-    this.explorerState = new QueryBuilderExplorerState(editorStore, this);
-    this.fetchStructureState = new QueryBuilderFetchStructureState(
-      editorStore,
-      this,
-    );
-    this.filterState = new QueryBuilderFilterState(
-      editorStore,
-      this,
-      this.filterOperators,
-    );
-    this.resultSetModifierState = new QueryResultSetModifierState(
-      editorStore,
-      this,
-    );
-    this.resultState = new QueryBuilderResultState(editorStore, this);
-    this.queryTextEditorState = new QueryTextEditorState(editorStore, this);
-    this.queryUnsupportedState = new QueryBuilderUnsupportedState(
-      editorStore,
-      this,
-    );
+    this.applicationStore = applicationStore;
+    this.graphManagerState = graphManagerState;
+
+    this.querySetupState = new QueryBuilderSetupState(this);
+    this.explorerState = new QueryBuilderExplorerState(this);
+    this.fetchStructureState = new QueryBuilderFetchStructureState(this);
+    this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.resultSetModifierState = new QueryResultSetModifierState(this);
+    this.resultState = new QueryBuilderResultState(this);
+    this.queryTextEditorState = new QueryTextEditorState(this);
+    this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
   }
 
   setBackdrop(val: boolean): void {
@@ -169,74 +172,20 @@ export class QueryBuilderState extends EditorExtensionState {
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
-  /**
-   * When opening query builder, we ensure the graph compiles successfully
-   */
-  *setOpenQueryBuilder(
-    val: boolean,
-    options?: { disableCompile: boolean },
-  ): GeneratorFn<void> {
-    if (!this.editorStore.isInFormMode) {
-      return;
-    }
-    if (val === this.openQueryBuilder) {
-      return;
-    }
-    if (val) {
-      if (!options?.disableCompile) {
-        this.editorStore.setBlockingAlert({
-          message: 'Compiling graph before building query...',
-          showLoading: true,
-        });
-        yield flowResult(
-          this.editorStore.graphState.globalCompileInFormMode({
-            disableNotificationOnSuccess: true,
-          }),
-        );
-        this.editorStore.setBlockingAlert(undefined);
-      }
-      if (!this.editorStore.graphState.hasCompilationError) {
-        this.openQueryBuilder = val;
-      }
-      this.editorStore.setBlockGlobalHotkeys(true);
-      this.editorStore.setHotkeys([]);
-    } else {
-      this.openQueryBuilder = val;
-      this.editorStore.setBlockGlobalHotkeys(false);
-      this.editorStore.resetHotkeys();
-    }
-  }
-
   resetData(): void {
-    this.explorerState = new QueryBuilderExplorerState(this.editorStore, this);
-    const fetchStructureState = new QueryBuilderFetchStructureState(
-      this.editorStore,
-      this,
-    );
+    this.explorerState = new QueryBuilderExplorerState(this);
+    const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
     );
     this.fetchStructureState = fetchStructureState;
-    this.filterState = new QueryBuilderFilterState(
-      this.editorStore,
-      this,
-      this.filterOperators,
-    );
-    this.resultSetModifierState = new QueryResultSetModifierState(
-      this.editorStore,
-      this,
-    );
-    const resultState = new QueryBuilderResultState(this.editorStore, this);
+    this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.resultSetModifierState = new QueryResultSetModifierState(this);
+    const resultState = new QueryBuilderResultState(this);
     resultState.setPreviewLimit(this.resultState.previewLimit);
     this.resultState = resultState;
-    this.queryTextEditorState = new QueryTextEditorState(
-      this.editorStore,
-      this,
-    );
-    this.queryUnsupportedState = new QueryBuilderUnsupportedState(
-      this.editorStore,
-      this,
-    );
+    this.queryTextEditorState = new QueryTextEditorState(this);
+    this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
     this.explorerState.refreshTreeData();
     this.fetchStructureState.graphFetchTreeState.initialize();
   }
@@ -253,7 +202,7 @@ export class QueryBuilderState extends EditorExtensionState {
       this.resetData();
       assertErrorThrown(error);
       if (options?.notifyError) {
-        this.editorStore.applicationStore.notifyError(
+        this.applicationStore.notifyError(
           `Unable to initialize query builder: ${error.message}`,
         );
       }
@@ -272,11 +221,11 @@ export class QueryBuilderState extends EditorExtensionState {
     this.resetData();
     if (!rawLambda.isStub) {
       const valueSpec =
-        this.editorStore.graphManagerState.graphManager.buildValueSpecification(
-          this.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+        this.graphManagerState.graphManager.buildValueSpecification(
+          this.graphManagerState.graphManager.serializeRawValueSpecification(
             rawLambda,
           ),
-          this.editorStore.graphManagerState.graph,
+          this.graphManagerState.graph,
         );
       const compiledValueSpecification = guaranteeType(
         valueSpec,
@@ -295,16 +244,16 @@ export class QueryBuilderState extends EditorExtensionState {
 
   buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
     const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
-      this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+      this.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       ),
       undefined,
     );
     lambdaFunctionInstanceValue.values = [lambdaFunction];
     return guaranteeType(
-      this.editorStore.graphManagerState.graphManager.buildRawValueSpecification(
+      this.graphManagerState.graphManager.buildRawValueSpecification(
         lambdaFunctionInstanceValue,
-        this.editorStore.graphManagerState.graph,
+        this.graphManagerState.graph,
       ),
       RawLambda,
     );
@@ -318,7 +267,7 @@ export class QueryBuilderState extends EditorExtensionState {
         await onQuerySave(rawLambda);
       } catch (error: unknown) {
         assertErrorThrown(error);
-        this.editorStore.applicationStore.notifyError(
+        this.applicationStore.notifyError(
           `Unable to save query: ${error.message}`,
         );
       }
@@ -334,92 +283,118 @@ export class QueryBuilderState extends EditorExtensionState {
   }
 
   *compileQuery(): GeneratorFn<void> {
-    if (this.openQueryBuilder) {
-      if (!this.queryTextEditorState.mode) {
-        this.isCompiling = true;
-        this.clearCompilationError();
-        // form mode
-        try {
-          this.queryTextEditorState.setCompilationError(undefined);
-          // NOTE: retain the source information on the lambda in order to be able
-          // to pin-point compilation issue in form mode
-          (yield this.editorStore.graphManagerState.graphManager.getLambdaReturnType(
-            this.getQuery({ keepSourceInformation: true }),
-            this.editorStore.graphManagerState.graph,
-            { keepSourceInformation: true },
-          )) as string;
-          this.editorStore.applicationStore.notifySuccess(
-            'Compiled successfully',
+    if (!this.queryTextEditorState.mode) {
+      this.isCompiling = true;
+      this.clearCompilationError();
+      // form mode
+      try {
+        this.queryTextEditorState.setCompilationError(undefined);
+        // NOTE: retain the source information on the lambda in order to be able
+        // to pin-point compilation issue in form mode
+        (yield this.graphManagerState.graphManager.getLambdaReturnType(
+          this.getQuery({ keepSourceInformation: true }),
+          this.graphManagerState.graph,
+          { keepSourceInformation: true },
+        )) as string;
+        this.applicationStore.notifySuccess('Compiled successfully');
+      } catch (error: unknown) {
+        assertErrorThrown(error);
+        this.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+          error,
+        );
+        let fallbackToTextModeForDebugging = true;
+        // if compilation failed, we try to reveal the error in form mode,
+        // if even this fail, we will fall back to show it in text mode
+        if (error instanceof CompilationError && error.sourceInformation) {
+          fallbackToTextModeForDebugging =
+            !this.fetchStructureState.projectionState.revealCompilationError(
+              error,
+            );
+        }
+
+        // decide if we need to fall back to text mode for debugging
+        if (fallbackToTextModeForDebugging) {
+          this.applicationStore.notifyWarning(
+            'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
           );
-        } catch (error: unknown) {
-          assertErrorThrown(error);
-          this.editorStore.applicationStore.log.error(
+          this.queryTextEditorState.openModal(QueryTextEditorMode.TEXT);
+          // TODO: trigger another compilation to pin-point the issue
+          // since we're using the lambda editor right now, we are a little bit limitted
+          // in terms of the timing to do compilation (since we're using an `useEffect` to
+          // convert the lambda to grammar text), we might as well wait for the refactor
+          // of query builder text-mode
+          // See https://github.com/finos/legend-studio/issues/319
+        } else {
+          this.applicationStore.notifyWarning(
+            `Compilation failed: ${error.message}`,
+          );
+        }
+      } finally {
+        this.isCompiling = false;
+      }
+    } else if (this.queryTextEditorState.mode === QueryTextEditorMode.TEXT) {
+      this.isCompiling = true;
+      try {
+        this.queryTextEditorState.setCompilationError(undefined);
+        (yield this.graphManagerState.graphManager.getLambdaReturnType(
+          this.queryTextEditorState.rawLambdaState.lambda,
+          this.graphManagerState.graph,
+          { keepSourceInformation: true },
+        )) as string;
+        this.applicationStore.notifySuccess('Compiled successfully');
+      } catch (error: unknown) {
+        assertErrorThrown(error);
+        if (error instanceof CompilationError) {
+          this.applicationStore.log.error(
             LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
             error,
           );
-          let fallbackToTextModeForDebugging = true;
-          // if compilation failed, we try to reveal the error in form mode,
-          // if even this fail, we will fall back to show it in text mode
-          if (error instanceof CompilationError && error.sourceInformation) {
-            fallbackToTextModeForDebugging =
-              !this.fetchStructureState.projectionState.revealCompilationError(
-                error,
-              );
-          }
-
-          // decide if we need to fall back to text mode for debugging
-          if (fallbackToTextModeForDebugging) {
-            this.editorStore.applicationStore.notifyWarning(
-              'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
-            );
-            this.queryTextEditorState.openModal(QueryTextEditorMode.TEXT);
-            // TODO: trigger another compilation to pin-point the issue
-            // since we're using the lambda editor right now, we are a little bit limitted
-            // in terms of the timing to do compilation (since we're using an `useEffect` to
-            // convert the lambda to grammar text), we might as well wait for the refactor
-            // of query builder text-mode
-            // See https://github.com/finos/legend-studio/issues/319
-          } else {
-            this.editorStore.applicationStore.notifyWarning(
-              `Compilation failed: ${error.message}`,
-            );
-          }
-        } finally {
-          this.isCompiling = false;
-        }
-      } else if (this.queryTextEditorState.mode === QueryTextEditorMode.TEXT) {
-        this.isCompiling = true;
-        try {
-          this.queryTextEditorState.setCompilationError(undefined);
-          (yield this.editorStore.graphManagerState.graphManager.getLambdaReturnType(
-            this.queryTextEditorState.rawLambdaState.lambda,
-            this.editorStore.graphManagerState.graph,
-            { keepSourceInformation: true },
-          )) as string;
-          this.editorStore.applicationStore.notifySuccess(
-            'Compiled successfully',
+          this.applicationStore.notifyWarning(
+            `Compilaion failed: ${error.message}`,
           );
-        } catch (error: unknown) {
-          assertErrorThrown(error);
-          if (error instanceof CompilationError) {
-            this.editorStore.applicationStore.log.error(
-              LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
-              error,
-            );
-            this.editorStore.applicationStore.notifyWarning(
-              `Compilaion failed: ${error.message}`,
-            );
-            const errorElementCoordinates = extractSourceInformationCoordinates(
-              error.sourceInformation,
-            );
-            if (errorElementCoordinates) {
-              this.queryTextEditorState.setCompilationError(error);
-            }
+          const errorElementCoordinates = extractSourceInformationCoordinates(
+            error.sourceInformation,
+          );
+          if (errorElementCoordinates) {
+            this.queryTextEditorState.setCompilationError(error);
           }
-        } finally {
-          this.isCompiling = false;
         }
+      } finally {
+        this.isCompiling = false;
       }
     }
+  }
+
+  get classOptions(): PackageableElementOption<Class>[] {
+    return this.graphManagerState.graph.ownClasses
+      .concat(
+        this.graphManagerState.filterSystemElementOptions(
+          this.graphManagerState.graph.systemModel.ownClasses,
+        ),
+      )
+      .concat(this.graphManagerState.graph.dependencyManager.classes)
+      .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
+  }
+
+  get mappingOptions(): PackageableElementOption<Mapping>[] {
+    return this.graphManagerState.graph.ownMappings
+      .concat(this.graphManagerState.graph.dependencyManager.mappings)
+      .map((e) => buildElementOption(e) as PackageableElementOption<Mapping>);
+  }
+
+  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
+    return this.graphManagerState.graph.ownRuntimes
+      .concat(this.graphManagerState.graph.dependencyManager.runtimes)
+      .map(
+        (e) =>
+          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
+      );
+  }
+
+  get serviceOptions(): PackageableElementOption<Service>[] {
+    return this.graphManagerState.graph.ownServices
+      .concat(this.graphManagerState.graph.dependencyManager.services)
+      .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
   }
 }

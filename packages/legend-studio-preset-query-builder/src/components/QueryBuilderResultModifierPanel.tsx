@@ -111,7 +111,6 @@ const ColumnSortEditor = observer(
 const ColumnsSortEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const editorStore = queryBuilderState.editorStore;
     const resultModifier = queryBuilderState.resultSetModifierState;
     const sortColumns = resultModifier.sortColumns;
     const projectionState =
@@ -128,7 +127,7 @@ const ColumnsSortEditor = observer(
     const addValue = (): void => {
       if (projectionOptions.length > 0) {
         const sortColumn = new SortColumnState(
-          editorStore,
+          queryBuilderState,
           projectionOptions[0].value,
         );
         resultModifier.addSortColumn(sortColumn);

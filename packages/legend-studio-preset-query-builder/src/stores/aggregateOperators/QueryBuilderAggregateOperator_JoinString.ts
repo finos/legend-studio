@@ -96,7 +96,6 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
       )
     ) {
       const aggregateColumnState = new QueryBuilderAggregateColumnState(
-        projectionColumnState.editorStore,
         projectionColumnState.projectionState.aggregationState,
         projectionColumnState,
         this,

@@ -56,7 +56,7 @@ const ServiceExecutionModals = observer(
             paper: 'editor-modal__content',
           }}
         >
-          <div className="modal modal--dark editor-modal execution-plan-viewer">
+          <div className="modal modal--dark editor-modal">
             <div className="modal__header">
               <div className="modal__title">Execution Result</div>
             </div>

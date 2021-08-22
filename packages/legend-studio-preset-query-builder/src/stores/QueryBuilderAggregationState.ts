@@ -23,7 +23,6 @@ import type {
   ValueSpecification,
   VariableExpression,
 } from '@finos/legend-graph';
-import type { EditorStore } from '@finos/legend-studio';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 import type {
   QueryBuilderProjectionColumnState,
@@ -58,7 +57,8 @@ export abstract class QueryBuilderAggregateOperator {
             .propertyExpression
         : undefined,
       aggregateColumnState.lambdaParameterName,
-      aggregateColumnState.editorStore.graphManagerState.graph,
+      aggregateColumnState.aggregationState.projectionState.queryBuilderState
+        .graphManagerState.graph,
     );
   }
 
@@ -71,28 +71,24 @@ export abstract class QueryBuilderAggregateOperator {
 
 export class QueryBuilderAggregateColumnState {
   uuid = uuid();
-  editorStore: EditorStore;
   aggregationState: QueryBuilderAggregationState;
   projectionColumnState: QueryBuilderProjectionColumnState;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
   operator: QueryBuilderAggregateOperator;
 
   constructor(
-    editorStore: EditorStore,
     aggregationState: QueryBuilderAggregationState,
     projectionColumnState: QueryBuilderProjectionColumnState,
     operator: QueryBuilderAggregateOperator,
   ) {
     makeAutoObservable(this, {
       uuid: false,
-      editorStore: false,
       aggregationState: false,
       setColumnState: action,
       setLambdaParameterName: action,
       setOperator: action,
     });
 
-    this.editorStore = editorStore;
     this.aggregationState = aggregationState;
     this.projectionColumnState = projectionColumnState;
     this.operator = operator;
@@ -112,24 +108,20 @@ export class QueryBuilderAggregateColumnState {
 }
 
 export class QueryBuilderAggregationState {
-  editorStore: EditorStore;
   projectionState: QueryBuilderProjectionState;
   operators: QueryBuilderAggregateOperator[] = [];
   columns: QueryBuilderAggregateColumnState[] = [];
 
   constructor(
-    editorStore: EditorStore,
     projectionState: QueryBuilderProjectionState,
     operators: QueryBuilderAggregateOperator[],
   ) {
     makeAutoObservable(this, {
-      editorStore: false,
       projectionState: false,
       removeColumn: action,
       addColumn: action,
     });
 
-    this.editorStore = editorStore;
     this.projectionState = projectionState;
     this.operators = operators;
   }
@@ -160,7 +152,6 @@ export class QueryBuilderAggregationState {
         aggregateColumnState.setOperator(val);
       } else {
         const newAggregateColumnState = new QueryBuilderAggregateColumnState(
-          this.editorStore,
           this,
           projectionColumnState,
           val,

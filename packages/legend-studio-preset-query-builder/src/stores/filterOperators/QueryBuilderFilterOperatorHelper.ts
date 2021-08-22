@@ -55,13 +55,13 @@ export const buildPrimitiveInstanceValue = (
   value: unknown,
 ): PrimitiveInstanceValue => {
   const multiplicityOne =
-    filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+    filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   const instance = new PrimitiveInstanceValue(
     GenericTypeExplicitReference.create(
       new GenericType(
-        filterConditionState.editorStore.graphManagerState.graph.getPrimitiveType(
+        filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
           type,
         ),
       ),
@@ -87,7 +87,7 @@ const buildFilterConditionExpressionWithExists = (
   operatorFunctionFullPath: string,
 ): ValueSpecification => {
   const multiplicityOne =
-    filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+    filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   assertTrue(
@@ -192,7 +192,8 @@ const buildFilterConditionExpressionWithExists = (
     const existsLambda = buildGenericLambdaFunctionInstanceValue(
       existsLambdaVariable.name,
       [childSFE],
-      filterConditionState.editorStore.graphManagerState.graph,
+      filterConditionState.filterState.queryBuilderState.graphManagerState
+        .graph,
     );
     // add the child SFE lambda to the current SFE parameters
     currentSFE.parametersValues.push(existsLambda);
@@ -206,7 +207,7 @@ export const buildFilterConditionExpression = (
   operatorFunctionFullPath: string,
 ): ValueSpecification => {
   const multiplicityOne =
-    filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+    filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   if (filterConditionState.propertyExpressionState.requiresExistsHandling) {
@@ -313,7 +314,7 @@ const buildFilterConditionStateWithExists = (
 
     // 2. Build the property expression
     const multiplicityOne =
-      filterState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+      filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const initialPropertyExpression = guaranteeType(
@@ -355,7 +356,6 @@ const buildFilterConditionStateWithExists = (
 
     // 3. Build the filter condition state with the simplified property expression
     const filterConditionState = new FilterConditionState(
-      filterState.editorStore,
       filterState,
       propertyExpression,
     );
@@ -415,7 +415,6 @@ export const buildFilterConditionState = (
     );
 
     filterConditionState = new FilterConditionState(
-      filterState.editorStore,
       filterState,
       propertyExpression,
     );
@@ -459,7 +458,7 @@ export const buildNotExpression = (
   expression: ValueSpecification,
 ): ValueSpecification => {
   const multiplicityOne =
-    filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
+    filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   const expressionNot = new SimpleFunctionExpression(
@@ -505,7 +504,7 @@ export const getCollectionValueSpecificationType = (
         case PRIMITIVE_TYPE.STRING:
           addUniqueEntry(
             valuePrimitiveTypes,
-            filterConditionState.editorStore.graphManagerState.graph.getPrimitiveType(
+            filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.STRING,
             ),
           );
@@ -516,7 +515,7 @@ export const getCollectionValueSpecificationType = (
         case PRIMITIVE_TYPE.NUMBER:
           addUniqueEntry(
             valuePrimitiveTypes,
-            filterConditionState.editorStore.graphManagerState.graph.getPrimitiveType(
+            filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.NUMBER,
             ),
           );
