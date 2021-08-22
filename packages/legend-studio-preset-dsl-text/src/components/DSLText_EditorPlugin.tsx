@@ -35,10 +35,9 @@ import { Text } from '../models/metamodels/pure/model/packageableElements/Text';
 import { TextEditorState } from '../stores/TextEditorState';
 import { TextElementEditor } from './TextElementEditor';
 import type { PackageableElement } from '@finos/legend-graph';
+import { PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL } from '../models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
-const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
-const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
 
 export class DSLText_EditorPlugin
@@ -147,13 +146,5 @@ export class DSLText_EditorPlugin
         return undefined;
       },
     ];
-  }
-
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_TEXT_PARSER_NAME];
-  }
-
-  getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL];
   }
 }

@@ -22,4 +22,8 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
 
   getExtraPureGraphExtensionClasses?(): Clazz<PackageableElement>[];
+
+  getExtraPureGrammarParserNames?(): string[];
+
+  getExtraPureGrammarKeywords?(): string[];
 }

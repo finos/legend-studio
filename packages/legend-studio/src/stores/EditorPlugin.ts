@@ -181,9 +181,5 @@ export interface DSL_EditorPlugin_Extension extends EditorPlugin {
 
   getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 
-  getExtraPureGrammarParserNames?(): string[];
-
-  getExtraPureGrammarKeywords?(): string[];
-
   getExtraGrammarTextEditorDnDTypes?(): string[];
 }

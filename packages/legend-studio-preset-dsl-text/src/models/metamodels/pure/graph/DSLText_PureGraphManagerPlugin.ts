@@ -21,6 +21,9 @@ import type { StudioPluginManager } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
 import { PureGraphManagerPlugin } from '@finos/legend-graph';
 
+const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
+export const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
+
 export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(
@@ -35,5 +38,13 @@ export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
     return [Text];
+  }
+
+  override getExtraPureGrammarParserNames(): string[] {
+    return [PURE_GRAMMAR_TEXT_PARSER_NAME];
+  }
+
+  override getExtraPureGrammarKeywords(): string[] {
+    return [PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL];
   }
 }

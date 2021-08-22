@@ -49,16 +49,11 @@ import {
 import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { StudioPluginManager } from './StudioPluginManager';
-import type { DSL_EditorPlugin_Extension } from '../stores/EditorPlugin';
 import { configureComponents } from '@finos/legend-application-components';
 import { WebApplicationNavigatorProvider } from '../components/application/WebApplicationNavigatorProvider';
+import type { GraphPluginManager } from '@finos/legend-graph';
 
-// This is not considered side-effect that hinders tree-shaking because the effectful calls
-// are embedded in the function
-// See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
-export const setupLegendStudioUILibrary = async (
-  pluginManager: StudioPluginManager,
-): Promise<void> => {
+export const setupTextEdtiorAPI = (pluginManager: GraphPluginManager): void => {
   // Register Pure as a language in `monaco-editor`
   monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
   monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
@@ -70,23 +65,22 @@ export const setupLegendStudioUILibrary = async (
     EDITOR_LANGUAGE.PURE,
     generateLanguageMonarch(
       pluginManager
-        .getEditorPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_EditorPlugin_Extension
-            ).getExtraPureGrammarKeywords?.() ?? [],
-        ),
+        .getPureGraphManagerPlugins()
+        .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
       pluginManager
-        .getEditorPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_EditorPlugin_Extension
-            ).getExtraPureGrammarParserNames?.() ?? [],
-        ),
+        .getPureGraphManagerPlugins()
+        .flatMap((plugin) => plugin.getExtraPureGrammarParserNames?.() ?? []),
     ),
   );
+};
+
+// This is not considered side-effect that hinders tree-shaking because the effectful calls
+// are embedded in the function
+// See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
+export const setupLegendStudioUILibrary = async (
+  pluginManager: StudioPluginManager,
+): Promise<void> => {
+  setupTextEdtiorAPI(pluginManager);
 
   configureMobx({
     // Force state modification to be done via actions
