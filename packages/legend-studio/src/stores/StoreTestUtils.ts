@@ -23,6 +23,7 @@ import { StudioPluginManager } from '../application/StudioPluginManager';
 import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '@finos/legend-graph';
+import { TEST__getTestGraphManagerState } from '@finos/legend-graph';
 import { WebApplicationNavigator } from './application/WebApplicationNavigator';
 import { Log } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
@@ -85,6 +86,7 @@ export const TEST__getTestEditorStore = (
     applicationStore,
     TEST__getTestSDLCServerClient(),
     TEST__getTestDepotServerClient(),
+    TEST__getTestGraphManagerState(pluginManager),
     pluginManager,
   );
 };
@@ -152,10 +154,10 @@ export const TEST__buildGraphBasic = async (
   editorStore: EditorStore,
   options?: GraphBuilderOptions,
 ): Promise<void> => {
-  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(editorStore.graphManagerState.initializeSystem());
   await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       entities,
       options,
     ),
@@ -169,9 +171,10 @@ export const TEST__checkBuildingElementsRoundtrip = async (
   await TEST__buildGraphBasic(entities, editorStore, {
     TEMPORARY__keepSectionIndex: true,
   });
-  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
-    (element) => editorStore.graphState.graphManager.elementToEntity(element),
-  );
+  const transformedEntities =
+    editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+      editorStore.graphManagerState.graphManager.elementToEntity(element),
+    );
   // ensure that transformed entities have all fields ordered alphabetically
   transformedEntities.forEach((entity) =>
     TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
@@ -183,7 +186,7 @@ export const TEST__checkBuildingElementsRoundtrip = async (
   // check hash
   await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
-    await editorStore.graphState.graphManager.buildHashesIndex(entities);
+    await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
@@ -204,9 +207,10 @@ export const TEST__checkBuildingResolvedElements = async (
   editorStore = TEST__getTestEditorStore(),
 ): Promise<void> => {
   await TEST__buildGraphBasic(entities, editorStore);
-  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
-    (element) => editorStore.graphState.graphManager.elementToEntity(element),
-  );
+  const transformedEntities =
+    editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+      editorStore.graphManagerState.graphManager.elementToEntity(element),
+    );
   // ensure that transformed entities have all fields ordered alphabetically
   transformedEntities.forEach((entity) =>
     TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
@@ -218,7 +222,7 @@ export const TEST__checkBuildingResolvedElements = async (
   // check hash
   await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
-    await editorStore.graphState.graphManager.buildHashesIndex(entities);
+    await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );

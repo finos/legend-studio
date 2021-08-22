@@ -262,7 +262,7 @@ const ModelGenerationSpecifications = observer(
             plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
           ).getExtraModelGenerationElementGetters?.() ?? [],
       )
-      .flatMap((getter) => getter(editorStore.graphState.graph));
+      .flatMap((getter) => getter(editorStore.graphManagerState.graph));
     const extraModelGenerationSpecificationElementDnDTypes =
       editorStore.pluginManager
         .getEditorPlugins()
@@ -434,7 +434,7 @@ const FileGenerationSpecifications = observer(
         (f) => f.value,
       );
     const fileGenerationInGraph =
-      editorStore.graphState.graph.ownFileGenerations;
+      editorStore.graphManagerState.graph.ownFileGenerations;
     const fileGenerationsOptions = fileGenerationInGraph
       .filter((f) => !fileGenerations.includes(f))
       .map(

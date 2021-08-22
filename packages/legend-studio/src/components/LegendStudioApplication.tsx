@@ -54,6 +54,7 @@ import { useWebApplicationNavigator } from './application/WebApplicationNavigato
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { StudioStoreProvider, useStudioStore } from './StudioStoreProvider';
+import { GraphManagerStateProvider } from '@finos/legend-graph';
 
 export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useStudioStore();
@@ -259,11 +260,13 @@ export const LegendStudioApplication = observer(
               serverUrl: config.depotServerUrl,
             }}
           >
-            <StudioStoreProvider pluginManager={pluginManager}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendStudioApplicationRoot />
-              </ThemeProvider>
-            </StudioStoreProvider>
+            <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
+              <StudioStoreProvider pluginManager={pluginManager}>
+                <ThemeProvider theme={LegendMaterialUITheme}>
+                  <LegendStudioApplicationRoot />
+                </ThemeProvider>
+              </StudioStoreProvider>
+            </GraphManagerStateProvider>
           </DepotServerClientProvider>
         </SDLCServerClientProvider>
       </ApplicationStoreProvider>

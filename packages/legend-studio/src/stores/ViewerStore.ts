@@ -228,7 +228,7 @@ export class ViewerStore {
 
       // setup engine
       yield flowResult(
-        this.editorStore.graphState.graphManager.initialize(
+        this.editorStore.graphManagerState.graphManager.initialize(
           {
             env: this.editorStore.applicationStore.config.env,
             tabSize: TAB_SIZE,
@@ -247,7 +247,7 @@ export class ViewerStore {
         ),
       );
       // initialize graph manager
-      yield flowResult(this.editorStore.graphState.initializeSystem());
+      yield flowResult(this.editorStore.graphManagerState.initializeSystem());
       yield flowResult(
         this.editorStore.graphState.buildGraphForViewerMode(entities),
       );
@@ -259,7 +259,8 @@ export class ViewerStore {
 
       // generate
       if (
-        this.editorStore.graphState.graph.ownGenerationSpecifications.length
+        this.editorStore.graphManagerState.graph.ownGenerationSpecifications
+          .length
       ) {
         yield flowResult(
           this.editorStore.graphState.graphGenerationState.globalGenerate(),
@@ -268,13 +269,13 @@ export class ViewerStore {
 
       // open element if provided an element path
       if (
-        this.editorStore.graphState.graph.buildState.hasSucceeded &&
+        this.editorStore.graphManagerState.graph.buildState.hasSucceeded &&
         this.editorStore.sdlcState.currentProject &&
         this.editorStore.explorerTreeState.buildState.hasCompleted &&
         this.elementPath
       ) {
         try {
-          const element = this.editorStore.graphState.graph.getElement(
+          const element = this.editorStore.graphManagerState.graph.getElement(
             this.elementPath,
           );
           this.editorStore.openElement(element);

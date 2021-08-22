@@ -83,14 +83,14 @@ export const buildLambdaFunction = (
     'Class is required to build query',
   );
   const multiplicityOne =
-    queryBuilderState.editorStore.graphState.graph.getTypicalMultiplicity(
+    queryBuilderState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   const typeString =
-    queryBuilderState.editorStore.graphState.graph.getPrimitiveType(
+    queryBuilderState.editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
-  const typeAny = queryBuilderState.editorStore.graphState.graph.getType(
+  const typeAny = queryBuilderState.editorStore.graphManagerState.graph.getType(
     CORE_ELEMENT_PATH.ANY,
   );
   const lambdaFunction = new LambdaFunction(
@@ -173,7 +173,7 @@ export const buildLambdaFunction = (
                 projectionColumnState.propertyExpressionState
                   .propertyExpression,
               ],
-              queryBuilderState.editorStore.graphState.graph,
+              queryBuilderState.editorStore.graphManagerState.graph,
             );
           } else if (
             projectionColumnState instanceof
@@ -214,7 +214,7 @@ export const buildLambdaFunction = (
                   aggregateColumnState,
                 ),
               ],
-              aggregateColumnState.editorStore.graphState.graph,
+              aggregateColumnState.editorStore.graphManagerState.graph,
             );
             aggregateFunctionExpression.parametersValues = [
               columnLambda,
@@ -277,7 +277,7 @@ export const buildLambdaFunction = (
                 projectionColumnState.propertyExpressionState
                   .propertyExpression,
               ],
-              queryBuilderState.editorStore.graphState.graph,
+              queryBuilderState.editorStore.graphManagerState.graph,
             );
           } else if (
             projectionColumnState instanceof

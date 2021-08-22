@@ -958,7 +958,7 @@ export class MappingEditorState extends ElementEditorState {
             this.mapping,
             suggestedId,
             spec.target,
-            this.editorStore.graphState.graph.getPrimitiveType(
+            this.editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.STRING,
             ),
           );
@@ -1315,7 +1315,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *createNewTest(setImplementation: SetImplementation): GeneratorFn<void> {
     const query =
-      this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+      this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
         setImplementation.class.value,
       );
     const source = getMappingElementSource(setImplementation);

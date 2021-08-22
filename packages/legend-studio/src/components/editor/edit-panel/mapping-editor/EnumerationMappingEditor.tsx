@@ -68,8 +68,12 @@ const EnumerationMappingSourceSelectorModal = observer(
     const { enumerationMapping, closeModal, open } = props;
     const editorStore = useEditorStore();
     const options = [
-      editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER),
-      editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+      editorStore.graphManagerState.graph.getPrimitiveType(
+        PRIMITIVE_TYPE.INTEGER,
+      ),
+      editorStore.graphManagerState.graph.getPrimitiveType(
+        PRIMITIVE_TYPE.STRING,
+      ),
     ]
       .map(buildElementOption)
       .concat(editorStore.enumerationOptions);

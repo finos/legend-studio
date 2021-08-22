@@ -168,15 +168,15 @@ export class QueryBuilderDerivedPropertyExpressionState {
     if (Array.isArray(this.derivedProperty.parameters)) {
       this.parameters = this.derivedProperty.parameters.map((parameter) =>
         guaranteeType(
-          this.editorStore.graphState.graphManager.buildValueSpecification(
+          this.editorStore.graphManagerState.graphManager.buildValueSpecification(
             parameter,
-            this.editorStore.graphState.graph,
+            this.editorStore.graphManagerState.graph,
           ),
           VariableExpression,
         ),
       );
     }
-    fillDerivedPropertyArguments(this, editorStore.graphState.graph);
+    fillDerivedPropertyArguments(this, editorStore.graphManagerState.graph);
   }
 
   get property(): AbstractProperty {

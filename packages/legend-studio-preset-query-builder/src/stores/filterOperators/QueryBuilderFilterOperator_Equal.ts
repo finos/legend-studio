@@ -128,7 +128,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
         if (propertyType instanceof Enumeration) {
           if (propertyType.values.length > 0) {
             const multiplicityOne =
-              filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+              filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
                 TYPICAL_MULTIPLICITY_TYPE.ONE,
               );
             const enumValueInstanceValue = new EnumValueInstanceValue(

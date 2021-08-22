@@ -77,7 +77,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
       try {
         this.loadQueryState.inProgress();
         this.currentQuery =
-          (yield this.queryStore.editorStore.graphState.graphManager.getLightQuery(
+          (yield this.queryStore.editorStore.graphManagerState.graphManager.getLightQuery(
             queryId,
           )) as LightQuery;
       } catch (error: unknown) {
@@ -101,7 +101,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
     this.loadQueriesState.inProgress();
     try {
       this.queries =
-        (yield this.queryStore.editorStore.graphState.graphManager.getQueries(
+        (yield this.queryStore.editorStore.graphManagerState.graphManager.getQueries(
           isValidSearchString ? searchText : undefined,
           this.showCurrentUserQueriesOnly,
           10,

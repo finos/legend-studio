@@ -44,7 +44,7 @@ beforeAll(async () => {
 
 test(unitTest('Relational Mapping with property from association'), () => {
   // db
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   const database = graph.getDatabase(
     'apps::pure::studio::model::simple::dbInc',
   );

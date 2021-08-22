@@ -99,10 +99,8 @@ const ElementRenamer = observer(() => {
     element instanceof Package || path.includes(ELEMENT_PATH_DELIMITER);
   const isValidElementPath =
     (element instanceof Package && isValidPath(path)) || isValidFullPath(path);
-  const existingElement = editorStore.graphState.graph.getNullableElement(
-    path,
-    true,
-  );
+  const existingElement =
+    editorStore.graphManagerState.graph.getNullableElement(path, true);
   const isElementUnique = !existingElement || existingElement === element;
   const elementRenameValidationErrorMessage = !isElementPathNonEmpty
     ? `Element path cannot be empty`
@@ -203,7 +201,7 @@ const ExplorerContextMenu = observer(
       ? node.packageableElement instanceof Package
         ? node.packageableElement
         : undefined
-      : editorStore.graphState.graph.root;
+      : editorStore.graphManagerState.graph.root;
     const deleteElement = (): void => {
       if (node) {
         flowResult(editorStore.deleteElement(node.packageableElement)).catch(
@@ -260,7 +258,7 @@ const ExplorerContextMenu = observer(
       .filter(
         // NOTE: we can only create package in root
         (type) =>
-          _package !== editorStore.graphState.graph.root ||
+          _package !== editorStore.graphManagerState.graph.root ||
           type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
       );
 
@@ -469,7 +467,7 @@ const ExplorerDropdownMenu = observer(
       .filter(
         // NOTE: we can only create package in root
         (type) =>
-          _package !== editorStore.graphState.graph.root ||
+          _package !== editorStore.graphManagerState.graph.root ||
           type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
       );
 
@@ -496,7 +494,7 @@ const ExplorerTrees = observer(() => {
   const { isInGrammarTextMode, isInViewerMode } = editorStore;
   const openModelLoader = (): void =>
     editorStore.openSingletonEditorState(editorStore.modelLoaderState);
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   // Explorer tree
   const treeData = editorStore.explorerTreeState.getTreeData();
   const selectedTreeNode = editorStore.explorerTreeState.selectedNode;
@@ -598,7 +596,7 @@ const ExplorerTrees = observer(() => {
               <ProjectConfig />
               {/* SYSTEM TREE */}
               {Boolean(
-                editorStore.graphState.systemModel.allOwnElements.length,
+                editorStore.graphManagerState.systemModel.allOwnElements.length,
               ) && (
                 <TreeView
                   components={{
@@ -775,11 +773,11 @@ export const Explorer = observer(() => {
     ((!editorStore.explorerTreeState.buildState.hasCompleted &&
       !editorStore.isInGrammarTextMode) ||
       editorStore.graphState.isUpdatingGraph) &&
-    !editorStore.graphState.graph.buildState.hasFailed;
+    !editorStore.graphManagerState.graph.buildState.hasFailed;
   const showExplorerTrees =
     sdlcState.currentProject &&
     sdlcState.currentWorkspace &&
-    editorStore.graphState.graph.buildState.hasSucceeded &&
+    editorStore.graphManagerState.graph.buildState.hasSucceeded &&
     editorStore.explorerTreeState.buildState.hasCompleted;
   // conflict resolution
   const showConflictResolutionContent =
@@ -873,7 +871,7 @@ export const Explorer = observer(() => {
                 <PanelLoadingIndicator isLoading={isLoading} />
                 {showExplorerTrees && <ExplorerTrees />}
                 {!showExplorerTrees &&
-                  editorStore.graphState.graph.buildState.hasFailed && (
+                  editorStore.graphManagerState.graph.buildState.hasFailed && (
                     <BlankPanelContent>
                       <div className="explorer__content__failure-notice">
                         <div className="explorer__content__failure-notice__icon">

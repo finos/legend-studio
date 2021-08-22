@@ -68,10 +68,10 @@ test(
         entities: TEST_DATA__ComplexRelationalModel,
       },
     );
-    const _personClass = mockedEditorStore.graphState.graph.getClass(
+    const _personClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Person',
     );
-    const _firmClass = mockedEditorStore.graphState.graph.getClass(
+    const _firmClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Firm',
     );
     MOBX__enableSpyOrMock();
@@ -97,7 +97,7 @@ test(
       treeData.nodes.get(treeData.rootIds[0]),
       QueryBuilderExplorerTreeRootNodeData,
     );
-    const mapping = mockedEditorStore.graphState.graph.getMapping(
+    const mapping = mockedEditorStore.graphManagerState.graph.getMapping(
       'model::relational::tests::simpleRelationalMapping',
     );
     expect(getRootSetImplementation(mapping, _personClass)).toBe(
@@ -353,10 +353,10 @@ test(
         entities: TEST_DATA__ComplexM2MModel,
       },
     );
-    const _personClass = mockedEditorStore.graphState.graph.getClass(
+    const _personClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::target::NPerson',
     );
-    const _firmClass = mockedEditorStore.graphState.graph.getClass(
+    const _firmClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::target::NFirm',
     );
     MOBX__enableSpyOrMock();

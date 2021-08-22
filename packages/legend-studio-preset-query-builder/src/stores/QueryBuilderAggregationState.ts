@@ -58,7 +58,7 @@ export abstract class QueryBuilderAggregateOperator {
             .propertyExpression
         : undefined,
       aggregateColumnState.lambdaParameterName,
-      aggregateColumnState.editorStore.graphState.graph,
+      aggregateColumnState.editorStore.graphManagerState.graph,
     );
   }
 

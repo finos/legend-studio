@@ -202,8 +202,8 @@ export class ServiceRegistrationState {
           : undefined;
       const projectId = this.editorStore.sdlcState.currentProjectId;
       const serviceRegistrationResult =
-        (yield this.editorStore.graphState.graphManager.registerService(
-          this.editorStore.graphState.graph,
+        (yield this.editorStore.graphManagerState.graphManager.registerService(
+          this.editorStore.graphManagerState.graph,
           this.serviceEditorState.service,
           projectId,
           serverUrl,
@@ -211,7 +211,7 @@ export class ServiceRegistrationState {
           versionInput,
         )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
-        yield this.editorStore.graphState.graphManager.activateService(
+        yield this.editorStore.graphManagerState.graphManager.activateService(
           serverUrl,
           serviceRegistrationResult.serviceInstanceId,
         );

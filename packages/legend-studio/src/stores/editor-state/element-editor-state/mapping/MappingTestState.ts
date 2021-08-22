@@ -133,7 +133,7 @@ export class MappingTestQueryState extends LambdaEditorState {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -210,14 +210,14 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new JsonModelConnection(
       PackageableElementExplicitReference.create(
-        this.editorStore.graphState.graph.modelStore,
+        this.editorStore.graphManagerState.graph.modelStore,
       ),
       PackageableElementExplicitReference.create(
         this.inputData.sourceClass.value,
@@ -243,7 +243,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -558,8 +558,8 @@ export class MappingTestState {
       const runtime = this.inputDataState.runtime;
       this.isExecutingTest = true;
       const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
-          this.editorStore.graphState.graph,
+        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+          this.editorStore.graphManagerState.graph,
           this.mappingEditorState.mapping,
           query,
           runtime,
@@ -612,8 +612,8 @@ export class MappingTestState {
       const runtime = this.inputDataState.runtime;
       this.isRunningTest = true;
       const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
-          this.editorStore.graphState.graph,
+        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+          this.editorStore.graphManagerState.graph,
           this.mappingEditorState.mapping,
           this.test.query,
           runtime,

@@ -42,11 +42,12 @@ beforeAll(async () => {
 });
 
 test(unitTest('Graph has been initialized properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   expect(graph.buildState.hasSucceeded).toBeTruthy();
   expect(
-    Array.from(editorStore.graphState.coreModel.multiplicitiesIndex.values())
-      .length,
+    Array.from(
+      editorStore.graphManagerState.coreModel.multiplicitiesIndex.values(),
+    ).length,
   ).toBeGreaterThan(0);
   Object.values(PRIMITIVE_TYPE).forEach((primitiveType) =>
     expect(graph.getPrimitiveType(primitiveType)).toBeDefined(),
@@ -54,7 +55,7 @@ test(unitTest('Graph has been initialized properly'), () => {
 });
 
 test(unitTest('Enumeration is loaded properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   const pureEnum = graph.getEnumeration('ui::TestEnumeration');
   expect(pureEnum.values).toHaveLength(3);
   pureEnum.values.forEach((val) => expect(val instanceof Enum).toBeTruthy());
@@ -67,7 +68,7 @@ test(unitTest('Enumeration is loaded properly'), () => {
 });
 
 test(unitTest('Class is loaded properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   const testClass = graph.getClass('ui::TestClass');
   const stereotype = testClass.stereotypes[0].value;
   expect(
@@ -96,7 +97,7 @@ test(unitTest('Class is loaded properly'), () => {
 });
 
 test(unitTest('Mapping is loaded properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   const simpleMapping = graph.getMapping('ui::testMapping');
   expect(simpleMapping.classMappings).toHaveLength(3);
   const targetClass = graph.getClass('ui::test1::Target_Something');
@@ -127,7 +128,7 @@ test(unitTest('Mapping is loaded properly'), () => {
 });
 
 test(unitTest('Diagram is loaded properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   const assertClassInGraph = (_class: Class): void =>
     expect(_class).toEqual(graph.getClass(_class.path));
   const simpleDiagram = graph.getDiagram('ui::testDiagram');

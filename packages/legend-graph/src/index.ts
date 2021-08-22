@@ -169,6 +169,9 @@ export * from './graph/PureGraphExtension';
 // --------------------------------------------- GRAPH MANAGER --------------------------------------------------
 
 export type { GraphPluginManager } from './GraphPluginManager';
+export { GraphManagerState } from './GraphManagerState';
+export * from './GraphManagerStateProvider';
+export * from './GraphManagerTestUtils';
 export type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager';
 export { AbstractPureGraphManager } from './graphManager/AbstractPureGraphManager';
 export * from './graphManager/GraphManagerUtils';

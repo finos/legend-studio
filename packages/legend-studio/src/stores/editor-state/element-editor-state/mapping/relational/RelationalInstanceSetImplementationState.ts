@@ -83,7 +83,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     if (this.lambdaString) {
       try {
         const operation =
-          (yield this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToRelationalOperationElement(
             this.fullLambdaString,
             this.lambdaId,
           )) as RawRelationalOperationElement | undefined;
@@ -118,7 +118,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
             this.propertyMapping.relationalOperation,
           );
           const operationsInText =
-            (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+            (yield this.editorStore.graphManagerState.graphManager.relationalOperationElementToPureCode(
               operations,
             )) as Map<string, string>;
           const grammarText = operationsInText.get(this.lambdaId);
@@ -323,7 +323,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
       this.isConvertingTransformLambdaObjects = true;
       try {
         const operationsInText =
-          (yield this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.relationalOperationElementToPureCode(
             operations,
           )) as Map<string, string>;
         operationsInText.forEach((grammarText, key) => {

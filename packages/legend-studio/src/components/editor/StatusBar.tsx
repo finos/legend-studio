@@ -59,7 +59,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     flowResult(editorStore.localChangesState.syncWithWorkspace()),
   );
   const syncStatusText =
-    editorStore.graphState.graph.buildState.hasFailed ||
+    editorStore.graphManagerState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
       : !editorStore.changeDetectionState.isChangeDetectionRunning
@@ -82,7 +82,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     flowResult(editorStore.conflictResolutionState.acceptConflictResolution()),
   );
   const conflictResolutionStatusText =
-    editorStore.graphState.graph.buildState.hasFailed ||
+    editorStore.graphManagerState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
       : !editorStore.changeDetectionState.isChangeDetectionRunning
@@ -244,7 +244,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           disabled={
             editorStore.graphState.isApplicationUpdateOperationIsRunning ||
             actionsDisabled ||
-            !editorStore.graphState.graph.ownGenerationSpecifications.length
+            !editorStore.graphManagerState.graph.ownGenerationSpecifications
+              .length
           }
           onClick={generate}
           tabIndex={-1}

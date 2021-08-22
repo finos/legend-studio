@@ -157,7 +157,7 @@ export class GraphGenerationState {
   *fetchAvailableFileGenerationDescriptions(): GeneratorFn<void> {
     try {
       const availableFileGenerationDescriptions =
-        (yield this.editorStore.graphState.graphManager.getAvailableGenerationConfigurationDescriptions()) as GenerationConfigurationDescription[];
+        (yield this.editorStore.graphManagerState.graphManager.getAvailableGenerationConfigurationDescriptions()) as GenerationConfigurationDescription[];
       this.setFileGenerationConfigurations(availableFileGenerationDescriptions);
       this.editorStore.elementGenerationStates =
         this.fileGenerationConfigurations.map(
@@ -205,7 +205,7 @@ export class GraphGenerationState {
     try {
       this.generatedEntities = new Map<string, Entity[]>(); // reset the map of generated entities
       const generationSpecs =
-        this.editorStore.graphState.graph.ownGenerationSpecifications;
+        this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -220,9 +220,9 @@ export class GraphGenerationState {
         let generatedEntities: Entity[] = [];
         try {
           generatedEntities =
-            (yield this.editorStore.graphState.graphManager.generateModel(
+            (yield this.editorStore.graphManagerState.graphManager.generateModel(
               node.generationElement.value,
-              this.editorStore.graphState.graph,
+              this.editorStore.graphManagerState.graph,
             )) as Entity[];
         } catch (error: unknown) {
           assertErrorThrown(error);
@@ -263,7 +263,7 @@ export class GraphGenerationState {
       this.emptyFileGeneration();
       const generationResultMap = new Map<string, GenerationOutput[]>();
       const generationSpecs =
-        this.editorStore.graphState.graph.ownGenerationSpecifications;
+        this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -281,11 +281,12 @@ export class GraphGenerationState {
             this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
               fileGeneration.value.type,
             ).generationMode;
-          result = (yield this.editorStore.graphState.graphManager.generateFile(
-            fileGeneration.value,
-            mode,
-            this.editorStore.graphState.graph,
-          )) as GenerationOutput[];
+          result =
+            (yield this.editorStore.graphManagerState.graphManager.generateFile(
+              fileGeneration.value,
+              mode,
+              this.editorStore.graphManagerState.graph,
+            )) as GenerationOutput[];
         } catch (error: unknown) {
           assertErrorThrown(error);
           throw new Error(
@@ -326,7 +327,10 @@ export class GraphGenerationState {
    * 2. there exists a generation element
    */
   addMissingGenerationSpecifications(): void {
-    if (!this.editorStore.graphState.graph.ownGenerationSpecifications.length) {
+    if (
+      !this.editorStore.graphManagerState.graph.ownGenerationSpecifications
+        .length
+    ) {
       const modelGenerationElements = this.editorStore.pluginManager
         .getPureGraphManagerPlugins()
         .flatMap(
@@ -335,9 +339,9 @@ export class GraphGenerationState {
               plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
             ).getExtraModelGenerationElementGetters?.() ?? [],
         )
-        .flatMap((getter) => getter(this.editorStore.graphState.graph));
+        .flatMap((getter) => getter(this.editorStore.graphManagerState.graph));
       const fileGenerations =
-        this.editorStore.graphState.graph.ownFileGenerations;
+        this.editorStore.graphManagerState.graph.ownFileGenerations;
       if (modelGenerationElements.length || fileGenerations.length) {
         const generationSpec = new GenerationSpecification(
           DEFAULT_GENERATION_SPECIFICATION_NAME,
@@ -352,7 +356,7 @@ export class GraphGenerationState {
           [...modelGenerationElements, ...fileGenerations][0].package,
         );
         specPackage.addElement(generationSpec);
-        this.editorStore.graphState.graph.addElement(generationSpec);
+        this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
     }
   }
@@ -375,7 +379,9 @@ export class GraphGenerationState {
     const generationResultMap = new Map<string, GenerationOutputResult>();
     Array.from(fileGenerationOutputMap.entries()).forEach((entry) => {
       const fileGeneration =
-        this.editorStore.graphState.graph.getNullableFileGeneration(entry[0]);
+        this.editorStore.graphManagerState.graph.getNullableFileGeneration(
+          entry[0],
+        );
       const rootFolder =
         fileGeneration?.generationOutputPath ??
         fileGeneration?.path.split(ELEMENT_PATH_DELIMITER).join('_');

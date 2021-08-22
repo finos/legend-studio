@@ -174,35 +174,38 @@ const testDependencyElements = async (
       'getProjectVersionsDependencyEntities',
     )
     .mockResolvedValue(dependencyEntities);
-  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(editorStore.graphManagerState.initializeSystem());
   const dependencyManager = new DependencyManager([]);
   const dependencyEntitiesMap = await flowResult(
     editorStore.graphState.getConfigurationProjectDependencyEntities(),
   );
-  editorStore.graphState.graph.setDependencyManager(dependencyManager);
+  editorStore.graphManagerState.graph.setDependencyManager(dependencyManager);
   await flowResult(
-    editorStore.graphState.graphManager.buildDependencies(
-      editorStore.graphState.coreModel,
-      editorStore.graphState.systemModel,
+    editorStore.graphManagerState.graphManager.buildDependencies(
+      editorStore.graphManagerState.coreModel,
+      editorStore.graphManagerState.systemModel,
       dependencyManager,
       dependencyEntitiesMap,
     ),
   );
   await waitFor(() =>
     expect(
-      editorStore.graphState.graph.dependencyManager.buildState.hasSucceeded,
+      editorStore.graphManagerState.graph.dependencyManager.buildState
+        .hasSucceeded,
     ).toBeTrue(),
   );
 
   await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       entities,
       { TEMPORARY__keepSectionIndex: true },
     ),
   );
   await waitFor(() =>
-    expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
+    expect(
+      editorStore.graphManagerState.graph.buildState.hasSucceeded,
+    ).toBeTrue(),
   );
   Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
@@ -220,25 +223,28 @@ const testDependencyElements = async (
       element,
       `element ${e} not found in dependency manager`,
     );
-    const elementInGraph = editorStore.graphState.graph.getElement(e);
+    const elementInGraph = editorStore.graphManagerState.graph.getElement(e);
     guaranteeNonNullable(
       elementInGraph,
       `element ${e} not found in main graph`,
     );
-    const elementInMainGraph = editorStore.graphState.graph.allOwnElements.find(
-      (el) => el.path === e,
-    );
+    const elementInMainGraph =
+      editorStore.graphManagerState.graph.allOwnElements.find(
+        (el) => el.path === e,
+      );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
     expect(elementInGraph.isReadOnly).toBeTrue();
   });
   if (includeDependencyInFileGenerationScopeElements) {
     const fileGeneration = guaranteeNonNullable(
-      editorStore.graphState.graph.getOwnFileGeneration(FILE_GENERATION_PATH),
+      editorStore.graphManagerState.graph.getOwnFileGeneration(
+        FILE_GENERATION_PATH,
+      ),
     );
     dependencyElementPaths.forEach((e) => {
       const elementInGraph = guaranteeNonNullable(
-        editorStore.graphState.graph.getElement(e),
+        editorStore.graphManagerState.graph.getElement(e),
       );
       expect(
         fileGeneration.scopeElements.find(
@@ -249,9 +255,10 @@ const testDependencyElements = async (
       ).toBeDefined();
     });
   }
-  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
-    (el) => editorStore.graphState.graphManager.elementToEntity(el),
-  );
+  const transformedEntities =
+    editorStore.graphManagerState.graph.allOwnElements.map((el) =>
+      editorStore.graphManagerState.graphManager.elementToEntity(el),
+    );
   expect(entities).toIncludeSameMembers(transformedEntities);
   // Ensure dependency elements are not transformed
   for (const entityPath of dependencyElementPaths) {

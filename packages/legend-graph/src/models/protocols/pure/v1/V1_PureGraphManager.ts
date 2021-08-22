@@ -140,8 +140,6 @@ import { V1_Protocol } from './model/V1_Protocol';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
 import { V1_GraphBuilderExtensions } from './transformation/pureGraph/to/V1_GraphBuilderExtensions';
-import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin';
-import type { PureGraphManagerPlugin } from '../../../../graphManager/PureGraphManagerPlugin';
 import type {
   DatabaseBuilderInput,
   DatabasePattern,
@@ -200,6 +198,7 @@ import {
   SystemGraphBuilderError,
 } from '../../../../graphManager/GraphManagerUtils';
 import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference';
+import type { GraphPluginManager } from '../../../../GraphPluginManager';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -363,15 +362,10 @@ export interface V1_EngineSetupConfig {
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
   engine!: V1_Engine;
-  log: Log;
   extensions: V1_GraphBuilderExtensions;
 
-  constructor(
-    pureGraphManagerPlugins: PureGraphManagerPlugin[],
-    pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
-    log: Log,
-  ) {
-    super(pureGraphManagerPlugins, pureProtocolProcessorPlugins);
+  constructor(pluginManager: GraphPluginManager, log: Log) {
+    super(pluginManager, log);
 
     makeObservable<
       V1_PureGraphManager,
@@ -407,16 +401,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildGenerationSpecificationss: flow,
     });
 
-    this.log = log;
     // setup plugins
     this.extensions = new V1_GraphBuilderExtensions(
-      this.pureProtocolProcessorPlugins,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     // setup (de)serializer using plugins
     V1_setupPureModelContextDataSerialization(
-      this.pureProtocolProcessorPlugins,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     );
-    V1_setupDatabaseSerialization(this.pureProtocolProcessorPlugins);
+    V1_setupDatabaseSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
   }
 
   TEMP__getEngineConfig(): TEMP__AbstractEngineConfig {
@@ -425,14 +420,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   *initialize(
     config: TEMP__EngineSetupConfig,
-    plugins: {
+    options: {
       tracerServicePlugins?: TracerServicePlugin<unknown>[];
     },
   ): GeneratorFn<void> {
     this.engine = new V1_Engine(config.clientConfig, this.log);
     this.engine
       .getEngineServerClient()
-      .registerTracerServicePlugins(plugins.tracerServicePlugins ?? []);
+      .registerTracerServicePlugins(options.tracerServicePlugins ?? []);
     yield this.engine.setup(config);
   }
 
@@ -450,9 +445,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graph = new PureModel(
       coreModel,
       systemModel,
-      this.pureGraphManagerPlugins.flatMap(
-        (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-      ),
+      this.pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+        ),
     );
     try {
       const systemData = new V1_PureModelContextData();
@@ -465,7 +462,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
          */
         V1_deserializePureModelContextData(V1_CORE_SYSTEM_MODELS)
           .elements.concat(
-            this.pureProtocolProcessorPlugins
+            this.pluginManager
+              .getPureProtocolProcessorPlugins()
               .flatMap((plugin) => plugin.V1_getExtraSystemModels?.() ?? [])
               .flatMap(
                 (modelContextData) =>
@@ -474,7 +472,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           )
           .map((element) => this.elementProtocolToEntity(element)),
         systemData,
-        this.pureProtocolProcessorPlugins,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
       );
       const systemGraphBuilderInput = [
         {
@@ -527,9 +525,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graph = new PureModel(
       coreModel,
       systemModel,
-      this.pureGraphManagerPlugins.flatMap(
-        (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-      ),
+      this.pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+        ),
     );
     graph.setDependencyManager(dependencyManager);
     try {
@@ -544,7 +544,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             return V1_entitiesToPureModelContextData(
               entities,
               projectModelData,
-              this.pureProtocolProcessorPlugins,
+              this.pluginManager.getPureProtocolProcessorPlugins(),
             );
           },
         ),
@@ -641,7 +641,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       yield V1_entitiesToPureModelContextData(
         entities,
         data,
-        this.pureProtocolProcessorPlugins,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
       );
 
       const graphBuilderInput: V1_GraphBuilderInput[] = [
@@ -894,7 +894,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             return V1_entitiesToPureModelContextData(
               entities,
               generatedData,
-              this.pureProtocolProcessorPlugins,
+              this.pluginManager.getPureProtocolProcessorPlugins(),
             );
           },
         ),
@@ -1565,7 +1565,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<Map<string, string>> {
     return this.engine.transformLambdasToCode(
       lambdas,
-      this.pureProtocolProcessorPlugins,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
       pretty,
     );
   }
@@ -1627,7 +1627,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       lambda.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
           new V1_GraphTransformerContextBuilder(
-            this.pureProtocolProcessorPlugins,
+            this.pluginManager.getPureProtocolProcessorPlugins(),
           )
             .withKeepSourceInformationFlag(
               Boolean(options?.keepSourceInformation),
@@ -1677,12 +1677,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<Entity[]> {
     const model = this.getFullGraphModelData(graph);
     let generatedModel: V1_PureModelContextData | undefined = undefined;
-    const extraModelGenerators = this.pureProtocolProcessorPlugins.flatMap(
-      (plugin) =>
-        (
-          plugin as DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension
-        ).V1_getExtraModelGenerators?.() ?? [],
-    );
+    const extraModelGenerators = this.pluginManager
+      .getPureProtocolProcessorPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraModelGenerators?.() ?? [],
+      );
     for (const generator of extraModelGenerators) {
       const _model = await generator(generationElement, model, this.engine);
       if (_model) {
@@ -1758,7 +1760,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       metamodel.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
           new V1_GraphTransformerContextBuilder(
-            this.pureProtocolProcessorPlugins,
+            this.pluginManager.getPureProtocolProcessorPlugins(),
           ).build(),
         ),
       ),
@@ -1848,7 +1850,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graphData = this.getFullGraphModelData(graph);
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
-    const extraExecutionElements = this.pureProtocolProcessorPlugins
+    const extraExecutionElements = this.pluginManager
+      .getPureProtocolProcessorPlugins()
       .flatMap((element) => element.V1_getExtraExecutionInputGetters?.() ?? [])
       .flatMap((getter) => getter(graph, mapping, runtime, graphData));
     prunedGraphData.elements = graphData.elements
@@ -1873,14 +1876,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     executeInput.function = V1_transformRawLambda(
       lambda,
       new V1_GraphTransformerContextBuilder(
-        this.pureProtocolProcessorPlugins,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
       ).build(),
     );
     executeInput.mapping = mapping.path;
     executeInput.runtime = V1_transformRuntime(
       runtime,
       new V1_GraphTransformerContextBuilder(
-        this.pureProtocolProcessorPlugins,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
       ).build(),
     );
     executeInput.model = prunedGraphData;
@@ -1956,7 +1959,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       V1_transformExecutionPlan(
         executionPlan,
         new V1_GraphTransformerContextBuilder(
-          this.pureProtocolProcessorPlugins,
+          this.pluginManager.getPureProtocolProcessorPlugins(),
         ).build(),
       ),
     );
@@ -1969,7 +1972,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       V1_transformExecutionNode(
         executionNode,
         new V1_GraphTransformerContextBuilder(
-          this.pureProtocolProcessorPlugins,
+          this.pluginManager.getPureProtocolProcessorPlugins(),
         ).build(),
       ),
     );
@@ -2163,7 +2166,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await V1_entitiesToPureModelContextData(
       entities,
       pureModelContextData,
-      this.pureProtocolProcessorPlugins,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     await Promise.all(
       pureModelContextData.elements.map((element) =>
@@ -2215,9 +2218,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         // file generation
         'typeSourceInformation',
       ].concat(
-        this.pureProtocolProcessorPlugins.flatMap(
-          (plugin) => plugin.V1_getExtraSourceInformationKeys?.() ?? [],
-        ),
+        this.pluginManager
+          .getPureProtocolProcessorPlugins()
+          .flatMap(
+            (plugin) => plugin.V1_getExtraSourceInformationKeys?.() ?? [],
+          ),
       ),
     );
 
@@ -2243,7 +2248,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await V1_entitiesToPureModelContextData(
       entities,
       graphData,
-      this.pureProtocolProcessorPlugins,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     return graphData;
   }
@@ -2269,8 +2274,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): T =>
     element.accept_PackageableElementVisitor(
       new V1_PackageableElementTransformer(
-        this.pureProtocolProcessorPlugins,
-        new V1_GraphTransformerContextBuilder(this.pureProtocolProcessorPlugins)
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+        new V1_GraphTransformerContextBuilder(
+          this.pluginManager.getPureProtocolProcessorPlugins(),
+        )
           .withKeepSourceInformationFlag(
             Boolean(options?.keepSourceInformation),
           )
@@ -2290,7 +2297,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Entity => ({
     path: this.getElementPath(elementProtocol),
     content: elementProtocol.accept_PackageableElementVisitor(
-      new V1_PackageableElementSerializer(this.pureProtocolProcessorPlugins),
+      new V1_PackageableElementSerializer(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
     ),
     classifierPath: this.getElementClassiferPath(elementProtocol),
   });
@@ -2352,8 +2361,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_ELEMENT_CLASSIFIER_PATH.GENERATION_SPECIFICATION;
     }
-    const extraElementProtocolClassifierPathGetters =
-      this.pureProtocolProcessorPlugins.flatMap(
+    const extraElementProtocolClassifierPathGetters = this.pluginManager
+      .getPureProtocolProcessorPlugins()
+      .flatMap(
         (plugin) => plugin.V1_getExtraElementClassifierPathGetters?.() ?? [],
       );
     for (const classifierPathGetter of extraElementProtocolClassifierPathGetters) {
@@ -2416,7 +2426,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
       input.connection,
       new V1_GraphTransformerContextBuilder(
-        this.pureProtocolProcessorPlugins,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
       ).build(),
     );
     const targetDatabase = new V1_TargetDatabase();

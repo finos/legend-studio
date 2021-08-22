@@ -56,11 +56,11 @@ export class ElementFileGenerationState {
 
   promoteToFileGeneration(packagePath: string, name: string): void {
     const fileGenerationPackage =
-      this.editorStore.graphState.graph.getOrCreatePackage(packagePath);
+      this.editorStore.graphManagerState.graph.getOrCreatePackage(packagePath);
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
     fileGenerationPackage.addElement(fileGeneration);
-    this.editorStore.graphState.graph.addElement(fileGeneration);
+    this.editorStore.graphManagerState.graph.addElement(fileGeneration);
     this.editorStore.openElement(fileGeneration);
     // reset file generation state so since the current file generation is promoted to a packageable element in the graph
     // otherwise if we keep this reference, editing this element generation state will also modify the packageable element

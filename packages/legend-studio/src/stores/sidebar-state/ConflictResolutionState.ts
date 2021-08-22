@@ -611,14 +611,17 @@ export class ConflictResolutionState {
       if (this.hasResolvedAllConflicts) {
         // if the editor has already built the graph, we will get live entity
         const element =
-          this.editorStore.graphState.graph.getNullableElement(entityPath);
+          this.editorStore.graphManagerState.graph.getNullableElement(
+            entityPath,
+          );
         if (!element) {
           return undefined;
         }
-        const entity = this.editorStore.graphState.graphManager.elementToEntity(
-          element,
-          true,
-        );
+        const entity =
+          this.editorStore.graphManagerState.graphManager.elementToEntity(
+            element,
+            true,
+          );
         return entity;
       }
       // if the editor is still in conflict resolution phase (i.e. graph is not built yet), we will get entity from change detection or conflict resolutions

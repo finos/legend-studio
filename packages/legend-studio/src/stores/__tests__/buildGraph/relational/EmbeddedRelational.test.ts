@@ -38,7 +38,7 @@ beforeAll(async () => {
 
 test(unitTest('Embedded Relational Mapping'), () => {
   // db
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   const myDB = graph.getDatabase(
     'meta::relational::tests::mapping::embedded::model::store::myDB',
   );

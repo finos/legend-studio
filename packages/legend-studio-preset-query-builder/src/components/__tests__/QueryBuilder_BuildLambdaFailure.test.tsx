@@ -127,7 +127,7 @@ describe(
           mockedEditorStore.getEditorExtensionState(QueryBuilderState);
         await flowResult(queryBuilderState.setOpenQueryBuilder(true));
         queryBuilderState.querySetupState.setClass(
-          mockedEditorStore.graphState.graph.getClass(targetClassPath),
+          mockedEditorStore.graphManagerState.graph.getClass(targetClassPath),
         );
         queryBuilderState.resetData();
         const queryBuilderSetup = await waitFor(() =>

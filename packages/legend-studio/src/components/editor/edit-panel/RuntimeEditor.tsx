@@ -784,7 +784,7 @@ const RuntimeMappingEditor = observer(
     const { runtimeEditorState, mappingRef, isReadOnly } = props;
     const editorStore = useEditorStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
-    const mappingOptions = editorStore.graphState.graph.ownMappings
+    const mappingOptions = editorStore.graphManagerState.graph.ownMappings
       .filter((m) => !runtimeValue.mappings.map((_m) => _m.value).includes(m))
       .map(buildElementOption);
     const filterOption = createFilter({
@@ -851,7 +851,7 @@ const RuntimeGeneralEditor = observer(
     const runtimeValue = runtimeEditorState.runtimeValue;
     const isRuntimeEmbedded = !(runtime instanceof RuntimePointer);
     // mappings
-    const mappings = editorStore.graphState.graph.ownMappings.filter(
+    const mappings = editorStore.graphManagerState.graph.ownMappings.filter(
       (mapping) => !runtimeValue.mappings.map((m) => m.value).includes(mapping),
     );
     const allowAddingMapping = !isReadOnly && Boolean(mappings.length);

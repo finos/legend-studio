@@ -46,6 +46,7 @@ import type { Log } from '@finos/legend-shared';
 import { QueryStoreProvider, useQueryStore } from '../QueryStoreProvider';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
+import { GraphManagerStateProvider } from '@finos/legend-graph';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useQueryStore();
@@ -117,11 +118,13 @@ export const LegendQueryApplication = observer(
               serverUrl: config.depotServerUrl,
             }}
           >
-            <QueryStoreProvider pluginManager={pluginManager}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendQueryApplicationInner />
-              </ThemeProvider>
-            </QueryStoreProvider>
+            <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
+              <QueryStoreProvider pluginManager={pluginManager}>
+                <ThemeProvider theme={LegendMaterialUITheme}>
+                  <LegendQueryApplicationInner />
+                </ThemeProvider>
+              </QueryStoreProvider>
+            </GraphManagerStateProvider>
           </DepotServerClientProvider>
         </SDLCServerClientProvider>
       </ApplicationStoreProvider>

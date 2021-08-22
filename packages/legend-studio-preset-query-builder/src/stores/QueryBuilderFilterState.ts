@@ -328,7 +328,7 @@ const buildFilterConditionExpression = (
     );
   } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
     const multiplicityOne =
-      filterState.editorStore.graphState.graph.getTypicalMultiplicity(
+      filterState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const func = new SimpleFunctionExpression(
@@ -383,7 +383,7 @@ export const buildFilterExpression = (
     return undefined;
   }
   const multiplicityOne =
-    filterState.editorStore.graphState.graph.getTypicalMultiplicity(
+    filterState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   // main filter expression
@@ -398,7 +398,7 @@ export const buildFilterExpression = (
     buildGenericLambdaFunctionInstanceValue(
       filterState.lambdaParameterName,
       filterConditionExpressions,
-      filterState.editorStore.graphState.graph,
+      filterState.editorStore.graphManagerState.graph,
     ),
   );
   return filterExpression;

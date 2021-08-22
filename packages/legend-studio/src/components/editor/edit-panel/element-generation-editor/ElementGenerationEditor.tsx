@@ -77,9 +77,10 @@ const NewFileGenerationModal = observer(
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
-    const elementAlreadyExists = editorStore.graphState.graph.allOwnElements
-      .map((el) => el.path)
-      .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
+    const elementAlreadyExists =
+      editorStore.graphManagerState.graph.allOwnElements
+        .map((el) => el.path)
+        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
 
     return (
       <Dialog

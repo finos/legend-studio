@@ -174,7 +174,7 @@ const QueryEditorHeader = observer(() => {
 const QueryEditorInner = observer(() => {
   const queryStore = useQueryStore();
   const isLoadingEditor =
-    !queryStore.editorStore.graphState.graph.buildState.hasCompleted ||
+    !queryStore.editorStore.graphManagerState.graph.buildState.hasCompleted ||
     !queryStore.editorInitState.hasCompleted;
   return (
     <div className="query-editor">

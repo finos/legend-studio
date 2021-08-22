@@ -95,8 +95,8 @@ export class QueryBuilderResultState {
         );
       }
       const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
-          this.editorStore.graphState.graph,
+        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+          this.editorStore.graphManagerState.graph,
           mapping,
           query,
           runtime,
@@ -125,8 +125,8 @@ export class QueryBuilderResultState {
       const runtime = this.queryBuilderState.querySetupState.runtime;
       const query = this.queryBuilderState.getQuery();
       const result =
-        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
-          this.editorStore.graphState.graph,
+        (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
+          this.editorStore.graphManagerState.graph,
           mapping,
           query,
           runtime,
@@ -166,9 +166,11 @@ export class QueryBuilderResultState {
         ),
       );
       const servicePackage =
-        this.editorStore.graphState.graph.getOrCreatePackage(packagePath);
+        this.editorStore.graphManagerState.graph.getOrCreatePackage(
+          packagePath,
+        );
       servicePackage.addElement(service);
-      this.editorStore.graphState.graph.addElement(service);
+      this.editorStore.graphManagerState.graph.addElement(service);
       this.editorStore.openElement(service);
       yield flowResult(this.queryBuilderState.setOpenQueryBuilder(false)).catch(
         this.editorStore.applicationStore.alertIllegalUnhandledError,

@@ -239,7 +239,7 @@ export class QueryExportState {
     this.queryStore.queryInfoState.decorateQuery(query);
     try {
       query.content =
-        await this.queryStore.editorStore.graphState.graphManager.lambdaToPureCode(
+        await this.queryStore.editorStore.graphManagerState.graphManager.lambdaToPureCode(
           this.lambda,
         );
     } catch (error: unknown) {
@@ -256,9 +256,9 @@ export class QueryExportState {
     try {
       if (createNew) {
         const newQuery =
-          await this.queryStore.editorStore.graphState.graphManager.createQuery(
+          await this.queryStore.editorStore.graphManagerState.graphManager.createQuery(
             query,
-            this.queryStore.editorStore.graphState.graph,
+            this.queryStore.editorStore.graphManagerState.graph,
           );
         this.queryStore.editorStore.applicationStore.notifySuccess(
           `Successfully created query!`,
@@ -269,9 +269,9 @@ export class QueryExportState {
       } else {
         assertType(this.queryStore.queryInfoState, ExistingQueryInfoState);
         const newQuery =
-          await this.queryStore.editorStore.graphState.graphManager.updateQuery(
+          await this.queryStore.editorStore.graphManagerState.graphManager.updateQuery(
             query,
-            this.queryStore.editorStore.graphState.graph,
+            this.queryStore.editorStore.graphManagerState.graph,
           );
         this.queryStore.queryInfoState.setQuery(toLightQuery(newQuery));
         this.queryStore.editorStore.applicationStore.notifySuccess(
@@ -316,7 +316,7 @@ export class QueryStore {
   reset(): void {
     this.setQueryInfoState(undefined);
     this.queryBuilderState = new QueryBuilderState(this.editorStore);
-    this.editorStore.graphState.resetGraph();
+    this.editorStore.graphManagerState.resetGraph();
     this.buildGraphState.reset();
     this.editorInitState.reset();
   }
@@ -342,7 +342,7 @@ export class QueryStore {
         queryInfoState = this.queryInfoState;
       } else {
         const lightQuery =
-          (yield this.editorStore.graphState.graphManager.getLightQuery(
+          (yield this.editorStore.graphManagerState.graphManager.getLightQuery(
             queryId,
           )) as LightQuery;
         queryInfoState = new ExistingQueryInfoState(this, lightQuery);
@@ -361,10 +361,11 @@ export class QueryStore {
         this.buildGraph(project, queryInfoState.query.versionId),
       );
 
-      const query = (yield this.editorStore.graphState.graphManager.getQuery(
-        queryId,
-        this.editorStore.graphState.graph,
-      )) as Query;
+      const query =
+        (yield this.editorStore.graphManagerState.graphManager.getQuery(
+          queryId,
+          this.editorStore.graphManagerState.graph,
+        )) as Query;
       this.queryBuilderState.querySetupState.mapping = query.mapping.value;
       this.queryBuilderState.querySetupState.runtime = new RuntimePointer(
         PackageableElementExplicitReference.create(query.runtime.value),
@@ -372,7 +373,7 @@ export class QueryStore {
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
       this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
       this.queryBuilderState.buildStateFromRawLambda(
-        (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+        (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
           query.content,
         )) as RawLambda,
       );
@@ -429,7 +430,7 @@ export class QueryStore {
         yield flowResult(this.buildGraph(project, versionId));
 
         const currentService =
-          this.editorStore.graphState.graph.getService(servicePath);
+          this.editorStore.graphManagerState.graph.getService(servicePath);
         queryInfoState = new ServiceQueryInfoState(
           this,
           project,
@@ -496,10 +497,10 @@ export class QueryStore {
         assertTrue(this.queryInfoState.project.artifactId === artifactId);
         assertTrue(this.queryInfoState.versionId === versionId);
         this.queryInfoState.setMapping(
-          this.editorStore.graphState.graph.getMapping(mappingPath),
+          this.editorStore.graphManagerState.graph.getMapping(mappingPath),
         );
         this.queryInfoState.setRuntime(
-          this.editorStore.graphState.graph.getRuntime(runtimePath),
+          this.editorStore.graphManagerState.graph.getRuntime(runtimePath),
         );
         queryInfoState = this.queryInfoState;
       } else {
@@ -510,9 +511,9 @@ export class QueryStore {
         );
         yield flowResult(this.buildGraph(project, versionId));
         const currentMapping =
-          this.editorStore.graphState.graph.getMapping(mappingPath);
+          this.editorStore.graphManagerState.graph.getMapping(mappingPath);
         const currentRuntime =
-          this.editorStore.graphState.graph.getRuntime(runtimePath);
+          this.editorStore.graphManagerState.graph.getRuntime(runtimePath);
         queryInfoState = new CreateQueryInfoState(
           this,
           project,
@@ -577,7 +578,7 @@ export class QueryStore {
     try {
       this.initState.inProgress();
       yield flowResult(
-        this.editorStore.graphState.graphManager.initialize(
+        this.editorStore.graphManagerState.graphManager.initialize(
           {
             env: this.editorStore.applicationStore.config.env,
             tabSize: TAB_SIZE,
@@ -596,7 +597,7 @@ export class QueryStore {
         ),
       );
 
-      yield flowResult(this.editorStore.graphState.initializeSystem());
+      yield flowResult(this.editorStore.graphManagerState.initializeSystem());
 
       this.initState.pass();
     } catch (error: unknown) {
@@ -633,26 +634,28 @@ export class QueryStore {
       }
 
       // build graph
-      this.editorStore.graphState.resetGraph();
+      this.editorStore.graphManagerState.resetGraph();
       // build dependencies
       const dependencyManager = new DependencyManager(
         this.getPureGraphExtensionElementClasses(),
       );
       yield flowResult(
-        this.editorStore.graphState.graphManager.buildDependencies(
-          this.editorStore.graphState.coreModel,
-          this.editorStore.graphState.systemModel,
+        this.editorStore.graphManagerState.graphManager.buildDependencies(
+          this.editorStore.graphManagerState.coreModel,
+          this.editorStore.graphManagerState.systemModel,
           dependencyManager,
           (yield flowResult(
             this.getProjectDependencyEntities(project, versionId),
           )) as Map<string, Entity[]>,
         ),
       );
-      this.editorStore.graphState.graph.setDependencyManager(dependencyManager);
+      this.editorStore.graphManagerState.graph.setDependencyManager(
+        dependencyManager,
+      );
       // build Graph
       yield flowResult(
-        this.editorStore.graphState.graphManager.buildGraph(
-          this.editorStore.graphState.graph,
+        this.editorStore.graphManagerState.graphManager.buildGraph(
+          this.editorStore.graphManagerState.graph,
           entities,
         ),
       );

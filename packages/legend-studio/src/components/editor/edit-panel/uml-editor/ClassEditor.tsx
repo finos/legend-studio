@@ -699,7 +699,7 @@ const ConstraintEditor = observer(
           }
           lambdaEditorState={constraintState}
           forceBackdrop={hasParserError}
-          expectedType={editorStore.graphState.graph.getPrimitiveType(
+          expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
             PRIMITIVE_TYPE.BOOLEAN,
           )}
         />
@@ -792,7 +792,7 @@ export const ClassFormEditor = observer(
         ); // attempting to read the hashCode of immutable element will throw an error
     const classState = editorState.classState;
     const isReadOnly = editorState.isReadOnly;
-    const defaultType = editorStore.graphState.graph.getPrimitiveType(
+    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
     // Selected property
@@ -865,15 +865,16 @@ export const ClassFormEditor = observer(
           superType.value.rawType.deleteSubClass(_class);
         }
       };
-    const possibleSupertypes = editorStore.graphState.graph.ownClasses.filter(
-      (superType) =>
-        // Exclude current class
-        superType !== _class &&
-        // Exclude super types of the class
-        !_class.allSuperClasses.includes(superType) &&
-        // Ensure there is no loop (might be expensive)
-        !superType.allSuperClasses.includes(_class),
-    );
+    const possibleSupertypes =
+      editorStore.graphManagerState.graph.ownClasses.filter(
+        (superType) =>
+          // Exclude current class
+          superType !== _class &&
+          // Exclude super types of the class
+          !_class.allSuperClasses.includes(superType) &&
+          // Ensure there is no loop (might be expensive)
+          !superType.allSuperClasses.includes(_class),
+      );
     // Derived properties
     const indirectDerivedProperties = _class
       .getAllDerivedProperties()

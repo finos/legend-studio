@@ -102,15 +102,16 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       TEMPORARY__keepSectionIndex: true,
     });
     // roundtrip check
-    const lambda = editorStore.graphState.graphManager.buildValueSpecification(
-      lambdaJson,
-      editorStore.graphState.graph,
-    );
+    const lambda =
+      editorStore.graphManagerState.graphManager.buildValueSpecification(
+        lambdaJson,
+        editorStore.graphManagerState.graph,
+      );
     const _lambdaJson =
-      editorStore.graphState.graphManager.serializeRawValueSpecification(
-        editorStore.graphState.graphManager.buildRawValueSpecification(
+      editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+        editorStore.graphManagerState.graphManager.buildRawValueSpecification(
           lambda,
-          editorStore.graphState.graph,
+          editorStore.graphManagerState.graph,
         ),
       );
     expect(_lambdaJson).toEqual(lambdaJson);

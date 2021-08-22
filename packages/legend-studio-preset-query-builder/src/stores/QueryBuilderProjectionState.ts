@@ -162,7 +162,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
         this.projectionState.queryBuilderState.explorerState
           .nonNullableTreeData,
         node,
-        this.editorStore.graphState.graph,
+        this.editorStore.graphManagerState.graph,
       ),
     );
     this.columnName = getPropertyChainName(
@@ -206,7 +206,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
     if (this.lambdaString) {
       try {
         const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
           )) as RawLambda | undefined;
@@ -239,7 +239,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
           ),
         );
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -348,7 +348,7 @@ export class QueryBuilderProjectionState {
       this.isConvertDerivationProjectionObjects = true;
       try {
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
@@ -378,16 +378,16 @@ export class QueryBuilderProjectionState {
     const columnColumnLambda = buildGenericLambdaFunctionInstanceValue(
       simpleProjectionColumnState.lambdaParameterName,
       [simpleProjectionColumnState.propertyExpressionState.propertyExpression],
-      this.editorStore.graphState.graph,
+      this.editorStore.graphManagerState.graph,
     );
     const derivationColumnState =
       new QueryBuilderDerivationProjectionColumnState(
         this.editorStore,
         this,
         guaranteeType(
-          this.editorStore.graphState.graphManager.buildRawValueSpecification(
+          this.editorStore.graphManagerState.graphManager.buildRawValueSpecification(
             columnColumnLambda,
-            this.editorStore.graphState.graph,
+            this.editorStore.graphManagerState.graph,
           ),
           RawLambda,
         ),
@@ -624,7 +624,7 @@ export class QueryBuilderProjectionState {
     const propertyExpression = buildPropertyExpressionFromExplorerTreeNodeData(
       this.queryBuilderState.explorerState.nonNullableTreeData,
       node,
-      this.editorStore.graphState.graph,
+      this.editorStore.graphManagerState.graph,
     );
     const propertyType = node.property.genericType.value.rawType;
     try {
@@ -634,14 +634,14 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT: {
           const previewResult =
-            (yield this.editorStore.graphState.graphManager.executeMapping(
-              this.editorStore.graphState.graph,
+            (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+              this.editorStore.graphManagerState.graph,
               this.queryBuilderState.querySetupState.mapping,
               this.queryBuilderState.buildRawLambdaFromLambdaFunction(
                 buildNumericPreviewDataQuery(
                   propertyExpression,
                   this.queryBuilderState.querySetupState._class,
-                  this.editorStore.graphState.graph,
+                  this.editorStore.graphManagerState.graph,
                 ),
               ),
               this.queryBuilderState.querySetupState.runtime,
@@ -673,14 +673,14 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.DATETIME: {
           const previewResult =
-            (yield this.editorStore.graphState.graphManager.executeMapping(
-              this.editorStore.graphState.graph,
+            (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+              this.editorStore.graphManagerState.graph,
               this.queryBuilderState.querySetupState.mapping,
               this.queryBuilderState.buildRawLambdaFromLambdaFunction(
                 buildNonNumericPreviewDataQuery(
                   propertyExpression,
                   this.queryBuilderState.querySetupState._class,
-                  this.editorStore.graphState.graph,
+                  this.editorStore.graphManagerState.graph,
                 ),
               ),
               this.queryBuilderState.querySetupState.runtime,

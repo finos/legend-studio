@@ -120,35 +120,35 @@ test(integrationTest('Create elements with no drivers'), async () => {
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getProfile(
+      mockedEditorStore.graphManagerState.graph.getProfile(
         `${ROOT_PACKAGE_NAME}::ProfileExtension`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getEnumeration(
+      mockedEditorStore.graphManagerState.graph.getEnumeration(
         `${ROOT_PACKAGE_NAME}::MyEnumeration`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getClass(
+      mockedEditorStore.graphManagerState.graph.getClass(
         `${ROOT_PACKAGE_NAME}::Person`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getMapping(
+      mockedEditorStore.graphManagerState.graph.getMapping(
         `${ROOT_PACKAGE_NAME}::MyMapping`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getService(
+      mockedEditorStore.graphManagerState.graph.getService(
         `${ROOT_PACKAGE_NAME}::MyService`,
       ),
     ).toBeDefined(),

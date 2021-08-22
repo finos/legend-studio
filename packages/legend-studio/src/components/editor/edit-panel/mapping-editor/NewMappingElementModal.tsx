@@ -162,7 +162,7 @@ export const NewMappingElementModal = observer(() => {
             mapping,
             id,
             spec.target,
-            editorStore.graphState.graph.getPrimitiveType(
+            editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.STRING,
             ),
           );

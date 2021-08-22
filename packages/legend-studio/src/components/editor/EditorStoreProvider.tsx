@@ -22,6 +22,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useStudioStore } from '../StudioStoreProvider';
+import { useGraphManagerState } from '@finos/legend-graph';
 
 const EditorStoreContext = createContext<EditorStore | undefined>(undefined);
 
@@ -33,6 +34,7 @@ export const EditorStoreProvider = ({
   const applicationStore = useApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
+  const graphManagerState = useGraphManagerState();
   const studioStore = useStudioStore();
   const store = useLocalObservable(
     () =>
@@ -40,6 +42,7 @@ export const EditorStoreProvider = ({
         applicationStore,
         sdlcServerClient,
         depotServerClient,
+        graphManagerState,
         studioStore.pluginManager,
       ),
   );

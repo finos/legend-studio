@@ -55,13 +55,13 @@ export const buildPrimitiveInstanceValue = (
   value: unknown,
 ): PrimitiveInstanceValue => {
   const multiplicityOne =
-    filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+    filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   const instance = new PrimitiveInstanceValue(
     GenericTypeExplicitReference.create(
       new GenericType(
-        filterConditionState.editorStore.graphState.graph.getPrimitiveType(
+        filterConditionState.editorStore.graphManagerState.graph.getPrimitiveType(
           type,
         ),
       ),
@@ -87,7 +87,7 @@ const buildFilterConditionExpressionWithExists = (
   operatorFunctionFullPath: string,
 ): ValueSpecification => {
   const multiplicityOne =
-    filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+    filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   assertTrue(
@@ -192,7 +192,7 @@ const buildFilterConditionExpressionWithExists = (
     const existsLambda = buildGenericLambdaFunctionInstanceValue(
       existsLambdaVariable.name,
       [childSFE],
-      filterConditionState.editorStore.graphState.graph,
+      filterConditionState.editorStore.graphManagerState.graph,
     );
     // add the child SFE lambda to the current SFE parameters
     currentSFE.parametersValues.push(existsLambda);
@@ -206,7 +206,7 @@ export const buildFilterConditionExpression = (
   operatorFunctionFullPath: string,
 ): ValueSpecification => {
   const multiplicityOne =
-    filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+    filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   if (filterConditionState.propertyExpressionState.requiresExistsHandling) {
@@ -313,7 +313,7 @@ const buildFilterConditionStateWithExists = (
 
     // 2. Build the property expression
     const multiplicityOne =
-      filterState.editorStore.graphState.graph.getTypicalMultiplicity(
+      filterState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const initialPropertyExpression = guaranteeType(
@@ -459,7 +459,7 @@ export const buildNotExpression = (
   expression: ValueSpecification,
 ): ValueSpecification => {
   const multiplicityOne =
-    filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+    filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   const expressionNot = new SimpleFunctionExpression(
@@ -505,7 +505,7 @@ export const getCollectionValueSpecificationType = (
         case PRIMITIVE_TYPE.STRING:
           addUniqueEntry(
             valuePrimitiveTypes,
-            filterConditionState.editorStore.graphState.graph.getPrimitiveType(
+            filterConditionState.editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.STRING,
             ),
           );
@@ -516,7 +516,7 @@ export const getCollectionValueSpecificationType = (
         case PRIMITIVE_TYPE.NUMBER:
           addUniqueEntry(
             valuePrimitiveTypes,
-            filterConditionState.editorStore.graphState.graph.getPrimitiveType(
+            filterConditionState.editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.NUMBER,
             ),
           );

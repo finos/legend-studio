@@ -471,7 +471,7 @@ export const FunctionMainEditor = observer(
     functionEditorState: FunctionEditorState;
   }) => {
     const editorStore = useEditorStore();
-    const defaultType = editorStore.graphState.graph.getPrimitiveType(
+    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
     const { functionElement, isReadOnly, functionEditorState } = props;

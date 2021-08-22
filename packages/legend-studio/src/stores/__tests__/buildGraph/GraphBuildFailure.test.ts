@@ -40,8 +40,8 @@ beforeEach(async () => {
 
 test(unitTest('Missing super type'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingSuperType as Entity[],
     ),
   );
@@ -52,8 +52,8 @@ test(unitTest('Missing super type'), async () => {
 
 test(unitTest('Missing profile'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingProfile as Entity[],
     ),
   );
@@ -64,8 +64,8 @@ test(unitTest('Missing profile'), async () => {
 
 test(unitTest('Missing class property'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingProperty as Entity[],
     ),
   );
@@ -76,8 +76,8 @@ test(unitTest('Missing class property'), async () => {
 
 test(unitTest('Missing stereotype'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingStereoType as Entity[],
     ),
   );
@@ -88,8 +88,8 @@ test(unitTest('Missing stereotype'), async () => {
 
 test(unitTest('Missing tagged value'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingTagValue as Entity[],
     ),
   );
@@ -100,8 +100,8 @@ test(unitTest('Missing tagged value'), async () => {
 
 test(unitTest('Missing class in Pure Instance class mapping'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingTargetClassinMapping as Entity[],
     ),
   );
@@ -112,8 +112,8 @@ test(unitTest('Missing class in Pure Instance class mapping'), async () => {
 
 test(unitTest('Missing class mapping'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingClassMapping as Entity[],
     ),
   );
@@ -124,8 +124,8 @@ test(unitTest('Missing class mapping'), async () => {
 
 test(unitTest('Missing class mapping with ID'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingClassMappingWithTargetId as Entity[],
     ),
   );
@@ -138,8 +138,8 @@ test(unitTest('Missing class mapping with ID'), async () => {
 // Unskip when include mappings support is added
 test.skip(unitTest('Missing set implementation'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingSetImp as Entity[],
     ),
   );
@@ -150,8 +150,8 @@ test.skip(unitTest('Missing set implementation'), async () => {
 
 test(unitTest('Missing class in diagram class view'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       TEST_DATA__MissingClassInDiagram as Entity[],
     ),
   );

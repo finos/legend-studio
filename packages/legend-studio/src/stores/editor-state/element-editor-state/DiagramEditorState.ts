@@ -372,12 +372,12 @@ export class DiagramEditorState extends ElementEditorState {
         _class.addProperty(
           new Property(
             `property_${_class.properties.length + 1}`,
-            this.editorStore.graphState.graph.getTypicalMultiplicity(
+            this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
               TYPICAL_MULTIPLICITY_TYPE.ONE,
             ),
             GenericTypeExplicitReference.create(
               new GenericType(
-                this.editorStore.graphState.graph.getPrimitiveType(
+                this.editorStore.graphManagerState.graph.getPrimitiveType(
                   PRIMITIVE_TYPE.STRING,
                 ),
               ),

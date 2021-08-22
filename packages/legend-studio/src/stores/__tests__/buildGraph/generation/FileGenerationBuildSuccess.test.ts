@@ -33,7 +33,7 @@ beforeAll(async () => {
 });
 
 test(unitTest('File Generation Graph Success'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   expect(graph.ownClasses).toHaveLength(3);
   expect(graph.ownEnumerations).toHaveLength(1);
   expect(graph.ownProfiles).toHaveLength(1);
@@ -51,10 +51,10 @@ test(unitTest('File Generation Graph Success'), () => {
 });
 
 test(unitTest('Generated Function paths are valid'), () => {
-  const functionGen = editorStore.graphState.graph.getFunction(
+  const functionGen = editorStore.graphManagerState.graph.getFunction(
     'model::functionFullPath_Firm_1__Firm_MANY__Firm_$1_MANY$__String_1__Boolean_1_',
   );
   const entity =
-    editorStore.graphState.graphManager.elementToEntity(functionGen);
+    editorStore.graphManagerState.graphManager.elementToEntity(functionGen);
   expect(entity.path).toBe('model::functionFullPath');
 });

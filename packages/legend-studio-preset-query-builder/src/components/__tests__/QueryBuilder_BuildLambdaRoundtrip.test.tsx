@@ -259,7 +259,7 @@ describe(
         mockedEditorStore.getEditorExtensionState(QueryBuilderState);
       await flowResult(queryBuilderState.setOpenQueryBuilder(true));
       queryBuilderState.querySetupState.setClass(
-        mockedEditorStore.graphState.graph.getClass(targetClassPath),
+        mockedEditorStore.graphManagerState.graph.getClass(targetClassPath),
       );
       queryBuilderState.resetData();
       const queryBuilderSetup = await waitFor(() =>
@@ -277,7 +277,7 @@ describe(
         new RawLambda(rawLambda.parameters, rawLambda.body),
       );
       const jsonQuery =
-        mockedEditorStore.graphState.graphManager.serializeRawValueSpecification(
+        mockedEditorStore.graphManagerState.graphManager.serializeRawValueSpecification(
           queryBuilderState.getQuery(),
         );
       expect([lambda]).toIncludeSameMembers([jsonQuery]);

@@ -40,7 +40,7 @@ beforeAll(async () => {
 });
 
 test(unitTest('Relational database is loaded properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   expect(graph.ownStores).toHaveLength(3);
   expect(graph.ownDatabases).toHaveLength(2);
   // db
@@ -69,7 +69,7 @@ test(unitTest('Relational database is loaded properly'), () => {
 });
 
 test(unitTest('Relational Mapping is loaded properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   expect(graph.ownMappings).toHaveLength(2);
   const simpleRelationalMapping = graph.getMapping(
     'meta::relational::tests::simpleRelationalMapping',

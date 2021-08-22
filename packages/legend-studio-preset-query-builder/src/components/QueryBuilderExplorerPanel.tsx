@@ -214,7 +214,7 @@ const QueryBuilderExplorerContextMenu = observer(
               buildPropertyExpressionFromExplorerTreeNodeData(
                 queryBuilderState.explorerState.nonNullableTreeData,
                 node,
-                projectionState.editorStore.graphState.graph,
+                projectionState.editorStore.graphManagerState.graph,
               ),
             ),
           );
@@ -267,7 +267,7 @@ const QueryBuilderExplorerContextMenu = observer(
                 buildPropertyExpressionFromExplorerTreeNodeData(
                   queryBuilderState.explorerState.nonNullableTreeData,
                   nodeToAdd,
-                  projectionState.editorStore.graphState.graph,
+                  projectionState.editorStore.graphManagerState.graph,
                 ),
               ),
             );

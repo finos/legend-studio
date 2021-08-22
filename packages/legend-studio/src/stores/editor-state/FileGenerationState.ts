@@ -116,10 +116,10 @@ export class FileGenerationState {
           this.fileGeneration.type,
         ).generationMode;
       const result =
-        (yield this.editorStore.graphState.graphManager.generateFile(
+        (yield this.editorStore.graphManagerState.graphManager.generateFile(
           this.fileGeneration,
           mode,
-          this.editorStore.graphState.graph,
+          this.editorStore.graphManagerState.graph,
         )) as GenerationOutput[];
       this.processGenerationResult(result);
     } catch (error: unknown) {

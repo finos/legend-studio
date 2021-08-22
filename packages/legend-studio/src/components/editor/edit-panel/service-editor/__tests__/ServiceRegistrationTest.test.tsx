@@ -154,10 +154,16 @@ test(
     );
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(mockedEditorStore.graphState.graphManager, 'registerService')
+      .spyOn(
+        mockedEditorStore.graphManagerState.graphManager,
+        'registerService',
+      )
       .mockResolvedValue(result);
     jest
-      .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
+      .spyOn(
+        mockedEditorStore.graphManagerState.graphManager,
+        'activateService',
+      )
       .mockResolvedValue();
     MOBX__disableSpyOrMock();
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
@@ -238,10 +244,16 @@ test(
     );
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(mockedEditorStore.graphState.graphManager, 'registerService')
+      .spyOn(
+        mockedEditorStore.graphManagerState.graphManager,
+        'registerService',
+      )
       .mockResolvedValue(result);
     jest
-      .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
+      .spyOn(
+        mockedEditorStore.graphManagerState.graphManager,
+        'activateService',
+      )
       .mockResolvedValue();
     MOBX__disableSpyOrMock();
     await TEST__openElementFromExplorerTree('test::myService', renderResult);

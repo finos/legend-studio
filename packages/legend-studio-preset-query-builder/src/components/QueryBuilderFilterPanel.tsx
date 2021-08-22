@@ -175,7 +175,7 @@ const QueryBuilderFilterConditionEditor = observer(
           node.condition.filterState.queryBuilderState.explorerState
             .nonNullableTreeData,
           propertyNode,
-          node.condition.filterState.editorStore.graphState.graph,
+          node.condition.filterState.editorStore.graphManagerState.graph,
         ),
       );
 
@@ -229,7 +229,7 @@ const QueryBuilderFilterConditionEditor = observer(
             <div className="query-builder-filter-tree__condition-node__value">
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                graph={node.condition.editorStore.graphState.graph}
+                graph={node.condition.editorStore.graphManagerState.graph}
                 expectedType={
                   node.condition.propertyExpressionState.propertyExpression.func
                     .genericType.value.rawType
@@ -353,7 +353,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               buildPropertyExpressionFromExplorerTreeNodeData(
                 filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 dropNode,
-                filterState.editorStore.graphState.graph,
+                filterState.editorStore.graphManagerState.graph,
               ),
             );
           } catch (error: unknown) {
@@ -671,7 +671,7 @@ export const QueryBuilderFilterPanel = observer(
             buildPropertyExpressionFromExplorerTreeNodeData(
               filterState.queryBuilderState.explorerState.nonNullableTreeData,
               (item as QueryBuilderExplorerTreeDragSource).node,
-              filterState.editorStore.graphState.graph,
+              filterState.editorStore.graphManagerState.graph,
             ),
           );
         } catch (error: unknown) {

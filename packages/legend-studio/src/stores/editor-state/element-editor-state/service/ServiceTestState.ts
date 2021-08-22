@@ -130,7 +130,7 @@ export class TestContainerState {
   updateTestAssert(): void {
     if (this.assertionData) {
       this.testContainer.assert =
-        this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
+        this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
         );
@@ -139,7 +139,7 @@ export class TestContainerState {
 
   private initializeAssertionData(testContainter: TestContainer): void {
     const expectedResultAssertionString =
-      this.editorStore.graphState.graphManager.HACKY_extractServiceTestAssertionData(
+      this.editorStore.graphManagerState.graphManager.HACKY_extractServiceTestAssertionData(
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
@@ -169,7 +169,7 @@ export class TestContainerState {
                 .connectionValue
             : identifiedConnection.connection;
         const engineConfig =
-          this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
+          this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
 
         if (connection instanceof JsonModelConnection) {
           newRuntime.addIdentifiedConnection(
@@ -177,7 +177,7 @@ export class TestContainerState {
               newRuntime.generateIdentifiedConnectionId(),
               new JsonModelConnection(
                 PackageableElementExplicitReference.create(
-                  this.editorStore.graphState.graph.modelStore,
+                  this.editorStore.graphManagerState.graph.modelStore,
                 ),
                 connection.class,
                 createUrlStringFromData(
@@ -195,7 +195,7 @@ export class TestContainerState {
               newRuntime.generateIdentifiedConnectionId(),
               new XmlModelConnection(
                 PackageableElementExplicitReference.create(
-                  this.editorStore.graphState.graph.modelStore,
+                  this.editorStore.graphManagerState.graph.modelStore,
                 ),
                 connection.class,
                 createUrlStringFromData(
@@ -261,8 +261,8 @@ export class TestContainerState {
             test.data,
           );
         const result =
-          (yield this.editorStore.graphState.graphManager.executeMapping(
-            this.serviceEditorState.editorStore.graphState.graph,
+          (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+            this.serviceEditorState.editorStore.graphManagerState.graph,
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
@@ -306,8 +306,8 @@ export class TestContainerState {
             test.data,
           );
         const result =
-          (yield this.editorStore.graphState.graphManager.executeMapping(
-            this.serviceEditorState.editorStore.graphState.graph,
+          (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+            this.serviceEditorState.editorStore.graphManagerState.graph,
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
@@ -395,7 +395,7 @@ export class SingleExecutionTestState {
 
   addNewTestContainer(): void {
     const testContainer = new TestContainer(
-      this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
+      this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
         '{}',
       ),
       this.test,
@@ -447,8 +447,8 @@ export class SingleExecutionTestState {
     if (executionInput) {
       try {
         generatedTestData =
-          (yield this.editorStore.graphState.graphManager.generateMappingTestData(
-            this.editorStore.graphState.graph,
+          (yield this.editorStore.graphManagerState.graphManager.generateMappingTestData(
+            this.editorStore.graphManagerState.graph,
             executionInput.mapping,
             executionInput.query,
             executionInput.runtime,
@@ -480,9 +480,9 @@ export class SingleExecutionTestState {
       this.isRunningAllTests = true;
       this.setTestResults([]);
       const results =
-        (yield this.editorStore.graphState.graphManager.runServiceTests(
+        (yield this.editorStore.graphManagerState.graphManager.runServiceTests(
           this.serviceEditorState.service,
-          this.serviceEditorState.editorStore.graphState.graph,
+          this.serviceEditorState.editorStore.graphManagerState.graph,
         )) as ServiceTestResult[];
       this.setTestResults(results);
     } catch (error: unknown) {

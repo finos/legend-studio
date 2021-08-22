@@ -59,48 +59,54 @@ const testGeneratedElements = async (
     TEMPORARY__keepSectionIndex: true,
   });
   await waitFor(() =>
-    expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
+    expect(
+      editorStore.graphManagerState.graph.buildState.hasSucceeded,
+    ).toBeTrue(),
   );
   // build generation graph
   const generatedEntitiesMap = new Map<string, Entity[]>();
   generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);
   await flowResult(
-    editorStore.graphState.graphManager.buildGenerations(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGenerations(
+      editorStore.graphManagerState.graph,
       generatedEntitiesMap,
     ),
   );
 
   expect(
-    editorStore.graphState.graph.generationModel.allOwnElements.length,
+    editorStore.graphManagerState.graph.generationModel.allOwnElements.length,
   ).toBe(generatedElementPaths.length);
   const parentElement = guaranteeNonNullable(
-    editorStore.graphState.graph.getElement(PARENT_ELEMENT_PATH),
+    editorStore.graphManagerState.graph.getElement(PARENT_ELEMENT_PATH),
   );
   generatedElementPaths.forEach((e) => {
     const element =
-      editorStore.graphState.graph.generationModel.getOwnNullableElement(e);
+      editorStore.graphManagerState.graph.generationModel.getOwnNullableElement(
+        e,
+      );
     guaranteeNonNullable(
       element,
       `Element '${e}' not found in generated model manager`,
     );
-    const elementInGraph = editorStore.graphState.graph.getElement(e);
+    const elementInGraph = editorStore.graphManagerState.graph.getElement(e);
     guaranteeNonNullable(
       elementInGraph,
       `Element '${e}' not found in main graph`,
     );
-    const elementInMainGraph = editorStore.graphState.graph.allOwnElements.find(
-      (el) => el.path === e,
-    );
+    const elementInMainGraph =
+      editorStore.graphManagerState.graph.allOwnElements.find(
+        (el) => el.path === e,
+      );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
     expect(elementInGraph.isReadOnly).toBeTrue();
     expect(elementInGraph.generationParentElement).toBe(parentElement);
   });
 
-  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
-    (el) => editorStore.graphState.graphManager.elementToEntity(el),
-  );
+  const transformedEntities =
+    editorStore.graphManagerState.graph.allOwnElements.map((el) =>
+      editorStore.graphManagerState.graphManager.elementToEntity(el),
+    );
   expect(entities).toIncludeSameMembers(transformedEntities);
   // Ensure generated elements are not transformed
   for (const entityPath of generatedElementPaths) {

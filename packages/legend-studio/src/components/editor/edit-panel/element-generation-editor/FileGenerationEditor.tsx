@@ -362,7 +362,7 @@ const FileGenerationScopeEditor = observer(
     const addValue = (): void => {
       if (itemValue && !isReadOnly) {
         regenerate.cancel();
-        const element = editorStore.graphState.graph.getNullableElement(
+        const element = editorStore.graphManagerState.graph.getNullableElement(
           itemValue,
           true,
         );
@@ -383,10 +383,11 @@ const FileGenerationScopeEditor = observer(
             .map((element) => scopeElementPath(element))
             .includes(itemValue)
         ) {
-          const element = editorStore.graphState.graph.getNullableElement(
-            itemValue,
-            true,
-          );
+          const element =
+            editorStore.graphManagerState.graph.getNullableElement(
+              itemValue,
+              true,
+            );
           if (element) {
             regenerate.cancel();
             fileGeneration.changeScopeElement(

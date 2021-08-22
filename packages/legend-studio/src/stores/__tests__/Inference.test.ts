@@ -38,9 +38,10 @@ test(unitTest('Infer default mapping element ID'), async () => {
       TEMPORARY__keepSectionIndex: true,
     },
   );
-  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
-    (element) => editorStore.graphState.graphManager.elementToEntity(element),
-  );
+  const transformedEntities =
+    editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+      editorStore.graphManagerState.graphManager.elementToEntity(element),
+    );
   expect(transformedEntities).toIncludeSameMembers(
     TEST__excludeSectionIndex(
       TEST_DATA__InferenceDefaultMappingElementID as Entity[],
@@ -52,11 +53,11 @@ test(
   unitTest('Import resolution throws when multiple matches found'),
   async () => {
     const editorStore = TEST__getTestEditorStore();
-    await flowResult(editorStore.graphState.initializeSystem());
+    await flowResult(editorStore.graphManagerState.initializeSystem());
     await expect(() =>
       flowResult(
-        editorStore.graphState.graphManager.buildGraph(
-          editorStore.graphState.graph,
+        editorStore.graphManagerState.graphManager.buildGraph(
+          editorStore.graphManagerState.graph,
           TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
           { TEMPORARY__keepSectionIndex: true },
         ),
@@ -77,9 +78,10 @@ test(
       TEST_DATA__ReferenceWithoutSection.original as Entity[],
       editorStore,
     );
-    const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
-      (element) => editorStore.graphState.graphManager.elementToEntity(element),
-    );
+    const transformedEntities =
+      editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+        editorStore.graphManagerState.graphManager.elementToEntity(element),
+      );
     expect(transformedEntities).toIncludeSameMembers(
       TEST_DATA__ReferenceWithoutSection.withoutSection,
     );
@@ -99,13 +101,15 @@ test(
       },
     );
     let enumeration =
-      editorStore.graphState.graph.getEnumeration('test::tEnum');
+      editorStore.graphManagerState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(
-      editorStore.graphState.graph.getProfile('test::tProf').getTag('s4'),
+      editorStore.graphManagerState.graph
+        .getProfile('test::tProf')
+        .getTag('s4'),
     );
     expect(
-      editorStore.graphState.graph.allOwnElements.map((element) =>
-        editorStore.graphState.graphManager.elementToEntity(element),
+      editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+        editorStore.graphManagerState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
       TEST__excludeSectionIndex(
@@ -121,13 +125,16 @@ test(
         TEMPORARY__keepSectionIndex: true,
       },
     );
-    enumeration = editorStore.graphState.graph.getEnumeration('test::tEnum');
+    enumeration =
+      editorStore.graphManagerState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(
-      editorStore.graphState.graph.getProfile('test2::tProf').getTag('s1'),
+      editorStore.graphManagerState.graph
+        .getProfile('test2::tProf')
+        .getTag('s1'),
     );
     expect(
-      editorStore.graphState.graph.allOwnElements.map((element) =>
-        editorStore.graphState.graphManager.elementToEntity(element),
+      editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+        editorStore.graphManagerState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
       TEST__excludeSectionIndex(

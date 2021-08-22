@@ -52,12 +52,14 @@ describe(unitTest('Execution plan processing roundtrip test'), () => {
     });
     // roundtrip check
     const executionPlan =
-      editorStore.graphState.graphManager.buildExecutionPlan(
+      editorStore.graphManagerState.graphManager.buildExecutionPlan(
         executionPlanJson,
-        editorStore.graphState.graph,
+        editorStore.graphManagerState.graph,
       );
     const _executionPlanJson =
-      editorStore.graphState.graphManager.serializeExecutionPlan(executionPlan);
+      editorStore.graphManagerState.graphManager.serializeExecutionPlan(
+        executionPlan,
+      );
     expect(_executionPlanJson).toEqual(executionPlanJson);
   });
 });

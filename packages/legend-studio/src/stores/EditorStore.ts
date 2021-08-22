@@ -36,7 +36,7 @@ import {
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
-import { GraphState } from './GraphState';
+import { EditorGraphState } from './EditorGraphState';
 import { ChangeDetectionState } from './ChangeDetectionState';
 import { NewElementState } from './NewElementState';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState';
@@ -96,7 +96,12 @@ import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
-import type { PackageableElement, Type, Store } from '@finos/legend-graph';
+import type {
+  PackageableElement,
+  Type,
+  Store,
+  GraphManagerState,
+} from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   PACKAGEABLE_ELEMENT_TYPE,
@@ -152,7 +157,8 @@ export class EditorStore {
   editorExtensionStates: EditorExtensionState[] = [];
   explorerTreeState: ExplorerTreeState;
   sdlcState: EditorSdlcState;
-  graphState: GraphState;
+  graphState: EditorGraphState;
+  graphManagerState: GraphManagerState;
   changeDetectionState: ChangeDetectionState;
   grammarTextEditorState: GrammarTextEditorState;
   modelLoaderState: ModelLoaderState;
@@ -209,12 +215,15 @@ export class EditorStore {
     applicationStore: ApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
+    graphManagerState: GraphManagerState,
     pluginManager: StudioPluginManager,
   ) {
     makeAutoObservable(this, {
       applicationStore: false,
       sdlcServerClient: false,
       depotServerClient: false,
+      graphState: false,
+      graphManagerState: false,
       setMode: action,
       setDevTool: action,
       setHotkeys: action,
@@ -252,7 +261,8 @@ export class EditorStore {
     this.pluginManager = pluginManager;
 
     this.sdlcState = new EditorSdlcState(this);
-    this.graphState = new GraphState(this);
+    this.graphState = new EditorGraphState(this);
+    this.graphManagerState = graphManagerState;
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolState(this);
     // side bar panels
@@ -402,7 +412,7 @@ export class EditorStore {
         this.sdlcState.currentProject &&
           this.sdlcState.currentWorkspace &&
           this.sdlcState.currentRevision,
-      ) && this.graphState.systemModel.buildState.hasSucceeded
+      ) && this.graphManagerState.systemModel.buildState.hasSucceeded
     );
   }
   get isInGrammarTextMode(): boolean {
@@ -665,8 +675,8 @@ export class EditorStore {
     yield Promise.all([
       this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
       this.preloadTextEditorFont(),
-      this.graphState.initializeSystem(), // this can be moved inside of `setupEngine`
-      this.graphState.graphManager.initialize(
+      this.graphManagerState.initializeSystem(), // this can be moved inside of `setupEngine`
+      this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
           tabSize: TAB_SIZE,
@@ -1054,7 +1064,7 @@ export class EditorStore {
       return;
     }
     const generatedChildrenElements =
-      this.graphState.graph.generationModel.allOwnElements.filter(
+      this.graphManagerState.graph.generationModel.allOwnElements.filter(
         (e) => e.generationParentElement === element,
       );
     const elementsToDelete = [element, ...generatedChildrenElements];
@@ -1072,9 +1082,9 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphState.graph.generationModel.deleteOwnElement(el),
+      this.graphManagerState.graph.generationModel.deleteOwnElement(el),
     );
-    this.graphState.graph.deleteElement(element);
+    this.graphManagerState.graph.deleteElement(element);
     // rerender currently opened diagram
     if (this.currentEditorState instanceof DiagramEditorState) {
       this.currentEditorState.renderer.render();
@@ -1096,7 +1106,7 @@ export class EditorStore {
     if (element.isReadOnly) {
       return;
     }
-    this.graphState.graph.renameOwnElement(element, newPath);
+    this.graphManagerState.graph.renameOwnElement(element, newPath);
     // rerender currently opened diagram
     if (this.currentEditorState instanceof DiagramEditorState) {
       this.currentEditorState.renderer.render();
@@ -1121,9 +1131,10 @@ export class EditorStore {
     editorState: EditorState,
   ): EditorState | undefined => {
     if (editorState instanceof ElementEditorState) {
-      const correspondingElement = this.graphState.graph.getNullableElement(
-        editorState.element.path,
-      );
+      const correspondingElement =
+        this.graphManagerState.graph.getNullableElement(
+          editorState.element.path,
+        );
       if (correspondingElement) {
         return editorState.reprocess(correspondingElement, this);
       }
@@ -1205,8 +1216,8 @@ export class EditorStore {
       });
       try {
         const graphGrammar =
-          (yield this.graphState.graphManager.graphToPureCode(
-            this.graphState.graph,
+          (yield this.graphManagerState.graphManager.graphToPureCode(
+            this.graphManagerState.graph,
           )) as string;
         yield flowResult(
           this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
@@ -1278,73 +1289,73 @@ export class EditorStore {
   }
 
   get enumerationOptions(): PackageableElementOption<Enumeration>[] {
-    return this.graphState.graph.ownEnumerations
-      .concat(this.graphState.graph.dependencyManager.enumerations)
+    return this.graphManagerState.graph.ownEnumerations
+      .concat(this.graphManagerState.graph.dependencyManager.enumerations)
       .map(
         (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
       );
   }
 
   get classOptions(): PackageableElementOption<Class>[] {
-    return this.graphState.graph.ownClasses
+    return this.graphManagerState.graph.ownClasses
       .concat(
         this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.ownClasses,
+          this.graphManagerState.graph.systemModel.ownClasses,
         ),
       )
-      .concat(this.graphState.graph.dependencyManager.classes)
+      .concat(this.graphManagerState.graph.dependencyManager.classes)
       .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
   }
 
   get associationOptions(): PackageableElementOption<Association>[] {
-    return this.graphState.graph.ownAssociations
+    return this.graphManagerState.graph.ownAssociations
       .concat(
         this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.ownAssociations,
+          this.graphManagerState.graph.systemModel.ownAssociations,
         ),
       )
-      .concat(this.graphState.graph.dependencyManager.associations)
+      .concat(this.graphManagerState.graph.dependencyManager.associations)
       .map(
         (e) => buildElementOption(e) as PackageableElementOption<Association>,
       );
   }
 
   get profileOptions(): PackageableElementOption<Profile>[] {
-    return this.graphState.graph.ownProfiles
+    return this.graphManagerState.graph.ownProfiles
       .concat(
         this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.ownProfiles,
+          this.graphManagerState.graph.systemModel.ownProfiles,
         ),
       )
-      .concat(this.graphState.graph.dependencyManager.profiles)
+      .concat(this.graphManagerState.graph.dependencyManager.profiles)
       .map((e) => buildElementOption(e) as PackageableElementOption<Profile>);
   }
 
   get classPropertyGenericTypeOptions(): PackageableElementOption<Type>[] {
-    return this.graphState.graph.primitiveTypes
+    return this.graphManagerState.graph.primitiveTypes
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
       .map((e) => buildElementOption(e) as PackageableElementOption<Type>)
       .concat(
-        this.graphState.graph.ownTypes
+        this.graphManagerState.graph.ownTypes
           .concat(
             this.filterSystemElementOptions(
-              this.graphState.graph.systemModel.ownTypes,
+              this.graphManagerState.graph.systemModel.ownTypes,
             ),
           )
-          .concat(this.graphState.graph.dependencyManager.types)
+          .concat(this.graphManagerState.graph.dependencyManager.types)
           .map((e) => buildElementOption(e) as PackageableElementOption<Type>),
       );
   }
 
   get mappingOptions(): PackageableElementOption<Mapping>[] {
-    return this.graphState.graph.ownMappings
-      .concat(this.graphState.graph.dependencyManager.mappings)
+    return this.graphManagerState.graph.ownMappings
+      .concat(this.graphManagerState.graph.dependencyManager.mappings)
       .map((e) => buildElementOption(e) as PackageableElementOption<Mapping>);
   }
 
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    return this.graphState.graph.ownRuntimes
-      .concat(this.graphState.graph.dependencyManager.runtimes)
+    return this.graphManagerState.graph.ownRuntimes
+      .concat(this.graphManagerState.graph.dependencyManager.runtimes)
       .map(
         (e) =>
           buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
@@ -1352,14 +1363,14 @@ export class EditorStore {
   }
 
   get serviceOptions(): PackageableElementOption<Service>[] {
-    return this.graphState.graph.ownServices
-      .concat(this.graphState.graph.dependencyManager.services)
+    return this.graphManagerState.graph.ownServices
+      .concat(this.graphManagerState.graph.dependencyManager.services)
       .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
   }
 
   get storeOptions(): PackageableElementOption<Store>[] {
-    return this.graphState.graph.ownStores
-      .concat(this.graphState.graph.dependencyManager.stores)
+    return this.graphManagerState.graph.ownStores
+      .concat(this.graphManagerState.graph.dependencyManager.stores)
       .map((e) => buildElementOption(e) as PackageableElementOption<Store>);
   }
 

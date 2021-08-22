@@ -77,7 +77,7 @@ export abstract class ElementEditorState extends EditorState {
   generateElementProtocol(): void {
     try {
       const elementEntity =
-        this.editorStore.graphState.graphManager.elementToEntity(
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
           this.element,
           true,
         );
@@ -102,14 +102,14 @@ export abstract class ElementEditorState extends EditorState {
   *generateElementGrammar(): GeneratorFn<void> {
     try {
       const elementEntity =
-        this.editorStore.graphState.graphManager.elementToEntity(
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
           this.element,
           false,
         );
       const grammar =
-        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
-          elementEntity,
-        ])) as string;
+        (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+          [elementEntity],
+        )) as string;
       this.setTextContent(grammar);
     } catch (error: unknown) {
       assertErrorThrown(error);

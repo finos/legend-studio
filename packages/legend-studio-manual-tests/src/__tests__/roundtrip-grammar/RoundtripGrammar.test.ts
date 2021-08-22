@@ -131,26 +131,28 @@ const checkGrammarRoundtrip = async (
     },
     {},
   );
-  const entities = editorStore.graphState.graphManager.pureProtocolToEntities(
-    JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
-  );
+  const entities =
+    editorStore.graphManagerState.graphManager.pureProtocolToEntities(
+      JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
+    );
   await TEST__buildGraphBasic(entities, editorStore, {
     TEMPORARY__keepSectionIndex: true,
   });
-  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
-    (element) => editorStore.graphState.graphManager.elementToEntity(element),
-  );
+  const transformedEntities =
+    editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+      editorStore.graphManagerState.graphManager.elementToEntity(element),
+    );
   if (excludes !== SKIP && !excludes.includes(phase)) {
     // ensure that transformed entities have all fields ordered alphabetically
     expect(
       // received: transformed entity
       transformedEntities
         .map((entity) => entity.content)
-        .map(editorStore.graphState.graphManager.pruneSourceInformation),
+        .map(editorStore.graphManagerState.graphManager.pruneSourceInformation),
     ).toIncludeSameMembers(
       // expected: protocol JSON parsed from grammar text
       transformGrammarToJsonResult.data.modelDataContext.elements
-        .map(editorStore.graphState.graphManager.pruneSourceInformation)
+        .map(editorStore.graphManagerState.graphManager.pruneSourceInformation)
         .filter(
           (elementProtocol: PlainObject<V1_PackageableElement>) =>
             elementProtocol._type !== 'sectionIndex',
@@ -165,7 +167,7 @@ const checkGrammarRoundtrip = async (
   // check hash computation
   await flowResult(editorStore.graphState.precomputeHashes());
   const protocolHashesIndex =
-    await editorStore.graphState.graphManager.buildHashesIndex(entities);
+    await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
@@ -191,9 +193,10 @@ const checkGrammarRoundtrip = async (
   // in engine already.
   // Here, we do it just so we might be able to detect problem in the grammar roundtrip in engine
   // we include the sections to guarantee the ordering of elements
-  const sectionIndices = editorStore.graphState.graph.ownSectionIndices.map(
-    (element) => editorStore.graphState.graphManager.elementToEntity(element),
-  );
+  const sectionIndices =
+    editorStore.graphManagerState.graph.ownSectionIndices.map((element) =>
+      editorStore.graphManagerState.graphManager.elementToEntity(element),
+    );
   const modelDataContext = {
     _type: 'data',
     elements: transformedEntities

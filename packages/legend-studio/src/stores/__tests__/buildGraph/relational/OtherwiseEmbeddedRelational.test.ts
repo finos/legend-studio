@@ -39,7 +39,7 @@ beforeAll(async () => {
 
 test(unitTest('Otherwise Embedded Relational Mapping'), () => {
   // db
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   const myDB = graph.getDatabase('mapping::db');
   expect(myDB.schemas).toHaveLength(1);
   expect(myDB.schemas[0].tables).toHaveLength(2);

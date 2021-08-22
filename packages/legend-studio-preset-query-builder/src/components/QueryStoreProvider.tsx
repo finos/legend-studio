@@ -22,6 +22,7 @@ import { EditorStore, useApplicationStore } from '@finos/legend-studio';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { SDLCServerClient } from '@finos/legend-server-sdlc';
+import { useGraphManagerState } from '@finos/legend-graph';
 
 const QueryStoreContext = createContext<QueryStore | undefined>(undefined);
 
@@ -37,6 +38,7 @@ export const QueryStoreProvider = ({
   // TODO: remove SDLC and its `package.json` dependencies when we refactor QueryBuilder to
   // no longer depends on `EditorStore`
   const sdlcServerClient = new SDLCServerClient({ serverUrl: '', env: '' });
+  const graphManagerState = useGraphManagerState();
   const store = useLocalObservable(
     () =>
       new QueryStore(
@@ -44,6 +46,7 @@ export const QueryStoreProvider = ({
           applicationStore,
           sdlcServerClient,
           depotServerClient,
+          graphManagerState,
           pluginManager,
         ),
       ),

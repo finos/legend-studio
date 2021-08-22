@@ -32,7 +32,7 @@ export const FileGenerationViewer = observer(() => {
   );
   const generatedFile = generatedFileState.generatedFile;
   const fileGeneration = generatedFile.parentId
-    ? editorStore.graphState.graph.getNullableFileGeneration(
+    ? editorStore.graphManagerState.graph.getNullableFileGeneration(
         generatedFile.parentId,
       )
     : undefined;

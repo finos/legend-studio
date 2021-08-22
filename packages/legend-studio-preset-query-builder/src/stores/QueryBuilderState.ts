@@ -283,11 +283,11 @@ export class QueryBuilderState extends EditorExtensionState {
     this.resetData();
     if (!rawLambda.isStub) {
       const valueSpec =
-        this.editorStore.graphState.graphManager.buildValueSpecification(
-          this.editorStore.graphState.graphManager.serializeRawValueSpecification(
+        this.editorStore.graphManagerState.graphManager.buildValueSpecification(
+          this.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
             rawLambda,
           ),
-          this.editorStore.graphState.graph,
+          this.editorStore.graphManagerState.graph,
         );
       const compiledValueSpecification = guaranteeType(
         valueSpec,
@@ -306,16 +306,16 @@ export class QueryBuilderState extends EditorExtensionState {
 
   buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
     const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
+      this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       ),
       undefined,
     );
     lambdaFunctionInstanceValue.values = [lambdaFunction];
     return guaranteeType(
-      this.editorStore.graphState.graphManager.buildRawValueSpecification(
+      this.editorStore.graphManagerState.graphManager.buildRawValueSpecification(
         lambdaFunctionInstanceValue,
-        this.editorStore.graphState.graph,
+        this.editorStore.graphManagerState.graph,
       ),
       RawLambda,
     );
@@ -354,9 +354,9 @@ export class QueryBuilderState extends EditorExtensionState {
           this.queryTextEditorState.setCompilationError(undefined);
           // NOTE: retain the source information on the lambda in order to be able
           // to pin-point compilation issue in form mode
-          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+          (yield this.editorStore.graphManagerState.graphManager.getLambdaReturnType(
             this.getQuery({ keepSourceInformation: true }),
-            this.editorStore.graphState.graph,
+            this.editorStore.graphManagerState.graph,
             { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(
@@ -402,9 +402,9 @@ export class QueryBuilderState extends EditorExtensionState {
         this.isCompiling = true;
         try {
           this.queryTextEditorState.setCompilationError(undefined);
-          (yield this.editorStore.graphState.graphManager.getLambdaReturnType(
+          (yield this.editorStore.graphManagerState.graphManager.getLambdaReturnType(
             this.queryTextEditorState.rawLambdaState.lambda,
-            this.editorStore.graphState.graph,
+            this.editorStore.graphManagerState.graph,
             { keepSourceInformation: true },
           )) as string;
           this.editorStore.applicationStore.notifySuccess(

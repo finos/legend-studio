@@ -71,14 +71,15 @@ export class LocalChangesState {
         return undefined;
       }
       const element =
-        this.editorStore.graphState.graph.getNullableElement(entityPath);
+        this.editorStore.graphManagerState.graph.getNullableElement(entityPath);
       if (!element) {
         return undefined;
       }
-      const entity = this.editorStore.graphState.graphManager.elementToEntity(
-        element,
-        true,
-      );
+      const entity =
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
+          element,
+          true,
+        );
       return entity;
     };
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)

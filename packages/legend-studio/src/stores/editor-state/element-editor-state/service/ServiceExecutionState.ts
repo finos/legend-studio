@@ -179,7 +179,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
           ),
         );
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -303,8 +303,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       this.isExecuting = true;
       const query = this.queryState.query;
       const result =
-        (yield this.editorStore.graphState.graphManager.executeMapping(
-          this.editorStore.graphState.graph,
+        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+          this.editorStore.graphManagerState.graph,
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
@@ -366,7 +366,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       decorateRuntimeWithNewMapping(
         this.selectedExecutionConfiguration.runtime,
         this.selectedExecutionConfiguration.mapping.value,
-        this.editorStore.graphState.graph,
+        this.editorStore.graphManagerState.graph,
       );
       this.selectedExecutionConfiguration.setRuntime(customRuntime);
     }
@@ -374,10 +374,10 @@ export class ServicePureExecutionState extends ServiceExecutionState {
 
   autoSelectRuntimeOnMappingChange(mapping: Mapping): void {
     if (this.selectedExecutionConfiguration) {
-      const runtimes = this.editorStore.graphState.graph.ownRuntimes.filter(
-        (runtime) =>
+      const runtimes =
+        this.editorStore.graphManagerState.graph.ownRuntimes.filter((runtime) =>
           runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
-      );
+        );
       if (runtimes.length) {
         this.selectedExecutionConfiguration.setRuntime(
           runtimes[0].runtimeValue,

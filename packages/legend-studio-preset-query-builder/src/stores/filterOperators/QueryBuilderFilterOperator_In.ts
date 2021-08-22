@@ -112,7 +112,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const multiplicityOne =
-      filterConditionState.editorStore.graphState.graph.getTypicalMultiplicity(
+      filterConditionState.editorStore.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const propertyType =

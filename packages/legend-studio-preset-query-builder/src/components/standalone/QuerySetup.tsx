@@ -81,7 +81,7 @@ const ExistingQuerySetup = observer(
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentQuery(undefined);
-      setupStore.queryStore.editorStore.graphState.resetGraph();
+      setupStore.queryStore.editorStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
       if (querySetupState.currentQuery) {
@@ -125,7 +125,7 @@ const ExistingQuerySetup = observer(
       ) => {
         event.preventDefault();
         event.stopPropagation();
-        queryStore.editorStore.graphState.graphManager
+        queryStore.editorStore.graphManagerState.graphManager
           .deleteQuery(option.value.id)
           .then(() =>
             flowResult(querySetupState.loadQueries('')).catch(
@@ -278,7 +278,7 @@ const ServiceQuerySetup = observer(
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentProject(undefined);
-      setupStore.queryStore.editorStore.graphState.resetGraph();
+      setupStore.queryStore.editorStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
       if (
@@ -310,7 +310,7 @@ const ServiceQuerySetup = observer(
     const canProceed =
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
-      queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
+      queryStore.editorStore.graphManagerState.graph.buildState.hasSucceeded &&
       !queryStore.editorStore.graphState.isInitializingGraph &&
       querySetupState.currentService;
 
@@ -352,7 +352,7 @@ const ServiceQuerySetup = observer(
       if (option?.value !== querySetupState.currentVersionId) {
         querySetupState.setCurrentVersionId(option?.value);
         // cascade
-        queryStore.editorStore.graphState.resetGraph();
+        queryStore.editorStore.graphManagerState.resetGraph();
         querySetupState.setCurrentServiceExecution(undefined, undefined);
         if (
           querySetupState.currentProject &&
@@ -465,7 +465,7 @@ const ServiceQuerySetup = observer(
           <div className="query-setup__service-query__graph">
             {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
-              !queryStore.editorStore.graphState.graph.buildState
+              !queryStore.editorStore.graphManagerState.graph.buildState
                 .hasSucceeded ||
               queryStore.editorStore.graphState.isInitializingGraph) && (
               <div className="query-setup__service-query__graph__loader">
@@ -473,13 +473,14 @@ const ServiceQuerySetup = observer(
                   isLoading={
                     Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
-                    !queryStore.editorStore.graphState.graph.buildState
+                    !queryStore.editorStore.graphManagerState.graph.buildState
                       .hasSucceeded &&
                     !queryStore.editorStore.graphState.isInitializingGraph
                   }
                 />
                 <BlankPanelContent>
-                  {queryStore.editorStore.graphState.graph.buildState.hasFailed
+                  {queryStore.editorStore.graphManagerState.graph.buildState
+                    .hasFailed
                     ? `Can't build graph`
                     : queryStore.editorStore.graphState.isInitializingGraph
                     ? `Building graph...`
@@ -489,7 +490,8 @@ const ServiceQuerySetup = observer(
             )}
             {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
-              queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
+              queryStore.editorStore.graphManagerState.graph.buildState
+                .hasSucceeded &&
               !queryStore.editorStore.graphState.isInitializingGraph && (
                 <>
                   <div className="query-setup__wizard__group">
@@ -527,7 +529,7 @@ const CreateQuerySetup = observer(
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentProject(undefined);
-      setupStore.queryStore.editorStore.graphState.resetGraph();
+      setupStore.queryStore.editorStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
       if (
@@ -560,7 +562,7 @@ const CreateQuerySetup = observer(
     const canProceed =
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
-      queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
+      queryStore.editorStore.graphManagerState.graph.buildState.hasSucceeded &&
       !queryStore.editorStore.graphState.isInitializingGraph &&
       querySetupState.currentMapping &&
       querySetupState.currentRuntime;
@@ -604,7 +606,7 @@ const CreateQuerySetup = observer(
       if (option?.value !== querySetupState.currentVersionId) {
         querySetupState.setCurrentVersionId(option?.value);
         // cascade
-        queryStore.editorStore.graphState.resetGraph();
+        queryStore.editorStore.graphManagerState.resetGraph();
         querySetupState.setCurrentMapping(undefined);
         querySetupState.setCurrentRuntime(undefined);
         if (
@@ -735,7 +737,7 @@ const CreateQuerySetup = observer(
           <div className="query-setup__create-query__graph">
             {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
-              !queryStore.editorStore.graphState.graph.buildState
+              !queryStore.editorStore.graphManagerState.graph.buildState
                 .hasSucceeded ||
               queryStore.editorStore.graphState.isInitializingGraph) && (
               <div className="query-setup__create-query__graph__loader">
@@ -743,13 +745,14 @@ const CreateQuerySetup = observer(
                   isLoading={
                     Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
-                    !queryStore.editorStore.graphState.graph.buildState
+                    !queryStore.editorStore.graphManagerState.graph.buildState
                       .hasSucceeded &&
                     !queryStore.editorStore.graphState.isInitializingGraph
                   }
                 />
                 <BlankPanelContent>
-                  {queryStore.editorStore.graphState.graph.buildState.hasFailed
+                  {queryStore.editorStore.graphManagerState.graph.buildState
+                    .hasFailed
                     ? `Can't build graph`
                     : queryStore.editorStore.graphState.isInitializingGraph
                     ? `Building graph...`
@@ -759,7 +762,8 @@ const CreateQuerySetup = observer(
             )}
             {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
-              queryStore.editorStore.graphState.graph.buildState.hasSucceeded &&
+              queryStore.editorStore.graphManagerState.graph.buildState
+                .hasSucceeded &&
               !queryStore.editorStore.graphState.isInitializingGraph && (
                 <>
                   <div className="query-setup__wizard__group">

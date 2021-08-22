@@ -128,7 +128,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     );
   }
   get element(): PackageableElement | undefined {
-    return this.editorStore.graphState.graph.getNullableElement(
+    return this.editorStore.graphManagerState.graph.getNullableElement(
       this.effectiveEntityPath,
     );
   }
@@ -178,9 +178,9 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     if (this.fromEntity) {
       try {
         const elementGrammar =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
-            this.fromEntity,
-          ])) as string;
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+            [this.fromEntity],
+          )) as string;
         this.setFromGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(
@@ -200,9 +200,9 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     if (this.toEntity) {
       try {
         const elementGrammar =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
-            this.toEntity,
-          ])) as string;
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+            [this.toEntity],
+          )) as string;
         this.setToGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(

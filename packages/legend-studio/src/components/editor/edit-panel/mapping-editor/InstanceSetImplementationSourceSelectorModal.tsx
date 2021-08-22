@@ -126,13 +126,15 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     const applicationStore = useApplicationStore();
     /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const options = (
-      editorStore.graphState.graph.ownClasses as MappingElementSource[]
+      editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
     )
       .concat(
-        editorStore.graphState.graph.ownFlatDatas.flatMap((e) => e.recordTypes),
+        editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
+          (e) => e.recordTypes,
+        ),
       )
       .concat(
-        editorStore.graphState.graph.ownDatabases.flatMap((e) =>
+        editorStore.graphManagerState.graph.ownDatabases.flatMap((e) =>
           e.schemas.flatMap((schema) =>
             (schema.tables as (Table | View)[]).concat(schema.views),
           ),

@@ -72,7 +72,7 @@ export class SortColumnState {
 
   buildFunctionExpression(): SimpleFunctionExpression {
     const multiplicityOne =
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
+      this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const sortColumnFunction = new SimpleFunctionExpression(
@@ -86,7 +86,7 @@ export class SortColumnState {
     const sortColumnName = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
         new GenericType(
-          this.editorStore.graphState.graph.getPrimitiveType(
+          this.editorStore.graphManagerState.graph.getPrimitiveType(
             PRIMITIVE_TYPE.STRING,
           ),
         ),
@@ -161,7 +161,7 @@ export class QueryResultSetModifierState {
     },
   ): LambdaFunction {
     const multiplicityOne =
-      this.editorStore.graphState.graph.getTypicalMultiplicity(
+      this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     if (lambda.expressionSequence.length === 1) {
@@ -213,7 +213,7 @@ export class QueryResultSetModifierState {
             const limit = new PrimitiveInstanceValue(
               GenericTypeExplicitReference.create(
                 new GenericType(
-                  this.editorStore.graphState.graph.getPrimitiveType(
+                  this.editorStore.graphManagerState.graph.getPrimitiveType(
                     PRIMITIVE_TYPE.INTEGER,
                   ),
                 ),
@@ -251,7 +251,7 @@ export class QueryResultSetModifierState {
             const limit = new PrimitiveInstanceValue(
               GenericTypeExplicitReference.create(
                 new GenericType(
-                  this.editorStore.graphState.graph.getPrimitiveType(
+                  this.editorStore.graphManagerState.graph.getPrimitiveType(
                     PRIMITIVE_TYPE.INTEGER,
                   ),
                 ),

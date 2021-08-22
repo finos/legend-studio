@@ -81,7 +81,7 @@ export const ActivityBar = observer(() => {
       .length;
   const localChangesDisplayLabel = localChanges > 99 ? '99+' : localChanges;
   const localChangesIndicatorStatusIcon =
-    editorStore.graphState.graph.buildState.hasFailed ||
+    editorStore.graphManagerState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop ? (
       <div />
     ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||

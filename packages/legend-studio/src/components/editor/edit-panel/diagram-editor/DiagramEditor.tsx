@@ -462,7 +462,7 @@ const DiagramEditorClassViewEditor = observer(
     const redrawOnClassChange = useCallback((): void => {
       cleanUpDeadReferencesInDiagram(
         diagramEditorState.diagram,
-        editorStore.graphState.graph,
+        editorStore.graphManagerState.graph,
       );
       diagramEditorState.renderer.render();
     }, [diagramEditorState, editorStore]);
@@ -670,7 +670,7 @@ const DiagramEditorInlineClassRenamerInner = observer(
     const isClassNameNonEmpty = name !== '';
     const isClassNameValid = isValidPathIdentifier(name);
     const existingElement =
-      editorStore.graphState.graph.getNullableElement(newClassPath);
+      editorStore.graphManagerState.graph.getNullableElement(newClassPath);
     const isClassNameUnique = !existingElement || existingElement === _class;
     // const class
     const classCreationValidationErrorMessage = !isClassNameNonEmpty
@@ -784,13 +784,13 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.diagram.package
           ? `${diagramEditorState.diagram.package.path}${ELEMENT_PATH_DELIMITER}`
           : ''
-      }Class_${editorStore.graphState.graph.ownClasses.length + 1}`,
+      }Class_${editorStore.graphManagerState.graph.ownClasses.length + 1}`,
     );
     const isClassPathNonEmpty = path !== '';
     const isNotTopLevelClass = path.includes(ELEMENT_PATH_DELIMITER);
     const isValidPath = isValidFullPath(path);
     const isClassUnique =
-      !editorStore.graphState.graph.getNullableElement(path);
+      !editorStore.graphManagerState.graph.getNullableElement(path);
     const classCreationValidationErrorMessage = !isClassPathNonEmpty
       ? `Class path cannot be empty`
       : !isNotTopLevelClass
@@ -809,10 +809,10 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
-        editorStore.graphState.graph
+        editorStore.graphManagerState.graph
           .getOrCreatePackage(packagePath)
           .addElement(_class);
-        editorStore.graphState.graph.addElement(_class);
+        editorStore.graphManagerState.graph.addElement(_class);
         editorStore.explorerTreeState.reprocess();
         diagramEditorState.renderer.addClassView(
           _class,

@@ -746,7 +746,8 @@ const RelationalConnectionStoreEditor = observer(
         <VscError />
       </div>
     );
-    const stores = connectionValueState.editorStore.graphState.graph.ownStores;
+    const stores =
+      connectionValueState.editorStore.graphManagerState.graph.ownStores;
     const options = stores.map(buildElementOption);
     const store = connection.store.value;
     const selectedStore = {

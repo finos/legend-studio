@@ -101,7 +101,7 @@ export class QueryTextEditorState extends LambdaEditorState {
     if (this.lambdaString) {
       try {
         const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
           )) as RawLambda | undefined;
@@ -135,7 +135,7 @@ export class QueryTextEditorState extends LambdaEditorState {
           ),
         );
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -168,8 +168,8 @@ export class QueryTextEditorState extends LambdaEditorState {
     if (mode === QueryTextEditorMode.JSON) {
       this.setLambdaJson(
         JSON.stringify(
-          this.editorStore.graphState.graphManager.pruneSourceInformation(
-            this.editorStore.graphState.graphManager.serializeRawValueSpecification(
+          this.editorStore.graphManagerState.graphManager.pruneSourceInformation(
+            this.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
               rawLambda,
             ),
           ),

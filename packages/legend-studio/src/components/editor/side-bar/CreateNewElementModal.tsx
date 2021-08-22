@@ -340,7 +340,7 @@ export const CreateNewElementModal = observer(() => {
     .filter(
       // NOTE: we can only create package in root
       (type) =>
-        selectedPackage !== editorStore.graphState.graph.root ||
+        selectedPackage !== editorStore.graphManagerState.graph.root ||
         type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
     )
     .map(buildElementTypeOption);
@@ -352,11 +352,11 @@ export const CreateNewElementModal = observer(() => {
   const closeModal = (): void => newElementState.closeModal();
   const [packagePath, elementName] = resolvePackageAndElementName(
     selectedPackage,
-    selectedPackage === editorStore.graphState.graph.root,
+    selectedPackage === editorStore.graphManagerState.graph.root,
     name,
   );
   const resolvedPackage =
-    editorStore.graphState.graph.getNullablePackage(packagePath);
+    editorStore.graphManagerState.graph.getNullablePackage(packagePath);
   const needsToOverride = Boolean(
     resolvedPackage?.children.find((child) => child.name === elementName),
   );

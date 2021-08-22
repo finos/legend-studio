@@ -183,7 +183,7 @@ export const ViewerInner = observer(() => {
   const applicationStore = useApplicationStore();
   const allowOpeningElement =
     editorStore.sdlcState.currentProject &&
-    editorStore.graphState.graph.buildState.hasSucceeded;
+    editorStore.graphManagerState.graph.buildState.hasSucceeded;
   const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
     editorStore.sideBarDisplayState.setSize(
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,

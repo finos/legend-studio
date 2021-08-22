@@ -126,13 +126,13 @@ export class ExecutionPlanState {
   ): void {
     if (metaModel instanceof ExecutionPlan) {
       const protocolJson =
-        this.editorStore.graphState.graphManager.serializeExecutionPlan(
+        this.editorStore.graphManagerState.graphManager.serializeExecutionPlan(
           metaModel,
         );
       this.setExecutionPlanDisplayDataJson(protocolJson);
     } else if (metaModel instanceof ExecutionNode) {
       const protocolJson =
-        this.editorStore.graphState.graphManager.serializeExecutionNode(
+        this.editorStore.graphManagerState.graphManager.serializeExecutionNode(
           metaModel,
         );
       this.setExecutionPlanDisplayDataJson(protocolJson);
@@ -147,8 +147,8 @@ export class ExecutionPlanState {
     try {
       this.isGenerating = true;
       const rawPlan =
-        (yield this.editorStore.graphState.graphManager.generateExecutionPlan(
-          this.editorStore.graphState.graph,
+        (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
+          this.editorStore.graphManagerState.graph,
           mapping,
           lambda,
           runtime,
@@ -169,10 +169,11 @@ export class ExecutionPlanState {
   buildExecutionPlan(rawPlan: object): void {
     try {
       this.setRawPlan(rawPlan);
-      const plan = this.editorStore.graphState.graphManager.buildExecutionPlan(
-        rawPlan,
-        this.editorStore.graphState.graph,
-      );
+      const plan =
+        this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
+          rawPlan,
+          this.editorStore.graphManagerState.graph,
+        );
       this.setPlan(plan);
     } catch {
       // do nothing

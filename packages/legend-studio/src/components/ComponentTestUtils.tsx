@@ -45,6 +45,7 @@ import type {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import {
+  TEST__provideMockedSDLCServerClient,
   TEST__SDLCServerClientProvider,
   TEST__getTestSDLCServerClient,
 } from '@finos/legend-server-sdlc';
@@ -55,7 +56,12 @@ import type {
   GenerationConfigurationDescription,
   GenerationMode,
 } from '@finos/legend-graph';
-import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import {
+  TEST__provideMockedGraphManagerState,
+  TEST__GraphManagerStateProvider,
+  TEST__getTestGraphManagerState,
+  ELEMENT_PATH_DELIMITER,
+} from '@finos/legend-graph';
 import {
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
@@ -189,6 +195,7 @@ export const TEST__provideMockedEditorStore = (
     applicationStore ?? TEST__getTestApplicationStore(),
     TEST__getTestSDLCServerClient(),
     TEST__getTestDepotServerClient(),
+    TEST__getTestGraphManagerState(pluginManager),
     pluginManager ?? StudioPluginManager.create(),
   );
   const MockedEditorStoreProvider = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
@@ -267,54 +274,48 @@ export const TEST__setUpEditor = async (
     availableImportDescriptions,
   } = data;
   // mock editor initialization data
+  const sdlcServerClient = TEST__provideMockedSDLCServerClient();
+  mockedEditorStore.sdlcServerClient = sdlcServerClient;
+
   MOBX__enableSpyOrMock();
+  jest.spyOn(sdlcServerClient, 'getProject').mockResolvedValue(project);
+  jest.spyOn(sdlcServerClient, 'getWorkspace').mockResolvedValue(workspace);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getProject')
-    .mockResolvedValue(project);
-  jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getWorkspace')
-    .mockResolvedValue(workspace);
-  jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getVersions')
+    .spyOn(sdlcServerClient, 'getVersions')
     .mockResolvedValue(projectVersions);
+  jest.spyOn(sdlcServerClient, 'getRevision').mockResolvedValue(curentRevision);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getRevision')
-    .mockResolvedValue(curentRevision);
-  jest
-    .spyOn(
-      mockedEditorStore.sdlcServerClient,
-      'checkIfWorkspaceIsInConflictResolutionMode',
-    )
+    .spyOn(sdlcServerClient, 'checkIfWorkspaceIsInConflictResolutionMode')
     .mockResolvedValue(false);
+  jest.spyOn(sdlcServerClient, 'isWorkspaceOutdated').mockResolvedValue(false);
+  jest.spyOn(sdlcServerClient, 'getEntities').mockResolvedValue(entities);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'isWorkspaceOutdated')
-    .mockResolvedValue(false);
-  jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getEntities')
-    .mockResolvedValue(entities);
-  jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getConfiguration')
+    .spyOn(sdlcServerClient, 'getConfiguration')
     .mockResolvedValue(projectConfiguration);
   jest
-    .spyOn(
-      mockedEditorStore.sdlcServerClient,
-      'getLatestProjectStructureVersion',
-    )
+    .spyOn(sdlcServerClient, 'getLatestProjectStructureVersion')
     .mockResolvedValue(latestProjectStructureVersion);
+
+  const graphManagerState = TEST__provideMockedGraphManagerState(
+    mockedEditorStore.pluginManager,
+  );
+  mockedEditorStore.graphManagerState = graphManagerState;
+
   // TODO: we need to think of how we will mock these calls when we modularize
-  mockedEditorStore.graphState.graphManager.initialize = jest.fn();
+  graphManagerState.graphManager.initialize = jest.fn();
   jest
     .spyOn(
-      mockedEditorStore.graphState.graphManager,
+      graphManagerState.graphManager,
       'getAvailableGenerationConfigurationDescriptions',
     )
     .mockResolvedValue(availableGenerationDescriptions);
   jest
     .spyOn(
-      mockedEditorStore.graphState.graphManager,
+      graphManagerState.graphManager,
       'getAvailableImportConfigurationDescriptions',
     )
     .mockResolvedValue(availableImportDescriptions);
+
   // skip font loader (as we have no network access in test)
   mockedEditorStore.preloadTextEditorFont = jest.fn();
   // mock change detections (since we do not test them now)
@@ -348,9 +349,11 @@ export const TEST__setUpEditor = async (
       <TEST__ApplicationStoreProvider>
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
-            <TEST__StudioStoreProvider>
-              <Editor />
-            </TEST__StudioStoreProvider>
+            <TEST__GraphManagerStateProvider>
+              <TEST__StudioStoreProvider>
+                <Editor />
+              </TEST__StudioStoreProvider>
+            </TEST__GraphManagerStateProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>
       </TEST__ApplicationStoreProvider>
@@ -366,19 +369,19 @@ export const TEST__setUpEditor = async (
   // assert immutable models have been model
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.systemModel.buildState.hasSucceeded,
+      mockedEditorStore.graphManagerState.systemModel.buildState.hasSucceeded,
     ).toBeTrue(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.dependencyManager.buildState
+      mockedEditorStore.graphManagerState.graph.dependencyManager.buildState
         .hasSucceeded,
     ).toBeTrue(),
   );
   // assert main model has been build
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.buildState.hasSucceeded,
+      mockedEditorStore.graphManagerState.graph.buildState.hasSucceeded,
     ).toBeTrue(),
   );
   // assert explorer trees have been built and rendered
