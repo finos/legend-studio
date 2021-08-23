@@ -261,7 +261,7 @@ const LambdaEditorInner = observer(
         });
 
       // set hotkeys (before calling the action, finish parsing the current text value)
-      onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger multiple compilation/generation/etc.
+      onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger hotkeys multiple times
       /**
        * NOTE: We can use `setCommand` here but that does not expose the event so we cannot `stopPropagation`, and we need to
        * use `stopPropagation` to prevent the event top bubble up to global hotkeys listener.

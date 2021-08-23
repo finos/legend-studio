@@ -83,10 +83,10 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
 } from '@finos/legend-graph';
+import type { LambdaEditorState } from '@finos/legend-application';
 import {
   ActionAlertActionType,
   ActionAlertType,
-  LambdaEditorState,
 } from '@finos/legend-application';
 
 export class EditorGraphState {

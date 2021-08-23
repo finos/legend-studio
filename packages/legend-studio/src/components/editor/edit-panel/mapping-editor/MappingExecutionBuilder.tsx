@@ -58,7 +58,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   EDITOR_LANGUAGE,
-  TextInputEditor,
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
@@ -71,6 +70,7 @@ import {
   SetImplementation,
   OperationSetImplementation,
 } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -304,7 +304,7 @@ const MappingExecutionQueryEditor = observer(
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={250}>
                 <div className="mapping-execution-builder__query-panel__query">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}
@@ -361,7 +361,7 @@ export const MappingExecutionObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -381,7 +381,7 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -406,7 +406,7 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -695,7 +695,7 @@ export const MappingExecutionBuilder = observer(
                   </div>
                 </div>
                 <div className="panel__content mapping-execution-builder__result-panel__content">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={executionResultText ?? ''}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.JSON}

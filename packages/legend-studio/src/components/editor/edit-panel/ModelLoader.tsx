@@ -31,12 +31,12 @@ import type { ImportConfigurationDescription } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
-  TextInputEditor,
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -200,7 +200,7 @@ export const ModelLoader = observer(() => {
         </div>
       </div>
       <div className="panel__content model-loader__editor">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={modelLoaderState.modelText}
           updateInput={updateModel}

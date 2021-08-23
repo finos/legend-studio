@@ -27,7 +27,7 @@ export { BlockingAlert } from './components/BlockingAlert';
 export { ActionAlert } from './components/ActionAlert';
 export { NotificationSnackbar } from './components/NotificationSnackbar';
 export { ApplicationBackdrop } from './components/ApplicationBackdrop';
-export { TextInputEditor } from './components/TextInputEditor';
+export * from './components/TextInputEditor';
 export * from './components/LambdaEditor';
 
 export * from './stores/ApplicationStore';

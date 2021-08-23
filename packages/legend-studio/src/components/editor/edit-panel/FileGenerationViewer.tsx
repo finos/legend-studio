@@ -21,9 +21,9 @@ import {
   getEditorLanguageFromFormat,
 } from '../../../stores/editor-state/FileGenerationViewerState';
 import { FaLock, FaFire, FaArrowCircleRight } from 'react-icons/fa';
-import { TextInputEditor } from '@finos/legend-application';
 import type { FileGenerationSpecification } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider';
+import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
 
 export const FileGenerationViewer = observer(() => {
   const editorStore = useEditorStore();
@@ -85,7 +85,7 @@ export const FileGenerationViewer = observer(() => {
           </div>
           <div className="panel__content">
             {
-              <TextInputEditor
+              <StudioTextInputEditor
                 inputValue={getTextContent(
                   generatedFile.content,
                   generatedFile.format,

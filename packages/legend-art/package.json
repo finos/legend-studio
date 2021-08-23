@@ -1,7 +1,7 @@
 {
   "name": "@finos/legend-art",
   "version": "0.0.0",
-  "description": "Legend Studio shared visual components and component utilities",
+  "description": "Legend shared visual components and component utilities",
   "keywords": [
     "legend",
     "legend-studio",

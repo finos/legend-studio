@@ -83,10 +83,8 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
-import {
-  TextInputEditor,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -291,7 +289,7 @@ export const GenerationResultViewer = observer(
             </div>
             <div className="panel__content">
               {fileNode instanceof GenerationFile && (
-                <TextInputEditor
+                <StudioTextInputEditor
                   inputValue={getTextContent(fileNode.content, fileNode.format)}
                   isReadOnly={true}
                   language={getEditorLanguageFromFormat(fileNode.format)}

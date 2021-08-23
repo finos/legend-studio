@@ -57,7 +57,8 @@ import type { EditorPlugin } from '../../../../stores/EditorPlugin';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { TextInputEditor, EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -168,7 +169,7 @@ export const ConnectionEditor_TextEditor = observer(
           {description}
         </div>
         <div className="panel__content__form__section__text-editor">
-          <TextInputEditor
+          <StudioTextInputEditor
             inputValue={value ?? ''}
             updateInput={update}
             isReadOnly={isReadOnly}

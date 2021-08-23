@@ -17,7 +17,7 @@
 import { LegendStudio } from '@finos/legend-studio';
 import { QueryBuilder_Preset } from '@finos/legend-studio-preset-query-builder';
 import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
-import { EFJSONSchema_Preset } from '@finos/legend-graph-preset-external-format-json-schema';
+import { EFJSONSchema_GraphPreset } from '@finos/legend-graph-preset-external-format-json-schema';
 import { BrowserConsole } from '@finos/legend-shared';
 
 export class LegendStudioApplication {
@@ -26,7 +26,7 @@ export class LegendStudioApplication {
       .setup({ baseUrl })
       .withPresets([
         new DSLText_Preset(),
-        new EFJSONSchema_Preset(),
+        new EFJSONSchema_GraphPreset(),
         new QueryBuilder_Preset(),
       ])
       .withLoggers([new BrowserConsole()])

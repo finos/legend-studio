@@ -40,6 +40,7 @@ export * from './components/editor/EditorStoreProvider';
 export * from './components/shared/AppHeader';
 export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
 export { TypeTree } from './components/shared/TypeTree';
+export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor';
 
 // test
 export {

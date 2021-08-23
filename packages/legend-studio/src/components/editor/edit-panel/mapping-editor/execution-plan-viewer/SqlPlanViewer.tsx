@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { TextInputEditor, EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { SQL_DISPLAY_TABS } from '../../../../../stores/ExecutionPlanState';
 import { prettyCONSTName } from '@finos/legend-shared';
@@ -48,6 +48,7 @@ import {
   BigInt,
   RelationalDatabaseConnection,
 } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
 
 interface QueryProps {
   query: string;
@@ -104,7 +105,7 @@ const generateDataTypeLabel = (
 
 const QueryViewer: React.FC<QueryProps> = ({ query, language, wordWrap }) => (
   <div className="mapping-test-editor__query-panel__query">
-    <TextInputEditor
+    <StudioTextInputEditor
       inputValue={query}
       isReadOnly={true}
       language={language}

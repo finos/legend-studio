@@ -53,7 +53,6 @@ import { VscError } from 'react-icons/vsc';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,
-  TextInputEditor,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
@@ -72,6 +71,7 @@ import {
   SetImplementation,
   OperationSetImplementation,
 } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -210,7 +210,7 @@ const MappingTestQueryEditor = observer(
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={250}>
                 <div className="mapping-test-editor__query-panel__query">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}
@@ -269,7 +269,7 @@ export const MappingTestObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.data}
           isReadOnly={isReadOnly}
@@ -293,7 +293,7 @@ export const MappingTestFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
@@ -322,7 +322,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
@@ -484,7 +484,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               <VscError />
             </div>
           )}
-          <TextInputEditor
+          <StudioTextInputEditor
             inputValue={assertionState.expectedResult}
             updateInput={updateExpectedResult}
             isReadOnly={isReadOnly}

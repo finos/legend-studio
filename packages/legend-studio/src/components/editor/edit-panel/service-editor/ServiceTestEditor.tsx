@@ -57,10 +57,10 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   EDITOR_LANGUAGE,
-  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import type { TestContainer } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const TestContainerContextMenu = observer(
   (
@@ -491,7 +491,7 @@ export const ServiceTestEditorEditPanel = observer(
                       </div>
                     )}
                     {expectedResult && (
-                      <TextInputEditor
+                      <StudioTextInputEditor
                         inputValue={expectedResult}
                         isReadOnly={
                           isReadOnly ||
@@ -702,7 +702,7 @@ export const ServiceTestEditor = observer(
                 <PanelLoadingIndicator
                   isLoading={selectedTestState.isGeneratingTestData}
                 />
-                <TextInputEditor
+                <StudioTextInputEditor
                   inputValue={selectedTest.data}
                   updateInput={updateTestData}
                   isReadOnly={isReadOnly}

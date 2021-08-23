@@ -48,12 +48,13 @@ import {
   FaRegCircle,
 } from 'react-icons/fa';
 import { capitalize } from '@finos/legend-shared';
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper';
 import { flowResult } from 'mobx';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -337,7 +338,7 @@ export const DatabaseBuilder = observer(
                     </div>
                   </div>
                   <div className="panel__content">
-                    <TextInputEditor
+                    <StudioTextInputEditor
                       language={EDITOR_LANGUAGE.PURE}
                       inputValue={databaseBuilderState.databaseGrammarCode}
                       isReadOnly={true}

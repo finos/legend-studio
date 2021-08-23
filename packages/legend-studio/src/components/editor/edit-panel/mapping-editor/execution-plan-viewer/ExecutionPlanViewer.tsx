@@ -35,17 +35,14 @@ import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanStat
 import { observer } from 'mobx-react-lite';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
 import Dialog from '@material-ui/core/Dialog';
-import {
-  TextInputEditor,
-  EDITOR_LANGUAGE,
-  TAB_SIZE,
-} from '@finos/legend-application';
+import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 import type { ExecutionPlan } from '@finos/legend-graph';
 import {
   ExecutionNode,
   SQLExecutionNode,
   RelationalTDSInstantiationExecutionNode,
 } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;
@@ -390,7 +387,7 @@ export const ExecutionPlanViewer = observer(
             </div>
           ) : (
             <div className="modal__body">
-              <TextInputEditor
+              <StudioTextInputEditor
                 inputValue={JSON.stringify(rawPlan, undefined, TAB_SIZE)}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.JSON}

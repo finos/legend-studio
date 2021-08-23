@@ -15,8 +15,8 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import type { IDisposable } from 'monaco-editor';
-import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
+import type { IDisposable, IKeyboardEvent } from 'monaco-editor';
+import { editor as monacoEditorAPI } from 'monaco-editor';
 import { useResizeDetector } from 'react-resize-detector';
 import {
   disposeEditor,
@@ -28,6 +28,11 @@ import type { EDITOR_LANGUAGE } from '../const';
 import { EDITOR_THEME, TAB_SIZE } from '../const';
 import { useApplicationStore } from './ApplicationStoreProvider';
 
+export type TextInputEditorOnKeyDownEventHandler = {
+  matcher: (event: IKeyboardEvent) => boolean;
+  action: (event: IKeyboardEvent) => void;
+};
+
 export const TextInputEditor: React.FC<{
   inputValue: string;
   isReadOnly?: boolean;
@@ -37,6 +42,7 @@ export const TextInputEditor: React.FC<{
   extraEditorOptions?: monacoEditorAPI.IEditorOptions &
     monacoEditorAPI.IGlobalEditorOptions;
   updateInput?: (val: string) => void;
+  onKeyDownEventHandlers?: TextInputEditorOnKeyDownEventHandler[];
 }> = (props) => {
   const {
     inputValue,
@@ -46,11 +52,13 @@ export const TextInputEditor: React.FC<{
     showMiniMap,
     hideGutter,
     extraEditorOptions,
+    onKeyDownEventHandlers,
   } = props;
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
+  const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
@@ -72,18 +80,6 @@ export const TextInputEditor: React.FC<{
         theme: EDITOR_THEME.LEGEND,
         formatOnType: true,
         formatOnPaste: true,
-      });
-      _editor.onKeyDown((event) => {
-        // FIXME: ideally, we should make this component fully independent of `editorStore` but we can't for now
-        // since `monaco-editor` does not give a way to disable hot key by default
-        if (event.keyCode === KeyCode.F8) {
-          event.preventDefault();
-          event.stopPropagation();
-          // See how we do this in `LambdaEditor` and replicate the behavior
-          // flowResult(editorStore.toggleTextMode()).catch(
-          //   applicationStore.alertIllegalUnhandledError,
-          // );
-        }
       });
       disableEditorHotKeys(_editor);
       setEditor(_editor);
@@ -111,6 +107,19 @@ export const TextInputEditor: React.FC<{
           updateInput?.(currentVal);
         }
       });
+
+    // dispose to avoid trigger hotkeys multiple times
+    // for a more extensive note on this, see `LambdaEditor`
+    onKeyDownEventDisposer.current?.dispose();
+    onKeyDownEventDisposer.current = editor.onKeyDown((event) => {
+      onKeyDownEventHandlers?.forEach((handler) => {
+        if (handler.matcher(event)) {
+          event.preventDefault();
+          event.stopPropagation();
+          handler.action(event);
+        }
+      });
+    });
 
     // Set the text value and editor options
     const currentValue = editor.getValue();

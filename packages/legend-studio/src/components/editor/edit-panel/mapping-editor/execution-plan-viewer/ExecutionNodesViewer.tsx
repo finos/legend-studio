@@ -51,7 +51,8 @@ import {
   MenuContentItem,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { TextInputEditor, EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
 
 const generateDataTypeLabel = (type: unknown | undefined): string => {
   if (type === undefined) {
@@ -189,7 +190,7 @@ const JSONViewer: React.FC<{ query: string }> = (props: { query: string }) => {
   const { query } = props;
   return (
     <div className="panel__content">
-      <TextInputEditor
+      <StudioTextInputEditor
         inputValue={query}
         isReadOnly={true}
         language={EDITOR_LANGUAGE.JSON}

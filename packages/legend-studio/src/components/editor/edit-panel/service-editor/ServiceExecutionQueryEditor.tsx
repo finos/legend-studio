@@ -32,7 +32,8 @@ import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const ServiceExecutionModals = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -60,7 +61,7 @@ const ServiceExecutionModals = observer(
               <div className="modal__title">Execution Result</div>
             </div>
             <div className="modal__body">
-              <TextInputEditor
+              <StudioTextInputEditor
                 inputValue={executionResultText ?? ''}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.JSON}
@@ -176,7 +177,7 @@ export const ServiceExecutionQueryEditor = observer(
                 <div
                   className={clsx('service-execution-query-editor__content')}
                 >
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}

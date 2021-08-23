@@ -19,7 +19,7 @@ import { AbstractPreset } from '@finos/legend-shared';
 import { EFJSONSchema_PureProtocolProcessorPlugin } from './models/protocols/pure/EFJSONSchema_PureProtocolProcessorPlugin';
 import type { GraphPluginManager } from '@finos/legend-graph';
 
-export class EFJSONSchema_Preset extends AbstractPreset {
+export class EFJSONSchema_GraphPreset extends AbstractPreset {
   constructor() {
     super(packageJson.name, packageJson.version);
   }

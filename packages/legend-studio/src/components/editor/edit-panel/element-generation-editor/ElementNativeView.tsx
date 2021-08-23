@@ -20,10 +20,10 @@ import type { ElementEditorState } from '../../../../stores/editor-state/element
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../../stores/EditorConfig';
 import { flowResult } from 'mobx';
 import {
-  TextInputEditor,
   useApplicationStore,
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 export const ElementNativeView = observer(
   (props: { currentElementState: ElementEditorState }) => {
@@ -51,7 +51,7 @@ export const ElementNativeView = observer(
     }, [applicationStore, currentElementState, currentElementState.editMode]);
 
     return (
-      <TextInputEditor
+      <StudioTextInputEditor
         inputValue={generatedText}
         language={editorLanguage}
         isReadOnly={true}
