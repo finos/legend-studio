@@ -24,7 +24,7 @@ import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { PackageableElement } from '@finos/legend-graph';
 
-export type EditorPluginSetup = (
+export type ApplicationSetup = (
   pluginManager: StudioPluginManager,
 ) => Promise<void>;
 
@@ -77,13 +77,13 @@ export type TEMP__ServiceQueryEditorRendererConfiguration = {
   ) => React.ReactNode | undefined;
 };
 
-export abstract class EditorPlugin extends AbstractPlugin {
-  private readonly _$nominalTypeBrand!: 'EditorPlugin';
+export abstract class StudioPlugin extends AbstractPlugin {
+  private readonly _$nominalTypeBrand!: 'StudioPlugin';
 
   /**
    * NOTE: The application will call the setup method from all editor plugins concurrently.
    */
-  getExtraEditorPluginSetups?(): EditorPluginSetup[];
+  getExtraApplicationSetups?(): ApplicationSetup[];
 
   getExtraApplicationPageRenderEntries?(): ApplicationPageRenderEntry[];
 
@@ -148,7 +148,7 @@ export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
 
-export interface DSL_EditorPlugin_Extension extends EditorPlugin {
+export interface DSL_StudioPlugin_Extension extends StudioPlugin {
   getExtraSupportedElementTypes?(): string[];
 
   getExtraElementTypeGetters?(): ElementTypeGetter[];

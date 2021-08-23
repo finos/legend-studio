@@ -31,7 +31,7 @@ import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
-import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import type { EntityChange } from '@finos/legend-server-sdlc';
 import {
@@ -1084,11 +1084,11 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.SECTION_INDEX;
     }
     const extraElementTypeLabelGetters = this.editorStore.pluginManager
-      .getEditorPlugins()
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_EditorPlugin_Extension
+            plugin as DSL_StudioPlugin_Extension
           ).getExtraElementTypeGetters?.() ?? [],
       );
     for (const labelGetter of extraElementTypeLabelGetters) {

@@ -30,7 +30,7 @@ import { CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
 import { compareLabelFn, prettyCONSTName } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';
 import type { Mapping, Store, Class } from '@finos/legend-graph';
 import {
@@ -71,11 +71,11 @@ export const getElementTypeLabel = (
     default: {
       if (type) {
         const extraElementTypeLabelGetters = editorStore.pluginManager
-          .getEditorPlugins()
+          .getStudioPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_EditorPlugin_Extension
+                plugin as DSL_StudioPlugin_Extension
               ).getExtraElementTypeLabelGetters?.() ?? [],
           );
         for (const typeLabelGetter of extraElementTypeLabelGetters) {
@@ -305,11 +305,11 @@ const renderNewElementDriver = (
       return <NewFileGenerationDriverEditor />;
     default: {
       const extraNewElementDriverEditorCreators = editorStore.pluginManager
-        .getEditorPlugins()
+        .getStudioPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_EditorPlugin_Extension
+              plugin as DSL_StudioPlugin_Extension
             ).getExtraNewElementDriverEditorCreators?.() ?? [],
         );
       for (const creator of extraNewElementDriverEditorCreators) {

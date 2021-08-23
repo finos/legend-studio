@@ -196,7 +196,7 @@ export const ViewerInner = observer(() => {
     );
   // Extensions
   const extraEditorExtensionComponents = editorStore.pluginManager
-    .getEditorPlugins()
+    .getStudioPlugins()
     .flatMap(
       (plugin) =>
         plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],

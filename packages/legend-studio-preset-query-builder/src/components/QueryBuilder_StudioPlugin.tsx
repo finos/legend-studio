@@ -28,9 +28,9 @@ import type {
   MappingExecutionState,
   MappingTestQueryEditorRendererConfiguration,
   MappingTestState,
-  EditorPluginSetup,
+  ApplicationSetup,
 } from '@finos/legend-studio';
-import { EditorPlugin } from '@finos/legend-studio';
+import { StudioPlugin } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder';
@@ -42,16 +42,16 @@ import type { PackageableElement } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
 import { setupLegendQueryUILibrary } from '@finos/legend-query';
 
-export class QueryBuilder_EditorPlugin extends EditorPlugin {
+export class QueryBuilder_StudioPlugin extends StudioPlugin {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {
-    pluginManager.registerEditorPlugin(this);
+    pluginManager.registerStudioPlugin(this);
   }
 
-  override getExtraEditorPluginSetups(): EditorPluginSetup[] {
+  override getExtraApplicationSetups(): ApplicationSetup[] {
     return [
       async (pluginManager: StudioPluginManager): Promise<void> => {
         await setupLegendQueryUILibrary();

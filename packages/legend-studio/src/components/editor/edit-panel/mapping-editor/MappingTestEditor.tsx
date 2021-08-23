@@ -81,7 +81,7 @@ const MappingTestQueryEditor = observer(
     const applicationStore = useApplicationStore();
 
     const extraQueryEditors = editorStore.pluginManager
-      .getEditorPlugins()
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           plugin.getExtraMappingTestQueryEditorRendererConfigurations?.() ?? [],

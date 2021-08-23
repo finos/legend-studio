@@ -66,7 +66,7 @@ import { GenerationSpecificationEditorState } from '../../../stores/editor-state
 import { GenerationSpecificationEditor } from './GenerationSpecificationEditor';
 import { FileGenerationViewerState } from '../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationViewer } from '../../editor/edit-panel/FileGenerationViewer';
-import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
@@ -279,11 +279,11 @@ export const EditPanel = observer(() => {
             return <UnsupportedElementEditor key={currentEditorState.uuid} />;
           }
           const extraElementEditorCreators = editorStore.pluginManager
-            .getEditorPlugins()
+            .getStudioPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSL_EditorPlugin_Extension
+                  plugin as DSL_StudioPlugin_Extension
                 ).getExtraElementEditorCreators?.() ?? [],
             );
           for (const elementEditorCreators of extraElementEditorCreators) {

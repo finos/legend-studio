@@ -17,7 +17,7 @@
 import packageJson from '../package.json';
 import type { StudioPluginManager } from '@finos/legend-studio';
 import { AbstractPreset } from '@finos/legend-shared';
-import { QueryBuilder_EditorPlugin } from './components/QueryBuilder_EditorPlugin';
+import { QueryBuilder_StudioPlugin } from './components/QueryBuilder_StudioPlugin';
 import { QueryBuilder_PureProtocolProcessorPlugin } from '@finos/legend-query';
 
 export class QueryBuilder_StudioPreset extends AbstractPreset {
@@ -26,7 +26,7 @@ export class QueryBuilder_StudioPreset extends AbstractPreset {
   }
 
   install(pluginManager: StudioPluginManager): void {
-    new QueryBuilder_EditorPlugin().install(pluginManager);
+    new QueryBuilder_StudioPlugin().install(pluginManager);
     new QueryBuilder_PureProtocolProcessorPlugin().install(pluginManager);
   }
 }

@@ -19,17 +19,17 @@ import type {
   StudioPluginManager,
   ApplicationPageRenderEntry,
 } from '@finos/legend-studio';
-import { EditorPlugin } from '@finos/legend-studio';
+import { StudioPlugin } from '@finos/legend-studio';
 import { ProjectDashboard } from './ProjectDashboard';
 import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
 
-export class Management_EditorPlugin extends EditorPlugin {
+export class Management_StudioPlugin extends StudioPlugin {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {
-    pluginManager.registerEditorPlugin(this);
+    pluginManager.registerStudioPlugin(this);
   }
 
   override getExtraApplicationPageRenderEntries(): ApplicationPageRenderEntry[] {

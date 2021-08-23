@@ -26,7 +26,7 @@ import type {
   TracerServicePluginManager,
 } from '@finos/legend-shared';
 import { AbstractPluginManager } from '@finos/legend-shared';
-import type { EditorPlugin } from '../stores/EditorPlugin';
+import type { StudioPlugin } from '../stores/StudioPlugin';
 
 export class StudioPluginManager
   extends AbstractPluginManager
@@ -39,7 +39,7 @@ export class StudioPluginManager
   private tracerServicePlugins: TracerServicePlugin<unknown>[] = [];
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
-  private editorPlugins: EditorPlugin[] = [];
+  private studioPlugins: StudioPlugin[] = [];
 
   private constructor() {
     super();
@@ -67,8 +67,8 @@ export class StudioPluginManager
     this.pureGraphManagerPlugins.push(plugin);
   }
 
-  registerEditorPlugin(plugin: EditorPlugin): void {
-    this.editorPlugins.push(plugin);
+  registerStudioPlugin(plugin: StudioPlugin): void {
+    this.studioPlugins.push(plugin);
   }
 
   getTelemetryServicePlugins(): TelemetryServicePlugin[] {
@@ -87,7 +87,7 @@ export class StudioPluginManager
     return [...this.pureProtocolProcessorPlugins];
   }
 
-  getEditorPlugins(): EditorPlugin[] {
-    return [...this.editorPlugins];
+  getStudioPlugins(): StudioPlugin[] {
+    return [...this.studioPlugins];
   }
 }

@@ -21,11 +21,11 @@ import {
   TEST__checkBuildingElementsRoundtrip,
 } from '@finos/legend-studio';
 import { unitTest } from '@finos/legend-shared';
-import { DSLText_Preset } from '../../DSLText_Preset';
+import { DSLText_StudioPreset } from '../../DSLText_StudioPreset';
 import { TEST_DATA__roundtrip } from './DSLText_RoundtripTestData';
 
 const pluginManager = StudioPluginManager.create();
-pluginManager.usePresets([new DSLText_Preset()]).install();
+pluginManager.usePresets([new DSLText_StudioPreset()]).install();
 
 test(unitTest('Text import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(

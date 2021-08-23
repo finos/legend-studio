@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type {
   DatasourceSpecification,
   AuthenticationStrategy,
@@ -50,8 +50,8 @@ export type AuthenticationStrategyEditorRenderer = (
   isReadOnly: boolean,
 ) => React.ReactNode | undefined;
 
-export interface StoreRelational_EditorPlugin_Extension
-  extends DSL_EditorPlugin_Extension {
+export interface StoreRelational_StudioPlugin_Extension
+  extends DSL_StudioPlugin_Extension {
   // connection datasource specification
 
   getExtraDatasourceSpecificationTypes?(): string[];

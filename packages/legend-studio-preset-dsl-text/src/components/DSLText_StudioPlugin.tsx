@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { EditorPlugin } from '@finos/legend-studio';
+import { StudioPlugin } from '@finos/legend-studio';
 import type {
   StudioPluginManager,
   NewElementFromStateCreator,
@@ -27,7 +27,7 @@ import type {
   ElementProjectExplorerDnDTypeGetter,
   ElementIconGetter,
   ElementEditorCreator,
-  DSL_EditorPlugin_Extension,
+  DSL_StudioPlugin_Extension,
   NewElementState,
 } from '@finos/legend-studio';
 import { FileIcon } from '@finos/legend-art';
@@ -40,16 +40,16 @@ import { PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL } from '../models/metamodels/pure/
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
 
-export class DSLText_EditorPlugin
-  extends EditorPlugin
-  implements DSL_EditorPlugin_Extension
+export class DSLText_StudioPlugin
+  extends StudioPlugin
+  implements DSL_StudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {
-    pluginManager.registerEditorPlugin(this);
+    pluginManager.registerStudioPlugin(this);
   }
 
   getExtraSupportedElementTypes(): string[] {

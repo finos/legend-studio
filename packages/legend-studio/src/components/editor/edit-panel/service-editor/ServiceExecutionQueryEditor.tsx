@@ -94,7 +94,7 @@ export const ServiceExecutionQueryEditor = observer(
     const applicationStore = editorStore.applicationStore;
     // query editor extensions
     const extraServiceQueryEditors = editorStore.pluginManager
-      .getEditorPlugins()
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           plugin.TEMP__getExtraServiceQueryEditorRendererConfigurations?.() ??

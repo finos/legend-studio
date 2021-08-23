@@ -39,7 +39,7 @@ import type { ElementDragSource } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 
@@ -128,11 +128,11 @@ export const GrammarTextEditor = observer(() => {
 
   // Drag and Drop
   const extraDnDTypes = editorStore.pluginManager
-    .getEditorPlugins()
+    .getStudioPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_EditorPlugin_Extension
+          plugin as DSL_StudioPlugin_Extension
         ).getExtraGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(

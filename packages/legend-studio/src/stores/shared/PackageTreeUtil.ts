@@ -19,7 +19,7 @@ import type { PackageTreeNodeData } from './TreeUtil';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore';
 import { CORE_DND_TYPE } from './DnDUtil';
-import type { DSL_EditorPlugin_Extension } from '../EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../StudioPlugin';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   ROOT_PACKAGE_NAME,
@@ -84,11 +84,11 @@ const getElementProjectExplorerDnDType = (
     return CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION;
   }
   const extraElementProjectExplorerDnDTypeGetters = editorStore.pluginManager
-    .getEditorPlugins()
+    .getStudioPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_EditorPlugin_Extension
+          plugin as DSL_StudioPlugin_Extension
         ).getExtraElementProjectExplorerDnDTypeGetters?.() ?? [],
     );
   for (const dndTypeGetter of extraElementProjectExplorerDnDTypeGetters) {

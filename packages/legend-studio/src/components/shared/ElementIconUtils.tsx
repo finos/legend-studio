@@ -16,7 +16,7 @@
 
 import { returnUndefOnError } from '@finos/legend-shared';
 import type { EditorStore } from '../../stores/EditorStore';
-import type { DSL_EditorPlugin_Extension } from '../../stores/EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../../stores/StudioPlugin';
 import type { PackageableElement, Type } from '@finos/legend-graph';
 import {
   Class,
@@ -107,11 +107,11 @@ export const getElementTypeIcon = (
     default: {
       if (type) {
         const extraElementIconGetters = editorStore.pluginManager
-          .getEditorPlugins()
+          .getStudioPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_EditorPlugin_Extension
+                plugin as DSL_StudioPlugin_Extension
               ).getExtraElementIconGetters?.() ?? [],
           );
         for (const iconGetter of extraElementIconGetters) {

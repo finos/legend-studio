@@ -60,7 +60,7 @@ export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useStudioStore();
   const applicationStore = useApplicationStore();
   const extraApplicationPageRenderEntries = studioStore.pluginManager
-    .getEditorPlugins()
+    .getStudioPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? [])
     .filter((entry) => {
       /**

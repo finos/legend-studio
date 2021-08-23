@@ -41,8 +41,8 @@ const setupLegendStudioUILibrary = async (
 
   await Promise.all(
     pluginManager
-      .getEditorPlugins()
-      .flatMap((plugin) => plugin.getExtraEditorPluginSetups?.() ?? [])
+      .getStudioPlugins()
+      .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
       .map((setup) => setup(pluginManager)),
   );
 };

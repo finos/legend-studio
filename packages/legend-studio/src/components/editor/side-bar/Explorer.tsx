@@ -183,7 +183,7 @@ const ExplorerContextMenu = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const extraExplorerContextMenuItems = editorStore.pluginManager
-      .getEditorPlugins()
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??

@@ -17,17 +17,17 @@
 import packageJson from '../package.json';
 import type { StudioPluginManager } from '@finos/legend-studio';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSLText_EditorPlugin } from './components/DSLText_EditorPlugin';
+import { DSLText_StudioPlugin } from './components/DSLText_StudioPlugin';
 import { DSLText_PureGraphManagerPlugin } from './models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
 import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin';
 
-export class DSLText_Preset extends AbstractPreset {
+export class DSLText_StudioPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.studioPreset, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {
-    new DSLText_EditorPlugin().install(pluginManager);
+    new DSLText_StudioPlugin().install(pluginManager);
     new DSLText_PureGraphManagerPlugin().install(pluginManager);
     new DSLText_PureProtocolProcessorPlugin().install(pluginManager);
   }

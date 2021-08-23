@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 
-export interface DSLGenerationSpecification_EditorPlugin_Extension
-  extends DSL_EditorPlugin_Extension {
+export interface DSLGenerationSpecification_StudioPlugin_Extension
+  extends DSL_StudioPlugin_Extension {
   getExtraModelGenerationSpecificationElementDnDTypes?(): string[];
 }

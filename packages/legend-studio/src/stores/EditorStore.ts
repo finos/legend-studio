@@ -78,7 +78,7 @@ import {
 import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
-import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
@@ -287,7 +287,7 @@ export class EditorStore {
     );
     // extensions
     this.editorExtensionStates = this.pluginManager
-      .getEditorPlugins()
+      .getStudioPlugins()
       .flatMap(
         (plugin) => plugin.getExtraEditorExtensionStateCreators?.() ?? [],
       )
@@ -1016,11 +1016,11 @@ export class EditorStore {
       return new FileGenerationEditorState(this, element);
     }
     const extraElementEditorStateCreators = this.pluginManager
-      .getEditorPlugins()
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_EditorPlugin_Extension
+            plugin as DSL_StudioPlugin_Extension
           ).getExtraElementEditorStateCreators?.() ?? [],
       );
     for (const creator of extraElementEditorStateCreators) {
@@ -1352,11 +1352,11 @@ export class EditorStore {
       ] as string[]
     ).concat(
       this.pluginManager
-        .getEditorPlugins()
+        .getStudioPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_EditorPlugin_Extension
+              plugin as DSL_StudioPlugin_Extension
             ).getExtraSupportedElementTypes?.() ?? [],
         ),
     );

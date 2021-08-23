@@ -30,7 +30,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
-import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { FileGenerationTypeOption } from './editor-state/GraphGenerationState';
 import { DEFAULT_GENERATION_SPECIFICATION_NAME } from './editor-state/GraphGenerationState';
 import type {
@@ -486,11 +486,11 @@ export class NewElementState {
           break;
         default: {
           const extraNewElementDriverCreators = this.editorStore.pluginManager
-            .getEditorPlugins()
+            .getStudioPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSL_EditorPlugin_Extension
+                  plugin as DSL_StudioPlugin_Extension
                 ).getExtraNewElementDriverCreators?.() ?? [],
             );
           for (const creator of extraNewElementDriverCreators) {
@@ -682,11 +682,11 @@ export class NewElementState {
         break;
       default: {
         const extraNewElementFromStateCreators = this.editorStore.pluginManager
-          .getEditorPlugins()
+          .getStudioPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_EditorPlugin_Extension
+                plugin as DSL_StudioPlugin_Extension
               ).getExtraNewElementFromStateCreators?.() ?? [],
           );
         for (const creator of extraNewElementFromStateCreators) {

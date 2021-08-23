@@ -21,7 +21,7 @@ export * from './application/StudioPluginManager';
 export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
 
 // stores
-export * from './stores/EditorPlugin';
+export * from './stores/StudioPlugin';
 export * from './stores/EditorStore';
 export * from './stores/EditorConfig';
 export * from './stores/editor-state/element-editor-state/ElementEditorState';
@@ -61,9 +61,9 @@ export {
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor';
-export * from './stores/DSLGenerationSpecification_EditorPlugin_Extension';
+export * from './stores/DSLGenerationSpecification_StudioPlugin_Extension';
 
-export * from './stores/StoreRelational_EditorPlugin_Extension';
+export * from './stores/StoreRelational_StudioPlugin_Extension';
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
